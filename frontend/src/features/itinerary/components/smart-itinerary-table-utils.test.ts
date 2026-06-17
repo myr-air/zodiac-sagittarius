@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ItineraryItem, PlanVariant, TripDailyBriefing } from "@/src/trip/types";
+import type { PlanVariant, TripDailyBriefing } from "@/src/trip/types";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import { buildItineraryItem } from "./fixtures/itinerary-items";
 import {
   buildGraphColumnWidth,
   buildWeatherSummary,
@@ -32,18 +33,65 @@ describe("smart-itinerary-table-utils", () => {
 
   it("groups child items and preserves parent ordering", () => {
     const items = [
-      { id: "c", parentItemId: "p", sortOrder: 2, startTime: "10:00", activity: "c", activityType: "default", day: "2026-06-10", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", sortKey: "a", endTime: "10:30", endOffsetDays: 0 } as unknown as ItineraryItem,
-      { id: "b", parentItemId: "p", sortOrder: 1, startTime: "09:00", activity: "b", activityType: "default", day: "2026-06-10", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", sortKey: "a", endTime: "09:30", endOffsetDays: 0 } as unknown as ItineraryItem,
-      { id: "p", sortOrder: 0, startTime: "08:00", activity: "p", activityType: "default", day: "2026-06-10", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", sortKey: "a", endTime: "08:30", endOffsetDays: 0 } as unknown as ItineraryItem,
+      buildItineraryItem({
+        id: "c",
+        parentItemId: "p",
+        sortOrder: 2,
+        startTime: "10:00",
+        endTime: "10:30",
+        activity: "c",
+      }),
+      buildItineraryItem({
+        id: "b",
+        parentItemId: "p",
+        sortOrder: 1,
+        startTime: "09:00",
+        endTime: "09:30",
+        activity: "b",
+      }),
+      buildItineraryItem({
+        id: "p",
+        sortOrder: 0,
+        startTime: "08:00",
+        endTime: "08:30",
+        activity: "p",
+      }),
     ];
     expect(groupChildItemsByParent(items).get("p")?.map((i) => i.id)).toEqual(["b", "c"]);
   });
 
   it("maps graph items by day and computes dynamic lane width", () => {
     const items = [
-      { id: "a", pathRole: "main", pathId: "main", day: "2026-06-10", sortOrder: 0, startTime: "08:00", activity: "a", activityType: "default", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", endTime: null, endOffsetDays: 0 } as unknown as ItineraryItem,
-      { id: "b", pathRole: "alternative", pathId: "p1", day: "2026-06-10", sortOrder: 0, startTime: "08:00", activity: "b", activityType: "default", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", endTime: null, endOffsetDays: 0 } as unknown as ItineraryItem,
-      { id: "c", pathRole: "alternative", pathId: "p2", day: "2026-06-10", sortOrder: 0, startTime: "10:00", activity: "c", activityType: "default", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", endTime: null, endOffsetDays: 0 } as unknown as ItineraryItem,
+      buildItineraryItem({
+        id: "a",
+        pathRole: "main",
+        pathId: "main",
+        day: "2026-06-10",
+        sortOrder: 0,
+        startTime: "08:00",
+        endTime: null,
+        activity: "a",
+      }),
+      buildItineraryItem({
+        id: "b",
+        pathRole: "alternative",
+        pathId: "p1",
+        day: "2026-06-10",
+        sortOrder: 0,
+        startTime: "08:00",
+        endTime: null,
+        activity: "b",
+      }),
+      buildItineraryItem({
+        id: "c",
+        pathRole: "alternative",
+        pathId: "p2",
+        day: "2026-06-10",
+        sortOrder: 0,
+        startTime: "10:00",
+        endTime: null,
+        activity: "c",
+      }),
     ];
     expect([...groupGraphItemsByDay(items).entries()].map(([day, dayItems]) => [day, dayItems.length])).toEqual([["2026-06-10", 3]]);
     expect(buildGraphColumnWidth(items, 30, 9, 18)).toBe(66);
@@ -54,9 +102,29 @@ describe("smart-itinerary-table-utils", () => {
       { id: "main", name: "Main", scope: "trip" },
       { id: "p2", name: "Plan 2", scope: "trip" },
     ];
-    const items: ItineraryItem[] = [
-      { id: "i1", pathId: "p2", pathName: "Plan 2", pathRole: "alternative", day: "2026-06-10", sortOrder: 0, startTime: "09:00", activity: "a", activityType: "default", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", endTime: null, endOffsetDays: 0 } as unknown as ItineraryItem,
-      { id: "i2", pathId: "p3", pathName: "Custom", pathRole: "alternative", day: "2026-06-11", sortOrder: 0, startTime: "09:00", activity: "b", activityType: "default", status: "planned", planVariantId: "main", createdBy: "u", updatedAt: "2026", version: 1, planKind: "main", endTime: null, endOffsetDays: 0 } as unknown as ItineraryItem,
+    const items = [
+      buildItineraryItem({
+        id: "i1",
+        pathId: "p2",
+        pathName: "Plan 2",
+        pathRole: "alternative",
+        day: "2026-06-10",
+        sortOrder: 0,
+        startTime: "09:00",
+        endTime: null,
+        activity: "a",
+      }),
+      buildItineraryItem({
+        id: "i2",
+        pathId: "p3",
+        pathName: "Custom",
+        pathRole: "alternative",
+        day: "2026-06-11",
+        sortOrder: 0,
+        startTime: "09:00",
+        endTime: null,
+        activity: "b",
+      }),
     ];
     const options = dedupePathOptions(pathOptions, items);
     expect(options).toEqual([

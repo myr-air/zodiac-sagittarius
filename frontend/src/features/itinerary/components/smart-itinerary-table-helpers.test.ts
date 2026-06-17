@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { BookingDoc, ItineraryItem, ItineraryItemDetails } from "@/src/trip/types";
+import type { BookingDoc, ItineraryItemDetails } from "@/src/trip/types";
+import { buildItineraryItem } from "./fixtures/itinerary-items";
 import {
   activityTypeOptions,
   bookingDocTypeForItemTemplate,
@@ -51,12 +52,9 @@ describe("smart-itinerary-table-helpers", () => {
   });
 
   it("builds booking type and summary helpers from itinerary data", () => {
-    const baseItem = {
+    const baseItem = buildItineraryItem({
       id: "1",
-      tripId: "trip",
-      planVariantId: "plan",
       day: "2026-06-10",
-      sortOrder: 0,
       startTime: "09:00",
       endTime: "11:00",
       endOffsetDays: 0,
@@ -64,19 +62,13 @@ describe("smart-itinerary-table-helpers", () => {
       activityType: "travel",
       activitySubtype: "flight",
       place: "BKK",
-      linkLabel: "",
-      mapLink: "",
       transportation: "Thai Airways",
       details: {
         subtype: "flight",
         provider: "Thai Airways",
       },
       durationMinutes: 120,
-      note: "",
-      createdBy: "user",
-      updatedAt: "2026-06-01T00:00:00.000Z",
-      version: 1,
-    } as unknown as ItineraryItem;
+    });
 
     expect(travelSubtypeForItem(baseItem)).toBe("flight");
     expect(bookingTemplateForItem(baseItem)).toBe("flight");
@@ -93,12 +85,9 @@ describe("smart-itinerary-table-helpers", () => {
   });
 
   it("builds activity subtype patch without losing unrelated details", () => {
-    const baseItem = {
+    const baseItem = buildItineraryItem({
       id: "2",
-      tripId: "trip",
-      planVariantId: "plan",
       day: "2026-06-10",
-      sortOrder: 0,
       startTime: "09:00",
       endTime: null,
       endOffsetDays: 0,
@@ -106,18 +95,12 @@ describe("smart-itinerary-table-helpers", () => {
       activityType: "travel",
       activitySubtype: null,
       place: "BKK",
-      linkLabel: "",
-      mapLink: "",
       transportation: "Uber",
       details: {
         notes: "quiet",
       },
       durationMinutes: null,
-      note: "",
-      createdBy: "user",
-      updatedAt: "2026-06-01T00:00:00.000Z",
-      version: 1,
-    } as unknown as ItineraryItem;
+    });
 
     expect(buildActivitySubtypePatch(baseItem, "travel", "taxi")).toEqual({
       activityType: "travel",
@@ -142,39 +125,54 @@ describe("smart-itinerary-table-helpers", () => {
     );
     expect(
       ticketNotesForItem(
-        {
+        buildItineraryItem({
           id: "3",
-          tripId: "trip",
-          planVariantId: "plan",
           day: "2026-06-10",
-          sortOrder: 0,
           startTime: "09:00",
           endTime: null,
           endOffsetDays: 0,
           activity: "Taxi",
           activityType: "travel",
           place: "Sukhumvit",
-          linkLabel: "",
-          mapLink: "",
           transportation: "Grab",
           details: { from: "Airport", to: "Hotel" },
           durationMinutes: null,
-          note: "",
-          createdBy: "user",
-          updatedAt: "2026-06-01T00:00:00.000Z",
-          version: 1,
-        } as unknown as ItineraryItem,
+        }),
         "en",
       ),
     ).toContain("From: Airport");
 
-    const booking = {
+    const booking: BookingDoc = {
       id: "b1",
+      tripId: "trip-id",
+      type: "other",
+      title: "Airline ticket",
+      status: "booked",
+      visibility: "shared",
+      travelerIds: [],
+      externalLinks: [],
       relatedItineraryItemIds: ["3", "missing"],
       providerName: "Airline",
-      status: "booked",
-    } as unknown as BookingDoc;
-    expect(formatBookingSummary(booking, [{ id: "3", activity: "Taxi" } as ItineraryItem])).toBe(
+      relatedTaskIds: [],
+      relatedExpenseIds: [],
+      noteIds: [],
+      notes: null,
+      createdBy: "test-user",
+      updatedAt: "2026-06-10T00:00:00.000Z",
+      version: 1,
+    };
+    expect(formatBookingSummary(booking, [buildItineraryItem({
+      id: "3",
+      day: "2026-06-10",
+      activity: "Taxi",
+      activityType: "travel",
+      place: "Sukhumvit",
+      transportation: "Grab",
+      details: {
+        from: "Airport",
+        to: "Hotel",
+      },
+    })])).toBe(
       "Airline · Taxi",
     );
 
