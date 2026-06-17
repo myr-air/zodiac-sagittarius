@@ -19,27 +19,18 @@ import { InlineActivityField } from "./activity-cell/InlineActivityField";
 import { ItineraryBookingButton } from "./activity-cell/BookingComponents";
 import { ActivityTimeButton } from "./activity-cell/TimeComponents";
 import { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
+import { ActivityActionButtons } from "./activity-cell/ActivityActionButtons";
 import {
-  itemPlaceholderCellClassName,
-  itemPlaceholderRowClassName,
   activityActionClusterClassName,
   activityActionsClassName,
   activityBodyClassName,
   activityCellClassName,
-  activityHeaderActivityClassName,
-  activityHeaderGridClassName,
-  activityIconButtonClassName,
   activityMainLineClassName,
   activityMetaClassName,
   activityMetaStatusClassName,
   activityMobileLineClassName,
-  activityMobilePlaceInputClassName,
   activityMobileStatusClassName,
   activityPillClassName,
-  activityPlaceInputClassName,
-  activityPlaceLineClassName,
-  activityRouteLabelClassName,
-  activityRouteLineClassName,
   activitySentenceClassName,
   activityTimeRailClassName,
   activityTitleInputClassName,
@@ -149,101 +140,22 @@ export function ActivityCell({
       </button>
     ) : null;
   const renderActivityActions = (compact = false) => (
-    <>
-      {item.mapLink ? (
-        <a
-          className={activityIconButtonClassName}
-          href={item.mapLink}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`${itineraryLabels.row.mapFallback}: ${item.place || item.activity}`}
-          title={`${itineraryLabels.row.mapFallback}: ${item.place || item.activity}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            if (compact) {
-              setActionsExpanded(false);
-            }
-          }}
-        >
-          <Icon name="map" />
-        </a>
-      ) : null}
-      {onAddNoteForItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={locale === "th" ? `เพิ่มโน้ต ${item.activity}` : `Add note for ${item.activity}`}
-          title={locale === "th" ? `เพิ่มโน้ต ${item.activity}` : `Add note for ${item.activity}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            openNoteModal(item, compact);
-          }}
-        >
-          <Icon name="note" />
-        </button>
-      ) : null}
-      <button
-        type="button"
-        className={activityIconButtonClassName}
-        aria-label={itineraryLabels.row.openDetails({
-          activity: item.activity,
-        })}
-        title={itineraryLabels.row.openDetails({
-          activity: item.activity,
-        })}
-        onClick={(event) => {
-          event.stopPropagation();
-          if (compact) {
-            setActionsExpanded(false);
-          }
-          onOpenItemDetails(item.id);
-        }}
-      >
-        <Icon name="panel" />
-      </button>
-      {onEditItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={itineraryLabels.row.edit({
-            activity: item.activity,
-          })}
-          title={itineraryLabels.row.edit({
-            activity: item.activity,
-          })}
-          onClick={(event) => {
-            event.stopPropagation();
-            if (compact) {
-              setActionsExpanded(false);
-            }
-            onEditItem(item.id);
-          }}
-        >
-          <Icon name="edit" />
-        </button>
-      ) : null}
-      {onDeleteItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={itineraryLabels.row.delete({
-            activity: item.activity,
-          })}
-          title={itineraryLabels.row.delete({
-            activity: item.activity,
-          })}
-          onClick={(event) => {
-            event.stopPropagation();
-            if (compact) {
-              setActionsExpanded(false);
-            }
-            onDeleteItem(item.id);
-          }}
-        >
-          <Icon name="trash" />
-        </button>
-      ) : null}
-    </>
+    <ActivityActionButtons
+      item={item}
+      itineraryLabels={itineraryLabels}
+      locale={locale}
+      onActionComplete={
+        compact ? () => setActionsExpanded(false) : undefined
+      }
+      onDeleteItem={onDeleteItem}
+      onEditItem={onEditItem}
+      onOpenItemDetails={onOpenItemDetails}
+      onOpenNoteForItem={
+        onAddNoteForItem
+          ? (target) => openNoteModal(target, compact)
+          : undefined
+      }
+    />
   );
 
   return (

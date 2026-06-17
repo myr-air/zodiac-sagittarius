@@ -13,10 +13,10 @@ import { ActivityTypePicker } from "./ActivityTypePicker";
 import { InlineActivityField } from "./InlineActivityField";
 import { ItineraryBookingButton } from "./BookingComponents";
 import { ActivityTimeButton } from "./TimeComponents";
+import { ActivityActionButtons } from "./ActivityActionButtons";
 import { useEscapeToClose } from "./use-escape-close";
 import {
   addSubActivityButtonClassName,
-  activityIconButtonClassName,
   subActivityActionsClassName,
   subActivityLineClassName,
   subActivityListClassName,
@@ -248,18 +248,16 @@ export function SubActivityList({
             />
           </div>
           <div className={subActivityActionsClassName}>
-            {subItem.mapLink ? (
-              <a
-                className={activityIconButtonClassName}
-                href={subItem.mapLink}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${itineraryLabels.row.mapFallback}: ${subItem.place || subItem.activity}`}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Icon name="map" className="size-4" />
-              </a>
-            ) : null}
+            <ActivityActionButtons
+              iconClassName="size-4"
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              showDelete={false}
+              showDetails={false}
+              showEdit={false}
+              showNote={false}
+            />
             <ItineraryBookingButton
               item={subItem}
               itineraryLabels={itineraryLabels}
@@ -278,49 +276,21 @@ export function SubActivityList({
               locale={locale}
               onUpdateItemInline={onUpdateItemInline}
             />
-            {onAddNoteForItem && onOpenNoteForItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={locale === "th" ? `เพิ่มโน้ต ${subItem.activity}` : `Add note for ${subItem.activity}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onOpenNoteForItem(subItem);
-                }}
-              >
-                <Icon name="note" className="size-4" />
-              </button>
-            ) : null}
-            {onEditItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={itineraryLabels.row.edit({
-                  activity: subItem.activity,
-                })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onEditItem(subItem.id);
-                }}
-              >
-                <Icon name="edit" className="size-4" />
-              </button>
-            ) : null}
-            {onDeleteItem ? (
-              <button
-                type="button"
-                className={activityIconButtonClassName}
-                aria-label={itineraryLabels.row.delete({
-                  activity: subItem.activity,
-                })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onDeleteItem(subItem.id);
-                }}
-              >
-                <Icon name="trash" className="size-4" />
-              </button>
-            ) : null}
+            <ActivityActionButtons
+              iconClassName="size-4"
+              item={subItem}
+              itineraryLabels={itineraryLabels}
+              locale={locale}
+              onDeleteItem={onDeleteItem}
+              onEditItem={onEditItem}
+              onOpenNoteForItem={
+                onAddNoteForItem && onOpenNoteForItem
+                  ? onOpenNoteForItem
+                  : undefined
+              }
+              showDetails={false}
+              showMap={false}
+            />
           </div>
         </div>
       ))}
