@@ -1,4 +1,5 @@
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
 import {
   pathIdPlanA as pathIdFixtureStoryA,
   pathIdPlanB as pathIdFixtureStoryB,
@@ -22,10 +23,11 @@ export const pathIdStoryPlanC = pathIdFixtureStoryC;
 export const pathIdRain = "rain" as const;
 export const pathIdStoryRain = pathIdFixtureRain;
 export const pathIdPlanOne = "path-plan-1" as const;
+export const pathNameMain = mainItineraryPathName;
 
 export const mainPathOption: ItineraryPathOption = {
   id: pathIdMain,
-  name: "Main",
+  name: pathNameMain,
   scope: "trip",
 };
 

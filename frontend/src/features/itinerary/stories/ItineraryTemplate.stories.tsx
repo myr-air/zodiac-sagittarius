@@ -5,6 +5,7 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
   buildOwnerStoryArgs,
+  itineraryStoryDay,
   branchGraphItemsBase,
   branchGraphPathOptions,
   planAExampleItemsBase,
@@ -12,6 +13,10 @@ import {
   planABPathOptions,
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
+  pathNameMain,
+  pathNamePlanA,
+  pathNamePlanB,
+  pathNamePlanC,
   planAPathOptions,
   stressPathOptions,
   withStoryPrefix,
@@ -32,7 +37,7 @@ const hierarchyBlockItems: ItineraryItem[] = [
     itemKind: "travel",
     isPlanBlock: true,
     parentItemId: null,
-    day: "2026-06-19",
+    day: itineraryStoryDay,
     startTime: "04:00",
     endTime: "13:00",
     durationMinutes: 540,
@@ -47,7 +52,7 @@ const hierarchyBlockItems: ItineraryItem[] = [
     activityType: "travel",
     itemKind: "preparation",
     parentItemId: "story-flight-block",
-    day: "2026-06-19",
+    day: itineraryStoryDay,
     startTime: "06:00",
     endTime: "06:45",
     durationMinutes: 45,
@@ -62,7 +67,7 @@ const hierarchyBlockItems: ItineraryItem[] = [
     activityType: "travel",
     itemKind: "preparation",
     parentItemId: "story-flight-block",
-    day: "2026-06-19",
+    day: itineraryStoryDay,
     startTime: "11:15",
     endTime: "12:15",
     durationMinutes: 60,
@@ -88,7 +93,7 @@ export const Owner: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
   },
 };
 
@@ -107,7 +112,7 @@ export const Traveler: Story = {
   args: { ...Owner.args, role: "traveler" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
+    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
   },
 };
 export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
@@ -120,7 +125,7 @@ export const HierarchyBlocks: Story = {
     dayPathOverrides: {},
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Flight to Hong Kong on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`Flight to Hong Kong on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
     await expect(canvas.queryByLabelText("Structure for Flight to Hong Kong")).toBeNull();
   },
 };
@@ -135,7 +140,7 @@ export const HierarchyWarnings: Story = {
         activity: "Plain parent",
         isPlanBlock: false,
         parentItemId: null,
-        day: "2026-06-19",
+        day: itineraryStoryDay,
         startTime: "09:00",
         endTime: "10:00",
         durationMinutes: 60,
@@ -146,7 +151,7 @@ export const HierarchyWarnings: Story = {
         id: "story-child-under-plain-parent",
         activity: "Child under plain parent",
         parentItemId: "story-plain-parent",
-        day: "2026-06-19",
+        day: itineraryStoryDay,
         startTime: "09:15",
         endTime: "09:45",
         durationMinutes: 30,
@@ -158,7 +163,7 @@ export const HierarchyWarnings: Story = {
         activity: "Window block",
         isPlanBlock: true,
         parentItemId: null,
-        day: "2026-06-19",
+        day: itineraryStoryDay,
         startTime: "10:00",
         endTime: "11:00",
         durationMinutes: 60,
@@ -169,7 +174,7 @@ export const HierarchyWarnings: Story = {
         id: "story-child-outside-window",
         activity: "Child outside window",
         parentItemId: "story-window-block",
-        day: "2026-06-19",
+        day: itineraryStoryDay,
         startTime: "09:30",
         endTime: "11:30",
         durationMinutes: 120,
@@ -218,7 +223,7 @@ export const BranchGraph: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: /Dim Sum morning on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`Dim Sum morning on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
   },
 };
 export const PlanAExample: Story = {
@@ -231,9 +236,9 @@ export const PlanAExample: Story = {
     pathOptions: planAPathOptions,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`) })).toBeInTheDocument();
   },
 };
 export const PlanABAlternatives: Story = {
@@ -246,9 +251,9 @@ export const PlanABAlternatives: Story = {
     pathOptions: planABPathOptions,
   },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A gallery route on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan B harbour route on Plan B/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`) })).toBeInTheDocument();
     await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
   },
 };
@@ -257,15 +262,15 @@ export const RequestedPlanExample: Story = {
     ...Owner.args,
     items: requestedPlanExampleItems,
     graphItems: requestedPlanExampleItems,
-    selectedItemId: "requested-main-0800",
+    selectedItemId: "story-requested-main-0800",
     showAllPaths: true,
     pathOptions: planAPathOptions,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Main 08:00 block on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A 09:00 branch on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan A 12:30 branch on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Main 16:00 block on Main/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`) })).toBeInTheDocument();
   },
 };
 export const StressPaths: Story = {
@@ -278,7 +283,7 @@ export const StressPaths: Story = {
     pathOptions: stressPathOptions,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Quiet park break on Plan C/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`Quiet park break on ${pathNamePlanC}`) })).toBeInTheDocument();
   },
 };

@@ -1,5 +1,9 @@
 import { parseTime, mainItineraryPathId, itineraryPathOptionsForDay, type ItineraryPathOption } from "@/src/trip/itinerary";
-import { humanizePathId, itineraryItemPathId } from "@/src/trip/itinerary-path-identifiers";
+import {
+  humanizePathId,
+  itineraryItemPathId,
+  mainItineraryPathName,
+} from "@/src/trip/itinerary-path-identifiers";
 import type { ItineraryItem } from "@/src/trip/types";
 import { dotLaneGap, laneColors, rowStep } from "./activity-path-graph.styles";
 import type { GraphEdge, GraphNode, GraphPoint, PushGraphEdge } from "./activity-path-graph.types";
@@ -14,7 +18,7 @@ export function buildPathMetaForDay(
   graphItems: ItineraryItem[],
   pathOptions: ItineraryPathOption[],
 ): Map<string, PathMeta> {
-  const options = new Map<string, string>([[mainItineraryPathId, "Main"]]);
+  const options = new Map<string, string>([[mainItineraryPathId, mainItineraryPathName]]);
   for (const option of itineraryPathOptionsForDay(pathOptions, day)) {
     options.set(option.id, option.name);
   }
@@ -61,7 +65,7 @@ export function buildGraphNodes(
       end: interval?.end ?? null,
       item,
       pathId,
-      pathName: pathMeta?.name ?? "Main",
+      pathName: pathMeta?.name ?? mainItineraryPathName,
       sourcePathId: pathId,
       start: interval?.start ?? null,
       x: laneXByPathId.get(pathId) ?? graphWidth / 2,

@@ -13,6 +13,7 @@ export {
   pathIdPlanB,
   pathIdPlanOne,
   pathIdRain,
+  pathNameMain,
   pathIdStoryPlanA,
   pathIdStoryPlanB,
   pathIdStoryPlanC,

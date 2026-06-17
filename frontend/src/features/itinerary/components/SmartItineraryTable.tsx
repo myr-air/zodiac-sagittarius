@@ -12,6 +12,7 @@ import {
   type ItineraryPathOption,
   type ItineraryView,
 } from "@/src/trip/itinerary";
+import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
 import { PageHeader } from "@/src/components/PageHeader";
 import type { InlineItineraryItemPatch } from "../lib";
 import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
@@ -94,7 +95,7 @@ export function SmartItineraryTable({
   mainTripPlanId,
   tripPlanError,
   isTripPlanBusy,
-  pathOptions = [{ id: mainItineraryPathId, name: "Main", scope: "trip" }],
+  pathOptions = [{ id: mainItineraryPathId, name: mainItineraryPathName, scope: "trip" }],
   role,
   startDate,
   selectedItemId,

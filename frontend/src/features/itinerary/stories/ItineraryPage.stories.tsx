@@ -3,8 +3,9 @@ import { expect, fn, userEvent, within } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
-import { pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
+import { pathIdMain, pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
 import {
+  itineraryStoryDay,
   branchGraphItemsBase,
   branchGraphPathOptions,
   planAExampleItemsBase,
@@ -19,7 +20,11 @@ import {
   buildOwnerStoryArgs,
   denseTripFixture,
   emptyTripFixture,
+  pathNameMain,
+  pathNamePlanA,
+  pathNamePlanB,
 } from "./itinerary-story-fixtures";
+import { pathNamePlanC } from "@/src/trip/testing/itinerary-path-fixtures";
 
 const noop = () => {};
 const onStoryChangeDayPath = fn();
@@ -155,8 +160,8 @@ export const OverlapConflictWarning: Story = {
         startTime: "09:00",
         durationMinutes: 120,
         sortOrder: 10,
-        pathId: "main",
-        pathName: "Main",
+        pathId: pathIdMain,
+        pathName: pathNameMain,
         pathRole: "main",
       },
       {
@@ -166,8 +171,8 @@ export const OverlapConflictWarning: Story = {
         startTime: "09:30",
         durationMinutes: 90,
         sortOrder: 20,
-        pathId: "main",
-        pathName: "Main",
+        pathId: pathIdMain,
+        pathName: pathNameMain,
         pathRole: "main",
       },
     ],
@@ -190,9 +195,9 @@ export const PlanAExample: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Itinerary table/i })).toHaveClass("table-panel", "grid");
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A museum stop on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan A cafe backup on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`) })).toBeInTheDocument();
   },
 };
 
@@ -207,9 +212,9 @@ export const PlanABAlternatives: Story = {
   },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A gallery route on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan B harbour route on Plan B/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`) })).toBeInTheDocument();
     await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
   },
 };
@@ -237,8 +242,8 @@ export const PathAndDurationInteractions: Story = {
 
     await userEvent.click(canvas.getByRole("button", { name: /Path for Day 2/i }));
     const dayPathMenu = documentCanvas.getByRole("listbox", { name: /Path for Day 2/i });
-    await userEvent.click(within(dayPathMenu).getByRole("option", { name: "Plan B" }));
-    await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", pathIdStoryPlanB);
+    await userEvent.click(within(dayPathMenu).getByRole("option", { name: pathNamePlanB }));
+    await expect(onStoryChangeDayPath).toHaveBeenCalledWith(itineraryStoryDay, pathIdStoryPlanB);
 
     await userEvent.click(canvas.getByRole("button", { name: "Trip Plan controls" }));
     await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
@@ -262,9 +267,9 @@ export const BranchGraph: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: /Dim Sum morning on Main/i })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`Dim Sum morning on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
     await expect(canvas.getByRole("button", { name: /Rain museum on Rain plan/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Late coffee on Plan A/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Late coffee on ${pathNamePlanA}`) })).toBeInTheDocument();
   },
 };
 
@@ -278,10 +283,10 @@ export const RequestedPlanExample: Story = {
     pathOptions: planAPathOptions,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Main 08:00 block on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Plan A 09:00 branch on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Plan A 12:30 branch on Plan A/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Main 16:00 block on Main/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`) })).toBeInTheDocument();
   },
 };
 
@@ -295,8 +300,8 @@ export const StressPaths: Story = {
     pathOptions: stressPathOptions,
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Taxi direct route on Plan C/i })).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+    await expect(canvas.getByRole("button", { name: new RegExp(`Taxi direct route on ${pathNamePlanC}`) })).toBeInTheDocument();
   },
 };
 
