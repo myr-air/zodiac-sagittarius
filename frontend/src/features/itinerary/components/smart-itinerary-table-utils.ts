@@ -283,7 +283,6 @@ export function buildWeatherSummary(
   dayLabel: string,
 ): { weatherLabel: string; tooltip: string } | null {
   const weather = briefing.weather;
-  const condition = weatherGraphicLabel(weather?.conditionCode);
   const hasForecastTemps =
     typeof weather?.temperatureMaxCelsius === "number" &&
     typeof weather?.temperatureMinCelsius === "number";
@@ -294,7 +293,6 @@ export function buildWeatherSummary(
 
   const sunrise = formatSolarTime(weather?.sunrise);
   const sunset = formatSolarTime(weather?.sunset);
-  const hasSolarTimes = Boolean(sunrise && sunset);
   const weatherLabel = formatWeatherSummaryParts(weather).join(" ");
   const tooltipLabel = buildWeatherTooltip(weather, weatherLabel, sunrise, sunset);
 

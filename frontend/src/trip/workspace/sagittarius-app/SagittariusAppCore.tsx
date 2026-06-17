@@ -167,16 +167,12 @@ export function SagittariusApp({
   );
   const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const {
-    canRedo,
-    canUndo,
     commitTrip,
     latestTripRef,
-    redo,
     replaceApiTrip,
     resetTrip,
     setTripState,
     trip,
-    undo,
     updateApiTrip,
   } = useTripWorkspaceState(initialTrip, setSelectedItemId);
   const isDataSourceApiMode = dataSource === "api";
@@ -214,8 +210,6 @@ export function SagittariusApp({
   const {
     activePlanItems,
     changeDayPath,
-    changeTripPath,
-    clearAllDayPaths,
     clearDayPath,
     dayPathOverrides,
     mainPlanItems,
@@ -385,7 +379,6 @@ export function SagittariusApp({
   const selectedItemIdForView = selectedItem?.id ?? "";
   const {
     createItineraryNote,
-    createItineraryTask,
     createStopNote,
     createTask,
     deleteStopNote,
@@ -460,7 +453,6 @@ export function SagittariusApp({
 
   const {
     expenseSummary,
-    itineraryCommitmentsByItemId,
     scopedSuggestions,
     scopedTripForRecords,
     scopedTripPlanRecords,
@@ -578,9 +570,6 @@ export function SagittariusApp({
     addSubActivity,
     createStop,
     deleteStop,
-    moveItem,
-    moveItemIntoPlanBlock,
-    moveItemToDay,
     moveItemToPath,
     resolveMissingMapCoordinates,
     updateItineraryItemInline,
@@ -664,10 +653,7 @@ export function SagittariusApp({
   const {
     applyPendingItineraryImport,
     clearPendingItineraryImport,
-    exportItinerary,
-    importItinerary,
     importItineraryError,
-    importItineraryText,
     pendingItineraryImport,
   } = useWorkspaceItineraryImport({
     apiClient: resolvedApiClient,

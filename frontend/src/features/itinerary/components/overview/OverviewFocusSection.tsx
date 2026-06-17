@@ -2,7 +2,7 @@ import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import { formatDayLabel } from "@/src/trip/itinerary";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
-import { overviewNextStopClassName, overviewMutedClassName } from "./overview.styles";
+import { overviewNextStopClassName } from "./overview.styles";
 import { cn } from "@/src/lib/cn";
 import { OverviewFocusList, TripCompletedPostcard } from "./OverviewSections";
 import { overviewPanelClassName, overviewPanelTitleClassName, overviewPanelWideClassName } from "./overview-page.styles";
