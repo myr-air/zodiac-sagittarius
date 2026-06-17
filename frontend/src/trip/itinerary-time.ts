@@ -1,5 +1,4 @@
 import type { ItineraryItem } from "@/src/trip/types";
-import { parseTime } from "@/src/trip/itinerary";
 
 export type InlineItineraryTimePatch = Partial<
   Pick<
@@ -25,6 +24,12 @@ export type InlineItineraryTimePatch = Partial<
     | "transportation"
   >
 >;
+
+export function parseTime(value: string): number | null {
+  const match = value.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
 
 export function daysBetweenIsoDates(from: string, to: string): number {
   return Math.round(
