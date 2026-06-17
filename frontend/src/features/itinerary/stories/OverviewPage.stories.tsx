@@ -157,7 +157,7 @@ export const Mobile: Story = {
   parameters: { viewport: { defaultViewport: "mobile320" } },
   play: async ({ canvasElement }) => {
     await expectOverviewStructure(canvasElement);
-    await expect(canvasElement.querySelector(".overview-hero")).toHaveClass("max-[767px]:grid-cols-1");
+    await expect(canvasElement.querySelector(".overview-hero")).toHaveClass("max-[1199px]:grid-cols-1");
     await expect(canvasElement.querySelector(".overview-highlight-list")).toHaveClass("max-[767px]:flex", "max-[767px]:overflow-x-auto");
   },
 };

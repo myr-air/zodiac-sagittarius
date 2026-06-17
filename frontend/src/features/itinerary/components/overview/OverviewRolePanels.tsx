@@ -25,7 +25,7 @@ import {
 type TaskScopeFilter = "mine" | "trip" | "all";
 type TaskStatusFilter = "all" | "open" | "done";
 
-interface OverviewBasePanelProps {
+interface OverviewChecklistPanelBaseProps {
   trip: Trip;
   locale: Locale;
   items: ItineraryItem[];
@@ -39,7 +39,7 @@ interface OverviewBasePanelProps {
   onToggleTask: (task: TripTask) => void;
 }
 
-interface TravelerOverviewPanelsProps extends OverviewBasePanelProps {
+interface TravelerOverviewPanelsProps extends OverviewChecklistPanelBaseProps {
   foodStops: ItineraryItem[];
   tripHighlights: ItineraryItem[];
   focusSectionDetailFallback: string;
@@ -162,19 +162,16 @@ export function TravelerOverviewPanels({
   );
 }
 
-interface ViewerOverviewPanelsProps extends OverviewBasePanelProps {
+interface ViewerOverviewPanelsProps {
+  trip: Trip;
+  locale: Locale;
   viewerHighlights: ItineraryItem[];
   expenseGroupSpend: number;
+  nextStop: ItineraryItem | undefined;
+  openExpenses: () => void;
 }
 
-export function ViewerOverviewPanels({
-  trip,
-  locale,
-  nextStop,
-  viewerHighlights,
-  expenseGroupSpend,
-  openExpenses,
-}: ViewerOverviewPanelsProps) {
+export function ViewerOverviewPanels({ trip, locale, nextStop, viewerHighlights, expenseGroupSpend, openExpenses }: ViewerOverviewPanelsProps) {
   const { t } = useI18n();
 
   return (
@@ -221,7 +218,7 @@ export function ViewerOverviewPanels({
   );
 }
 
-interface ManagerOverviewPanelsProps extends OverviewBasePanelProps {
+interface ManagerOverviewPanelsProps extends OverviewChecklistPanelBaseProps {
   taskScopeFilter: TaskScopeFilter;
   setTaskScopeFilter: (filter: TaskScopeFilter) => void;
   taskStatusFilter: TaskStatusFilter;

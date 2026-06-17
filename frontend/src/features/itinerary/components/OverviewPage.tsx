@@ -262,15 +262,8 @@ export function OverviewPage({
           <ViewerOverviewPanels
             trip={trip}
             locale={locale}
-            items={items}
-            groupSpendLabel={groupSpendLabel}
             nextStop={nextStop}
-            nextDayItems={nextDayItems}
-            focusTodayHeading={focusTodayHeading}
-            isCompleted={isCompleted}
             openExpenses={openExpenses}
-            taskListLabels={taskListLabels}
-            onToggleTask={toggleTask}
             viewerHighlights={viewerHighlights}
             expenseGroupSpend={expenseSummary.groupSpend}
           />
