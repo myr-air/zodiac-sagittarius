@@ -12,7 +12,7 @@ import {
   defaultPathOptionsForPanel,
   openHeaderControls,
   renderSmartItineraryTable,
-} from "@/src/features/itinerary/testing/support/SmartItineraryTable.test-support";
+} from "@/src/features/itinerary/testing";
 
 const renderTable = renderSmartItineraryTable;
 

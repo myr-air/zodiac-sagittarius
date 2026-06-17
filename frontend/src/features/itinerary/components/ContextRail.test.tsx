@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { ContextRail } from "@/src/features/itinerary/components";
-import { buildBookingDoc } from "@/src/features/itinerary/testing/fixtures/itinerary-items";
+import { buildBookingDoc } from "@/src/features/itinerary/testing";
 
 const selectedItem =
   tripFixture.planItems.find((item) => item.id === "item-dimdim") ??

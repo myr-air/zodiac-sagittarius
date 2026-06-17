@@ -2,7 +2,7 @@ import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src
 import type { ItineraryItem } from "@/src/trip/types";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
-import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing/fixtures/itinerary-items";
+import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing";
 
 export type SmartItineraryStoryArgs = Parameters<typeof SmartItineraryTable>[0];
 
