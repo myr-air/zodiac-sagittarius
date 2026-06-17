@@ -8,6 +8,7 @@ import { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 import { OverviewFocusSection } from "./OverviewFocusSection";
 import { OverviewStopList, ViewerNextStopPanel } from "./OverviewSections";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
+import { TravelerChecklistPanel } from "./TravelerChecklistPanel";
 import {
   overviewHealthGridClassName,
   overviewPanelClassName,
@@ -19,7 +20,6 @@ import {
   overviewTaskFiltersClassName,
   overviewTaskPanelClassName,
   overviewTaskToolbarClassName,
-  personalTaskFormClassName,
 } from "./overview-page.styles";
 
 type TaskScopeFilter = "mine" | "trip" | "all";
@@ -105,42 +105,28 @@ export function TravelerOverviewPanels({
         <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
       </section>
 
-      <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={t.overview.sections.travelChecklist}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="check" />
-          <h2>{t.overview.checklist}</h2>
-        </div>
-        <div className={overviewTaskToolbarClassName}>
-          <SegmentedControl
-            aria-label={t.overview.filters.statusLabel}
-            className={overviewTaskFiltersClassName}
-            selectedItemClassName={overviewTaskFilterActiveClassName}
-            value={taskStatusFilter}
-            options={[
-              { value: "all", label: t.overview.filters.all },
-              { value: "open", label: t.common.status.open },
-              { value: "done", label: t.common.status.done },
-            ]}
-            onChange={setTaskStatusFilter}
-          />
-        </div>
-        <form className={personalTaskFormClassName} onSubmit={onSubmitTask}>
-          <label>
-            <span>{t.overview.addPersonalTask}</span>
-            <input value={newTaskTitle} onChange={(event) => onTaskTitleChange(event.target.value)} placeholder={t.overview.personalTaskPlaceholder} />
-          </label>
-          <button type="submit" disabled={!newTaskTitle.trim()}>{t.overview.addTask}</button>
-        </form>
-
-        <OverviewTaskList
-          tasks={visibleTasks}
-          trip={trip}
-          items={items}
-          labels={taskListLabels}
-          emptyMessage={t.overview.noChecklist}
-          onToggleTask={onToggleTask}
-        />
-      </section>
+      <TravelerChecklistPanel
+        addPersonalTaskLabel={t.overview.addPersonalTask}
+        addTaskLabel={t.overview.addTask}
+        allLabel={t.overview.filters.all}
+        ariaLabel={t.overview.sections.travelChecklist}
+        doneLabel={t.common.status.done}
+        emptyMessage={t.overview.noChecklist}
+        items={items}
+        newTaskTitle={newTaskTitle}
+        openLabel={t.common.status.open}
+        placeholder={t.overview.personalTaskPlaceholder}
+        statusFilterLabel={t.overview.filters.statusLabel}
+        taskListLabels={taskListLabels}
+        taskStatusFilter={taskStatusFilter}
+        title={t.overview.checklist}
+        trip={trip}
+        visibleTasks={visibleTasks}
+        onSubmitTask={onSubmitTask}
+        onTaskStatusFilterChange={setTaskStatusFilter}
+        onTaskTitleChange={onTaskTitleChange}
+        onToggleTask={onToggleTask}
+      />
 
       <OverviewExpenseShortcut
         icon="wallet"
