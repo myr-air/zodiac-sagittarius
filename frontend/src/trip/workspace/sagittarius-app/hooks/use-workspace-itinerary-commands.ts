@@ -10,7 +10,6 @@ import {
   appendItineraryItemToTrip,
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,
-  deleteItineraryItemFromTrip,
   mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
   mergeUpdatedItineraryBranchIntoTrip,
@@ -27,9 +26,7 @@ import {
   buildPatchItineraryItemRequest,
 } from "@/src/trip/itinerary-api-requests";
 import {
-  buildMapPlaceResolutionRequest,
   locationFieldsFromCandidate,
-  mapResolutionPlaceHint,
   buildMapLink,
   resolveStopPlace,
   type PlaceResolver,
@@ -45,7 +42,6 @@ import {
   nextClientMutationId as nextClientMutationIdFactory,
   nextLocalItemId,
 } from "@/src/trip/local-ids";
-import type { MapCoordinateResolutionResult } from "@/src/features/itinerary/components";
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import type {
@@ -55,6 +51,8 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import { queueKeyedUpdate } from "../support/queued-updates";
+import { useWorkspaceItineraryDeleteCommand } from "./use-workspace-itinerary-delete-command";
+import { useWorkspaceItineraryMapCommands } from "./use-workspace-itinerary-map-commands";
 import { useWorkspaceItineraryMoveCommands } from "./use-workspace-itinerary-move-commands";
 
 interface ItineraryDialogStateCreate {
@@ -555,112 +553,27 @@ export function useWorkspaceItineraryCommands({
     ],
   );
 
-  const resolveMissingMapCoordinates = useCallback(
-    async (itemsToResolve: ItineraryItem[]): Promise<MapCoordinateResolutionResult> => {
-      const result: MapCoordinateResolutionResult = {
-        attempted: 0,
-        failed: 0,
-        resolved: 0,
-        skipped: 0,
-      };
-      if (!canEdit || !effectivePlaceResolver) return result;
+  const { resolveMissingMapCoordinates } = useWorkspaceItineraryMapCommands({
+    canEdit,
+    effectivePlaceResolver,
+    nextClientMutationId,
+    trip,
+    updateItineraryItemInline,
+  });
 
-      for (const item of itemsToResolve) {
-        if (item.coordinates) continue;
-        result.attempted += 1;
-        const placeHint = mapResolutionPlaceHint(item);
-        if (!placeHint) {
-          result.skipped += 1;
-          continue;
-        }
-        try {
-          const response = await effectivePlaceResolver(
-            buildMapPlaceResolutionRequest(item, trip, {
-              clientMutationId: nextClientMutationId("map-place-resolve"),
-              placeHint,
-            }),
-          );
-          if (response.status !== "resolved") {
-            result.skipped += 1;
-            continue;
-          }
-          const candidate = response.candidates[0];
-          if (!candidate) {
-            result.skipped += 1;
-            continue;
-          }
-          await updateItineraryItemInline(item.id, {
-            address: candidate.address,
-            coordinates: candidate.coordinates,
-            mapLink: candidate.mapLink,
-          });
-          result.resolved += 1;
-        } catch {
-          result.failed += 1;
-        }
-      }
-      return result;
-    },
-    [
-      canEdit,
-      effectivePlaceResolver,
-      nextClientMutationId,
-      trip,
-      updateItineraryItemInline,
-    ],
-  );
-
-  const deleteStop = useCallback(
-    async (itemId: string) => {
-      if (!canEdit) return;
-      const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
-      if (!item) return;
-      const remainingItems = trip.itineraryItems.filter(
-        (candidate) => candidate.id !== itemId,
-      );
-      const nextSelectedItemId =
-        selectedItemId === itemId
-          ? (remainingItems[0]?.id ?? "")
-          : selectedItemId;
-
-      if (isApiMode && resolvedApiClient && participantSession) {
-        await resolvedApiClient.deleteItineraryItem(
-          trip.id,
-          itemId,
-          participantSession.sessionToken,
-        );
-        updateApiTrip((current) => deleteItineraryItemFromTrip(current, itemId));
-        setSelectedItemId(nextSelectedItemId);
-        if (!nextSelectedItemId) setContextRailVisibility(false);
-        setDialogState((current) =>
-          current?.mode === "edit" && current.item.id === itemId ? null : current,
-        );
-        return;
-      }
-
-      commitTrip(
-        (current) => deleteItineraryItemFromTrip(current, itemId),
-        nextSelectedItemId,
-      );
-      if (!nextSelectedItemId) setContextRailVisibility(false);
-      setDialogState((current) =>
-        current?.mode === "edit" && current.item.id === itemId ? null : current,
-      );
-    },
-    [
-      canEdit,
-      commitTrip,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      selectedItemId,
-      setContextRailVisibility,
-      setDialogState,
-      setSelectedItemId,
-      trip,
-      updateApiTrip,
-    ],
-  );
+  const { deleteStop } = useWorkspaceItineraryDeleteCommand({
+    canEdit,
+    commitTrip,
+    isApiMode,
+    participantSession,
+    resolvedApiClient,
+    selectedItemId,
+    setContextRailVisibility,
+    setDialogState,
+    setSelectedItemId,
+    trip,
+    updateApiTrip,
+  });
 
   return {
     addStop,
