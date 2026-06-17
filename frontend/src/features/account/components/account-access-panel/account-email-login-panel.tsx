@@ -17,19 +17,15 @@ import {
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
 import {
   accountAlternateActionsClassName,
-  accountCheckClassName,
   accountEmailPattern,
   accountEntryLoginFlowClassName,
-  accountFieldClassName,
-  accountFieldHintClassName,
   accountLoginFlowClassName,
   accountStepKickerClassName,
   accountStepStageClassName,
   accountStepStageDirectionClassNames,
-  accountStepSummaryClassName,
-  accountTertiaryActionClassName,
   type AuthTransitionDirection,
 } from "./account-email-login-styles";
+import { AccountField, AccountStepSummary, AccountTertiaryAction, AccountTrustDeviceField } from "./account-email-login-fields";
 import { PanelHeading } from "./account-portal-primitives";
 import { StatusMessage } from "./account-status-message";
 
@@ -288,10 +284,7 @@ export function EmailLoginPanel({
     : t.access.emailLogin.stepLogin({ current: visualStep === "otp" ? 2 : 1, total: 2 });
 
   const trustDeviceFields = (
-    <label className={accountCheckClassName}>
-      <input checked={trustDevice} onChange={(event) => setTrustDevice(event.target.checked)} type="checkbox" suppressHydrationWarning />
-      {t.access.emailLogin.trustDevice}
-    </label>
+    <AccountTrustDeviceField checked={trustDevice} label={t.access.emailLogin.trustDevice} onChange={setTrustDevice} />
   );
 
   return (
@@ -325,12 +318,8 @@ export function EmailLoginPanel({
           />
           {challenge ? (
             <>
-            <div className={accountStepSummaryClassName}>
-              <span>{t.access.emailLogin.sentCodeTo}</span>
-              <strong>{normalizedEmail}</strong>
-            </div>
-            <div className={accountFieldClassName}>
-              <label htmlFor={codeInputId}><span>{t.access.emailLogin.verificationCode}</span></label>
+            <AccountStepSummary label={t.access.emailLogin.sentCodeTo} value={normalizedEmail} />
+            <AccountField inputId={codeInputId} label={t.access.emailLogin.verificationCode} hintId={codeHintId} hint={t.access.emailLogin.verificationCodeHint}>
               <input
                 id={codeInputId}
                 value={code}
@@ -344,8 +333,7 @@ export function EmailLoginPanel({
                 required
                 suppressHydrationWarning
               />
-              <p className={accountFieldHintClassName} id={codeHintId}>{t.access.emailLogin.verificationCodeHint}</p>
-            </div>
+            </AccountField>
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={!otpReady || isSubmitting}>
               <Icon name="check" />
@@ -361,8 +349,12 @@ export function EmailLoginPanel({
             </>
           ) : authStep === "email" ? (
             <>
-            <div className={accountFieldClassName}>
-              <label htmlFor={emailInputId}><span>{t.access.emailLogin.email}</span></label>
+            <AccountField
+              inputId={emailInputId}
+              label={t.access.emailLogin.email}
+              hintId={emailHintId}
+              hint={isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}
+            >
               <input
                 id={emailInputId}
                 value={email}
@@ -379,10 +371,8 @@ export function EmailLoginPanel({
                 required
                 suppressHydrationWarning
               />
-              <p className={accountFieldHintClassName} id={emailHintId}>{isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}</p>
-            </div>
-            <div className={accountFieldClassName}>
-              <label htmlFor={passwordInputId}><span>{t.access.emailLogin.password}</span></label>
+            </AccountField>
+            <AccountField inputId={passwordInputId} label={t.access.emailLogin.password} hintId={passwordHintId} hint={t.access.emailLogin.passwordHint}>
               <input
                 id={passwordInputId}
                 value={password}
@@ -396,8 +386,7 @@ export function EmailLoginPanel({
                 required
                 suppressHydrationWarning
               />
-              <p className={accountFieldHintClassName} id={passwordHintId}>{t.access.emailLogin.passwordHint}</p>
-            </div>
+            </AccountField>
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={!isEmailValid || !passwordReady || isSubmitting}>
               <Icon name={activeFlow === "register" ? "check" : "key"} />
@@ -405,23 +394,14 @@ export function EmailLoginPanel({
             </Button>
             {activeFlow === "login" ? (
               <div className={accountAlternateActionsClassName} aria-label={t.access.emailLogin.alternateSignInOptions}>
-                <button className={accountTertiaryActionClassName} type="button" disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()}>
-                  <Icon name="check" />
-                  {t.access.emailLogin.useSignInCodeInstead}
-                </button>
-                <button className={accountTertiaryActionClassName} type="button" disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()}>
-                  <Icon name="key" />
-                  {t.access.emailLogin.usePasskeyInstead}
-                </button>
+                <AccountTertiaryAction icon="check" label={t.access.emailLogin.useSignInCodeInstead} disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()} />
+                <AccountTertiaryAction icon="key" label={t.access.emailLogin.usePasskeyInstead} disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()} />
               </div>
             ) : null}
             </>
           ) : authStep === "methods" ? (
             <>
-            <div className={accountStepSummaryClassName}>
-              <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
-              <strong>{normalizedEmail}</strong>
-            </div>
+            <AccountStepSummary label={activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs} value={normalizedEmail} />
             <Button type="button" disabled={isSubmitting} onClick={() => void requestEmailCode()}>
               <Icon name="check" />
               {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
@@ -442,10 +422,7 @@ export function EmailLoginPanel({
             </>
           ) : authStep === "setup" ? (
             <>
-            <div className={accountStepSummaryClassName}>
-              <span>{t.access.emailLogin.createFor}</span>
-              <strong>{normalizedEmail}</strong>
-            </div>
+            <AccountStepSummary label={t.access.emailLogin.createFor} value={normalizedEmail} />
             <label>
               <span>{t.access.emailLogin.displayName}</span>
               <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" placeholder="Aom Traveler" required suppressHydrationWarning />
@@ -461,10 +438,7 @@ export function EmailLoginPanel({
             </>
           ) : (
             <>
-            <div className={accountStepSummaryClassName}>
-              <span>{activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs}</span>
-              <strong>{normalizedEmail}</strong>
-            </div>
+            <AccountStepSummary label={activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs} value={normalizedEmail} />
             <input
               aria-hidden="true"
               autoComplete="username"
@@ -475,8 +449,7 @@ export function EmailLoginPanel({
               type="email"
               value={normalizedEmail}
             />
-            <div className={accountFieldClassName}>
-              <label htmlFor={`${passwordInputId}-step`}><span>{t.access.emailLogin.password}</span></label>
+            <AccountField inputId={`${passwordInputId}-step`} label={t.access.emailLogin.password} hintId={passwordHintId} hint={t.access.emailLogin.passwordHint}>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -490,8 +463,7 @@ export function EmailLoginPanel({
                 required
                 suppressHydrationWarning
               />
-              <p className={accountFieldHintClassName} id={passwordHintId}>{t.access.emailLogin.passwordHint}</p>
-            </div>
+            </AccountField>
             {activeFlow === "login" ? trustDeviceFields : null}
             <Button type="submit" disabled={password.length < 8 || isSubmitting}>
               <Icon name="key" />
