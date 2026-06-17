@@ -14,15 +14,14 @@ import {
   formatTimeRangeLabel,
   formatTimeTooltip,
   parseTimeToMinutes,
-  readItineraryDetailString,
   ticketModalCopy,
   toDateTimeLocalValue,
   ticketNotesForItem,
   travelSubtypeForItem,
   travelSubtypeOptions,
-  uniqueIds,
   fromDateTimeLocalValue,
 } from "../domain";
+import { readItineraryDetailString, uniqueIds } from "../lib";
 
 describe("smart-itinerary-table-helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {

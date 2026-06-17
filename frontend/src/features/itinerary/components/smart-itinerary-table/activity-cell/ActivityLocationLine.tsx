@@ -3,7 +3,7 @@ import type { Messages } from "@/src/i18n/messages";
 import type { InlineItineraryItemPatch } from "../../../lib";
 import type { ItineraryItem } from "@/src/trip/types";
 import { InlineActivityField } from "./InlineActivityField";
-import { readItineraryDetailString } from "../../../domain/itinerary-item-editing";
+import { readItineraryDetailString } from "../../../lib";
 import {
   activityMobilePlaceInputClassName,
   activityPlaceInputClassName,

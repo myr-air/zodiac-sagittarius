@@ -21,13 +21,15 @@ import {
   formatBookingSummary,
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
-  readItineraryDetailString,
   ticketModalCopy,
   ticketNotesForItem,
   toDateTimeLocalValue,
+} from "@/src/features/itinerary/domain/itinerary-item-editing";
+import {
+  readItineraryDetailString,
   toggleId,
   uniqueIds,
-} from "@/src/features/itinerary/domain/itinerary-item-editing";
+} from "@/src/features/itinerary/lib";
 import {
   activityBookingButtonClassName,
   activityBookingButtonEmptyClassName,

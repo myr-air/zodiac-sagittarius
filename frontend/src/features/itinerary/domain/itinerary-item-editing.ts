@@ -11,6 +11,11 @@ import {
   parseTimeToMinutes,
   toDateTimeLocalValue,
 } from "../lib/itinerary-time";
+import {
+  readItineraryDetailString,
+  toggleId,
+  uniqueIds,
+} from "../lib/itinerary-item-helpers";
 
 export type TravelSubtype =
   | "flight"
@@ -68,14 +73,6 @@ const activityTypeIcons: Record<ItineraryItem["activityType"], IconName> = {
 function formatTimeRangeLabel(startTime: string, endTime: string, endOffsetDays = 0): string {
   const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
   return `${startTime || "--:--"} - ${endTime}${endOffset}`;
-}
-
-function readItineraryDetailString(
-  details: ItineraryItem["details"] | null | undefined,
-  key: string,
-): string {
-  const value = details?.[key];
-  return typeof value === "string" ? value.trim() : "";
 }
 
 function normalizeTravelSubtype(value: string | null | undefined): TravelSubtype | null {
@@ -360,14 +357,6 @@ function formatTimeTooltip(
     lines.push(formatDuration(item.durationMinutes, locale));
   }
   return lines.join("\n");
-}
-
-function uniqueIds(ids: string[]): string[] {
-  return Array.from(new Set(ids.filter(Boolean)));
-}
-
-function toggleId(ids: string[], id: string): string[] {
-  return ids.includes(id) ? ids.filter((candidate) => candidate !== id) : [...ids, id];
 }
 
 export {
