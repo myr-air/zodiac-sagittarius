@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from "react";
 import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
-import { Select } from "@/src/ui";
+import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
-import { formatThaiDate } from "@/src/features/itinerary/lib";
 import { StopDialogActions } from "./stop-dialog/StopDialogActions";
 import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
+import { StopDialogContextFields } from "./stop-dialog/StopDialogContextFields";
 import { StopDialogDetailSection } from "./stop-dialog/StopDialogDetailSection";
 import { StopDialogPlaceResolution } from "./stop-dialog/StopDialogPlaceResolution";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
@@ -276,34 +275,23 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
 
         <form className={stopFormClassName} onSubmit={handleSubmit}>
           <div className={dialogGridClassName}>
-            {mode === "edit" && !isSubActivity && dayOptions.length ? (
-              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.day}>
-                <span>{t.stopDialog.fields.day}</span>
-                <Select id={stopDialogFieldIds.day} value={values.day} onChange={(event) => update("day", event.target.value)}>
-                  {dayOptions.map((day) => (
-                    <option value={day} key={day}>{formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}</option>
-                  ))}
-                </Select>
-              </label>
-            ) : null}
-            {mode === "edit" && !isSubActivity && manualPathOptions.length > 1 ? (
-              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.path}>
-                <span>{t.stopDialog.fields.plan}</span>
-                <Select id={stopDialogFieldIds.path} value={values.pathId ?? "main"} onChange={(event) => update("pathId", event.target.value)}>
-                  {manualPathOptions.map((option) => (
-                    <option value={option.id} key={option.id}>{option.name}</option>
-                  ))}
-                </Select>
-              </label>
-            ) : null}
-            <label htmlFor={stopDialogFieldIds.activityType}>
-              <span>{t.stopDialog.fields.type}</span>
-              <Select id={stopDialogFieldIds.activityType} value={detailType} onChange={(event) => updateDetailType(event.target.value as StopDetailType)}>
-                {detailTypeOptions.map((option) => (
-                  <option value={option} key={option}>{detailLabels.types[option]}</option>
-                ))}
-              </Select>
-            </label>
+            <StopDialogContextFields
+              dayLabel={t.stopDialog.fields.day}
+              dayOptions={dayOptions}
+              detailLabels={detailLabels}
+              detailType={detailType}
+              detailTypeOptions={detailTypeOptions}
+              isSubActivity={isSubActivity}
+              locale={locale}
+              manualPathOptions={manualPathOptions}
+              mode={mode}
+              pathLabel={t.stopDialog.fields.plan}
+              startDate={startDate}
+              typeLabel={t.stopDialog.fields.type}
+              values={values}
+              onUpdate={update}
+              onUpdateDetailType={updateDetailType}
+            />
             {mode === "create" ? (
               <StopDialogAdvancedFields
                 advancedLabel={detailLabels.fields.advanced}
