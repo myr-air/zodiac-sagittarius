@@ -10,6 +10,7 @@ import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } f
 import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import {
   emptyExpenseLineItem,
@@ -303,48 +304,17 @@ export function ExpenseDialog({
             </label>
           </div>
 
-          {splitMode === "itemized" ? (
-            <div className={expenseStyles.itemizedListClassName}>
-              {lineItems.map((lineItem, index) => (
-                <fieldset className={expenseStyles.itemizedLineClassName} key={lineItem.id} role="group" aria-label={t.expenses.fields.lineGroup({ number: index + 1 })}>
-                  <label className={expenseStyles.fieldClassName}>
-                    <span>{t.expenses.fields.lineTitle}</span>
-                    <input value={lineItem.title} onChange={(event) => updateLineItem(index, { title: event.target.value })} />
-                  </label>
-                  <label className={expenseStyles.fieldClassName}>
-                    <span>{t.expenses.fields.lineAmount}</span>
-                    <input inputMode="decimal" value={lineItem.amount} onChange={(event) => updateLineItem(index, { amount: event.target.value })} />
-                  </label>
-                  <div className={expenseStyles.participantChecksClassName} aria-label={t.expenses.fields.lineParticipants}>
-                    {trip.members.map((member) => (
-                      <label key={member.id}>
-                        <input
-                          type="checkbox"
-                          checked={lineItem.participantIds.includes(member.id)}
-                          onChange={() => toggleLineParticipant(index, member.id)}
-                        />
-                        {member.displayName}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ))}
-              <Button type="button" variant="ghost" onClick={addLineItem}>{t.expenses.actions.addLineItem}</Button>
-            </div>
-          ) : splitMode !== "equal" ? (
-            <div className={expenseStyles.splitGridClassName}>
-              {trip.members.map((member) => (
-                <label className={expenseStyles.fieldClassName} key={member.id}>
-                  <span>{t.expenses.fields.memberShare({ name: member.displayName })}</span>
-                  <input
-                    inputMode="decimal"
-                    value={splitValues[member.id] ?? ""}
-                    onChange={(event) => setSplitValues((current) => ({ ...current, [member.id]: event.target.value }))}
-                  />
-                </label>
-              ))}
-            </div>
-          ) : null}
+          <ExpenseSplitFields
+            splitMode={splitMode}
+            members={trip.members}
+            lineItems={lineItems}
+            splitValues={splitValues}
+            copy={t.expenses}
+            onAddLineItem={addLineItem}
+            onToggleLineParticipant={toggleLineParticipant}
+            onUpdateLineItem={updateLineItem}
+            onUpdateSplitValue={(memberId, value) => setSplitValues((current) => ({ ...current, [memberId]: value }))}
+          />
 
           {expense ? (
             <section className={expenseStyles.commentsClassName} aria-label={t.expenses.fields.comments}>
