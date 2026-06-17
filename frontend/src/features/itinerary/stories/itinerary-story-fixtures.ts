@@ -3,6 +3,17 @@ import type { ItineraryItem } from "@/src/trip/types";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing";
+import {
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathOptionStoryPlanB,
+  pathOptionStoryPlanC,
+  pathIdStoryPlanA,
+  pathIdStoryPlanB,
+  pathIdStoryPlanC,
+  pathIdStoryRain,
+  storyRainPathOption,
+} from "@/src/features/itinerary/testing";
 
 export type SmartItineraryStoryArgs = Parameters<typeof SmartItineraryTable>[0];
 
@@ -17,28 +28,28 @@ export const defaultPathOptions = [
 ] satisfies ReadonlyArray<ItineraryPathOption>;
 
 export const branchGraphPathOptions: ItineraryPathOption[] = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-rain", name: "Rain plan", scope: "day", day },
-  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
-] ;
+  mainPathOption,
+  storyRainPathOption,
+  pathOptionStoryPlanA,
+];
 
 export const planAPathOptions: ItineraryPathOption[] = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
-] ;
+  mainPathOption,
+  pathOptionStoryPlanA,
+];
 
 export const planABPathOptions: ItineraryPathOption[] = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
-  { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day },
-] ;
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathOptionStoryPlanB,
+];
 
 export const stressPathOptions: ItineraryPathOption[] = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
-  { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day },
-  { id: "path-2026-06-19-sub-c", name: "Plan C", scope: "day", day },
-] ;
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathOptionStoryPlanB,
+  pathOptionStoryPlanC,
+];
 
 export const ownerStoryArgs: SmartItineraryStoryArgs = {
   endDate: tripFixture.trip.endDate,
@@ -52,7 +63,7 @@ export const ownerStoryArgs: SmartItineraryStoryArgs = {
   role: "owner",
   startDate: tripFixture.trip.startDate,
   selectedItemId: "item-dimdim",
-  dayPathOverrides: { [tripFixture.trip.startDate]: "path-rain" },
+  dayPathOverrides: { [tripFixture.trip.startDate]: pathIdStoryRain },
   showAllPaths: false,
   tripName: tripFixture.trip.name,
   onAddStop: noop,
@@ -116,7 +127,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     sortOrder: 200,
     activity: "Rain museum",
     pathGroupId: "path-group-morning",
-    pathId: "path-rain",
+    pathId: pathIdStoryRain,
     pathName: "Rain plan",
     pathRole: "alternative",
   }),
@@ -127,7 +138,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     sortOrder: 300,
     activity: "Late coffee",
     pathGroupId: "path-group-morning",
-    pathId: "path-2026-06-19-sub-a",
+    pathId: pathIdStoryPlanA,
     pathName: "Plan A",
     pathRole: "alternative",
   }),
@@ -158,7 +169,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     sortOrder: 200,
     activity: "Plan A museum stop",
     place: "Plan A checkpoint",
-    pathId: "path-2026-06-19-sub-a",
+    pathId: pathIdStoryPlanA,
     pathName: "Plan A",
     pathRole: "alternative",
   }),
@@ -169,7 +180,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     sortOrder: 300,
     activity: "Plan A cafe backup",
     place: "Plan A checkpoint",
-    pathId: "path-2026-06-19-sub-a",
+    pathId: pathIdStoryPlanA,
     pathName: "Plan A",
     pathRole: "alternative",
   }),
@@ -202,7 +213,7 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
     200,
     "Plan A gallery route",
     "Plan A",
-    "path-2026-06-19-sub-a",
+    pathIdStoryPlanA,
     "alternative",
   ],
   [
@@ -212,7 +223,7 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
     300,
     "Plan B harbour route",
     "Plan B",
-    "path-2026-06-19-sub-b",
+    pathIdStoryPlanB,
     "alternative",
   ],
   [
@@ -244,11 +255,11 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
 export const requestedPlanExampleItemsBase: ItineraryItem[] = [
   ["requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
   ["requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
-  ["requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
-  ["requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+  ["requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", pathIdStoryPlanA, "Plan A", "alternative"],
+  ["requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", pathIdStoryPlanA, "Plan A", "alternative"],
   ["requested-main-1100", "11:00", 60, 400, "Main 11:00 block", undefined, undefined, "main"],
   ["requested-main-1200", "12:00", 180, 500, "Main 12:00 block", undefined, undefined, "main"],
-  ["requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", "path-2026-06-19-sub-a", "Plan A", "alternative"],
+  ["requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", pathIdStoryPlanA, "Plan A", "alternative"],
   ["requested-main-1600", "16:00", 60, 600, "Main 16:00 block", undefined, undefined, "main"],
 ].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) =>
   buildBaseItem(0, {
@@ -267,21 +278,21 @@ export const requestedPlanExampleItemsBase: ItineraryItem[] = [
 
 export const stressPathItemsBase: ItineraryItem[] = [
   ["stress-0800-main", "08:00", 75, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["stress-0810-b", "08:10", 70, 120, "Market photo walk", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["stress-0815-c", "08:15", 85, 130, "Ferry slow route", "Plan C", "path-2026-06-19-sub-c", "alternative"],
+  ["stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", pathIdStoryPlanA, "alternative"],
+  ["stress-0810-b", "08:10", 70, 120, "Market photo walk", "Plan B", pathIdStoryPlanB, "alternative"],
+  ["stress-0815-c", "08:15", 85, 130, "Ferry slow route", "Plan C", pathIdStoryPlanC, "alternative"],
   ["stress-1000-main", "10:00", 60, 200, "Peak tram queue", "Main", undefined, "main"],
-  ["stress-1005-a", "10:05", 65, 210, "Indoor tram backup", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["stress-1010-b", "10:10", 80, 220, "Bus scenic route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["stress-1015-c", "10:15", 55, 230, "Taxi direct route", "Plan C", "path-2026-06-19-sub-c", "alternative"],
+  ["stress-1005-a", "10:05", 65, 210, "Indoor tram backup", "Plan A", pathIdStoryPlanA, "alternative"],
+  ["stress-1010-b", "10:10", 80, 220, "Bus scenic route", "Plan B", pathIdStoryPlanB, "alternative"],
+  ["stress-1015-c", "10:15", 55, 230, "Taxi direct route", "Plan C", pathIdStoryPlanC, "alternative"],
   ["stress-1230-main", "12:30", 75, 300, "Central lunch", "Main", undefined, "main"],
-  ["stress-1235-a", "12:35", 65, 310, "Dim sum backup", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["stress-1240-b", "12:40", 70, 320, "Noodle shop backup", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["stress-1245-c", "12:45", 80, 330, "Vegetarian backup", "Plan C", "path-2026-06-19-sub-c", "alternative"],
+  ["stress-1235-a", "12:35", 65, 310, "Dim sum backup", "Plan A", pathIdStoryPlanA, "alternative"],
+  ["stress-1240-b", "12:40", 70, 320, "Noodle shop backup", "Plan B", pathIdStoryPlanB, "alternative"],
+  ["stress-1245-c", "12:45", 80, 330, "Vegetarian backup", "Plan C", pathIdStoryPlanC, "alternative"],
   ["stress-1500-main", "15:00", 50, 400, "Hotel recharge", "Main", undefined, "main"],
-  ["stress-1505-a", "15:05", 60, 410, "Cafe work block", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["stress-1510-b", "15:10", 45, 420, "Souvenir window", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["stress-1515-c", "15:15", 55, 430, "Quiet park break", "Plan C", "path-2026-06-19-sub-c", "alternative"],
+  ["stress-1505-a", "15:05", 60, 410, "Cafe work block", "Plan A", pathIdStoryPlanA, "alternative"],
+  ["stress-1510-b", "15:10", 45, 420, "Souvenir window", "Plan B", pathIdStoryPlanB, "alternative"],
+  ["stress-1515-c", "15:15", 55, 430, "Quiet park break", "Plan C", pathIdStoryPlanC, "alternative"],
 ].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) =>
   buildBaseItem(0, {
     id: id as string,
