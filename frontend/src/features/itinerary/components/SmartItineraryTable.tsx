@@ -14,12 +14,11 @@ import {
   type ItineraryView,
   type ItineraryDayGroup,
 } from "@/src/trip/itinerary";
-import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
-import { formatDuration } from "@/src/features/itinerary/lib";
+import { PageHeader } from "@/src/components/PageHeader";
 import type { InlineItineraryItemPatch } from "../lib";
 import { DayGroup } from "./smart-itinerary-table/day-group";
 import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
+import { SmartItineraryTableMeta } from "./smart-itinerary-table/SmartItineraryTableMeta";
 import { SmartItineraryTableHead } from "./smart-itinerary-table/SmartItineraryTableHead";
 import type {
   ItineraryBookingTemplate,
@@ -192,27 +191,17 @@ export function SmartItineraryTable({
         title={t.itinerary.title}
         subtitle={tripName}
         meta={
-          <>
-            <span>
-              <Icon name="calendar" />{" "}
-              {formatTripRange(startDate, endDate, locale)}
-            </span>
-            <span>
-              <Icon name="route" />{" "}
-              {t.itinerary.dayItems({
-                days: groups.length,
-                stops: items.length,
-              })}
-            </span>
-            <span>
-              <Icon name="warning" />{" "}
-              {t.dates.warningCount({ count: warningCount })}
-            </span>
-            <span>
-              <Icon name="clock" /> {formatDuration(totalMinutes, locale)}{" "}
-              {t.dates.planned}
-            </span>
-          </>
+          <SmartItineraryTableMeta
+            groupsCount={groups.length}
+            itemsCount={items.length}
+            locale={locale}
+            startDate={startDate}
+            endDate={endDate}
+            tDates={t.dates}
+            tItinerary={t.itinerary}
+            totalMinutes={totalMinutes}
+            warningCount={warningCount}
+          />
         }
         aside={
           <SmartItineraryTableHeaderControls
