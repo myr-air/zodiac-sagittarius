@@ -51,6 +51,22 @@ import {
 import { AccountPortalNav } from "./account-portal-nav";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
+import {
+  accountAlternateActionsClassName,
+  accountCheckClassName,
+  accountEmailPattern,
+  accountEntryLoginFlowClassName,
+  accountFieldClassName,
+  accountFieldHintClassName,
+  accountLoginFlowClassName,
+  accountStepKickerClassName,
+  accountStepStageClassName,
+  accountStepStageDirectionClassNames,
+  accountStepSummaryClassName,
+  accountTertiaryActionClassName,
+  buildAccountAuthCardClassName,
+  type AuthTransitionDirection,
+} from "./account-email-login-styles";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import { StatusMessage } from "./account-status-message";
 import { PortalDashboardSection } from "./portal-dashboard-section";
@@ -81,9 +97,7 @@ interface AccountAccessPanelProps {
 }
 
 type AccessMode = "account" | "temp";
-type AuthTransitionDirection = "forward" | "back" | "mode";
 
-const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
 const accountToastStackClassName =
   "account-toast-stack pointer-events-none fixed bottom-6 right-[clamp(18px,4vw,44px)] z-[50] grid w-[min(420px,calc(100vw_-_40px))] gap-2.5 max-[767px]:inset-x-[18px] max-[767px]:bottom-5 max-[767px]:w-auto [&_.account-success]:pointer-events-auto [&_.account-success]:min-h-12 [&_.account-success]:w-full [&_.account-success]:justify-start [&_.account-success]:rounded-(--radius-lg) [&_.account-success]:bg-(--color-success-soft) [&_.account-success]:shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] [&_.join-alert]:pointer-events-auto [&_.join-alert]:min-h-12 [&_.join-alert]:w-full [&_.join-alert]:justify-start [&_.join-alert]:rounded-(--radius-lg) [&_.join-alert]:bg-(--color-danger-soft) [&_.join-alert]:shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] [&>*]:account-toast-item";
@@ -152,34 +166,10 @@ const accountDeviceRowClassName =
   "account-device-row flex min-w-0 items-center justify-between gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 max-[767px]:flex-wrap max-[767px]:items-start [&>.button]:w-auto [&>.button]:min-w-[124px] [&>.button]:shrink-0 max-[767px]:[&>.button]:w-full [&>div]:max-[767px]:min-w-0 [&_span]:block [&_span]:text-xs [&_span]:leading-[18px] [&_span]:text-(--color-text-muted) max-[767px]:[&_span]:[overflow-wrap:anywhere] [&_strong]:block";
 const accountFormClassName =
   "account-form [&_input]:min-h-[46px] [&_input]:w-full [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-(--color-text) [&_input]:transition-[border-color,box-shadow,background] [&_input]:duration-[180ms] [&_input]:ease-out [&_input:focus]:border-(--color-route-border) [&_input:focus]:shadow-[0_0_0_4px_rgb(191_219_254_/_0.45)] [&_input:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted) [&_select]:min-h-[46px] [&_select]:w-full [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border-strong) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-(--color-text) [&_select]:transition-[border-color,box-shadow,background] [&_select]:duration-[180ms] [&_select]:ease-out [&_select:focus]:border-(--color-route-border) [&_select:focus]:shadow-[0_0_0_4px_rgb(191_219_254_/_0.45)] [&_select:hover]:border-[color-mix(in_srgb,var(--color-primary)_36%,var(--color-border-strong))]";
-const accountCheckClassName =
-  "account-check grid grid-cols-[auto_minmax(0,1fr)] items-center [&_input]:min-h-[18px] [&_input]:w-[18px]";
-const accountFieldClassName = "account-field grid gap-1.5";
-const accountFieldHintClassName = "account-field-hint m-0 text-xs font-[650] leading-[18px] text-(--color-text-muted)";
 const accountTwoColClassName =
   "account-two-col grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
-const accountLoginFlowClassName = "account-login-flow grid w-[min(100%,560px)] justify-self-center gap-3";
-const accountEntryLoginFlowClassName =
-  "relative row-start-2 w-full self-start justify-self-center gap-[22px] rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-[clamp(22px,3vw,34px)] pt-[70px] shadow-[0_14px_34px_rgb(15_23_42_/_0.1)] min-[1100px]:col-start-2 min-[1100px]:row-start-3 min-[1100px]:w-[min(100%,520px)] max-[767px]:row-start-1 max-[767px]:min-h-[100dvh] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:p-[18px] max-[767px]:pt-[92px] max-[767px]:shadow-none";
-const accountAuthCardClassName = cn(
-  accountCardClassName,
-  "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none [&_.button]:min-h-11 [&_.button]:w-full",
-  accountFormClassName,
-);
-const accountStepKickerClassName = "account-step-kicker block text-xs font-[850] leading-[18px] text-(--color-text-muted)";
-const accountStepStageClassName =
-  "account-step-stage grid gap-4 overflow-visible [animation-duration:260ms] [animation-fill-mode:both] [animation-timing-function:cubic-bezier(0.2,0.72,0.28,1)] motion-reduce:animate-none";
-const accountStepStageDirectionClassNames = {
-  back: "account-step-stage--back animate-[account-step-in-back]",
-  forward: "account-step-stage--forward animate-[account-step-in-forward]",
-  mode: "account-step-stage--mode animate-[account-step-in-mode] [animation-duration:190ms] [animation-timing-function:cubic-bezier(0.16,0.72,0.24,1)]",
-} satisfies Record<AuthTransitionDirection, string>;
-const accountStepSummaryClassName =
-  "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
-const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800] max-[520px]:grid max-[520px]:grid-cols-1";
-const accountTertiaryActionClassName =
-  "account-tertiary-action inline-flex min-h-11 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent px-2 py-1 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
+const accountAuthCardClassName = buildAccountAuthCardClassName(accountCardClassName, accountFormClassName);
 
 const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
 const portalSectionStorageKey = "sagittarius:portal-section-index";
