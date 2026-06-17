@@ -18,6 +18,7 @@ import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { Button, IconButton, Select } from "@/src/ui";
+import * as expenseStyles from "./TripExpensesPage.styles";
 import {
   categoryTone,
   formatExchangeRateInput,
@@ -67,53 +68,6 @@ export interface ExpenseUpdateInput extends ExpenseInput {
 
 const categories = ["food", "transport", "tickets", "stay", "shopping", "settlement"] satisfies Expense["category"][];
 const splitModes = ["equal", "exact", "shares", "percentage", "itemized"] satisfies ExpenseSplitMode[];
-
-const expensesPageClassName = "expenses-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
-const expensesSummaryClassName = "expenses-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
-const statClassName = "expense-stat grid min-h-[104px] gap-1 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(145deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-primary-soft)_42%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-2xl [&>strong]:font-extrabold [&>strong]:tabular-nums [&>strong]:text-(--color-text)";
-const contentGridClassName = "expenses-content grid min-h-0 grid-cols-[332px_minmax(0,1fr)] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
-const panelClassName = "expenses-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_48%,var(--color-border))] bg-[linear-gradient(180deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_30%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
-const panelHeadingClassName = "m-0 flex items-center gap-2 text-[14px] font-extrabold leading-5 text-(--color-text)";
-const balanceListClassName = "grid gap-2";
-const balanceRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-border)_78%,var(--color-route-border))] bg-[rgb(255_255_255_/_0.84)] px-2.5 py-2 text-xs shadow-[0_1px_0_rgb(15_23_42_/_0.035)]";
-const settlementRowClassName = "grid grid-cols-1 items-start gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";
-const balanceActionsClassName = "inline-flex flex-wrap items-center justify-start gap-1.5";
-const balanceNameClassName = "font-extrabold text-(--color-text)";
-const balanceMetaClassName = "text-(--color-text-muted)";
-const amountClassName = "font-extrabold tabular-nums";
-const positiveClassName = "text-[#15803d]";
-const negativeClassName = "text-[#b91c1c]";
-const commandBarClassName = "expenses-command-bar grid content-start gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(135deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_54%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:p-3 max-[1199px]:shadow-none";
-const filterGridClassName = "grid grid-cols-[minmax(180px,1fr)_minmax(150px,220px)_minmax(150px,220px)_auto] items-end gap-2 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
-const commandActionsClassName = "expenses-command-actions flex flex-wrap items-center gap-2 max-[767px]:[&>*]:flex-[1_1_180px]";
-const copyFeedbackClassName = "expense-copy-feedback inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold leading-4 text-(--color-text-muted) data-[state=copied]:border-(--color-success-border) data-[state=copied]:bg-(--color-success-soft) data-[state=copied]:text-(--color-success) data-[state=error]:border-(--color-danger-border) data-[state=error]:bg-(--color-danger-soft) data-[state=error]:text-(--color-danger)";
-const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
-const tableWrapClassName = "expenses-table-wrap min-h-0 overflow-auto rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_42%,var(--color-border))] bg-(--color-surface) p-2 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:p-0 max-[1199px]:shadow-none";
-const tableClassName = "expense-ledger-table w-full min-w-[780px] border-separate border-spacing-y-2 text-left text-sm";
-const tableHeaderClassName = "sticky top-0 z-[1] bg-(--color-surface-subtle) text-[11px] font-black uppercase text-(--color-text-muted) [&_th]:px-3 [&_th]:py-2";
-const tableBodyClassName = "[&_td]:border-y [&_td]:border-[rgb(15_23_42_/_0.08)] [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td:first-child]:rounded-l-(--radius-md) [&_td:first-child]:border-l [&_td:last-child]:rounded-r-(--radius-md) [&_td:last-child]:border-r [&_tr:hover_td]:bg-(--color-surface-subtle)";
-const tableTitleClassName = "grid gap-1 [&_strong]:text-(--color-text) [&_span]:text-xs [&_span]:text-(--color-text-muted)";
-const actionCellClassName = "inline-flex items-center gap-1.5";
-const memberLineClassName = "grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2";
-const avatarClassName = "inline-grid size-[34px] place-items-center rounded-full border border-white text-[11px] font-black text-white shadow-[0_6px_14px_rgb(15_23_42_/_0.16)]";
-const categoryBadgeClassName = "inline-flex min-h-6 w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const categoryDotClassName = "inline-block size-2 rounded-full";
-const ledgerAmountClassName = "inline-flex min-h-8 items-center rounded-(--radius-sm) bg-(--color-primary-soft) px-2.5 text-[13px] font-black tabular-nums text-(--color-primary-strong)";
-const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-const dialogClassName = "expense-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
-const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const splitGridClassName = "grid grid-cols-2 gap-2 max-[767px]:grid-cols-1";
-const itemizedListClassName = "grid gap-2";
-const itemizedLineClassName = "grid gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
-const participantChecksClassName = "grid grid-cols-3 gap-2 max-[767px]:grid-cols-1 [&_label]:inline-flex [&_label]:items-center [&_label]:gap-2 [&_label]:text-xs [&_label]:font-bold [&_input]:size-4";
-const commentsClassName = "grid gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
-const commentRowClassName = "grid gap-0.5 rounded-(--radius-sm) bg-(--color-surface) px-2.5 py-2 text-xs [&_strong]:text-(--color-text) [&_span]:text-(--color-text-muted)";
-const warningClassName = "rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs font-bold text-(--color-warning-strong)";
-const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
-const scopeAuditListClassName = "grid gap-2";
-const scopeAuditRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";
 
 export function TripExpensesPage({
   trip,
@@ -253,7 +207,7 @@ export function TripExpensesPage({
   }
 
   return (
-    <section className={expensesPageClassName} aria-label={t.expenses.pageLabel}>
+    <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
       <PageHeader
         title={t.expenses.title}
         subtitle={trip.name}
@@ -267,28 +221,28 @@ export function TripExpensesPage({
         motif={<TravelMotif tone="route" />}
       />
 
-      <div className={expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
+      <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
         <SummaryStat icon="wallet" label={t.expenses.stats.tripSpend} value={formatMoney(expenseSummary.groupSpend, settlementCurrency)} />
         <SummaryStat icon="check" label={t.expenses.stats.yourBalance} value={expenseSummary.currentUserNetLabel} tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"} />
         <SummaryStat icon="users" label={t.expenses.stats.owedToYou} value={formatMoney(owedToYou, settlementCurrency)} tone="positive" />
         <SummaryStat icon="warning" label={t.expenses.stats.youOwe} value={formatMoney(youOwe, settlementCurrency)} tone="negative" />
       </div>
 
-      <div className={contentGridClassName}>
+      <div className={expenseStyles.contentGridClassName}>
         <div className="grid content-start gap-3">
-          <section className={panelClassName} aria-label={t.expenses.balanceLabel}>
-            <h2 className={panelHeadingClassName}><Icon name="users" /> {t.expenses.panels.balances}</h2>
-            <div className={balanceListClassName}>
+          <section className={expenseStyles.panelClassName} aria-label={t.expenses.balanceLabel}>
+            <h2 className={expenseStyles.panelHeadingClassName}><Icon name="users" /> {t.expenses.panels.balances}</h2>
+            <div className={expenseStyles.balanceListClassName}>
               {trip.members.map((member) => {
                 const net = expenseSummary.netByMember[member.id] ?? 0;
                 return (
-                  <div className={balanceRowClassName} key={member.id}>
-                    <span className={memberLineClassName}>
-                      <span className={avatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">{memberInitial(member.displayName)}</span>
+                  <div className={expenseStyles.balanceRowClassName} key={member.id}>
+                    <span className={expenseStyles.memberLineClassName}>
+                      <span className={expenseStyles.avatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">{memberInitial(member.displayName)}</span>
                       <span className="min-w-0">
-                        <span className={balanceNameClassName}>{member.displayName}</span>
+                        <span className={expenseStyles.balanceNameClassName}>{member.displayName}</span>
                         <br />
-                        <span className={balanceMetaClassName}>
+                        <span className={expenseStyles.balanceMetaClassName}>
                           {net > 0
                               ? t.expenses.balance.owed({ name: member.displayName, amount: formatMoney(net, settlementCurrency) })
                             : net < 0
@@ -297,23 +251,23 @@ export function TripExpensesPage({
                         </span>
                       </span>
                     </span>
-                    <strong className={cn(amountClassName, net > 0 && positiveClassName, net < 0 && negativeClassName)}>{formatMoney(net, settlementCurrency)}</strong>
+                    <strong className={cn(expenseStyles.amountClassName, net > 0 && expenseStyles.positiveClassName, net < 0 && expenseStyles.negativeClassName)}>{formatMoney(net, settlementCurrency)}</strong>
                   </div>
                 );
               })}
             </div>
           </section>
 
-          <section className={panelClassName} aria-label={t.expenses.panels.settle}>
-            <h2 className={panelHeadingClassName}><Icon name="wallet" /> {t.expenses.panels.settle}</h2>
+          <section className={expenseStyles.panelClassName} aria-label={t.expenses.panels.settle}>
+            <h2 className={expenseStyles.panelHeadingClassName}><Icon name="wallet" /> {t.expenses.panels.settle}</h2>
             {expenseSummary.settlementSuggestions.length ? (
-              <div className={balanceListClassName}>
+              <div className={expenseStyles.balanceListClassName}>
                 {expenseSummary.settlementSuggestions.map((suggestion) => {
                   const from = memberById(trip.members, suggestion.from);
                   const to = memberById(trip.members, suggestion.to);
                   return (
-                    <div className={settlementRowClassName} key={`${suggestion.from}-${suggestion.to}-${suggestion.amount}`}>
-                      <span className={balanceMetaClassName}>
+                    <div className={expenseStyles.settlementRowClassName} key={`${suggestion.from}-${suggestion.to}-${suggestion.amount}`}>
+                      <span className={expenseStyles.balanceMetaClassName}>
                         {t.expenses.balance.payback({
                           from: from?.displayName ?? suggestion.from,
                           to: to?.displayName ?? suggestion.to,
@@ -321,11 +275,11 @@ export function TripExpensesPage({
                         })}
                       </span>
                       {suggestion.lastRemindedAt ? (
-                        <span className={balanceMetaClassName}>
+                        <span className={expenseStyles.balanceMetaClassName}>
                           {t.expenses.reminders.lastSent({ date: formatReminderDate(suggestion.lastRemindedAt, locale) })}
                         </span>
                       ) : null}
-                      <span className={balanceActionsClassName}>
+                      <span className={expenseStyles.balanceActionsClassName}>
                         <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => void copyPaybackReminder(suggestion)}>
                           <Icon name="copy" /> {t.expenses.actions.copyReminder}
                         </Button>
@@ -338,22 +292,22 @@ export function TripExpensesPage({
                 })}
               </div>
             ) : (
-              <p className={balanceMetaClassName}>{t.expenses.balance.noPaybacks}</p>
+              <p className={expenseStyles.balanceMetaClassName}>{t.expenses.balance.noPaybacks}</p>
             )}
           </section>
 
-          <section className={panelClassName} aria-label={t.expenses.panels.categories}>
-            <h2 className={panelHeadingClassName}><Icon name="list" /> {t.expenses.panels.categories}</h2>
-            <div className={balanceListClassName}>
+          <section className={expenseStyles.panelClassName} aria-label={t.expenses.panels.categories}>
+            <h2 className={expenseStyles.panelHeadingClassName}><Icon name="list" /> {t.expenses.panels.categories}</h2>
+            <div className={expenseStyles.balanceListClassName}>
               {categorySpend.map(([category, amount]) => {
                 const tone = categoryTone(category);
                 return (
-                  <div className={balanceRowClassName} key={category}>
-                    <span className={categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
-                      <span className={categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
+                  <div className={expenseStyles.balanceRowClassName} key={category}>
+                    <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
+                      <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
                       {category}
                     </span>
-                    <strong className={amountClassName}>{formatMoney(amount, settlementCurrency)}</strong>
+                    <strong className={expenseStyles.amountClassName}>{formatMoney(amount, settlementCurrency)}</strong>
                   </div>
                 );
               })}
@@ -361,16 +315,16 @@ export function TripExpensesPage({
           </section>
 
           {inferredScopeExpenses.length ? (
-            <section className={panelClassName} aria-label={t.expenses.scopeAudit.label}>
-              <h2 className={panelHeadingClassName}><Icon name="warning" /> {t.expenses.scopeAudit.title}</h2>
-              <p className={balanceMetaClassName}>{t.expenses.scopeAudit.summary({ count: inferredScopeExpenses.length })}</p>
-              <div className={scopeAuditListClassName}>
+            <section className={expenseStyles.panelClassName} aria-label={t.expenses.scopeAudit.label}>
+              <h2 className={expenseStyles.panelHeadingClassName}><Icon name="warning" /> {t.expenses.scopeAudit.title}</h2>
+              <p className={expenseStyles.balanceMetaClassName}>{t.expenses.scopeAudit.summary({ count: inferredScopeExpenses.length })}</p>
+              <div className={expenseStyles.scopeAuditListClassName}>
                 {inferredScopeExpenses.map((expense) => (
-                  <div className={scopeAuditRowClassName} key={expense.id}>
+                  <div className={expenseStyles.scopeAuditRowClassName} key={expense.id}>
                     <span className="min-w-0">
-                      <strong className={balanceNameClassName}>{expense.title}</strong>
+                      <strong className={expenseStyles.balanceNameClassName}>{expense.title}</strong>
                       <br />
-                      <span className={balanceMetaClassName}>
+                      <span className={expenseStyles.balanceMetaClassName}>
                         {t.expenses.scopeAudit.inferred}: {tripPlanName(trip, expense.tripPlanId)}
                       </span>
                     </span>
@@ -391,20 +345,20 @@ export function TripExpensesPage({
         </div>
 
         <section className="grid min-h-0 content-start gap-3" aria-label={t.expenses.ledgerLabel}>
-          <div className={commandBarClassName}>
-            <div className={filterGridClassName}>
-              <label className={fieldClassName}>
+          <div className={expenseStyles.commandBarClassName}>
+            <div className={expenseStyles.filterGridClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.filters.search}</span>
                 <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => setQuery(event.target.value)} />
               </label>
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.filters.category}</span>
                 <Select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as "all" | Expense["category"])}>
                   <option value="all">{t.expenses.filters.allCategories}</option>
                   {categories.map((category) => <option key={category} value={category}>{category}</option>)}
                 </Select>
               </label>
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.filters.payer}</span>
                 <Select value={payerFilter} onChange={(event) => setPayerFilter(event.target.value)}>
                   <option value="all">{t.expenses.filters.allPayers}</option>
@@ -413,7 +367,7 @@ export function TripExpensesPage({
               </label>
               <Button type="button" variant="ghost" onClick={clearFilters}>{t.expenses.actions.clearFilters}</Button>
             </div>
-            <div className={commandActionsClassName}>
+            <div className={expenseStyles.commandActionsClassName}>
               <Button type="button" variant="ghost" onClick={() => void copyStatement()}>
                 <Icon name="copy" /> {t.expenses.actions.copyStatement}
               </Button>
@@ -423,15 +377,15 @@ export function TripExpensesPage({
               <Button type="button" disabled={!canEditExpenses} onClick={() => setDialogExpense("new")}>
                 <Icon name="plus" /> {t.expenses.actions.addExpense}
               </Button>
-              <span className={copyFeedbackClassName} data-state={copyState} role="status" aria-label={t.expenses.copy.statusLabel}>
+              <span className={expenseStyles.copyFeedbackClassName} data-state={copyState} role="status" aria-label={t.expenses.copy.statusLabel}>
                 {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : t.expenses.copy.ready}
               </span>
             </div>
           </div>
 
-          <div className={tableWrapClassName}>
-            <table className={tableClassName} aria-label={t.expenses.ledgerLabel}>
-              <thead className={tableHeaderClassName}>
+          <div className={expenseStyles.tableWrapClassName}>
+            <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
+              <thead className={expenseStyles.tableHeaderClassName}>
                 <tr>
                   <th>{t.expenses.table.expense}</th>
                   <th>{t.expenses.table.amount}</th>
@@ -441,33 +395,33 @@ export function TripExpensesPage({
                   <th>{t.expenses.table.actions}</th>
                 </tr>
               </thead>
-              <tbody className={tableBodyClassName}>
+              <tbody className={expenseStyles.tableBodyClassName}>
                 {filteredExpenses.map((expense) => {
                   const payer = memberById(trip.members, expense.paidBy);
                   const linkedItem = expense.itineraryItemId ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId) : null;
                   const tone = categoryTone(expense.category);
                   return (
                     <tr key={expense.id}>
-                      <td className={tableTitleClassName}>
+                      <td className={expenseStyles.tableTitleClassName}>
                         <strong>{expense.title}</strong>
-                        <span className={categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
-                          <span className={categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
+                        <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
+                          <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
                           {expense.category}
                         </span>
                       </td>
-                      <td><span className={ledgerAmountClassName}>{formatMoney(expense.amount, expense.currency ?? settlementCurrency)}</span></td>
+                      <td><span className={expenseStyles.ledgerAmountClassName}>{formatMoney(expense.amount, expense.currency ?? settlementCurrency)}</span></td>
                       <td>
                         {payer ? (
-                          <span className={memberLineClassName}>
-                            <span className={avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{memberInitial(payer.displayName)}</span>
-                            <span className={balanceNameClassName}>{payer.displayName}</span>
+                          <span className={expenseStyles.memberLineClassName}>
+                            <span className={expenseStyles.avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{memberInitial(payer.displayName)}</span>
+                            <span className={expenseStyles.balanceNameClassName}>{payer.displayName}</span>
                           </span>
                         ) : expense.paidBy}
                       </td>
                       <td>{formatMoney(sumShares(expense.splits), expense.currency ?? settlementCurrency)}</td>
                       <td>{linkedItem?.activity ?? t.expenses.uncategorizedStop}</td>
                       <td>
-                        <span className={actionCellClassName}>
+                        <span className={expenseStyles.actionCellClassName}>
                           <IconButton type="button" aria-label={t.expenses.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => setDialogExpense(expense)}>
                             <Icon name="edit" />
                           </IconButton>
@@ -531,10 +485,10 @@ export function TripExpensesPage({
 
 function SummaryStat({ icon, label, value, tone = "neutral" }: { icon: "wallet" | "check" | "users" | "warning"; label: string; value: string; tone?: "positive" | "negative" | "neutral" }) {
   return (
-    <div className={statClassName}>
+    <div className={expenseStyles.statClassName}>
       <Icon name={icon} />
       <span>{label}</span>
-      <strong className={cn(tone === "positive" && positiveClassName, tone === "negative" && negativeClassName)}>{value}</strong>
+      <strong className={cn(tone === "positive" && expenseStyles.positiveClassName, tone === "negative" && expenseStyles.negativeClassName)}>{value}</strong>
     </div>
   );
 }
@@ -732,23 +686,23 @@ function ExpenseDialog({
   }
 
   return (
-    <div className={dialogBackdropClassName}>
-      <section className={dialogClassName} role="dialog" aria-modal="true" aria-label={expense ? t.expenses.dialog.editTitle : t.expenses.dialog.addTitle}>
-        <div className={dialogHeaderClassName}>
+    <div className={expenseStyles.dialogBackdropClassName}>
+      <section className={expenseStyles.dialogClassName} role="dialog" aria-modal="true" aria-label={expense ? t.expenses.dialog.editTitle : t.expenses.dialog.addTitle}>
+        <div className={expenseStyles.dialogHeaderClassName}>
           <h2>{expense ? t.expenses.dialog.editTitle : t.expenses.dialog.addTitle}</h2>
           <IconButton type="button" aria-label={t.common.actions.close} onClick={onClose}><Icon name="x" /></IconButton>
         </div>
-        <form className={dialogFormClassName} onSubmit={submitExpense}>
-          <div className={dialogGridClassName}>
-            <label className={fieldClassName}>
+        <form className={expenseStyles.dialogFormClassName} onSubmit={submitExpense}>
+          <div className={expenseStyles.dialogGridClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.title}</span>
               <input value={title} onChange={(event) => setTitle(event.target.value)} />
             </label>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.amount}</span>
               <input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
             </label>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.currency}</span>
               <Select
                 aria-label={t.expenses.fields.currency}
@@ -764,22 +718,22 @@ function ExpenseDialog({
                 ))}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.receiptUrl}</span>
               <input value={receiptUrl} onChange={(event) => setReceiptUrl(event.target.value)} />
             </label>
-            <label className={`${fieldClassName} md:col-span-2`}>
+            <label className={`${expenseStyles.fieldClassName} md:col-span-2`}>
               <span>{t.expenses.fields.notes}</span>
               <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
             </label>
             {!expense ? (
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.fields.repeatCount}</span>
                 <input inputMode="numeric" min={1} max={31} type="number" value={repeatCount} onChange={(event) => setRepeatCount(event.target.value)} />
               </label>
             ) : null}
             {needsExchangeRate ? (
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.fields.exchangeRate({ currency: normalizedCurrency, settlementCurrency })}</span>
                 <input
                   inputMode="decimal"
@@ -791,20 +745,20 @@ function ExpenseDialog({
                 />
               </label>
             ) : null}
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.paidBy}</span>
               <Select value={paidBy} onChange={(event) => setPaidBy(event.target.value)}>
                 {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.category}</span>
               <Select value={category} onChange={(event) => setCategory(event.target.value as Expense["category"])}>
                 {categories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
               </Select>
             </label>
             <div className="grid gap-1.5">
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.fields.tripPlan}</span>
                 <Select
                   value={effectiveTripPlanId}
@@ -816,16 +770,16 @@ function ExpenseDialog({
                   ))}
                 </Select>
               </label>
-              {linkedItem ? <span className={balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
+              {linkedItem ? <span className={expenseStyles.balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
             </div>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.linkedStop}</span>
               <Select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
                 <option value="">{t.expenses.fields.noLinkedStop}</option>
                 {trip.itineraryItems.map((item) => <option key={item.id} value={item.id}>{item.activity}</option>)}
               </Select>
             </label>
-            <label className={fieldClassName}>
+            <label className={expenseStyles.fieldClassName}>
               <span>{t.expenses.fields.splitMode}</span>
               <Select value={splitMode} onChange={(event) => changeSplitMode(event.target.value as ExpenseSplitMode)}>
                 {splitModes.map((mode) => <option key={mode} value={mode}>{t.expenses.splitModes[mode]}</option>)}
@@ -834,18 +788,18 @@ function ExpenseDialog({
           </div>
 
           {splitMode === "itemized" ? (
-            <div className={itemizedListClassName}>
+            <div className={expenseStyles.itemizedListClassName}>
               {lineItems.map((lineItem, index) => (
-                <fieldset className={itemizedLineClassName} key={lineItem.id} role="group" aria-label={t.expenses.fields.lineGroup({ number: index + 1 })}>
-                  <label className={fieldClassName}>
+                <fieldset className={expenseStyles.itemizedLineClassName} key={lineItem.id} role="group" aria-label={t.expenses.fields.lineGroup({ number: index + 1 })}>
+                  <label className={expenseStyles.fieldClassName}>
                     <span>{t.expenses.fields.lineTitle}</span>
                     <input value={lineItem.title} onChange={(event) => updateLineItem(index, { title: event.target.value })} />
                   </label>
-                  <label className={fieldClassName}>
+                  <label className={expenseStyles.fieldClassName}>
                     <span>{t.expenses.fields.lineAmount}</span>
                     <input inputMode="decimal" value={lineItem.amount} onChange={(event) => updateLineItem(index, { amount: event.target.value })} />
                   </label>
-                  <div className={participantChecksClassName} aria-label={t.expenses.fields.lineParticipants}>
+                  <div className={expenseStyles.participantChecksClassName} aria-label={t.expenses.fields.lineParticipants}>
                     {trip.members.map((member) => (
                       <label key={member.id}>
                         <input
@@ -862,9 +816,9 @@ function ExpenseDialog({
               <Button type="button" variant="ghost" onClick={addLineItem}>{t.expenses.actions.addLineItem}</Button>
             </div>
           ) : splitMode !== "equal" ? (
-            <div className={splitGridClassName}>
+            <div className={expenseStyles.splitGridClassName}>
               {trip.members.map((member) => (
-                <label className={fieldClassName} key={member.id}>
+                <label className={expenseStyles.fieldClassName} key={member.id}>
                   <span>{t.expenses.fields.memberShare({ name: member.displayName })}</span>
                   <input
                     inputMode="decimal"
@@ -877,20 +831,20 @@ function ExpenseDialog({
           ) : null}
 
           {expense ? (
-            <section className={commentsClassName} aria-label={t.expenses.fields.comments}>
-              <div className={balanceListClassName}>
+            <section className={expenseStyles.commentsClassName} aria-label={t.expenses.fields.comments}>
+              <div className={expenseStyles.balanceListClassName}>
                 {comments.map((comment) => {
                   const author = memberById(trip.members, comment.authorId);
                   return (
-                    <div className={commentRowClassName} key={comment.id}>
+                    <div className={expenseStyles.commentRowClassName} key={comment.id}>
                       <strong>{author?.displayName ?? t.expenses.comment.unknownAuthor}</strong>
                       <span>{comment.body}</span>
                     </div>
                   );
                 })}
-                {!comments.length ? <p className={balanceMetaClassName}>{t.expenses.comment.empty}</p> : null}
+                {!comments.length ? <p className={expenseStyles.balanceMetaClassName}>{t.expenses.comment.empty}</p> : null}
               </div>
-              <label className={fieldClassName}>
+              <label className={expenseStyles.fieldClassName}>
                 <span>{t.expenses.fields.commentInput}</span>
                 <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} />
               </label>
@@ -898,7 +852,7 @@ function ExpenseDialog({
             </section>
           ) : null}
 
-          <p className={splitMismatch ? warningClassName : balanceMetaClassName}>
+          <p className={splitMismatch ? expenseStyles.warningClassName : expenseStyles.balanceMetaClassName}>
             {t.expenses.dialog.splitTotal({ total: formatMoney(splitTotal, normalizedCurrency), amount: formatMoney(Number.isFinite(amountNumber) ? amountNumber : 0, normalizedCurrency) })}
             {splitMismatch ? ` ${t.expenses.dialog.mismatch}` : ""}
             {invalidItemizedLines ? ` ${t.expenses.dialog.itemizedRequired}` : ""}
@@ -906,7 +860,7 @@ function ExpenseDialog({
             {needsExchangeRate && !hasValidExchangeRate ? ` ${t.expenses.dialog.exchangeRateRequired}` : ""}
           </p>
 
-          <div className={dialogActionsClassName}>
+          <div className={expenseStyles.dialogActionsClassName}>
             <Button type="button" variant="ghost" onClick={onClose}>{t.common.actions.cancel}</Button>
             <Button type="submit" disabled={isSaving || !title.trim() || !Number.isFinite(amountNumber) || amountNumber <= 0 || splitMismatch || !hasValidExchangeRate || invalidItemizedLines || !hasValidRepeatCount}>
               {t.expenses.actions.saveExpense}
