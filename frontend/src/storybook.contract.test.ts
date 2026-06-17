@@ -74,7 +74,7 @@ describe("Storybook template catalog", () => {
       ["features/itinerary/stories/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "PlanABAlternatives", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile", "MobileViewer"]],
       ["features/itinerary/stories/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["features/itinerary/stories/workspace/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
+      ["features/workspace/pages/members/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddExpenseDialogOpen", "FilteredLedger", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["features/workspace/pages/photos/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["components/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddBookingDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
@@ -155,7 +155,7 @@ describe("Storybook template catalog", () => {
       ["features/itinerary/stories/ItineraryTemplate.stories.tsx", ["Owner", "OwnerThai", "Viewer", "Traveler", "Dense", "HierarchyBlocks", "HierarchyWarnings", "TableOverflow", "BranchGraph", "PlanAExample", "PlanABAlternatives", "RequestedPlanExample", "StressPaths"]],
       ["features/itinerary/stories/TimelineTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
       ["features/itinerary/stories/workspace/MapTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
-      ["components/MembersTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
+      ["features/workspace/pages/members/MembersTemplate.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"]],
     ];
 
     requiredTemplateStates.forEach(([file, stateNames]) => {
