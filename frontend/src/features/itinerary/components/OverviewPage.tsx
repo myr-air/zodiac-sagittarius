@@ -1,20 +1,14 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageUserCard } from "@/src/components/PageHeader";
-import { Button, SegmentedControl, Select, TextInput } from "@/src/ui";
+import { Button, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
-import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, ViewerNextStopPanel } from "./overview";
+import { CockpitCard, HighlightBoard, OverviewHero } from "./overview";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./overview/OverviewTaskList";
-import { OverviewFocusSection } from "./overview/OverviewFocusSection";
-import { OverviewExpenseShortcut } from "./overview/OverviewExpenseShortcut";
-import {
-  overviewMutedClassName,
-} from "./overview/overview.styles";
 import {
   dialogFieldWideClassName,
   overviewReadinessChipsClassName,
@@ -24,16 +18,7 @@ import {
   overviewHealthGridClassName,
   overviewPageClassName,
   overviewPanelClassName,
-  overviewPanelHealthClassName,
-  overviewPanelTitleClassName,
-  overviewPanelWideClassName,
-  overviewTaskAddButtonClassName,
-  overviewTaskFilterActiveClassName,
-  overviewTaskFiltersClassName,
-  overviewTaskPanelClassName,
-  overviewTaskToolbarClassName,
   overviewUndoToastClassName,
-  personalTaskFormClassName,
   taskDialogActionsClassName,
   taskDialogClassName,
   taskDialogFormClassName,
@@ -50,6 +35,7 @@ import {
   photoBoardEmptyMessage,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
+import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./overview/OverviewRolePanels";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -246,214 +232,74 @@ export function OverviewPage({
 
       <div className={overviewGridClassName}>
         {isTravelerLens ? (
-          <>
-            <OverviewFocusSection
-              ariaLabel={t.overview.sections.todayFocus}
-              heading={focusTodayHeading}
-              trip={trip}
-              items={items}
-              nextStop={nextStop}
-              nextDayItems={nextDayItems}
-              startDate={trip.startDate}
-              locale={locale}
-              groupSpendLabel={groupSpendLabel}
-              isCompleted={isCompleted}
-              focusListLabel={t.overview.sections.todayFocusStops}
-              detailFallback={nextStop ? travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback) : t.overview.focusDetails.travelerFallback}
-              emptyText={t.overview.empty.itinerary}
-            />
-
-            <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.travelerHighlights}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="location" />
-                <h2>{t.overview.headings.highlights}</h2>
-              </div>
-              <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
-            </section>
-
-            <section className={cn(overviewPanelClassName, overviewTaskPanelClassName)} aria-label={t.overview.sections.travelChecklist}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="check" />
-                <h2>{t.overview.checklist}</h2>
-              </div>
-              <div className={overviewTaskToolbarClassName}>
-                <SegmentedControl
-                  aria-label={t.overview.filters.statusLabel}
-                  className={overviewTaskFiltersClassName}
-                  selectedItemClassName={overviewTaskFilterActiveClassName}
-                  value={taskStatusFilter}
-                  options={[
-                    { value: "all", label: t.overview.filters.all },
-                    { value: "open", label: t.common.status.open },
-                    { value: "done", label: t.common.status.done },
-                  ]}
-                  onChange={setTaskStatusFilter}
-                />
-              </div>
-              <form className={personalTaskFormClassName} onSubmit={submitTask}>
-                <label>
-                  <span>{t.overview.addPersonalTask}</span>
-                  <input value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder={t.overview.personalTaskPlaceholder} />
-                </label>
-                <button type="submit" disabled={!newTaskTitle.trim()}>{t.overview.addTask}</button>
-              </form>
-              <OverviewTaskList
-                tasks={visibleTasks}
-                trip={trip}
-                items={items}
-                labels={taskListLabels}
-                emptyMessage={t.overview.noChecklist}
-                onToggleTask={toggleTask}
-              />
-            </section>
-
-            <OverviewExpenseShortcut
-              icon="wallet"
-              title={t.overview.expenses}
-              value={expenseSummary.currentUserNetLabel}
-              detail={t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}
-              titleId="overview-traveler-budget-title"
-              onClick={openExpenses}
-            />
-            <OverviewExpenseShortcut
-              icon="plus"
-              title={t.overview.generalExpense}
-              value={t.overview.money.generalExamples}
-              detail={t.overview.money.generalDetail}
-              ariaLabel={t.overview.generalExpense}
-              onClick={openExpenses}
-            />
-          </>
+          <TravelerOverviewPanels
+            trip={trip}
+            locale={locale}
+            items={items}
+            groupSpendLabel={groupSpendLabel}
+            nextStop={nextStop}
+            nextDayItems={nextDayItems}
+            focusTodayHeading={focusTodayHeading}
+            isCompleted={isCompleted}
+            openExpenses={openExpenses}
+            taskListLabels={taskListLabels}
+            onToggleTask={toggleTask}
+            foodStops={foodStops}
+            tripHighlights={tripHighlights}
+            focusSectionDetailFallback={nextStop ? travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback) : t.overview.focusDetails.travelerFallback}
+            taskStatusFilter={taskStatusFilter}
+            setTaskStatusFilter={setTaskStatusFilter}
+            visibleTasks={visibleTasks}
+            newTaskTitle={newTaskTitle}
+            onTaskTitleChange={setNewTaskTitle}
+            onSubmitTask={submitTask}
+            expenseNetLabel={expenseSummary.currentUserNetLabel}
+            expenseSettlementSuggestionsLabel={t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}
+          />
         ) : null}
 
         {isViewerLens ? (
-          <>
-            <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={t.overview.sections.viewerSnapshot}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="location" />
-                <h2>{t.overview.headings.viewerSnapshot}</h2>
-              </div>
-              <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
-            </section>
-
-            <section className={overviewPanelClassName} aria-label={t.overview.sections.nextStop}>
-              <div className={overviewPanelTitleClassName}>
-                <Icon name="route" />
-                <h2>{t.overview.headings.nextStop}</h2>
-              </div>
-              <ViewerNextStopPanel
-                item={nextStop}
-                startDate={trip.startDate}
-                locale={locale}
-                emptyMessage={t.overview.empty.itinerary}
-                detailFallback={t.overview.focusDetails.viewerFallback}
-              />
-            </section>
-
-            <OverviewExpenseShortcut
-              icon="wallet"
-              title={t.overview.headings.overallBudget}
-              value={`HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`}
-              detail={t.overview.money.overallSummary}
-              titleId="overview-viewer-budget-title"
-              onClick={openExpenses}
-            />
-            <OverviewExpenseShortcut
-              icon="plus"
-              title={t.overview.generalExpense}
-              value={t.overview.money.generalExamples}
-              detail={t.overview.money.generalDetail}
-              ariaLabel={t.overview.generalExpense}
-              onClick={openExpenses}
-            />
-          </>
+          <ViewerOverviewPanels
+            trip={trip}
+            locale={locale}
+            items={items}
+            groupSpendLabel={groupSpendLabel}
+            nextStop={nextStop}
+            nextDayItems={nextDayItems}
+            focusTodayHeading={focusTodayHeading}
+            isCompleted={isCompleted}
+            openExpenses={openExpenses}
+            taskListLabels={taskListLabels}
+            onToggleTask={toggleTask}
+            viewerHighlights={viewerHighlights}
+            expenseGroupSpend={expenseSummary.groupSpend}
+          />
         ) : null}
 
         {isManagerLens ? (
-          <>
-            <OverviewFocusSection
-              ariaLabel={t.overview.sections.todayFocus}
-              heading={focusTodayHeading}
-              trip={trip}
-              items={items}
-              nextStop={nextStop}
-              nextDayItems={nextDayItems}
-              startDate={trip.startDate}
-              locale={locale}
-              groupSpendLabel={groupSpendLabel}
-              isCompleted={isCompleted}
-              focusListLabel={t.overview.sections.todayFocusStops}
-              detailFallback={nextStop ? managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback) : t.overview.focusDetails.managerFallback}
-              emptyText={t.overview.empty.itinerary}
-            />
-
-            <section className={cn(overviewPanelClassName, overviewPanelHealthClassName)} aria-label={t.overview.sections.readiness}>
-          <div className={overviewPanelTitleClassName}>
-            <Icon name="check" />
-            <h2>{t.overview.headings.readiness}</h2>
-          </div>
-          <div className={overviewHealthGridClassName}>
-            <span><strong>{myOpenTasks}</strong> {t.overview.readiness.myChecklist}</span>
-            <span><strong>{sharedOpenTasks}</strong> {t.overview.readiness.sharedChecklist}</span>
-            <span><strong>{pendingSuggestions}</strong> {t.overview.readiness.pendingSuggestions}</span>
-          </div>
-            </section>
-
-            <OverviewExpenseShortcut
-              icon="plus"
-              title={t.overview.generalExpense}
-              value={t.overview.money.generalExamples}
-              detail={t.overview.money.generalDetail}
-              ariaLabel={t.overview.generalExpense}
-              onClick={openExpenses}
-            />
-
-            <section className={cn(overviewPanelClassName, overviewTaskPanelClassName)} aria-label={t.overview.sections.tripChecklist}>
-          <div className={overviewPanelTitleClassName}>
-            <Icon name="check" />
-            <h2>{t.overview.headings.tripChecklist}</h2>
-          </div>
-          <div className={overviewTaskToolbarClassName}>
-            <SegmentedControl
-              aria-label={t.overview.filters.scopeLabel}
-              className={overviewTaskFiltersClassName}
-              selectedItemClassName={overviewTaskFilterActiveClassName}
-              value={taskScope}
-              options={[
-                { value: "mine", label: t.overview.filters.mine },
-                { value: "trip", label: t.overview.filters.trip },
-                { value: "all", label: t.overview.filters.all },
-              ]}
-              onChange={setTaskScope}
-            />
-            <SegmentedControl
-              aria-label={t.overview.filters.statusLabel}
-              className={overviewTaskFiltersClassName}
-              selectedItemClassName={overviewTaskFilterActiveClassName}
-              value={taskStatusFilter}
-              options={[
-                { value: "all", label: t.overview.filters.allStatuses },
-                { value: "open", label: t.overview.filters.open },
-                { value: "done", label: t.overview.filters.done },
-              ]}
-              onChange={setTaskStatusFilter}
-            />
-            <button className={overviewTaskAddButtonClassName} type="button" aria-label={t.overview.headings.addChecklist} title={t.overview.headings.addChecklist} onClick={() => setIsTaskDialogOpen(true)}>
-              <span aria-hidden="true">+</span>
-            </button>
-          </div>
-              <OverviewTaskList
-                tasks={visibleTasks}
-                trip={trip}
-                items={items}
-                labels={taskListLabels}
-                emptyMessage={t.overview.task.emptyFilter}
-                includeTripKindMeta
-                includeStopMeta
-                onToggleTask={toggleTask}
-              />
-            </section>
-          </>
+          <ManagerOverviewPanels
+            trip={trip}
+            locale={locale}
+            items={items}
+            groupSpendLabel={groupSpendLabel}
+            nextStop={nextStop}
+            nextDayItems={nextDayItems}
+            focusTodayHeading={focusTodayHeading}
+            isCompleted={isCompleted}
+            openExpenses={openExpenses}
+            taskListLabels={taskListLabels}
+            onToggleTask={toggleTask}
+            taskScopeFilter={taskScope}
+            setTaskScopeFilter={setTaskScope}
+            taskStatusFilter={taskStatusFilter}
+            setTaskStatusFilter={setTaskStatusFilter}
+            myOpenTasks={myOpenTasks}
+            sharedOpenTasks={sharedOpenTasks}
+            pendingSuggestions={pendingSuggestions}
+            visibleTasks={visibleTasks}
+            focusSectionDetailFallback={nextStop ? managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback) : t.overview.focusDetails.managerFallback}
+            openTaskDialog={() => setIsTaskDialogOpen(true)}
+          />
         ) : null}
       </div>
       {isTaskDialogOpen ? (
