@@ -38,7 +38,6 @@ import {
   localizeAccessError,
   rawErrorMessage,
 } from "./account-auth-support";
-import { AccountPortalNav } from "./account-portal-nav";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import type { AuthFlow } from "./account-auth-chrome";
 import { EmailLoginPanel } from "./account-email-login-panel";
@@ -47,15 +46,8 @@ import {
   buildAccountAuthCardClassName,
 } from "./account-email-login-styles";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
+import { AccountPortalDashboard } from "./account-portal-dashboard";
 import { StatusMessage } from "./account-status-message";
-import { PortalDashboardSection } from "./portal-dashboard-section";
-import { PortalExplorerSection } from "./portal-explorer-section";
-import { PortalNewTripSection } from "./portal-new-trip-section";
-import { PortalSettingsSection } from "./portal-settings-section";
-import { PortalSignOutSection } from "./portal-sign-out-section";
-import { PortalTodosSection } from "./portal-todos-section";
-import { PortalTripsSection } from "./portal-trips-section";
-import { PortalVaultSection } from "./portal-vault-section";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
@@ -150,8 +142,28 @@ const accountTwoColClassName =
 const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
 const accountAuthCardClassName = buildAccountAuthCardClassName(accountCardClassName, accountFormClassName);
 
-const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
-const portalSectionStorageKey = "sagittarius:portal-section-index";
+const accountPortalDashboardClassNames = {
+  avatar: accountAvatarClassName,
+  dashboard: accountDashboardClassName,
+  deviceList: accountDeviceListClassName,
+  deviceRow: accountDeviceRowClassName,
+  empty: accountEmptyClassName,
+  featureCard: portalFeatureCardClassName,
+  historyCard: portalHistoryCardClassName,
+  newTripCard: portalNewTripCardClassName,
+  portalContent: portalContentClassName,
+  profileCard: portalProfileCardClassName,
+  profileRow: accountProfileRowClassName,
+  sectionTopline: portalSectionToplineClassName,
+  settingsCard: portalSettingsCardClassName,
+  settingsForm: accountSettingsFormClassName,
+  settingsGrid: accountSettingsGridClassName,
+  settingsProfilePreview: settingsProfilePreviewClassName,
+  statGrid: accountStatGridClassName,
+  stepSummary: accountStepSummaryClassName,
+  tripBuilderTopbar: tripBuilderTopbarClassName,
+  twoCol: accountTwoColClassName,
+};
 
 export function AccountAccessPanel({
   accessMode = "combined",
@@ -412,10 +424,11 @@ export function AccountAccessPanel({
             portalSection={portalSection}
           />
         ) : accountSession ? (
-          <AccountDashboard
+          <AccountPortalDashboard
             accountClient={accountClient}
             apiClient={apiClient}
             accountSession={accountSession}
+            classNames={accountPortalDashboardClassNames}
             isLoading={!displayedSettings}
             settings={displayedSettings}
             stats={displayedStats}
@@ -469,177 +482,4 @@ export function AccountAccessPanel({
       </section>
     </main>
   );
-}
-
-
-function AccountDashboard({
-  accountClient,
-  apiClient,
-  accountSession,
-  explorer,
-  isLoading,
-  onCreatedTrip,
-  onError,
-  onLogout,
-  onSessionCleared,
-  onMessage,
-  onSettingsChanged,
-  onVaultItemCreated,
-  portalSection,
-  settings,
-  stats,
-  todos,
-  trips,
-  vaultItems,
-}: {
-  accountClient: AccountApiClient;
-  apiClient?: TripApiClient;
-  accountSession: AccountSession;
-  explorer: AccountExplorerSummary | null;
-  isLoading: boolean;
-  onCreatedTrip: (session: TripParticipantSession, options?: { openTrip?: boolean }) => Promise<void>;
-  onError: (message: string | null) => void;
-  onLogout: () => Promise<void>;
-  onSessionCleared: () => void;
-  onMessage: (message: string | null) => void;
-  onSettingsChanged: (settings: AccountSettings) => void;
-  onVaultItemCreated: (item: AccountVaultItemSummary) => void;
-  portalSection: PortalSection;
-  settings: AccountSettings | null;
-  stats: AccountTripStats | null;
-  todos: AccountTodoSummary[];
-  trips: AccountTripSummary[];
-  vaultItems: AccountVaultItemSummary[];
-}) {
-  const { t } = useI18n();
-  const [transitionDirection] = useState<"forward" | "back">(() => {
-    const currentIndex = portalSectionOrder.indexOf(portalSection);
-    return currentIndex < readPreviousPortalSectionIndex(currentIndex) ? "back" : "forward";
-  });
-
-  const activePortalSection = portalSection === "new-trip" ? "trips" : portalSection;
-  const currentPortalSectionIndex = portalSectionOrder.indexOf(portalSection);
-
-  useEffect(() => {
-    window.sessionStorage.setItem(portalSectionStorageKey, String(currentPortalSectionIndex));
-  }, [currentPortalSectionIndex]);
-
-  return (
-    <div className={accountDashboardClassName} id="account-portal" data-transition-direction={transitionDirection}>
-      <AccountPortalNav activeSection={activePortalSection} email={settings?.profile.primaryEmail ?? t.access.dashboard.noEmail} />
-
-      <div className={portalContentClassName}>
-        {portalSection === "dashboard" ? (
-          <PortalDashboardSection
-            accountSession={accountSession}
-            classNames={{
-              avatar: accountAvatarClassName,
-              profileRow: accountProfileRowClassName,
-              section: portalProfileCardClassName,
-              statGrid: accountStatGridClassName,
-            }}
-            isLoading={isLoading}
-            settings={settings}
-            stats={stats}
-          />
-        ) : null}
-
-        {portalSection === "trips" ? (
-          <PortalTripsSection
-            classNames={{
-              section: portalHistoryCardClassName,
-              topline: portalSectionToplineClassName,
-            }}
-            isLoading={isLoading}
-            trips={trips}
-          />
-        ) : null}
-
-        {portalSection === "new-trip" ? (
-          <PortalNewTripSection
-            accountClient={accountClient}
-            accountSession={accountSession}
-            apiClient={apiClient}
-            classNames={{
-              card: portalNewTripCardClassName,
-              historyCard: portalHistoryCardClassName,
-              topbar: tripBuilderTopbarClassName,
-            }}
-            settings={settings}
-            onCreatedTrip={onCreatedTrip}
-            onError={onError}
-            onMessage={onMessage}
-          />
-        ) : null}
-
-        {portalSection === "explorer" ? (
-          <PortalExplorerSection
-            classNames={{
-              section: portalFeatureCardClassName,
-              settingsGrid: accountSettingsGridClassName,
-              stepSummary: accountStepSummaryClassName,
-            }}
-            explorer={explorer}
-            isLoading={isLoading}
-            trips={trips}
-          />
-        ) : null}
-
-        {portalSection === "todos" ? (
-          <PortalTodosSection className={portalFeatureCardClassName} isLoading={isLoading} todos={todos} />
-        ) : null}
-
-        {portalSection === "vault" ? (
-          <PortalVaultSection
-            accountClient={accountClient}
-            accountSession={accountSession}
-            classNames={{
-              empty: accountEmptyClassName,
-              form: accountSettingsFormClassName,
-              section: portalFeatureCardClassName,
-              twoCol: accountTwoColClassName,
-            }}
-            isLoading={isLoading}
-            vaultItems={vaultItems}
-            onError={onError}
-            onMessage={onMessage}
-            onVaultItemCreated={onVaultItemCreated}
-          />
-        ) : null}
-
-        {portalSection === "settings" ? (
-          <PortalSettingsSection
-            accountClient={accountClient}
-            accountSession={accountSession}
-            classNames={{
-              avatar: accountAvatarClassName,
-              deviceList: accountDeviceListClassName,
-              deviceRow: accountDeviceRowClassName,
-              empty: accountEmptyClassName,
-              profilePreview: settingsProfilePreviewClassName,
-              section: portalSettingsCardClassName,
-              settingsForm: accountSettingsFormClassName,
-              settingsGrid: accountSettingsGridClassName,
-              twoCol: accountTwoColClassName,
-            }}
-            settings={settings}
-            onError={onError}
-            onMessage={onMessage}
-            onSessionCleared={onSessionCleared}
-            onSettingsChanged={onSettingsChanged}
-          />
-        ) : null}
-
-        {portalSection === "sign-out" ? (
-          <PortalSignOutSection className={portalProfileCardClassName} onLogout={onLogout} />
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function readPreviousPortalSectionIndex(fallbackIndex: number): number {
-  if (typeof window === "undefined") return fallbackIndex;
-  const storedIndex = Number(window.sessionStorage.getItem(portalSectionStorageKey));
-  return Number.isFinite(storedIndex) ? storedIndex : fallbackIndex;
 }
