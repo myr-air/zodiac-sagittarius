@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { type ItineraryItem } from "@/src/trip/types";
-import { hasCoordinates } from "@/src/features/itinerary/components/route-map.utils";
+import { hasCoordinates } from "./route-map.utils";
 import {
   activeDayLabel,
   dayColorFor,
