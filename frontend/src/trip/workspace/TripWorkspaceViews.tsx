@@ -1,8 +1,8 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { BookingsDocsPage } from "@/src/components/BookingsDocsPage";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
+import { BookingsDocsPage } from "@/src/features/workspace/pages/bookings-docs";
 import { TripExpensesPage } from "@/src/features/workspace/pages/expenses";
 import { TripMembersPage } from "@/src/features/workspace/pages/members";
 import { TripPhotosPage } from "@/src/features/workspace/pages/photos";

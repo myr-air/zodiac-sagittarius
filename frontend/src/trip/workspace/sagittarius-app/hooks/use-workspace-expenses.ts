@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BookingDocInput } from "@/src/components/BookingsDocsPage";
+import type { BookingDocInput } from "@/src/features/workspace/pages/bookings-docs";
 import { bookingDocInputForExpenseEstimate } from "@/src/trip/booking-docs";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
