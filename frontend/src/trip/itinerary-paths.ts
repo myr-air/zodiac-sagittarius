@@ -1,7 +1,11 @@
 import { parseTime } from "./itinerary";
 import type { ItineraryExportItem } from "./itinerary-import-export";
 import type { ItineraryItem, ItineraryPath, ItineraryPathScope, Trip } from "./types";
-import { itineraryItemPathId, mainItineraryPathId } from "./itinerary-path-identifiers";
+import {
+  itineraryItemPathId,
+  mainItineraryPathId,
+  mainItineraryPathName,
+} from "./itinerary-path-identifiers";
 
 export interface ItineraryImportApplyTarget {
   memberId: string;
@@ -77,9 +81,9 @@ export function applyManualActivityPath(trip: Trip, itemId: string, targetPathId
 
 export function deriveManualActivityPathOptions(trip: Trip, itemId: string): ManualActivityPathOption[] {
   const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
-  if (!item) return [{ id: mainItineraryPathId, name: "Main" }];
+  if (!item) return [{ id: mainItineraryPathId, name: mainItineraryPathName }];
   const branchItems = findOverlappingActivityBranch(trip.itineraryItems, item);
-  const options = new Map<string, ManualActivityPathOption>([[mainItineraryPathId, { id: mainItineraryPathId, name: "Main" }]]);
+  const options = new Map<string, ManualActivityPathOption>([[mainItineraryPathId, { id: mainItineraryPathId, name: mainItineraryPathName }]]);
   for (const branchItem of sortBranchItems(branchItems)) {
     if (branchItem.pathRole === "alternative" && branchItem.pathId) {
       options.set(branchItem.pathId, { id: branchItem.pathId, name: branchItem.pathName ?? subPathNameFromId(branchItem.pathId) });

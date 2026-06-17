@@ -3,6 +3,7 @@ import { Button, Select } from "@/src/ui";
 import { slugifyFilePart } from "@/src/lib/file-names";
 import {
   mainItineraryPathId,
+  mainItineraryPathName,
   type ItineraryPathOption,
 } from "@/src/trip/itinerary";
 import type { ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
@@ -56,7 +57,7 @@ export function TripWorkspaceImportDialog({
     records.tasks.length;
   const currentPathName =
     pathOptions.find((option) => option.id === currentTripPathId)?.name ??
-    "Main";
+    mainItineraryPathName;
   const [pathNameInput, setPathNameInput] = useState(currentPathName);
   const [scope, setScope] = useState<"trip" | "day">("trip");
   const [day, setDay] = useState(importedItems[0]?.day ?? startDate);
@@ -69,7 +70,7 @@ export function TripWorkspaceImportDialog({
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const pathName = pathNameInput.trim() || "Main";
+    const pathName = pathNameInput.trim() || mainItineraryPathName;
     const targetDay = scope === "day" ? day.trim() : undefined;
     if (scope === "day" && !targetDay) return;
     onApply(
@@ -222,18 +223,21 @@ function buildItineraryImportApplyTarget({
       option.name.toLowerCase() === pathName.toLowerCase() ||
       option.id === pathName,
   );
+  const normalizedPathName = pathName.trim();
   const pathId =
-    pathName.toLowerCase() === "main"
+    normalizedPathName.toLowerCase() === mainItineraryPathName.toLowerCase()
       ? mainItineraryPathId
       : (existingPath?.id ??
-        `path-${slugifyFilePart(pathName) || Date.now().toString(36)}`);
-  const normalizedPathName =
-    pathId === mainItineraryPathId ? "Main" : (existingPath?.name ?? pathName);
+        `path-${slugifyFilePart(normalizedPathName) || Date.now().toString(36)}`);
+  const resolvedPathName =
+    pathId === mainItineraryPathId
+      ? mainItineraryPathName
+      : (existingPath?.name ?? pathName);
   return {
     memberId,
     tripPlanId,
     pathId,
-    pathName: normalizedPathName,
+    pathName: resolvedPathName,
     scope,
     day,
     mode,

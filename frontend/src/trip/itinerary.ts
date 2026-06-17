@@ -6,8 +6,8 @@ import type {
   Trip,
   ValidationWarning,
 } from "./types";
-import { itineraryItemPathId, humanizePathId, mainItineraryPathId } from "./itinerary-path-identifiers";
-export { mainItineraryPathId, itineraryItemPathId, humanizePathId } from "./itinerary-path-identifiers";
+import { itineraryItemPathId, humanizePathId, mainItineraryPathId, mainItineraryPathName } from "./itinerary-path-identifiers";
+export { mainItineraryPathId, itineraryItemPathId, humanizePathId, mainItineraryPathName } from "./itinerary-path-identifiers";
 
 export interface ItineraryPathSelection {
   tripPathId?: string;
@@ -620,7 +620,11 @@ export function itineraryItemPathFieldsForTarget(
 
 export function deriveItineraryPathOptions(items: ItineraryItem[], paths: ItineraryPath[] = []): ItineraryPathOption[] {
   const options = new Map<string, ItineraryPathOption>();
-  options.set(mainItineraryPathId, { id: mainItineraryPathId, name: "Main", scope: "trip" });
+  options.set(mainItineraryPathId, {
+    id: mainItineraryPathId,
+    name: mainItineraryPathName,
+    scope: "trip",
+  });
 
   for (const path of paths) {
     options.set(path.id, {

@@ -12,7 +12,10 @@ import {
   weatherGraphicLabel,
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
-import { mainItineraryPathId } from "@/src/trip/itinerary-path-identifiers";
+import {
+  mainItineraryPathId,
+  mainItineraryPathName,
+} from "@/src/trip/itinerary-path-identifiers";
 
 function formatWeatherSummaryParts(
   weather: TripDailyBriefing["weather"],
@@ -161,15 +164,12 @@ export function dedupePathOptions(
     if (!optionsById.has(pathId)) {
       optionsById.set(pathId, {
         id: pathId,
-        name: item.pathName ?? (pathId === mainItineraryPathId ? "Main" : pathId),
+        name: item.pathName ?? (pathId === mainItineraryPathId ? mainItineraryPathName : pathId),
       });
     }
   });
   if (!optionsById.has(mainItineraryPathId)) {
-    optionsById.set(mainItineraryPathId, {
-      id: mainItineraryPathId,
-      name: "Main",
-    });
+    optionsById.set(mainItineraryPathId, { id: mainItineraryPathId, name: mainItineraryPathName });
   }
   return Array.from(optionsById.values());
 }

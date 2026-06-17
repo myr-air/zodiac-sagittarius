@@ -1,5 +1,9 @@
 import { buildExpenseSummary } from "./expenses";
 import { seedTrip } from "./seed";
+import {
+  mainItineraryPathId,
+  mainItineraryPathName,
+} from "./itinerary-path-identifiers";
 import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripTask } from "./types";
 
 export type TripFixtureRole = "owner" | "organizer" | "traveler" | "viewer";
@@ -86,7 +90,7 @@ export function buildEmptyTripFixture(): Trip {
 export function buildDenseTripFixture(): Trip {
   const denseDays = Array.from({ length: 12 }, (_, index) => dateOffset(seedTrip.startDate, index));
   const pathBranches: Array<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole">> = [
-    { pathId: "main", pathName: "Main", pathRole: "main" },
+    { pathId: mainItineraryPathId, pathName: mainItineraryPathName, pathRole: "main" },
     { pathGroupId: "dense-morning", pathId: "dense-plan-a", pathName: "Plan A", pathRole: "alternative" },
     { pathGroupId: "dense-morning", pathId: "dense-plan-b", pathName: "Plan B", pathRole: "alternative" },
   ];

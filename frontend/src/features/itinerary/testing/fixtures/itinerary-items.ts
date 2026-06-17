@@ -12,6 +12,7 @@ import {
   pathPlanOneOption,
   storyRainPathOption,
 } from "./path-options";
+import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
 
 export const defaultSmartItineraryPathOptions = [
   mainPathOption,
@@ -88,7 +89,7 @@ const defaultItem: Readonly<ItineraryItem> = {
   isPlanBlock: false,
   pathGroupId: "group-id",
   pathRole: "main",
-  pathName: "Main",
+  pathName: mainItineraryPathName,
   address: "",
   coordinates: undefined,
   parentItemId: null,
