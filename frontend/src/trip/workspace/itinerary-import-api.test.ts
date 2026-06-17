@@ -18,6 +18,7 @@ import {
   createImportedPlanRecordsViaApi,
 } from "./itinerary-import-api";
 import type { ImportedPlanRecords } from "./itinerary-import-model";
+import { pathIdRain } from "../testing/itinerary-path-fixtures";
 
 const task: TripTask = {
   assigneeId: "member-aom",
@@ -213,7 +214,7 @@ describe("itinerary import API adapter", () => {
       note: "Use group entrance",
       parentItemId: "preview-parent",
       pathGroupId: "path-group-import",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       place: "Museum",
@@ -242,7 +243,7 @@ describe("itinerary import API adapter", () => {
       clientMutationId: "itinerary-import-create-mutation",
       planVariantId: "plan-rain",
       pathGroupId: "path-group-import",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       parentItemId: "created-parent",

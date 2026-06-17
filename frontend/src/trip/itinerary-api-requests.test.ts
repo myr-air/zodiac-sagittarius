@@ -9,6 +9,7 @@ import {
   buildShiftItineraryItemDayRequest,
 } from "./itinerary-api-requests";
 import { seedTrip } from "./seed";
+import { pathIdRain } from "./testing/itinerary-path-fixtures";
 
 describe("itinerary API request builders", () => {
   it("builds create itinerary item requests from the draft item", () => {
@@ -17,7 +18,7 @@ describe("itinerary API request builders", () => {
       id: "item-new",
       planVariantId: "plan-alt",
       pathGroupId: "path-group-item-new",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative" as const,
       parentItemId: null,
@@ -45,7 +46,7 @@ describe("itinerary API request builders", () => {
       clientMutationId: "mutation-1",
       planVariantId: "plan-alt",
       pathGroupId: "path-group-item-new",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       parentItemId: null,

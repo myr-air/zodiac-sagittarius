@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { tripFixture } from "./trip-fixtures";
 import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, deriveManualActivityPathOptions } from "./itinerary-paths";
 import type { ItineraryExportItem } from "./itinerary-import-export";
+import { pathIdRain } from "./testing/itinerary-path-fixtures";
 
 const importItem: ItineraryExportItem = {
   id: "import-rain-museum",
@@ -308,7 +309,7 @@ describe("itinerary path import application", () => {
 
     const next = applyImportedItemsToItineraryPath(trip, [importItem], {
       memberId: "member-aom",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       scope: "day",
       day: "2026-06-19",
@@ -322,12 +323,12 @@ describe("itinerary path import application", () => {
       "import-rain-museum",
     ]);
     expect(next.itineraryItems.find((item) => item.id === "import-rain-museum")).toMatchObject({
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       pathGroupId: "path-group-import-rain-museum",
     });
-    expect(next.itineraryPaths?.find((path) => path.id === "path-rain")).toMatchObject({
+    expect(next.itineraryPaths?.find((path) => path.id === pathIdRain)).toMatchObject({
       name: "Rain plan",
       scope: "day",
       day: "2026-06-19",
@@ -497,7 +498,7 @@ describe("itinerary path import application", () => {
       id: "existing-rain",
       day: "2026-06-19",
       pathGroupId: "group-breakfast",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathRole: "alternative" as const,
     };
     const existingSlow = {
@@ -510,7 +511,7 @@ describe("itinerary path import application", () => {
       itineraryItems: [existingRain, existingSlow],
       itineraryPaths: [
         {
-          id: "path-rain",
+          id: pathIdRain,
           tripId: tripFixture.trip.id,
           name: "Rain plan",
           scope: "day" as const,
@@ -524,7 +525,7 @@ describe("itinerary path import application", () => {
 
     const next = applyImportedItemsToItineraryPath(trip, [importItem], {
       memberId: "member-aom",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       scope: "day",
       day: "2026-06-19",

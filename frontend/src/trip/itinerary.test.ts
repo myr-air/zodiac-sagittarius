@@ -44,6 +44,7 @@ import {
   replaceSuggestionById,
 } from "./suggestions";
 import type { Suggestion } from "./types";
+import { pathIdRain } from "./testing/itinerary-path-fixtures";
 
 describe("itinerary planning domain", () => {
   const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
@@ -75,13 +76,13 @@ describe("itinerary planning domain", () => {
     const rainMuseum = {
       ...mainMuseum,
       id: "rain-museum",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathRole: "alternative" as const,
       activity: "Indoor museum rain plan",
     };
 
     const visible = resolveItineraryPathItems([mainBreakfast, mainMuseum, rainMuseum], {
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
     });
 
     expect(visible.map((item) => item.id)).toEqual(["main-breakfast", "rain-museum"]);
@@ -145,7 +146,7 @@ describe("itinerary planning domain", () => {
     const rainDinner = {
       ...mainDinner,
       id: "rain-dinner",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathRole: "alternative" as const,
       activity: "Rain dinner",
     };
@@ -153,7 +154,7 @@ describe("itinerary planning domain", () => {
 
     const visible = resolveItineraryPathItems(items, {
       tripPathId: "path-plan-1",
-      dayPathOverrides: { "2025-05-17": "path-rain" },
+      dayPathOverrides: { "2025-05-17": pathIdRain },
     });
 
     expect(visible.map((item) => item.id)).toEqual(["rain-dinner"]);
@@ -184,28 +185,28 @@ describe("itinerary planning domain", () => {
   it("selects the effective itinerary path for a day", () => {
     expect(
       selectedItineraryPathIdForDay("2026-06-19", {
-        tripPathId: "path-rain",
+        tripPathId: pathIdRain,
         dayPathOverrides: { "2026-06-19": "path-food" },
       }),
     ).toBe("path-food");
     expect(
       selectedItineraryPathIdForDay("2026-06-20", {
-        tripPathId: "path-rain",
+        tripPathId: pathIdRain,
         dayPathOverrides: { "2026-06-19": "path-food" },
       }),
-    ).toBe("path-rain");
+    ).toBe(pathIdRain);
     expect(selectedItineraryPathIdForDay("2026-06-20", {})).toBe("main");
     expect(
       selectedItineraryPathIdForDay("2026-06-20", {
         showAll: true,
-        tripPathId: "path-rain",
+        tripPathId: pathIdRain,
       }),
     ).toBe("main");
   });
 
   it("updates itinerary path selection state with trip, day, and show-all actions", () => {
     const currentSelection = {
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: { "2026-06-19": "path-food" },
       showAll: true,
     };
@@ -227,7 +228,7 @@ describe("itinerary planning domain", () => {
         pathId: "path-museum",
       }),
     ).toEqual({
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: {
         "2026-06-19": "path-food",
         "2026-06-20": "path-museum",
@@ -241,7 +242,7 @@ describe("itinerary planning domain", () => {
         pathId: mainItineraryPathId,
       }),
     ).toEqual({
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: { "2026-06-19": undefined },
       showAll: false,
     });
@@ -251,7 +252,7 @@ describe("itinerary planning domain", () => {
         day: "2026-06-19",
       }),
     ).toEqual({
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: { "2026-06-19": undefined },
       showAll: true,
     });
@@ -260,7 +261,7 @@ describe("itinerary planning domain", () => {
         type: "clear-all-day-paths",
       }),
     ).toEqual({
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: {},
       showAll: true,
     });
@@ -270,7 +271,7 @@ describe("itinerary planning domain", () => {
         showAll: false,
       }),
     ).toEqual({
-      tripPathId: "path-rain",
+      tripPathId: pathIdRain,
       dayPathOverrides: { "2026-06-19": "path-food" },
       showAll: false,
     });
@@ -324,7 +325,7 @@ describe("itinerary planning domain", () => {
 
   it("derives main and named path options from metadata and item fields", () => {
     const rainPath = {
-      id: "path-rain",
+      id: pathIdRain,
       tripId: seedTrip.id,
       name: "Rain plan",
       scope: "day" as const,
@@ -342,7 +343,7 @@ describe("itinerary planning domain", () => {
 
     expect(deriveItineraryPathOptions([slowItem], [rainPath])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
-      { id: "path-rain", name: "Rain plan", scope: "day", day: "2025-05-16" },
+      { id: pathIdRain, name: "Rain plan", scope: "day", day: "2025-05-16" },
       { id: "path-slow", name: "Slow morning", scope: "trip" },
     ]);
   });

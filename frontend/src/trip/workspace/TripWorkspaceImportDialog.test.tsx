@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { TripWorkspaceImportDialog } from "./TripWorkspaceImportDialog";
 import type { ItineraryExportRecords } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
+import { pathIdRain } from "../testing/itinerary-path-fixtures";
 
 const emptyRecords: ItineraryExportRecords = {
   bookingDocs: [],
@@ -38,7 +39,7 @@ describe("TripWorkspaceImportDialog", () => {
 
     render(
       <TripWorkspaceImportDialog
-        currentTripPathId="path-rain"
+        currentTripPathId={pathIdRain}
         importedItems={[
           {
             activity: "Museum",
@@ -59,7 +60,7 @@ describe("TripWorkspaceImportDialog", () => {
         memberId="member-aom"
         pathOptions={[
           { id: "main", name: "Main", scope: "trip" },
-          { id: "path-rain", name: "Rain Route", scope: "trip" },
+          { id: pathIdRain, name: "Rain Route", scope: "trip" },
         ]}
         records={emptyRecords}
         startDate="2026-06-18"
@@ -83,7 +84,7 @@ describe("TripWorkspaceImportDialog", () => {
       day: "2026-06-20",
       memberId: "member-aom",
       mode: "replace-target",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain Route",
       recordMode: "clone-linked",
       scope: "day",

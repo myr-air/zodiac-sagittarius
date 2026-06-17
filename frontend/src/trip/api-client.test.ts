@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTripApiClient, mapCockpitResponse, TripApiError, type TripCockpitResponse } from "./api-client";
+import { pathIdRain } from "./testing/itinerary-path-fixtures";
 
 const cockpitResponse: TripCockpitResponse = {
   trip: {
@@ -67,7 +68,7 @@ const cockpitResponse: TripCockpitResponse = {
       tripId: "018f4e80-5788-7de0-a45c-8a555d17fc2d",
       planVariantId: "018f4e82-3000-7c00-b111-000000000001",
       pathGroupId: "group-breakfast",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       day: "2025-05-16",
@@ -278,7 +279,7 @@ describe("Trip API client", () => {
     });
     expect(cockpit.trip.itineraryItems[0]).toMatchObject({
       pathGroupId: "group-breakfast",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
       endTime: "09:30",

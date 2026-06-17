@@ -5,6 +5,7 @@ import {
   parseItineraryImportDocument,
 } from "./itinerary-import-export";
 import { tripFixture } from "./trip-fixtures";
+import { pathIdRain } from "./testing/itinerary-path-fixtures";
 
 describe("itinerary import/export JSON", () => {
   it("exports active itinerary items in a stable JSON v1 envelope", () => {
@@ -393,7 +394,7 @@ describe("itinerary import/export JSON", () => {
       ...tripFixture.planItems[0],
       id: "item-rain-alt",
       pathGroupId: "group-morning",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative" as const,
     };
@@ -407,13 +408,13 @@ describe("itinerary import/export JSON", () => {
     expect(payload.items[0]).toMatchObject({
       id: "item-rain-alt",
       pathGroupId: "group-morning",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
     });
     expect(parseItineraryImport(JSON.stringify(payload))[0]).toMatchObject({
       pathGroupId: "group-morning",
-      pathId: "path-rain",
+      pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative",
     });
