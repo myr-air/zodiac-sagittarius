@@ -65,13 +65,13 @@ export const storyRainDisplayPathOption: ItineraryPathOption = {
 
 export const pathOptionPlanA: ItineraryPathOption = {
   id: pathIdPlanA,
-  name: "Plan A",
+  name: pathNamePlanA,
   scope: "trip",
 };
 
 export const pathOptionPlanB: ItineraryPathOption = {
   id: pathIdPlanB,
-  name: "Plan B",
+  name: pathNamePlanB,
   scope: "trip",
 };
 

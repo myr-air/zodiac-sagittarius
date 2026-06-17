@@ -14,6 +14,11 @@ import {
   pathIdStoryRain,
   storyRainPathOption,
 } from "@/src/features/itinerary/testing";
+import {
+  pathNamePlanA,
+  pathNamePlanB,
+  pathNamePlanC,
+} from "@/src/trip/testing/itinerary-path-fixtures";
 
 export type SmartItineraryStoryArgs = Parameters<typeof SmartItineraryTable>[0];
 
@@ -139,7 +144,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     activity: "Late coffee",
     pathGroupId: "path-group-morning",
     pathId: pathIdStoryPlanA,
-    pathName: "Plan A",
+    pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
   buildBaseItem(3, {
@@ -167,10 +172,10 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     startTime: "08:15",
     durationMinutes: 60,
     sortOrder: 200,
-    activity: "Plan A museum stop",
+    activity: `${pathNamePlanA} museum stop`,
     place: "Plan A checkpoint",
     pathId: pathIdStoryPlanA,
-    pathName: "Plan A",
+    pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
   buildBaseItem(2, {
@@ -178,10 +183,10 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     startTime: "09:45",
     durationMinutes: 45,
     sortOrder: 300,
-    activity: "Plan A cafe backup",
-    place: "Plan A checkpoint",
+    activity: `${pathNamePlanA} cafe backup`,
+    place: `${pathNamePlanA} checkpoint`,
     pathId: pathIdStoryPlanA,
-    pathName: "Plan A",
+    pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
   buildBaseItem(3, {
@@ -211,8 +216,8 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
     "10:00",
     75,
     200,
-    "Plan A gallery route",
-    "Plan A",
+    `${pathNamePlanA} gallery route`,
+    pathNamePlanA,
     pathIdStoryPlanA,
     "alternative",
   ],
@@ -221,8 +226,8 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
     "14:00",
     90,
     300,
-    "Plan B harbour route",
-    "Plan B",
+    `${pathNamePlanB} harbour route`,
+    pathNamePlanB,
     pathIdStoryPlanB,
     "alternative",
   ],
@@ -255,11 +260,11 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
 export const requestedPlanExampleItemsBase: ItineraryItem[] = [
   ["requested-main-0800", "08:00", 60, 100, "Main 08:00 block", undefined, undefined, "main"],
   ["requested-main-0900", "09:00", 120, 200, "Main 09:00 block", undefined, undefined, "main"],
-  ["requested-plan-a-0900", "09:00", 30, 210, "Plan A 09:00 branch", pathIdStoryPlanA, "Plan A", "alternative"],
-  ["requested-plan-a-1000", "10:00", 60, 300, "Plan A 10:00 follow up", pathIdStoryPlanA, "Plan A", "alternative"],
+  ["requested-plan-a-0900", "09:00", 30, 210, `${pathNamePlanA} 09:00 branch`, pathIdStoryPlanA, pathNamePlanA, "alternative"],
+  ["requested-plan-a-1000", "10:00", 60, 300, `${pathNamePlanA} 10:00 follow up`, pathIdStoryPlanA, pathNamePlanA, "alternative"],
   ["requested-main-1100", "11:00", 60, 400, "Main 11:00 block", undefined, undefined, "main"],
   ["requested-main-1200", "12:00", 180, 500, "Main 12:00 block", undefined, undefined, "main"],
-  ["requested-plan-a-1230", "12:30", 60, 510, "Plan A 12:30 branch", pathIdStoryPlanA, "Plan A", "alternative"],
+  ["requested-plan-a-1230", "12:30", 60, 510, `${pathNamePlanA} 12:30 branch`, pathIdStoryPlanA, pathNamePlanA, "alternative"],
   ["requested-main-1600", "16:00", 60, 600, "Main 16:00 block", undefined, undefined, "main"],
 ].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) =>
   buildBaseItem(0, {
@@ -278,21 +283,21 @@ export const requestedPlanExampleItemsBase: ItineraryItem[] = [
 
 export const stressPathItemsBase: ItineraryItem[] = [
   ["stress-0800-main", "08:00", 75, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["stress-0805-a", "08:05", 90, 110, "Museum sprint", "Plan A", pathIdStoryPlanA, "alternative"],
-  ["stress-0810-b", "08:10", 70, 120, "Market photo walk", "Plan B", pathIdStoryPlanB, "alternative"],
-  ["stress-0815-c", "08:15", 85, 130, "Ferry slow route", "Plan C", pathIdStoryPlanC, "alternative"],
+  ["stress-0805-a", "08:05", 90, 110, "Museum sprint", pathNamePlanA, pathIdStoryPlanA, "alternative"],
+  ["stress-0810-b", "08:10", 70, 120, "Market photo walk", pathNamePlanB, pathIdStoryPlanB, "alternative"],
+  ["stress-0815-c", "08:15", 85, 130, "Ferry slow route", pathNamePlanC, pathIdStoryPlanC, "alternative"],
   ["stress-1000-main", "10:00", 60, 200, "Peak tram queue", "Main", undefined, "main"],
-  ["stress-1005-a", "10:05", 65, 210, "Indoor tram backup", "Plan A", pathIdStoryPlanA, "alternative"],
-  ["stress-1010-b", "10:10", 80, 220, "Bus scenic route", "Plan B", pathIdStoryPlanB, "alternative"],
-  ["stress-1015-c", "10:15", 55, 230, "Taxi direct route", "Plan C", pathIdStoryPlanC, "alternative"],
+  ["stress-1005-a", "10:05", 65, 210, "Indoor tram backup", pathNamePlanA, pathIdStoryPlanA, "alternative"],
+  ["stress-1010-b", "10:10", 80, 220, "Bus scenic route", pathNamePlanB, pathIdStoryPlanB, "alternative"],
+  ["stress-1015-c", "10:15", 55, 230, "Taxi direct route", pathNamePlanC, pathIdStoryPlanC, "alternative"],
   ["stress-1230-main", "12:30", 75, 300, "Central lunch", "Main", undefined, "main"],
-  ["stress-1235-a", "12:35", 65, 310, "Dim sum backup", "Plan A", pathIdStoryPlanA, "alternative"],
-  ["stress-1240-b", "12:40", 70, 320, "Noodle shop backup", "Plan B", pathIdStoryPlanB, "alternative"],
-  ["stress-1245-c", "12:45", 80, 330, "Vegetarian backup", "Plan C", pathIdStoryPlanC, "alternative"],
+  ["stress-1235-a", "12:35", 65, 310, "Dim sum backup", pathNamePlanA, pathIdStoryPlanA, "alternative"],
+  ["stress-1240-b", "12:40", 70, 320, "Noodle shop backup", pathNamePlanB, pathIdStoryPlanB, "alternative"],
+  ["stress-1245-c", "12:45", 80, 330, "Vegetarian backup", pathNamePlanC, pathIdStoryPlanC, "alternative"],
   ["stress-1500-main", "15:00", 50, 400, "Hotel recharge", "Main", undefined, "main"],
-  ["stress-1505-a", "15:05", 60, 410, "Cafe work block", "Plan A", pathIdStoryPlanA, "alternative"],
-  ["stress-1510-b", "15:10", 45, 420, "Souvenir window", "Plan B", pathIdStoryPlanB, "alternative"],
-  ["stress-1515-c", "15:15", 55, 430, "Quiet park break", "Plan C", pathIdStoryPlanC, "alternative"],
+  ["stress-1505-a", "15:05", 60, 410, "Cafe work block", pathNamePlanA, pathIdStoryPlanA, "alternative"],
+  ["stress-1510-b", "15:10", 45, 420, "Souvenir window", pathNamePlanB, pathIdStoryPlanB, "alternative"],
+  ["stress-1515-c", "15:15", 55, 430, "Quiet park break", pathNamePlanC, pathIdStoryPlanC, "alternative"],
 ].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) =>
   buildBaseItem(0, {
     id: id as string,
