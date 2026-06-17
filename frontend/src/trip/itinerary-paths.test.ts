@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { tripFixture } from "./trip-fixtures";
 import { applyImportedItemsToItineraryPath, applyItemToActivityBranch, applyManualActivityPath, deriveManualActivityPathOptions } from "./itinerary-paths";
 import type { ItineraryExportItem } from "./itinerary-import-export";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+import {
+  pathIdPlanA,
+  pathIdPlanB,
+  pathIdRain,
+  pathNamePlanA,
+  pathNamePlanB,
+} from "./testing/itinerary-path-fixtures";
 
 const importItem: ItineraryExportItem = {
   id: "import-rain-museum",
@@ -107,8 +113,8 @@ describe("itinerary path import application", () => {
       lateItem,
     ).trip;
 
-    const planATrip = applyManualActivityPath(flatTrip, "item-late", "path-2026-06-19-sub-a").trip;
-    const planBTrip = applyManualActivityPath(planATrip, "item-main-long", "path-2026-06-19-sub-b").trip;
+    const planATrip = applyManualActivityPath(flatTrip, "item-late", pathIdPlanA).trip;
+    const planBTrip = applyManualActivityPath(planATrip, "item-main-long", pathIdPlanB).trip;
     const itemsById = new Map(planBTrip.itineraryItems.map((item) => [item.id, item]));
 
     expect(itemsById.get("item-middle")).toMatchObject({
@@ -117,14 +123,14 @@ describe("itinerary path import application", () => {
     });
     expect(itemsById.get("item-late")).toMatchObject({
       pathGroupId: "path-group-item-main-long",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative",
     });
     expect(itemsById.get("item-main-long")).toMatchObject({
       pathGroupId: "path-group-item-main-long",
-      pathId: "path-2026-06-19-sub-b",
-      pathName: "Plan B",
+      pathId: pathIdPlanB,
+      pathName: pathNamePlanB,
       pathRole: "alternative",
     });
   });
@@ -156,12 +162,12 @@ describe("itinerary path import application", () => {
     };
     const flatTrip = applyItemToActivityBranch({ ...tripFixture.trip, itineraryItems: [mainItem] }, middleItem).trip;
 
-    const next = applyManualActivityPath(flatTrip, "item-main-long", "path-2026-06-19-sub-b").trip;
+    const next = applyManualActivityPath(flatTrip, "item-main-long", pathIdPlanB).trip;
     const itemsById = new Map(next.itineraryItems.map((item) => [item.id, item]));
 
     expect(itemsById.get("item-main-long")).toMatchObject({
-      pathId: "path-2026-06-19-sub-b",
-      pathName: "Plan B",
+      pathId: pathIdPlanB,
+      pathName: pathNamePlanB,
       pathRole: "alternative",
     });
     expect(itemsById.get("item-middle")).toMatchObject({
@@ -214,19 +220,19 @@ describe("itinerary path import application", () => {
       itineraryItems: [block, child, overlap],
     };
 
-    const placement = applyManualActivityPath(trip, "item-flight-block", "path-2026-06-19-sub-a");
+    const placement = applyManualActivityPath(trip, "item-flight-block", pathIdPlanA);
     const itemsById = new Map(placement.trip.itineraryItems.map((item) => [item.id, item]));
 
     expect(itemsById.get("item-flight-block")).toMatchObject({
       pathGroupId: "path-group-item-flight-block",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative",
     });
     expect(itemsById.get("item-flight-checkin")).toMatchObject({
       pathGroupId: "path-group-item-flight-block",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative",
     });
     expect(placement.changedExistingItems.map((item) => item.id)).toEqual([
@@ -257,8 +263,8 @@ describe("itinerary path import application", () => {
 
     expect(deriveManualActivityPathOptions(trip, "item-middle")).toEqual([
       { id: "main", name: "Main" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A" },
-      { id: "path-2026-06-19-sub-b", name: "Plan B" },
+      { id: pathIdPlanA, name: pathNamePlanA },
+      { id: pathIdPlanB, name: pathNamePlanB },
     ]);
   });
 

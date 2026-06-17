@@ -2,14 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { patchApiItineraryBranchItems } from "./itinerary-paths-api";
 import type { TripApiClient } from "./api-client";
 import type { ItineraryItem } from "./types";
+import { pathIdPlanA, pathNamePlanA } from "./testing/itinerary-path-fixtures";
 
 describe("itinerary path API adapter", () => {
   it("patches branch root items with current path fields", async () => {
     const rootItem = itineraryItem({
       id: "item-root",
       pathGroupId: "path-group-root",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative",
       version: 4,
     });
@@ -36,8 +37,8 @@ describe("itinerary path API adapter", () => {
         expectedVersion: 4,
         patch: {
           pathGroupId: "path-group-root",
-          pathId: "path-2026-06-19-sub-a",
-          pathName: "Plan A",
+          pathId: pathIdPlanA,
+          pathName: pathNamePlanA,
           pathRole: "alternative",
         },
       },

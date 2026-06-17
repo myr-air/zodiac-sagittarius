@@ -1,4 +1,14 @@
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import {
+  pathIdPlanA as pathIdFixtureStoryA,
+  pathIdPlanB as pathIdFixtureStoryB,
+  pathIdPlanC as pathIdFixtureStoryC,
+  pathIdRain as pathIdFixtureRain,
+  pathNamePlanA,
+  pathNamePlanB,
+  pathNamePlanC,
+  pathNameRain,
+} from "@/src/trip/testing/itinerary-path-fixtures";
 
 export const itineraryFixtureDay = "2026-06-19" as const;
 
@@ -6,11 +16,11 @@ export const pathIdMain = "main" as const;
 export const pathIdPlanA = "plan-a" as const;
 export const pathIdPlanB = "plan-b" as const;
 export const pathIdPlanC = "plan-c" as const;
-export const pathIdStoryPlanA = "path-2026-06-19-sub-a" as const;
-export const pathIdStoryPlanB = "path-2026-06-19-sub-b" as const;
-export const pathIdStoryPlanC = "path-2026-06-19-sub-c" as const;
+export const pathIdStoryPlanA = pathIdFixtureStoryA;
+export const pathIdStoryPlanB = pathIdFixtureStoryB;
+export const pathIdStoryPlanC = pathIdFixtureStoryC;
 export const pathIdRain = "rain" as const;
-export const pathIdStoryRain = "path-rain" as const;
+export const pathIdStoryRain = pathIdFixtureRain;
 export const pathIdPlanOne = "path-plan-1" as const;
 
 export const mainPathOption: ItineraryPathOption = {
@@ -41,7 +51,7 @@ export const pathRainPlanOption: ItineraryPathOption = {
 
 export const storyRainPathOption: ItineraryPathOption = {
   id: pathIdStoryRain,
-  name: "Rain plan",
+  name: pathNameRain,
   scope: "day",
   day: itineraryFixtureDay,
 };
@@ -67,21 +77,21 @@ export const pathOptionPlanB: ItineraryPathOption = {
 
 export const pathOptionStoryPlanA: ItineraryPathOption = {
   id: pathIdStoryPlanA,
-  name: "Plan A",
+  name: pathNamePlanA,
   scope: "day",
   day: itineraryFixtureDay,
 };
 
 export const pathOptionStoryPlanB: ItineraryPathOption = {
   id: pathIdStoryPlanB,
-  name: "Plan B",
+  name: pathNamePlanB,
   scope: "day",
   day: itineraryFixtureDay,
 };
 
 export const pathOptionStoryPlanC: ItineraryPathOption = {
   id: pathIdStoryPlanC,
-  name: "Plan C",
+  name: pathNamePlanC,
   scope: "day",
   day: itineraryFixtureDay,
 };

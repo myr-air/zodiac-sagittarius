@@ -44,7 +44,14 @@ import {
   replaceSuggestionById,
 } from "./suggestions";
 import type { Suggestion } from "./types";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+import {
+  pathIdPlanA,
+  pathIdRain,
+  pathIdRainDay,
+  pathNamePlanA,
+  pathNameRain,
+  pathNameRainDay,
+} from "./testing/itinerary-path-fixtures";
 
 describe("itinerary planning domain", () => {
   const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
@@ -287,13 +294,13 @@ describe("itinerary planning domain", () => {
     expect(
       itineraryItemPathFieldsForTarget(
         "path-group-breakfast",
-        "path-2026-06-19-sub-a",
-        "Plan A",
+        pathIdPlanA,
+        pathNamePlanA,
       ),
     ).toEqual({
       pathGroupId: "path-group-breakfast",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative",
     });
   });
@@ -327,7 +334,7 @@ describe("itinerary planning domain", () => {
     const rainPath = {
       id: pathIdRain,
       tripId: seedTrip.id,
-      name: "Rain plan",
+      name: pathNameRain,
       scope: "day" as const,
       day: "2025-05-16",
       createdBy: "member-aom",
@@ -343,7 +350,7 @@ describe("itinerary planning domain", () => {
 
     expect(deriveItineraryPathOptions([slowItem], [rainPath])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
-      { id: pathIdRain, name: "Rain plan", scope: "day", day: "2025-05-16" },
+      { id: pathIdRain, name: pathNameRain, scope: "day", day: "2025-05-16" },
       { id: "path-slow", name: "Slow morning", scope: "trip" },
     ]);
   });
@@ -353,14 +360,14 @@ describe("itinerary planning domain", () => {
       ...seedTrip.itineraryItems[0],
       day: "2026-06-19",
       pathGroupId: "path-group-morning",
-      pathId: "path-2026-06-19-sub-a",
-      pathName: "Plan A",
+      pathId: pathIdPlanA,
+      pathName: pathNamePlanA,
       pathRole: "alternative" as const,
     };
 
     expect(deriveItineraryPathOptions([planAItem])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+      { id: pathIdPlanA, name: pathNamePlanA, scope: "day", day: "2026-06-19" },
     ]);
   });
 
@@ -484,8 +491,8 @@ describe("itinerary planning domain", () => {
         createdBy: "member-aom",
         mapLink: "https://maps.example/museum",
         nextItemId: "item-local-1",
-        pathId: "path-rain-day",
-        pathName: "Rain day",
+        pathId: pathIdRainDay,
+        pathName: pathNameRainDay,
         planItems: seedTrip.itineraryItems,
         selectedTripPlanId: seedTrip.activePlanVariantId,
         trip: seedTrip,
@@ -498,8 +505,8 @@ describe("itinerary planning domain", () => {
       tripId: seedTrip.id,
       planVariantId: seedTrip.activePlanVariantId,
       pathGroupId: "path-group-item-local-1",
-      pathId: "path-rain-day",
-      pathName: "Rain day",
+      pathId: pathIdRainDay,
+      pathName: pathNameRainDay,
       pathRole: "alternative",
       parentItemId: null,
       linkLabel: "แผนที่",
