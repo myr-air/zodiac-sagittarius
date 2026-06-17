@@ -2,9 +2,10 @@ import { useState, type FormEvent } from "react";
 import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
-import { Button, Select } from "@/src/ui";
+import { Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { formatThaiDate } from "@/src/features/itinerary/lib";
+import { StopDialogActions } from "./stop-dialog/StopDialogActions";
 import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
 import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
@@ -16,11 +17,9 @@ import {
 import {
   advancedDetailsClassName,
   advancedDetailsGridClassName,
-  dialogActionsClassName,
   dialogErrorClassName,
   dialogFieldWideClassName,
   dialogGridClassName,
-  dialogPrimaryActionsClassName,
   dialogTitleRowClassName,
   dialogWarningClassName,
   modalBackdropClassName,
@@ -431,24 +430,21 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
             ) : null}
           </div>
 
-          <div className={dialogActionsClassName}>
-            {mode === "edit" && onDelete ? (
-              <Button type="button" variant="danger" onClick={onDelete}>{t.stopDialog.actions.delete}</Button>
-            ) : <span />}
-            <span />
-            <div className={dialogPrimaryActionsClassName}>
-              {initialItem?.itemKind === "foodRecommendation" && onPromoteFoodRecommendation ? (
-                <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onPromoteFoodRecommendation}>
-                  Promote to meal
-                </Button>
-              ) : null}
-              {placeResolution?.state === "unresolved" ? (
-                <Button type="button" variant="ghost" disabled={isSubmitting} onClick={submitUnresolved}>{t.stopDialog.actions.saveUnresolved}</Button>
-              ) : null}
-              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={onClose}>{t.stopDialog.actions.cancel}</Button>
-              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? t.stopDialog.messages.saving : mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}</Button>
-            </div>
-          </div>
+          <StopDialogActions
+            cancelLabel={t.stopDialog.actions.cancel}
+            deleteLabel={t.stopDialog.actions.delete}
+            isFoodRecommendation={initialItem?.itemKind === "foodRecommendation"}
+            isSubmitting={isSubmitting}
+            mode={mode}
+            placeResolutionState={placeResolution?.state}
+            primaryLabel={isSubmitting ? t.stopDialog.messages.saving : mode === "create" ? t.stopDialog.actions.create : t.stopDialog.actions.edit}
+            promoteLabel="Promote to meal"
+            saveUnresolvedLabel={t.stopDialog.actions.saveUnresolved}
+            onClose={onClose}
+            onDelete={onDelete}
+            onPromoteFoodRecommendation={onPromoteFoodRecommendation}
+            onSubmitUnresolved={submitUnresolved}
+          />
         </form>
       </section>
     </div>
