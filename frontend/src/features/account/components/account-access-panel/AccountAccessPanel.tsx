@@ -57,7 +57,6 @@ import {
   rawErrorMessage,
 } from "./account-auth-support";
 import {
-  buildInviteEmailHref,
   buildInviteLink,
   defaultTripForm,
   normalizedTripForm,
@@ -68,6 +67,7 @@ import { AccountSettingsEditor } from "./account-settings-editor";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import { StatusMessage } from "./account-status-message";
+import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
 import { PortalTripWizard } from "./portal-trip-wizard";
 
 interface AccountAccessPanelProps {
@@ -145,10 +145,6 @@ const portalNewTripCardClassName =
   "portal-new-trip-card !gap-[18px] !min-h-[calc(100vh-28px)] !overflow-visible !rounded-[16px] !border !border-[rgb(226_232_240_/_0.72)] !bg-[#ffffff] !p-[18px] !shadow-[0_12px_28px_rgb(15_23_42_/_0.07)] max-[767px]:!min-h-[calc(100vh-20px)] max-[767px]:!rounded-none max-[767px]:!border-0 max-[767px]:!p-0 max-[767px]:!shadow-none";
 const tripBuilderTopbarClassName =
   "trip-builder-topbar grid grid-cols-[132px_minmax(0,1fr)_auto] items-center gap-7 pb-[18px] max-[767px]:grid-cols-[1fr_auto] max-[767px]:gap-2.5 [&>.badge]:mt-2 [&>.badge]:justify-self-end [&>.button]:min-h-[58px] [&>.button]:rounded-[9px] [&>.button]:bg-[rgb(255_255_255_/_0.88)] [&>.button]:shadow-[0_8px_24px_rgb(15_23_42_/_0.04)] max-[767px]:[&>.button]:w-auto max-[767px]:[&>.button]:min-w-[118px] [&>.trip-builder-title]:grid [&>.trip-builder-title]:min-w-0 [&>.trip-builder-title]:justify-self-start [&>.trip-builder-title]:gap-0.5 [&>.trip-builder-title]:text-left max-[767px]:[&>.trip-builder-title]:col-span-full [&>.trip-builder-title>span]:hidden [&>.trip-builder-title>strong]:inline-flex [&>.trip-builder-title>strong]:items-center [&>.trip-builder-title>strong]:gap-2.5 [&>.trip-builder-title>strong]:text-[30px] [&>.trip-builder-title>strong]:leading-[34px] [&>.trip-builder-title>strong]:text-(--color-text) max-[767px]:[&>.trip-builder-title>strong]:text-[28px] max-[767px]:[&>.trip-builder-title>strong]:leading-8 [&>.trip-builder-title>small]:mt-2 [&>.trip-builder-title>small]:block [&>.trip-builder-title>small]:max-w-[420px] [&>.trip-builder-title>small]:text-[13px] [&>.trip-builder-title>small]:font-[650] [&>.trip-builder-title>small]:leading-[18px] [&>.trip-builder-title>small]:text-(--color-text-muted) max-[767px]:[&>.trip-builder-title>small]:max-w-[260px] max-[767px]:[&>.trip-builder-title>small]:text-[11px]";
-const tripCreatedShareClassName =
-  "trip-created-share grid gap-2.5 rounded-[12px] border border-(--color-success-border) bg-[linear-gradient(180deg,rgb(240_253_244_/_0.94),white)] p-3 text-[13px] font-bold text-(--color-text-muted) [&_strong]:text-(--color-text) [&_code]:rounded-[6px] [&_code]:bg-white [&_code]:px-2 [&_code]:py-1 [&_code]:text-xs [&_code]:font-black [&_code]:text-(--color-primary-strong) [&_div]:flex [&_div]:flex-wrap [&_div]:gap-2 [&_.button]:w-auto";
-const tripCreatedShareLinkClassName =
-  "inline-flex min-h-9 items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 py-[7px] text-[13px] font-extrabold text-(--color-primary-strong) no-underline";
 const portalFeatureCardClassName = cn(accountCardClassName, "portal-feature-card col-span-2 max-[767px]:col-auto");
 const portalSettingsCardClassName = cn(accountCardClassName, "account-settings-card col-span-2 max-[767px]:col-auto");
 const accountStatGridClassName = "account-stat-grid grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1";
@@ -209,12 +205,6 @@ const accountTertiaryActionClassName =
 
 const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
 const portalSectionStorageKey = "sagittarius:portal-section-index";
-
-interface CreatedTripShare {
-  inviteLink: string;
-  joinId: string;
-  name: string;
-}
 
 export function AccountAccessPanel({
   accessMode = "combined",
@@ -1256,18 +1246,11 @@ function AccountDashboard({
             </div>
           </div>
           {createdTripShare ? (
-            <section className={tripCreatedShareClassName} role="region" aria-label="Created trip share link">
-              <strong>{createdTripShare.name} is ready to share.</strong>
-              <span>Invite link: <code>{createdTripShare.inviteLink}</code></span>
-              <div>
-                <Button type="button" variant="secondary" onClick={() => void copyCreatedInviteLink()}>
-                  {hasCopiedCreatedInvite ? "Copied" : "Copy invite link"}
-                </Button>
-                <a className={tripCreatedShareLinkClassName} href={buildInviteEmailHref(createdTripShare.name, createdTripShare.inviteLink)}>
-                  Send email
-                </a>
-              </div>
-            </section>
+            <PortalCreatedTripShare
+              hasCopiedInvite={hasCopiedCreatedInvite}
+              share={createdTripShare}
+              onCopyInvite={() => void copyCreatedInviteLink()}
+            />
           ) : null}
           <PortalTripWizard
             defaultOwnerDisplayName={defaultOwnerDisplayName}
