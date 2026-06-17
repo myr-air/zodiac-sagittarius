@@ -38,6 +38,7 @@ describe("Storybook template catalog", () => {
       "Design System/Weather Briefing Drawer",
       "Design System/Weather Forecast Strip",
       "Pages/Account Access",
+      "Pages/Account Portal Primitives",
       "Sagittarius/App",
       "Templates/Workspace Shell",
       "Templates/Overview",
@@ -90,6 +91,7 @@ describe("Storybook template catalog", () => {
       ["shared/components/weather/WeatherForecastStrip.stories.tsx", ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"]],
       ["features/public-site/pages/home/HomeLanding.stories.tsx", ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
       ["features/account/components/account-access-panel/AccountAccessPanel.stories.tsx", ["AccountLogin", "AccountRegister", "AccountLoginThai", "TripAccess", "PortalDashboard", "NewTripBuilder", "NewTripMobile", "AccountLoginTablet", "AccountLoginDesktop1024", "AccountLoginDesktop1440", "TripAccessTablet", "TripAccessDesktop1024", "TripAccessDesktop1440", "NewTripTablet", "NewTripDesktop1024", "NewTripDesktop1440"]],
+      ["features/account/components/account-access-panel/account-portal-primitives.stories.tsx", ["Overview", "ThaiEmpty"]],
     ];
 
     requiredPageStates.forEach(([file, stateNames]) => {
