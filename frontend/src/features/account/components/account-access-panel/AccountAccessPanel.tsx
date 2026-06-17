@@ -5,12 +5,6 @@ import Link from "next/link";
 import type {
   AccountApiClient,
   AccountSession,
-  AccountExplorerSummary,
-  AccountSettings,
-  AccountTodoSummary,
-  AccountTripStats,
-  AccountTripSummary,
-  AccountVaultItemSummary,
 } from "@/src/account/api-client";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
@@ -22,9 +16,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { PortalSection } from "@/src/shared/portal";
 import {
-  cacheAccountPortalData,
   clearAccountPortalDataCache,
-  getAccountPortalDataCache,
   heroDetail,
   heroTitle,
   isAccountEntryMode,
@@ -33,10 +25,7 @@ import {
 } from "./account-access-panel-support";
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
-  ACCESS_ERROR_CODES,
-  isUnauthenticated,
   localizeAccessError,
-  rawErrorMessage,
 } from "./account-auth-support";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import type { AuthFlow } from "./account-auth-chrome";
@@ -76,6 +65,7 @@ import {
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import { AccountPortalDashboard } from "./account-portal-dashboard";
 import { StatusMessage } from "./account-status-message";
+import { useAccountPortalData } from "./use-account-portal-data";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
@@ -129,75 +119,27 @@ export function AccountAccessPanel({
   const isTripAccessEntry = effectiveAccessMode === "trip-access";
   const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
-  const initialPortalData = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
-  const [settings, setSettings] = useState<AccountSettings | null>(() => initialPortalData?.settings ?? null);
-  const [trips, setTrips] = useState<AccountTripSummary[]>(() => initialPortalData?.trips ?? []);
-  const [stats, setStats] = useState<AccountTripStats | null>(() => initialPortalData?.stats ?? null);
-  const [explorer, setExplorer] = useState<AccountExplorerSummary | null>(() => initialPortalData?.explorer ?? null);
-  const [todos, setTodos] = useState<AccountTodoSummary[]>(() => initialPortalData?.todos ?? []);
-  const [vaultItems, setVaultItems] = useState<AccountVaultItemSummary[]>(() => initialPortalData?.vaultItems ?? []);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAccountSession, setPendingAccountSession] = useState<AccountSession | null>(null);
   const displayError = error ? localizeAccessError(error, accessMessages) ?? error : localizeAccessError(initialError ?? null, accessMessages);
-  const currentPortalCache = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
-  const displayedSettings = settings ?? currentPortalCache?.settings ?? null;
-  const displayedTrips = trips.length ? trips : currentPortalCache?.trips ?? [];
-  const displayedStats = stats ?? currentPortalCache?.stats ?? null;
-  const displayedExplorer = explorer ?? currentPortalCache?.explorer ?? null;
-  const displayedTodos = todos.length ? todos : currentPortalCache?.todos ?? [];
-  const displayedVaultItems = vaultItems.length ? vaultItems : currentPortalCache?.vaultItems ?? [];
-
-  useEffect(() => {
-    if (!accountSession || isAccountEntry) {
-      return;
-    }
-
-    let cancelled = false;
-    const cachedData = getAccountPortalDataCache(accountSession.sessionToken);
-
-    Promise.allSettled([
-      accountClient.loadSettings(accountSession.sessionToken),
-      accountClient.listTrips(accountSession.sessionToken),
-      accountClient.loadStats(accountSession.sessionToken),
-      accountClient.loadExplorer(accountSession.sessionToken),
-      accountClient.listToDos(accountSession.sessionToken),
-      accountClient.listVault(accountSession.sessionToken),
-    ])
-      .then(([nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]) => {
-        if (cancelled) return;
-        const failures = [nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]
-          .filter((result) => result.status === "rejected");
-        if (nextSettings.status === "fulfilled") setSettings(nextSettings.value);
-        if (nextTrips.status === "fulfilled") setTrips(nextTrips.value);
-        if (nextStats.status === "fulfilled") setStats(nextStats.value);
-        if (nextExplorer.status === "fulfilled") setExplorer(nextExplorer.value);
-        if (nextTodos.status === "fulfilled") setTodos(nextTodos.value);
-        if (nextVaultItems.status === "fulfilled") setVaultItems(nextVaultItems.value);
-        cacheAccountPortalData(accountSession.sessionToken, {
-          settings: nextSettings.status === "fulfilled" ? nextSettings.value : cachedData?.settings ?? null,
-          trips: nextTrips.status === "fulfilled" ? nextTrips.value : cachedData?.trips ?? [],
-          stats: nextStats.status === "fulfilled" ? nextStats.value : cachedData?.stats ?? null,
-          explorer: nextExplorer.status === "fulfilled" ? nextExplorer.value : cachedData?.explorer ?? null,
-          todos: nextTodos.status === "fulfilled" ? nextTodos.value : cachedData?.todos ?? [],
-          vaultItems: nextVaultItems.status === "fulfilled" ? nextVaultItems.value : cachedData?.vaultItems ?? [],
-        });
-        if (failures.some((result) => isUnauthenticated(result.reason))) {
-          clearAccountPortalDataCache(accountSession.sessionToken);
-          onAccountSessionChange(null);
-          return;
-        }
-        if (failures.length) {
-          setError(rawErrorMessage(failures[0].reason, ACCESS_ERROR_CODES.accountLoadFailed));
-        } else {
-          setError(null);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [accountClient, accountSession, isAccountEntry, onAccountSessionChange]);
+  const {
+    displayedExplorer,
+    displayedSettings,
+    displayedStats,
+    displayedTodos,
+    displayedTrips,
+    displayedVaultItems,
+    refreshAccount,
+    setSettings,
+    setVaultItems,
+  } = useAccountPortalData({
+    accountClient,
+    accountSession,
+    isAccountEntry,
+    onAccountSessionChange,
+    onError: setError,
+  });
 
   useEffect(() => {
     if (!pendingAccountSession) {
@@ -219,25 +161,6 @@ export function AccountAccessPanel({
 
     return () => window.clearTimeout(timeout);
   }, [accountSuccessRedirectHref, onAccountSessionChange, pendingAccountSession]);
-
-  async function refreshAccount(sessionToken: string) {
-    const [nextSettings, nextTrips, nextStats] = await Promise.all([
-      accountClient.loadSettings(sessionToken),
-      accountClient.listTrips(sessionToken),
-      accountClient.loadStats(sessionToken),
-    ]);
-    setSettings(nextSettings);
-    setTrips(nextTrips);
-    setStats(nextStats);
-    cacheAccountPortalData(sessionToken, {
-      settings: nextSettings,
-      trips: nextTrips,
-      stats: nextStats,
-      explorer,
-      todos,
-      vaultItems,
-    });
-  }
 
   return (
     <main

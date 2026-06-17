@@ -1,0 +1,124 @@
+import { useEffect, useState } from "react";
+import type {
+  AccountApiClient,
+  AccountExplorerSummary,
+  AccountSettings,
+  AccountSession,
+  AccountTodoSummary,
+  AccountTripStats,
+  AccountTripSummary,
+  AccountVaultItemSummary,
+} from "@/src/account/api-client";
+import {
+  cacheAccountPortalData,
+  clearAccountPortalDataCache,
+  getAccountPortalDataCache,
+} from "./account-access-panel-support";
+import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "./account-auth-support";
+
+interface UseAccountPortalDataOptions {
+  accountClient: AccountApiClient;
+  accountSession: AccountSession | null;
+  isAccountEntry: boolean;
+  onAccountSessionChange: (session: AccountSession | null) => void;
+  onError: (message: string | null) => void;
+}
+
+export function useAccountPortalData({
+  accountClient,
+  accountSession,
+  isAccountEntry,
+  onAccountSessionChange,
+  onError,
+}: UseAccountPortalDataOptions) {
+  const initialPortalData = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
+  const [settings, setSettings] = useState<AccountSettings | null>(() => initialPortalData?.settings ?? null);
+  const [trips, setTrips] = useState<AccountTripSummary[]>(() => initialPortalData?.trips ?? []);
+  const [stats, setStats] = useState<AccountTripStats | null>(() => initialPortalData?.stats ?? null);
+  const [explorer, setExplorer] = useState<AccountExplorerSummary | null>(() => initialPortalData?.explorer ?? null);
+  const [todos, setTodos] = useState<AccountTodoSummary[]>(() => initialPortalData?.todos ?? []);
+  const [vaultItems, setVaultItems] = useState<AccountVaultItemSummary[]>(() => initialPortalData?.vaultItems ?? []);
+  const currentPortalCache = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
+
+  useEffect(() => {
+    if (!accountSession || isAccountEntry) {
+      return;
+    }
+
+    let cancelled = false;
+    const cachedData = getAccountPortalDataCache(accountSession.sessionToken);
+
+    Promise.allSettled([
+      accountClient.loadSettings(accountSession.sessionToken),
+      accountClient.listTrips(accountSession.sessionToken),
+      accountClient.loadStats(accountSession.sessionToken),
+      accountClient.loadExplorer(accountSession.sessionToken),
+      accountClient.listToDos(accountSession.sessionToken),
+      accountClient.listVault(accountSession.sessionToken),
+    ])
+      .then(([nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]) => {
+        if (cancelled) return;
+        const failures = [nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]
+          .filter((result) => result.status === "rejected");
+        if (nextSettings.status === "fulfilled") setSettings(nextSettings.value);
+        if (nextTrips.status === "fulfilled") setTrips(nextTrips.value);
+        if (nextStats.status === "fulfilled") setStats(nextStats.value);
+        if (nextExplorer.status === "fulfilled") setExplorer(nextExplorer.value);
+        if (nextTodos.status === "fulfilled") setTodos(nextTodos.value);
+        if (nextVaultItems.status === "fulfilled") setVaultItems(nextVaultItems.value);
+        cacheAccountPortalData(accountSession.sessionToken, {
+          settings: nextSettings.status === "fulfilled" ? nextSettings.value : cachedData?.settings ?? null,
+          trips: nextTrips.status === "fulfilled" ? nextTrips.value : cachedData?.trips ?? [],
+          stats: nextStats.status === "fulfilled" ? nextStats.value : cachedData?.stats ?? null,
+          explorer: nextExplorer.status === "fulfilled" ? nextExplorer.value : cachedData?.explorer ?? null,
+          todos: nextTodos.status === "fulfilled" ? nextTodos.value : cachedData?.todos ?? [],
+          vaultItems: nextVaultItems.status === "fulfilled" ? nextVaultItems.value : cachedData?.vaultItems ?? [],
+        });
+        if (failures.some((result) => isUnauthenticated(result.reason))) {
+          clearAccountPortalDataCache(accountSession.sessionToken);
+          onAccountSessionChange(null);
+          return;
+        }
+        if (failures.length) {
+          onError(rawErrorMessage(failures[0].reason, ACCESS_ERROR_CODES.accountLoadFailed));
+        } else {
+          onError(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accountClient, accountSession, isAccountEntry, onAccountSessionChange, onError]);
+
+  async function refreshAccount(sessionToken: string) {
+    const [nextSettings, nextTrips, nextStats] = await Promise.all([
+      accountClient.loadSettings(sessionToken),
+      accountClient.listTrips(sessionToken),
+      accountClient.loadStats(sessionToken),
+    ]);
+    setSettings(nextSettings);
+    setTrips(nextTrips);
+    setStats(nextStats);
+    cacheAccountPortalData(sessionToken, {
+      settings: nextSettings,
+      trips: nextTrips,
+      stats: nextStats,
+      explorer,
+      todos,
+      vaultItems,
+    });
+  }
+
+  return {
+    displayedExplorer: explorer ?? currentPortalCache?.explorer ?? null,
+    displayedSettings: settings ?? currentPortalCache?.settings ?? null,
+    displayedStats: stats ?? currentPortalCache?.stats ?? null,
+    displayedTodos: todos.length ? todos : currentPortalCache?.todos ?? [],
+    displayedTrips: trips.length ? trips : currentPortalCache?.trips ?? [],
+    displayedVaultItems: vaultItems.length ? vaultItems : currentPortalCache?.vaultItems ?? [],
+    refreshAccount,
+    setSettings,
+    setVaultItems,
+  };
+}
