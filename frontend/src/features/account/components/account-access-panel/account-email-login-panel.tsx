@@ -3,8 +3,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import {
@@ -16,7 +14,6 @@ import {
 } from "./account-auth-support";
 import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
 import {
-  accountAlternateActionsClassName,
   accountEmailPattern,
   accountEntryLoginFlowClassName,
   accountLoginFlowClassName,
@@ -25,7 +22,14 @@ import {
   accountStepStageDirectionClassNames,
   type AuthTransitionDirection,
 } from "./account-email-login-styles";
-import { AccountField, AccountStepSummary, AccountTertiaryAction, AccountTrustDeviceField } from "./account-email-login-fields";
+import { AccountTrustDeviceField } from "./account-email-login-fields";
+import {
+  EmailLoginCredentialsStep,
+  EmailLoginMethodsStep,
+  EmailLoginOtpStep,
+  EmailLoginPasswordStep,
+  EmailLoginSetupStep,
+} from "./account-email-login-step-content";
 import { PanelHeading } from "./account-portal-primitives";
 import { StatusMessage } from "./account-status-message";
 
@@ -317,168 +321,122 @@ export function EmailLoginPanel({
             }
           />
           {challenge ? (
-            <>
-            <AccountStepSummary label={t.access.emailLogin.sentCodeTo} value={normalizedEmail} />
-            <AccountField inputId={codeInputId} label={t.access.emailLogin.verificationCode} hintId={codeHintId} hint={t.access.emailLogin.verificationCodeHint}>
-              <input
-                id={codeInputId}
-                value={code}
-                onChange={(event) => updateCode(event.target.value)}
-                name="one-time-code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="[0-9]{6}"
-                aria-describedby={codeHintId}
-                aria-invalid={code.length > 0 && !otpReady ? true : undefined}
-                required
-                suppressHydrationWarning
-              />
-            </AccountField>
-            {activeFlow === "login" ? trustDeviceFields : null}
-            <Button type="submit" disabled={!otpReady || isSubmitting}>
-              <Icon name="check" />
-              {activeFlow === "register" ? t.access.emailLogin.verifyEmail : t.access.emailLogin.signInAccount}
-            </Button>
-            <Button type="button" variant="secondary" disabled={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0} onClick={() => void requestEmailCode()}>
-              {t.access.emailLogin.resendCode}
-              {resendCooldown > 0 ? t.access.emailLogin.resendCooldown({ seconds: resendCooldown }) : ""}
-            </Button>
-            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={resetChallenge}>
-              {t.access.emailLogin.changeEmail}
-            </Button>
-            </>
-          ) : authStep === "email" ? (
-            <>
-            <AccountField
-              inputId={emailInputId}
-              label={t.access.emailLogin.email}
-              hintId={emailHintId}
-              hint={isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}
-            >
-              <input
-                id={emailInputId}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                name="email"
-                type="email"
-                inputMode="email"
-                autoCapitalize="none"
-                autoComplete="username"
-                aria-describedby={emailHintId}
-                aria-invalid={isEmailInvalid ? true : undefined}
-                spellCheck={false}
-                placeholder="you@example.com"
-                required
-                suppressHydrationWarning
-              />
-            </AccountField>
-            <AccountField inputId={passwordInputId} label={t.access.emailLogin.password} hintId={passwordHintId} hint={t.access.emailLogin.passwordHint}>
-              <input
-                id={passwordInputId}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                name="password"
-                type="password"
-                autoComplete={passwordAutocomplete}
-                aria-describedby={passwordHintId}
-                aria-invalid={isPasswordInvalid ? true : undefined}
-                minLength={8}
-                required
-                suppressHydrationWarning
-              />
-            </AccountField>
-            {activeFlow === "login" ? trustDeviceFields : null}
-            <Button type="submit" disabled={!isEmailValid || !passwordReady || isSubmitting}>
-              <Icon name={activeFlow === "register" ? "check" : "key"} />
-              {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInAccount}
-            </Button>
-            {activeFlow === "login" ? (
-              <div className={accountAlternateActionsClassName} aria-label={t.access.emailLogin.alternateSignInOptions}>
-                <AccountTertiaryAction icon="check" label={t.access.emailLogin.useSignInCodeInstead} disabled={!isEmailValid || isSubmitting} onClick={() => void requestEmailCode()} />
-                <AccountTertiaryAction icon="key" label={t.access.emailLogin.usePasskeyInstead} disabled={!isEmailValid || isSubmitting} onClick={() => void signInWithPasskey()} />
-              </div>
-            ) : null}
-            </>
-          ) : authStep === "methods" ? (
-            <>
-            <AccountStepSummary label={activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs} value={normalizedEmail} />
-            <Button type="button" disabled={isSubmitting} onClick={() => void requestEmailCode()}>
-              <Icon name="check" />
-              {activeFlow === "register" ? t.access.emailLogin.sendRegisterCode : t.access.emailLogin.sendSignInCode}
-            </Button>
-            <Button type="button" variant="secondary" disabled={isSubmitting} onClick={showPasswordStep}>
-              <Icon name="key" />
-              {activeFlow === "register" ? t.access.emailLogin.createWithPassword : t.access.emailLogin.signInWithPassword}
-            </Button>
-            {activeFlow === "login" ? (
-              <Button type="button" variant="secondary" disabled={isSubmitting} onClick={() => void signInWithPasskey()}>
-                <Icon name="key" />
-                {t.access.emailLogin.signInWithPasskey}
-              </Button>
-            ) : null}
-            <Button type="button" variant="ghost" disabled={isSubmitting} onClick={changeEmail}>
-              {t.access.emailLogin.changeEmail}
-            </Button>
-            </>
-          ) : authStep === "setup" ? (
-            <>
-            <AccountStepSummary label={t.access.emailLogin.createFor} value={normalizedEmail} />
-            <label>
-              <span>{t.access.emailLogin.displayName}</span>
-              <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" placeholder="Aom Traveler" required suppressHydrationWarning />
-            </label>
-            <label>
-              <span>{t.access.emailLogin.homeBase}</span>
-              <input value={homeBase} onChange={(event) => setHomeBase(event.target.value)} autoComplete="address-level2" placeholder="Bangkok" suppressHydrationWarning />
-            </label>
-            <Button type="submit" disabled={!displayName.trim() || isSubmitting}>
-              <Icon name="check" />
-              {t.access.emailLogin.finishSetup}
-            </Button>
-            </>
-          ) : (
-            <>
-            <AccountStepSummary label={activeFlow === "register" ? t.access.emailLogin.createFor : t.access.emailLogin.signInAs} value={normalizedEmail} />
-            <input
-              aria-hidden="true"
-              autoComplete="username"
-              className="sr-only"
-              name="email"
-              readOnly
-              tabIndex={-1}
-              type="email"
-              value={normalizedEmail}
+            <EmailLoginOtpStep
+              activeFlow={activeFlow}
+              code={code}
+              codeHintId={codeHintId}
+              codeInputId={codeInputId}
+              disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
+              isSubmitting={isSubmitting}
+              labels={{
+                changeEmail: t.access.emailLogin.changeEmail,
+                resendCode: t.access.emailLogin.resendCode,
+                resendCooldown: (seconds) => t.access.emailLogin.resendCooldown({ seconds }),
+                sentCodeTo: t.access.emailLogin.sentCodeTo,
+                signInAccount: t.access.emailLogin.signInAccount,
+                verificationCode: t.access.emailLogin.verificationCode,
+                verificationCodeHint: t.access.emailLogin.verificationCodeHint,
+                verifyEmail: t.access.emailLogin.verifyEmail,
+              }}
+              normalizedEmail={normalizedEmail}
+              onChangeCode={updateCode}
+              onRequestEmailCode={() => void requestEmailCode()}
+              onResetChallenge={resetChallenge}
+              otpReady={otpReady}
+              resendCooldown={resendCooldown}
+              trustDeviceFields={trustDeviceFields}
             />
-            <AccountField inputId={`${passwordInputId}-step`} label={t.access.emailLogin.password} hintId={passwordHintId} hint={t.access.emailLogin.passwordHint}>
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                id={`${passwordInputId}-step`}
-                name="password"
-                type="password"
-                autoComplete={passwordAutocomplete}
-                aria-describedby={passwordHintId}
-                aria-invalid={isPasswordInvalid ? true : undefined}
-                minLength={8}
-                required
-                suppressHydrationWarning
-              />
-            </AccountField>
-            {activeFlow === "login" ? trustDeviceFields : null}
-            <Button type="submit" disabled={password.length < 8 || isSubmitting}>
-              <Icon name="key" />
-              {activeFlow === "register" ? t.access.emailLogin.continueToOtp : t.access.emailLogin.signInWithPassword}
-            </Button>
-            {activeFlow === "login" ? (
-              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={chooseMethods}>
-                {t.access.emailLogin.chooseAnotherMethod}
-              </Button>
-            ) : (
-              <Button type="button" variant="ghost" disabled={isSubmitting} onClick={changeEmail}>
-                {t.access.emailLogin.changeEmail}
-              </Button>
-            )}
-            </>
+          ) : authStep === "email" ? (
+            <EmailLoginCredentialsStep
+              activeFlow={activeFlow}
+              disabledAlternateActions={!isEmailValid || isSubmitting}
+              disabledPrimary={!isEmailValid || !passwordReady || isSubmitting}
+              email={email}
+              emailHint={isEmailInvalid ? t.access.emailLogin.emailInvalidHint : t.access.emailLogin.emailHint}
+              emailHintId={emailHintId}
+              emailInputId={emailInputId}
+              isEmailInvalid={isEmailInvalid}
+              isPasswordInvalid={isPasswordInvalid}
+              labels={{
+                alternateSignInOptions: t.access.emailLogin.alternateSignInOptions,
+                createWithPassword: t.access.emailLogin.createWithPassword,
+                email: t.access.emailLogin.email,
+                password: t.access.emailLogin.password,
+                passwordHint: t.access.emailLogin.passwordHint,
+                signInAccount: t.access.emailLogin.signInAccount,
+                usePasskeyInstead: t.access.emailLogin.usePasskeyInstead,
+                useSignInCodeInstead: t.access.emailLogin.useSignInCodeInstead,
+              }}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onRequestEmailCode={() => void requestEmailCode()}
+              onSignInWithPasskey={() => void signInWithPasskey()}
+              password={password}
+              passwordAutocomplete={passwordAutocomplete}
+              passwordHintId={passwordHintId}
+              passwordInputId={passwordInputId}
+              trustDeviceFields={trustDeviceFields}
+            />
+          ) : authStep === "methods" ? (
+            <EmailLoginMethodsStep
+              activeFlow={activeFlow}
+              isSubmitting={isSubmitting}
+              labels={{
+                changeEmail: t.access.emailLogin.changeEmail,
+                createFor: t.access.emailLogin.createFor,
+                createWithPassword: t.access.emailLogin.createWithPassword,
+                sendRegisterCode: t.access.emailLogin.sendRegisterCode,
+                sendSignInCode: t.access.emailLogin.sendSignInCode,
+                signInAs: t.access.emailLogin.signInAs,
+                signInWithPasskey: t.access.emailLogin.signInWithPasskey,
+                signInWithPassword: t.access.emailLogin.signInWithPassword,
+              }}
+              normalizedEmail={normalizedEmail}
+              onChangeEmail={changeEmail}
+              onRequestEmailCode={() => void requestEmailCode()}
+              onShowPasswordStep={showPasswordStep}
+              onSignInWithPasskey={() => void signInWithPasskey()}
+            />
+          ) : authStep === "setup" ? (
+            <EmailLoginSetupStep
+              displayName={displayName}
+              homeBase={homeBase}
+              isSubmitting={isSubmitting}
+              labels={{
+                createFor: t.access.emailLogin.createFor,
+                displayName: t.access.emailLogin.displayName,
+                finishSetup: t.access.emailLogin.finishSetup,
+                homeBase: t.access.emailLogin.homeBase,
+              }}
+              normalizedEmail={normalizedEmail}
+              onDisplayNameChange={setDisplayName}
+              onHomeBaseChange={setHomeBase}
+            />
+          ) : (
+            <EmailLoginPasswordStep
+              activeFlow={activeFlow}
+              isPasswordInvalid={isPasswordInvalid}
+              isSubmitting={isSubmitting}
+              labels={{
+                changeEmail: t.access.emailLogin.changeEmail,
+                chooseAnotherMethod: t.access.emailLogin.chooseAnotherMethod,
+                continueToOtp: t.access.emailLogin.continueToOtp,
+                createFor: t.access.emailLogin.createFor,
+                password: t.access.emailLogin.password,
+                passwordHint: t.access.emailLogin.passwordHint,
+                signInAs: t.access.emailLogin.signInAs,
+                signInWithPassword: t.access.emailLogin.signInWithPassword,
+              }}
+              normalizedEmail={normalizedEmail}
+              onChangeEmail={changeEmail}
+              onChooseMethods={chooseMethods}
+              onPasswordChange={setPassword}
+              password={password}
+              passwordAutocomplete={passwordAutocomplete}
+              passwordHintId={passwordHintId}
+              passwordInputId={passwordInputId}
+              trustDeviceFields={trustDeviceFields}
+            />
           )}
         </div>
       </form>
