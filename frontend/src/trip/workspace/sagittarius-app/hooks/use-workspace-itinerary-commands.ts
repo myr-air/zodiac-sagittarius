@@ -60,9 +60,8 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
+import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import { queueKeyedUpdate } from "../support/queued-updates";
-
-const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
 interface ItineraryDialogStateCreate {
   mode: "create";
@@ -217,7 +216,7 @@ export function useWorkspaceItineraryCommands({
                 mapLink: buildMapLink(nextPatch.place),
               }
             : {}),
-          updatedAt: localMutationTimestamp,
+          updatedAt: workspaceLocalMutationTimestamp,
           version: item.version + 1,
         };
         return {
@@ -288,7 +287,7 @@ export function useWorkspaceItineraryCommands({
         draggedItemId,
         targetItemId,
         selectedTripPlanId,
-        localMutationTimestamp,
+        workspaceLocalMutationTimestamp,
       );
       if (!nextTrip) return;
 
@@ -366,7 +365,7 @@ export function useWorkspaceItineraryCommands({
         draggedItemId,
         planBlockItemId,
         selectedTripPlanId,
-        localMutationTimestamp,
+        workspaceLocalMutationTimestamp,
       );
       if (!nextTrip) return;
 
@@ -418,7 +417,7 @@ export function useWorkspaceItineraryCommands({
         draggedItemId,
         targetDay,
         selectedTripPlanId,
-        localMutationTimestamp,
+        workspaceLocalMutationTimestamp,
       );
       if (!nextTrip) return;
 
@@ -557,7 +556,7 @@ export function useWorkspaceItineraryCommands({
           planItems,
           selectedTripPlanId,
           trip,
-          updatedAt: localMutationTimestamp,
+          updatedAt: workspaceLocalMutationTimestamp,
         },
       );
       const branchPlacement =
@@ -737,7 +736,7 @@ export function useWorkspaceItineraryCommands({
               address: locationFields.address,
               coordinates: locationFields.coordinates,
               mapLink: locationFields.mapLink,
-              updatedAt: localMutationTimestamp,
+              updatedAt: workspaceLocalMutationTimestamp,
             },
           );
           const tripWithUpdatedItem = replaceItineraryItem(current, updatedItem);

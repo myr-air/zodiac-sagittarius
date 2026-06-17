@@ -14,6 +14,7 @@ import {
   updateLocalPhotoAlbumInTrip,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 
 interface UseWorkspacePhotoAlbumsOptions {
   apiClient?: TripApiClient;
@@ -27,8 +28,6 @@ interface UseWorkspacePhotoAlbumsOptions {
   setTripState: (state: { trip: Trip; past: Trip[]; future: Trip[] }) => void;
   trip: Trip;
 }
-
-const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
 export function useWorkspacePhotoAlbums({
   apiClient,
@@ -69,7 +68,7 @@ export function useWorkspacePhotoAlbums({
       title,
       url,
       createdBy: currentMemberId,
-      updatedAt: localMutationTimestamp,
+      updatedAt: workspaceLocalMutationTimestamp,
       nextPhotoAlbumId: nextLocalPhotoAlbumId,
     });
     commitTrip((current) => appendPhotoAlbumToTrip(current, photoAlbum));
@@ -128,7 +127,7 @@ export function useWorkspacePhotoAlbums({
       updateLocalPhotoAlbumInTrip(current, albumId, input, {
         title: input.title.trim(),
         url: input.url.trim(),
-        updatedAt: localMutationTimestamp,
+        updatedAt: workspaceLocalMutationTimestamp,
       }),
     );
   }, [

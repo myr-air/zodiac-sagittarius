@@ -32,6 +32,7 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForBookingRecord } from "@/src/trip/workspace/trip-plan-records";
+import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import { queueKeyedUpdate } from "../support/queued-updates";
 
 interface UseWorkspaceBookingCommandsOptions {
@@ -126,7 +127,7 @@ export function useWorkspaceBookingCommands({
           input.tripPlanId ??
           tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
         createdBy: currentMemberId,
-        updatedAt: "2026-05-28T00:00:00.000Z",
+        updatedAt: workspaceLocalMutationTimestamp,
         nextBookingDocId: nextLocalBookingDocId,
       });
       commitTrip((current) => ({
@@ -261,7 +262,7 @@ export function useWorkspaceBookingCommands({
       commitTrip((current) =>
         updateLocalBookingDocInTrip(current, bookingDocId, input, {
           title: input.title.trim(),
-          updatedAt: "2026-05-28T00:00:00.000Z",
+          updatedAt: workspaceLocalMutationTimestamp,
         }),
       );
     },
