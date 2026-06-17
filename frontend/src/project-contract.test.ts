@@ -288,7 +288,7 @@ describe("Sagittarius project scaffold", () => {
       expect(source).not.toContain("SagittariusApp");
     });
 
-    expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).toContain("@/src/trip/workspace/planning-view");
+    expect(readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8")).toContain("@/src/trip/workspace/planning-view");
     expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).toContain("@/src/trip/workspace/planning-view");
     expect(readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"), "utf8")).toContain(
       "@/src/trip/workspace/SagittariusApp",
@@ -296,7 +296,7 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"), "utf8")).not.toContain(
       "@/src/app/SagittariusApp",
     );
-    expect(readFileSync(join(frontendRoot, "src/components/AppShell.tsx"), "utf8")).not.toContain("@/src/app/SagittariusApp");
+    expect(readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8")).not.toContain("@/src/app/SagittariusApp");
     expect(readFileSync(join(frontendRoot, "src/routes/app-routes.ts"), "utf8")).not.toContain("@/src/app/SagittariusApp");
 
     const sagaCore = readFileSync(

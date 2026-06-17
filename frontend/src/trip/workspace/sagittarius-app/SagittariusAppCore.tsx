@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { AppShell } from "@/src/components/AppShell";
+import { AppShell } from "@/src/features/workspace/components/app-shell";
 import { StopDialog } from "@/src/features/itinerary/components";
 import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
