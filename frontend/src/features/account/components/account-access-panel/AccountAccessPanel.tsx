@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, FormEvent, ReactNode, useEffect, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import type {
   AccountApiClient,
@@ -65,6 +65,9 @@ import {
 import { AccountPortalNav } from "./account-portal-nav";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import { AccountSettingsEditor } from "./account-settings-editor";
+import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "./account-auth-chrome";
+import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
+import { StatusMessage } from "./account-status-message";
 import { PortalTripWizard } from "./portal-trip-wizard";
 
 interface AccountAccessPanelProps {
@@ -86,14 +89,10 @@ interface AccountAccessPanelProps {
 }
 
 type AccessMode = "account" | "temp";
-type AuthFlow = "login" | "register";
 type AuthTransitionDirection = "forward" | "back" | "mode";
 
 const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
-const accountDangerStatusClassName = "join-alert m-0 inline-flex items-center gap-2 rounded-(--radius-md) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2.5 text-[13px] font-bold text-(--color-danger)";
-const accountSuccessStatusClassName =
-  "account-success m-0 inline-flex items-center gap-2 rounded-(--radius-md) border border-(--color-success-border) bg-(--color-success-soft) px-3 py-2.5 text-[13px] font-extrabold text-(--color-success)";
 const accountToastStackClassName =
   "account-toast-stack pointer-events-none fixed bottom-6 right-[clamp(18px,4vw,44px)] z-[50] grid w-[min(420px,calc(100vw_-_40px))] gap-2.5 max-[767px]:inset-x-[18px] max-[767px]:bottom-5 max-[767px]:w-auto [&_.account-success]:pointer-events-auto [&_.account-success]:min-h-12 [&_.account-success]:w-full [&_.account-success]:justify-start [&_.account-success]:rounded-(--radius-lg) [&_.account-success]:bg-(--color-success-soft) [&_.account-success]:shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] [&_.join-alert]:pointer-events-auto [&_.join-alert]:min-h-12 [&_.join-alert]:w-full [&_.join-alert]:justify-start [&_.join-alert]:rounded-(--radius-lg) [&_.join-alert]:bg-(--color-danger-soft) [&_.join-alert]:shadow-[0_10px_22px_rgb(15_23_42_/_0.1)] [&>*]:account-toast-item";
 const accountPageClassName =
@@ -113,9 +112,6 @@ const accountEntryShellClassName =
   "account-shell--entry relative !w-[min(100%,520px)] grid-cols-1 grid-rows-[auto_auto] items-start gap-3.5 min-[1100px]:!w-[min(100%,1240px)] min-[1100px]:grid-cols-[minmax(560px,1.04fr)_minmax(380px,0.96fr)] min-[1100px]:grid-rows-[auto_auto_1fr] min-[1100px]:items-center min-[1100px]:gap-x-7 max-[767px]:!w-full max-[767px]:gap-0";
 const tripAccessLanguageSwitchClassName =
   "trip-access-language-switch !right-4 !top-4 !z-[5] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!right-[26px] max-[767px]:!top-[26px]";
-const accessLanguageSwitchClassName = "access-language-switch mt-3.5";
-const accountEntryLanguageSwitchClassName =
-  "account-entry-language-switch !absolute !right-4 !top-4 !z-[2] !m-0 !w-fit !bg-(--color-surface) !shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:!right-[18px] max-[767px]:!top-[18px]";
 const backHomeButtonClassName =
   "back-home-button inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] px-3 py-1.5 text-[0.78rem] font-[850] text-(--color-text-muted) no-underline transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:border-(--color-route-border)";
 const accountEntryBackHomeClassName =
@@ -141,7 +137,6 @@ const accountModeTabsClassName =
 const accountTabClassName =
   "account-tab inline-flex min-h-[42px] items-center justify-center gap-2 rounded-(--radius-md) border-0 bg-transparent font-extrabold text-(--color-text-muted) transition-[background,color] duration-[180ms] ease-out";
 const accountTabActiveClassName = "account-tab--active bg-(--color-primary-soft) text-(--color-primary-strong)";
-const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-(--color-border) px-[34px] pb-3.5 max-[520px]:px-0";
 const accountDashboardClassName = "account-dashboard grid grid-cols-[220px_minmax(0,1fr)] items-start gap-3.5 max-[767px]:grid-cols-1";
 const portalContentClassName = "portal-content grid min-h-[460px] grid-cols-2 items-start gap-2.5 max-[767px]:min-h-[520px] max-[767px]:grid-cols-1";
 const portalProfileCardClassName = cn(accountCardClassName, "account-profile-card col-span-2 max-[767px]:col-auto");
@@ -208,8 +203,6 @@ const accountStepStageDirectionClassNames = {
 } satisfies Record<AuthTransitionDirection, string>;
 const accountStepSummaryClassName =
   "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
-const accountFlowSwitchClassName =
-  "account-flow-switch m-0 text-center text-[13px] font-[750] text-(--color-text-muted) [&_a]:cursor-pointer [&_a]:border-0 [&_a]:bg-transparent [&_a]:p-0 [&_a]:font-[inherit] [&_a]:font-[850] [&_a]:text-(--color-primary-strong) [&_a]:no-underline [&_a:focus-visible]:underline [&_a:hover]:underline [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:font-[inherit] [&_button]:font-[850] [&_button]:text-(--color-primary-strong) [&_button]:no-underline [&_button:focus-visible]:underline [&_button:hover]:underline";
 const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800] max-[520px]:grid max-[520px]:grid-cols-1";
 const accountTertiaryActionClassName =
   "account-tertiary-action inline-flex min-h-11 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent px-2 py-1 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
@@ -799,37 +792,7 @@ function EmailLoginPanel({
   return (
     <div className={cn(accountLoginFlowClassName, showRouteTabs ? accountEntryLoginFlowClassName : "")}>
       {showRouteTabs ? (
-        <>
-          <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName)} />
-          <nav className={accountEntryTabsClassName} aria-label={t.access.mainLabels.combined}>
-            <button
-              type="button"
-              className={cn(
-                "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid bg-transparent text-[15px] font-[850] no-underline transition-[border-color,color] duration-[180ms] ease-out",
-                activeFlow === "login"
-                  ? "account-entry-tab--active border-(--color-primary) text-(--color-primary-strong)"
-                  : "border-transparent text-(--color-text-muted)"
-              )}
-              aria-current={activeFlow === "login" ? "page" : undefined}
-              onClick={() => switchFlow("login")}
-            >
-              {t.access.titles.accountLogin}
-            </button>
-            <button
-              type="button"
-              className={cn(
-                "account-entry-tab grid min-h-[42px] cursor-pointer place-items-center border-0 border-b-[3px] border-solid bg-transparent text-[15px] font-[850] no-underline transition-[border-color,color] duration-[180ms] ease-out",
-                activeFlow === "register"
-                  ? "account-entry-tab--active border-(--color-primary) text-(--color-primary-strong)"
-                  : "border-transparent text-(--color-text-muted)"
-              )}
-              aria-current={activeFlow === "register" ? "page" : undefined}
-              onClick={() => switchFlow("register")}
-            >
-              {t.access.titles.accountRegister}
-            </button>
-          </nav>
-        </>
+        <AccountAuthRouteTabs activeFlow={activeFlow} onFlowChange={switchFlow} />
       ) : null}
       <form
         aria-busy={isSubmitting}
@@ -1043,17 +1006,7 @@ function EmailLoginPanel({
         </div>
       </form>
       {!challenge ? (
-        <p className={accountFlowSwitchClassName}>
-          {activeFlow === "register" ? (
-            <>
-              {t.access.emailLogin.hasAccount} <button type="button" onClick={() => switchFlow("login")}>{t.access.emailLogin.signInLink}</button>
-            </>
-          ) : (
-            <>
-              {t.access.emailLogin.noAccount} <button type="button" onClick={() => switchFlow("register")}>{t.access.emailLogin.registerLink}</button>
-            </>
-          )}
-        </p>
+        <AccountAuthFlowSwitch activeFlow={activeFlow} onFlowChange={switchFlow} />
       ) : null}
     </div>
   );
@@ -1536,13 +1489,4 @@ function readPreviousPortalSectionIndex(fallbackIndex: number): number {
   if (typeof window === "undefined") return fallbackIndex;
   const storedIndex = Number(window.sessionStorage.getItem(portalSectionStorageKey));
   return Number.isFinite(storedIndex) ? storedIndex : fallbackIndex;
-}
-
-function StatusMessage({ children, id, tone }: { children: ReactNode; id?: string; tone: "danger" | "success" }) {
-  return (
-    <p className={tone === "danger" ? accountDangerStatusClassName : accountSuccessStatusClassName} id={id} role={tone === "danger" ? "alert" : "status"}>
-      <Icon name={tone === "danger" ? "alertCircle" : "check"} />
-      {children}
-    </p>
-  );
 }
