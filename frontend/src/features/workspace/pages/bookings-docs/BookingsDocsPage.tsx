@@ -11,6 +11,7 @@ import { Icon } from "@/src/ui/icons";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import * as bookingStyles from "./BookingsDocsPage.styles";
 import {
   bookingDocLinkedContext,
   bookingDocMatchesFolder,
@@ -65,44 +66,6 @@ export interface BookingDocInput {
 const bookingTypes = ["flight", "train", "public_transport", "hotel", "insurance", "passport", "visa", "activity_ticket", "other"] satisfies BookingDocType[];
 const bookingStatuses = ["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"] satisfies BookingDocStatus[];
 const bookingVisibilities = ["shared", "sensitive", "private"] satisfies BookingDocVisibility[];
-
-const pageClassName = "bookings-docs-page max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden";
-const headerAsideClassName = "booking-docs-header-actions flex min-w-0 items-center justify-end gap-2";
-const headerActionRowClassName = "flex min-w-0 flex-wrap items-center justify-end gap-2 max-[1199px]:justify-end";
-const mobileAddButtonClassName = "bookings-mobile-add-button !hidden max-[767px]:fixed max-[767px]:!fixed max-[767px]:right-[60px] max-[767px]:top-1.5 max-[767px]:z-[45] max-[767px]:!inline-flex max-[767px]:min-h-9 max-[767px]:w-9 max-[767px]:rounded-(--radius-sm) max-[767px]:p-0 max-[767px]:shadow-none";
-const contentClassName = "bookings-content grid min-h-0 grid-cols-[192px_minmax(0,1fr)_300px] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[auto_minmax(0,1fr)] max-[1199px]:gap-0 max-[767px]:grid-cols-1 max-[767px]:gap-0 max-[767px]:h-full max-[767px]:[&_.booking-inspector]:col-span-1";
-const folderRailClassName = "booking-folder-rail grid min-h-0 content-start gap-1 max-[1199px]:grid-cols-7 max-[1199px]:content-normal max-[1199px]:gap-0 max-[1199px]:p-0 max-[767px]:grid-cols-7 max-[767px]:rounded-none max-[767px]:shadow-none";
-const folderButtonClassName = "group grid min-h-10 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-transparent bg-transparent px-2 py-1.5 text-left text-sm font-bold text-(--color-text-muted) transition-[background-color,border-color,color] duration-150 hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&_.icon]:size-4 max-[1199px]:min-h-12 max-[1199px]:grid-cols-1 max-[1199px]:grid-rows-[20px_16px] max-[1199px]:justify-items-center max-[1199px]:gap-0 max-[1199px]:rounded-none max-[1199px]:border-0 max-[1199px]:border-b-2 max-[1199px]:border-transparent max-[1199px]:px-0 max-[1199px]:py-1.5 max-[1199px]:text-center max-[767px]:min-h-10 max-[767px]:grid-rows-[18px_12px]";
-const selectedFolderClassName = "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) max-[1199px]:border-b-(--color-primary) max-[1199px]:bg-transparent";
-const filePanelClassName = "bookings-file-panel grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] p-0 max-[1199px]:min-h-[calc(100dvh-180px)] max-[767px]:h-full max-[767px]:min-h-0 max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)] max-[767px]:rounded-none max-[767px]:border-0 max-[767px]:shadow-none";
-const fileToolbarClassName = "bookings-file-toolbar grid gap-2 border-b border-(--color-border) p-3 max-[1199px]:px-3 max-[1199px]:py-2 max-[767px]:gap-0 max-[767px]:px-2 max-[767px]:py-2";
-const toolbarControlsClassName = "grid grid-cols-[minmax(0,1fr)_176px] items-center gap-2 max-[767px]:grid-cols-[minmax(0,1fr)_132px] max-[767px]:gap-1.5";
-const searchInputClassName = "min-h-10 w-full rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-sm font-medium text-(--color-text) outline-none transition-colors placeholder:text-(--color-text-subtle) focus:border-(--color-primary) focus:bg-(--color-surface) max-[767px]:min-h-9";
-const statusFilterWrapClassName = "status-filter relative min-w-0";
-const statusFilterButtonClassName = "status-filter-button grid min-h-10 w-full grid-cols-[minmax(0,1fr)_16px] items-center gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-2.5 text-left text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface-subtle) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) max-[767px]:min-h-9 max-[767px]:px-2";
-const statusFilterMenuClassName = "status-filter-menu absolute right-0 top-[calc(100%+6px)] z-40 grid w-[220px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_18px_rgb(15_23_42_/_0.14)] max-[767px]:right-0 max-[767px]:w-[min(220px,calc(100vw-16px))]";
-const statusFilterOptionClassName = "status-filter-option grid min-h-9 w-full grid-cols-[16px_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border-0 bg-transparent px-2 text-left text-xs font-bold text-(--color-text-muted) hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--color-primary)";
-const statusFilterOptionActiveClassName = "bg-(--color-primary-soft) text-(--color-primary-strong)";
-const activeFolderBarClassName = "flex flex-wrap items-center justify-between gap-2 border-b border-(--color-border) px-3 py-2 max-[767px]:px-3 max-[767px]:py-2";
-const activeFolderDescriptionClassName = "text-xs font-semibold text-(--color-text-muted) max-[767px]:hidden";
-const fieldClassName = "grid min-w-0 gap-1.5 [&>span]:text-[11px] [&>span]:font-extrabold [&>span]:text-(--color-text-muted) [&_input]:min-h-10 [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-sm [&_select]:min-h-10 [&_select]:rounded-(--radius-md) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-3 [&_select]:text-sm [&_textarea]:min-h-[74px] [&_textarea]:resize-y [&_textarea]:rounded-(--radius-md) [&_textarea]:border [&_textarea]:border-(--color-border) [&_textarea]:bg-(--color-surface) [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm";
-const fileListClassName = "booking-file-list min-h-0 overflow-auto";
-const fileHeaderClassName = "sticky top-0 z-[1] grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-[11px] font-black text-(--color-text-muted) max-[1199px]:hidden";
-const fileRowClassName = "booking-file-row booking-ticket-card grid min-w-[760px] grid-cols-[minmax(220px,1.7fr)_90px_100px_minmax(120px,1fr)_108px_70px] items-center gap-2 border-b border-(--color-border) px-3 py-2.5 text-left text-sm transition-colors hover:bg-(--color-surface-subtle) focus-within:bg-(--color-primary-soft) max-[1199px]:min-w-0 max-[1199px]:grid-cols-[minmax(0,1fr)_auto] max-[1199px]:gap-x-3 max-[1199px]:gap-y-1 max-[1199px]:px-3 max-[1199px]:py-3";
-const selectedFileRowClassName = "bg-(--color-primary-soft)";
-const lockedRowClassName = "booking-row-locked grid min-h-[46px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-(--color-border) px-3 py-2 text-sm";
-const badgeClassName = "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
-const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[767px]:!fixed max-[767px]:bottom-0 max-[767px]:left-0 max-[767px]:transition-[transform,opacity] motion-reduce:max-[1199px]:transition-none";
-const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
-const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
-const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
-const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-const dialogClassName = "booking-dialog grid max-h-[min(760px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
-const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
-const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
 const bookingCopy = {
   en: {
     pageLabel: "Bookings & Docs",
@@ -378,7 +341,7 @@ export function BookingsDocsPage({
   }
 
   return (
-    <WorkspacePage className={pageClassName} kind="workspace" aria-label={copy.pageLabel} role="region">
+    <WorkspacePage className={bookingStyles.pageClassName} kind="workspace" aria-label={copy.pageLabel} role="region">
       <BookingsDocsHeader
         canEditBookings={canEditBookings}
         copy={copy}
@@ -388,17 +351,17 @@ export function BookingsDocsPage({
         trip={trip}
       />
       {canEditBookings ? (
-        <Button className={mobileAddButtonClassName} type="button" onClick={() => setDialogBooking("new")} aria-label={copy.addBooking} title={copy.addBooking}>
+        <Button className={bookingStyles.mobileAddButtonClassName} type="button" onClick={() => setDialogBooking("new")} aria-label={copy.addBooking} title={copy.addBooking}>
           <Icon name="plus" />
         </Button>
       ) : null}
 
-      <div className={contentClassName}>
-        <WorkspaceSurface as="nav" className={folderRailClassName} density="compact" aria-label={copy.bookingFolders}>
+      <div className={bookingStyles.contentClassName}>
+        <WorkspaceSurface as="nav" className={bookingStyles.folderRailClassName} density="compact" aria-label={copy.bookingFolders}>
           {bookingFolders.map((folder) => (
             <button
               type="button"
-              className={cn(folderButtonClassName, activeFolderId === folder.id && selectedFolderClassName)}
+              className={cn(bookingStyles.folderButtonClassName, activeFolderId === folder.id && bookingStyles.selectedFolderClassName)}
               key={folder.id}
               onClick={() => {
                 setActiveFolderId(folder.id);
@@ -420,13 +383,13 @@ export function BookingsDocsPage({
           ))}
         </WorkspaceSurface>
 
-        <WorkspaceSurface className={filePanelClassName} aria-label={copy.fileList}>
-          <div className={fileToolbarClassName}>
-            <div className={toolbarControlsClassName}>
+        <WorkspaceSurface className={bookingStyles.filePanelClassName} aria-label={copy.fileList}>
+          <div className={bookingStyles.fileToolbarClassName}>
+            <div className={bookingStyles.toolbarControlsClassName}>
               <label className="min-w-0">
                 <span className="sr-only">{copy.searchPlaceholder}</span>
                 <input
-                  className={searchInputClassName}
+                  className={bookingStyles.searchInputClassName}
                   value={query}
                   onChange={(event) => {
                     setQuery(event.target.value);
@@ -437,13 +400,13 @@ export function BookingsDocsPage({
                   type="search"
                 />
               </label>
-              <div className={statusFilterWrapClassName}>
+              <div className={bookingStyles.statusFilterWrapClassName}>
                 <button
                   aria-controls="booking-status-filter-menu"
                   aria-expanded={statusMenuOpen}
                   aria-haspopup="listbox"
                   aria-label={`${copy.statusFilter}: ${statusFilter === "all" ? copy.allStatuses : formatEnumLabel(statusFilter, copy)}`}
-                  className={statusFilterButtonClassName}
+                  className={bookingStyles.statusFilterButtonClassName}
                   onClick={() => setStatusMenuOpen((current) => !current)}
                   type="button"
                 >
@@ -451,13 +414,13 @@ export function BookingsDocsPage({
                   <Icon name="chevronRight" className={cn("size-3.5 transition-transform", statusMenuOpen && "rotate-90")} />
                 </button>
                 {statusMenuOpen ? (
-                  <div className={statusFilterMenuClassName} id="booking-status-filter-menu" role="listbox" aria-label={copy.statusFilter}>
+                  <div className={bookingStyles.statusFilterMenuClassName} id="booking-status-filter-menu" role="listbox" aria-label={copy.statusFilter}>
                     {(["all", ...bookingStatuses] as Array<BookingDocStatus | "all">).map((status) => {
                       const selected = statusFilter === status;
                       return (
                         <button
                           aria-selected={selected}
-                          className={cn(statusFilterOptionClassName, selected && statusFilterOptionActiveClassName)}
+                          className={cn(bookingStyles.statusFilterOptionClassName, selected && bookingStyles.statusFilterOptionActiveClassName)}
                           key={status}
                           onClick={() => {
                             setStatusFilter(status);
@@ -478,16 +441,16 @@ export function BookingsDocsPage({
             </div>
           </div>
 
-          <div className={activeFolderBarClassName} aria-label={copy.bookingSummary}>
+          <div className={bookingStyles.activeFolderBarClassName} aria-label={copy.bookingSummary}>
             <div className="grid gap-0.5">
               <strong className="text-[15px] font-extrabold text-(--color-text)">{activeFolderCopy.title}</strong>
-              <span className={activeFolderDescriptionClassName}>{copy.visibleItems(activeFolderCopy.description, folderDocs.length)}</span>
+              <span className={bookingStyles.activeFolderDescriptionClassName}>{copy.visibleItems(activeFolderCopy.description, folderDocs.length)}</span>
             </div>
             <span className="text-xs font-black text-(--color-text-muted)">{copy.itemCount(folderDocs.length)}</span>
           </div>
 
-          <div className={fileListClassName} aria-label={copy.fileList} tabIndex={0}>
-            <div className={fileHeaderClassName} aria-hidden="true">
+          <div className={bookingStyles.fileListClassName} aria-label={copy.fileList} tabIndex={0}>
+            <div className={bookingStyles.fileHeaderClassName} aria-hidden="true">
               <span>{copy.columnName}</span>
               <span>{copy.columnDate}</span>
               <span>{copy.columnProvider}</span>
@@ -517,7 +480,7 @@ export function BookingsDocsPage({
               </div>
             ) : null}
             {lockedDocs.map((doc) => (
-              <div className={lockedRowClassName} key={doc.id}>
+              <div className={bookingStyles.lockedRowClassName} key={doc.id}>
                 <span className="inline-flex items-center gap-2 font-extrabold text-(--color-text-muted)"><Icon name="eyeOff" /> {copy.lockedSensitiveRecord}</span>
                 <span className="text-xs font-bold text-(--color-text-muted)">{formatEnumLabel(doc.type, copy)}</span>
               </div>
@@ -549,8 +512,8 @@ export function BookingsDocsPage({
       ) : null}
 
       {deleteBooking ? (
-        <div className={dialogBackdropClassName} role="presentation">
-          <section className={deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-delete-title">
+        <div className={bookingStyles.dialogBackdropClassName} role="presentation">
+          <section className={bookingStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-delete-title">
             <h2 id="booking-delete-title" className="m-0 text-base font-extrabold text-(--color-danger)">{copy.deleteBooking}</h2>
             <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{copy.deletePrompt(deleteBooking.title)}</p>
             <div className="flex justify-end gap-2">
@@ -590,8 +553,8 @@ function BookingsDocsHeader({
         </>
       )}
       aside={canEditBookings ? (
-        <div className={headerAsideClassName}>
-          <div className={headerActionRowClassName}>
+        <div className={bookingStyles.headerAsideClassName}>
+          <div className={bookingStyles.headerActionRowClassName}>
             <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}>
               <Icon name="plus" /> <span>{copy.addBooking}</span>
             </Button>
@@ -616,7 +579,7 @@ function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, 
   const provider = doc.providerName ?? copy.noProvider;
 
   return (
-    <article className={cn(fileRowClassName, selected && selectedFileRowClassName)}>
+    <article className={cn(bookingStyles.fileRowClassName, selected && bookingStyles.selectedFileRowClassName)}>
       <button type="button" className="grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2 text-left max-[1199px]:col-start-1 max-[1199px]:row-start-1" onClick={onSelect} aria-label={copy.select(doc.title)}>
         <span className={cn("grid size-8 place-items-center rounded-(--radius-sm) border", typeIconClassName(doc.type))}>
           <Icon name={bookingTypeIcon(doc.type)} />
@@ -631,7 +594,7 @@ function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, 
       <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{doc.startsAt ? formatDateTime(doc.startsAt) : copy.noDate}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-3 max-[1199px]:pl-[42px]">{provider}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:hidden">{linkedStop}</span>
-      <span className={cn(badgeClassName, statusBadgeClassName(doc.status), "max-[1199px]:col-start-2 max-[1199px]:row-start-1 max-[1199px]:justify-self-end")}>{formatEnumLabel(doc.status, copy)}</span>
+      <span className={cn(bookingStyles.badgeClassName, statusBadgeClassName(doc.status), "max-[1199px]:col-start-2 max-[1199px]:row-start-1 max-[1199px]:justify-self-end")}>{formatEnumLabel(doc.status, copy)}</span>
       <span className="inline-flex justify-end gap-1 max-[1199px]:hidden">
         {doc.externalLinks[0] ? (
           <a className="grid size-8 place-items-center rounded-(--radius-sm) text-(--color-primary-strong) hover:bg-(--color-primary-soft)" href={doc.externalLinks[0].url} target="_blank" rel="noreferrer" aria-label={copy.openLink(doc.externalLinks[0].label)}>
@@ -670,7 +633,7 @@ function BookingInspector({
 }) {
   if (!booking || !relations) {
     return (
-      <WorkspaceSurface className={cn(inspectorClassName, mobileInspectorClosedClassName)} density="compact" aria-label={copy.bookingDetails}>
+      <WorkspaceSurface className={cn(bookingStyles.inspectorClassName, bookingStyles.mobileInspectorClosedClassName)} density="compact" aria-label={copy.bookingDetails}>
         <strong className="text-(--color-text)">{copy.noBookingSelected}</strong>
       </WorkspaceSurface>
     );
@@ -678,7 +641,7 @@ function BookingInspector({
 
   return (
     <WorkspaceSurface
-      className={cn(inspectorClassName, mobileOpen ? mobileInspectorOpenClassName : mobileInspectorClosedClassName)}
+      className={cn(bookingStyles.inspectorClassName, mobileOpen ? bookingStyles.mobileInspectorOpenClassName : bookingStyles.mobileInspectorClosedClassName)}
       density="compact"
       aria-label={copy.bookingDetails}
     >
@@ -687,7 +650,7 @@ function BookingInspector({
         <IconButton type="button" aria-label={copy.closeBookingPreview} onClick={onClose}><Icon name="x" /></IconButton>
       </div>
       <div className="grid gap-1">
-        <span className={cn(badgeClassName, statusBadgeClassName(booking.status))}>{formatEnumLabel(booking.status, copy)}</span>
+        <span className={cn(bookingStyles.badgeClassName, statusBadgeClassName(booking.status))}>{formatEnumLabel(booking.status, copy)}</span>
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>
         <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{booking.notes ?? copy.noNotes}</p>
         {canEdit ? (
@@ -698,7 +661,7 @@ function BookingInspector({
         ) : null}
       </div>
 
-      <div className={inspectorSectionClassName}>
+      <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.quickFacts}</strong>
         <span>{formatEnumLabel(booking.type, copy)}</span>
         <span>{booking.startsAt ? formatDateTime(booking.startsAt) : copy.noDate}</span>
@@ -706,7 +669,7 @@ function BookingInspector({
         <span>{booking.confirmationCode ? `${copy.confirmation}: ${booking.confirmationCode}` : copy.noConfirmation}</span>
       </div>
 
-      <div className={inspectorSectionClassName}>
+      <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.externalLinks}</strong>
         {booking.externalLinks.length ? booking.externalLinks.map((link) => (
           <a className="inline-flex min-h-9 items-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-extrabold text-(--color-primary-strong)" href={link.url} key={link.id} target="_blank" rel="noreferrer">
@@ -715,7 +678,7 @@ function BookingInspector({
         )) : <span className="text-sm text-(--color-text-muted)">{copy.noExternalLinks}</span>}
       </div>
 
-      <div className={inspectorSectionClassName}>
+      <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.tripContext}</strong>
         <span>{copy.itineraryLinks(relations.itineraryItems.length)}</span>
         <span>{copy.todos(relations.tasks.length)}</span>
@@ -784,26 +747,26 @@ function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: {
   }
 
   return (
-    <div className={dialogBackdropClassName} role="presentation">
-      <section className={dialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-dialog-title">
-        <div className={dialogHeaderClassName}>
+    <div className={bookingStyles.dialogBackdropClassName} role="presentation">
+      <section className={bookingStyles.dialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-dialog-title">
+        <div className={bookingStyles.dialogHeaderClassName}>
           <h2 id="booking-dialog-title">{booking ? copy.editBookingDialog : copy.addBookingDialog}</h2>
           <IconButton type="button" aria-label={copy.closeBookingDialog} onClick={onCancel}><Icon name="x" /></IconButton>
         </div>
-        <form className={dialogFormClassName} onSubmit={submit}>
-          <div className={dialogGridClassName}>
-            <label className={fieldClassName}><span>{copy.titleField}</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-            <label className={fieldClassName}><span>{copy.typeField}</span><Select value={type} onChange={(event) => setType(event.target.value as BookingDocType)}>{bookingTypes.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
-            <label className={fieldClassName}><span>{copy.statusField}</span><Select value={status} onChange={(event) => setStatus(event.target.value as BookingDocStatus)}>{bookingStatuses.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
-            <label className={fieldClassName}><span>{copy.visibilityField}</span><Select value={visibility} onChange={(event) => setVisibility(event.target.value as BookingDocVisibility)}>{bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
-            <label className={fieldClassName}><span>{copy.providerField}</span><input value={providerName} onChange={(event) => setProviderName(event.target.value)} /></label>
-            <label className={fieldClassName}><span>{copy.confirmationCodeField}</span><input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} /></label>
-            <label className={fieldClassName}><span>{copy.startField}</span><DateTimePickerField value={startsAt} onChange={setStartsAt} /></label>
-            <label className={fieldClassName}><span>{copy.endField}</span><DateTimePickerField value={endsAt} onChange={setEndsAt} /></label>
-            <label className={fieldClassName}><span>{copy.priceField}</span><input inputMode="decimal" type="number" min="0" step="0.01" value={priceAmount} onChange={(event) => setPriceAmount(event.target.value)} /></label>
-            <label className={fieldClassName}><span>{copy.currencyField}</span><input value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
-            <label className={fieldClassName}><span>{copy.externalLinkField}</span><input type="url" value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} /></label>
-            <label className={cn(fieldClassName, "col-span-full")}><span>{copy.notesField}</span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
+        <form className={bookingStyles.dialogFormClassName} onSubmit={submit}>
+          <div className={bookingStyles.dialogGridClassName}>
+            <label className={bookingStyles.fieldClassName}><span>{copy.titleField}</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.typeField}</span><Select value={type} onChange={(event) => setType(event.target.value as BookingDocType)}>{bookingTypes.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.statusField}</span><Select value={status} onChange={(event) => setStatus(event.target.value as BookingDocStatus)}>{bookingStatuses.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.visibilityField}</span><Select value={visibility} onChange={(event) => setVisibility(event.target.value as BookingDocVisibility)}>{bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}</Select></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.providerField}</span><input value={providerName} onChange={(event) => setProviderName(event.target.value)} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.confirmationCodeField}</span><input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.startField}</span><DateTimePickerField value={startsAt} onChange={setStartsAt} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.endField}</span><DateTimePickerField value={endsAt} onChange={setEndsAt} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.priceField}</span><input inputMode="decimal" type="number" min="0" step="0.01" value={priceAmount} onChange={(event) => setPriceAmount(event.target.value)} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.currencyField}</span><input value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
+            <label className={bookingStyles.fieldClassName}><span>{copy.externalLinkField}</span><input type="url" value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} /></label>
+            <label className={cn(bookingStyles.fieldClassName, "col-span-full")}><span>{copy.notesField}</span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
           </div>
           <div className="grid gap-3">
             <CheckboxGroup
@@ -837,7 +800,7 @@ function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: {
               onToggle={(noteId) => setNoteIds((current) => toggleId(current, noteId))}
             />
           </div>
-          <div className={dialogActionsClassName}>
+          <div className={bookingStyles.dialogActionsClassName}>
             <Button type="button" variant="secondary" onClick={onCancel}>{copy.cancel}</Button>
             <Button type="submit">{copy.saveBooking}</Button>
           </div>
