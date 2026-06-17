@@ -30,7 +30,7 @@ import type {
   TripParticipantSession,
   TripRole,
 } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "@/src/components/TripSettingsPage";
+import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings";
 
 interface UseWorkspaceAdministrationOptions {
   accountClient: AccountApiClient;

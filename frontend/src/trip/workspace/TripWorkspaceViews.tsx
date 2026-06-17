@@ -3,10 +3,10 @@
 import type { ComponentProps } from "react";
 import { BookingsDocsPage } from "@/src/components/BookingsDocsPage";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
+import { TripSettingsPage } from "@/src/features/workspace/pages/trip-settings";
 import { TripExpensesPage } from "@/src/components/TripExpensesPage";
 import { TripMembersPage } from "@/src/components/TripMembersPage";
 import { TripPhotosPage } from "@/src/components/TripPhotosPage";
-import { TripSettingsPage } from "@/src/components/TripSettingsPage";
 import type { PlanningView } from "./planning-view";
 
 interface TripWorkspaceViewsProps {

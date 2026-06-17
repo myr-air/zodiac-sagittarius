@@ -543,7 +543,7 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain('from "@/src/components/OverviewPage"');
     expect(sagittariusApp).not.toContain('from "@/src/components/TimelineView"');
 
-    const tripSettingsPage = readFileSync(join(frontendRoot, "src/components/TripSettingsPage.tsx"), "utf8");
+    const tripSettingsPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"), "utf8");
     expect(tripSettingsPage).toContain("@/src/trip/itinerary-time");
     expect(tripSettingsPage).not.toContain("function daysBetweenIsoDates");
     expect(tripSettingsPage).not.toContain("function shiftIsoDate");
