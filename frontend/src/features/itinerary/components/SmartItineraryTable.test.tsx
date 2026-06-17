@@ -10,6 +10,7 @@ import {
   createDragDataTransfer,
   buildBookingDoc,
   defaultPathOptionsForPanel,
+  pathIdStoryPlanA,
   openHeaderControls,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
@@ -223,7 +224,7 @@ describe("SmartItineraryTable", () => {
     );
     expect(onChangeDayPath).toHaveBeenCalledWith(
       "2026-06-19",
-      "path-2026-06-19-sub-a",
+      pathIdStoryPlanA,
     );
   });
 

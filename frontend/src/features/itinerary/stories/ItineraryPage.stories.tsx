@@ -3,6 +3,7 @@ import { expect, fn, userEvent, within } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
+import { pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
 import {
   branchGraphItemsBase,
   branchGraphPathOptions,
@@ -237,14 +238,14 @@ export const PathAndDurationInteractions: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /Path for Day 2/i }));
     const dayPathMenu = documentCanvas.getByRole("listbox", { name: /Path for Day 2/i });
     await userEvent.click(within(dayPathMenu).getByRole("option", { name: "Plan B" }));
-    await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", "path-2026-06-19-sub-b");
+    await expect(onStoryChangeDayPath).toHaveBeenCalledWith("2026-06-19", pathIdStoryPlanB);
 
     await userEvent.click(canvas.getByRole("button", { name: "Trip Plan controls" }));
     await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
     await expect(onStoryToggleShowAllPaths).toHaveBeenCalledWith(true);
 
-    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), "path-2026-06-19-sub-a");
-    await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", "path-2026-06-19-sub-a");
+    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), pathIdStoryPlanA);
+    await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", pathIdStoryPlanA);
 
     await expect(canvas.queryByRole("button", { name: /Edit duration Harbour breakfast/i })).not.toBeInTheDocument();
   },

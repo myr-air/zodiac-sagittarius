@@ -7,6 +7,7 @@ import {
   defaultDayPathOptions,
   findGraphLine,
   layoutRect,
+  pathIdStoryPlanA,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
 
@@ -29,7 +30,7 @@ describe("SmartItineraryTable", () => {
       id: "graph-plan-a",
       day: "2026-06-19",
       activity: "Graph plan A",
-      pathId: "path-2026-06-19-sub-a",
+      pathId: pathIdStoryPlanA,
       pathName: "Plan A",
       pathRole: "alternative" as const,
       sortOrder: mainItem.sortOrder + 10,
@@ -148,11 +149,11 @@ describe("SmartItineraryTable", () => {
 
     await user.selectOptions(
       screen.getByLabelText(/Move Graph main to path/i),
-      "path-2026-06-19-sub-a",
+      pathIdStoryPlanA,
     );
     expect(onMoveItemToPath).toHaveBeenCalledWith(
       "graph-main",
-      "path-2026-06-19-sub-a",
+      pathIdStoryPlanA,
     );
 
     cleanup();

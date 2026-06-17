@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { pathIdMain, pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
 import { StopDialog } from "./StopDialog";
 
 const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
@@ -372,19 +373,19 @@ describe("StopDialog", () => {
         endDate="2026-06-23"
         initialItem={{ ...tripFixture.planItems[0], pathRole: "main" }}
         manualPathOptions={[
-          { id: "main", name: "Main" },
-          { id: "path-2026-06-19-sub-a", name: "Plan A" },
-          { id: "path-2026-06-19-sub-b", name: "Plan B" },
+          { id: pathIdMain, name: "Main" },
+          { id: pathIdStoryPlanA, name: "Plan A" },
+          { id: pathIdStoryPlanB, name: "Plan B" },
         ]}
         onClose={vi.fn()}
         onSubmit={onSubmit}
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("แผน"), { target: { value: "path-2026-06-19-sub-b" } });
+    fireEvent.change(screen.getByLabelText("แผน"), { target: { value: pathIdStoryPlanB } });
     fireEvent.submit(screen.getByRole("button", { name: "บันทึกการแก้ไข" }).closest("form")!);
 
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ pathId: "path-2026-06-19-sub-b" }));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ pathId: pathIdStoryPlanB }));
   });
 
   it("shows ambiguous place candidates and submits the selected candidate", async () => {
