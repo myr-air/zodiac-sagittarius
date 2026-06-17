@@ -11,6 +11,16 @@ import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "./TripExpensesPage.styles";
+import {
+  emptyExpenseLineItem,
+  expenseSplitValuesForMode,
+  initialExpenseLineItems,
+  initialExpenseSplitValues,
+  initialExpenseTripPlanId,
+  parseExpenseLineItems,
+  validExpenseLineItems,
+  type EditableExpenseLineItem,
+} from "./expense-dialog-support";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
 import {
   expenseCategories,
@@ -58,28 +68,10 @@ export function ExpenseDialog({
   const [paidBy, setPaidBy] = useState(expense?.paidBy ?? currentMember.id);
   const [category, setCategory] = useState<Expense["category"]>(expense?.category ?? "transport");
   const [itemId, setItemId] = useState(expense?.itineraryItemId ?? "");
-  const [tripPlanId, setTripPlanId] = useState(
-    expense?.tripPlanId ??
-      selectedTripPlanId ??
-      trip.mainTripPlanId ??
-      trip.activePlanVariantId ??
-      trip.tripPlans?.[0]?.id ??
-      trip.planVariants[0]?.id ??
-      "",
-  );
+  const [tripPlanId, setTripPlanId] = useState(initialExpenseTripPlanId({ expense, selectedTripPlanId, trip }));
   const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
-  const [splitValues, setSplitValues] = useState<Record<string, string>>(
-    Object.fromEntries(trip.members.map((member) => [member.id, expense ? String(expense.splits[member.id] ?? 0) : "0"])),
-  );
-  const [lineItems, setLineItems] = useState<EditableExpenseLineItem[]>(
-    expense?.lineItems?.length
-      ? expense.lineItems.map((lineItem) => ({
-          ...lineItem,
-          amount: String(lineItem.amount),
-          participantIds: lineItem.participantIds.filter((memberId) => trip.members.some((member) => member.id === memberId)),
-        }))
-      : [emptyLineItem(trip.members, 1)],
-  );
+  const [splitValues, setSplitValues] = useState<Record<string, string>>(initialExpenseSplitValues(trip.members, expense));
+  const [lineItems, setLineItems] = useState<EditableExpenseLineItem[]>(initialExpenseLineItems(expense, trip.members));
   const amountNumber = Number(amount);
   const exchangeRateNumber = Number(exchangeRate);
   const repeatCountNumber = Number(repeatCount);
@@ -88,13 +80,8 @@ export function ExpenseDialog({
   const needsExchangeRate = normalizedCurrency !== normalizeCurrencyCode(settlementCurrency);
   const hasValidExchangeRate = !needsExchangeRate || (Number.isFinite(exchangeRateNumber) && exchangeRateNumber > 0);
   const parsedSplitValues = Object.fromEntries(trip.members.map((member) => [member.id, Number(splitValues[member.id] || 0)]));
-  const parsedLineItems = lineItems.map((lineItem, index) => ({
-    id: lineItem.id || `line-${index + 1}`,
-    title: lineItem.title.trim(),
-    amount: Number(lineItem.amount || 0),
-    participantIds: lineItem.participantIds,
-  }));
-  const validLineItems = parsedLineItems.filter((lineItem) => lineItem.title && Number.isFinite(lineItem.amount) && lineItem.amount > 0 && lineItem.participantIds.length > 0);
+  const parsedLineItems = parseExpenseLineItems(lineItems);
+  const validLineItems = validExpenseLineItems(parsedLineItems);
   const splits = Number.isFinite(amountNumber) && amountNumber >= 0
     ? splitMode === "itemized"
       ? buildItemizedExpenseSplits({ lineItems: validLineItems, memberIds: trip.members.map((member) => member.id) })
@@ -131,13 +118,13 @@ export function ExpenseDialog({
   function changeSplitMode(nextMode: ExpenseSplitMode) {
     setSplitMode(nextMode);
     if (nextMode === "exact") {
-      setSplitValues(Object.fromEntries(trip.members.map((member) => [member.id, "0"])));
+      setSplitValues(expenseSplitValuesForMode(trip.members, "0"));
     } else if (nextMode === "shares") {
-      setSplitValues(Object.fromEntries(trip.members.map((member) => [member.id, "1"])));
+      setSplitValues(expenseSplitValuesForMode(trip.members, "1"));
     } else if (nextMode === "percentage") {
-      setSplitValues(Object.fromEntries(trip.members.map((member) => [member.id, "0"])));
+      setSplitValues(expenseSplitValuesForMode(trip.members, "0"));
     } else if (nextMode === "itemized" && !lineItems.length) {
-      setLineItems([emptyLineItem(trip.members, 1)]);
+      setLineItems([emptyExpenseLineItem(trip.members, 1)]);
     }
   }
 
@@ -156,7 +143,7 @@ export function ExpenseDialog({
   }
 
   function addLineItem() {
-    setLineItems((current) => [...current, emptyLineItem(trip.members, current.length + 1)]);
+    setLineItems((current) => [...current, emptyExpenseLineItem(trip.members, current.length + 1)]);
   }
 
   function addComment() {
@@ -399,20 +386,4 @@ export function ExpenseDialog({
       </section>
     </div>
   );
-}
-
-interface EditableExpenseLineItem {
-  id: string;
-  title: string;
-  amount: string;
-  participantIds: string[];
-}
-
-function emptyLineItem(members: Member[], index: number): EditableExpenseLineItem {
-  return {
-    id: `line-${Date.now().toString(36)}-${index}`,
-    title: "",
-    amount: "",
-    participantIds: members.map((member) => member.id),
-  };
 }
