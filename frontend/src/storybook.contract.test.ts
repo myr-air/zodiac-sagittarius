@@ -79,7 +79,7 @@ describe("Storybook template catalog", () => {
       ["features/workspace/pages/photos/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["features/workspace/pages/bookings-docs/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddBookingDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
       ["features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["components/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
+      ["features/account/components/trip-join-gate/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
       ["features/itinerary/stories/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Tablet", "Desktop1024", "Desktop1440", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile", "Tablet", "Desktop1024", "Desktop1440"]],
       ["features/itinerary/stories/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
