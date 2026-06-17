@@ -79,6 +79,7 @@ import {
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
+import { buildPromotedFoodRecommendationStop } from "./promote-food-recommendation";
 import type {
   ItineraryItem,
   Trip,
@@ -711,32 +712,10 @@ export function SagittariusApp({
   }
 
   async function promoteFoodRecommendation(item: ItineraryItem) {
-    if (!canEdit || item.itemKind !== "foodRecommendation") return;
-    await createStop({
-      day: item.day,
-      parentItemId: item.parentItemId ?? null,
-      itemKind: "meal",
-      timeMode: item.timeMode ?? "flexible",
-      isPlanBlock: false,
-      status: "planned",
-      priority: item.priority ?? "normal",
-      startTime: item.startTime,
-      endTime: item.endTime ?? null,
-      endOffsetDays: item.endOffsetDays ?? 0,
-      activity: item.activity,
-      activityType: "food",
-      place: item.place,
-      mapLink: item.mapLink,
-      durationMinutes: item.durationMinutes,
-      transportation: item.transportation,
-      details: {
-        ...(item.details ?? {}),
-        promotedFromItemId: item.id,
-        sourceItemKind: item.itemKind,
-      },
-      note: item.note,
-      saveUnresolved: true,
-    });
+    if (!canEdit) return;
+    const promotedStop = buildPromotedFoodRecommendationStop(item);
+    if (!promotedStop) return;
+    await createStop(promotedStop);
   }
 
   async function deleteSelectedStop() {
