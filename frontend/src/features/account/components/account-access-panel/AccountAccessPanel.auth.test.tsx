@@ -7,6 +7,7 @@ import { AccountAccessPanel } from "./AccountAccessPanel";
 import {
   authForm,
   createAccountClient,
+  createTrustedAccountSession,
   installLocalStorageStub,
   render,
   switchToThai,
@@ -427,14 +428,11 @@ describe("AccountAccessPanel auth access", () => {
       <AccountAccessPanel
         accessMode="account-login"
         accountClient={createAccountClient()}
-        accountSession={{
+        accountSession={createTrustedAccountSession({
           userId: "stale-user",
           sessionToken: "stale-account-session",
-          kind: "trusted",
           trustedDeviceId: "device-stale",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        })}
         initialError="unauthorized"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}

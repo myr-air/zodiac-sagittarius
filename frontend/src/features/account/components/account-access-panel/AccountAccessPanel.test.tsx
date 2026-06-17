@@ -14,6 +14,7 @@ import {
   authForm,
   bytes,
   createAccountClient,
+  createTrustedAccountSession,
   installLocalStorageStub,
   render,
   stubCredentials,
@@ -47,14 +48,13 @@ describe("AccountAccessPanel", () => {
     view.rerender(
       <AccountAccessPanel
         accountClient={createAccountClient()}
-        accountSession={{
+        accountSession={createTrustedAccountSession({
           userId: "11111111-1111-1111-1111-111111111111",
           sessionToken: "playwright-account-session",
-          kind: "trusted",
           trustedDeviceId: "device-1",
           createdAt: "2026-05-30T10:00:00.000Z",
           expiresAt: "2030-01-01T10:00:00.000Z",
-        }}
+        })}
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
         onAuthenticated={vi.fn()}
@@ -76,14 +76,13 @@ describe("AccountAccessPanel", () => {
     render(
       <AccountAccessPanel
         accountClient={accountClient}
-        accountSession={{
+        accountSession={createTrustedAccountSession({
           userId: "11111111-1111-1111-1111-111111111111",
           sessionToken: "playwright-account-session",
-          kind: "trusted",
           trustedDeviceId: "device-1",
           createdAt: "2026-05-30T10:00:00.000Z",
           expiresAt: "2030-01-01T10:00:00.000Z",
-        }}
+        })}
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
         onAuthenticated={vi.fn()}
@@ -178,14 +177,7 @@ describe("AccountAccessPanel", () => {
         <AccountAccessPanel
           accessMode="account-portal"
           accountClient={accountClient}
-          accountSession={{
-            userId: "user-aom",
-            sessionToken: "account-session",
-            kind: "trusted",
-            trustedDeviceId: "device-current",
-            createdAt: "2026-05-30T08:00:00.000Z",
-            expiresAt: "2026-06-29T08:00:00.000Z",
-          }}
+          accountSession={createTrustedAccountSession()}
           portalSection={item.section}
           trip={seedTrip}
           onAccountSessionChange={vi.fn()}
@@ -207,14 +199,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={createAccountClient()}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="vault"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
@@ -246,14 +231,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="trips"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
@@ -277,14 +255,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="todos"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
@@ -306,14 +277,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="trips"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
@@ -345,14 +309,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="todos"
         trip={seedTrip}
         onAccountSessionChange={vi.fn()}
@@ -379,14 +336,7 @@ describe("AccountAccessPanel", () => {
       <AccountAccessPanel
         accessMode="account-portal"
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="dashboard"
         trip={seedTrip}
         onAccountSessionChange={onAccountSessionChange}
@@ -449,14 +399,7 @@ describe("AccountAccessPanel", () => {
     render(
       <AccountAccessPanel
         accountClient={accountClient}
-        accountSession={{
-          userId: "user-aom",
-          sessionToken: "account-session",
-          kind: "trusted",
-          trustedDeviceId: "device-current",
-          createdAt: "2026-05-30T08:00:00.000Z",
-          expiresAt: "2026-06-29T08:00:00.000Z",
-        }}
+        accountSession={createTrustedAccountSession()}
         portalSection="settings"
         trip={seedTrip}
         onAccountSessionChange={onAccountSessionChange}

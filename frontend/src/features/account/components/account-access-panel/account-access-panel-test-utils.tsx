@@ -61,6 +61,18 @@ export function installLocalStorageStub() {
   return storage;
 }
 
+export function createTrustedAccountSession(overrides: Partial<AccountSession> = {}): AccountSession {
+  return {
+    userId: "user-aom",
+    sessionToken: "account-session",
+    kind: "trusted",
+    trustedDeviceId: "device-current",
+    createdAt: "2026-05-30T08:00:00.000Z",
+    expiresAt: "2026-06-29T08:00:00.000Z",
+    ...overrides,
+  };
+}
+
 export function AccountHarness({
   accountClient,
   onAuthenticated,
@@ -85,22 +97,8 @@ export function AccountHarness({
 export function createAccountClient(): AccountApiClient {
   return {
     startEmailLogin: vi.fn().mockResolvedValue({ challengeId: "login-challenge", expiresAt: "2026-05-30T09:00:00.000Z" }),
-    finishEmailLogin: vi.fn().mockResolvedValue({
-      userId: "user-aom",
-      sessionToken: "account-session",
-      kind: "trusted",
-      trustedDeviceId: "device-current",
-      createdAt: "2026-05-30T08:00:00.000Z",
-      expiresAt: "2026-06-29T08:00:00.000Z",
-    }),
-    finishPasswordLogin: vi.fn().mockResolvedValue({
-      userId: "user-aom",
-      sessionToken: "account-session",
-      kind: "trusted",
-      trustedDeviceId: "device-current",
-      createdAt: "2026-05-30T08:00:00.000Z",
-      expiresAt: "2026-06-29T08:00:00.000Z",
-    }),
+    finishEmailLogin: vi.fn().mockResolvedValue(createTrustedAccountSession()),
+    finishPasswordLogin: vi.fn().mockResolvedValue(createTrustedAccountSession()),
     loadSettings: vi.fn().mockResolvedValue(accountSettings),
     updateSettings: vi.fn().mockImplementation((_sessionToken: string, request: AccountSettingsUpdateRequest) =>
       Promise.resolve({
