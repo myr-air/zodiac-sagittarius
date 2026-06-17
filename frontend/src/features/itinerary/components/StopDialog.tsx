@@ -7,7 +7,7 @@ import { Icon } from "@/src/ui/icons";
 import { formatThaiDate } from "@/src/features/itinerary/lib";
 import { StopDialogActions } from "./stop-dialog/StopDialogActions";
 import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
-import { StopDialogDetails } from "./stop-dialog/StopDialogDetails";
+import { StopDialogDetailSection } from "./stop-dialog/StopDialogDetailSection";
 import { StopDialogPlaceResolution } from "./stop-dialog/StopDialogPlaceResolution";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
 import {
@@ -16,8 +16,6 @@ import {
   buildStopSubmitValues,
 } from "./stop-dialog/stop-dialog.form";
 import {
-  advancedDetailsClassName,
-  advancedDetailsGridClassName,
   dialogErrorClassName,
   dialogFieldWideClassName,
   dialogGridClassName,
@@ -340,50 +338,17 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
               <span>{t.stopDialog.fields.place}</span>
               <input id={stopDialogFieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
             </label>
-            {isFocusedEdit ? (
-              <details className={advancedDetailsClassName}>
-                <summary>{moreDetailsLabel}</summary>
-                <div className={advancedDetailsGridClassName}>
-                  <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.mapLink}>
-                    <span>{t.stopDialog.fields.mapLink}</span>
-                    <input
-                      id={stopDialogFieldIds.mapLink}
-                      type="url"
-                      inputMode="url"
-                      value={values.mapLink ?? ""}
-                      onChange={(event) => update("mapLink", event.target.value)}
-                      placeholder="https://maps.google.com/... or https://uri.amap.com/..."
-                    />
-                  </label>
-                  <StopDialogDetails
-                    detailLabels={detailLabels}
-                    detailType={detailType}
-                    detailValues={detailValues}
-                    updateDetail={updateDetail}
-                  />
-                </div>
-              </details>
-            ) : (
-              <>
-                <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.mapLink}>
-                  <span>{t.stopDialog.fields.mapLink}</span>
-                  <input
-                    id={stopDialogFieldIds.mapLink}
-                    type="url"
-                    inputMode="url"
-                    value={values.mapLink ?? ""}
-                    onChange={(event) => update("mapLink", event.target.value)}
-                    placeholder="https://maps.google.com/... or https://uri.amap.com/..."
-                  />
-                </label>
-                <StopDialogDetails
-                  detailLabels={detailLabels}
-                  detailType={detailType}
-                  detailValues={detailValues}
-                  updateDetail={updateDetail}
-                />
-              </>
-            )}
+            <StopDialogDetailSection
+              detailLabels={detailLabels}
+              detailType={detailType}
+              detailValues={detailValues}
+              isFocusedEdit={isFocusedEdit}
+              mapLink={values.mapLink}
+              mapLinkLabel={t.stopDialog.fields.mapLink}
+              moreDetailsLabel={moreDetailsLabel}
+              onMapLinkChange={(mapLink) => update("mapLink", mapLink)}
+              updateDetail={updateDetail}
+            />
             {placeResolution ? (
               <StopDialogPlaceResolution
                 candidates={placeResolution.candidates}
