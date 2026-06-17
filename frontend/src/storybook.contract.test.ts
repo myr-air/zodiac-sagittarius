@@ -83,6 +83,8 @@ describe("Storybook template catalog", () => {
       ["features/itinerary/stories/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Tablet", "Desktop1024", "Desktop1440", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile", "Tablet", "Desktop1024", "Desktop1440"]],
       ["features/itinerary/stories/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
+      ["shared/components/people-panel/PeoplePanel.stories.tsx", ["Manager", "ReadOnly", "Empty"]],
+      ["shared/components/suggestion-panel/SuggestionPanel.stories.tsx", ["Default", "Thai", "Empty", "ConflictedHeavy"]],
       ["shared/components/date-time-pickers/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
       ["shared/components/weather/WeatherBriefingDrawer.stories.tsx", ["OrganizerDrawer", "TravelerDrawer", "MobileSheet", "PartialData"]],
       ["shared/components/weather/WeatherForecastStrip.stories.tsx", ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"]],

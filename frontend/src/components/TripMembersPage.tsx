@@ -5,8 +5,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import { PeoplePanel } from "@/src/shared/components/people-panel";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { PeoplePanel } from "./PeoplePanel";
 import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 
 interface TripMembersPageProps {
