@@ -11,6 +11,7 @@ import { Icon } from "@/src/ui/icons";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { bookingCopy, bookingStatuses, bookingTypes, bookingVisibilities, formatEnumLabel, type BookingCopy } from "./BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
 import {
   bookingDocLinkedContext,
@@ -62,230 +63,6 @@ export interface BookingDocInput {
   noteIds: string[];
   notes?: string | null;
 }
-
-const bookingTypes = ["flight", "train", "public_transport", "hotel", "insurance", "passport", "visa", "activity_ticket", "other"] satisfies BookingDocType[];
-const bookingStatuses = ["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"] satisfies BookingDocStatus[];
-const bookingVisibilities = ["shared", "sensitive", "private"] satisfies BookingDocVisibility[];
-const bookingCopy = {
-  en: {
-    pageLabel: "Bookings & Docs",
-    title: "Bookings & Docs",
-    records: (count: number) => `${count} records`,
-    canEditBookings: "Can edit bookings",
-    readOnly: "Read-only",
-    bookingFolders: "Booking folders",
-    folderCount: (title: string, count: number) => `${title}, ${count} items`,
-    visibleItems: (description: string, count: number) => `${description} · ${count} visible items`,
-    addBooking: "Add booking",
-    searchPlaceholder: "Search bookings, docs, links",
-    statusFilter: "Status",
-    allStatuses: "All statuses",
-    fileList: "Files",
-    columnName: "Name",
-    columnDate: "Date",
-    columnProvider: "Provider",
-    columnLinkedStop: "Linked stop",
-    columnStatus: "Status",
-    columnOpen: "Open",
-    itemCount: (count: number) => `${count} items`,
-    bookingSummary: "Booking summary",
-    emptyTitle: "No matching files",
-    emptyDetail: "No items in this view. Try another folder, status, or search term.",
-    lockedSensitiveRecord: "Locked sensitive record",
-    select: (title: string) => `Select ${title}`,
-    noProvider: "No provider",
-    noLinkedStop: "No linked stop",
-    noDate: "No date",
-    noConfirmation: "No confirmation",
-    confirmation: "Confirmation",
-    quickFacts: "Quick facts",
-    travelers: (count: number) => `${count} travelers`,
-    noPrice: "No price",
-    links: (count: number) => `${count} links`,
-    cloudLink: "Cloud link",
-    open: "Open",
-    noLink: "No link",
-    editBooking: "Edit booking",
-    deleteBooking: "Delete booking",
-    bookingDetails: "Booking details",
-    closeBookingPreview: "Close booking preview",
-    noBookingSelected: "No booking selected",
-    noNotes: "No notes yet.",
-    externalLinks: "External links",
-    openLink: (label: string) => `Open ${label}`,
-    noExternalLinks: "No external links yet.",
-    tripContext: "Trip context",
-    itineraryLinks: (count: number) => `${count} itinerary links`,
-    todos: (count: number) => `${count} todos`,
-    expenses: (count: number) => `${count} expenses`,
-    notes: (count: number) => `${count} notes`,
-    noTravelers: "No travelers",
-    addBookingDialog: "Add booking",
-    editBookingDialog: "Edit booking",
-    closeBookingDialog: "Close booking dialog",
-    titleField: "Title",
-    typeField: "Type",
-    statusField: "Status",
-    visibilityField: "Visibility",
-    providerField: "Provider",
-    confirmationCodeField: "Confirmation code",
-    startField: "Start",
-    endField: "End",
-    priceField: "Price",
-    currencyField: "Currency",
-    externalLinkField: "External link",
-    notesField: "Notes",
-    travelersField: "Travelers",
-    linkedItinerary: "Linked itinerary",
-    linkedTodos: "Linked todos",
-    linkedExpenses: "Linked expenses",
-    linkedNotes: "Linked notes",
-    cancel: "Cancel",
-    saveBooking: "Save booking",
-    deletePrompt: (title: string) => `Delete ${title}? Related itinerary, todo, and expense records will stay in place.`,
-    anyTimeDocs: "Any time docs",
-    externalLinkLabel: "External link",
-    folders: {
-      all: { title: "All items", description: "Everything saved for this trip" },
-      transport: { title: "Transport", description: "Flights, trains, local passes" },
-      stays: { title: "Stays", description: "Hotels and room bookings" },
-      tickets: { title: "Tickets", description: "Attractions and activities" },
-      travel_docs: { title: "Travel docs", description: "Passport, visa, insurance" },
-      needs_action: { title: "Needs action", description: "Missing, unpaid, or pending" },
-      external_links: { title: "Links & files", description: "Drive, photos, cloud storage" },
-    },
-    enumLabels: {
-      flight: "Flight",
-      train: "Train",
-      public_transport: "Public Transport",
-      hotel: "Hotel",
-      insurance: "Insurance",
-      passport: "Passport",
-      visa: "Visa",
-      activity_ticket: "Activity Ticket",
-      other: "Other",
-      draft: "Draft",
-      needs_action: "Needs Action",
-      booked: "Booked",
-      confirmed: "Confirmed",
-      paid: "Paid",
-      cancelled: "Cancelled",
-      expired: "Expired",
-      shared: "Shared",
-      sensitive: "Sensitive",
-      private: "Private",
-    },
-  },
-  th: {
-    pageLabel: "การจองและเอกสาร",
-    title: "การจองและเอกสาร",
-    records: (count: number) => `${count} รายการ`,
-    canEditBookings: "แก้ไขการจองได้",
-    readOnly: "อ่านอย่างเดียว",
-    bookingFolders: "โฟลเดอร์การจอง",
-    folderCount: (title: string, count: number) => `${title}, ${count} รายการ`,
-    visibleItems: (description: string, count: number) => `${description} · แสดง ${count} รายการ`,
-    addBooking: "เพิ่มการจอง",
-    searchPlaceholder: "ค้นหาการจอง เอกสาร ลิงก์",
-    statusFilter: "สถานะ",
-    allStatuses: "ทุกสถานะ",
-    fileList: "ไฟล์",
-    columnName: "ชื่อ",
-    columnDate: "วันที่",
-    columnProvider: "ผู้ให้บริการ",
-    columnLinkedStop: "จุดที่เกี่ยวข้อง",
-    columnStatus: "สถานะ",
-    columnOpen: "เปิด",
-    itemCount: (count: number) => `${count} รายการ`,
-    bookingSummary: "สรุปการจอง",
-    emptyTitle: "ไม่มีรายการในมุมมองนี้",
-    emptyDetail: "ลองเปลี่ยนโฟลเดอร์ สถานะ หรือคำค้นหา",
-    lockedSensitiveRecord: "รายการละเอียดอ่อนถูกล็อก",
-    select: (title: string) => `เลือก ${title}`,
-    noProvider: "ยังไม่มีผู้ให้บริการ",
-    noLinkedStop: "ยังไม่ได้ผูกจุดแวะ",
-    noDate: "ยังไม่มีวันที่",
-    noConfirmation: "ยังไม่มีรหัสยืนยัน",
-    confirmation: "รหัสยืนยัน",
-    quickFacts: "ข้อมูลสำคัญ",
-    travelers: (count: number) => `${count} ผู้เดินทาง`,
-    noPrice: "ยังไม่มีราคา",
-    links: (count: number) => `${count} ลิงก์`,
-    cloudLink: "ลิงก์คลาวด์",
-    open: "เปิด",
-    noLink: "ยังไม่มีลิงก์",
-    editBooking: "แก้ไขการจอง",
-    deleteBooking: "ลบการจอง",
-    bookingDetails: "รายละเอียดการจอง",
-    closeBookingPreview: "ปิดตัวอย่างการจอง",
-    noBookingSelected: "ยังไม่ได้เลือกการจอง",
-    noNotes: "ยังไม่มีโน้ต",
-    externalLinks: "ลิงก์ภายนอก",
-    openLink: (label: string) => `เปิด ${label}`,
-    noExternalLinks: "ยังไม่มีลิงก์ภายนอก",
-    tripContext: "บริบทของทริป",
-    itineraryLinks: (count: number) => `${count} ลิงก์แผนเดินทาง`,
-    todos: (count: number) => `${count} งาน`,
-    expenses: (count: number) => `${count} ค่าใช้จ่าย`,
-    notes: (count: number) => `${count} โน้ต`,
-    noTravelers: "ยังไม่มีผู้เดินทาง",
-    addBookingDialog: "เพิ่มการจอง",
-    editBookingDialog: "แก้ไขการจอง",
-    closeBookingDialog: "ปิดหน้าต่างการจอง",
-    titleField: "ชื่อ",
-    typeField: "ประเภท",
-    statusField: "สถานะ",
-    visibilityField: "การมองเห็น",
-    providerField: "ผู้ให้บริการ",
-    confirmationCodeField: "รหัสยืนยัน",
-    startField: "เริ่ม",
-    endField: "สิ้นสุด",
-    priceField: "ราคา",
-    currencyField: "สกุลเงิน",
-    externalLinkField: "ลิงก์ภายนอก",
-    notesField: "โน้ต",
-    travelersField: "ผู้เดินทาง",
-    linkedItinerary: "แผนเดินทางที่เกี่ยวข้อง",
-    linkedTodos: "งานที่เกี่ยวข้อง",
-    linkedExpenses: "ค่าใช้จ่ายที่เกี่ยวข้อง",
-    linkedNotes: "โน้ตที่เกี่ยวข้อง",
-    cancel: "ยกเลิก",
-    saveBooking: "บันทึกการจอง",
-    deletePrompt: (title: string) => `ลบ ${title}? แผนเดินทาง งาน และค่าใช้จ่ายที่เกี่ยวข้องจะยังอยู่`,
-    anyTimeDocs: "เอกสารไม่ระบุเวลา",
-    externalLinkLabel: "ลิงก์ภายนอก",
-    folders: {
-      all: { title: "ทุกอย่าง", description: "ทุกอย่างที่บันทึกไว้สำหรับทริปนี้" },
-      transport: { title: "การเดินทาง", description: "เที่ยวบิน รถไฟ และพาสในเมือง" },
-      stays: { title: "ที่พัก", description: "โรงแรมและการจองห้องพัก" },
-      tickets: { title: "ตั๋ว", description: "สถานที่ท่องเที่ยวและกิจกรรม" },
-      travel_docs: { title: "เอกสารเดินทาง", description: "พาสปอร์ต วีซ่า และประกัน" },
-      needs_action: { title: "ต้องดำเนินการ", description: "ขาดข้อมูล ยังไม่จ่าย หรือรอดำเนินการ" },
-      external_links: { title: "ลิงก์และไฟล์", description: "Drive รูปภาพ และคลาวด์" },
-    },
-    enumLabels: {
-      flight: "เที่ยวบิน",
-      train: "รถไฟ",
-      public_transport: "ขนส่งสาธารณะ",
-      hotel: "โรงแรม",
-      insurance: "ประกัน",
-      passport: "พาสปอร์ต",
-      visa: "วีซ่า",
-      activity_ticket: "ตั๋วกิจกรรม",
-      other: "อื่นๆ",
-      draft: "ร่าง",
-      needs_action: "ต้องดำเนินการ",
-      booked: "จองแล้ว",
-      confirmed: "ยืนยันแล้ว",
-      paid: "จ่ายแล้ว",
-      cancelled: "ยกเลิกแล้ว",
-      expired: "หมดอายุ",
-      shared: "แชร์",
-      sensitive: "ละเอียดอ่อน",
-      private: "ส่วนตัว",
-    },
-  },
-} as const;
 
 export function BookingsDocsPage({
   trip,
@@ -536,7 +313,7 @@ function BookingsDocsHeader({
   trip,
 }: {
   canEditBookings: boolean;
-  copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  copy: BookingCopy;
   locale: Locale;
   onAddBooking: () => void;
   recordCount: number;
@@ -567,7 +344,7 @@ function BookingsDocsHeader({
 
 function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, onDelete }: {
   doc: BookingDoc;
-  copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  copy: BookingCopy;
   trip: Trip;
   selected: boolean;
   canEdit: boolean;
@@ -624,7 +401,7 @@ function BookingInspector({
 }: {
   booking: BookingDoc | null;
   canEdit: boolean;
-  copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  copy: BookingCopy;
   mobileOpen: boolean;
   onClose: () => void;
   onDelete: () => void;
@@ -692,7 +469,7 @@ function BookingInspector({
 
 function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: {
   booking: BookingDoc | null;
-  copy: typeof bookingCopy.en | typeof bookingCopy.th;
+  copy: BookingCopy;
   trip: Trip;
   tasks: TripTask[];
   onCancel: () => void;
@@ -836,8 +613,4 @@ function CheckboxGroup({
       </div>
     </fieldset>
   );
-}
-
-function formatEnumLabel(value: keyof typeof bookingCopy.en.enumLabels | keyof typeof bookingCopy.th.enumLabels, copy: typeof bookingCopy.en | typeof bookingCopy.th): string {
-  return copy.enumLabels[value];
 }
