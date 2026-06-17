@@ -3,8 +3,9 @@ export {
   ActivityLocationLine,
   ActivityTypePicker,
   InlineActivityField,
-  ItineraryNoteModal,
 } from "./activity-cell";
+
+export { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
 
 export { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
 
