@@ -1,4 +1,5 @@
-import type { BookingDocType, Member, Suggestion, TripTask } from "@/src/trip/types";
+import type { BookingDocType, Member, Suggestion } from "@/src/trip/types";
+import { taskKindLabel } from "@/src/features/itinerary/domain/overview";
 
 export type ContextRailTab = "notes" | "booking" | "suggestions";
 
@@ -33,13 +34,7 @@ export function memberDisplayName(
   return member?.displayName ?? fallback;
 }
 
-export function taskKindLabel(
-  task: TripTask,
-  labels: { booking: string; prep: string },
-): string {
-  /* v8 ignore next */
-  return task.kind === "booking" ? labels.booking : labels.prep;
-}
+export { taskKindLabel };
 
 export function formatBookingDocTypeLabel(type: BookingDocType): string {
   return type
