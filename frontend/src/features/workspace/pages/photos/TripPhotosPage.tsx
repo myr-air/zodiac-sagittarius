@@ -3,22 +3,21 @@ import {
   buildPhotoAlbumSummary,
   filterPhotoAlbumLinks,
   findPhotoAlbumRelations,
-  safePhotoAlbumCoverHref,
-  safePhotoAlbumHref,
 } from "@/src/trip/photo-albums";
 import type { Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoAlbumProvider } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
-import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { PhotoAlbumCard } from "./components/PhotoAlbumCard";
+import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy, type PhotoCopy } from "./TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
 import {
   countPhotoProviders,
   photoAccessLabel,
   photoAccessOptions,
-  photoAlbumLinkHost,
   photoProviderLabel,
   photoProviderOptions,
   photoProviders,
@@ -197,139 +196,6 @@ function SummaryStat({ icon, label, value }: { icon: Parameters<typeof Icon>[0][
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
-  );
-}
-
-function PhotoAlbumCard({
-  album,
-  copy,
-  trip,
-  selected,
-  canEdit,
-  onSelect,
-  onEdit,
-  onDelete,
-}: {
-  album: TripPhotoAlbumLink;
-  copy: PhotoCopy;
-  trip: Trip;
-  selected: boolean;
-  canEdit: boolean;
-  onSelect: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const href = safePhotoAlbumHref(album.url);
-  const owner = trip.members.find((member) => member.id === album.ownerMemberId);
-  const coverHref = safePhotoAlbumCoverHref(album.coverUrl);
-  return (
-    <article className={cn(photoStyles.albumCardClassName, selected && photoStyles.selectedAlbumClassName)}>
-      <button type="button" className="grid min-w-0 gap-2 text-left" onClick={onSelect} aria-label={copy.selectAlbum(album.title)}>
-        <span
-          aria-label={copy.coverFor(album.title)}
-          className={photoStyles.albumCoverClassName}
-          role="img"
-          style={coverHref ? { backgroundImage: `url(${coverHref})` } : undefined}
-        />
-        <span className="flex items-center justify-between gap-2">
-          <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoAccessLabel(album.access, copy)}</Badge>
-          <span className="text-xs font-extrabold text-(--color-text-muted)">{photoProviderLabel(album.provider, copy)}</span>
-        </span>
-        <span className="grid gap-1">
-          <strong className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-black text-(--color-text)">{album.title}</strong>
-          <span className="line-clamp-2 text-xs font-semibold leading-5 text-(--color-text-muted)">{album.accessNote || album.description || copy.defaultAccessNote}</span>
-        </span>
-      </button>
-      <div className="grid gap-2 text-xs font-bold text-(--color-text-muted)">
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {owner?.displayName ?? copy.noOwner}</span>
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="calendar" /> {album.day ?? copy.tripLevel}</span>
-        {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {href ? (
-          <Button asChild variant="ghost" className="w-auto">
-            <a href={href} target="_blank" rel="noreferrer">{copy.openAlbumTitle(album.title)}<Icon name="external" /></a>
-          </Button>
-        ) : (
-          <Button type="button" variant="ghost" className="w-auto" disabled>{copy.openBlocked}</Button>
-        )}
-        {canEdit ? (
-          <span className="flex gap-1">
-            <IconButton type="button" aria-label={copy.editAlbum} onClick={onEdit}><Icon name="edit" /></IconButton>
-            <IconButton type="button" aria-label={copy.deleteAlbum} onClick={onDelete}><Icon name="trash" /></IconButton>
-          </span>
-        ) : null}
-      </div>
-    </article>
-  );
-}
-
-function PhotoAlbumInspector({
-  album,
-  copy,
-  relations,
-  trip,
-}: {
-  album: TripPhotoAlbumLink | null;
-  copy: PhotoCopy;
-  relations: ReturnType<typeof findPhotoAlbumRelations> | null;
-  trip: Trip;
-}) {
-  if (!album) {
-    return (
-      <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
-        <div className={photoStyles.inspectorSectionClassName}>{copy.selectHint}</div>
-      </WorkspaceSurface>
-    );
-  }
-  const href = safePhotoAlbumHref(album.url);
-  const createdBy = trip.members.find((member) => member.id === album.createdBy);
-  const linkHost = photoAlbumLinkHost(href);
-  return (
-    <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
-      <div className="grid gap-2">
-        <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoProviderLabel(album.provider, copy)}</Badge>
-        <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
-        <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">{copy.externalProviderNote}</span>
-      </div>
-      <div className={photoStyles.inspectorSectionClassName}>
-        <div className="flex min-w-0 items-center justify-between gap-2">
-          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{linkHost ?? copy.blockedLink}</span>
-          {href ? (
-            <button
-              type="button"
-              className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-xs font-extrabold text-(--color-primary-strong)"
-              onClick={() => void navigator.clipboard?.writeText(album.url)}
-            >
-              <Icon name="copy" /> {copy.copy}
-            </button>
-          ) : null}
-        </div>
-        {href ? (
-          <Button asChild className="w-full">
-            <a href={href} target="_blank" rel="noreferrer">{copy.openAlbum}<Icon name="external" /></a>
-          </Button>
-        ) : (
-          <strong className="text-[#b91c1c]">{copy.unsafeLinkBlocked}</strong>
-        )}
-      </div>
-      <div className={photoStyles.inspectorSectionClassName}>
-        <strong className="text-(--color-text)">{copy.access}</strong>
-        <span>{photoAccessLabel(album.access, copy)}</span>
-        <span className="text-(--color-text-muted)">{album.accessNote || copy.noAccessNote}</span>
-      </div>
-      <div className={photoStyles.inspectorSectionClassName}>
-        <strong className="text-(--color-text)">{copy.owner}</strong>
-        <span>{relations?.owner?.displayName ?? copy.noOwnerAssigned}</span>
-        <span className="text-xs text-(--color-text-muted)">{copy.createdBy(createdBy?.displayName ?? album.createdBy)}</span>
-      </div>
-      <div className={photoStyles.inspectorSectionClassName}>
-        <strong className="text-(--color-text)">{copy.relatedStops}</strong>
-        {relations?.itineraryItems.length ? relations.itineraryItems.map((item) => (
-          <span key={item.id} className="text-sm">{item.day} · {item.activity}</span>
-        )) : <span className="text-(--color-text-muted)">{copy.tripLevel}</span>}
-      </div>
-    </WorkspaceSurface>
   );
 }
 
