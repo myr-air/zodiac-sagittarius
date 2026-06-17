@@ -1,6 +1,10 @@
+import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 
 type CategoryTone = { background: string; border: string; dot: string; text: string };
+
+export const expenseCategories = ["food", "transport", "tickets", "stay", "shopping", "settlement"] satisfies Expense["category"][];
+export const expenseSplitModes = ["equal", "exact", "shares", "percentage", "itemized"] satisfies ExpenseSplitMode[];
 
 const categoryTones: Record<Expense["category"], CategoryTone> = {
   food: { background: "#fff7ed", border: "#fed7aa", dot: "#f97316", text: "#9a3412" },
