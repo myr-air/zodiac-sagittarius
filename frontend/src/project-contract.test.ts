@@ -197,7 +197,7 @@ describe("Sagittarius project scaffold", () => {
 
   it("uses Next App Router with trip-scoped production routes", () => {
     expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
-    expect(readFileSync(join(frontendRoot, "src/components/HomeLanding.tsx"), "utf8")).toContain("LanguageSwitch");
+    expect(readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8")).toContain("LanguageSwitch");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("Plan trips with friends");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
