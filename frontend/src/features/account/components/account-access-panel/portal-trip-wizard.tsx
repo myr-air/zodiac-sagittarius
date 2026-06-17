@@ -31,6 +31,7 @@ import {
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
 import { DestinationCardMeta } from "./destination-card-meta";
+import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { TripPreviewLiveMap } from "./trip-preview-map";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
@@ -83,10 +84,6 @@ export function PortalTripWizard({
   const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
   const joinCode = generatedJoinId;
   const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01", tripForm.startDate, tripForm.endDate);
-  const activeMobileStepIndex = Math.max(0, tripWizardSteps.findIndex((step) => step.id === activeMobileStep));
-  const activeMobileStepMeta = tripWizardSteps[activeMobileStepIndex] ?? tripWizardSteps[0];
-  const previousMobileStep = tripWizardSteps[activeMobileStepIndex - 1] ?? null;
-  const nextMobileStep = tripWizardSteps[activeMobileStepIndex + 1] ?? null;
   const isMobilePreviewStep = activeMobileStep === "preview";
   const currentStepComplete = tripStepComplete(activeMobileStep, {
     accessComplete,
@@ -235,27 +232,11 @@ export function PortalTripWizard({
           <p>{wizard.detail}</p>
         </div>
       </div>
-      <nav className={wizardStyles.tripWorkflowNavClassName} aria-label="Trip creation workflow">
-        <ol>
-          {tripWizardSteps.map((step) => (
-            <li key={step.id}>
-              <button
-                type="button"
-                aria-current={activeMobileStep === step.id ? "step" : undefined}
-                aria-label={`${wizard.stepNames[step.id]} step`}
-                onClick={() => setActiveMobileStep(step.id)}
-                ref={(node) => {
-                  if (node) mobileStepButtonRefs.current.set(step.id, node);
-                  else mobileStepButtonRefs.current.delete(step.id);
-                }}
-              >
-                {wizard.stepNames[step.id]}
-              </button>
-            </li>
-          ))}
-        </ol>
-        <p>{wizard.workflow[activeMobileStepMeta.id]}</p>
-      </nav>
+      <TripWizardWorkflowNav
+        activeMobileStep={activeMobileStep}
+        mobileStepButtonRefs={mobileStepButtonRefs}
+        onActiveMobileStepChange={setActiveMobileStep}
+      />
       <div className={wizardStyles.tripWizardLayoutClassName}>
         <div className={cn(wizardStyles.tripWizardMainClassName, isMobilePreviewStep ? "max-[767px]:hidden" : "")}>
           <div className={wizardStyles.tripWizardPaneClassName}>
@@ -540,29 +521,11 @@ export function PortalTripWizard({
           </div>
         </aside>
       </div>
-      <div className={wizardStyles.tripMobileStepActionsClassName} aria-label="Mobile step controls">
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={!previousMobileStep}
-          aria-label={previousMobileStep ? `${wizard.actions.back}: ${wizard.stepNames[previousMobileStep.id]}` : wizard.actions.back}
-          onClick={() => previousMobileStep ? setActiveMobileStep(previousMobileStep.id) : undefined}
-        >
-          <Icon name="chevronLeft" />
-          {wizard.actions.back}
-        </Button>
-        <span>{activeMobileStepIndex + 1} / {tripWizardSteps.length}</span>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={!nextMobileStep || !currentStepComplete}
-          aria-label={nextMobileStep ? `${wizard.actions.next}: ${wizard.stepNames[nextMobileStep.id]}` : wizard.actions.next}
-          onClick={() => nextMobileStep ? setActiveMobileStep(nextMobileStep.id) : undefined}
-        >
-          {wizard.actions.next}
-          <Icon name="chevronRight" />
-        </Button>
-      </div>
+      <TripWizardMobileStepActions
+        activeMobileStep={activeMobileStep}
+        currentStepComplete={currentStepComplete}
+        onActiveMobileStepChange={setActiveMobileStep}
+      />
       <div className={wizardStyles.tripWizardActionsClassName} role="group" aria-label="Create trip status">
         <p className={wizardStyles.tripWizardActionStatusClassName}>
           <Icon name={canSubmit ? "check" : "key"} />
