@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, within } from "storybook/test";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { AccountPortalNav } from "./account-portal-nav";
 import { PanelHeading, PortalEmptyState, PortalListSkeleton, PortalStatSkeleton, SettingLine, Stat } from "./account-portal-primitives";
 
 const meta = {
@@ -16,6 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const Overview: Story = {
   render: () => (
     <section className="grid max-w-[720px] gap-4">
+      <AccountPortalNav activeSection="dashboard" email="aom@example.test" />
       <PanelHeading icon="home" title="Portal dashboard" detail="Fast access to trips, invites, and account settings." />
       <div className="grid grid-cols-2 gap-2.5">
         <Stat label="Trips" value={8} />
@@ -37,6 +39,8 @@ export const Overview: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(canvas.getByLabelText("Portal navigation")).toHaveClass("portal-nav");
+    await expect(canvas.getByRole("link", { name: /Dashboard/i })).toHaveClass("portal-nav-link--active");
     await expect(canvas.getByText("Portal dashboard").closest(".account-panel-heading")).toHaveClass("flex");
     await expect(canvas.getByText("Trips").closest(".account-stat")).toHaveClass("grid");
     await expect(canvasElement.querySelector(".portal-skeleton-card")).toHaveClass("account-stat");
