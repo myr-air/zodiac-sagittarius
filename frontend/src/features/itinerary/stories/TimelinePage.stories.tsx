@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import type { ItineraryItem } from "@/src/trip/types";
 import { TimelineView } from "@/src/features/itinerary/components";
+import type { ItineraryItem } from "@/src/trip/types";
+import { planABAlternativeItemsBase, withStoryPrefix } from "./itinerary-story-fixtures";
 
 const noop = () => {};
 
@@ -21,26 +22,7 @@ async function expectTimelineStructure(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("timeline-grid", "grid", "grid-cols-3");
 }
 
-const timelinePlanABAlternativeItems: ItineraryItem[] = [
-  ["timeline-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["timeline-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["timeline-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["timeline-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole], index) => ({
-  ...tripFixture.planItems[index % tripFixture.planItems.length],
-  id: id as string,
-  day: "2026-06-19",
-  startTime: startTime as string,
-  durationMinutes: durationMinutes as number,
-  sortOrder: sortOrder as number,
-  activity: activity as string,
-  activityType: "experience",
-  place: `${pathName} checkpoint`,
-  pathGroupId: "timeline-plan-ab-clean-branch",
-  pathId: pathId as string | undefined,
-  pathName: pathId ? pathName as string : undefined,
-  pathRole: pathRole as ItineraryItem["pathRole"],
-}));
+const timelinePlanABAlternativeItems = withStoryPrefix(planABAlternativeItemsBase, "timeline");
 const timelineAdvisoryItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],

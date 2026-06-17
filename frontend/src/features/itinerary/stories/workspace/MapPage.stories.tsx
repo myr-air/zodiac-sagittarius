@@ -3,6 +3,7 @@ import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { RouteMapView } from "@/src/features/itinerary/components";
+import { planABAlternativeItemsBase, withStoryPrefix } from "../itinerary-story-fixtures";
 
 const meta = {
   title: "Pages/Map",
@@ -21,26 +22,7 @@ async function expectMapResponsiveContract(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".route-stop-list")).toHaveClass("route-stop-list", "max-[767px]:hidden");
 }
 
-const mapPlanABAlternativeItems: ItineraryItem[] = [
-  ["map-plan-ab-main-breakfast", "08:00", 60, 100, "Harbour breakfast", "Main", undefined, "main"],
-  ["map-plan-ab-a-gallery", "10:00", 75, 200, "Plan A gallery route", "Plan A", "path-2026-06-19-sub-a", "alternative"],
-  ["map-plan-ab-b-harbour", "14:00", 90, 300, "Plan B harbour route", "Plan B", "path-2026-06-19-sub-b", "alternative"],
-  ["map-plan-ab-main-dinner", "18:00", 75, 400, "Main dinner meet-up", "Main", undefined, "main"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole], index) => ({
-  ...tripFixture.planItems[index % tripFixture.planItems.length],
-  id: id as string,
-  day: "2026-06-19",
-  startTime: startTime as string,
-  durationMinutes: durationMinutes as number,
-  sortOrder: sortOrder as number,
-  activity: activity as string,
-  activityType: "experience",
-  place: `${pathName} checkpoint`,
-  pathGroupId: "map-plan-ab-clean-branch",
-  pathId: pathId as string | undefined,
-  pathName: pathId ? pathName as string : undefined,
-  pathRole: pathRole as ItineraryItem["pathRole"],
-}));
+const mapPlanABAlternativeItems = withStoryPrefix(planABAlternativeItemsBase, "map");
 const mapStopsWithoutCoordinatesItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],

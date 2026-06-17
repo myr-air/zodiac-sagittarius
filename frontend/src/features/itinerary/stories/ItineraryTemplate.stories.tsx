@@ -6,10 +6,14 @@ import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
   buildOwnerStoryArgs,
   branchGraphItemsBase,
+  branchGraphPathOptions,
   planAExampleItemsBase,
   planABAlternativeItemsBase,
+  planABPathOptions,
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
+  planAPathOptions,
+  stressPathOptions,
   withStoryPrefix,
 } from "./itinerary-story-fixtures";
 
@@ -210,11 +214,7 @@ export const BranchGraph: Story = {
     graphItems: branchGraphItems,
     selectedItemId: "story-graph-main",
     showAllPaths: true,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: branchGraphPathOptions,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
@@ -228,10 +228,7 @@ export const PlanAExample: Story = {
     graphItems: planAExampleItems,
     selectedItemId: "story-plan-a-main-breakfast",
     showAllPaths: true,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: planAPathOptions,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
@@ -246,11 +243,7 @@ export const PlanABAlternatives: Story = {
     graphItems: planABAlternativeItems,
     selectedItemId: "story-plan-ab-main-breakfast",
     showAllPaths: true,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
-      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: planABPathOptions,
   },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");
@@ -266,10 +259,7 @@ export const RequestedPlanExample: Story = {
     graphItems: requestedPlanExampleItems,
     selectedItemId: "requested-main-0800",
     showAllPaths: true,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: planAPathOptions,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: /Main 08:00 block on Main/i })).toHaveClass("activity-path-graph-node--selected");
@@ -283,14 +273,9 @@ export const StressPaths: Story = {
     ...Owner.args,
     items: stressPathItems,
     graphItems: stressPathItems,
-    selectedItemId: "stress-0800-main",
+    selectedItemId: "story-stress-0800-main",
     showAllPaths: true,
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
-      { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day: "2026-06-19" },
-      { id: "path-2026-06-19-sub-c", name: "Plan C", scope: "day", day: "2026-06-19" },
-    ],
+    pathOptions: stressPathOptions,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: /Harbour breakfast on Main/i })).toHaveClass("activity-path-graph-node--selected");

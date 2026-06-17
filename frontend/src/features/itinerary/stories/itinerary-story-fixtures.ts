@@ -16,6 +16,30 @@ export const defaultPathOptions = [
   ),
 ] satisfies ReadonlyArray<ItineraryPathOption>;
 
+export const branchGraphPathOptions: ItineraryPathOption[] = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-rain", name: "Rain plan", scope: "day", day },
+  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
+] ;
+
+export const planAPathOptions: ItineraryPathOption[] = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
+] ;
+
+export const planABPathOptions: ItineraryPathOption[] = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
+  { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day },
+] ;
+
+export const stressPathOptions: ItineraryPathOption[] = [
+  { id: "main", name: "Main", scope: "trip" },
+  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day },
+  { id: "path-2026-06-19-sub-b", name: "Plan B", scope: "day", day },
+  { id: "path-2026-06-19-sub-c", name: "Plan C", scope: "day", day },
+] ;
+
 export const ownerStoryArgs: SmartItineraryStoryArgs = {
   endDate: tripFixture.trip.endDate,
   items: tripFixture.planItems,
