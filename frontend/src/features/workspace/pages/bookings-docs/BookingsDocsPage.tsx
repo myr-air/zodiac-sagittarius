@@ -4,16 +4,15 @@ import {
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, BookingDocStatus, Member, Trip, TripTask } from "@/src/trip/types";
-import type { Locale } from "@/src/i18n/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Button, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 import { BookingDialog } from "./BookingDialog";
 import { BookingFileRow } from "./BookingFileRow";
+import { BookingsDocsHeader } from "./BookingsDocsHeader";
 import { BookingInspector } from "./BookingInspector";
-import { bookingCopy, bookingStatuses, formatEnumLabel, type BookingCopy } from "./BookingsDocsPage.copy";
+import { bookingCopy, bookingStatuses, formatEnumLabel } from "./BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
 import {
@@ -275,43 +274,5 @@ export function BookingsDocsPage({
         </div>
       ) : null}
     </WorkspacePage>
-  );
-}
-
-function BookingsDocsHeader({
-  canEditBookings,
-  copy,
-  locale,
-  onAddBooking,
-  recordCount,
-  trip,
-}: {
-  canEditBookings: boolean;
-  copy: BookingCopy;
-  locale: Locale;
-  onAddBooking: () => void;
-  recordCount: number;
-  trip: Trip;
-}) {
-  return (
-    <PageHeader
-      title={copy.title}
-      subtitle={trip.name}
-      meta={(
-        <>
-          <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-          <span><Icon name="ticket" /> {copy.records(recordCount)}</span>
-        </>
-      )}
-      aside={canEditBookings ? (
-        <div className={bookingStyles.headerAsideClassName}>
-          <div className={bookingStyles.headerActionRowClassName}>
-            <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}>
-              <Icon name="plus" /> <span>{copy.addBooking}</span>
-            </Button>
-          </div>
-        </div>
-      ) : null}
-    />
   );
 }
