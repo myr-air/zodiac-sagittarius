@@ -68,6 +68,7 @@ import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } fr
 import { StatusMessage } from "./account-status-message";
 import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
 import { PortalExplorerSection } from "./portal-explorer-section";
+import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripWizard } from "./portal-trip-wizard";
 import { PortalVaultSection } from "./portal-vault-section";
 
@@ -1234,32 +1235,9 @@ function AccountDashboard({
           />
         ) : null}
 
-        {portalSection === "todos" ? <section className={portalFeatureCardClassName} id="portal-to-dos">
-          <PanelHeading icon="list" title={t.access.portal.sections.todos.title} detail={t.access.portal.sections.todos.detail} />
-          {isLoading && !todos.length ? (
-            <PortalListSkeleton rows={1} />
-          ) : todos.length ? (
-            <PortalList>
-              {todos.map((todo) => (
-                <PortalListRow
-                  key={todo.id}
-                  icon="list"
-                  title={todo.title}
-                  detail={`${todo.tripName} · ${todo.visibility} · ${todo.kind ?? "prep"}`}
-                  badge={<Badge tone={todo.status === "done" ? "success" : "warning"}>{todo.status}</Badge>}
-                />
-              ))}
-            </PortalList>
-          ) : (
-            <PortalEmptyState
-              actionHref={appRoutes.portalNewTrip()}
-              actionLabel={t.access.portal.emptyStates.todos.action}
-              detail={t.access.portal.emptyStates.todos.detail}
-              icon="list"
-              title={t.access.portal.emptyStates.todos.title}
-            />
-          )}
-        </section> : null}
+        {portalSection === "todos" ? (
+          <PortalTodosSection className={portalFeatureCardClassName} isLoading={isLoading} todos={todos} />
+        ) : null}
 
         {portalSection === "vault" ? (
           <PortalVaultSection
