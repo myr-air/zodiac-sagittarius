@@ -3,17 +3,10 @@ import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { deleteItineraryItemFromTrip } from "@/src/trip/itinerary";
 import type {
-  ItineraryItem,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-
-interface ItineraryDialogStateEdit {
-  mode: "edit";
-  item: ItineraryItem;
-}
-
-type ItineraryDialogState = ItineraryDialogStateEdit | { mode: "create" } | null;
+import type { ItineraryDialogState } from "./itinerary-dialog-state";
 
 interface UseWorkspaceItineraryDeleteCommandParams {
   canEdit: boolean;
