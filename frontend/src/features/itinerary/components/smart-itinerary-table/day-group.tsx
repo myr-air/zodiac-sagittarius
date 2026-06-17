@@ -8,7 +8,6 @@ import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
-import { InlineOptionPicker } from "../inline-option-picker";
 import { formatThaiDate, dayRouteLabel } from "@/src/features/itinerary/lib";
 import type { InlineItineraryItemPatch } from "../../lib";
 import type {
@@ -19,12 +18,9 @@ import { groupChildItemsByParent, groupTopLevelItems } from "../smart-itinerary-
 import {
   addStopInlineButtonClassName,
   addStopRowClassName,
-  dayClearPathButtonClassName,
   dayDateClassName,
   dayGroupClassName,
   dayOrdinalClassName,
-  dayPathControlsClassName,
-  dayPathPickerClassName,
   dayRouteClassName,
   dayRowClassName,
   dayRowContentClassName,
@@ -37,6 +33,7 @@ import {
 import { DayWeatherChip } from "./day-weather-chip";
 import { ActivityCell } from "./activity-cell";
 import { DayTitleEditor } from "./day-title-editor";
+import { DayPathControls } from "./day-path-controls";
 
 export function DayGroup({
   graphColumnWidth,
@@ -198,32 +195,17 @@ export function DayGroup({
               />
             </span>
             <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
-            {hasAlternativePathOptions ? (
-              <span className={dayPathControlsClassName}>
-                <InlineOptionPicker
-                  buttonClassName={dayPathPickerClassName}
-                  ariaLabel={`Path for ${dayA11yLabel}`}
-                  value={dayPathOverride || mainItineraryPathId}
-                  disabled={!canEdit || showAllPaths}
-                  options={dayPathOptions.map((option) => ({
-                    value: option.id,
-                    label: option.name,
-                  }))}
-                  onCommit={(pathId) =>
-                    onChangeDayPath?.(group.day, pathId)
-                  }
-                />
-                <button
-                  type="button"
-                  className={dayClearPathButtonClassName}
-                  aria-label={`Clear path override for ${dayA11yLabel}`}
-                  disabled={!canEdit || showAllPaths || !dayPathOverride}
-                  onClick={() => onClearDayPath?.(group.day)}
-                >
-                  Clear
-                </button>
-              </span>
-            ) : null}
+            <DayPathControls
+              day={group.day}
+              dayLabel={dayA11yLabel}
+              dayPathOptions={dayPathOptions}
+              dayPathOverride={dayPathOverride}
+              canEdit={canEdit}
+              showAllPaths={showAllPaths}
+              hasAlternativePathOptions={hasAlternativePathOptions}
+              onChangeDayPath={onChangeDayPath}
+              onClearDayPath={onClearDayPath}
+            />
           </div>
         </th>
       </tr>
