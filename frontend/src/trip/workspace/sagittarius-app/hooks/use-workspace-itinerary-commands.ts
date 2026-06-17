@@ -1,10 +1,10 @@
 import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import {
-  TripApiError,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
+import { isVersionConflict } from "@/src/trip/api-errors";
 import {
   appendItineraryItemPlacement,
   appendItineraryItemToTrip,
@@ -185,11 +185,7 @@ export function useWorkspaceItineraryCommands({
             setSelectedItemId(itemId);
             return;
           } catch (error) {
-            if (
-              !(error instanceof TripApiError) ||
-              error.code !== "version_conflict" ||
-              attempt > 0
-            ) {
+            if (!isVersionConflict(error) || attempt > 0) {
               throw error;
             }
             const cockpit = await resolvedApiClient.loadTrip(

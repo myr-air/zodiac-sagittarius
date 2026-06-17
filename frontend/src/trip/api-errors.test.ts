@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { TripApiError } from "./api-client";
-import { isAuthFailure, isForbidden, isUnauthenticated } from "./api-errors";
+import {
+  isAuthFailure,
+  isForbidden,
+  isUnauthenticated,
+  isVersionConflict,
+} from "./api-errors";
 
 describe("trip API error helpers", () => {
   it("classifies unauthenticated and forbidden API errors", () => {
@@ -29,6 +34,26 @@ describe("trip API error helpers", () => {
           code: "version_conflict",
           message: "Reload latest trip",
           status: 409,
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("classifies API version conflicts", () => {
+    const versionConflict = new TripApiError({
+      code: "version_conflict",
+      message: "Reload latest trip",
+      status: 409,
+    });
+
+    expect(isVersionConflict(versionConflict)).toBe(true);
+    expect(isVersionConflict(new Error("network"))).toBe(false);
+    expect(
+      isVersionConflict(
+        new TripApiError({
+          code: "forbidden",
+          message: "No access",
+          status: 403,
         }),
       ),
     ).toBe(false);

@@ -1,10 +1,8 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
 import type { TripPhotoAlbumInput } from "@/src/features/workspace/pages/photos";
-import {
-  TripApiError,
-  type TripApiClient,
-} from "@/src/trip/api-client";
+import type { TripApiClient } from "@/src/trip/api-client";
+import { isVersionConflict } from "@/src/trip/api-errors";
 import { nextClientMutationId, nextLocalPhotoAlbumId } from "@/src/trip/local-ids";
 import {
   appendPhotoAlbumToTrip,
@@ -112,10 +110,7 @@ export function useWorkspacePhotoAlbums({
           replacePhotoAlbumInTrip(latestTripRef.current, patchedPhotoAlbum),
         );
       } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
+        if (isVersionConflict(error)) {
           const latest = await apiClient.loadTrip(
             trip.id,
             participantSession.sessionToken,

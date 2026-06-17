@@ -22,7 +22,8 @@ import {
   updateLocalBookingDocInTrip,
   uniqueStringIds,
 } from "@/src/trip/booking-docs";
-import { TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
+import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
+import { isVersionConflict } from "@/src/trip/api-errors";
 import { nextLocalBookingDocId } from "@/src/trip/local-ids";
 import type {
   BookingDoc,
@@ -107,10 +108,7 @@ export function useWorkspaceBookingCommands({
           replaceApiTrip(nextTrip);
           return bookingDoc;
         } catch (error) {
-          if (
-            !(error instanceof TripApiError) ||
-            error.code !== "version_conflict"
-          )
+          if (!isVersionConflict(error))
             throw error;
           const cockpit = await apiClient.loadTrip(
             trip.id,
@@ -248,11 +246,7 @@ export function useWorkspaceBookingCommands({
             replaceApiTrip(nextTrip);
             return;
           } catch (error) {
-            if (
-              !(error instanceof TripApiError) ||
-              error.code !== "version_conflict" ||
-              attempt > 0
-            )
+            if (!isVersionConflict(error) || attempt > 0)
               throw error;
             const cockpit = await apiClient.loadTrip(
               currentTrip.id,

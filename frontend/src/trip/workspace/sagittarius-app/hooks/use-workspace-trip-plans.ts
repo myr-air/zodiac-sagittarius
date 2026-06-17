@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
-import { TripApiError, type TripApiClient } from "@/src/trip/api-client";
+import type { TripApiClient } from "@/src/trip/api-client";
+import { isVersionConflict } from "@/src/trip/api-errors";
 import {
   buildCreateTripPlanRequest,
   buildPatchTripPlanStatusRequest,
@@ -119,10 +120,7 @@ export function useWorkspaceTripPlanCommands({
         setSelectedTripPlanId(tripPlanId);
         rememberSelectedTripPlanId(publishedTrip, tripPlanId);
       } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
+        if (isVersionConflict(error)) {
           await reloadTripPlanConflict(null);
           return true;
         }
@@ -181,10 +179,7 @@ export function useWorkspaceTripPlanCommands({
         );
         updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
       } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
+        if (isVersionConflict(error)) {
           await reloadTripPlanConflict();
           return true;
         }
@@ -248,10 +243,7 @@ export function useWorkspaceTripPlanCommands({
         );
         updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
       } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
+        if (isVersionConflict(error)) {
           await reloadTripPlanConflict();
           return true;
         }
@@ -311,10 +303,7 @@ export function useWorkspaceTripPlanCommands({
         setSelectedTripPlanId(createdVariant.id);
         rememberSelectedTripPlanId(trip, createdVariant.id);
       } catch (error) {
-        if (
-          error instanceof TripApiError &&
-          error.code === "version_conflict"
-        ) {
+        if (isVersionConflict(error)) {
           await reloadTripPlanConflict();
           return true;
         }
