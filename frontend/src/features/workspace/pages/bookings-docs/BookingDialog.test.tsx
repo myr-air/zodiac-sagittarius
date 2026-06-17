@@ -2,15 +2,9 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import type { TripTask } from "@/src/trip/types";
 import { bookingCopy } from "./BookingsDocsPage.copy";
 import { BookingDialog } from "./BookingDialog";
-
-const tasks: TripTask[] = [
-  { id: "task-passport-nam", title: "เพิ่มชื่อ passport ของ Explorer Friend", status: "open", visibility: "shared", kind: "booking", createdBy: "member-nam", assigneeId: "member-nam" },
-  { id: "task-hotel-names", title: "ยืนยันรายชื่อผู้เข้าพักโรงแรม", status: "open", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-];
+import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
 
 describe("BookingDialog", () => {
   it("submits a trimmed new booking payload", async () => {
@@ -22,7 +16,7 @@ describe("BookingDialog", () => {
         booking={null}
         copy={bookingCopy.en}
         trip={seedTrip}
-        tasks={tasks}
+        tasks={bookingDocTestTasks}
         onCancel={() => undefined}
         onSubmit={onSubmit}
       />,
@@ -70,7 +64,7 @@ describe("BookingDialog", () => {
         booking={booking}
         copy={bookingCopy.en}
         trip={seedTrip}
-        tasks={tasks}
+        tasks={bookingDocTestTasks}
         onCancel={onCancel}
         onSubmit={onSubmit}
       />,

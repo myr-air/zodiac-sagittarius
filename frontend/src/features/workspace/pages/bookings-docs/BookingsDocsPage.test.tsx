@@ -3,14 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import type { BookingDoc, Member, TripTask } from "@/src/trip/types";
+import type { BookingDoc, Member } from "@/src/trip/types";
 import { BookingsDocsPage, type BookingDocInput } from "./BookingsDocsPage";
-
-const tasks: TripTask[] = [
-  { id: "task-passport-nam", title: "เพิ่มชื่อ passport ของ Explorer Friend", status: "open", visibility: "shared", kind: "booking", createdBy: "member-nam", assigneeId: "member-nam" },
-  { id: "task-hotel-names", title: "ยืนยันรายชื่อผู้เข้าพักโรงแรม", status: "open", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-];
+import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
 
 describe("BookingsDocsPage", () => {
   it("renders booking folders, a file list, and selected booking inspector", () => {
@@ -189,7 +184,7 @@ function renderPage(overrides: Partial<{
   return renderWithI18n(
     <BookingsDocsPage
       trip={seedTrip}
-      tasks={tasks}
+      tasks={bookingDocTestTasks}
       currentMember={currentMember}
       bookingDocs={overrides.bookingDocs ?? seedTrip.bookingDocs ?? []}
       canEditBookings={currentMember.role === "owner" || currentMember.role === "organizer"}

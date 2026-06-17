@@ -2,15 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { findBookingDocRelations } from "@/src/trip/booking-docs";
 import { seedTrip } from "@/src/trip/seed";
-import type { TripTask } from "@/src/trip/types";
 import { bookingCopy } from "./BookingsDocsPage.copy";
 import { BookingInspector } from "./BookingInspector";
-
-const tasks: TripTask[] = [
-  { id: "task-passport-nam", title: "เพิ่มชื่อ passport ของ Explorer Friend", status: "open", visibility: "shared", kind: "booking", createdBy: "member-nam", assigneeId: "member-nam" },
-  { id: "task-hotel-names", title: "ยืนยันรายชื่อผู้เข้าพักโรงแรม", status: "open", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-  { id: "task-peak-tram", title: "จอง Peak Tram", status: "done", visibility: "shared", kind: "booking", createdBy: "member-beam", assigneeId: "member-beam" },
-];
+import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
 
 describe("BookingInspector", () => {
   it("renders an empty inspector when no booking is selected", () => {
@@ -33,7 +27,7 @@ describe("BookingInspector", () => {
 
   it("renders selected booking facts, links, and relation counts", () => {
     const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
-    const relations = findBookingDocRelations(booking, seedTrip, tasks);
+    const relations = findBookingDocRelations(booking, seedTrip, bookingDocTestTasks);
 
     render(
       <BookingInspector
@@ -60,7 +54,7 @@ describe("BookingInspector", () => {
 
   it("shows edit controls when allowed and reports inspector actions", () => {
     const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
-    const relations = findBookingDocRelations(booking, seedTrip, tasks);
+    const relations = findBookingDocRelations(booking, seedTrip, bookingDocTestTasks);
     const onClose = vi.fn();
     const onDelete = vi.fn();
     const onEdit = vi.fn();
