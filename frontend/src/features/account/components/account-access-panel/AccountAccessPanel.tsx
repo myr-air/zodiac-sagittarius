@@ -29,7 +29,6 @@ import {
   cacheAccountPortalData,
   clearAccountPortalDataCache,
   getAccountPortalDataCache,
-  getLatestAccountPortalDataCache,
   heroDetail,
   heroTitle,
   isAccountEntryMode,
@@ -44,9 +43,6 @@ import {
   PortalStatSkeleton,
   SettingLine,
   Stat,
-  portalSkeletonBlockClassName,
-  portalSkeletonLineClassName,
-  portalSkeletonTitleClassName,
 } from "./account-portal-primitives";
 import {
   ACCESS_ERROR_CODES,
@@ -67,6 +63,7 @@ import {
   normalizedTripForm,
 } from "./account-trip-wizard-support";
 import { AccountPortalNav } from "./account-portal-nav";
+import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import { AccountSettingsEditor } from "./account-settings-editor";
 import { PortalTripWizard } from "./portal-trip-wizard";
 
@@ -475,7 +472,14 @@ export function AccountAccessPanel({
             onError={setError}
           />
         ) : !accountSessionLoaded && effectiveAccessMode === "account-portal" ? (
-          <AccountPortalLoadingFrame portalSection={portalSection} />
+          <AccountPortalLoadingFrame
+            classNames={{
+              content: portalContentClassName,
+              dashboard: accountDashboardClassName,
+              loadingCard: portalLoadingCardClassName,
+            }}
+            portalSection={portalSection}
+          />
         ) : accountSession ? (
           <AccountDashboard
             accountClient={accountClient}
@@ -532,24 +536,6 @@ export function AccountAccessPanel({
         )}
       </section>
     </main>
-  );
-}
-
-function AccountPortalLoadingFrame({ portalSection }: { portalSection: PortalSection }) {
-  const { t } = useI18n();
-  const cachedEmail = getLatestAccountPortalDataCache()?.settings?.profile.primaryEmail ?? t.access.dashboard.noEmail;
-
-  return (
-    <div className={accountDashboardClassName} id="account-portal" aria-busy="true">
-      <AccountPortalNav activeSection={portalSection} email={cachedEmail} />
-      <div className={portalContentClassName}>
-        <section className={portalLoadingCardClassName}>
-          <span className={portalSkeletonTitleClassName} />
-          <span className={portalSkeletonLineClassName} />
-          <span className={portalSkeletonBlockClassName} />
-        </section>
-      </div>
-    </div>
   );
 }
 
