@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { mainPathOption, pathOptionPlanA } from "@/src/features/itinerary/testing";
 import { DayPathControls } from "./day-path-controls";
 
 const meta = {
@@ -8,10 +9,7 @@ const meta = {
   args: {
     day: "2026-06-19",
     dayLabel: "Day 2",
-    dayPathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "plan-a", name: "Plan A", scope: "trip", day: "2026-06-19" },
-    ],
+    dayPathOptions: [mainPathOption, pathOptionPlanA],
     canEdit: true,
     showAllPaths: false,
     hasAlternativePathOptions: true,

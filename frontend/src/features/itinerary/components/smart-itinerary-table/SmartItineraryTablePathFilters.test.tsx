@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { messages } from "@/src/i18n/messages";
+import { mainPathOption, pathOptionPlanA, pathIdMain, pathIdPlanA } from "@/src/features/itinerary/testing";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 
 describe("SmartItineraryTablePathFilters", () => {
@@ -11,15 +12,12 @@ describe("SmartItineraryTablePathFilters", () => {
 
     render(
       <SmartItineraryTablePathFilters
-        filterOptions={[
-          { id: "main", name: "Main" },
-          { id: "path-a", name: "Path A" },
-        ]}
+        filterOptions={[mainPathOption, pathOptionPlanA]}
         itineraryLabels={messages.en.itinerary}
         onTogglePathFilter={onTogglePathFilter}
         onChangeShowAllPaths={vi.fn()}
         selectedFilterLabel="1 selected"
-        selectedPathIds={new Set(["main", "path-a"])}
+        selectedPathIds={new Set([pathIdMain, pathIdPlanA])}
         showAllPaths={false}
       />,
     );
@@ -27,7 +25,7 @@ describe("SmartItineraryTablePathFilters", () => {
     const mainCheckbox = screen.getByRole("checkbox", { name: "Main" });
     await user.click(mainCheckbox);
 
-    expect(onTogglePathFilter).toHaveBeenCalledWith("main");
+    expect(onTogglePathFilter).toHaveBeenCalledWith(pathIdMain);
     expect(screen.getByRole("checkbox", { name: "Show all paths" })).toBeInTheDocument();
   });
 
@@ -37,13 +35,13 @@ describe("SmartItineraryTablePathFilters", () => {
     render(
       <SmartItineraryTablePathFilters
         filterOptions={[
-          { id: "main", name: "Main" },
+          { id: pathIdMain, name: mainPathOption.name },
         ]}
         itineraryLabels={messages.en.itinerary}
         onTogglePathFilter={vi.fn()}
         onChangeShowAllPaths={onChangeShowAllPaths}
         selectedFilterLabel="1 selected"
-        selectedPathIds={new Set(["main"])}
+        selectedPathIds={new Set([pathIdMain])}
         showAllPaths={false}
       />,
     );

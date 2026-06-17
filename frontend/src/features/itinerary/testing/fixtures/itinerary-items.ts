@@ -6,27 +6,28 @@ import type {
   ItineraryTimeMode,
 } from "@/src/trip/types";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import {
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathPlanOneOption,
+  storyRainPathOption,
+} from "./path-options";
 
 export const defaultSmartItineraryPathOptions = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-plan-1", name: "Plan 1", scope: "trip" },
-  { id: "path-rain", name: "Rain plan", scope: "day", day: "2026-06-19" },
+  mainPathOption,
+  pathPlanOneOption,
+  storyRainPathOption,
 ] as const satisfies ReadonlyArray<ItineraryPathOption>;
 
 export const defaultPathOptionsForPanel = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "path-plan-1", name: "Plan 1", scope: "trip" },
-  { id: "path-2026-06-19-sub-a", name: "Plan A", scope: "day", day: "2026-06-19" },
+  mainPathOption,
+  pathPlanOneOption,
+  pathOptionStoryPlanA,
 ] as const satisfies ReadonlyArray<ItineraryPathOption>;
 
 export const defaultDayPathOptions = [
-  { id: "main", name: "Main", scope: "trip" },
-  {
-    id: "path-2026-06-19-sub-a",
-    name: "Plan A",
-    scope: "day",
-    day: "2026-06-19",
-  },
+  mainPathOption,
+  pathOptionStoryPlanA,
 ] as const satisfies ReadonlyArray<ItineraryPathOption>;
 
 export function buildBookingDoc(

@@ -1,15 +1,14 @@
 import { screen } from "@testing-library/react";
+import type { CSSProperties } from "react";
 import { describe, expect, it } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
+import { mainPathOption, pathRainOption } from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 
 describe("SmartItineraryTableBody", () => {
-  const pathOptions = [
-    { id: "main", name: "Main", scope: "trip" as const },
-    { id: "rain", name: "Rain", scope: "day" as const, day: "2026-06-19" },
-  ];
+  const pathOptions = [mainPathOption, pathRainOption];
   const today = tripFixture.planItems[0];
   const second = tripFixture.planItems[1];
 
@@ -24,24 +23,24 @@ describe("SmartItineraryTableBody", () => {
         ]}
         graphItemsByDay={new Map()}
         dailyBriefingsByDate={new Map()}
-    pathOptions={pathOptions}
-    dayPathOverrides={{}}
-    showAllPaths={false}
-    smartTableStyle={{ ["--graph-column-width"]: "128px" } as CSSProperties}
-    graphColumnWidth={128}
+        pathOptions={pathOptions}
+        dayPathOverrides={{}}
+        showAllPaths={false}
+        smartTableStyle={{ ["--graph-column-width"]: "128px" } as CSSProperties}
+        graphColumnWidth={128}
         itineraryLabels={messages.en.itinerary}
         locale="en"
         startDate={tripFixture.trip.startDate}
         selectedItemId={today.id}
-    bookingDocs={[]}
-    bookingLinkItems={tripFixture.planItems}
-    onAddStop={() => {}}
-    onOpenItemDetails={() => {}}
-    onSelectItem={() => {}}
-    onToggleDay={() => {}}
-    tHeaders={messages.en.itinerary.headers}
-  />,
-  { locale: "en" },
+        bookingDocs={[]}
+        bookingLinkItems={tripFixture.planItems}
+        onAddStop={() => {}}
+        onOpenItemDetails={() => {}}
+        onSelectItem={() => {}}
+        onToggleDay={() => {}}
+        tHeaders={messages.en.itinerary.headers}
+      />,
+      { locale: "en" },
     );
 
     expect(screen.getByRole("columnheader", { name: /Path graph/i })).toBeInTheDocument();
@@ -50,4 +49,3 @@ describe("SmartItineraryTableBody", () => {
     expect(screen.getByText("Day 2")).toBeInTheDocument();
   });
 });
-import type { CSSProperties } from "react";

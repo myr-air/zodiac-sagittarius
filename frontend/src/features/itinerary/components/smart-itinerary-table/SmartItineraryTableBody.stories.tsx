@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
+import { mainPathOption, storyRainDisplayPathOption } from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 
 const meta = {
@@ -20,15 +21,7 @@ const meta = {
     ],
     graphItemsByDay: new Map(),
     dailyBriefingsByDate: new Map(),
-    pathOptions: [
-      { id: "main", name: "Main", scope: "trip" },
-      {
-        id: "path-rain",
-        name: "Rain",
-        scope: "day",
-        day: "2026-06-19",
-      },
-    ],
+    pathOptions: [mainPathOption, storyRainDisplayPathOption],
     dayPathOverrides: {},
     showAllPaths: false,
     smartTableStyle: { "--graph-column-width": "164px" } as CSSProperties,

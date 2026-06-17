@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { PlanVariant, TripDailyBriefing } from "@/src/trip/types";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
+import { mainPathOption } from "@/src/features/itinerary/testing";
+import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import {
   buildGraphColumnWidth,
   buildWeatherSummary,
@@ -99,8 +100,8 @@ describe("smart-itinerary-table-utils", () => {
 
   it("deduplicates path options and formats labels consistently", () => {
     const pathOptions: ItineraryPathOption[] = [
-      { id: "main", name: "Main", scope: "trip" },
-      { id: "p2", name: "Plan 2", scope: "trip" },
+      mainPathOption,
+      { id: "p2", name: "Plan 2", scope: "trip" } as ItineraryPathOption,
     ];
     const items = [
       buildItineraryItem({

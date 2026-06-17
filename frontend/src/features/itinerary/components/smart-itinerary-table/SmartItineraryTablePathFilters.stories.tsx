@@ -4,6 +4,13 @@ import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 import type { ComponentProps } from "react";
+import {
+  mainPathOption,
+  pathIdPlanA,
+  pathIdPlanB,
+  pathOptionPlanA,
+  pathOptionPlanB,
+} from "@/src/features/itinerary/testing";
 
 const StoryRenderer = (args: ComponentProps<typeof SmartItineraryTablePathFilters>) => {
   const [selected, setSelected] = useState(new Set(args.selectedPathIds));
@@ -40,15 +47,15 @@ const meta = {
   render: StoryRenderer,
   args: {
     filterOptions: [
-      { id: "main", name: "Main" },
-      { id: "plan-a", name: "Plan A" },
-      { id: "plan-b", name: "Plan B" },
+      mainPathOption,
+      pathOptionPlanA,
+      pathOptionPlanB,
     ],
     itineraryLabels: messages.en.itinerary,
     onTogglePathFilter: fn(),
     onChangeShowAllPaths: fn(),
     selectedFilterLabel: "3 selected",
-    selectedPathIds: new Set(["main", "plan-a", "plan-b"]),
+    selectedPathIds: new Set([mainPathOption.id, pathIdPlanA, pathIdPlanB]),
     showAllPaths: false,
   },
 } satisfies Meta<typeof SmartItineraryTablePathFilters>;

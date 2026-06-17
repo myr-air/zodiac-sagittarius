@@ -1,14 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { mainPathOption, pathIdPlanA, pathOptionPlanA } from "@/src/features/itinerary/testing";
 import { DayPathControls } from "./day-path-controls";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
 
 describe("DayPathControls", () => {
-  const pathOptions: ItineraryPathOption[] = [
-    { id: "main", name: "Main", scope: "trip" },
-    { id: "plan-a", name: "Plan A", scope: "trip", day: "2026-06-19" },
-  ];
+  const pathOptions = [mainPathOption, pathOptionPlanA];
 
   it("renders clear button and invokes clear callback", async () => {
     const user = userEvent.setup();
@@ -19,7 +16,7 @@ describe("DayPathControls", () => {
         day="2026-06-19"
         dayLabel="Day 2"
         dayPathOptions={pathOptions}
-        dayPathOverride="plan-a"
+        dayPathOverride={pathIdPlanA}
         canEdit
         showAllPaths={false}
         hasAlternativePathOptions
@@ -38,7 +35,7 @@ describe("DayPathControls", () => {
       <DayPathControls
         day="2026-06-19"
         dayLabel="Day 2"
-        dayPathOptions={[{ id: "main", name: "Main", scope: "trip" }]}
+        dayPathOptions={[mainPathOption]}
         canEdit
         showAllPaths={false}
         hasAlternativePathOptions={false}

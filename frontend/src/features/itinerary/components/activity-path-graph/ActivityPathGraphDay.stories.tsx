@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import type { ItineraryItem } from "@/src/trip/types";
 import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
 import type { ActivityPathGraphDayProps } from "./activity-path-graph.types";
+import { mainPathOption, pathRainPlanOption } from "@/src/features/itinerary/testing";
 import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
 
 const rowItems: ItineraryItem[] = [
@@ -35,10 +35,7 @@ const graphItems: ItineraryItem[] = [
   }),
 ];
 
-const pathOptions: ItineraryPathOption[] = [
-  { id: "main", name: "Main", scope: "trip" },
-  { id: "rain", name: "Rain Plan", scope: "day", day: "2026-06-19" },
-];
+const pathOptions = [mainPathOption, pathRainPlanOption];
 
 const meta = {
   title: "Features/Itinerary/ActivityPathGraphDay",
@@ -78,4 +75,3 @@ export const ReadOnly: Story = {
     canEdit: false,
   },
 };
-
