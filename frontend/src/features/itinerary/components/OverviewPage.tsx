@@ -3,7 +3,7 @@ import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion,
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageUserCard } from "@/src/components/PageHeader";
+import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
 import { Button, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";

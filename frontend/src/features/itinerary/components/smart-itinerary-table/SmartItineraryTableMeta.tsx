@@ -1,7 +1,7 @@
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange } from "@/src/components/PageHeader";
+import { formatTripRange } from "@/src/shared/components/page-header";
 import { formatDuration } from "@/src/features/itinerary/lib";
 
 interface SmartItineraryTableMetaProps {

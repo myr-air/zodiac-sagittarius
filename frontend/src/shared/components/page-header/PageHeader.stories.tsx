@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { Icon } from "@/src/ui/icons";
-import { TravelMotif } from "./motifs";
+import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
 
 const meta = {

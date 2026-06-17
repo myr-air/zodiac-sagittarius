@@ -13,7 +13,7 @@ import {
   type ItineraryView,
 } from "@/src/trip/itinerary";
 import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
-import { PageHeader } from "@/src/components/PageHeader";
+import { PageHeader } from "@/src/shared/components/page-header";
 import type { InlineItineraryItemPatch } from "../lib";
 import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
 import { SmartItineraryTableMeta } from "./smart-itinerary-table/SmartItineraryTableMeta";

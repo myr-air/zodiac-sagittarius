@@ -7,8 +7,8 @@ import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-time";
 import type { Member, Trip } from "@/src/trip/types";
 import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { DatePickerField } from "./DateTimePickers";
-import { PageHeader } from "./PageHeader";
+import { DatePickerField } from "@/src/shared/components/date-time-pickers";
+import { PageHeader } from "@/src/shared/components/page-header";
 
 export interface TripSettingsFormValues {
   name: string;

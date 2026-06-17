@@ -14,8 +14,8 @@ import {
 import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, ExpenseLineItem, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
-import { TravelMotif } from "./motifs";
-import { formatTripRange, PageHeader } from "./PageHeader";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { Button, IconButton, Select } from "@/src/ui";
 
 interface TripExpensesPageProps {

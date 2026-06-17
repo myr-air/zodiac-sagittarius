@@ -22,7 +22,9 @@ Sagittarius is a group-trip planning cockpit. Use this map as the first project-
 ### Frontend
 
 - [frontend/src/app/](../frontend/src/app): application shell and route entrypoints.
-- [frontend/src/components/](../frontend/src/components): cockpit UI surfaces, including `SagittariusApp` and `SmartItineraryTable`.
+- [frontend/src/components/](../frontend/src/components): legacy page-level cockpit and account surfaces that have not moved into feature folders yet.
+- [frontend/src/features/](../frontend/src/features): feature-owned UI modules such as itinerary components, stories, domain helpers, and tests.
+- [frontend/src/shared/components/](../frontend/src/shared/components): reusable UI building blocks shared across features, such as page headers, date/time pickers, and travel motifs.
 - [frontend/src/trip/](../frontend/src/trip): trip domain types, API client/routes, itinerary logic, import/export, and real API e2e tests.
 - [frontend/src/account/](../frontend/src/account): account and portal API/client logic.
 - [frontend/src/i18n/](../frontend/src/i18n): product copy and labels.
@@ -63,6 +65,8 @@ Start with [AGENTS.md](../AGENTS.md) frontend conventions. Use existing componen
 Likely files:
 
 - [frontend/src/components/](../frontend/src/components)
+- [frontend/src/features/](../frontend/src/features)
+- [frontend/src/shared/components/](../frontend/src/shared/components)
 - [frontend/src/i18n/](../frontend/src/i18n)
 - [frontend/src/trip/](../frontend/src/trip)
 - [docs/storybook-ux-ui-qa.md](./storybook-ux-ui-qa.md)

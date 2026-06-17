@@ -4,8 +4,8 @@ import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { TravelMotif } from "./motifs";
-import { formatTripRange, PageHeader } from "./PageHeader";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { PeoplePanel } from "./PeoplePanel";
 import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 

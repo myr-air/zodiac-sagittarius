@@ -5,20 +5,21 @@ import { describe, expect, it } from "vitest";
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
   const accountSource = readFileSync("src/components/AccountAccessPanel.tsx", "utf8");
-  const activityPathGraphSource = readFileSync(
+  const activityPathGraphSource = readSourceFiles([
     "src/features/itinerary/components/ActivityPathGraphDay.tsx",
-    "utf8",
-  );
-  const contextRailSource = readFileSync(
+    ...collectRuntimeSourceFiles("src/features/itinerary/components/activity-path-graph"),
+  ]);
+  const contextRailSource = readSourceFiles([
     "src/features/itinerary/components/ContextRail.tsx",
-    "utf8",
-  );
-  const smartTableSource = readFileSync(
+    ...collectRuntimeSourceFiles("src/features/itinerary/components/context-rail"),
+  ]);
+  const smartTableSource = readSourceFiles([
     "src/features/itinerary/components/SmartItineraryTable.tsx",
-    "utf8",
-  );
-  const motifSource = readFileSync("src/components/motifs.tsx", "utf8");
-  const motifStories = readFileSync("src/components/motifs.stories.tsx", "utf8");
+    "src/features/itinerary/components/smart-itinerary-table.styles.ts",
+    ...collectRuntimeSourceFiles("src/features/itinerary/components/smart-itinerary-table"),
+  ]);
+  const motifSource = readFileSync("src/shared/components/travel-motifs/TravelMotifs.tsx", "utf8");
+  const motifStories = readFileSync("src/shared/components/travel-motifs/TravelMotifs.stories.tsx", "utf8");
   const tripWorkspaceFrameSource = readFileSync("src/trip/workspace/TripWorkspaceFrame.tsx", "utf8");
   const workspaceToastSource = readFileSync("src/trip/workspace/WorkspaceToast.tsx", "utf8");
   const sourceFiles = collectSourceFiles("src").filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
@@ -220,4 +221,14 @@ function collectSourceFiles(root: string): string[] {
     if (/\.(ts|tsx)$/.test(path)) return [path];
     return [];
   });
+}
+
+function collectRuntimeSourceFiles(root: string): string[] {
+  return collectSourceFiles(root)
+    .filter((file) => !/\.(test|stories)\.tsx?$/.test(file))
+    .sort();
+}
+
+function readSourceFiles(files: string[]): string {
+  return files.map((file) => readFileSync(file, "utf8")).join("\n");
 }

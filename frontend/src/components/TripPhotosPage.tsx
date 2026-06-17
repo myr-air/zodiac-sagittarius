@@ -10,7 +10,7 @@ import type { Member, Trip, TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoA
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "./PageHeader";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
 
 interface TripPhotosPageProps {

@@ -130,7 +130,7 @@ export const Tablet: Story = {
   parameters: { viewport: { defaultViewport: "tablet768" } },
   play: async ({ canvasElement }) => {
     await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-2");
+    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-1");
   },
 };
 
@@ -155,7 +155,7 @@ export const Mobile: Story = {
   parameters: { viewport: { defaultViewport: "mobile320" } },
   play: async ({ canvasElement }) => {
     await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[767px]:grid-cols-1");
+    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-1", "max-[767px]:overflow-y-auto");
     await expect(canvasElement.querySelector(".timeline-stop-button")).toHaveClass("max-[767px]:grid-cols-[62px_32px_minmax(0,1fr)]");
   },
 };

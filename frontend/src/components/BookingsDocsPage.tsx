@@ -8,9 +8,9 @@ import type { Locale } from "@/src/i18n/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "./PageHeader";
+import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
-import { DateTimePickerField } from "./DateTimePickers";
 
 interface BookingsDocsPageProps {
   trip: Trip;

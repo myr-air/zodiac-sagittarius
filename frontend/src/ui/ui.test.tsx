@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { formatTripRange, PageHeader, PageUserCard } from "@/src/components/PageHeader";
+import { formatTripRange, PageHeader, PageUserCard } from "@/src/shared/components/page-header";
 import {
   ActionBar,
   Badge,

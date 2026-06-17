@@ -83,7 +83,7 @@ describe("Storybook template catalog", () => {
       ["features/itinerary/stories/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Tablet", "Desktop1024", "Desktop1440", "Thai"]],
       ["components/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile", "Tablet", "Desktop1024", "Desktop1440"]],
       ["features/itinerary/stories/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
-      ["components/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
+      ["shared/components/date-time-pickers/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
       ["components/HomeLanding.stories.tsx", ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
       ["components/AccountAccessPanel.stories.tsx", ["AccountLogin", "AccountRegister", "AccountLoginThai", "TripAccess", "PortalDashboard", "NewTripBuilder", "NewTripMobile", "AccountLoginTablet", "AccountLoginDesktop1024", "AccountLoginDesktop1440", "TripAccessTablet", "TripAccessDesktop1024", "TripAccessDesktop1440", "NewTripTablet", "NewTripDesktop1024", "NewTripDesktop1440"]],
     ];

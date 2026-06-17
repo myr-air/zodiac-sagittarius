@@ -1,4 +1,4 @@
-import { TimePickerField } from "@/src/components/DateTimePickers";
+import { TimePickerField } from "@/src/shared/components/date-time-pickers";
 import { formatDuration } from "@/src/features/itinerary/lib";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryTimeMode } from "@/src/trip/types";

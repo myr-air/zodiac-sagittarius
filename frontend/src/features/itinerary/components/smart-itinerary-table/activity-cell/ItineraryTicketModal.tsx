@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { DateTimePickerField } from "@/src/components/DateTimePickers";
+import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";

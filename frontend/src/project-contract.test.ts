@@ -10,6 +10,7 @@ const productCopySourceRoots = [
   "app",
   "src/app",
   "src/components",
+  "src/shared/components",
   "src/i18n",
 ];
 
@@ -182,6 +183,7 @@ describe("Sagittarius project scaffold", () => {
     expect(map).toContain("[docs/COMMANDS.md](./COMMANDS.md)");
     expect(map).toContain("[frontend/src/trip/](../frontend/src/trip)");
     expect(map).toContain("[frontend/src/components/](../frontend/src/components)");
+    expect(map).toContain("[frontend/src/shared/components/](../frontend/src/shared/components)");
     expect(map).toContain("[backend/crates/sagittarius-api/src/api/](../backend/crates/sagittarius-api/src/api)");
     expect(map).toContain("[backend/migrations/](../backend/migrations)");
     expect(map).toContain("[docs/itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md)");

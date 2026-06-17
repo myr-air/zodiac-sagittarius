@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { TimelineMotif, TravelMotif } from "./motifs";
+import { TimelineMotif, TravelMotif } from "./TravelMotifs";
 
 const meta = {
   title: "Design System/Travel Motifs",

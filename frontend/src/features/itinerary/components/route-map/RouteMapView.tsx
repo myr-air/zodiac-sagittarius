@@ -4,8 +4,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
-import { TravelMotif } from "@/src/components/motifs";
-import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
+import { TravelMotif } from "@/src/shared/components/travel-motifs";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import {
   mapSourceNoteClassName,
   routeLiveMapClassName,

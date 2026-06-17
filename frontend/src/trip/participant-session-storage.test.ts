@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { tripParticipantSessionStorageKey } from "./auth";
 import {
   clearParticipantSession,
@@ -37,6 +37,7 @@ function createMemoryStorage(): Storage {
 
 describe("participant session storage", () => {
   beforeEach(() => {
+    vi.useFakeTimers({ now: new Date("2026-06-16T12:00:00.000Z") });
     Object.defineProperty(window, "localStorage", {
       configurable: true,
       value: createMemoryStorage(),
@@ -47,6 +48,10 @@ describe("participant session storage", () => {
     });
     window.localStorage.clear();
     window.sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("persists participant sessions in sessionStorage and clears legacy localStorage", () => {

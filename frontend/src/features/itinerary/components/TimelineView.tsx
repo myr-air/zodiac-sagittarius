@@ -4,8 +4,8 @@ import { cn } from "@/src/lib/cn";
 import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
 import { Badge, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { TimelineMotif } from "@/src/components/motifs";
-import { formatTripRange, PageHeader } from "@/src/components/PageHeader";
+import { TimelineMotif } from "@/src/shared/components/travel-motifs";
+import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import {
   activityTypeLabel,
   dayRouteLabel,
