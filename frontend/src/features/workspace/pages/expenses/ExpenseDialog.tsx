@@ -3,13 +3,15 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
-  formatMoney,
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
-import { fetchMajorExchangeRate, majorCurrencyOptions, normalizeCurrencyCode } from "@/src/trip/currencies";
+import { fetchMajorExchangeRate, normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
-import { Button, IconButton, Select } from "@/src/ui";
+import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import { ExpenseCommentsSection } from "./components/ExpenseCommentsSection";
+import { ExpenseDetailsFields } from "./components/ExpenseDetailsFields";
+import { ExpenseDialogSummary } from "./components/ExpenseDialogSummary";
 import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import {
@@ -23,13 +25,7 @@ import {
   type EditableExpenseLineItem,
 } from "./expense-dialog-support";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
-import {
-  expenseCategories,
-  expenseSplitModes,
-  formatExchangeRateInput,
-  memberById,
-  sumShares,
-} from "./expense-page-support";
+import { formatExchangeRateInput, sumShares } from "./expense-page-support";
 
 interface ExpenseDialogProps {
   expense: Expense | null;
@@ -91,7 +87,7 @@ export function ExpenseDialog({
   const splitTotal = sumShares(splits);
   const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;
   const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
-  const linkedItem = itemId ? trip.itineraryItems.find((item) => item.id === itemId) : null;
+  const linkedItem = itemId ? (trip.itineraryItems.find((item) => item.id === itemId) ?? null) : null;
   const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
   const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
 
@@ -127,6 +123,17 @@ export function ExpenseDialog({
     } else if (nextMode === "itemized" && !lineItems.length) {
       setLineItems([emptyExpenseLineItem(trip.members, 1)]);
     }
+  }
+
+  function changeCurrency(nextCurrency: string) {
+    setCurrency(normalizeCurrencyCode(nextCurrency));
+    setExchangeRateTouched(false);
+    setExchangeRate("1");
+  }
+
+  function changeExchangeRate(nextExchangeRate: string) {
+    setExchangeRateTouched(true);
+    setExchangeRate(nextExchangeRate);
   }
 
   function updateLineItem(index: number, patch: Partial<EditableExpenseLineItem>) {
@@ -210,99 +217,40 @@ export function ExpenseDialog({
           <IconButton type="button" aria-label={t.common.actions.close} onClick={onClose}><Icon name="x" /></IconButton>
         </div>
         <form className={expenseStyles.dialogFormClassName} onSubmit={submitExpense}>
-          <div className={expenseStyles.dialogGridClassName}>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.title}</span>
-              <input value={title} onChange={(event) => setTitle(event.target.value)} />
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.amount}</span>
-              <input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.currency}</span>
-              <Select
-                aria-label={t.expenses.fields.currency}
-                value={currency}
-                onChange={(event) => {
-                  setCurrency(normalizeCurrencyCode(event.target.value));
-                  setExchangeRateTouched(false);
-                  setExchangeRate("1");
-                }}
-              >
-                {majorCurrencyOptions.map((option) => (
-                  <option key={option.code} value={option.code}>{option.code} · {option.label}</option>
-                ))}
-              </Select>
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.receiptUrl}</span>
-              <input value={receiptUrl} onChange={(event) => setReceiptUrl(event.target.value)} />
-            </label>
-            <label className={`${expenseStyles.fieldClassName} md:col-span-2`}>
-              <span>{t.expenses.fields.notes}</span>
-              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
-            </label>
-            {!expense ? (
-              <label className={expenseStyles.fieldClassName}>
-                <span>{t.expenses.fields.repeatCount}</span>
-                <input inputMode="numeric" min={1} max={31} type="number" value={repeatCount} onChange={(event) => setRepeatCount(event.target.value)} />
-              </label>
-            ) : null}
-            {needsExchangeRate ? (
-              <label className={expenseStyles.fieldClassName}>
-                <span>{t.expenses.fields.exchangeRate({ currency: normalizedCurrency, settlementCurrency })}</span>
-                <input
-                  inputMode="decimal"
-                  value={exchangeRate}
-                  onChange={(event) => {
-                    setExchangeRateTouched(true);
-                    setExchangeRate(event.target.value);
-                  }}
-                />
-              </label>
-            ) : null}
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.paidBy}</span>
-              <Select value={paidBy} onChange={(event) => setPaidBy(event.target.value)}>
-                {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-              </Select>
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.category}</span>
-              <Select value={category} onChange={(event) => setCategory(event.target.value as Expense["category"])}>
-                {expenseCategories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
-              </Select>
-            </label>
-            <div className="grid gap-1.5">
-              <label className={expenseStyles.fieldClassName}>
-                <span>{t.expenses.fields.tripPlan}</span>
-                <Select
-                  value={effectiveTripPlanId}
-                  disabled={Boolean(linkedItem)}
-                  onChange={(event) => setTripPlanId(event.target.value)}
-                >
-                  {tripPlanOptions.map((plan) => (
-                    <option key={plan.id} value={plan.id}>{plan.name}</option>
-                  ))}
-                </Select>
-              </label>
-              {linkedItem ? <span className={expenseStyles.balanceMetaClassName}>{t.expenses.dialog.planLockedToLinkedStop}</span> : null}
-            </div>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.linkedStop}</span>
-              <Select value={itemId} onChange={(event) => changeItemId(event.target.value)}>
-                <option value="">{t.expenses.fields.noLinkedStop}</option>
-                {trip.itineraryItems.map((item) => <option key={item.id} value={item.id}>{item.activity}</option>)}
-              </Select>
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{t.expenses.fields.splitMode}</span>
-              <Select value={splitMode} onChange={(event) => changeSplitMode(event.target.value as ExpenseSplitMode)}>
-                {expenseSplitModes.map((mode) => <option key={mode} value={mode}>{t.expenses.splitModes[mode]}</option>)}
-              </Select>
-            </label>
-          </div>
+          <ExpenseDetailsFields
+            amount={amount}
+            category={category}
+            currency={currency}
+            effectiveTripPlanId={effectiveTripPlanId}
+            exchangeRate={exchangeRate}
+            expense={expense}
+            itemId={itemId}
+            linkedItem={linkedItem}
+            needsExchangeRate={needsExchangeRate}
+            normalizedCurrency={normalizedCurrency}
+            notes={notes}
+            paidBy={paidBy}
+            receiptUrl={receiptUrl}
+            repeatCount={repeatCount}
+            settlementCurrency={settlementCurrency}
+            splitMode={splitMode}
+            title={title}
+            trip={trip}
+            tripPlanOptions={tripPlanOptions}
+            copy={t.expenses}
+            onAmountChange={setAmount}
+            onCategoryChange={setCategory}
+            onCurrencyChange={changeCurrency}
+            onExchangeRateChange={changeExchangeRate}
+            onItemIdChange={changeItemId}
+            onNotesChange={setNotes}
+            onPaidByChange={setPaidBy}
+            onReceiptUrlChange={setReceiptUrl}
+            onRepeatCountChange={setRepeatCount}
+            onSplitModeChange={changeSplitMode}
+            onTitleChange={setTitle}
+            onTripPlanIdChange={setTripPlanId}
+          />
 
           <ExpenseSplitFields
             splitMode={splitMode}
@@ -317,34 +265,28 @@ export function ExpenseDialog({
           />
 
           {expense ? (
-            <section className={expenseStyles.commentsClassName} aria-label={t.expenses.fields.comments}>
-              <div className={expenseStyles.balanceListClassName}>
-                {comments.map((comment) => {
-                  const author = memberById(trip.members, comment.authorId);
-                  return (
-                    <div className={expenseStyles.commentRowClassName} key={comment.id}>
-                      <strong>{author?.displayName ?? t.expenses.comment.unknownAuthor}</strong>
-                      <span>{comment.body}</span>
-                    </div>
-                  );
-                })}
-                {!comments.length ? <p className={expenseStyles.balanceMetaClassName}>{t.expenses.comment.empty}</p> : null}
-              </div>
-              <label className={expenseStyles.fieldClassName}>
-                <span>{t.expenses.fields.commentInput}</span>
-                <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} />
-              </label>
-              <Button type="button" variant="ghost" onClick={addComment}>{t.expenses.actions.addComment}</Button>
-            </section>
+            <ExpenseCommentsSection
+              comments={comments}
+              commentDraft={commentDraft}
+              members={trip.members}
+              copy={t.expenses}
+              onAddComment={addComment}
+              onCommentDraftChange={setCommentDraft}
+            />
           ) : null}
 
-          <p className={splitMismatch ? expenseStyles.warningClassName : expenseStyles.balanceMetaClassName}>
-            {t.expenses.dialog.splitTotal({ total: formatMoney(splitTotal, normalizedCurrency), amount: formatMoney(Number.isFinite(amountNumber) ? amountNumber : 0, normalizedCurrency) })}
-            {splitMismatch ? ` ${t.expenses.dialog.mismatch}` : ""}
-            {invalidItemizedLines ? ` ${t.expenses.dialog.itemizedRequired}` : ""}
-            {needsExchangeRate && hasValidExchangeRate ? ` ${t.expenses.dialog.settleValue({ amount: formatMoney(amountNumber * exchangeRateNumber, settlementCurrency) })}` : ""}
-            {needsExchangeRate && !hasValidExchangeRate ? ` ${t.expenses.dialog.exchangeRateRequired}` : ""}
-          </p>
+          <ExpenseDialogSummary
+            amount={amountNumber}
+            currency={normalizedCurrency}
+            exchangeRate={exchangeRateNumber}
+            hasValidExchangeRate={hasValidExchangeRate}
+            invalidItemizedLines={invalidItemizedLines}
+            needsExchangeRate={needsExchangeRate}
+            settlementCurrency={settlementCurrency}
+            splitMismatch={splitMismatch}
+            splitTotal={splitTotal}
+            copy={t.expenses.dialog}
+          />
 
           <div className={expenseStyles.dialogActionsClassName}>
             <Button type="button" variant="ghost" onClick={onClose}>{t.common.actions.cancel}</Button>
