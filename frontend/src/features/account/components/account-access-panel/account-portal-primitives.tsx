@@ -4,11 +4,25 @@ import type { ComponentProps } from "react";
 import Link from "next/link";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import { cn } from "@/src/lib/cn";
 
 const accountPanelHeadingClassName =
   "account-panel-heading flex min-w-0 items-center gap-3 max-[767px]:flex-wrap max-[767px]:items-start [&>div]:max-[767px]:min-w-0 [&_small]:text-[13px] [&_small]:leading-5 [&_small]:text-(--color-text-muted) max-[767px]:[&_small]:[overflow-wrap:anywhere] [&_span[aria-hidden=true]]:grid [&_span[aria-hidden=true]]:size-9 [&_span[aria-hidden=true]]:shrink-0 [&_span[aria-hidden=true]]:place-items-center [&_span[aria-hidden=true]]:rounded-(--radius-md) [&_span[aria-hidden=true]]:bg-(--color-primary-soft) [&_span[aria-hidden=true]]:text-(--color-primary-strong) [&_strong]:block [&_strong]:text-(--color-text)";
 export const accountStatClassName =
   "account-stat grid min-h-[66px] content-center gap-0.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-(--color-text-muted) [&_strong]:text-2xl [&_strong]:leading-7 [&_strong]:text-(--color-text)";
+const portalSkeletonBaseClassName =
+  "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
+export const portalSkeletonTitleClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--title h-7 w-[min(220px,48%)]");
+export const portalSkeletonLineClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--line h-4 w-[min(520px,72%)]");
+export const portalSkeletonBlockClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--block h-[132px] w-full");
+const portalSkeletonNumberClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--number h-[26px] w-[34px]");
+const portalSkeletonShortClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--short h-3.5 w-24");
+const portalSkeletonIconClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--icon size-9");
+const portalSkeletonCardClassName = cn(accountStatClassName, "portal-skeleton-card");
+const portalListSkeletonClassName = "portal-list-skeleton grid gap-2";
+const portalListSkeletonCompactClassName = cn(portalListSkeletonClassName, "portal-list-skeleton--compact grid-cols-2 max-[520px]:grid-cols-1");
+const portalSkeletonRowClassName =
+  "portal-skeleton-row grid min-h-[62px] grid-cols-[36px_minmax(0,1fr)_96px] items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
 const accountSettingLineClassName =
   "account-setting-line grid min-h-[66px] content-center gap-0.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-(--color-text-muted) [&_strong]:text-sm [&_strong]:text-(--color-text)";
 const portalEmptyStateClassName =
@@ -61,6 +75,33 @@ export function Stat({ label, value }: { label: string; value: number }) {
     <div className={accountStatClassName}>
       <strong>{value}</strong>
       <span>{label}</span>
+    </div>
+  );
+}
+
+export function PortalStatSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 4 }, (_, index) => (
+        <div className={portalSkeletonCardClassName} key={index}>
+          <span className={portalSkeletonNumberClassName} />
+          <span className={portalSkeletonShortClassName} />
+        </div>
+      ))}
+    </>
+  );
+}
+
+export function PortalListSkeleton({ compact = false, rows }: { compact?: boolean; rows: number }) {
+  return (
+    <div className={compact ? portalListSkeletonCompactClassName : portalListSkeletonClassName} aria-hidden="true">
+      {Array.from({ length: rows }, (_, index) => (
+        <div className={portalSkeletonRowClassName} key={index}>
+          <span className={portalSkeletonIconClassName} />
+          <span className={portalSkeletonLineClassName} />
+          <span className={portalSkeletonShortClassName} />
+        </div>
+      ))}
     </div>
   );
 }

@@ -39,7 +39,17 @@ import {
   type AccountAccessMode,
 } from "./account-access-panel-support";
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
-import { PanelHeading, PortalEmptyState, SettingLine, Stat, accountStatClassName } from "./account-portal-primitives";
+import {
+  PanelHeading,
+  PortalEmptyState,
+  PortalListSkeleton,
+  PortalStatSkeleton,
+  SettingLine,
+  Stat,
+  portalSkeletonBlockClassName,
+  portalSkeletonLineClassName,
+  portalSkeletonTitleClassName,
+} from "./account-portal-primitives";
 import {
   ACCESS_ERROR_CODES,
   arrayBufferToBase64Url,
@@ -130,19 +140,6 @@ const accountEntryBrandTaglineClassName =
 const accountCardClassName =
   "account-card grid gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[var(--shadow-soft)]";
 const portalLoadingCardClassName = cn(accountCardClassName, "portal-loading-card col-span-2 min-h-[220px] max-[767px]:col-auto");
-const portalSkeletonBaseClassName =
-  "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
-const portalSkeletonTitleClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--title h-7 w-[min(220px,48%)]");
-const portalSkeletonLineClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--line h-4 w-[min(520px,72%)]");
-const portalSkeletonBlockClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--block h-[132px] w-full");
-const portalSkeletonNumberClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--number h-[26px] w-[34px]");
-const portalSkeletonShortClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--short h-3.5 w-24");
-const portalSkeletonIconClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--icon size-9");
-const portalSkeletonCardClassName = cn(accountStatClassName, "portal-skeleton-card");
-const portalListSkeletonClassName = "portal-list-skeleton grid gap-2";
-const portalListSkeletonCompactClassName = cn(portalListSkeletonClassName, "portal-list-skeleton--compact grid-cols-2 max-[520px]:grid-cols-1");
-const portalSkeletonRowClassName =
-  "portal-skeleton-row grid min-h-[62px] grid-cols-[36px_minmax(0,1fr)_96px] items-center gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
 const accountModeTabsClassName =
   "account-mode-tabs inline-grid w-[min(100%,420px)] grid-cols-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-1";
 const accountTabClassName =
@@ -1601,33 +1598,6 @@ function readPreviousPortalSectionIndex(fallbackIndex: number): number {
   if (typeof window === "undefined") return fallbackIndex;
   const storedIndex = Number(window.sessionStorage.getItem(portalSectionStorageKey));
   return Number.isFinite(storedIndex) ? storedIndex : fallbackIndex;
-}
-
-function PortalStatSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 4 }, (_, index) => (
-        <div className={portalSkeletonCardClassName} key={index}>
-          <span className={portalSkeletonNumberClassName} />
-          <span className={portalSkeletonShortClassName} />
-        </div>
-      ))}
-    </>
-  );
-}
-
-function PortalListSkeleton({ compact = false, rows }: { compact?: boolean; rows: number }) {
-  return (
-    <div className={compact ? portalListSkeletonCompactClassName : portalListSkeletonClassName} aria-hidden="true">
-      {Array.from({ length: rows }, (_, index) => (
-        <div className={portalSkeletonRowClassName} key={index}>
-          <span className={portalSkeletonIconClassName} />
-          <span className={portalSkeletonLineClassName} />
-          <span className={portalSkeletonShortClassName} />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 function AccountSettingsEditor({
