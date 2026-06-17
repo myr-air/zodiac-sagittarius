@@ -1,4 +1,4 @@
 export { RouteMapView } from "./RouteMapView";
-export { applyRouteMapTheme, type RouteDayGroup, type RoutePoint } from "./route-map.utils";
+export { applyRouteMapTheme } from "./route-map.live";
+export type { RouteDayGroup, RoutePoint } from "./route-map.types";
 export type { MapCoordinateResolutionResult } from "./RouteMapView";
-

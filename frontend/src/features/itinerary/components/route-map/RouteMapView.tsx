@@ -26,20 +26,22 @@ import {
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
-  activeDayLabel,
   applyRouteMapTheme,
-  buildRouteDayGroups,
-  buildRoutePoints,
   cleanupRouteLayers,
-  dayColorFor,
-  fallbackRouteViewport,
   fitLiveRoute,
-  getRouteCenter,
-  hasCoordinates,
   removeMapChromeFromTabOrder,
   synchronizeRouteLayers,
-  type DayFilter,
+} from "./route-map.live";
+import {
+  activeDayLabel,
+  buildRouteDayGroups,
+  buildRoutePoints,
+  dayColorFor,
+  fallbackRouteViewport,
+  getRouteCenter,
+  hasCoordinates,
 } from "./route-map.utils";
+import type { DayFilter } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { StaticRouteFallback } from "./StaticRouteFallback";
 
@@ -390,9 +392,11 @@ export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error",
 
 export {
   activeDayLabel,
-  applyRouteMapTheme,
   dayColorFor,
   fallbackRouteViewport,
-  fitLiveRoute,
   getRouteCenter,
 } from "./route-map.utils";
+export {
+  applyRouteMapTheme,
+  fitLiveRoute,
+} from "./route-map.live";
