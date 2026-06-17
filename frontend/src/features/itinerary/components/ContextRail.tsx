@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   BookingDoc,
   BookingDocType,
@@ -13,25 +13,18 @@ import type {
 } from "@/src/trip/types";
 import { safeExternalHref } from "@/src/trip/safe-links";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Button, Select } from "@/src/ui";
+import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { activityTypeLabel, formatDuration, formatEndTime } from "@/src/features/itinerary/lib";
+import { ContextRailBookingSection } from "./context-rail/ContextRailBookingSection";
+import { ContextRailExpensesSection } from "./context-rail/ContextRailExpensesSection";
+import { ContextRailNotesSection } from "./context-rail/ContextRailNotesSection";
 import {
-  bookingDocTypeOptions,
   ContextRailTab,
-  formatBookingDocTypeLabel,
   memberDisplayName,
   suggestionLabel,
-  taskKindLabel,
 } from "./context-rail.utils";
 import {
-  bookingAdvisoryClassName,
-  bookingDocClassName,
-  bookingDocQuickFieldClassName,
-  bookingDocTypeSelectClassName,
-  bookingTaskClassName,
-  bookingTaskLabelClassName,
-  bookingTaskMetaClassName,
   conflictRowClassName,
   conflictSummaryClassName,
   contextRailClassName,
@@ -43,9 +36,6 @@ import {
   detailMetaLineClassName,
   detailSectionClassName,
   emptyWarningClassName,
-  expenseFormClassName,
-  expenseGridClassName,
-  expenseItemClassName,
   inspectorCloseButtonClassName,
   inspectorTabClassName,
   inspectorTabsClassName,
@@ -59,19 +49,6 @@ import {
   mapRoadThreeClassName,
   mapRoadTwoClassName,
   mapWaterClassName,
-  moduleListClassName,
-  noteActionButtonClassName,
-  noteActionsClassName,
-  noteAuthorClassName,
-  noteEditActionsClassName,
-  noteEditFormClassName,
-  noteEditLabelClassName,
-  noteEditTextareaClassName,
-  noteFormClassName,
-  noteFormLabelClassName,
-  noteFormTextareaClassName,
-  noteHeaderClassName,
-  noteItemClassName,
   railInspectorClassName,
   suggestionActionButtonClassName,
   suggestionActionsClassName,
@@ -167,15 +144,6 @@ export function ContextRail({
 }: ContextRailProps) {
   const { locale, t } = useI18n();
   const [activeTab, setActiveTab] = useState<ContextRailTab>(preferredTab);
-  const [noteBody, setNoteBody] = useState("");
-  const [expenseTitle, setExpenseTitle] = useState("");
-  const [expenseAmount, setExpenseAmount] = useState("");
-  const [expensePaidBy, setExpensePaidBy] = useState(currentMember.id);
-  const [expenseCategory, setExpenseCategory] =
-    useState<Expense["category"]>("food");
-  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editingNoteBody, setEditingNoteBody] = useState("");
   const selectedEnd = selectedItem
     ? formatEndTime(selectedItem.startTime, selectedItem.durationMinutes)
     : "";
@@ -232,62 +200,6 @@ export function ContextRail({
     };
   }, [open, preferredTab, selectedItem?.id]);
 
-  function submitNote(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const body = noteBody.trim();
-    if (!body || !selectedItem) return;
-    onCreateNote({ itemId: selectedItem.id, body });
-    setNoteBody("");
-  }
-
-  function startEditingNote(note: StopNote) {
-    setEditingNoteId(note.id);
-    setEditingNoteBody(note.body);
-  }
-
-  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const body = editingNoteBody.trim();
-    if (!editingNoteId || !body) return;
-    onUpdateNote({ noteId: editingNoteId, body });
-    setEditingNoteId(null);
-    setEditingNoteBody("");
-  }
-
-  function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = expenseTitle.trim();
-    const amount = Number(expenseAmount);
-    if (!title || !Number.isFinite(amount) || amount < 0) return;
-    if (editingExpenseId) {
-      onUpdateExpense({
-        expenseId: editingExpenseId,
-        title,
-        amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
-      });
-    } else {
-      onCreateExpense({
-        itemId: selectedItem ? selectedItem.id : null,
-        title,
-        amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
-      });
-    }
-    setEditingExpenseId(null);
-    setExpenseTitle("");
-    setExpenseAmount("");
-  }
-
-  function startEditingExpense(expense: Expense) {
-    setEditingExpenseId(expense.id);
-    setExpenseTitle(expense.title);
-    setExpenseAmount(String(expense.amount));
-    setExpensePaidBy(expense.paidBy);
-    setExpenseCategory(expense.category);
-  }
   return (
     <aside
       className={`${contextRailClassName} ${open ? contextRailOpenClassName : contextRailClosedClassName}`}
@@ -423,300 +335,29 @@ export function ContextRail({
             </section>
 
             {activeTab === "notes" ? (
-              <section
-                className={`${detailSectionClassName} stop-notes-module`}
-                aria-label={t.contextRail.notes.label}
-              >
-                <h3 className={detailHeadingClassName}>
-                  {t.contextRail.notes.title}
-                </h3>
-                <div className={`stop-note-list ${moduleListClassName}`}>
-                  {selectedNotes.map((note) => {
-                    const author = trip.members.find(
-                      (member) => member.id === note.authorId,
-                    );
-                    const canManageNote =
-                      canEdit || note.authorId === currentMember.id;
-                    return (
-                      <article className={noteItemClassName} key={note.id}>
-                        <div className={noteHeaderClassName}>
-                          <strong>
-                            {memberDisplayName(
-                              author,
-                              t.appShell.roles.traveler,
-                            )}
-                          </strong>
-                          {canManageNote ? (
-                            <span className={noteActionsClassName}>
-                              <button
-                                className={noteActionButtonClassName}
-                                type="button"
-                                aria-label={t.contextRail.notes.editBy({
-                                  name: memberDisplayName(
-                                    author,
-                                    t.appShell.roles.traveler,
-                                  ),
-                                })}
-                                onClick={() => startEditingNote(note)}
-                              >
-                                <Icon name="edit" />
-                              </button>
-                              <button
-                                className={noteActionButtonClassName}
-                                type="button"
-                                aria-label={t.contextRail.notes.deleteBy({
-                                  name: memberDisplayName(
-                                    author,
-                                    t.appShell.roles.traveler,
-                                  ),
-                                })}
-                                onClick={() => onDeleteNote(note.id)}
-                              >
-                                <Icon name="trash" />
-                              </button>
-                            </span>
-                          ) : null}
-                        </div>
-                        {editingNoteId === note.id ? (
-                          <form
-                            className={noteEditFormClassName}
-                            onSubmit={submitNoteEdit}
-                          >
-                            <label className={noteEditLabelClassName}>
-                              <span>{t.contextRail.notes.editNote}</span>
-                              <textarea
-                                className={noteEditTextareaClassName}
-                                value={editingNoteBody}
-                                onChange={(event) =>
-                                  setEditingNoteBody(event.target.value)
-                                }
-                                rows={3}
-                              />
-                            </label>
-                            <div className={noteEditActionsClassName}>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                className={detailButtonClassName}
-                                onClick={() => setEditingNoteId(null)}
-                              >
-                                {t.common.actions.cancel}
-                              </Button>
-                              <Button
-                                type="submit"
-                                variant="secondary"
-                                className={detailButtonClassName}
-                                disabled={!editingNoteBody.trim()}
-                              >
-                                {t.contextRail.notes.saveEdit}
-                              </Button>
-                            </div>
-                          </form>
-                        ) : (
-                          <p>{note.body}</p>
-                        )}
-                      </article>
-                    );
-                  })}
-                  {!selectedNotes.length ? (
-                    <p className={emptyWarningClassName}>
-                      {t.contextRail.notes.empty}
-                    </p>
-                  ) : null}
-                </div>
-                <form className={noteFormClassName} onSubmit={submitNote}>
-                  <label className={noteFormLabelClassName}>
-                    <span>{t.contextRail.notes.add}</span>
-                    <textarea
-                      className={noteFormTextareaClassName}
-                      value={noteBody}
-                      disabled={!canCreateNote}
-                      onChange={(event) => setNoteBody(event.target.value)}
-                      rows={3}
-                    />
-                  </label>
-                  <span className={noteAuthorClassName}>
-                    {t.contextRail.notes.savedAs({
-                      name: currentMember.displayName,
-                    })}
-                  </span>
-                  <Button
-                    type="submit"
-                    variant="secondary"
-                    className={detailButtonClassName}
-                    disabled={!canCreateNote || !noteBody.trim()}
-                  >
-                    {t.contextRail.notes.save}
-                  </Button>
-                </form>
-              </section>
+              <ContextRailNotesSection
+                itemId={selectedItem?.id}
+                notes={selectedNotes}
+                tripMembers={trip.members}
+                currentMember={currentMember}
+                canCreateNote={canCreateNote}
+                canEdit={canEdit}
+                onCreateNote={onCreateNote}
+                onDeleteNote={onDeleteNote}
+                onUpdateNote={onUpdateNote}
+              />
             ) : null}
 
             {activeTab === "booking" ? (
-              <section
-                className={`${detailSectionClassName} stop-booking-module`}
-                aria-label={t.contextRail.booking.label}
-              >
-                <h3 className={detailHeadingClassName}>
-                  {t.contextRail.booking.title}
-                </h3>
-                <div className={`booking-advisory-list ${moduleListClassName}`}>
-                  {selectedAdvisories.map((advisory) => (
-                    <span
-                      className={`${bookingAdvisoryClassName} booking-advisory--${advisory.severity}`}
-                      key={advisory.code}
-                    >
-                      <Icon name="alertCircle" /> {advisory.label}
-                    </span>
-                  ))}
-                  {!selectedItem.advisories?.length ? (
-                    <span className={emptyWarningClassName}>
-                      {t.contextRail.booking.noWarnings}
-                    </span>
-                  ) : null}
-                </div>
-                <ul className={`stop-booking-doc-list ${moduleListClassName}`}>
-                  {selectedBookingDocs.map((bookingDoc) => (
-                    <li className={bookingDocClassName} key={bookingDoc.id}>
-                      <strong>{bookingDoc.title}</strong>
-                      <span>
-                        {t.contextRail.booking.booking} · {bookingDoc.status}
-                      </span>
-                      <label className="grid gap-1">
-                        <span>{t.contextRail.booking.type}</span>
-                        <Select
-                          aria-label={t.contextRail.booking.typeFor({
-                            title: bookingDoc.title,
-                          })}
-                          className={bookingDocTypeSelectClassName}
-                          disabled={!canEdit || !onChangeBookingDocType}
-                          value={bookingDoc.type}
-                          onChange={(event) =>
-                            void onChangeBookingDocType?.(
-                              bookingDoc.id,
-                              event.target.value as BookingDocType,
-                            )
-                          }
-                        >
-                          {bookingDocTypeOptions.map((type) => (
-                            <option key={type} value={type}>
-                              {formatBookingDocTypeLabel(type)}
-                            </option>
-                          ))}
-                        </Select>
-                      </label>
-                      <label className="grid gap-1">
-                        <span>{t.contextRail.booking.provider}</span>
-                        <input
-                          aria-label={t.contextRail.booking.providerFor({
-                            title: bookingDoc.title,
-                          })}
-                          className={bookingDocQuickFieldClassName}
-                          defaultValue={bookingDoc.providerName ?? ""}
-                          disabled={!canEdit || !onChangeBookingDocQuickFields}
-                          placeholder={t.contextRail.booking.providerPlaceholder}
-                          onChange={(event) => {
-                            event.currentTarget.dataset.draftValue =
-                              event.currentTarget.value;
-                          }}
-                          onBlur={(event) => {
-                            const value = (
-                              event.currentTarget.dataset.draftValue ??
-                              event.currentTarget.value
-                            ).trim();
-                            if (value === (bookingDoc.providerName ?? "")) return;
-                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
-                              providerName: value || null,
-                            });
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key !== "Enter") return;
-                            event.preventDefault();
-                            const value = (
-                              event.currentTarget.dataset.draftValue ??
-                              event.currentTarget.value
-                            ).trim();
-                            if (value === (bookingDoc.providerName ?? "")) return;
-                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
-                              providerName: value || null,
-                            });
-                          }}
-                        />
-                      </label>
-                      <label className="grid gap-1">
-                        <span>{t.contextRail.booking.reference}</span>
-                        <input
-                          aria-label={t.contextRail.booking.referenceFor({
-                            title: bookingDoc.title,
-                          })}
-                          className={bookingDocQuickFieldClassName}
-                          defaultValue={bookingDoc.confirmationCode ?? ""}
-                          disabled={!canEdit || !onChangeBookingDocQuickFields}
-                          placeholder={t.contextRail.booking.referencePlaceholder}
-                          onChange={(event) => {
-                            event.currentTarget.dataset.draftValue =
-                              event.currentTarget.value;
-                          }}
-                          onBlur={(event) => {
-                            const value = (
-                              event.currentTarget.dataset.draftValue ??
-                              event.currentTarget.value
-                            ).trim();
-                            if (value === (bookingDoc.confirmationCode ?? "")) return;
-                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
-                              confirmationCode: value || null,
-                            });
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key !== "Enter") return;
-                            event.preventDefault();
-                            const value = (
-                              event.currentTarget.dataset.draftValue ??
-                              event.currentTarget.value
-                            ).trim();
-                            if (value === (bookingDoc.confirmationCode ?? "")) return;
-                            void onChangeBookingDocQuickFields?.(bookingDoc.id, {
-                              confirmationCode: value || null,
-                            });
-                          }}
-                        />
-                      </label>
-                    </li>
-                  ))}
-                  {!selectedBookingDocs.length ? (
-                    <li className={emptyWarningClassName}>
-                      {t.contextRail.booking.noBookings}
-                    </li>
-                  ) : null}
-                </ul>
-                <ul className={`stop-booking-task-list ${moduleListClassName}`}>
-                  {selectedTasks.map((task) => (
-                    <li
-                      className={bookingTaskClassName}
-                      data-status={task.status}
-                      key={task.id}
-                    >
-                      <label className={bookingTaskLabelClassName}>
-                        <input
-                          type="checkbox"
-                          checked={task.status === "done"}
-                          disabled={!canEdit}
-                          onChange={() => onToggleTaskStatus(task.id)}
-                        />
-                        <span>{task.title}</span>
-                      </label>
-                      <small className={bookingTaskMetaClassName}>
-                        {taskKindLabel(task, t.contextRail.booking)}
-                      </small>
-                    </li>
-                  ))}
-                  {!selectedTasks.length ? (
-                    <li className={emptyWarningClassName}>
-                      {t.contextRail.booking.noTasks}
-                    </li>
-                  ) : null}
-                </ul>
-              </section>
+              <ContextRailBookingSection
+                advisories={selectedAdvisories}
+                bookingDocs={selectedBookingDocs}
+                tasks={selectedTasks}
+                canEdit={canEdit}
+                onChangeBookingDocType={onChangeBookingDocType}
+                onChangeBookingDocQuickFields={onChangeBookingDocQuickFields}
+                onToggleTaskStatus={onToggleTaskStatus}
+              />
             ) : null}
 
             {activeTab === "suggestions" ? (
@@ -827,132 +468,17 @@ export function ContextRail({
           </>
         ) : null}
 
-        <section
-          className={`${detailSectionClassName} expense-module`}
-          aria-label={t.contextRail.expenses.label}
-        >
-          {selectedItem ? (
-            <h3 className={detailHeadingClassName}>
-              {t.contextRail.expenses.title}
-            </h3>
-          ) : null}
-          <div className={expenseGridClassName}>
-            <span>{t.contextRail.expenses.perPerson}</span>
-            <strong>HK${perPerson}</strong>
-            <span>
-              {t.contextRail.expenses.totalFor({
-                count: trip.members.length - 1,
-              })}
-            </span>
-            <strong>HK${groupSpend}</strong>
-          </div>
-          <div className={moduleListClassName}>
-            {selectedExpenses.map((expense) => (
-              <article className={expenseItemClassName} key={expense.id}>
-                <span>
-                  <strong>{expense.title}</strong>
-                  <br />
-                  HK${expense.amount.toLocaleString("en-HK")}
-                </span>
-                <span className={noteActionsClassName}>
-                  <button
-                    className={noteActionButtonClassName}
-                    type="button"
-                    aria-label={`Edit expense ${expense.title}`}
-                    disabled={!canEditExpenses}
-                    onClick={() => startEditingExpense(expense)}
-                  >
-                    <Icon name="edit" />
-                  </button>
-                  <button
-                    className={noteActionButtonClassName}
-                    type="button"
-                    aria-label={`Delete expense ${expense.title}`}
-                    disabled={!canEditExpenses}
-                    onClick={() => onDeleteExpense(expense.id)}
-                  >
-                    <Icon name="trash" />
-                  </button>
-                </span>
-              </article>
-            ))}
-          </div>
-          <form className={expenseFormClassName} onSubmit={submitExpense}>
-            <p className="m-0 text-[11px] font-bold leading-4 text-(--color-text-muted)">
-              {t.contextRail.expenses.actualOnlyHint}
-            </p>
-            <label>
-              <span>{t.contextRail.expenses.formTitle}</span>
-              <input
-                value={expenseTitle}
-                disabled={!canEditExpenses}
-                onChange={(event) => setExpenseTitle(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>{t.contextRail.expenses.formAmount}</span>
-              <input
-                inputMode="decimal"
-                value={expenseAmount}
-                disabled={!canEditExpenses}
-                onChange={(event) => setExpenseAmount(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>{t.contextRail.expenses.formPaidBy}</span>
-              <Select
-                value={expensePaidBy}
-                disabled={!canEditExpenses}
-                onChange={(event) => setExpensePaidBy(event.target.value)}
-              >
-                {trip.members.map((member) => (
-                  <option value={member.id} key={member.id}>
-                    {member.displayName}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label>
-              <span>{t.contextRail.expenses.formCategory}</span>
-              <Select
-                value={expenseCategory}
-                disabled={!canEditExpenses}
-                onChange={(event) =>
-                  setExpenseCategory(event.target.value as Expense["category"])
-                }
-              >
-                {(
-                  [
-                    "food",
-                    "transport",
-                    "tickets",
-                    "stay",
-                    "shopping",
-                    "settlement",
-                  ] satisfies Expense["category"][]
-                ).map((category) => (
-                  <option value={category} key={category}>
-                    {category}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <Button
-              type="submit"
-              variant="secondary"
-              className={detailButtonClassName}
-              disabled={
-                !canEditExpenses ||
-                !expenseTitle.trim() ||
-                !expenseAmount.trim()
-              }
-            >
-              {editingExpenseId
-                ? t.common.actions.save
-                : t.contextRail.expenses.edit}
-            </Button>
-          </form>
-        </section>
+        <ContextRailExpensesSection
+          selectedItemId={selectedItem?.id}
+          expenses={selectedExpenses}
+          members={trip.members}
+          perPerson={perPerson}
+          groupSpend={groupSpend}
+          canEditExpenses={canEditExpenses}
+          onCreateExpense={onCreateExpense}
+          onUpdateExpense={onUpdateExpense}
+          onDeleteExpense={onDeleteExpense}
+        />
       </div>
     </aside>
   );
