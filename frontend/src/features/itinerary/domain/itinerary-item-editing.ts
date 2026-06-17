@@ -1,9 +1,8 @@
 import type { BookingDoc, BookingDocType, ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryBookingTemplate } from "@/src/trip/booking-docs";
-import { activityTypeLabel, formatDuration } from "@/src/features/itinerary/lib";
+import { formatDuration } from "@/src/features/itinerary/lib";
 import { type IconName } from "@/src/ui/icons";
-import type { InlineItineraryItemPatch } from "../lib";
 import {
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
@@ -16,16 +15,18 @@ import {
   toggleId,
   uniqueIds,
 } from "../lib/itinerary-item-helpers";
+import {
+  activityTypeOptions,
+  buildActivitySubtypePatch,
+  buildActivityTypePatch,
+  normalizeTravelSubtype,
+  travelSubtypeForItem,
+  travelSubtypeIcons,
+  travelSubtypeOptions,
+  type TravelSubtype,
+  withoutTravelSubtypeDetails,
+} from "./itinerary-activity-types";
 
-export type TravelSubtype =
-  | "flight"
-  | "train"
-  | "bus"
-  | "taxi"
-  | "ferry"
-  | "walk"
-  | "car"
-  | "shuttle";
 type TicketModalCopy = {
   cancel: string;
   close: string;
@@ -47,158 +48,9 @@ type TicketModalCopy = {
   useExisting: string;
 };
 
-const travelSubtypes: TravelSubtype[] = ["flight", "train", "bus", "taxi", "ferry", "walk", "car", "shuttle"];
-
-const travelSubtypeIcons: Record<TravelSubtype, IconName> = {
-  bus: "bus",
-  car: "car",
-  ferry: "ship",
-  flight: "plane",
-  shuttle: "bus",
-  taxi: "car",
-  train: "train",
-  walk: "walk",
-};
-
-const activityTypeIcons: Record<ItineraryItem["activityType"], IconName> = {
-  attraction: "location",
-  default: "document",
-  experience: "ticket",
-  food: "utensils",
-  shopping: "wallet",
-  stay: "home",
-  travel: "route",
-};
-
 function formatTimeRangeLabel(startTime: string, endTime: string, endOffsetDays = 0): string {
   const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
   return `${startTime || "--:--"} - ${endTime}${endOffset}`;
-}
-
-function normalizeTravelSubtype(value: string | null | undefined): TravelSubtype | null {
-  const normalized = value?.trim().toLowerCase().replace(/[^a-z]+/g, "_");
-  if (!normalized) return null;
-  if (normalized === "plane" || normalized === "airline") return "flight";
-  if (normalized === "rail" || normalized === "mtr") return "train";
-  if (normalized === "boat" || normalized === "ship") return "ferry";
-  if (normalized === "walking") return "walk";
-  return travelSubtypes.includes(normalized as TravelSubtype)
-    ? (normalized as TravelSubtype)
-    : null;
-}
-
-function withoutTravelSubtypeDetails(details: ItineraryItem["details"] | null | undefined): ItineraryItem["details"] {
-  const nextDetails = { ...(details ?? {}) };
-  delete nextDetails.subtype;
-  if (normalizeTravelSubtype(readItineraryDetailString(details, "mode"))) {
-    delete nextDetails.mode;
-  }
-  return nextDetails;
-}
-
-function buildActivityTypePatch(
-  item: ItineraryItem,
-  activityType: string,
-): InlineItineraryItemPatch {
-  const nextActivityType = activityType as ItineraryItem["activityType"];
-  if (nextActivityType === "travel") {
-    return { activityType: nextActivityType };
-  }
-
-  const detailsWithoutTravelMode = withoutTravelSubtypeDetails(item.details);
-  return {
-    activityType: nextActivityType,
-    activitySubtype: null,
-    details: detailsWithoutTravelMode,
-  };
-}
-
-function buildActivitySubtypePatch(
-  item: ItineraryItem,
-  activityType: ItineraryItem["activityType"],
-  subtype: string,
-): InlineItineraryItemPatch {
-  if (activityType !== "travel") return buildActivityTypePatch(item, activityType);
-  return {
-    activityType,
-    activitySubtype: subtype as ItineraryItem["activitySubtype"],
-    details: {
-      ...(item.details ?? {}),
-      subtype,
-    },
-  };
-}
-
-function activityTypeOptions(locale: Locale): Array<{ icon: IconName; value: string; label: string }> {
-  const types: ItineraryItem["activityType"][] = [
-    "travel",
-    "food",
-    "shopping",
-    "attraction",
-    "experience",
-    "stay",
-    "default",
-  ];
-  return types.map((type) => ({
-    icon: activityTypeIcons[type],
-    value: type,
-    label: activityTypeLabel(type, locale),
-  }));
-}
-
-function travelSubtypeForItem(item: ItineraryItem): TravelSubtype | null {
-  if (item.activityType !== "travel") return null;
-  const storedSubtype = normalizeTravelSubtype(item.activitySubtype ?? undefined);
-  if (storedSubtype) return storedSubtype;
-
-  const subtype = readItineraryDetailString(item.details, "subtype");
-  const explicitSubtype = normalizeTravelSubtype(subtype);
-  if (explicitSubtype) return explicitSubtype;
-
-  const mode = readItineraryDetailString(item.details, "mode");
-  const explicitMode = normalizeTravelSubtype(mode);
-  if (explicitMode) return explicitMode;
-
-  const haystack = `${item.transportation} ${item.activity}`.toLowerCase();
-  if (/\bflight\b|\bplane\b|\bairline\b|เครื่องบิน|สายการบิน|(^|\s)บิน/.test(haystack)) return "flight";
-  if (/\btrain\b|\brail\b|\bmtr\b|รถไฟ|ราง|สถานีรถไฟ/.test(haystack)) return "train";
-  if (/\bbus\b|รถบัส|บัส/.test(haystack)) return "bus";
-  if (/\btaxi\b|แท็กซี่/.test(haystack)) return "taxi";
-  if (/\bferry\b|\bboat\b|เรือ|เฟอร์รี่/.test(haystack)) return "ferry";
-  if (/\bwalk\b|\bwalking\b|เดิน/.test(haystack)) return "walk";
-  if (/\bshuttle\b|รถรับส่ง/.test(haystack)) return "shuttle";
-  if (/\bcar\b|\bdrive\b|รถยนต์/.test(haystack)) return "car";
-  return null;
-}
-
-function travelSubtypeOptions(locale: Locale): Array<{ icon: IconName; value: TravelSubtype; label: string }> {
-  const labels: Record<Locale, Record<TravelSubtype, string>> = {
-    en: {
-      bus: "Bus",
-      car: "Car",
-      ferry: "Ferry",
-      flight: "Flight",
-      shuttle: "Shuttle",
-      taxi: "Taxi",
-      train: "Train",
-      walk: "Walk",
-    },
-    th: {
-      bus: "รถบัส",
-      car: "รถยนต์",
-      ferry: "เรือ",
-      flight: "เครื่องบิน",
-      shuttle: "รถรับส่ง",
-      taxi: "แท็กซี่",
-      train: "รถไฟ",
-      walk: "เดิน",
-    },
-  };
-  return travelSubtypes.map((type) => ({
-    icon: travelSubtypeIcons[type],
-    label: labels[locale][type],
-    value: type,
-  }));
 }
 
 function bookingIconForItem(item: ItineraryItem): IconName {
@@ -386,3 +238,5 @@ export {
   withoutTravelSubtypeDetails,
   toggleId,
 };
+
+export type { TravelSubtype };
