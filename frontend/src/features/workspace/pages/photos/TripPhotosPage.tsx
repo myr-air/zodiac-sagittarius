@@ -12,7 +12,18 @@ import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Badge, Button, IconButton, Select, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { photoCopy, type PhotoCopy } from "./TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
+import {
+  countPhotoProviders,
+  photoAccessLabel,
+  photoAccessOptions,
+  photoAlbumLinkHost,
+  photoProviderLabel,
+  photoProviderOptions,
+  photoProviders,
+  type PhotoProviderFilter,
+} from "./TripPhotosPage.support";
 
 interface TripPhotosPageProps {
   trip: Trip;
@@ -37,161 +48,6 @@ export interface TripPhotoAlbumInput {
   coverUrl?: string | null;
 }
 
-const providers = ["all", "google_photos", "icloud", "google_drive", "dropbox", "onedrive", "custom"] as const;
-const providerOptions = providers.filter((provider) => provider !== "all") as TripPhotoAlbumProvider[];
-const accessOptions = ["view_only", "collaborative", "upload_request"] satisfies TripPhotoAlbumAccess[];
-
-const photoCopy = {
-  en: {
-    pageLabel: "Photos & Albums",
-    title: "Photos & Albums",
-    albumLinks: (count: number) => `${count} album links`,
-    canAddAlbums: "Can add albums",
-    readOnly: "Read-only",
-    summaryLabel: "Photo album summary",
-    savedDestinations: "Saved destinations",
-    albums: (count: number) => `${count} albums`,
-    sharedUploads: "Shared uploads",
-    collaborative: (count: number) => `${count} collaborative`,
-    uploadRequests: "Upload requests",
-    requests: (count: number) => `${count} requests`,
-    needsAccessNote: "Needs access note",
-    missing: (count: number) => `${count} missing`,
-    providersLabel: "Photo providers",
-    providerCount: (label: string, count: number) => `${label}, ${count} albums`,
-    providerHint: (count: number) => `Photos stay with the linked provider · ${count} visible albums`,
-    addAlbum: "Add album",
-    albumLinksLabel: "Photo album links",
-    emptyTitle: "No albums in this view",
-    emptyDetail: "Add a Google Photos album, Drive folder, Dropbox request, or another shared photo destination.",
-    deleteAlbum: "Delete album",
-    deletePrompt: (title: string) => `Delete ${title}? The external provider album will stay in place.`,
-    cancel: "Cancel",
-    selectAlbum: (title: string) => `Select ${title}`,
-    coverFor: (title: string) => `Cover for ${title}`,
-    defaultAccessNote: "Add access note so the group knows how to use this album.",
-    noOwner: "No owner",
-    tripLevel: "Trip-level",
-    unsafeLinkBlocked: "Unsafe link blocked",
-    openAlbumTitle: (title: string) => `Open ${title}`,
-    openBlocked: "Open blocked",
-    editAlbum: "Edit album",
-    inspectorLabel: "Photo album inspector",
-    selectHint: "Select an album to see access details.",
-    externalProviderNote: "External provider permissions control real access.",
-    blockedLink: "Blocked link",
-    copy: "Copy",
-    openAlbum: "Open album",
-    access: "Access",
-    noAccessNote: "No access note yet.",
-    owner: "Owner",
-    noOwnerAssigned: "No owner assigned",
-    createdBy: (name: string) => `Created by ${name}`,
-    relatedStops: "Related stops",
-    addAlbumDialog: "Add album",
-    editAlbumDialog: "Edit album",
-    close: "Close",
-    titleField: "Title",
-    providerField: "Provider",
-    accessField: "Access",
-    ownerField: "Owner",
-    albumLinkField: "Album link",
-    dayField: "Day",
-    descriptionField: "Description",
-    accessNoteField: "Access note",
-    relatedItinerary: "Related itinerary",
-    saveAlbum: "Save album",
-    providers: {
-      all: "All albums",
-      google_photos: "Google Photos",
-      icloud: "iCloud",
-      google_drive: "Google Drive",
-      dropbox: "Dropbox",
-      onedrive: "OneDrive",
-      custom: "Custom",
-    },
-    accessLabels: {
-      view_only: "View only",
-      collaborative: "Collaborative",
-      upload_request: "Upload request",
-    },
-  },
-  th: {
-    pageLabel: "รูปภาพและอัลบั้ม",
-    title: "รูปภาพและอัลบั้ม",
-    albumLinks: (count: number) => `${count} ลิงก์อัลบั้ม`,
-    canAddAlbums: "เพิ่มอัลบั้มได้",
-    readOnly: "อ่านอย่างเดียว",
-    summaryLabel: "สรุปอัลบั้มรูปภาพ",
-    savedDestinations: "ปลายทางที่บันทึกไว้",
-    albums: (count: number) => `${count} อัลบั้ม`,
-    sharedUploads: "อัปโหลดร่วมกัน",
-    collaborative: (count: number) => `${count} อัลบั้มร่วม`,
-    uploadRequests: "คำขออัปโหลด",
-    requests: (count: number) => `${count} คำขอ`,
-    needsAccessNote: "ต้องมีโน้ตการเข้าถึง",
-    missing: (count: number) => `ขาด ${count} รายการ`,
-    providersLabel: "ผู้ให้บริการรูปภาพ",
-    providerCount: (label: string, count: number) => `${label}, ${count} อัลบั้ม`,
-    providerHint: (count: number) => `รูปภาพยังอยู่กับผู้ให้บริการที่ลิงก์ไว้ · แสดง ${count} อัลบั้ม`,
-    addAlbum: "เพิ่มอัลบั้ม",
-    albumLinksLabel: "ลิงก์อัลบั้มรูปภาพ",
-    emptyTitle: "ไม่มีอัลบั้มในมุมมองนี้",
-    emptyDetail: "เพิ่ม Google Photos, โฟลเดอร์ Drive, คำขอ Dropbox หรือปลายทางรูปภาพอื่นที่แชร์ได้",
-    deleteAlbum: "ลบอัลบั้ม",
-    deletePrompt: (title: string) => `ลบ ${title}? อัลบั้มภายนอกจะยังอยู่ที่ผู้ให้บริการเดิม`,
-    cancel: "ยกเลิก",
-    selectAlbum: (title: string) => `เลือก ${title}`,
-    coverFor: (title: string) => `ภาพปกของ ${title}`,
-    defaultAccessNote: "เพิ่มโน้ตการเข้าถึงเพื่อให้กลุ่มรู้วิธีใช้อัลบั้มนี้",
-    noOwner: "ยังไม่มีเจ้าของ",
-    tripLevel: "ระดับทริป",
-    unsafeLinkBlocked: "บล็อกลิงก์ที่ไม่ปลอดภัย",
-    openAlbumTitle: (title: string) => `เปิด ${title}`,
-    openBlocked: "เปิดไม่ได้",
-    editAlbum: "แก้ไขอัลบั้ม",
-    inspectorLabel: "รายละเอียดอัลบั้มรูปภาพ",
-    selectHint: "เลือกอัลบั้มเพื่อดูรายละเอียดการเข้าถึง",
-    externalProviderNote: "สิทธิ์จริงถูกควบคุมโดยผู้ให้บริการภายนอก",
-    blockedLink: "ลิงก์ถูกบล็อก",
-    copy: "คัดลอก",
-    openAlbum: "เปิดอัลบั้ม",
-    access: "การเข้าถึง",
-    noAccessNote: "ยังไม่มีโน้ตการเข้าถึง",
-    owner: "เจ้าของ",
-    noOwnerAssigned: "ยังไม่ได้กำหนดเจ้าของ",
-    createdBy: (name: string) => `สร้างโดย ${name}`,
-    relatedStops: "จุดที่เกี่ยวข้อง",
-    addAlbumDialog: "เพิ่มอัลบั้ม",
-    editAlbumDialog: "แก้ไขอัลบั้ม",
-    close: "ปิด",
-    titleField: "ชื่อ",
-    providerField: "ผู้ให้บริการ",
-    accessField: "การเข้าถึง",
-    ownerField: "เจ้าของ",
-    albumLinkField: "ลิงก์อัลบั้ม",
-    dayField: "วัน",
-    descriptionField: "คำอธิบาย",
-    accessNoteField: "โน้ตการเข้าถึง",
-    relatedItinerary: "แผนการเดินทางที่เกี่ยวข้อง",
-    saveAlbum: "บันทึกอัลบั้ม",
-    providers: {
-      all: "ทุกอัลบั้ม",
-      google_photos: "Google Photos",
-      icloud: "iCloud",
-      google_drive: "Google Drive",
-      dropbox: "Dropbox",
-      onedrive: "OneDrive",
-      custom: "กำหนดเอง",
-    },
-    accessLabels: {
-      view_only: "ดูอย่างเดียว",
-      collaborative: "ร่วมแก้ไขได้",
-      upload_request: "คำขออัปโหลด",
-    },
-  },
-} as const;
-
 export function TripPhotosPage({
   trip,
   currentMember,
@@ -203,12 +59,12 @@ export function TripPhotosPage({
 }: TripPhotosPageProps) {
   const { locale } = useI18n();
   const copy = photoCopy[locale];
-  const [activeProvider, setActiveProvider] = useState<(typeof providers)[number]>("all");
+  const [activeProvider, setActiveProvider] = useState<PhotoProviderFilter>("all");
   const [selectedAlbumId, setSelectedAlbumId] = useState(photoAlbumLinks[0]?.id ?? "");
   const [dialogAlbum, setDialogAlbum] = useState<TripPhotoAlbumLink | "new" | null>(null);
   const [deleteAlbum, setDeleteAlbum] = useState<TripPhotoAlbumLink | null>(null);
   const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
-  const providerCounts = useMemo(() => countProviders(photoAlbumLinks), [photoAlbumLinks]);
+  const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
   const visibleAlbums = useMemo(() => filterPhotoAlbumLinks(photoAlbumLinks, { provider: activeProvider }), [activeProvider, photoAlbumLinks]);
   const selectedAlbum = visibleAlbums.find((album) => album.id === selectedAlbumId) ?? visibleAlbums[0] ?? null;
   const selectedRelations = selectedAlbum ? findPhotoAlbumRelations(selectedAlbum, trip) : null;
@@ -251,14 +107,14 @@ export function TripPhotosPage({
       <div className={photoStyles.contentClassName}>
         <WorkspaceSurface as="div" className={photoStyles.panelClassName} density="compact">
           <div className={photoStyles.providerGridClassName} aria-label={copy.providersLabel}>
-            {providers.map((provider) => (
+            {photoProviders.map((provider) => (
               <button
                 key={provider}
                 type="button"
                 className={cn(photoStyles.providerButtonClassName, activeProvider === provider && photoStyles.selectedProviderClassName)}
                 onClick={() => setActiveProvider(provider)}
                 aria-pressed={activeProvider === provider}
-                aria-label={copy.providerCount(providerLabel(provider, copy), providerCounts[provider] ?? 0)}
+                aria-label={copy.providerCount(photoProviderLabel(provider, copy), providerCounts[provider] ?? 0)}
               >
                 <span className="flex items-center justify-between gap-2">
                   <span className="grid size-9 place-items-center rounded-(--radius-md) border border-(--color-primary-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
@@ -266,14 +122,14 @@ export function TripPhotosPage({
                   </span>
                   <strong className="tabular-nums text-sm text-(--color-text)">{providerCounts[provider] ?? 0}</strong>
                 </span>
-                <strong className="text-sm font-extrabold text-(--color-text)">{providerLabel(provider, copy)}</strong>
+                <strong className="text-sm font-extrabold text-(--color-text)">{photoProviderLabel(provider, copy)}</strong>
               </button>
             ))}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="grid gap-0.5">
-              <strong className="text-[15px] font-extrabold text-(--color-text)">{providerLabel(activeProvider, copy)}</strong>
+              <strong className="text-[15px] font-extrabold text-(--color-text)">{photoProviderLabel(activeProvider, copy)}</strong>
               <span className="text-xs font-semibold text-(--color-text-muted)">{copy.providerHint(visibleAlbums.length)}</span>
             </div>
             {canEditPhotoAlbums ? <Button type="button" onClick={() => setDialogAlbum("new")}><Icon name="plus" /> {copy.addAlbum}</Button> : null}
@@ -355,7 +211,7 @@ function PhotoAlbumCard({
   onDelete,
 }: {
   album: TripPhotoAlbumLink;
-  copy: typeof photoCopy.en | typeof photoCopy.th;
+  copy: PhotoCopy;
   trip: Trip;
   selected: boolean;
   canEdit: boolean;
@@ -376,8 +232,8 @@ function PhotoAlbumCard({
           style={coverHref ? { backgroundImage: `url(${coverHref})` } : undefined}
         />
         <span className="flex items-center justify-between gap-2">
-          <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{accessLabel(album.access, copy)}</Badge>
-          <span className="text-xs font-extrabold text-(--color-text-muted)">{providerLabel(album.provider, copy)}</span>
+          <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoAccessLabel(album.access, copy)}</Badge>
+          <span className="text-xs font-extrabold text-(--color-text-muted)">{photoProviderLabel(album.provider, copy)}</span>
         </span>
         <span className="grid gap-1">
           <strong className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-black text-(--color-text)">{album.title}</strong>
@@ -415,7 +271,7 @@ function PhotoAlbumInspector({
   trip,
 }: {
   album: TripPhotoAlbumLink | null;
-  copy: typeof photoCopy.en | typeof photoCopy.th;
+  copy: PhotoCopy;
   relations: ReturnType<typeof findPhotoAlbumRelations> | null;
   trip: Trip;
 }) {
@@ -428,11 +284,11 @@ function PhotoAlbumInspector({
   }
   const href = safePhotoAlbumHref(album.url);
   const createdBy = trip.members.find((member) => member.id === album.createdBy);
-  const linkHost = albumLinkHost(href);
+  const linkHost = photoAlbumLinkHost(href);
   return (
     <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
       <div className="grid gap-2">
-        <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{providerLabel(album.provider, copy)}</Badge>
+        <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoProviderLabel(album.provider, copy)}</Badge>
         <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
         <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">{copy.externalProviderNote}</span>
       </div>
@@ -459,7 +315,7 @@ function PhotoAlbumInspector({
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
-        <span>{accessLabel(album.access, copy)}</span>
+        <span>{photoAccessLabel(album.access, copy)}</span>
         <span className="text-(--color-text-muted)">{album.accessNote || copy.noAccessNote}</span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
@@ -477,15 +333,6 @@ function PhotoAlbumInspector({
   );
 }
 
-function albumLinkHost(href: string | null): string | null {
-  if (!href) return null;
-  try {
-    return new URL(href).host;
-  } catch {
-    return null;
-  }
-}
-
 function PhotoAlbumDialog({
   album,
   copy,
@@ -495,7 +342,7 @@ function PhotoAlbumDialog({
   onSubmit,
 }: {
   album: TripPhotoAlbumLink | null;
-  copy: typeof photoCopy.en | typeof photoCopy.th;
+  copy: PhotoCopy;
   currentMember: Member;
   trip: Trip;
   onCancel: () => void;
@@ -548,13 +395,13 @@ function PhotoAlbumDialog({
             <label className={photoStyles.fieldClassName}>
               <span>{copy.providerField}</span>
               <Select value={provider} onChange={(event) => setProvider(event.target.value as TripPhotoAlbumProvider)}>
-                {providerOptions.map((option) => <option key={option} value={option}>{providerLabel(option, copy)}</option>)}
+                {photoProviderOptions.map((option) => <option key={option} value={option}>{photoProviderLabel(option, copy)}</option>)}
               </Select>
             </label>
             <label className={photoStyles.fieldClassName}>
               <span>{copy.accessField}</span>
               <Select value={access} onChange={(event) => setAccess(event.target.value as TripPhotoAlbumAccess)}>
-                {accessOptions.map((option) => <option key={option} value={option}>{accessLabel(option, copy)}</option>)}
+                {photoAccessOptions.map((option) => <option key={option} value={option}>{photoAccessLabel(option, copy)}</option>)}
               </Select>
             </label>
             <label className={photoStyles.fieldClassName}>
@@ -603,24 +450,4 @@ function PhotoAlbumDialog({
       </div>
     </div>
   );
-}
-
-function countProviders(albums: TripPhotoAlbumLink[]): Record<(typeof providers)[number], number> {
-  return {
-    all: albums.length,
-    google_photos: albums.filter((album) => album.provider === "google_photos").length,
-    icloud: albums.filter((album) => album.provider === "icloud").length,
-    google_drive: albums.filter((album) => album.provider === "google_drive").length,
-    dropbox: albums.filter((album) => album.provider === "dropbox").length,
-    onedrive: albums.filter((album) => album.provider === "onedrive").length,
-    custom: albums.filter((album) => album.provider === "custom").length,
-  };
-}
-
-function providerLabel(provider: TripPhotoAlbumProvider | "all", copy: typeof photoCopy.en | typeof photoCopy.th): string {
-  return copy.providers[provider];
-}
-
-function accessLabel(access: TripPhotoAlbumAccess, copy: typeof photoCopy.en | typeof photoCopy.th): string {
-  return copy.accessLabels[access];
 }
