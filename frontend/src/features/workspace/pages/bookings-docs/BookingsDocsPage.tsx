@@ -5,15 +5,15 @@ import {
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, BookingDocStatus, Member, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { Button, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { Button, WorkspacePage } from "@/src/ui";
 import { BookingDeleteDialog } from "./components/BookingDeleteDialog";
 import { BookingDialog } from "./components/BookingDialog";
-import { BookingFileRow } from "./components/BookingFileRow";
+import { BookingFilePanel } from "./components/BookingFilePanel";
+import { BookingFolderRail } from "./components/BookingFolderRail";
 import { BookingsDocsHeader } from "./components/BookingsDocsHeader";
 import { BookingInspector } from "./components/BookingInspector";
-import { bookingCopy, bookingStatuses, formatEnumLabel } from "./BookingsDocsPage.copy";
+import { bookingCopy } from "./BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
 import {
@@ -91,6 +91,24 @@ export function BookingsDocsPage({
     setMobilePreviewOpen(true);
   }
 
+  function selectFolder(folderId: BookingFolderId) {
+    setActiveFolderId(folderId);
+    setMobilePreviewOpen(false);
+    setStatusMenuOpen(false);
+  }
+
+  function changeQuery(nextQuery: string) {
+    setQuery(nextQuery);
+    setMobilePreviewOpen(false);
+    setStatusMenuOpen(false);
+  }
+
+  function changeStatusFilter(nextStatus: BookingDocStatus | "all") {
+    setStatusFilter(nextStatus);
+    setStatusMenuOpen(false);
+    setMobilePreviewOpen(false);
+  }
+
   return (
     <WorkspacePage className={bookingStyles.pageClassName} kind="workspace" aria-label={copy.pageLabel} role="region">
       <BookingsDocsHeader
@@ -108,136 +126,32 @@ export function BookingsDocsPage({
       ) : null}
 
       <div className={bookingStyles.contentClassName}>
-        <WorkspaceSurface as="nav" className={bookingStyles.folderRailClassName} density="compact" aria-label={copy.bookingFolders}>
-          {bookingFolders.map((folder) => (
-            <button
-              type="button"
-              className={cn(bookingStyles.folderButtonClassName, activeFolderId === folder.id && bookingStyles.selectedFolderClassName)}
-              key={folder.id}
-              onClick={() => {
-                setActiveFolderId(folder.id);
-                setMobilePreviewOpen(false);
-                setStatusMenuOpen(false);
-              }}
-              aria-pressed={activeFolderId === folder.id}
-              aria-label={copy.folderCount(copy.folders[folder.id].title, folderCounts[folder.id] ?? 0)}
-            >
-              <span className="grid size-7 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) text-(--color-primary-strong) max-[1199px]:size-5 max-[1199px]:border-0 max-[1199px]:bg-transparent">
-                <Icon name={folder.icon} />
-              </span>
-              <span className="min-w-0 max-[767px]:hidden">
-                <strong className="block truncate text-sm font-extrabold max-[1199px]:text-[11px] max-[1199px]:leading-4">{copy.folders[folder.id].title}</strong>
-                <span className="block truncate text-[11px] font-semibold text-(--color-text-muted) max-[1199px]:hidden">{copy.folders[folder.id].description}</span>
-              </span>
-              <strong className="tabular-nums text-xs text-(--color-text-muted) max-[1199px]:text-[11px]">{folderCounts[folder.id] ?? 0}</strong>
-            </button>
-          ))}
-        </WorkspaceSurface>
+        <BookingFolderRail
+          activeFolderId={activeFolderId}
+          copy={copy}
+          folderCounts={folderCounts}
+          onSelectFolder={selectFolder}
+        />
 
-        <WorkspaceSurface className={bookingStyles.filePanelClassName} aria-label={copy.fileList}>
-          <div className={bookingStyles.fileToolbarClassName}>
-            <div className={bookingStyles.toolbarControlsClassName}>
-              <label className="min-w-0">
-                <span className="sr-only">{copy.searchPlaceholder}</span>
-                <input
-                  className={bookingStyles.searchInputClassName}
-                  value={query}
-                  onChange={(event) => {
-                    setQuery(event.target.value);
-                    setMobilePreviewOpen(false);
-                    setStatusMenuOpen(false);
-                  }}
-                  placeholder={copy.searchPlaceholder}
-                  type="search"
-                />
-              </label>
-              <div className={bookingStyles.statusFilterWrapClassName}>
-                <button
-                  aria-controls="booking-status-filter-menu"
-                  aria-expanded={statusMenuOpen}
-                  aria-haspopup="listbox"
-                  aria-label={`${copy.statusFilter}: ${statusFilter === "all" ? copy.allStatuses : formatEnumLabel(statusFilter, copy)}`}
-                  className={bookingStyles.statusFilterButtonClassName}
-                  onClick={() => setStatusMenuOpen((current) => !current)}
-                  type="button"
-                >
-                  <span className="truncate">{statusFilter === "all" ? copy.allStatuses : formatEnumLabel(statusFilter, copy)}</span>
-                  <Icon name="chevronRight" className={cn("size-3.5 transition-transform", statusMenuOpen && "rotate-90")} />
-                </button>
-                {statusMenuOpen ? (
-                  <div className={bookingStyles.statusFilterMenuClassName} id="booking-status-filter-menu" role="listbox" aria-label={copy.statusFilter}>
-                    {(["all", ...bookingStatuses] as Array<BookingDocStatus | "all">).map((status) => {
-                      const selected = statusFilter === status;
-                      return (
-                        <button
-                          aria-selected={selected}
-                          className={cn(bookingStyles.statusFilterOptionClassName, selected && bookingStyles.statusFilterOptionActiveClassName)}
-                          key={status}
-                          onClick={() => {
-                            setStatusFilter(status);
-                            setStatusMenuOpen(false);
-                            setMobilePreviewOpen(false);
-                          }}
-                          role="option"
-                          type="button"
-                        >
-                          <span>{selected ? <Icon name="check" className="size-3.5" /> : null}</span>
-                          <span className="truncate">{status === "all" ? copy.allStatuses : formatEnumLabel(status, copy)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className={bookingStyles.activeFolderBarClassName} aria-label={copy.bookingSummary}>
-            <div className="grid gap-0.5">
-              <strong className="text-[15px] font-extrabold text-(--color-text)">{activeFolderCopy.title}</strong>
-              <span className={bookingStyles.activeFolderDescriptionClassName}>{copy.visibleItems(activeFolderCopy.description, folderDocs.length)}</span>
-            </div>
-            <span className="text-xs font-black text-(--color-text-muted)">{copy.itemCount(folderDocs.length)}</span>
-          </div>
-
-          <div className={bookingStyles.fileListClassName} aria-label={copy.fileList} tabIndex={0}>
-            <div className={bookingStyles.fileHeaderClassName} aria-hidden="true">
-              <span>{copy.columnName}</span>
-              <span>{copy.columnDate}</span>
-              <span>{copy.columnProvider}</span>
-              <span>{copy.columnLinkedStop}</span>
-              <span>{copy.columnStatus}</span>
-              <span>{copy.columnOpen}</span>
-            </div>
-            {folderDocs.map((doc) => (
-              <BookingFileRow
-                key={doc.id}
-                doc={doc}
-                trip={trip}
-                selected={selectedBooking?.id === doc.id}
-                canEdit={canEditBookings}
-                onSelect={() => selectBooking(doc.id)}
-                onEdit={() => setDialogBooking(doc)}
-                onDelete={() => setDeleteBooking(doc)}
-                copy={copy}
-              />
-            ))}
-            {!folderDocs.length ? (
-              <div className="grid min-h-[180px] min-w-[720px] place-items-center p-5 text-center max-[1199px]:min-w-0 max-[1199px]:w-full max-[767px]:min-h-[220px] max-[767px]:px-4">
-                <div className="grid max-w-[360px] gap-1">
-                  <strong className="text-(--color-text)">{copy.emptyTitle}</strong>
-                  <span className="text-sm font-medium leading-6 text-(--color-text-muted)">{copy.emptyDetail}</span>
-                </div>
-              </div>
-            ) : null}
-            {lockedDocs.map((doc) => (
-              <div className={bookingStyles.lockedRowClassName} key={doc.id}>
-                <span className="inline-flex items-center gap-2 font-extrabold text-(--color-text-muted)"><Icon name="eyeOff" /> {copy.lockedSensitiveRecord}</span>
-                <span className="text-xs font-bold text-(--color-text-muted)">{formatEnumLabel(doc.type, copy)}</span>
-              </div>
-            ))}
-          </div>
-        </WorkspaceSurface>
+        <BookingFilePanel
+          activeFolderDescription={activeFolderCopy.description}
+          activeFolderTitle={activeFolderCopy.title}
+          canEditBookings={canEditBookings}
+          copy={copy}
+          folderDocs={folderDocs}
+          lockedDocs={lockedDocs}
+          query={query}
+          selectedBookingId={selectedBooking?.id}
+          statusFilter={statusFilter}
+          statusMenuOpen={statusMenuOpen}
+          trip={trip}
+          onDeleteBooking={setDeleteBooking}
+          onEditBooking={setDialogBooking}
+          onQueryChange={changeQuery}
+          onSelectBooking={selectBooking}
+          onStatusFilterChange={changeStatusFilter}
+          onToggleStatusMenu={() => setStatusMenuOpen((current) => !current)}
+        />
 
         <BookingInspector
           booking={selectedBooking}
