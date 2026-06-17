@@ -60,6 +60,7 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
+import { queueKeyedUpdate } from "../support/queued-updates";
 
 const localMutationTimestamp = "2026-05-28T00:00:00.000Z";
 
@@ -247,20 +248,13 @@ export function useWorkspaceItineraryCommands({
   const updateItineraryItemInline = useCallback(
     async (itemId: string, patch: InlineItineraryItemPatch) => {
       if (!canEdit) return;
-      const previousUpdate = inlineUpdateQueueRef.current.get(itemId) ?? Promise.resolve();
-      const queuedUpdate = previousUpdate
-        .catch(() => undefined)
-        .then(() => runItineraryItemInlineUpdate(itemId, patch));
-      inlineUpdateQueueRef.current.set(itemId, queuedUpdate);
       try {
-        await queuedUpdate;
+        await queueKeyedUpdate(inlineUpdateQueueRef.current, itemId, () =>
+          runItineraryItemInlineUpdate(itemId, patch),
+        );
         setTripPlanError(null);
       } catch {
         setTripPlanError(canSaveItineraryErrorMessage);
-      } finally {
-        if (inlineUpdateQueueRef.current.get(itemId) === queuedUpdate) {
-          inlineUpdateQueueRef.current.delete(itemId);
-        }
       }
     },
     [

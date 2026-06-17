@@ -31,6 +31,7 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForBookingRecord } from "@/src/trip/workspace/trip-plan-records";
+import { queueKeyedUpdate } from "../support/queued-updates";
 
 interface UseWorkspaceBookingCommandsOptions {
   canEditBookings: boolean;
@@ -285,19 +286,7 @@ export function useWorkspaceBookingCommands({
 
   const queueBookingDocUpdate = useCallback(
     async (bookingDocId: string, update: () => void | Promise<void>) => {
-      const previousUpdate =
-        bookingDocUpdateQueueRef.current.get(bookingDocId) ?? Promise.resolve();
-      const queuedUpdate = previousUpdate
-        .catch(() => undefined)
-        .then(() => update());
-      bookingDocUpdateQueueRef.current.set(bookingDocId, queuedUpdate);
-      try {
-        await queuedUpdate;
-      } finally {
-        if (bookingDocUpdateQueueRef.current.get(bookingDocId) === queuedUpdate) {
-          bookingDocUpdateQueueRef.current.delete(bookingDocId);
-        }
-      }
+      await queueKeyedUpdate(bookingDocUpdateQueueRef.current, bookingDocId, update);
     },
     [],
   );
