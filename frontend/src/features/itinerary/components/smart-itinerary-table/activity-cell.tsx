@@ -37,11 +37,10 @@ import {
   activityTypePickerClassName,
   activityTypeRailClassName,
   activityMobileTypePickerClassName,
-  subActivityToggleButtonClassName,
-  activityTabletActionsClassName,
   activityTabletActionLayerClassName,
 } from "../smart-itinerary-table.styles";
 import { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
+import { ActivityMoreActionsButton, ActivitySubActivityToggle } from "./activity-cell/ActivityCellControls";
 
 export function ActivityCell({
   canEdit,
@@ -114,30 +113,22 @@ export function ActivityCell({
 
   const renderSubActivityButton = (compact = false) =>
     showSubActivityToggle ? (
-      <button
-        type="button"
-        className={subActivityToggleButtonClassName}
-        aria-label={`Sub-activities for ${item.activity}`}
-        aria-expanded={subActivitiesExpanded}
-        title={`Sub-activities for ${item.activity}`}
-        onClick={(event) => {
-          event.stopPropagation();
+      <ActivitySubActivityToggle
+        activity={item.activity}
+        expanded={subActivitiesExpanded}
+        onOpenCompact={() => {
           if (compact) {
             setActionsExpanded(false);
           }
-          if (
-            typeof window !== "undefined" &&
-            typeof window.matchMedia === "function" &&
-            window.matchMedia("(max-width: 640px)").matches
-          ) {
-            setSubActivityModalOpen(true);
-            return;
+          setSubActivityModalOpen(true);
+        }}
+        onToggleExpanded={() => {
+          if (compact) {
+            setActionsExpanded(false);
           }
           setSubActivitiesExpanded((current) => !current);
         }}
-      >
-        <Icon name="list" />
-      </button>
+      />
     ) : null;
   const renderActivityActions = (compact = false) => (
     <ActivityActionButtons
@@ -231,19 +222,11 @@ export function ActivityCell({
           />
           <span className={activityActionClusterClassName}>
             {renderSubActivityButton(true)}
-            <button
-              type="button"
-              className={activityTabletActionsClassName}
-              aria-label={actionMenuLabel}
-              aria-expanded={actionsExpanded}
-              title={actionMenuLabel}
-              onClick={(event) => {
-                event.stopPropagation();
-                setActionsExpanded((current) => !current);
-              }}
-            >
-              <Icon name="dots" />
-            </button>
+            <ActivityMoreActionsButton
+              expanded={actionsExpanded}
+              label={actionMenuLabel}
+              onToggle={() => setActionsExpanded((current) => !current)}
+            />
           </span>
         </div>
         <div className={activityMetaClassName}>
@@ -276,19 +259,11 @@ export function ActivityCell({
               {renderActivityActions()}
             </span>
             {renderSubActivityButton()}
-            <button
-              type="button"
-              className={activityTabletActionsClassName}
-              aria-label={actionMenuLabel}
-              aria-expanded={actionsExpanded}
-              title={actionMenuLabel}
-              onClick={(event) => {
-                event.stopPropagation();
-                setActionsExpanded((current) => !current);
-              }}
-            >
-              <Icon name="dots" />
-            </button>
+            <ActivityMoreActionsButton
+              expanded={actionsExpanded}
+              label={actionMenuLabel}
+              onToggle={() => setActionsExpanded((current) => !current)}
+            />
           </div>
         </div>
         {actionsExpanded ? (
