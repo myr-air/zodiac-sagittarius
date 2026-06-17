@@ -8,6 +8,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { Button, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { BookingDeleteDialog } from "./BookingDeleteDialog";
 import { BookingDialog } from "./BookingDialog";
 import { BookingFileRow } from "./BookingFileRow";
 import { BookingsDocsHeader } from "./BookingsDocsHeader";
@@ -262,16 +263,12 @@ export function BookingsDocsPage({
       ) : null}
 
       {deleteBooking ? (
-        <div className={bookingStyles.dialogBackdropClassName} role="presentation">
-          <section className={bookingStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-delete-title">
-            <h2 id="booking-delete-title" className="m-0 text-base font-extrabold text-(--color-danger)">{copy.deleteBooking}</h2>
-            <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{copy.deletePrompt(deleteBooking.title)}</p>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={() => setDeleteBooking(null)}>{copy.cancel}</Button>
-              <Button type="button" variant="danger" onClick={confirmDelete}>{copy.deleteBooking}</Button>
-            </div>
-          </section>
-        </div>
+        <BookingDeleteDialog
+          bookingTitle={deleteBooking.title}
+          copy={copy}
+          onCancel={() => setDeleteBooking(null)}
+          onConfirm={confirmDelete}
+        />
       ) : null}
     </WorkspacePage>
   );
