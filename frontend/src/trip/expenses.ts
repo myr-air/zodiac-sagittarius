@@ -699,12 +699,18 @@ function sumSplits(splits: Record<string, number>): number {
   return roundMoney(Object.values(splits).reduce((sum, split) => sum + split, 0));
 }
 
-function formatMoney(amount: number, currency = "HKD"): string {
+export function formatMoney(amount: number, currency = "HKD"): string {
   const normalizedCurrency = normalizeCurrency(currency);
   const prefixByCurrency: Record<string, string> = {
     CNY: "CN¥",
+    EUR: "€",
+    GBP: "£",
     HKD: "HK$",
+    JPY: "¥",
+    KRW: "₩",
+    SGD: "S$",
     THB: "฿",
+    TWD: "NT$",
     USD: "US$",
   };
   const prefix = prefixByCurrency[normalizedCurrency] ?? `${normalizedCurrency} `;

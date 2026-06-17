@@ -12,6 +12,7 @@ import {
   buildExpenseReminderRequest,
   expenseReminderRequestForSuggestion,
   expenseSplitsToMinor,
+  formatMoney,
   normalizeExpenseRepeatCount,
   normalizeExpenseSplitsFromMinor,
   repeatExpenseLineItems,
@@ -26,6 +27,14 @@ import type { Expense, Trip } from "./types";
 const members = ["member-aom", "member-beam", "member-nam"];
 
 describe("expense money helpers", () => {
+  it("formats common trip currencies with stable prefixes", () => {
+    expect(formatMoney(1234.5, "JPY")).toBe("¥1,234.50");
+    expect(formatMoney(12, "EUR")).toBe("€12.00");
+    expect(formatMoney(-12, "USD")).toBe("-US$12.00");
+    expect(formatMoney(12, "bad")).toBe("BAD 12.00");
+    expect(formatMoney(12, "$")).toBe("HK$12.00");
+  });
+
   it("builds equal, exact, share, and percentage splits in major money units", () => {
     expect(buildExpenseSplits({ amount: 100, memberIds: members, mode: "equal" })).toEqual({
       "member-aom": 33.34,
