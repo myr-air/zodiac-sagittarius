@@ -8,6 +8,16 @@ export const overviewFocusListClassName =
 
 export const overviewMutedClassName = "overview-muted text-xs font-bold text-(--color-text-muted)";
 export const overviewTaskMetaClassName = "overview-task-meta inline-flex flex-wrap justify-end gap-1.5";
+export const overviewTaskListClassName =
+  "overview-task-list m-0 grid list-none gap-2 p-0 text-[13px] font-semibold leading-5 text-(--color-text-muted)";
+export const overviewTaskItemClassName =
+  "overview-task-item grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-2 max-[767px]:grid-cols-1 [&_input]:size-4 [&_input]:accent-[var(--color-primary)] [&_label]:inline-flex [&_label]:min-w-0 [&_label]:items-center [&_label]:gap-[9px] [&_label>span]:overflow-hidden [&_label>span]:text-ellipsis [&_label>span]:whitespace-nowrap [&_label>span]:text-[13px] [&_label>span]:leading-[18px] [&_small]:whitespace-nowrap [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:text-(--color-text-muted)";
+export const overviewTaskItemInteractiveClassName =
+  "transition-[border-color,box-shadow,background] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface)";
+export const overviewTaskKindChipClassName =
+  "text-[11px] font-extrabold text-(--color-text-muted) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 rounded-sm";
+export const overviewTaskTitleDoneClassName = "line-through text-(--color-text-muted) font-normal";
+export const overviewTaskTitleTodoClassName = "text-(--color-text) font-bold";
 
 export const overviewNextStopClassName =
   "overview-next-stop grid gap-[5px] [&_p]:m-0 [&_p]:mt-1 [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted) [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted) [&_strong]:text-xl [&_strong]:font-extrabold [&_strong]:leading-7 [&_strong]:text-(--color-text)";

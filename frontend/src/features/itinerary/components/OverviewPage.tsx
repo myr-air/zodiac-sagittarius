@@ -8,11 +8,11 @@ import { formatTripRange, PageUserCard } from "@/src/components/PageHeader";
 import { Button, SegmentedControl, Select, TextInput } from "@/src/ui";
 import { WeatherBriefingDrawer } from "@/src/components/WeatherBriefingDrawer";
 import { WeatherForecastStrip } from "@/src/components/WeatherForecastStrip";
-import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./overview";
+import { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TripCompletedPostcard, ViewerNextStopPanel } from "./overview";
+import { OverviewTaskList, type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {
   overviewMutedClassName,
   overviewNextStopClassName,
-  overviewTaskMetaClassName,
 } from "./overview/overview.styles";
 import {
   dialogFieldWideClassName,
@@ -30,9 +30,6 @@ import {
   overviewTaskAddButtonClassName,
   overviewTaskFilterActiveClassName,
   overviewTaskFiltersClassName,
-  overviewTaskItemClassName,
-  overviewTaskItemInteractiveClassName,
-  overviewTaskListClassName,
   overviewTaskPanelClassName,
   overviewTaskToolbarClassName,
   overviewUndoToastClassName,
@@ -51,8 +48,6 @@ import {
   managerNextStopDetail,
   overviewRoleLens,
   photoBoardEmptyMessage,
-  stopLabel,
-  taskKindLabel,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
 
@@ -173,6 +168,15 @@ export function OverviewPage({
   function openExpenses() {
     onOpenExpenses?.();
   }
+
+  const taskListLabels: OverviewTaskListLabels = {
+    assignee: t.overview.task,
+    kind: {
+      booking: t.overview.task.booking,
+      prep: t.overview.task.prep,
+      planStop: t.overview.task.planStop,
+    },
+  };
 
   return (
     <section className={overviewPageClassName} aria-label={t.overview.pageLabel}>
@@ -300,25 +304,14 @@ export function OverviewPage({
                 </label>
                 <button type="submit" disabled={!newTaskTitle.trim()}>{t.overview.addTask}</button>
               </form>
-              {visibleTasks.length ? (
-                <ul className={overviewTaskListClassName}>
-                  {visibleTasks.map((task) => (
-                    <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
-                      <label>
-                        <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
-                        <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
-                          {task.title}
-                        </span>
-                      </label>
-                      <div className={overviewTaskMetaClassName}>
-                        <TaskAssigneeBadge task={task} trip={trip} labels={t.overview.task} />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={overviewMutedClassName}>{t.overview.noChecklist}</p>
-              )}
+              <OverviewTaskList
+                tasks={visibleTasks}
+                trip={trip}
+                items={items}
+                labels={taskListLabels}
+                emptyMessage={t.overview.noChecklist}
+                onToggleTask={toggleTask}
+              />
             </section>
 
             <button className={cn(overviewPanelClassName, overviewPanelButtonClassName)} type="button" onClick={openExpenses}>
@@ -465,31 +458,16 @@ export function OverviewPage({
               <span aria-hidden="true">+</span>
             </button>
           </div>
-          {visibleTasks.length ? (
-            <ul className={overviewTaskListClassName}>
-              {visibleTasks.map((task) => (
-                <li className={cn(overviewTaskItemClassName, overviewTaskItemInteractiveClassName)} key={task.id} aria-label={task.title} data-status={task.status}>
-                  <label>
-                    <input type="checkbox" checked={task.status === "done"} onChange={() => toggleTask(task)} />
-                    <span className={task.status === "done" ? "line-through text-(--color-text-muted) font-normal" : "text-(--color-text) font-bold"}>
-                      {task.title}
-                    </span>
-                  </label>
-                  <div className={overviewTaskMetaClassName}>
-                    <TaskAssigneeBadge task={task} trip={trip} labels={t.overview.task} />
-                    <small className="text-[11px] font-extrabold text-(--color-text-muted) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 rounded-sm">{taskKindLabel(task, t.overview.task)}</small>
-                    {task.relatedItemId && (
-                      <small className="text-[11px] font-extrabold text-(--color-text-muted) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 rounded-sm">
-                        {stopLabel(task.relatedItemId, items, t.overview.task.planStop)}
-                      </small>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className={overviewMutedClassName}>{t.overview.task.emptyFilter}</p>
-          )}
+              <OverviewTaskList
+                tasks={visibleTasks}
+                trip={trip}
+                items={items}
+                labels={taskListLabels}
+                emptyMessage={t.overview.task.emptyFilter}
+                includeTripKindMeta
+                includeStopMeta
+                onToggleTask={toggleTask}
+              />
             </section>
           </>
         ) : null}
