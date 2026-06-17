@@ -25,9 +25,20 @@ import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import { TripJoinGate } from "@/src/features/account/components/trip-join-gate";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import type { PortalSection } from "@/src/shared/portal";
+import {
+  cacheAccountPortalData,
+  clearAccountPortalDataCache,
+  getAccountPortalDataCache,
+  getLatestAccountPortalDataCache,
+  getPortalNavItems,
+  heroDetail,
+  heroTitle,
+  isAccountEntryMode,
+  mainLabel,
+  type AccountAccessMode,
+} from "./account-access-panel-support";
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
   ACCESS_ERROR_CODES,
@@ -69,7 +80,7 @@ import {
 } from "./account-trip-wizard-support";
 
 interface AccountAccessPanelProps {
-  accessMode?: "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
+  accessMode?: AccountAccessMode;
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
   accountSessionLoaded?: boolean;
@@ -352,22 +363,11 @@ const accountTertiaryActionClassName =
 const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
 const portalSectionStorageKey = "sagittarius:portal-section-index";
 
-interface AccountPortalDataCache {
-  explorer: AccountExplorerSummary | null;
-  settings: AccountSettings | null;
-  stats: AccountTripStats | null;
-  todos: AccountTodoSummary[];
-  trips: AccountTripSummary[];
-  vaultItems: AccountVaultItemSummary[];
-}
-
 interface CreatedTripShare {
   inviteLink: string;
   joinId: string;
   name: string;
 }
-
-let accountPortalDataCache: (AccountPortalDataCache & { sessionToken: string }) | null = null;
 
 export function AccountAccessPanel({
   accessMode = "combined",
@@ -681,7 +681,7 @@ export function AccountAccessPanel({
 function AccountPortalLoadingFrame({ portalSection }: { portalSection: PortalSection }) {
   const { t } = useI18n();
   const portalNavItems = getPortalNavItems(t);
-  const cachedEmail = accountPortalDataCache?.settings?.profile.primaryEmail ?? t.access.dashboard.noEmail;
+  const cachedEmail = getLatestAccountPortalDataCache()?.settings?.profile.primaryEmail ?? t.access.dashboard.noEmail;
 
   return (
     <div className={accountDashboardClassName} id="account-portal" aria-busy="true">
@@ -718,58 +718,6 @@ function AccountPortalLoadingFrame({ portalSection }: { portalSection: PortalSec
       </div>
     </div>
   );
-}
-
-function mainLabel(accessMode: AccountAccessPanelProps["accessMode"], labels: Messages["access"]["mainLabels"]): string {
-  if (accessMode === "account-login") return labels.accountLogin;
-  if (accessMode === "account-register") return labels.accountRegister;
-  if (accessMode === "account-portal") return labels.accountPortal;
-  if (accessMode === "trip-access") return labels.tripAccess;
-  return labels.combined;
-}
-
-function getPortalNavItems(t: Messages) {
-  return [
-    { id: "dashboard" as const, href: appRoutes.portal(), icon: "home" as const, label: t.access.portal.nav.dashboard },
-    { id: "trips" as const, href: appRoutes.portalMyTrips(), icon: "calendar" as const, label: t.access.portal.nav.trips },
-    { id: "explorer" as const, href: appRoutes.portalExplorer(), icon: "map" as const, label: t.access.portal.nav.explorer },
-    { id: "todos" as const, href: appRoutes.portalToDos(), icon: "list" as const, label: t.access.portal.nav.todos },
-    { id: "vault" as const, href: appRoutes.portalVault(), icon: "document" as const, label: t.access.portal.nav.vault },
-    { id: "settings" as const, href: appRoutes.portalSettings(), icon: "settings" as const, label: t.access.portal.nav.settings },
-  ];
-}
-
-function getAccountPortalDataCache(sessionToken: string): AccountPortalDataCache | null {
-  if (accountPortalDataCache?.sessionToken !== sessionToken) return null;
-  return accountPortalDataCache;
-}
-
-function cacheAccountPortalData(sessionToken: string, data: AccountPortalDataCache) {
-  accountPortalDataCache = { ...data, sessionToken };
-}
-
-function clearAccountPortalDataCache(sessionToken: string) {
-  if (accountPortalDataCache?.sessionToken === sessionToken) accountPortalDataCache = null;
-}
-
-function heroTitle(accessMode: AccountAccessPanelProps["accessMode"], titles: Messages["access"]["titles"]): string {
-  if (accessMode === "account-login") return titles.accountLogin;
-  if (accessMode === "account-register") return titles.accountRegister;
-  if (accessMode === "account-portal") return titles.accountPortal;
-  if (accessMode === "trip-access") return titles.tripAccess;
-  return titles.combined;
-}
-
-function heroDetail(accessMode: AccountAccessPanelProps["accessMode"], details: Messages["access"]["details"]): string {
-  if (accessMode === "account-login") return details.accountLogin;
-  if (accessMode === "account-register") return details.accountRegister;
-  if (accessMode === "account-portal") return details.accountPortal;
-  if (accessMode === "trip-access") return details.tripAccess;
-  return details.combined;
-}
-
-function isAccountEntryMode(accessMode: AccountAccessPanelProps["accessMode"]): accessMode is "account-login" | "account-register" {
-  return accessMode === "account-login" || accessMode === "account-register";
 }
 
 function EmailLoginPanel({
