@@ -63,8 +63,8 @@ For itinerary/path changes, prefer focused coverage in:
 
 - `frontend/src/trip/itinerary-paths.test.ts`
 - `frontend/src/trip/itinerary.test.ts`
-- `frontend/src/components/SmartItineraryTable.test.tsx`
-- `frontend/src/components/SagittariusApp.test.tsx` when API/local app wiring is
+- `frontend/src/features/itinerary/components/SmartItineraryTable.test.tsx`
+- `frontend/src/trip/workspace/sagittarius-app/SagittariusApp.test.tsx` when API/local app wiring is
   involved
 
 When a user-facing feature touches the itinerary table, verify at least one real

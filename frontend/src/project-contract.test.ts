@@ -182,8 +182,9 @@ describe("Sagittarius project scaffold", () => {
     expect(map).toContain("[CONTEXT.md](../CONTEXT.md)");
     expect(map).toContain("[docs/COMMANDS.md](./COMMANDS.md)");
     expect(map).toContain("[frontend/src/trip/](../frontend/src/trip)");
-    expect(map).toContain("[frontend/src/components/](../frontend/src/components)");
+    expect(map).toContain("[frontend/src/features/](../frontend/src/features)");
     expect(map).toContain("[frontend/src/shared/components/](../frontend/src/shared/components)");
+    expect(map).toContain("[frontend/src/ui/](../frontend/src/ui)");
     expect(map).toContain("[backend/crates/sagittarius-api/src/api/](../backend/crates/sagittarius-api/src/api)");
     expect(map).toContain("[backend/migrations/](../backend/migrations)");
     expect(map).toContain("[docs/itinerary-trip-plan-phase-0-1-implementation-spec.md](./itinerary-trip-plan-phase-0-1-implementation-spec.md)");
