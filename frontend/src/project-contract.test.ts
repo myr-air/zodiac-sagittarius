@@ -237,6 +237,7 @@ describe("Sagittarius project scaffold", () => {
     expect(supportIndex).toContain("route-matchers");
     expect(supportIndex).toContain("portalRoutes");
     expect(storySupport).toContain("export const storyTripId");
+    expect(storySupport).toContain("export function appViewportStory");
     expect(storySupport).toContain("export async function expectWorkspaceView");
     expect(storySupport).toContain("seedTripJoinId");
     expect(hooksIndex).toContain("useWorkspaceItineraryImport");

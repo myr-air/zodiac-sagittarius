@@ -1,10 +1,17 @@
 import { expect } from "storybook/test";
+import type { StoryObj } from "@storybook/nextjs-vite";
+import type { SagittariusApp } from "@/src/app/SagittariusApp";
 import { seedTripJoinId } from "@/src/trip/auth";
 import {
   buildDenseTripFixture,
   buildEmptyTripFixture,
   tripFixture,
 } from "@/src/trip/trip-fixtures";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
+
+type SagittariusAppStory = StoryObj<typeof SagittariusApp>;
+type SagittariusAppPlay = NonNullable<SagittariusAppStory["play"]>;
+type SagittariusViewport = "mobile320" | "tablet768" | "desktop1024" | "desktop1440";
 
 export const storyTripId = "trip-1";
 export const travelerMemberId = tripFixture.currentMembers.traveler.id;
@@ -12,6 +19,30 @@ export const viewerMemberId = tripFixture.currentMembers.viewer.id;
 export const denseTrip = buildDenseTripFixture();
 export const emptyTrip = buildEmptyTripFixture();
 export { seedTripJoinId };
+
+export function appViewStory(
+  initialView: PlanningView,
+  play?: SagittariusAppPlay,
+): SagittariusAppStory {
+  return {
+    args: { initialView },
+    ...(play ? { play } : {}),
+  };
+}
+
+export function appViewportStory(
+  initialView: PlanningView,
+  defaultViewport: SagittariusViewport,
+  play: SagittariusAppPlay,
+): SagittariusAppStory {
+  return {
+    args: { initialView },
+    parameters: {
+      viewport: { defaultViewport },
+    },
+    play,
+  };
+}
 
 export async function expectWorkspaceView(
   canvasElement: HTMLElement,

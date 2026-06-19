@@ -7,6 +7,8 @@ import {
   tripRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  appViewportStory,
+  appViewStory,
   denseTrip,
   emptyTrip,
   expectBookingsView,
@@ -208,132 +210,27 @@ export const Desktop1024Overview: Story = {
     await expect(canvasElement.querySelector(".side-rail")).toBeInTheDocument();
   },
 };
-export const Desktop1440Overview: Story = {
-  args: { initialView: "overview" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: Desktop1024Overview.play,
-};
-export const Desktop1024Itinerary: Story = {
-  args: { initialView: "itinerary" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectItineraryView,
-};
-export const Desktop1440Itinerary: Story = {
-  args: { initialView: "itinerary" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectItineraryView,
-};
-export const Desktop1024Timeline: Story = {
-  args: { initialView: "timeline" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectTimelineView,
-};
-export const Desktop1440Timeline: Story = {
-  args: { initialView: "timeline" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectTimelineView,
-};
-export const Desktop1024Map: Story = {
-  args: { initialView: "map" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectMapView,
-};
-export const Desktop1440Map: Story = {
-  args: { initialView: "map" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectMapView,
-};
-export const Desktop1024Members: Story = {
-  args: { initialView: "members" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectMembersView,
-};
-export const Desktop1440Members: Story = {
-  args: { initialView: "members" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectMembersView,
-};
-export const Desktop1024Expenses: Story = {
-  args: { initialView: "expenses" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectExpensesView,
-};
-export const Desktop1440Expenses: Story = {
-  args: { initialView: "expenses" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectExpensesView,
-};
-export const Desktop1024Bookings: Story = {
-  args: { initialView: "bookings" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectBookingsView,
-};
-export const Desktop1440Bookings: Story = {
-  args: { initialView: "bookings" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectBookingsView,
-};
-export const Desktop1024Photos: Story = {
-  args: { initialView: "photos" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectPhotosView,
-};
-export const Desktop1440Photos: Story = {
-  args: { initialView: "photos" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectPhotosView,
-};
-export const Desktop1024Settings: Story = {
-  args: { initialView: "settings" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectSettingsView,
-};
-export const Desktop1440Settings: Story = {
-  args: { initialView: "settings" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: expectSettingsView,
-};
-export const Itinerary: Story = {
-  args: { initialView: "itinerary" },
-  play: expectItineraryView,
-};
-export const Timeline: Story = { args: { initialView: "timeline" } };
-export const Map: Story = { args: { initialView: "map" } };
-export const Members: Story = { args: { initialView: "members" } };
+export const Desktop1440Overview: Story = appViewportStory("overview", "desktop1440", Desktop1024Overview.play!);
+export const Desktop1024Itinerary: Story = appViewportStory("itinerary", "desktop1024", expectItineraryView);
+export const Desktop1440Itinerary: Story = appViewportStory("itinerary", "desktop1440", expectItineraryView);
+export const Desktop1024Timeline: Story = appViewportStory("timeline", "desktop1024", expectTimelineView);
+export const Desktop1440Timeline: Story = appViewportStory("timeline", "desktop1440", expectTimelineView);
+export const Desktop1024Map: Story = appViewportStory("map", "desktop1024", expectMapView);
+export const Desktop1440Map: Story = appViewportStory("map", "desktop1440", expectMapView);
+export const Desktop1024Members: Story = appViewportStory("members", "desktop1024", expectMembersView);
+export const Desktop1440Members: Story = appViewportStory("members", "desktop1440", expectMembersView);
+export const Desktop1024Expenses: Story = appViewportStory("expenses", "desktop1024", expectExpensesView);
+export const Desktop1440Expenses: Story = appViewportStory("expenses", "desktop1440", expectExpensesView);
+export const Desktop1024Bookings: Story = appViewportStory("bookings", "desktop1024", expectBookingsView);
+export const Desktop1440Bookings: Story = appViewportStory("bookings", "desktop1440", expectBookingsView);
+export const Desktop1024Photos: Story = appViewportStory("photos", "desktop1024", expectPhotosView);
+export const Desktop1440Photos: Story = appViewportStory("photos", "desktop1440", expectPhotosView);
+export const Desktop1024Settings: Story = appViewportStory("settings", "desktop1024", expectSettingsView);
+export const Desktop1440Settings: Story = appViewportStory("settings", "desktop1440", expectSettingsView);
+export const Itinerary: Story = appViewStory("itinerary", expectItineraryView);
+export const Timeline: Story = appViewStory("timeline");
+export const Map: Story = appViewStory("map");
+export const Members: Story = appViewStory("members");
 export const Dense: Story = {
   args: { initialTrip: denseTrip, initialView: "overview" },
   play: async ({ canvasElement }) => {
@@ -348,129 +245,21 @@ export const Empty: Story = {
     await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
   },
 };
-export const TabletOverview: Story = {
-  args: { initialView: "overview" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectOverviewView,
-};
-export const MobileOverview: Story = {
-  args: { initialView: "overview" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectOverviewView,
-};
-export const TabletItinerary: Story = {
-  args: { initialView: "itinerary" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectItineraryView,
-};
-export const MobileItinerary: Story = {
-  args: { initialView: "itinerary" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectItineraryView,
-};
-export const TabletTimeline: Story = {
-  args: { initialView: "timeline" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectTimelineView,
-};
-export const MobileTimeline: Story = {
-  args: { initialView: "timeline" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectTimelineView,
-};
-export const TabletMap: Story = {
-  args: { initialView: "map" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectMapView,
-};
-export const MobileMap: Story = {
-  args: { initialView: "map" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectMapView,
-};
-export const TabletMembers: Story = {
-  args: { initialView: "members" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectMembersView,
-};
-export const MobileMembers: Story = {
-  args: { initialView: "members" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectMembersView,
-};
-export const TabletExpenses: Story = {
-  args: { initialView: "expenses" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectExpensesView,
-};
-export const MobileExpenses: Story = {
-  args: { initialView: "expenses" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectExpensesView,
-};
-export const TabletBookings: Story = {
-  args: { initialView: "bookings" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectBookingsView,
-};
-export const MobileBookings: Story = {
-  args: { initialView: "bookings" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectBookingsView,
-};
-export const TabletPhotos: Story = {
-  args: { initialView: "photos" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectPhotosView,
-};
-export const MobilePhotos: Story = {
-  args: { initialView: "photos" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectPhotosView,
-};
-export const TabletSettings: Story = {
-  args: { initialView: "settings" },
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: expectSettingsView,
-};
-export const MobileSettings: Story = {
-  args: { initialView: "settings" },
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: expectSettingsView,
-};
+export const TabletOverview: Story = appViewportStory("overview", "tablet768", expectOverviewView);
+export const MobileOverview: Story = appViewportStory("overview", "mobile320", expectOverviewView);
+export const TabletItinerary: Story = appViewportStory("itinerary", "tablet768", expectItineraryView);
+export const MobileItinerary: Story = appViewportStory("itinerary", "mobile320", expectItineraryView);
+export const TabletTimeline: Story = appViewportStory("timeline", "tablet768", expectTimelineView);
+export const MobileTimeline: Story = appViewportStory("timeline", "mobile320", expectTimelineView);
+export const TabletMap: Story = appViewportStory("map", "tablet768", expectMapView);
+export const MobileMap: Story = appViewportStory("map", "mobile320", expectMapView);
+export const TabletMembers: Story = appViewportStory("members", "tablet768", expectMembersView);
+export const MobileMembers: Story = appViewportStory("members", "mobile320", expectMembersView);
+export const TabletExpenses: Story = appViewportStory("expenses", "tablet768", expectExpensesView);
+export const MobileExpenses: Story = appViewportStory("expenses", "mobile320", expectExpensesView);
+export const TabletBookings: Story = appViewportStory("bookings", "tablet768", expectBookingsView);
+export const MobileBookings: Story = appViewportStory("bookings", "mobile320", expectBookingsView);
+export const TabletPhotos: Story = appViewportStory("photos", "tablet768", expectPhotosView);
+export const MobilePhotos: Story = appViewportStory("photos", "mobile320", expectPhotosView);
+export const TabletSettings: Story = appViewportStory("settings", "tablet768", expectSettingsView);
+export const MobileSettings: Story = appViewportStory("settings", "mobile320", expectSettingsView);
