@@ -153,6 +153,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
@@ -302,6 +304,21 @@ describe("Sagittarius project scaffold", () => {
     expect(workspacePrimitives).toContain("export function WorkspaceSurface");
     expect(workspacePrimitives).toContain("export function WorkspacePage");
     expect(workspacePrimitives).toContain("export const fieldControlClassName");
+  });
+
+  it("keeps AppShell split into component, styles, and support logic", () => {
+    const appShell = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8");
+    const appShellStyles = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"), "utf8");
+    const appShellSupport = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"), "utf8");
+
+    expect(appShell).toContain("./AppShell.styles");
+    expect(appShell).toContain("./app-shell.support");
+    expect(appShell).not.toContain("const appLayoutClassName");
+    expect(appShell).not.toContain("function roleLabel");
+    expect(appShellStyles).toContain("export const appLayoutClassName");
+    expect(appShellStyles).toContain("export const sideRailClassName");
+    expect(appShellSupport).toContain("export function resolveViewFromPath");
+    expect(appShellSupport).toContain("export function roleLabel");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
