@@ -1,29 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import type {
   AccountApiClient,
   AccountSession,
 } from "@/src/account/api-client";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
 import { TripJoinGate } from "@/src/features/account/components/trip-join-gate";
-import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { PortalSection } from "@/src/shared/portal";
 import {
   clearAccountPortalDataCache,
-  heroDetail,
-  heroTitle,
   isAccountEntryMode,
   mainLabel,
   type AccountAccessMode,
 } from "./account-access-panel-support";
-import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
+import { AccountAccessChrome } from "./account-access-panel-chrome";
 import {
   localizeAccessError,
   StatusMessage,
@@ -38,36 +32,21 @@ import { EmailLoginPanel } from "./email-login";
 import {
   accountAuthCardClassName,
   accountDashboardClassName,
-  accountEntryBackHomeClassName,
-  accountEntryBrandTaglineClassName,
   accountEntryPageClassName,
   accountEntryShellClassName,
-  accountHeroClassName,
-  accountHeroEyebrowClassName,
-  accountHeroMarkClassName,
-  accountModeTabsClassName,
   accountPageClassName,
   accountPortalDashboardClassNames,
-  accountPortalHeroClassName,
-  accountPortalHeroMarkClassName,
-  accountPortalLanguageSwitchClassName,
   accountPortalNewTripPageClassName,
   accountPortalNewTripShellClassName,
   accountPortalPageClassName,
   accountPortalShellClassName,
   accountShellClassName,
-  accountTabActiveClassName,
-  accountTabClassName,
   accountToastStackClassName,
   accountTripAccessPageClassName,
   accountTripAccessShellClassName,
-  backHomeButtonClassName,
   portalContentClassName,
   portalLoadingCardClassName,
-  tripAccessBackHomeClassName,
-  tripAccessLanguageSwitchClassName,
 } from "./account-access-panel-layout";
-import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
@@ -176,63 +155,23 @@ export function AccountAccessPanel({
       aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
       <section className={cn(accountShellClassName, isAccountEntry ? accountEntryShellClassName : "", isPortalEntry ? accountPortalShellClassName : "", isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripShellClassName : "", isTripAccessEntry ? accountTripAccessShellClassName : "")}>
-        {isAccountEntry ? (
-          <>
-            <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, accountEntryBackHomeClassName)}>
-              <Icon name="chevronLeft" className="size-3.5" />
-              {t.access.backToHome}
-            </Link>
-          </>
-        ) : null}
-        {isTripAccessEntry ? (
-          <>
-            <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, tripAccessBackHomeClassName)}>
-              <Icon name="chevronLeft" className="size-3.5" />
-              {t.access.backToHome}
-            </Link>
-            <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName, tripAccessLanguageSwitchClassName)} />
-          </>
-        ) : null}
-        {!isTripAccessEntry ? <div className={cn(accountHeroClassName, isPortalEntry ? accountPortalHeroClassName : "")}>
-          <div className={cn(accountHeroMarkClassName, isPortalEntry ? accountPortalHeroMarkClassName : "")} aria-hidden="true">
-            <Icon name="route" />
-          </div>
-          <div>
-            <p className={accountHeroEyebrowClassName}>{isAccountEntry ? t.access.entryHero.brand : t.access.eyebrow}</p>
-            {isAccountEntry ? <p className={accountEntryBrandTaglineClassName}>{t.access.entryHero.tagline}</p> : null}
-            <h1>{isAccountEntry ? t.access.entryHero.title : heroTitle(effectiveEntryAccessMode, t.access.titles)}</h1>
-            <div className="h-6"></div>
-            <p>{isAccountEntry ? t.access.entryHero.detail : heroDetail(effectiveEntryAccessMode, t.access.details)}</p>
-            {isAccountEntry || (isPortalEntry && portalSection === "new-trip") ? null : <LanguageSwitch className={cn(accessLanguageSwitchClassName, isPortalEntry ? accountPortalLanguageSwitchClassName : "")} />}
-          </div>
-          {isAccountEntry ? <AuthTravelCollage labels={t.access.entryHero} /> : null}
-          {isAccountEntry ? <AuthHighlights flow={entryFlow} highlights={t.access.highlights} entryHero={t.access.entryHero} /> : null}
-        </div> : null}
-
-        {effectiveAccessMode === "combined" ? (
-          <div className={accountModeTabsClassName} role="tablist" aria-label={t.access.tabs.label}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "account"}
-              className={cn(accountTabClassName, mode === "account" ? accountTabActiveClassName : "")}
-              onClick={() => setSelectedMode("account")}
-            >
-              <Icon name="users" />
-              {t.access.tabs.account}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "temp"}
-              className={cn(accountTabClassName, mode === "temp" ? accountTabActiveClassName : "")}
-              onClick={() => setSelectedMode("temp")}
-            >
-              <Icon name="clock" />
-              {t.access.tabs.temp}
-            </button>
-          </div>
-        ) : null}
+        <AccountAccessChrome
+          accessMode={effectiveAccessMode}
+          backToHomeLabel={t.access.backToHome}
+          detailLabels={t.access.details}
+          entryFlow={entryFlow}
+          entryHeroLabels={t.access.entryHero}
+          eyebrowLabel={t.access.eyebrow}
+          highlightLabels={t.access.highlights}
+          isAccountEntry={isAccountEntry}
+          isPortalEntry={isPortalEntry}
+          isTripAccessEntry={isTripAccessEntry}
+          mode={mode}
+          onModeChange={setSelectedMode}
+          portalSection={portalSection}
+          tabLabels={t.access.tabs}
+          titleLabels={t.access.titles}
+        />
 
         {isAccountEntry && message ? (
           <div className={accountToastStackClassName} aria-live="polite">

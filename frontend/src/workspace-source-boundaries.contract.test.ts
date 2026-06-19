@@ -117,6 +117,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/workspace/pages/members/TripMembersPage.support.ts"),
       "utf8",
     );
+    const accountAccessPanel = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"),
+      "utf8",
+    );
+    const accountAccessChrome = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx"),
+      "utf8",
+    );
     const accountTripWizardSupport = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts"),
       "utf8",
@@ -425,6 +433,14 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");
     expect(memberSupport).toContain("@/src/routes/invite-links");
     expect(memberSupport).not.toContain("function buildInviteLink");
+    expect(accountAccessPanel).toContain("AccountAccessChrome");
+    expect(accountAccessPanel).not.toContain("accountHeroClassName");
+    expect(accountAccessPanel).not.toContain("accountModeTabsClassName");
+    expect(accountAccessPanel).not.toContain("appRoutes.home()");
+    expect(accountAccessChrome).toContain("export function AccountAccessChrome");
+    expect(accountAccessChrome).toContain("accountHeroClassName");
+    expect(accountAccessChrome).toContain("accountModeTabsClassName");
+    expect(accountAccessChrome).toContain("appRoutes.home()");
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).toContain("./account-trip-credentials");
     expect(accountTripWizardSupport).toContain("./account-trip-destinations");
