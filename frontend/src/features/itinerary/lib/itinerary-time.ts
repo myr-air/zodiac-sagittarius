@@ -1,13 +1,9 @@
+import { parseTime } from "@/src/trip/itinerary-time";
+
 export function parseTimeToMinutes(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
-  const match = /^(\d{2}):(\d{2})$/.exec(trimmed);
-  if (!match) return null;
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return null;
-  if (hour > 23 || minute > 59) return null;
-  return hour * 60 + minute;
+  return parseTime(trimmed);
 }
 
 export function itineraryDateTimeValue(day: string, time: string | null | undefined): string | null {
