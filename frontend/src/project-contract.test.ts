@@ -201,6 +201,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/StopDialog.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
@@ -518,6 +519,18 @@ describe("Sagittarius project scaffold", () => {
     expect(stopDialogModel).toContain("export function useStopDialogModel");
     expect(stopDialogModel).toContain("buildStopSubmitValues");
     expect(stopDialogModel).toContain("applyStopActivityInput");
+  });
+
+  it("keeps stop dialog detail serialization split from utility ids", () => {
+    const stopDialogUtils = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts"), "utf8");
+    const stopDialogDetails = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts"), "utf8");
+
+    expect(stopDialogUtils).toContain("./stop-dialog-details");
+    expect(stopDialogUtils).toContain("export const stopDialogFieldIds");
+    expect(stopDialogUtils).not.toContain("export function buildStructuredStopDetails");
+    expect(stopDialogUtils).not.toContain("function trimmedStopDetailValues");
+    expect(stopDialogDetails).toContain("export function buildStructuredStopDetails");
+    expect(stopDialogDetails).toContain("function trimmedStopDetailValues");
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {
