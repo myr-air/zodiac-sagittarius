@@ -182,6 +182,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ActivityPathGraphDay.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/index.ts"))).toBe(true);
@@ -387,6 +388,20 @@ describe("Sagittarius project scaffold", () => {
     expect(list).toContain("export function SubActivityList");
     expect(modal).toContain("export function SubActivityModal");
     expect(types).toContain("export interface SubActivitySharedProps");
+  });
+
+  it("keeps itinerary table weather formatting split from path utilities", () => {
+    const tableUtils = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"), "utf8");
+    const weatherSummary = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts"), "utf8");
+    const weatherChip = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx"), "utf8");
+
+    expect(tableUtils).not.toContain("TripDailyBriefing");
+    expect(tableUtils).not.toContain("weather-briefings");
+    expect(tableUtils).not.toContain("buildWeatherSummary");
+    expect(tableUtils).not.toContain("buildWeatherTooltip");
+    expect(weatherSummary).toContain("export function buildWeatherSummary");
+    expect(weatherSummary).toContain("export function buildWeatherTooltip");
+    expect(weatherChip).toContain("./weather-summary");
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {

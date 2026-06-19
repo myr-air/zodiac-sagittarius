@@ -5,7 +5,6 @@ import { mainPathOption } from "@/src/features/itinerary/testing";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import {
   buildGraphColumnWidth,
-  buildWeatherSummary,
   dedupePathOptions,
   formatSelectedPlanLabel,
   formatTripPlanOptionLabel,
@@ -13,6 +12,7 @@ import {
   groupGraphItemsByDay,
   mergeTripDayGroups,
 } from "./smart-itinerary-table-utils";
+import { buildWeatherSummary } from "./weather-summary";
 const countLabel = ({ count }: { count: number }) => `${count} selected`;
 const namesLabel = ({ names }: { names: string }) => `Selected: ${names}`;
 

@@ -6,7 +6,7 @@ import {
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
 import { Icon } from "@/src/ui/icons";
-import { buildWeatherTooltip } from "./smart-itinerary-table-utils";
+import { buildWeatherTooltip } from "./weather-summary";
 import {
   dayWeatherChipClassName,
   dayWeatherSolarClassName,
