@@ -14,7 +14,7 @@ import type {
 import {
   itineraryExportSchema,
   itineraryExportVersion,
-} from "./itinerary-import-export";
+} from "./itinerary-import-export-schema";
 
 export function buildItineraryExport({
   exportedAt,
