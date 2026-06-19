@@ -1,5 +1,6 @@
 import type { TripCity, TripParticipantSession, TripRole } from "@/src/trip/types";
-import { TripApiError, type TripSummaryResponse } from "@/src/trip/api-client";
+import type { TripSummaryResponse } from "@/src/trip/api-client";
+import { createTripApiRequester } from "@/src/trip/api-client-transport";
 import { accountApiRoutes } from "./api-routes";
 
 export type AccountSessionKind = "temporary" | "trusted";
@@ -222,25 +223,10 @@ export interface AccountApiClient {
 }
 
 export function createAccountApiClient(options: AccountApiClientOptions = {}): AccountApiClient {
-  const fetcher = options.fetchImpl ?? fetch;
-  const baseUrl = trimTrailingSlash(options.baseUrl ?? "");
-
-  async function request<T>(path: string, init: RequestInit): Promise<T> {
-    const response = await fetcher(`${baseUrl}${path}`, {
-      ...init,
-      headers: {
-        "content-type": "application/json",
-        ...(init.headers ?? {}),
-      },
-    });
-
-    if (!response.ok) {
-      throw await toApiError(response);
-    }
-
-    if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
-  }
+  const request = createTripApiRequester({
+    baseUrl: options.baseUrl ?? "",
+    fetcher: options.fetchImpl,
+  });
 
   function authHeaders(sessionToken: string) {
     return { Authorization: `Bearer ${sessionToken}` };
@@ -380,18 +366,4 @@ export function createAccountApiClient(options: AccountApiClientOptions = {}): A
       });
     },
   };
-}
-
-async function toApiError(response: Response): Promise<TripApiError> {
-  const fallback = { code: "request_failed", message: `request failed with ${response.status}` };
-  const body = (await response.json().catch(() => fallback)) as Partial<typeof fallback>;
-  return new TripApiError({
-    code: body.code ?? fallback.code,
-    message: body.message ?? fallback.message,
-    status: response.status,
-  });
-}
-
-function trimTrailingSlash(value: string): string {
-  return value.endsWith("/") ? value.slice(0, -1) : value;
 }
