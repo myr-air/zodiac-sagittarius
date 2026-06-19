@@ -10,7 +10,7 @@ import {
   buildMoveItineraryItemToDayRequest,
 } from "@/src/trip/itinerary-api-requests";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { useWorkspaceItineraryPathMoveCommand } from "./use-workspace-itinerary-path-move-command";
 import { useWorkspaceItineraryReorderCommand } from "./use-workspace-itinerary-reorder-command";
 

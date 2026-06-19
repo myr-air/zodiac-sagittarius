@@ -10,7 +10,7 @@ import {
   buildReorderItineraryItemsRequest,
 } from "@/src/trip/itinerary-api-requests";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 
 interface UseWorkspaceItineraryReorderCommandParams {
   canEdit: boolean;
