@@ -5,9 +5,9 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { useWorkspaceExpenseEstimateCommand } from "./use-workspace-expense-estimate-command";
-import { useWorkspaceExpenseMutationCommands } from "./use-workspace-expense-mutation-commands";
-import { useWorkspaceExpenseReminderCommand } from "./use-workspace-expense-reminder-command";
+import { useWorkspaceExpenseEstimateCommand } from "./expenses/use-workspace-expense-estimate-command";
+import { useWorkspaceExpenseMutationCommands } from "./expenses/use-workspace-expense-mutation-commands";
+import { useWorkspaceExpenseReminderCommand } from "./expenses/use-workspace-expense-reminder-command";
 
 interface UseWorkspaceExpensesOptions {
   apiClient?: TripApiClient;
