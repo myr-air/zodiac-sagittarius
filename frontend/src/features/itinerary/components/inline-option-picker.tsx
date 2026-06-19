@@ -1,8 +1,8 @@
-import { createPortal } from "react-dom";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
 import { Icon, type IconName } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
+import { InlineOptionPickerMenu } from "./inline-option-picker-menu";
 
 export interface InlineOptionPickerOption {
   icon?: IconName;
@@ -17,25 +17,6 @@ const inlineOptionPickerButtonClassName = cn(
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
 );
 const inlineOptionPickerCaretClassName = "shrink-0 text-(--color-text-subtle)";
-const floatingOptionMenuClassName =
-  "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
-const floatingOptionButtonClassName =
-  "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none aria-selected:bg-(--color-route-soft) aria-selected:text-(--color-route) data-[active=true]:bg-(--color-route-soft)";
-
-function sideMenuFloatingLeft(
-  menuLeft: number,
-  menuWidth: number,
-  sideMenuWidth: number,
-  viewportWidth: number,
-): number {
-  const margin = 8;
-  const gap = 6;
-  const right = menuLeft + menuWidth + gap;
-  if (right + sideMenuWidth <= viewportWidth - margin) return right;
-  const left = menuLeft - sideMenuWidth - gap;
-  if (left >= margin) return left;
-  return Math.max(margin, viewportWidth - sideMenuWidth - margin);
-}
 
 interface InlineOptionPickerProps {
   ariaLabel: string;
@@ -79,16 +60,6 @@ export function InlineOptionPicker({
   const selectedOption = options.find((option) => option.value === value) ?? options[0];
   const activeOption = options[activeIndex] ?? selectedOption;
   const activeSubOptions = activeOption ? subOptionsByValue?.[activeOption.value] ?? [] : [];
-  const hasSideMenu = open && activeSubOptions.length > 0 && Boolean(onCommitSubOption);
-  const sideMenuWidth = Math.max(position.width, 180);
-  const sideMenuTop = Math.min(
-    Math.max(8, position.top + activeIndex * 34),
-    Math.max(8, typeof window === "undefined" ? position.top : window.innerHeight - Math.min(260, activeSubOptions.length * 34 + 8) - 8),
-  );
-  const sideMenuLeft =
-    typeof window === "undefined"
-      ? position.left + position.width + 6
-      : sideMenuFloatingLeft(position.left, position.width, sideMenuWidth, window.innerWidth);
 
   useEffect(() => {
     if (!open) return;
@@ -184,101 +155,26 @@ export function InlineOptionPicker({
           ⌄
         </span>
       </button>
-      {open ? createPortal(
-        <>
-          <div
-            ref={menuRef}
-            className={floatingOptionMenuClassName}
-            role="listbox"
-            aria-label={ariaLabel}
-            aria-activedescendant={`${optionKeyPrefix}-${options[activeIndex]?.value ?? value}`}
-            style={{ left: position.left, top: position.top, width: position.width }}
-            tabIndex={-1}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                setOpen(false);
-                buttonRef.current?.focus();
-              }
-              if (event.key === "ArrowDown") {
-                event.preventDefault();
-                setActiveIndex((current) => Math.min(options.length - 1, current + 1));
-              }
-              if (event.key === "ArrowUp") {
-                event.preventDefault();
-                setActiveIndex((current) => Math.max(0, current - 1));
-              }
-              if (event.key === "ArrowRight" && activeSubOptions.length > 0 && activeOption) {
-                event.preventDefault();
-                commitSubOption(activeOption, activeSubOptions[0]);
-              }
-              if (event.key === "Enter") {
-                event.preventDefault();
-                const option = options[activeIndex];
-                if (option) commitOption(option);
-              }
-            }}
-          >
-            {options.map((option, index) => (
-              <div
-                className={floatingOptionButtonClassName}
-                role="option"
-                aria-selected={option.value === value}
-                data-active={index === activeIndex ? "true" : undefined}
-                id={`${optionKeyPrefix}-${option.value}`}
-                tabIndex={-1}
-                key={`${optionKeyPrefix}-${option.value}`}
-                onMouseEnter={() => setActiveIndex(index)}
-                onFocus={() => setActiveIndex(index)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  commitOption(option);
-                }}
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  {option.icon ? <Icon name={option.icon} className="size-3.5" /> : null}
-                  <span className="min-w-0 truncate">{option.label}</span>
-                </span>
-                <span aria-hidden="true">
-                  {subOptionsByValue?.[option.value]?.length
-                    ? "›"
-                    : option.value === value
-                      ? "✓"
-                      : ""}
-                </span>
-              </div>
-            ))}
-          </div>
-          {hasSideMenu && activeOption ? (
-            <div
-              ref={sideMenuRef}
-              className={cn(floatingOptionMenuClassName, "w-[180px]")}
-              role="listbox"
-              aria-label={`${activeOption.label} options`}
-              style={{ left: sideMenuLeft, top: sideMenuTop, width: sideMenuWidth }}
-            >
-              {activeSubOptions.map((option) => (
-                <button
-                  type="button"
-                  className={floatingOptionButtonClassName}
-                  data-active={option.value === selectedSubValue ? "true" : undefined}
-                  key={`${optionKeyPrefix}-${activeOption.value}-${option.value}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    commitSubOption(activeOption, option);
-                  }}
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {option.icon ? <Icon name={option.icon} className="size-3.5" /> : null}
-                    <span className="min-w-0 truncate">{option.label}</span>
-                  </span>
-                  <span aria-hidden="true">{option.value === selectedSubValue ? "✓" : ""}</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </>,
-        document.body,
+      {open ? (
+        <InlineOptionPickerMenu
+          activeIndex={activeIndex}
+          activeOption={activeOption}
+          activeSubOptions={activeSubOptions}
+          ariaLabel={ariaLabel}
+          buttonRef={buttonRef}
+          commitOption={commitOption}
+          commitSubOption={commitSubOption}
+          menuRef={menuRef}
+          optionKeyPrefix={optionKeyPrefix}
+          options={options}
+          position={position}
+          selectedSubValue={selectedSubValue}
+          setActiveIndex={setActiveIndex}
+          setOpen={setOpen}
+          sideMenuRef={sideMenuRef}
+          subOptionsByValue={subOptionsByValue}
+          value={value}
+        />
       ) : null}
     </>
   );

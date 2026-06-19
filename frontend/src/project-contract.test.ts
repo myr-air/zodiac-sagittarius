@@ -153,6 +153,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerContent.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker-menu.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
@@ -367,6 +368,19 @@ describe("Sagittarius project scaffold", () => {
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
     expect(activityCellTypes).toContain("export interface ActivityCellProps");
+  });
+
+  it("keeps inline option picker menu rendering split from trigger state", () => {
+    const picker = readFileSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker.tsx"), "utf8");
+    const pickerMenu = readFileSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker-menu.tsx"), "utf8");
+
+    expect(picker).toContain("./inline-option-picker-menu");
+    expect(picker).not.toContain("createPortal");
+    expect(picker).not.toContain("floatingOptionMenuClassName");
+    expect(picker).not.toContain("sideMenuFloatingLeft");
+    expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
+    expect(pickerMenu).toContain("createPortal");
+    expect(pickerMenu).toContain("sideMenuFloatingLeft");
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
