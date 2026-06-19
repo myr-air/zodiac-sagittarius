@@ -68,6 +68,8 @@ import {
   useWorkspaceTripPlanCommands,
   useWorkspaceSession,
   useEffectivePlaceResolver,
+  useWorkspaceSelectedTripPlanState,
+  useWorkspaceSelectedTripPlanSync,
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
@@ -147,9 +149,8 @@ export function SagittariusApp({
     toastDismissed,
     toastDismissing,
   } = useWorkspaceChrome({ autoDismissToast: requireJoin });
-  const [selectedTripPlanId, setSelectedTripPlanId] = useState(() =>
-    resolveSelectedTripPlanId(initialTrip),
-  );
+  const [selectedTripPlanId, setSelectedTripPlanId] =
+    useWorkspaceSelectedTripPlanState(initialTrip);
   const [currentMemberId, setCurrentMemberId] = useState(
     initialMemberId ?? initialTrip.members[0].id,
   );
@@ -315,21 +316,12 @@ export function SagittariusApp({
     trip,
   });
 
-  useEffect(() => {
-    if (!sessionRestored && !isApiMode) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      setSelectedTripPlanId((current) => {
-        const nextTripPlanId = resolveSelectedTripPlanId(trip, current);
-        rememberSelectedTripPlanId(trip, nextTripPlanId);
-        return nextTripPlanId;
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [isApiMode, sessionRestored, trip]);
+  useWorkspaceSelectedTripPlanSync({
+    isApiMode,
+    sessionRestored,
+    setSelectedTripPlanId,
+    trip,
+  });
   const itineraryView = useMemo(
     () => buildItineraryView(planItems),
     [planItems],

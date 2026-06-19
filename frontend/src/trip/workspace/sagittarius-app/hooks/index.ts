@@ -12,3 +12,7 @@ export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";
 export { useWorkspaceSession } from "./use-workspace-session";
+export {
+  useWorkspaceSelectedTripPlanState,
+  useWorkspaceSelectedTripPlanSync,
+} from "./use-workspace-selected-trip-plan";
