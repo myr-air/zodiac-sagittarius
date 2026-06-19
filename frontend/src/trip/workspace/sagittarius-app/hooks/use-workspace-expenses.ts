@@ -9,10 +9,8 @@ import {
   appendLocalExpensesToTrip,
   buildCreateExpenseRequest,
   buildExpenseCreateDrafts,
-  buildExpenseReminderRequest,
   buildExpenseUpdateDraft,
   buildPatchExpenseRequest,
-  recordLocalExpenseReminderInTrip,
   removeExpenseFromTrip,
   replaceExpenseInTrip,
   updateLocalExpenseInTrip,
@@ -23,11 +21,11 @@ import { nextClientMutationId, nextLocalExpenseId } from "@/src/trip/local-ids";
 import type {
   Expense,
   ExpenseSummary,
-  SettlementSuggestion,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForRecord } from "@/src/trip/workspace/trip-plan-records";
+import { useWorkspaceExpenseReminderCommand } from "./use-workspace-expense-reminder-command";
 
 interface UseWorkspaceExpensesOptions {
   apiClient?: TripApiClient;
@@ -62,6 +60,16 @@ export function useWorkspaceExpenses({
   trip,
   updateApiTrip,
 }: UseWorkspaceExpensesOptions) {
+  const recordPaybackReminder = useWorkspaceExpenseReminderCommand({
+    apiClient,
+    commitTrip,
+    isApiMode,
+    participantSession,
+    selectedTripPlanId,
+    setBackendExpenseSummary,
+    trip,
+  });
+
   const createExpense = useCallback(async (input: ExpenseInputLike) => {
     if (!canEditExpenses) return;
     const expenseDrafts = buildExpenseCreateDrafts(
@@ -194,39 +202,6 @@ export function useWorkspaceExpenses({
     trip.itineraryItems,
     trip.mainTripPlanId,
     trip.members,
-  ]);
-
-  const recordPaybackReminder = useCallback(async (
-    suggestion: SettlementSuggestion,
-  ) => {
-    if (isApiMode && apiClient && participantSession) {
-      setBackendExpenseSummary({
-        tripPlanId: selectedTripPlanId,
-        summary: await apiClient.recordExpenseReminder(
-          trip.id,
-          participantSession.sessionToken,
-          buildExpenseReminderRequest(suggestion, {
-            clientMutationId: nextClientMutationId("expense-reminder"),
-          }),
-          selectedTripPlanId,
-        ),
-      });
-      return;
-    }
-    commitTrip((current) =>
-      recordLocalExpenseReminderInTrip(current, suggestion, {
-        tripPlanId: selectedTripPlanId,
-        remindedAt: new Date().toISOString(),
-      }),
-    );
-  }, [
-    apiClient,
-    commitTrip,
-    isApiMode,
-    participantSession,
-    selectedTripPlanId,
-    setBackendExpenseSummary,
-    trip.id,
   ]);
 
   return {
