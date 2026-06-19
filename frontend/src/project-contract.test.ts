@@ -164,6 +164,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpitCard.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
@@ -533,6 +534,20 @@ describe("Sagittarius project scaffold", () => {
     expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
     expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");
+  });
+
+  it("keeps overview cockpit cards split from shared overview sections", () => {
+    const overviewSections = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSections.tsx"), "utf8");
+    const cockpit = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"), "utf8");
+    const cockpitCard = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpitCard.tsx"), "utf8");
+    const overviewBarrel = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/index.ts"), "utf8");
+
+    expect(cockpit).toContain("./OverviewCockpitCard");
+    expect(overviewBarrel).toContain('export { CockpitCard } from "./OverviewCockpitCard"');
+    expect(overviewSections).not.toContain("export function CockpitCard");
+    expect(overviewSections).not.toContain("cockpitCardButtonClassName");
+    expect(cockpitCard).toContain("export function CockpitCard");
+    expect(cockpitCard).toContain("cockpitCardButtonClassName");
   });
 
   it("keeps overview task state split from page composition", () => {

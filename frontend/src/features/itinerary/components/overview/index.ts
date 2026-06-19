@@ -1,5 +1,6 @@
 export { OverviewPage } from "./OverviewPage";
-export { CockpitCard, HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./OverviewSections";
+export { CockpitCard } from "./OverviewCockpitCard";
+export { HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./OverviewSections";
 export { OverviewCockpit } from "./OverviewCockpit";
 export { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 export { OverviewFocusSection } from "./OverviewFocusSection";
