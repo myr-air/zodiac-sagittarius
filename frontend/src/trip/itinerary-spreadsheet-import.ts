@@ -1,10 +1,11 @@
 import { itineraryExportSchema, itineraryExportVersion } from "./itinerary-import-export-schema";
-import { itemKindFromActivityType } from "./itinerary-item-kind";
+import { buildSpreadsheetLinkedRecords } from "./itinerary-spreadsheet-records";
 import {
-  buildSpreadsheetLinkedRecords,
-  hasBookingHint,
-  parseMoneyHint,
-} from "./itinerary-spreadsheet-records";
+  findSpreadsheetHeader,
+  readSpreadsheetCell,
+  readSpreadsheetTitle,
+  type SpreadsheetHeader,
+} from "./itinerary-spreadsheet-columns";
 import {
   detectDelimiter,
   parseDelimitedRows,
@@ -12,39 +13,20 @@ import {
   parseSpreadsheetDate,
   parseTimeWindow,
 } from "./itinerary-spreadsheet-parsing";
+import {
+  classifySpreadsheetRow,
+  inferSpreadsheetPlace,
+  isSpreadsheetDayMarker,
+  normalizeWhitespace,
+  stripSubItemPrefix,
+} from "./itinerary-spreadsheet-row";
 import { safeExternalHref } from "./safe-links";
-import type { ItineraryAdvisory, ItineraryItem } from "./types";
+import type { ItineraryAdvisory } from "./types";
 import type {
   ItineraryExportDocument,
   ItineraryExportItem,
   ItineraryExportRecords,
 } from "./itinerary-import-export-types";
-
-type SpreadsheetColumnKey =
-  | "day"
-  | "date"
-  | "time"
-  | "activity"
-  | "mapLink"
-  | "duration"
-  | "transportation"
-  | "note";
-
-interface SpreadsheetHeader {
-  rowIndex: number;
-  columns: Partial<Record<SpreadsheetColumnKey, number>>;
-}
-
-const spreadsheetColumnAliases: Record<SpreadsheetColumnKey, string[]> = {
-  day: ["day", "weekday"],
-  date: ["date", "travel date"],
-  time: ["time", "start time", "time range", "เวล่า", "เวลา"],
-  activity: ["plans", "plan", "activity", "activities", "place", "stop"],
-  mapLink: ["maps", "map", "map link", "map url", "link", "google maps"],
-  duration: ["duration", "travel time", "estimate duration"],
-  transportation: ["transportation", "transport", "transit", "route"],
-  note: ["note", "notes", "remarks", "memo"],
-};
 
 export function parseSpreadsheetItineraryImportDocument(source: string): ItineraryExportDocument {
   const rows = parseDelimitedRows(source, detectDelimiter(source));
@@ -201,162 +183,4 @@ function parseSpreadsheetRows(
     items,
     records: { expenses: [], bookingDocs, stopNotes, tasks },
   };
-}
-
-function findSpreadsheetHeader(rows: string[][]): SpreadsheetHeader | null {
-  for (const [rowIndex, row] of rows.entries()) {
-    const columns: Partial<Record<SpreadsheetColumnKey, number>> = {};
-    for (const [columnIndex, cell] of row.entries()) {
-      const key = spreadsheetColumnKey(cell);
-      if (key && columns[key] === undefined) columns[key] = columnIndex;
-    }
-    const detectedColumns = Object.keys(columns).length;
-    if (columns.activity !== undefined && detectedColumns >= 3) {
-      return { rowIndex, columns };
-    }
-  }
-  return null;
-}
-
-function spreadsheetColumnKey(value: string): SpreadsheetColumnKey | null {
-  const normalized = normalizeHeaderLabel(value);
-  for (const [key, aliases] of Object.entries(spreadsheetColumnAliases)) {
-    if (aliases.includes(normalized)) return key as SpreadsheetColumnKey;
-  }
-  return null;
-}
-
-function normalizeHeaderLabel(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[_-]+/g, " ")
-    .replace(/[^\p{L}\p{N}\s]/gu, "")
-    .replace(/\s+/g, " ");
-}
-
-function readSpreadsheetCell(
-  row: string[],
-  columnIndex: number | undefined,
-): string {
-  if (columnIndex === undefined) return "";
-  return row[columnIndex] ?? "";
-}
-
-function readSpreadsheetTitle(rows: string[][], headerIndex: number): string {
-  for (let index = 0; index < headerIndex; index += 1) {
-    const title = rows[index]?.find((cell) => cell.trim())?.trim();
-    if (title) return title;
-  }
-  return "";
-}
-
-function classifySpreadsheetRow({
-  activity,
-  mapLink,
-  rawActivity,
-  rawTime,
-  sourceNote,
-  transportation,
-}: {
-  activity: string;
-  mapLink: string;
-  rawActivity: string;
-  rawTime: string;
-  sourceNote: string;
-  transportation: string;
-}): {
-  activityType: ItineraryItem["activityType"];
-  itemKind: ItineraryItem["itemKind"];
-  isPlanBlock: boolean;
-  isSubActivity: boolean;
-  status: ItineraryItem["status"];
-  priority: ItineraryItem["priority"];
-  fallbackActivity: string;
-  labels: string[];
-  advisories: ItineraryAdvisory[];
-} {
-  const haystack = `${activity} ${transportation} ${sourceNote}`.toLowerCase();
-  const hasRouteDash = /\S\s+-\s+\S/.test(activity);
-  const isTravel =
-    hasRouteDash ||
-    /(?:->|→|\bairport\b|\bstation\b|\bsubway\b|\bmetro\b|\bbus\b|\btrain\b|\btaxi\b|\bferry\b|\bflight\b|\bmtr\b|\bdidi\b)/i.test(
-      haystack,
-    );
-  const isFood = /(?:breakfast|lunch|dinner|restaurant|cafe|dessert|noodle|dim sum|dimsum|food|congee)/i.test(
-    haystack,
-  );
-  const isStay = /(?:hotel|check[- ]?in|check[- ]?out|leave bag)/i.test(haystack);
-  const isShopping = /(?:shopping|mall|market)/i.test(haystack);
-  const isSubActivity = /^\s{2,}|^\s*(?:[-*•·]|>)\s+/.test(rawActivity);
-  const isUntimedTravel = isTravel && !rawTime.trim();
-  const isUntimedGroupHeading =
-    Boolean(activity) &&
-    !rawTime.trim() &&
-    !mapLink &&
-    !transportation &&
-    !sourceNote;
-  const labels = [
-    isTravel ? "journey" : "",
-    isFood ? "food" : "",
-    isStay ? "stay" : "",
-    isShopping ? "shopping" : "",
-    isSubActivity ? "sub-activity" : "",
-    isUntimedTravel ? "flexible-journey" : "",
-    isUntimedGroupHeading ? "parent-block" : "",
-    hasBookingHint(sourceNote) ? "booking-hint" : "",
-    parseMoneyHint(sourceNote) ? "plan-estimate" : "",
-  ].filter(Boolean);
-  const advisories: ItineraryAdvisory[] = [];
-  if (!activity && (mapLink || sourceNote || transportation)) {
-    advisories.push({
-      code: "csv-missing-activity",
-      label: "Imported row did not include an activity name.",
-      severity: "warning",
-    });
-  }
-  const activityType: ItineraryItem["activityType"] = isTravel
-    ? "travel"
-    : isFood
-      ? "food"
-      : isStay
-        ? "stay"
-        : isShopping
-          ? "shopping"
-          : "experience";
-  return {
-    activityType,
-    itemKind: itemKindFromActivityType(activityType),
-    isPlanBlock: isUntimedTravel || isUntimedGroupHeading,
-    isSubActivity,
-    status: hasBookingHint(sourceNote) ? "idea" : "planned",
-    priority: hasBookingHint(sourceNote) || parseMoneyHint(sourceNote) ? "high" : "normal",
-    fallbackActivity: sourceNote || transportation || "Imported itinerary note",
-    labels,
-    advisories,
-  };
-}
-
-function inferSpreadsheetPlace(activity: string): string {
-  const normalized = normalizeWhitespace(activity);
-  const arrowParts = normalized.split(/(?:->|→)/);
-  if (arrowParts.length > 1) {
-    return arrowParts[arrowParts.length - 1]?.trim() ?? normalized;
-  }
-  return normalized
-    .replace(/^(?:breakfast|lunch|dinner|dessert)\s+at\s+/i, "")
-    .replace(/^check[- ]?in\s+at\s+/i, "")
-    .trim();
-}
-
-function stripSubItemPrefix(value: string): string {
-  return value.replace(/^\s*(?:[-*•·]|>)\s+/, "");
-}
-
-function isSpreadsheetDayMarker(value: string): boolean {
-  return /^day\s*\d+/i.test(value.trim());
-}
-
-function normalizeWhitespace(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
 }
