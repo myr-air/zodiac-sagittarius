@@ -13,11 +13,6 @@ import {
   type TripCockpit,
 } from "@/src/trip/api-client";
 import {
-  createConfiguredAccountApiClient,
-  createConfiguredTripApiClient,
-  publicSagittariusApiBaseUrl,
-} from "@/src/api/sagittarius-api-clients";
-import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
 import {
@@ -48,6 +43,7 @@ import {
   useWorkspaceBookingCommands,
   useWorkspaceAccessGate,
   useWorkspaceApiCockpitEffects,
+  useWorkspaceApiClients,
   useWorkspaceBackendExpenseSummary,
   useWorkspaceItineraryImport,
   useWorkspaceItineraryUiActions,
@@ -107,19 +103,11 @@ export function SagittariusApp({
   initialTrip = seedTrip,
 }: SagittariusAppProps) {
   const { t } = useI18n();
-  /* v8 ignore next 3 */
-  const resolvedApiClient = useMemo(
-    () =>
-      apiClient ??
-      (dataSource === "api"
-        ? createConfiguredTripApiClient()
-        : undefined),
-    [apiClient, dataSource],
-  );
-  const accountClient = useMemo(
-    () => createConfiguredAccountApiClient(),
-    [],
-  );
+  const {
+    accountClient,
+    apiBaseUrl,
+    resolvedApiClient,
+  } = useWorkspaceApiClients({ apiClient, dataSource });
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
   const [accountClaimState, setAccountClaimState] = useState<{
     status: "idle" | "saving";
@@ -799,7 +787,7 @@ export function SagittariusApp({
             expenseSummary,
             canEditExpenses,
             selectedTripPlanId,
-            apiBaseUrl: publicSagittariusApiBaseUrl(),
+            apiBaseUrl,
             onCreateExpense: createExpense,
             onUpdateExpense: updateExpense,
             onDeleteExpense: deleteExpense,

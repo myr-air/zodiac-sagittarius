@@ -37,6 +37,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
+    const apiClientsHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts"),
+      "utf8",
+    );
     const backendExpenseSummaryHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts"),
       "utf8",
@@ -390,6 +394,13 @@ describe("Sagittarius workspace source boundaries", () => {
       'from "@/src/components/TimelineView"',
     ]);
     expect(sagaCore).toContain("WorkspaceMainShell");
+    expect(sagaCore).toContain("useWorkspaceApiClients");
+    expect(sagaCore).not.toContain("createConfiguredTripApiClient");
+    expect(sagaCore).not.toContain("createConfiguredAccountApiClient");
+    expect(sagaCore).not.toContain("publicSagittariusApiBaseUrl");
+    expect(apiClientsHook).toContain("createConfiguredTripApiClient");
+    expect(apiClientsHook).toContain("createConfiguredAccountApiClient");
+    expect(apiClientsHook).toContain("publicSagittariusApiBaseUrl");
     expect(sagaCore).toContain("useWorkspaceMemberContext");
     expect(sagaCore).not.toContain("findSessionMember");
     expect(sagaCore).not.toContain("isLocalParticipantSession");
