@@ -1,9 +1,4 @@
-import type {
-  ItineraryAdvisory,
-  ItineraryCoordinates,
-  ItineraryItem,
-  TripPlan,
-} from "./types";
+import type { TripPlan } from "./types";
 import {
   itineraryExportSchema,
   itineraryExportVersion,
@@ -11,6 +6,29 @@ import {
 import { itemKindFromActivityType } from "./itinerary-item-kind";
 import { parseSpreadsheetItineraryImportDocument } from "./itinerary-spreadsheet-import";
 import { safeExternalHref } from "./safe-links";
+import {
+  isRecord,
+  readActivityType,
+  readAdvisories,
+  readCoordinates,
+  readDetails,
+  readNumber,
+  readOptionalActivitySubtype,
+  readOptionalItemKind,
+  readOptionalNullableString,
+  readOptionalNumber,
+  readOptionalPathRole,
+  readOptionalPlanStatus,
+  readOptionalPriority,
+  readOptionalStatus,
+  readOptionalString,
+  readOptionalTimeMode,
+  readPlanVariantKind,
+  readRecordArray,
+  readString,
+  statusFromPlanKind,
+  unsupportedImportFileError,
+} from "./itinerary-import-readers";
 import type {
   ItineraryExportDocument,
   ItineraryExportItem,
@@ -137,7 +155,7 @@ function readTripPlanAliases(value: Record<string, unknown>): {
 function readTripPlans(value: unknown): TripPlan[] {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value) || value.some((entry) => !isRecord(entry))) {
-    throw new Error("Unsupported itinerary import file.");
+    throw unsupportedImportFileError();
   }
   return value.map((entry) => {
     const plan = entry as Record<string, unknown>;
@@ -159,7 +177,7 @@ function assertTripPlanAliasesMatch(
   legacy: TripPlan[],
 ): void {
   if (canonical.length !== legacy.length) {
-    throw new Error("Unsupported itinerary import file.");
+    throw unsupportedImportFileError();
   }
   for (const [index, canonicalPlan] of canonical.entries()) {
     const legacyPlan = legacy[index];
@@ -171,7 +189,7 @@ function assertTripPlanAliasesMatch(
       canonicalPlan.kind !== legacyPlan.kind ||
       canonicalPlan.status !== legacyPlan.status
     ) {
-      throw new Error("Unsupported itinerary import file.");
+      throw unsupportedImportFileError();
     }
   }
 }
@@ -181,7 +199,7 @@ function parseExportRecords(value: unknown): ItineraryExportRecords {
     return { expenses: [], bookingDocs: [], stopNotes: [], tasks: [] };
   }
   if (!isRecord(value) || Array.isArray(value)) {
-    throw new Error("Unsupported itinerary import file.");
+    throw unsupportedImportFileError();
   }
   return {
     expenses: readRecordArray(value, "expenses"),
@@ -191,20 +209,8 @@ function parseExportRecords(value: unknown): ItineraryExportRecords {
   };
 }
 
-function readRecordArray<T>(
-  item: Record<string, unknown>,
-  key: string,
-): T[] {
-  const value = item[key];
-  if (value === undefined || value === null) return [];
-  if (!Array.isArray(value) || value.some((entry) => !isRecord(entry))) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value as T[];
-}
-
 function parseExportItem(value: unknown): ItineraryExportItem {
-  if (!isRecord(value)) throw new Error("Unsupported itinerary import file.");
+  if (!isRecord(value)) throw unsupportedImportFileError();
   const item = value as Record<string, unknown>;
 
   return {
@@ -263,242 +269,10 @@ function normalizeImportedHierarchy(
       return parentIds.has(item.id) ? { ...item, isPlanBlock: true } : item;
     }
     const parent = itemsById.get(item.parentItemId);
-    if (!parent) throw new Error("Unsupported itinerary import file.");
+    if (!parent) throw unsupportedImportFileError();
     if (parent.parentItemId || item.day !== parent.day) {
-      throw new Error("Unsupported itinerary import file.");
+      throw unsupportedImportFileError();
     }
     return { ...item, isPlanBlock: false };
   });
-}
-
-function readOptionalNullableString(
-  item: Record<string, unknown>,
-  key: string,
-): string | null | undefined {
-  const value = item[key];
-  if (value === undefined) return undefined;
-  if (value === null) return null;
-  if (typeof value !== "string") {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readDetails(value: unknown): ItineraryItem["details"] {
-  if (value === undefined || value === null) return {};
-  if (!isRecord(value) || Array.isArray(value)) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readOptionalString(
-  item: Record<string, unknown>,
-  key: string,
-): string | undefined {
-  const value = item[key];
-  if (value === undefined || value === null) return undefined;
-  if (typeof value !== "string") {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readOptionalPathRole(
-  item: Record<string, unknown>,
-  key: string,
-): ItineraryItem["pathRole"] | undefined {
-  const value = item[key];
-  if (value === undefined || value === null) return undefined;
-  if (value === "main" || value === "alternative") return value;
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readString(item: Record<string, unknown>, key: string): string {
-  const value = item[key];
-  if (typeof value !== "string") {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readNumber(item: Record<string, unknown>, key: string): number {
-  const value = item[key];
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readOptionalNumber(
-  item: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const value = item[key];
-  if (value === undefined || value === null) return undefined;
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value;
-}
-
-function readActivityType(value: unknown): ItineraryItem["activityType"] {
-  if (
-    value === "travel" ||
-    value === "food" ||
-    value === "shopping" ||
-    value === "attraction" ||
-    value === "experience" ||
-    value === "stay" ||
-    value === "default"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readOptionalActivitySubtype(
-  value: unknown,
-): ItineraryItem["activitySubtype"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "flight" ||
-    value === "train" ||
-    value === "bus" ||
-    value === "taxi" ||
-    value === "ferry" ||
-    value === "walk" ||
-    value === "car" ||
-    value === "shuttle"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readOptionalItemKind(
-  value: unknown,
-): ItineraryItem["itemKind"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "travel" ||
-    value === "activity" ||
-    value === "lodging" ||
-    value === "meal" ||
-    value === "note" ||
-    value === "preparation" ||
-    value === "foodRecommendation"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readPlanVariantKind(value: unknown): TripPlan["kind"] {
-  if (
-    value === "main" ||
-    value === "backup" ||
-    value === "draft" ||
-    value === "split"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readOptionalPlanStatus(value: unknown): TripPlan["status"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "main" ||
-    value === "backup" ||
-    value === "draft" ||
-    value === "proposal"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function statusFromPlanKind(kind: TripPlan["kind"]): TripPlan["status"] {
-  return kind === "split" ? "proposal" : kind;
-}
-
-function readOptionalTimeMode(
-  value: unknown,
-): ItineraryItem["timeMode"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (value === "scheduled" || value === "flexible") return value;
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readOptionalStatus(
-  value: unknown,
-): ItineraryItem["status"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "idea" ||
-    value === "planned" ||
-    value === "booked" ||
-    value === "confirmed" ||
-    value === "done" ||
-    value === "skipped"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readOptionalPriority(
-  value: unknown,
-): ItineraryItem["priority"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "low" ||
-    value === "normal" ||
-    value === "high" ||
-    value === "must"
-  ) {
-    return value;
-  }
-  throw new Error("Unsupported itinerary import file.");
-}
-
-function readCoordinates(value: unknown): ItineraryCoordinates | undefined {
-  if (value === undefined) return undefined;
-  if (
-    !isRecord(value) ||
-    typeof value.lat !== "number" ||
-    typeof value.lng !== "number"
-  ) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return { lat: value.lat, lng: value.lng };
-}
-
-function readAdvisories(value: unknown): ItineraryAdvisory[] | undefined {
-  if (value === undefined) return undefined;
-  if (!Array.isArray(value)) {
-    throw new Error("Unsupported itinerary import file.");
-  }
-  return value.map((entry) => {
-    if (
-      !isRecord(entry) ||
-      typeof entry.code !== "string" ||
-      typeof entry.label !== "string"
-    ) {
-      throw new Error("Unsupported itinerary import file.");
-    }
-    if (
-      entry.severity !== "info" &&
-      entry.severity !== "warning" &&
-      entry.severity !== "critical"
-    ) {
-      throw new Error("Unsupported itinerary import file.");
-    }
-    return { code: entry.code, label: entry.label, severity: entry.severity };
-  });
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
