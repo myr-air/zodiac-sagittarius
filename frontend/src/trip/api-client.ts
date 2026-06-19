@@ -6,7 +6,6 @@ import type {
   Suggestion,
   Trip,
   TripDailyBriefing,
-  TripParticipantSession,
   PlaceResolutionResponse,
 } from "./types";
 import { parseItineraryImportDocument } from "./itinerary-import-export";
@@ -15,10 +14,10 @@ import {
   createTripApiRequester,
   serializeItineraryLocation,
 } from "./api-client-transport";
+import { createTripMemberApiClient } from "./api-client-members";
 import { createTripRecordApiClient } from "./api-client-records";
 import type {
   CreatePlanVariantApiRequest,
-  JoinInviteTokenResponse,
   PatchPlanVariantApiRequest,
   PublishPlanVariantApiRequest,
   TripApiClient,
@@ -27,17 +26,13 @@ import type {
 import {
   mapCockpitResponse,
   mapItineraryItem,
-  mapJoinTripResponse,
-  mapMember,
   mapTask,
   mapTripPlanResponse,
   mapTripSummary,
 } from "./api-response-mappers";
 import type {
   ItineraryItemResponse,
-  JoinTripResponse,
   TripCockpitResponse,
-  TripMemberResponse,
   TripPlanResponse,
   TripSummaryResponse,
   TripTaskResponse,
@@ -140,41 +135,7 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
   }
 
   return {
-    joinTrip(credentials) {
-      return request<JoinTripResponse>(tripApiRoutes.joinSession(), {
-        method: "POST",
-        body: JSON.stringify({ joinCode: credentials.joinId, tripPassword: credentials.password }),
-      }).then(mapJoinTripResponse);
-    },
-    resolveJoinInviteToken(token) {
-      return request<JoinTripResponse>(tripApiRoutes.joinInviteTokenCurrent(token), {
-        method: "GET",
-      }).then(mapJoinTripResponse);
-    },
-    rotateJoinInviteToken(tripId, sessionToken) {
-      return request<JoinInviteTokenResponse>(tripApiRoutes.joinInviteTokens(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-    },
-    claimMember(tripId, memberId, participantPassword, joinSessionToken) {
-      return request<TripParticipantSession>(tripApiRoutes.claimMember(tripId, memberId), {
-        method: "POST",
-        body: JSON.stringify({ participantPassword, joinSessionToken }),
-      });
-    },
-    loginMember(tripId, memberId, participantPassword, joinSessionToken) {
-      return request<TripParticipantSession>(tripApiRoutes.memberSessions(tripId), {
-        method: "POST",
-        body: JSON.stringify({ memberId, participantPassword, joinSessionToken }),
-      });
-    },
-    async logout(tripId, sessionToken) {
-      await request<void>(tripApiRoutes.currentMemberSession(tripId), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-    },
+    ...createTripMemberApiClient(request),
     async loadTrip(tripId, sessionToken) {
       const cockpit = await request<TripCockpitResponse>(tripApiRoutes.trip(tripId), {
         method: "GET",
@@ -333,44 +294,6 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
         method: "DELETE",
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
-    },
-    async listMembers(tripId, sessionToken) {
-      const members = await request<TripMemberResponse[]>(tripApiRoutes.members(tripId), {
-        method: "GET",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-      return members.map(mapMember);
-    },
-    async updatePresence(tripId, sessionToken, presenceRequest) {
-      const member = await request<TripMemberResponse>(tripApiRoutes.presence(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(presenceRequest),
-      });
-      return mapMember(member);
-    },
-    async createMember(tripId, sessionToken, memberRequest) {
-      const member = await request<TripMemberResponse>(tripApiRoutes.members(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(memberRequest),
-      });
-      return mapMember(member);
-    },
-    async patchMember(tripId, memberId, sessionToken, memberRequest) {
-      const member = await request<TripMemberResponse>(tripApiRoutes.member(tripId, memberId), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(memberRequest),
-      });
-      return mapMember(member);
-    },
-    async resetMemberClaim(tripId, memberId, sessionToken) {
-      const member = await request<TripMemberResponse>(tripApiRoutes.resetMemberClaim(tripId, memberId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-      return mapMember(member);
     },
     ...createTripRecordApiClient(request),
   };
