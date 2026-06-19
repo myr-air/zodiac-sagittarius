@@ -397,6 +397,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-wizard-support.ts"),
       "utf8",
     );
+    const portalTripWizard = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard.tsx"),
+      "utf8",
+    );
     const accountAuthSupport = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/account-auth-support.ts"),
       "utf8",
@@ -470,6 +474,11 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
     expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
     expect(accountTripWizardSupport).not.toContain("function randomToken");
+    expect(accountTripWizardSupport).toContain("export function applyTripDestinationCities");
+    expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
+    expect(portalTripWizard).toContain("applyTripDestinationCities");
+    expect(portalTripWizard).toContain("applyTripCalendarDate");
+    expect(portalTripWizard).not.toContain("Date.parse(`${date}T00:00:00`)");
     expect(accountAuthSupport).toContain("./account-access-error-codes");
     expect(accountAuthSupport).toContain("./account-passkey-support");
     expect(accountAuthSupport).not.toContain("accountLoadFailed:");

@@ -2,6 +2,7 @@ import type {
   AccountSettings,
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
+import type { TripCity } from "@/src/trip/types";
 import {
   tripCityOptions,
   type TripCityOption,
@@ -31,6 +32,7 @@ export { formatPreviewTravelDate, routeCalendarDays, tripNightCount } from "./ac
 export type { RouteCalendarDay } from "./account-trip-dates";
 
 export type TripWizardStepId = "trip" | "place" | "dates" | "invite" | "preview";
+export type TripWizardDateSelectionStep = "depart" | "return";
 
 export const tripWizardSteps: Array<{ id: TripWizardStepId; label: string; regionLabel: string; nextCopy: string }> = [
   { id: "trip", label: "Trip", regionLabel: "Trip details step", nextCopy: "Next: add destination detail" },
@@ -118,6 +120,54 @@ export function tripStepComplete(step: TripWizardStepId, state: { tripNameComple
   if (step === "dates") return state.datesComplete;
   if (step === "invite") return state.accessComplete;
   return true;
+}
+
+export function applyTripDestinationCities(form: AccountTripCreateRequest, nextCities: TripCity[]): AccountTripCreateRequest {
+  const nextCountries = uniqueList(nextCities.map((city) => city.country));
+  return {
+    ...form,
+    countries: nextCountries,
+    destinationCities: nextCities,
+    destinationLabel: nextCities.map((city) => city.city).join(", "),
+  };
+}
+
+export function applyTripStartDate(form: AccountTripCreateRequest, date: string): AccountTripCreateRequest {
+  if (!date || !form.endDate) return { ...form, startDate: date };
+  if (Date.parse(`${date}T00:00:00`) > Date.parse(`${form.endDate}T00:00:00`)) {
+    return { ...form, startDate: form.endDate, endDate: date };
+  }
+  return { ...form, startDate: date };
+}
+
+export function applyTripEndDate(form: AccountTripCreateRequest, date: string): AccountTripCreateRequest {
+  if (!date || !form.startDate) return { ...form, endDate: date };
+  if (Date.parse(`${date}T00:00:00`) < Date.parse(`${form.startDate}T00:00:00`)) {
+    return { ...form, startDate: date, endDate: form.startDate };
+  }
+  return { ...form, endDate: date };
+}
+
+export function applyTripCalendarDate(
+  form: AccountTripCreateRequest,
+  date: string,
+  selectingDateStep: TripWizardDateSelectionStep,
+): { form: AccountTripCreateRequest; selectingDateStep: TripWizardDateSelectionStep } {
+  if (selectingDateStep === "depart") {
+    return {
+      form: {
+        ...form,
+        startDate: date,
+        endDate: Date.parse(`${form.endDate}T00:00:00`) < Date.parse(`${date}T00:00:00`) ? date : form.endDate,
+      },
+      selectingDateStep: "return",
+    };
+  }
+
+  return {
+    form: applyTripEndDate(form, date),
+    selectingDateStep: "depart",
+  };
 }
 
 export function uniqueList(values: string[]): string[] {

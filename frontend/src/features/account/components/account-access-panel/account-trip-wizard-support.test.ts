@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import {
+  applyTripCalendarDate,
+  applyTripDestinationCities,
+  applyTripEndDate,
+  applyTripStartDate,
   citySuggestions,
   buildInviteEmailHref,
   buildInviteLink,
@@ -71,4 +75,82 @@ describe("account trip wizard support", () => {
     expect(days.find((day) => day.value === "2026-06-21")).toMatchObject({ dateState: "start", tourDay: 1 });
     expect(days.find((day) => day.value === "2026-06-24")).toMatchObject({ dateState: "end", tourDay: 4 });
   });
+
+  it("keeps destination city and country fields in sync", () => {
+    const form = {
+      ...baseTripForm(),
+      destinationLabel: "Old",
+    };
+
+    expect(
+      applyTripDestinationCities(form, [
+        { city: "Tokyo", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 35.6762, longitude: 139.6503 },
+        { city: "Kyoto", country: "Japan", countryCode: "JP", timezone: "Asia/Tokyo", latitude: 35.0116, longitude: 135.7681 },
+      ]),
+    ).toMatchObject({
+      countries: ["Japan"],
+      destinationLabel: "Tokyo, Kyoto",
+    });
+  });
+
+  it("keeps trip date ranges ordered from direct date inputs", () => {
+    const form = {
+      ...baseTripForm(),
+      endDate: "2026-06-24",
+      startDate: "2026-06-21",
+    };
+
+    expect(applyTripStartDate(form, "2026-06-25")).toMatchObject({
+      endDate: "2026-06-25",
+      startDate: "2026-06-24",
+    });
+    expect(applyTripEndDate(form, "2026-06-20")).toMatchObject({
+      endDate: "2026-06-21",
+      startDate: "2026-06-20",
+    });
+  });
+
+  it("advances calendar date selection between departure and return dates", () => {
+    const form = {
+      ...baseTripForm(),
+      endDate: "2026-06-24",
+      startDate: "2026-06-21",
+    };
+
+    expect(applyTripCalendarDate(form, "2026-06-25", "depart")).toMatchObject({
+      form: {
+        endDate: "2026-06-25",
+        startDate: "2026-06-25",
+      },
+      selectingDateStep: "return",
+    });
+
+    expect(applyTripCalendarDate(form, "2026-06-20", "return")).toMatchObject({
+      form: {
+        endDate: "2026-06-21",
+        startDate: "2026-06-20",
+      },
+      selectingDateStep: "depart",
+    });
+  });
 });
+
+function baseTripForm(): AccountTripCreateRequest {
+  return {
+    countries: [],
+    defaultTimezone: "",
+    destinationCities: [],
+    destinationLabel: "",
+    endDate: "2026-06-24",
+    joinId: "0626-TYO-ABC",
+    joinPassword: "ABCD-1234",
+    name: "Summer trip",
+    originCity: "Bangkok",
+    originCountry: "Thailand",
+    originCountryCode: "TH",
+    originLabel: "Bangkok, Thailand",
+    ownerDisplayName: "Owner",
+    partySize: 2,
+    startDate: "2026-06-21",
+  };
+}

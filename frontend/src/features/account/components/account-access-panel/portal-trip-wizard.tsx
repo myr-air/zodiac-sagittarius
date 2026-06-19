@@ -24,7 +24,12 @@ import {
   tripStepComplete,
   tripWizardSteps,
   uniqueList,
+  applyTripCalendarDate,
+  applyTripDestinationCities,
+  applyTripEndDate,
+  applyTripStartDate,
   type TripCityOption,
+  type TripWizardDateSelectionStep,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
 import {
@@ -56,7 +61,7 @@ export function PortalTripWizard({
   const [cityQuery, setCityQuery] = useState("");
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
   const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
-  const [selectingDateStep, setSelectingDateStep] = useState<"depart" | "return">("depart");
+  const [selectingDateStep, setSelectingDateStep] = useState<TripWizardDateSelectionStep>("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
   const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
   const destinationSearchRef = useRef<HTMLInputElement | null>(null);
@@ -128,13 +133,7 @@ export function PortalTripWizard({
   }
 
   function updateDestinationCities(nextCities: TripCity[]) {
-    const nextCountries = uniqueList(nextCities.map((city) => city.country));
-    onChange((current) => ({
-      ...current,
-      countries: nextCountries,
-      destinationCities: nextCities,
-      destinationLabel: nextCities.map((city) => city.city).join(", "),
-    }));
+    onChange((current) => applyTripDestinationCities(current, nextCities));
     setCountryQuery("");
     setCityQuery("");
   }
@@ -153,23 +152,11 @@ export function PortalTripWizard({
   }
 
   function updateStartDate(date: string) {
-    onChange((current) => {
-      if (!date || !current.endDate) return { ...current, startDate: date };
-      if (Date.parse(`${date}T00:00:00`) > Date.parse(`${current.endDate}T00:00:00`)) {
-        return { ...current, startDate: current.endDate, endDate: date };
-      }
-      return { ...current, startDate: date };
-    });
+    onChange((current) => applyTripStartDate(current, date));
   }
 
   function updateEndDate(date: string) {
-    onChange((current) => {
-      if (!date || !current.startDate) return { ...current, endDate: date };
-      if (Date.parse(`${date}T00:00:00`) < Date.parse(`${current.startDate}T00:00:00`)) {
-        return { ...current, startDate: date, endDate: current.startDate };
-      }
-      return { ...current, endDate: date };
-    });
+    onChange((current) => applyTripEndDate(current, date));
   }
 
   function addCityStop() {
@@ -183,18 +170,8 @@ export function PortalTripWizard({
   }
 
   function selectCalendarDate(date: string) {
-    if (selectingDateStep === "depart") {
-      onChange((current) => ({ ...current, startDate: date, endDate: Date.parse(`${current.endDate}T00:00:00`) < Date.parse(`${date}T00:00:00`) ? date : current.endDate }));
-      setSelectingDateStep("return");
-      return;
-    }
-    onChange((current) => {
-      if (current.startDate && Date.parse(`${date}T00:00:00`) < Date.parse(`${current.startDate}T00:00:00`)) {
-        return { ...current, startDate: date, endDate: current.startDate };
-      }
-      return { ...current, endDate: date };
-    });
-    setSelectingDateStep("depart");
+    onChange((current) => applyTripCalendarDate(current, date, selectingDateStep).form);
+    setSelectingDateStep((current) => (current === "depart" ? "return" : "depart"));
   }
 
   function clearTravelDates() {
