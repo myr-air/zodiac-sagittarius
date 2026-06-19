@@ -189,6 +189,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/StopDialog.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
@@ -402,6 +403,19 @@ describe("Sagittarius project scaffold", () => {
     expect(weatherSummary).toContain("export function buildWeatherSummary");
     expect(weatherSummary).toContain("export function buildWeatherTooltip");
     expect(weatherChip).toContain("./weather-summary");
+  });
+
+  it("keeps StopDialog render split from form model state", () => {
+    const stopDialog = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"), "utf8");
+    const stopDialogModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"), "utf8");
+
+    expect(stopDialog).toContain("./use-stop-dialog-model");
+    expect(stopDialog).not.toContain("useState");
+    expect(stopDialog).not.toContain("buildStopSubmitValues");
+    expect(stopDialog).not.toContain("applyStopActivityInput");
+    expect(stopDialogModel).toContain("export function useStopDialogModel");
+    expect(stopDialogModel).toContain("buildStopSubmitValues");
+    expect(stopDialogModel).toContain("applyStopActivityInput");
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {

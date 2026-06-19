@@ -1,5 +1,4 @@
-import { useState, type FormEvent } from "react";
-import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
+import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
@@ -10,17 +9,6 @@ import { StopDialogDetailSection } from "./StopDialogDetailSection";
 import { StopDialogPlaceResolution } from "./StopDialogPlaceResolution";
 import { StopDialogTimeWindow } from "./StopDialogTimeWindow";
 import {
-  applyStopActivityInput,
-  applyStopDetailType,
-  applyStopEndTime,
-  applyStopStartTime,
-  applyStopTimeMode,
-  toggleStopNextDayEnd,
-  buildInitialStopDetailValues,
-  buildInitialStopFormValues,
-  buildStopSubmitValues,
-} from "./stop-dialog.form";
-import {
   dialogErrorClassName,
   dialogFieldWideClassName,
   dialogGridClassName,
@@ -30,10 +18,9 @@ import {
   stopFormClassName,
 } from "./stop-dialog.styles";
 import type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
+import { useStopDialogModel } from "./use-stop-dialog-model";
 import {
   type StopDetailType,
-  type StopDetailValues,
-  detailTypeFromItem,
   stopDialogDetailTypeOptions,
   stopDialogFieldIds,
   stopDetailLabels,
@@ -58,27 +45,52 @@ interface StopDialogProps {
 
 const detailTypeOptions: StopDetailType[] = stopDialogDetailTypeOptions;
 
-export function StopDialog({ mode, endDate, initialDay, initialItem, initialParentItemId = null, manualPathOptions = [], onClose, onDelete, onPromoteFoodRecommendation, onSubmit, placeResolution, startDate }: StopDialogProps) {
+export function StopDialog({
+  mode,
+  endDate,
+  initialDay,
+  initialItem,
+  initialParentItemId = null,
+  manualPathOptions = [],
+  onClose,
+  onDelete,
+  onPromoteFoodRecommendation,
+  onSubmit,
+  placeResolution,
+  startDate,
+}: StopDialogProps) {
   const { locale, t } = useI18n();
   const dayOptions = startDate && endDate ? getTripDates(startDate, endDate) : [];
-  const [values, setValues] = useState<StopFormValues>(() =>
-    buildInitialStopFormValues({
-      initialDay,
-      initialItem,
-      initialParentItemId,
-      startDate,
-    }),
-  );
-  const [detailType, setDetailType] = useState<StopDetailType>(() => detailTypeFromItem(initialItem));
-  const [detailValues, setDetailValues] = useState<StopDetailValues>(() =>
-    buildInitialStopDetailValues(initialItem),
-  );
-  const [selectedCandidate, setSelectedCandidate] = useState<PlaceResolutionCandidate | undefined>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    derivedDuration,
+    detailType,
+    detailValues,
+    handleSubmit,
+    isSubActivity,
+    isSubmitting,
+    selectedCandidate,
+    setSelectedCandidate,
+    submitError,
+    submitUnresolved,
+    toggleNextDayEnd,
+    update,
+    updateActivity,
+    updateDetail,
+    updateDetailType,
+    updateEndTime,
+    updateStartTime,
+    updateTimeMode,
+    values,
+  } = useStopDialogModel({
+    initialDay,
+    initialItem,
+    initialParentItemId,
+    onSubmit,
+    saveFailedMessage: t.stopDialog.messages.saveFailed,
+    startDate,
+  });
 
   const detailLabels = stopDetailLabels(locale);
-  const isSubActivity = Boolean(values.parentItemId);
   const isFocusedEdit = mode === "edit";
   const title =
     mode === "create"
@@ -90,80 +102,6 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
         : t.stopDialog.titles.edit;
   const moreDetailsLabel =
     locale === "th" ? "รายละเอียดเพิ่มเติม" : "More details";
-  const derivedDuration =
-    values.timeMode === "flexible" || !values.endTime
-      ? null
-      : values.durationMinutes;
-
-  function update<K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) {
-    setSubmitError(null);
-    setValues((current) => ({ ...current, [key]: value }));
-  }
-
-  function updateStartTime(startTime: string) {
-    setValues((current) => applyStopStartTime(current, startTime));
-  }
-
-  function updateTimeMode(timeMode: ItineraryTimeMode) {
-    setSubmitError(null);
-    setValues((current) => applyStopTimeMode(current, timeMode));
-  }
-
-  function updateEndTime(nextEndTime: string) {
-    setValues((current) => applyStopEndTime(current, nextEndTime));
-  }
-
-  function toggleNextDayEnd() {
-    setValues((current) => toggleStopNextDayEnd(current));
-  }
-
-  function updateDetail<K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) {
-    setDetailValues((current) => ({ ...current, [key]: value }));
-  }
-
-  function updateDetailType(nextDetailType: StopDetailType) {
-    setDetailType(nextDetailType);
-    setValues((current) => applyStopDetailType(current, nextDetailType));
-  }
-
-  function updateActivity(activity: string) {
-    setSubmitError(null);
-    const result = applyStopActivityInput({ activity, detailValues, values });
-    if (result.detailType) setDetailType(result.detailType);
-    if (result.detailValues) setDetailValues(result.detailValues);
-    setValues(result.values);
-  }
-
-  function buildSubmitValues(saveUnresolved: boolean): StopFormValues {
-    return buildStopSubmitValues({
-      detailType,
-      detailValues,
-      saveUnresolved,
-      selectedCandidate,
-      values,
-    });
-  }
-
-  async function submitValues(saveUnresolved: boolean) {
-    setSubmitError(null);
-    setIsSubmitting(true);
-    try {
-      await onSubmit(buildSubmitValues(saveUnresolved));
-    } catch {
-      setSubmitError(t.stopDialog.messages.saveFailed);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void submitValues(false);
-  }
-
-  function submitUnresolved() {
-    void submitValues(true);
-  }
 
   return (
     <div className={modalBackdropClassName} role="presentation">
