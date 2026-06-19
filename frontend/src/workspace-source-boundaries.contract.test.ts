@@ -153,6 +153,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"),
       "utf8",
     );
+    const tripJoinGateChrome = readFileSync(
+      join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx"),
+      "utf8",
+    );
     const tripJoinGateVisual = readFileSync(
       join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"),
       "utf8",
@@ -490,11 +494,18 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(dateTimePickers).not.toContain("function TimePickerContent");
     expect(dateTimePickers).not.toContain("createPortal");
     expect(tripJoinGate).toContain("./trip-join-gate.support");
-    expect(tripJoinGate).toContain("TripJoinGateVisual");
+    expect(tripJoinGate).toContain("TripJoinGateChrome");
+    expect(tripJoinGate).not.toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
     expect(tripJoinGate).toContain("TripJoinParticipantStep");
     expect(tripJoinGate).not.toContain("joinFormClassName");
     expect(tripJoinGate).not.toContain("participantGridClassName");
+    expect(tripJoinGate).not.toContain("joinHeroClassName");
+    expect(tripJoinGate).not.toContain("tripAccessRightColumnClassName");
+    expect(tripJoinGateChrome).toContain("export function TripJoinGateChrome");
+    expect(tripJoinGateChrome).toContain("TripJoinGateVisual");
+    expect(tripJoinGateChrome).toContain("joinHeroClassName");
+    expect(tripJoinGateChrome).toContain("tripAccessRightColumnClassName");
     expect(tripJoinRoomForm).toContain("export function TripJoinRoomForm");
     expect(tripJoinRoomForm).toContain("joinFormClassName");
     expect(tripJoinParticipantStep).toContain("export function TripJoinParticipantStep");

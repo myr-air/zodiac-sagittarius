@@ -1,10 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Icon } from "@/src/ui/icons";
-import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import {
   claimTripParticipant,
   createTripParticipantSession,
@@ -21,25 +18,9 @@ import {
   errorMessage,
   tripFromJoinResponse,
 } from "./trip-join-gate.support";
-import {
-  embeddedJoinPageClassName,
-  embeddedJoinShellClassName,
-  joinAlertClassName,
-  joinAlertStackClassName,
-  joinEyebrowClassName,
-  joinHeroClassName,
-  joinMarkClassName,
-  joinPageClassName,
-  joinShellClassName,
-  tripAccessContentClassName,
-  tripAccessHeroClassName,
-  tripAccessJoinMarkClassName,
-  tripAccessJoinShellClassName,
-  tripAccessRightColumnClassName,
-} from "./trip-join-gate.styles";
+import { TripJoinGateChrome } from "./TripJoinGateChrome";
 import { TripJoinParticipantStep } from "./TripJoinParticipantStep";
 import { TripJoinRoomForm } from "./TripJoinRoomForm";
-import { TripJoinGateVisual } from "./TripJoinGateVisual";
 
 export { tripFromJoinResponse } from "./trip-join-gate.support";
 
@@ -209,7 +190,6 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
     }
   }
 
-  const PageElement = embedded ? "section" : "main";
   const isTripAccessVariant = variant === "trip-access";
   const visualNotes = [
     { icon: "key" as const, title: t.join.visual.secureTitle, detail: t.join.visual.secureDetail },
@@ -218,81 +198,73 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
   ];
 
   return (
-    <PageElement className={cn(joinPageClassName, embedded ? embeddedJoinPageClassName : "")} aria-label={t.join.pageLabel}>
-      <section className={cn(joinShellClassName, embedded ? embeddedJoinShellClassName : "", isTripAccessVariant ? tripAccessJoinShellClassName : "")}>
-        <TripJoinGateVisual label={t.join.visual.label} notes={visualNotes} />
-        <div className={isTripAccessVariant ? tripAccessRightColumnClassName : "contents"}>
-          <div className={cn(joinHeroClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessHeroClassName : "")}>
-            <div className={cn(joinMarkClassName, isTripAccessVariant ? tripAccessJoinMarkClassName : "")} aria-hidden="true">
-              <Icon name="route" />
-            </div>
-            <div>
-              <p className={joinEyebrowClassName}>{t.join.eyebrow}</p>
-              <h1>{step === "room" ? t.join.roomTitle : t.join.participantTitle}</h1>
-              <p>{step === "room" ? t.join.roomDetail : t.join.participantDetail}</p>
-              {!embedded ? <LanguageSwitch className="access-language-switch mt-3.5" /> : null}
-            </div>
-          </div>
-
-          {error ? (
-            <div className={joinAlertStackClassName} aria-live="polite">
-              <p className={joinAlertClassName} role="alert">
-                <Icon name="alertCircle" />
-                {error}
-              </p>
-            </div>
-          ) : null}
-
-          {step === "room" ? (
-            <TripJoinRoomForm
-              copy={{
-                hideTripPassword: t.join.hideTripPassword,
-                showTripPassword: t.join.showTripPassword,
-                submitRoom: t.join.submitRoom,
-                tripId: t.join.tripId,
-                tripPassword: t.join.tripPassword,
-              }}
-              isSubmitting={isSubmitting}
-              isTripAccessVariant={isTripAccessVariant}
-              joinId={joinId}
-              onJoinIdChange={setJoinId}
-              onPasswordChange={setTripPassword}
-              onSubmit={submitTripRoom}
-              onToggleTripPassword={() => setShowTripPassword((current) => !current)}
-              showTripPassword={showTripPassword}
-              tripPassword={tripPassword}
-            />
-          ) : (
-            <TripJoinParticipantStep
-              copy={{
-                backToRoom: t.join.backToRoom,
-                confirm: t.common.actions.confirm,
-                hideParticipantPassword: t.join.hideParticipantPassword,
-                memberStatus: t.join.memberStatus,
-                participantHelp: t.join.participantHelp,
-                participantListLabel: t.join.participantListLabel,
-                participantPassword: t.join.participantPassword,
-                roles: t.appShell.roles,
-                setParticipantPassword: t.join.setParticipantPassword,
-                showParticipantPassword: t.join.showParticipantPassword,
-                start: t.join.start,
-              }}
-              isSubmitting={isSubmitting}
-              isTripAccessVariant={isTripAccessVariant}
-              participantMembers={participantMembers}
-              participantPassword={participantPassword}
-              selectedMember={selectedMember}
-              selectedMemberId={selectedMemberId}
-              showParticipantPassword={showParticipantPassword}
-              onBackToRoom={() => setStep("room")}
-              onParticipantPasswordChange={setParticipantPassword}
-              onSelectMember={selectMember}
-              onSubmitParticipant={submitParticipant}
-              onToggleParticipantPassword={() => setShowParticipantPassword((current) => !current)}
-            />
-          )}
-        </div>
-      </section>
-    </PageElement>
+    <TripJoinGateChrome
+      embedded={embedded}
+      error={error}
+      eyebrow={t.join.eyebrow}
+      isTripAccessVariant={isTripAccessVariant}
+      pageLabel={t.join.pageLabel}
+      showLanguageSwitch={!embedded}
+      step={step}
+      text={{
+        participantDetail: t.join.participantDetail,
+        participantTitle: t.join.participantTitle,
+        roomDetail: t.join.roomDetail,
+        roomTitle: t.join.roomTitle,
+      }}
+      visual={{
+        label: t.join.visual.label,
+        notes: visualNotes,
+      }}
+    >
+      {step === "room" ? (
+        <TripJoinRoomForm
+          copy={{
+            hideTripPassword: t.join.hideTripPassword,
+            showTripPassword: t.join.showTripPassword,
+            submitRoom: t.join.submitRoom,
+            tripId: t.join.tripId,
+            tripPassword: t.join.tripPassword,
+          }}
+          isSubmitting={isSubmitting}
+          isTripAccessVariant={isTripAccessVariant}
+          joinId={joinId}
+          onJoinIdChange={setJoinId}
+          onPasswordChange={setTripPassword}
+          onSubmit={submitTripRoom}
+          onToggleTripPassword={() => setShowTripPassword((current) => !current)}
+          showTripPassword={showTripPassword}
+          tripPassword={tripPassword}
+        />
+      ) : (
+        <TripJoinParticipantStep
+          copy={{
+            backToRoom: t.join.backToRoom,
+            confirm: t.common.actions.confirm,
+            hideParticipantPassword: t.join.hideParticipantPassword,
+            memberStatus: t.join.memberStatus,
+            participantHelp: t.join.participantHelp,
+            participantListLabel: t.join.participantListLabel,
+            participantPassword: t.join.participantPassword,
+            roles: t.appShell.roles,
+            setParticipantPassword: t.join.setParticipantPassword,
+            showParticipantPassword: t.join.showParticipantPassword,
+            start: t.join.start,
+          }}
+          isSubmitting={isSubmitting}
+          isTripAccessVariant={isTripAccessVariant}
+          participantMembers={participantMembers}
+          participantPassword={participantPassword}
+          selectedMember={selectedMember}
+          selectedMemberId={selectedMemberId}
+          showParticipantPassword={showParticipantPassword}
+          onBackToRoom={() => setStep("room")}
+          onParticipantPasswordChange={setParticipantPassword}
+          onSelectMember={selectMember}
+          onSubmitParticipant={submitParticipant}
+          onToggleParticipantPassword={() => setShowParticipantPassword((current) => !current)}
+        />
+      )}
+    </TripJoinGateChrome>
   );
 }
