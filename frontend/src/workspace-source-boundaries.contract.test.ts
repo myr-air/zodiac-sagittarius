@@ -97,6 +97,18 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/photo-albums.ts"),
       "utf8",
     );
+    const photoAlbumApi = readFileSync(
+      join(frontendRoot, "src/trip/photo-album-api.ts"),
+      "utf8",
+    );
+    const photoAlbumLocal = readFileSync(
+      join(frontendRoot, "src/trip/photo-album-local.ts"),
+      "utf8",
+    );
+    const photoAlbumQuery = readFileSync(
+      join(frontendRoot, "src/trip/photo-album-query.ts"),
+      "utf8",
+    );
     const expenseMutationCommands = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts"),
       "utf8",
@@ -695,7 +707,13 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(photoAlbumsHook).toContain("normalizePhotoAlbumCreateInput");
     expect(photoAlbumsHook).not.toContain("const title = input.title.trim()");
     expect(photoAlbumsHook).not.toContain("const url = input.url.trim()");
-    expect(photoAlbumsDomain).toContain("normalizePhotoAlbumCreateInput");
+    expect(photoAlbumsDomain).toContain("./photo-album-api");
+    expect(photoAlbumsDomain).toContain("./photo-album-local");
+    expect(photoAlbumsDomain).toContain("./photo-album-query");
+    expect(photoAlbumApi).toContain("serializePhotoAlbumInputForApi");
+    expect(photoAlbumLocal).toContain("normalizePhotoAlbumCreateInput");
+    expect(photoAlbumLocal).toContain("createLocalPhotoAlbum");
+    expect(photoAlbumQuery).toContain("buildPhotoAlbumSummary");
     expect(expenseMutationCommands).toContain(
       "resolveExpenseCreateDraftTripPlanId",
     );

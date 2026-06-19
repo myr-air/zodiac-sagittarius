@@ -101,6 +101,11 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/trip-countries.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/stop-notes.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/tasks.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-albums.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-album-api.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-album-inputs.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-album-local.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-album-query.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-api-requests.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
