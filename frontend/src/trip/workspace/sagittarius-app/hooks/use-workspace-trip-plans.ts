@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
 import {
   buildCreateTripPlanRequest,
   buildPatchTripPlanStatusRequest,
@@ -17,6 +16,7 @@ import { nextClientMutationId, nextLocalPlanVariantId } from "@/src/trip/local-i
 import type { PlanStatus, Trip } from "@/src/trip/types";
 import type { TripCockpit } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
+import { runTripPlanApiCommand } from "./trip-plan-api-command";
 
 interface UseWorkspaceTripPlanCommandsParams {
   canManageTripPlans: boolean;
@@ -101,35 +101,30 @@ export function useWorkspaceTripPlanCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const setMainTripPlanRequest =
-          resolvedApiClient.setMainTripPlan ??
-          resolvedApiClient.publishPlanVariant;
-        const publishedTrip = await setMainTripPlanRequest(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildSetMainTripPlanRequest(
-            nextClientMutationId("trip-plan-set-main"),
-          ),
-        );
-        updateApiTrip((current) =>
-          mergePublishedTripPlan(current, publishedTrip, tripPlanId),
-        );
-        setSelectedTripPlanId(tripPlanId);
-        rememberSelectedTripPlanId(publishedTrip, tripPlanId);
-      } catch (error) {
-        if (isVersionConflict(error)) {
-          await reloadTripPlanConflict(null);
-          return true;
-        }
-        setTripPlanError(tripPlanErrorMessage);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
+      return runTripPlanApiCommand({
+        command: async () => {
+          const setMainTripPlanRequest =
+            resolvedApiClient.setMainTripPlan ??
+            resolvedApiClient.publishPlanVariant;
+          const publishedTrip = await setMainTripPlanRequest(
+            trip.id,
+            tripPlanId,
+            participantSession.sessionToken,
+            buildSetMainTripPlanRequest(
+              nextClientMutationId("trip-plan-set-main"),
+            ),
+          );
+          updateApiTrip((current) =>
+            mergePublishedTripPlan(current, publishedTrip, tripPlanId),
+          );
+          setSelectedTripPlanId(tripPlanId);
+          rememberSelectedTripPlanId(publishedTrip, tripPlanId);
+        },
+        reloadOnConflict: () => reloadTripPlanConflict(null),
+        setBusy: setIsTripPlanBusy,
+        setError: setTripPlanError,
+        errorMessage: tripPlanErrorMessage,
+      });
     }
 
     commitTrip((current) => setLocalMainTripPlan(current, tripPlanId));
@@ -162,33 +157,28 @@ export function useWorkspaceTripPlanCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const patchTripPlanMutation =
-          resolvedApiClient.patchTripPlan ??
-          resolvedApiClient.patchPlanVariant;
-        const updatedPlan = await patchTripPlanMutation(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildPatchTripPlanStatusRequest(
-            currentPlan,
-            status,
-            nextClientMutationId("trip-plan-status"),
-          ),
-        );
-        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
-      } catch (error) {
-        if (isVersionConflict(error)) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(tripPlanErrorMessage);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
+      return runTripPlanApiCommand({
+        command: async () => {
+          const patchTripPlanMutation =
+            resolvedApiClient.patchTripPlan ??
+            resolvedApiClient.patchPlanVariant;
+          const updatedPlan = await patchTripPlanMutation(
+            trip.id,
+            tripPlanId,
+            participantSession.sessionToken,
+            buildPatchTripPlanStatusRequest(
+              currentPlan,
+              status,
+              nextClientMutationId("trip-plan-status"),
+            ),
+          );
+          updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
+        },
+        reloadOnConflict: reloadTripPlanConflict,
+        setBusy: setIsTripPlanBusy,
+        setError: setTripPlanError,
+        errorMessage: tripPlanErrorMessage,
+      });
     }
 
     commitTrip((current) =>
@@ -226,33 +216,28 @@ export function useWorkspaceTripPlanCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const patchTripPlanMutation =
-          resolvedApiClient.patchTripPlan ??
-          resolvedApiClient.patchPlanVariant;
-        const updatedPlan = await patchTripPlanMutation(
-          trip.id,
-          tripPlanId,
-          participantSession.sessionToken,
-          buildRenameTripPlanRequest(
-            currentPlan,
-            trimmedName,
-            nextClientMutationId("trip-plan-rename"),
-          ),
-        );
-        updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
-      } catch (error) {
-        if (isVersionConflict(error)) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(tripPlanErrorMessage);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
+      return runTripPlanApiCommand({
+        command: async () => {
+          const patchTripPlanMutation =
+            resolvedApiClient.patchTripPlan ??
+            resolvedApiClient.patchPlanVariant;
+          const updatedPlan = await patchTripPlanMutation(
+            trip.id,
+            tripPlanId,
+            participantSession.sessionToken,
+            buildRenameTripPlanRequest(
+              currentPlan,
+              trimmedName,
+              nextClientMutationId("trip-plan-rename"),
+            ),
+          );
+          updateApiTrip((current) => updateTripPlanInTrip(current, updatedPlan));
+        },
+        reloadOnConflict: reloadTripPlanConflict,
+        setBusy: setIsTripPlanBusy,
+        setError: setTripPlanError,
+        errorMessage: tripPlanErrorMessage,
+      });
     }
 
     commitTrip((current) =>
@@ -284,35 +269,30 @@ export function useWorkspaceTripPlanCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      setIsTripPlanBusy(true);
-      try {
-        const createTripPlanMutation =
-          resolvedApiClient.createTripPlan ??
-          resolvedApiClient.createPlanVariant;
-        const createdVariant = await createTripPlanMutation(
-          trip.id,
-          participantSession.sessionToken,
-          buildCreateTripPlanRequest(
-            trimmedName,
-            nextClientMutationId("trip-plan-create"),
-          ),
-        );
-        updateApiTrip((current) =>
-          updateTripPlanInTrip(current, createdVariant),
-        );
-        setSelectedTripPlanId(createdVariant.id);
-        rememberSelectedTripPlanId(trip, createdVariant.id);
-      } catch (error) {
-        if (isVersionConflict(error)) {
-          await reloadTripPlanConflict();
-          return true;
-        }
-        setTripPlanError(tripPlanErrorMessage);
-        return false;
-      } finally {
-        setIsTripPlanBusy(false);
-      }
-      return true;
+      return runTripPlanApiCommand({
+        command: async () => {
+          const createTripPlanMutation =
+            resolvedApiClient.createTripPlan ??
+            resolvedApiClient.createPlanVariant;
+          const createdVariant = await createTripPlanMutation(
+            trip.id,
+            participantSession.sessionToken,
+            buildCreateTripPlanRequest(
+              trimmedName,
+              nextClientMutationId("trip-plan-create"),
+            ),
+          );
+          updateApiTrip((current) =>
+            updateTripPlanInTrip(current, createdVariant),
+          );
+          setSelectedTripPlanId(createdVariant.id);
+          rememberSelectedTripPlanId(trip, createdVariant.id);
+        },
+        reloadOnConflict: reloadTripPlanConflict,
+        setBusy: setIsTripPlanBusy,
+        setError: setTripPlanError,
+        errorMessage: tripPlanErrorMessage,
+      });
     }
 
     let createdTripPlanId = "";
