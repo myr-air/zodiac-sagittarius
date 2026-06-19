@@ -102,6 +102,12 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerField.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/TimePickerField.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerContent.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
@@ -390,6 +396,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-step-content.tsx"),
       "utf8",
     );
+    const dateTimePickers = readFileSync(
+      join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickers.tsx"),
+      "utf8",
+    );
     const tripWizardFormSections = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
       "utf8",
@@ -458,6 +468,12 @@ describe("Sagittarius project scaffold", () => {
     expect(emailLoginStepContent).not.toContain("function EmailLoginCredentialsStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginOtpStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
+    expect(dateTimePickers).toContain("./DatePickerField");
+    expect(dateTimePickers).toContain("./DateTimePickerField");
+    expect(dateTimePickers).toContain("./TimePickerField");
+    expect(dateTimePickers).not.toContain("function CalendarContent");
+    expect(dateTimePickers).not.toContain("function TimePickerContent");
+    expect(dateTimePickers).not.toContain("createPortal");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-dates-step");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-destination-step");
