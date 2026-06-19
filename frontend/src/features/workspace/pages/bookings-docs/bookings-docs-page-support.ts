@@ -18,10 +18,6 @@ export const bookingFolders: Array<{
   { id: "external_links", icon: "cloud" },
 ];
 
-export function toggleId(ids: string[], id: string): string[] {
-  return ids.includes(id) ? ids.filter((candidate) => candidate !== id) : [...ids, id];
-}
-
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";
   const date = new Date(value);

@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility, Trip, TripTask } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from "@/src/features/itinerary/lib/itinerary-time";
+import { toggleId } from "@/src/features/itinerary/lib/itinerary-item-helpers";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Button, IconButton, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -15,7 +16,6 @@ import {
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { BookingDocInput } from "../BookingsDocsPage.types";
 import { CheckboxGroup } from "./CheckboxGroup";
-import { toggleId } from "../bookings-docs-page-support";
 
 interface BookingDialogProps {
   booking: BookingDoc | null;

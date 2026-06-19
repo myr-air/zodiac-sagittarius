@@ -11,7 +11,6 @@ import {
   countBookingFolders,
   formatDateTime,
   statusBadgeClassName,
-  toggleId,
   typeIconClassName,
 } from "./bookings-docs-page-support";
 
@@ -73,8 +72,6 @@ describe("bookings docs page support", () => {
   });
 
   it("keeps selection and visual token helpers centralized", () => {
-    expect(toggleId(["a"], "b")).toEqual(["a", "b"]);
-    expect(toggleId(["a", "b"], "a")).toEqual(["b"]);
     expect(bookingTypeIcon("hotel")).toBe("home");
     expect(typeIconClassName("passport")).toContain("text-(--color-primary-strong)");
     expect(statusBadgeClassName("needs_action")).toContain("text-(--color-warning-strong)");

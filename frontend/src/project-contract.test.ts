@@ -337,7 +337,9 @@ describe("Sagittarius project scaffold", () => {
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
     expect(bookingsDocsSupport).not.toContain("function toDateTimeLocalValue");
     expect(bookingsDocsSupport).not.toContain("function fromDateTimeLocalValue");
+    expect(bookingsDocsSupport).not.toContain("function toggleId");
     expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");

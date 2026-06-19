@@ -21,7 +21,7 @@ import {
   travelSubtypeOptions,
   fromDateTimeLocalValue,
 } from "../domain";
-import { readItineraryDetailString, uniqueIds } from "../lib";
+import { readItineraryDetailString, toggleId, uniqueIds } from "../lib";
 
 describe("smart-itinerary-table-helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {
@@ -178,6 +178,8 @@ describe("smart-itinerary-table-helpers", () => {
     expect(toDateTimeLocalValue("2026-06-10")).toBe("2026-06-10");
     expect(fromDateTimeLocalValue("2026-06-10T09:45:30.000Z")).toBe("2026-06-10T09:45:30.000Z");
     expect(uniqueIds(["a", "b", "a", "", "c"])).toEqual(["a", "b", "c"]);
+    expect(toggleId(["a"], "b")).toEqual(["a", "b"]);
+    expect(toggleId(["a", "b"], "a")).toEqual(["b"]);
   });
 
   it("builds concise time tooltips for row inline UI", () => {
