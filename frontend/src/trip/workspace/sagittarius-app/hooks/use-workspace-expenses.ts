@@ -1,8 +1,5 @@
 import { useCallback } from "react";
-import {
-  type BookingDocInputLike,
-  bookingDocInputForExpenseEstimate,
-} from "@/src/trip/booking-docs";
+import type { BookingDocInputLike } from "@/src/trip/booking-docs";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
   appendExpensesToTrip,
@@ -25,6 +22,7 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForRecord } from "@/src/trip/workspace/trip-plan-records";
+import { useWorkspaceExpenseEstimateCommand } from "./use-workspace-expense-estimate-command";
 import { useWorkspaceExpenseReminderCommand } from "./use-workspace-expense-reminder-command";
 
 interface UseWorkspaceExpensesOptions {
@@ -67,6 +65,14 @@ export function useWorkspaceExpenses({
     participantSession,
     selectedTripPlanId,
     setBackendExpenseSummary,
+    trip,
+  });
+
+  const duplicateExpenseAsEstimate = useWorkspaceExpenseEstimateCommand({
+    canEditBookings,
+    createBookingDoc,
+    currentMemberId,
+    selectedTripPlanId,
     trip,
   });
 
@@ -177,31 +183,6 @@ export function useWorkspaceExpenses({
     selectedTripPlanId,
     trip,
     updateApiTrip,
-  ]);
-
-  const duplicateExpenseAsEstimate = useCallback(async (expense: Expense) => {
-    if (!canEditBookings) return;
-    await createBookingDoc(
-      bookingDocInputForExpenseEstimate(expense, {
-        currentMemberId,
-        defaultTimezone: trip.defaultTimezone,
-        members: trip.members,
-        itineraryItems: trip.itineraryItems,
-        selectedTripPlanId,
-        mainTripPlanId: trip.mainTripPlanId,
-        activePlanVariantId: trip.activePlanVariantId,
-      }),
-    );
-  }, [
-    canEditBookings,
-    createBookingDoc,
-    currentMemberId,
-    selectedTripPlanId,
-    trip.activePlanVariantId,
-    trip.defaultTimezone,
-    trip.itineraryItems,
-    trip.mainTripPlanId,
-    trip.members,
   ]);
 
   return {
