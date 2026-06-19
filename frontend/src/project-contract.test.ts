@@ -120,6 +120,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ContextRail.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/ContextRail.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ActivityPathGraphDay.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/index.ts"))).toBe(true);

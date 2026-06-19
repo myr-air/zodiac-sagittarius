@@ -9,7 +9,6 @@ describe("Calm Travel Ops CSS contract", () => {
     ...collectRuntimeSourceFiles("src/features/itinerary/components/activity-path-graph"),
   ]);
   const contextRailSource = readSourceFiles([
-    "src/features/itinerary/components/ContextRail.tsx",
     ...collectRuntimeSourceFiles("src/features/itinerary/components/context-rail"),
   ]);
   const smartTableSource = readSourceFiles([

@@ -13,9 +13,9 @@ import type {
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
-import { ContextRailExpensesSection } from "./context-rail/ContextRailExpensesSection";
-import { ContextRailSelectedStopPanel } from "./context-rail/ContextRailSelectedStopPanel";
-import { ContextRailTab } from "./context-rail/context-rail.utils";
+import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
+import { ContextRailSelectedStopPanel } from "./ContextRailSelectedStopPanel";
+import { ContextRailTab } from "./context-rail.utils";
 import {
   contextRailClassName,
   contextRailClosedClassName,
@@ -24,7 +24,7 @@ import {
   inspectorTitleClassName,
   inspectorTitleHeadingClassName,
   railInspectorClassName,
-} from "./context-rail/context-rail.styles";
+} from "./context-rail.styles";
 
 interface ContextRailProps {
   trip: Trip;
