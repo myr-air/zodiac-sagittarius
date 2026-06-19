@@ -1,4 +1,3 @@
-import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
@@ -9,8 +8,6 @@ import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 
 import {
-  bookingDocTypeForItemTemplate,
-  bookingTemplateForItem,
   formatBookingSummary,
   ticketModalCopy,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
@@ -26,20 +23,14 @@ import {
   ticketModalBackdropClassName,
   ticketModalBodyClassName,
   ticketModalClassName,
-  ticketModalFooterClassName,
   ticketModalHeaderClassName,
   ticketModalTitleClassName,
   ticketModeButtonClassName,
   ticketModeToggleClassName,
 } from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
-import {
-  buildTicketFormValues,
-  buildTicketSubmitInput,
-  findLinkedTicket,
-  findTicketCandidates,
-  type TicketFormMode,
-} from "./booking-ticket-form";
+import { ItineraryTicketModalFooter } from "./ItineraryTicketModalFooter";
+import { useItineraryTicketModalModel } from "./use-itinerary-ticket-modal-model";
 
 export function ItineraryTicketModal({
   bookingDocs,
@@ -58,93 +49,42 @@ export function ItineraryTicketModal({
   onSave: (input: ItineraryBookingTicketInput) => void | Promise<void>;
   onUnlink?: (bookingDocId: string) => void | Promise<void>;
 }) {
-  const template = bookingTemplateForItem(item);
-  const type = bookingDocTypeForItemTemplate(item, template);
-  const existingCandidates = findTicketCandidates(bookingDocs, item, type);
-  const initiallyLinked = findLinkedTicket(existingCandidates, item.id);
-  const currentLinkedBooking = findLinkedTicket(bookingDocs, item.id);
-  const [mode, setMode] = useState<TicketFormMode>(
-    initiallyLinked ? "existing" : "new",
-  );
-  const [selectedBookingId, setSelectedBookingId] = useState(
-    initiallyLinked?.id ?? existingCandidates[0]?.id ?? "",
-  );
-  const selectedBooking =
-    existingCandidates.find((booking) => booking.id === selectedBookingId) ??
-    null;
-  const initialValues = buildTicketFormValues({
-    booking: mode === "existing" ? selectedBooking : null,
+  const {
+    confirmationCode,
+    currentLinkedBooking,
+    endsAt,
+    existingCandidates,
+    mode,
+    notes,
+    providerName,
+    relatedItineraryItemIds,
+    saving,
+    selectExistingTicket,
+    selectExistingTicketMode,
+    selectNewTicketMode,
+    selectedBookingId,
+    setConfirmationCode,
+    setEndsAt,
+    setNotes,
+    setProviderName,
+    setRelatedItineraryItemIds,
+    setStartsAt,
+    setTitle,
+    startsAt,
+    submit,
+    title,
+    unlinkCurrentBooking,
+    unlinking,
+  } = useItineraryTicketModalModel({
+    bookingDocs,
     item,
     locale,
-    type,
+    onSave,
+    onUnlink,
   });
-  const [title, setTitle] = useState(initialValues.title);
-  const [providerName, setProviderName] = useState(initialValues.providerName);
-  const [confirmationCode, setConfirmationCode] = useState(
-    initialValues.confirmationCode,
-  );
-  const [startsAt, setStartsAt] = useState(initialValues.startsAt);
-  const [endsAt, setEndsAt] = useState(initialValues.endsAt);
-  const [notes, setNotes] = useState(initialValues.notes);
-  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
-    initialValues.relatedItineraryItemIds,
-  );
-  const [saving, setSaving] = useState(false);
-  const [unlinking, setUnlinking] = useState(false);
   const copy = ticketModalCopy(locale);
 
   useEscapeToClose(onClose);
-
-  function hydrateTicketFields(booking: BookingDoc | null) {
-    const nextValues = buildTicketFormValues({ booking, item, locale, type });
-    setTitle(nextValues.title);
-    setProviderName(nextValues.providerName);
-    setConfirmationCode(nextValues.confirmationCode);
-    setStartsAt(nextValues.startsAt);
-    setEndsAt(nextValues.endsAt);
-    setNotes(nextValues.notes);
-    setRelatedItineraryItemIds(nextValues.relatedItineraryItemIds);
-  }
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedTitle = title.trim();
-    if (saving || unlinking || !trimmedTitle) return;
-    setSaving(true);
-    try {
-      await onSave(
-        buildTicketSubmitInput({
-          item,
-          mode,
-          selectedBooking,
-          selectedBookingId,
-          template,
-          type,
-          values: {
-            title: trimmedTitle,
-            providerName,
-            confirmationCode,
-            startsAt,
-            endsAt,
-            notes,
-            relatedItineraryItemIds,
-          },
-        }),
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function unlinkCurrentBooking() {
-    if (!currentLinkedBooking || !onUnlink || saving || unlinking) return;
-    setUnlinking(true);
-    try {
-      await onUnlink(currentLinkedBooking.id);
-    } finally {
-      setUnlinking(false);
-    }
-  }
 
   if (typeof document === "undefined") return null;
 
@@ -182,10 +122,7 @@ export function ItineraryTicketModal({
               type="button"
               className={ticketModeButtonClassName}
               aria-pressed={mode === "new"}
-              onClick={() => {
-                setMode("new");
-                hydrateTicketFields(null);
-              }}
+              onClick={selectNewTicketMode}
             >
               <Icon name="plus" /> {copy.newTicket}
             </button>
@@ -194,12 +131,7 @@ export function ItineraryTicketModal({
               className={ticketModeButtonClassName}
               aria-pressed={mode === "existing"}
               disabled={!existingCandidates.length}
-              onClick={() => {
-                const booking = selectedBooking ?? existingCandidates[0] ?? null;
-                setMode("existing");
-                setSelectedBookingId(booking?.id ?? "");
-                hydrateTicketFields(booking);
-              }}
+              onClick={selectExistingTicketMode}
             >
               <Icon name="ticket" /> {copy.useExisting}
             </button>
@@ -215,10 +147,7 @@ export function ItineraryTicketModal({
                   <input
                     type="radio"
                     checked={selectedBookingId === booking.id}
-                    onChange={() => {
-                      setSelectedBookingId(booking.id);
-                      hydrateTicketFields(booking);
-                    }}
+                    onChange={() => selectExistingTicket(booking)}
                   />
                   <span>
                     <strong>{booking.title}</strong>
@@ -284,39 +213,17 @@ export function ItineraryTicketModal({
             </div>
           </section>
         </div>
-        <footer className={ticketModalFooterClassName}>
-          <div className="mr-auto min-w-0">
-            {currentLinkedBooking && onUnlink ? (
-              <button
-                type="button"
-                className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:border-(--color-danger-border) hover:bg-(--color-danger-soft) hover:text-(--color-danger) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={saving || unlinking}
-                onClick={() => void unlinkCurrentBooking()}
-              >
-                <Icon name="x" />
-                {unlinking ? copy.unlinking : copy.unlink}
-              </button>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <button
-              type="button"
-              className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
-              disabled={unlinking}
-              onClick={onClose}
-            >
-              {copy.cancel}
-            </button>
-            <button
-              type="submit"
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={saving || unlinking || !title.trim() || (mode === "existing" && !selectedBookingId)}
-            >
-              <Icon name="ticket" />
-              {copy.save}
-            </button>
-          </div>
-        </footer>
+        <ItineraryTicketModalFooter
+          copy={copy}
+          currentLinkedBooking={currentLinkedBooking}
+          mode={mode}
+          onClose={onClose}
+          onUnlink={onUnlink ? () => void unlinkCurrentBooking() : undefined}
+          saving={saving}
+          selectedBookingId={selectedBookingId}
+          title={title}
+          unlinking={unlinking}
+        />
       </form>
     </div>,
     document.body,

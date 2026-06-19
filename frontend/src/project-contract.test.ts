@@ -172,7 +172,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table.styles.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
@@ -353,6 +355,20 @@ describe("Sagittarius project scaffold", () => {
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
     expect(activityCellTypes).toContain("export interface ActivityCellProps");
+  });
+
+  it("keeps itinerary ticket modal form state split from modal render", () => {
+    const ticketModal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx"), "utf8");
+    const ticketFooter = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"), "utf8");
+    const ticketModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"), "utf8");
+
+    expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
+    expect(ticketModal).toContain("./ItineraryTicketModalFooter");
+    expect(ticketModal).not.toContain("useState");
+    expect(ticketModal).not.toContain("buildTicketSubmitInput");
+    expect(ticketFooter).toContain("export function ItineraryTicketModalFooter");
+    expect(ticketModel).toContain("export function useItineraryTicketModalModel");
+    expect(ticketModel).toContain("buildTicketSubmitInput");
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {
