@@ -7,7 +7,6 @@ import {
   useState,
 } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell";
-import { StopDialog } from "@/src/features/itinerary/components";
 import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
@@ -37,7 +36,6 @@ import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import { deriveManualActivityPathOptions } from "@/src/trip/itinerary-paths";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import {
   initialSelectedTripPlanId,
@@ -45,9 +43,7 @@ import {
   resolveSelectedTripPlanId,
   tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
-import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
-import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
@@ -77,6 +73,7 @@ import {
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
+import { WorkspaceDialogs } from "./WorkspaceDialogs";
 import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
 import type {
   ItineraryItem,
@@ -931,81 +928,36 @@ export function SagittariusApp({
               }}
             />
         </TripWorkspaceFrame>
-        {dialogState ? (
-          <StopDialog
-            key={
-              dialogState.mode === "edit"
-                ? `edit-${dialogState.item.id}`
-                : "create-stop"
-            }
-            mode={dialogState.mode}
-            startDate={trip.startDate}
-            endDate={trip.endDate}
-            initialItem={
-              dialogState.mode === "edit" ? dialogState.item : undefined
-            }
-            initialDay={
-              dialogState.mode === "create"
-                ? (dialogState.day ?? selectedDay)
-                : undefined
-            }
-            initialParentItemId={
-              dialogState.mode === "create"
-                ? dialogState.parentItemId
-                : undefined
-            }
-            manualPathOptions={
-              dialogState.mode === "edit"
-                ? deriveManualActivityPathOptions(trip, dialogState.item.id)
-                : undefined
-            }
-            onClose={() => {
-              setStopPlaceResolution({ state: "idle", candidates: [] });
-              setDialogState(null);
-            }}
-            onDelete={
-              dialogState.mode === "edit" ? deleteSelectedStop : undefined
-            }
-            onPromoteFoodRecommendation={
-              dialogState.mode === "edit"
-                ? () => void promoteFoodRecommendation(dialogState.item)
-                : undefined
-            }
-            onSubmit={
-              dialogState.mode === "edit" ? updateSelectedStop : createStop
-            }
-            placeResolution={stopPlaceResolution}
-          />
-        ) : null}
-        {pendingItineraryImport ? (
-          <TripWorkspaceImportDialog
-            currentTripPathId={selectedTripPathId}
-            importedItems={pendingItineraryImport.items}
-            memberId={currentMember.id}
-            pathOptions={pathOptions}
-            records={pendingItineraryImport.records}
-            tripPlanOptions={trip.tripPlans ?? trip.planVariants}
-            tripPlanId={selectedTripPlanId}
-            startDate={trip.startDate}
-            onApply={(target) => void applyPendingItineraryImport(target)}
-            onClose={clearPendingItineraryImport}
-          />
-        ) : null}
-        <TripWorkspaceDeleteDialog
-          item={dialogDeleteItem}
-          cancelLabel={t.itinerary.row.confirmDeleteNo}
-          confirmLabel={t.itinerary.row.confirmDeleteYes}
-          titleForActivity={(activity) =>
+        <WorkspaceDialogs
+          applyPendingItineraryImport={applyPendingItineraryImport}
+          clearPendingItineraryImport={clearPendingItineraryImport}
+          createStop={createStop}
+          currentMemberId={currentMember.id}
+          deleteSelectedStop={deleteSelectedStop}
+          deleteStop={deleteStop}
+          dialogDeleteItem={dialogDeleteItem}
+          dialogState={dialogState}
+          importPathOptions={pathOptions}
+          pendingItineraryImport={pendingItineraryImport}
+          promoteFoodRecommendation={promoteFoodRecommendation}
+          selectedDay={selectedDay}
+          selectedTripPathId={selectedTripPathId}
+          selectedTripPlanId={selectedTripPlanId}
+          setDialogDeleteItem={setDialogDeleteItem}
+          setDialogState={setDialogState}
+          setStopPlaceResolution={setStopPlaceResolution}
+          stopPlaceResolution={stopPlaceResolution}
+          trip={trip}
+          tripPlanOptions={trip.tripPlans ?? trip.planVariants}
+          updateSelectedStop={updateSelectedStop}
+          deleteCancelLabel={t.itinerary.row.confirmDeleteNo}
+          deleteConfirmLabel={t.itinerary.row.confirmDeleteYes}
+          deleteTitleForActivity={(activity) =>
             t.itinerary.row.confirmDeleteTitle({ activity })
           }
-          bodyForActivity={(activity) =>
+          deleteBodyForActivity={(activity) =>
             t.itinerary.row.confirmDeleteBody({ activity })
           }
-          onCancel={() => setDialogDeleteItem(null)}
-          onConfirm={async (itemId) => {
-            setDialogDeleteItem(null);
-            await deleteStop(itemId);
-          }}
         />
       </main>
     </AppShell>
