@@ -5,17 +5,13 @@ import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   buildUpdatedItineraryItem,
   mergeUpdatedItineraryBranchIntoTrip,
-  normalizeStopHierarchyValues,
   replaceItineraryItem,
 } from "@/src/trip/itinerary";
 import { buildPatchItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
 import {
-  locationFieldsFromCandidate,
-  resolveStopPlace,
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import { safeExternalHref } from "@/src/trip/safe-links";
 import {
   applyItemToActivityBranch,
   applyManualActivityPath,
@@ -30,6 +26,10 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
+import {
+  resolveStopFormLocation,
+  shouldResolveUpdatedStopPlace,
+} from "./stop-place-resolution-command";
 
 interface UseWorkspaceItineraryStopUpdateCommandParams {
   commitTrip: (
@@ -67,47 +67,26 @@ export function useWorkspaceItineraryStopUpdateCommand({
     async (values: StopFormValues) => {
       if (dialogState?.mode !== "edit") return;
       const place = dialogState.item;
-      values = normalizeStopHierarchyValues(values);
       const itemId = place.id;
       const editDay = values.day || place.day;
-      const shouldResolvePlace =
-        values.place !== place.place ||
-        safeExternalHref(values.mapLink) !== safeExternalHref(place.mapLink) ||
-        Boolean(values.resolvedPlace) ||
-        Boolean(values.saveUnresolved);
-      setStopPlaceResolution(
-        shouldResolvePlace &&
-          effectivePlaceResolver &&
-          !values.resolvedPlace &&
-          !values.saveUnresolved
-          ? { state: "resolving", candidates: [] }
-          : { state: "idle", candidates: [] },
-      );
-      const placeResolution = shouldResolvePlace
-        ? await resolveStopPlace(
-            { ...values, day: editDay },
-            trip,
-            effectivePlaceResolver,
-            nextClientMutationId,
-          )
-        : { candidate: null, state: null };
-      if (placeResolution.state) {
-        setStopPlaceResolution(placeResolution.state);
-        return;
-      }
-      setStopPlaceResolution({ state: "idle", candidates: [] });
-
-      const locationFields = shouldResolvePlace
-        ? locationFieldsFromCandidate(
-            placeResolution.candidate,
-            values.place,
-            values.mapLink,
-          )
-        : {
+      const shouldResolvePlace = shouldResolveUpdatedStopPlace(values, place);
+      const resolvedLocation = await resolveStopFormLocation({
+        day: editDay,
+        effectivePlaceResolver,
+        fallbackLocationFields: {
             address: place.address ?? place.place,
             coordinates: place.coordinates,
             mapLink: place.mapLink,
-          };
+          },
+        nextClientMutationId,
+        setStopPlaceResolution,
+        shouldResolvePlace,
+        trip,
+        values,
+      });
+      if (!resolvedLocation) return;
+      values = resolvedLocation.values;
+      const locationFields = resolvedLocation.locationFields;
 
       const patchedItem = isApiMode && resolvedApiClient && participantSession
         ? await resolvedApiClient.patchItineraryItem(

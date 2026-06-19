@@ -8,15 +8,12 @@ import {
   buildItineraryItemDraft,
   mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
-  normalizeStopHierarchyValues,
   selectedItineraryPathIdForDay,
   type ItineraryPathOption,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
 import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
 import {
-  locationFieldsFromCandidate,
-  resolveStopPlace,
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
@@ -33,6 +30,7 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
+import { resolveStopFormLocation } from "./stop-place-resolution-command";
 
 interface UseWorkspaceItineraryStopCreateCommandParams {
   commitTrip: (
@@ -80,31 +78,18 @@ export function useWorkspaceItineraryStopCreateCommand({
 }: UseWorkspaceItineraryStopCreateCommandParams) {
   return useCallback(
     async (values: StopFormValues) => {
-      values = normalizeStopHierarchyValues(values);
       const day = values.day || selectedDay;
-      setStopPlaceResolution(
-        effectivePlaceResolver && !values.resolvedPlace && !values.saveUnresolved
-          ? { state: "resolving", candidates: [] }
-          : { state: "idle", candidates: [] },
-      );
-
-      const placeResolution = await resolveStopPlace(
-        { ...values, day },
-        trip,
+      const resolvedLocation = await resolveStopFormLocation({
+        day,
         effectivePlaceResolver,
         nextClientMutationId,
-      );
-      if (placeResolution.state) {
-        setStopPlaceResolution(placeResolution.state);
-        return;
-      }
-
-      setStopPlaceResolution({ state: "idle", candidates: [] });
-      const locationFields = locationFieldsFromCandidate(
-        placeResolution.candidate,
-        values.place,
-        values.mapLink,
-      );
+        setStopPlaceResolution,
+        trip,
+        values,
+      });
+      if (!resolvedLocation) return;
+      values = resolvedLocation.values;
+      const locationFields = resolvedLocation.locationFields;
       const parentItem = values.parentItemId
         ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
         : undefined;
