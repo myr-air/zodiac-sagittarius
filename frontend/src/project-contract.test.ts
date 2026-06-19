@@ -103,6 +103,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/TimePickerField.tsx"))).toBe(true);
@@ -422,6 +424,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"),
       "utf8",
     );
+    const tripJoinGateVisual = readFileSync(
+      join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"),
+      "utf8",
+    );
+    const tripJoinGateStyles = readFileSync(
+      join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"),
+      "utf8",
+    );
     const tripWizardFormSections = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
       "utf8",
@@ -511,6 +521,11 @@ describe("Sagittarius project scaffold", () => {
     expect(dateTimePickers).not.toContain("function TimePickerContent");
     expect(dateTimePickers).not.toContain("createPortal");
     expect(tripJoinGate).toContain("./trip-join-gate.support");
+    expect(tripJoinGate).toContain("TripJoinGateVisual");
+    expect(tripJoinGate).not.toContain("tripAccessPhotoKrabiClassName");
+    expect(tripJoinGateVisual).toContain("export function TripJoinGateVisual");
+    expect(tripJoinGateVisual).toContain("tripAccessPhotoKrabiClassName");
+    expect(tripJoinGateStyles).toContain("tripAccessRightColumnClassName");
     expect(tripJoinGate).not.toContain("function tripFromJoinResponse");
     expect(tripJoinGate).not.toContain("function friendlyErrorText");
     expect(tripJoinGate).not.toContain("assertMainPlanPointerAliasesMatch");
