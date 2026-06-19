@@ -37,6 +37,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
+    const accessGateHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts"),
+      "utf8",
+    );
+    const accessState = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts"),
+      "utf8",
+    );
     const itineraryViewModelHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
       "utf8",
@@ -595,6 +603,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).toContain("useWorkspaceItineraryImport");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
+    expect(accessGateHook).toContain("resolveWorkspaceAccessState");
+    expect(accessState).toContain("shouldRedirectUnauthenticatedTripRoute");
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");

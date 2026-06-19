@@ -5,6 +5,7 @@ import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import { decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { SagittariusAccessMode } from "../types";
+import { resolveWorkspaceAccessState } from "./workspace-access-state";
 
 interface UseWorkspaceAccessGateOptions {
   accessMode: SagittariusAccessMode;
@@ -42,37 +43,29 @@ export function useWorkspaceAccessGate({
   sessionMember,
   sessionRestored,
 }: UseWorkspaceAccessGateOptions): UseWorkspaceAccessGateResult {
-  const isAccountOnlyAccessMode =
-    accessMode === "account-login" || accessMode === "account-register";
-  const hasRouteParticipantSession = Boolean(
-    participantSession &&
-      (!routeTripId || participantSession.tripId === routeTripId),
-  );
-  const canAccessPanel =
-    accessMode === "account-portal" ||
-    isAccountOnlyAccessMode ||
-    (requireJoin &&
-      !sessionMember &&
-      (!routeTripId || accessMode === "trip-access"));
-  const isAccountTripAccessPending =
-    requireJoin &&
-    isApiMode &&
-    Boolean(routeTripId) &&
-    !sessionMember &&
-    !accessError &&
-    (!accountSessionLoaded ||
-      Boolean(accountSession && accountTripAccessDeniedRouteId !== routeTripId));
-  const shouldRedirectUnauthenticatedTripRoute =
-    sessionRestored &&
-    requireJoin &&
-    Boolean(routeTripId) &&
-    !hasRouteParticipantSession &&
-    !accessError &&
-    !isAccountTripAccessPending &&
-    !isTripLoading &&
-    typeof window !== "undefined" &&
-    !window.location.pathname.includes("iframe.html") &&
-    !("__vitest_browser__" in window);
+  const {
+    canAccessPanel,
+    hasRouteParticipantSession,
+    isAccountTripAccessPending,
+    shouldRedirectUnauthenticatedTripRoute,
+  } = resolveWorkspaceAccessState({
+    accessMode,
+    accountSessionLoaded,
+    accountSessionPresent: Boolean(accountSession),
+    accountTripAccessDeniedRouteId,
+    accessError,
+    currentPathname:
+      typeof window === "undefined" ? undefined : window.location.pathname,
+    isApiMode,
+    isTripLoading,
+    isVitestBrowser:
+      typeof window !== "undefined" && "__vitest_browser__" in window,
+    participantSessionTripId: participantSession?.tripId ?? null,
+    requireJoin,
+    routeTripId,
+    sessionMember,
+    sessionRestored,
+  });
 
   useEffect(() => {
     if (
