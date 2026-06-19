@@ -347,6 +347,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"),
       "utf8",
     );
+    const routeMapUtils = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/route-map/route-map.utils.ts"),
+      "utf8",
+    );
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
@@ -375,6 +379,7 @@ describe("Sagittarius project scaffold", () => {
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
+    expect(routeMapUtils).not.toContain("export type { DayColorStyle");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");

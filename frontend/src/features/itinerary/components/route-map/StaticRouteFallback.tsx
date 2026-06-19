@@ -18,9 +18,8 @@ import {
   dayColorFor,
   markerStyle,
   routeLineStyle,
-  type RouteDayGroup,
-  type RoutePoint,
 } from "./route-map.utils";
+import type { RouteDayGroup, RoutePoint } from "./route-map.types";
 
 export function StaticRouteFallback({
   routeDayGroups,

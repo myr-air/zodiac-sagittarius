@@ -178,5 +178,3 @@ function isRegionalMapStop(item: ItineraryItem): boolean {
   if (!item.coordinates) return true;
   return hasCoordinates(item.coordinates);
 }
-
-export type { DayColorStyle, DayFilter, MarkerStyle, RouteDayGroup, RoutePoint } from "./route-map.types";

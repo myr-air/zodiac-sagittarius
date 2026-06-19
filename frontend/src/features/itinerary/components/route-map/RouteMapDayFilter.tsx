@@ -7,9 +7,8 @@ import {
 } from "./route-map.config";
 import {
   dayFilterStyle,
-  type DayFilter,
-  type RouteDayGroup,
 } from "./route-map.utils";
+import type { DayFilter, RouteDayGroup } from "./route-map.types";
 
 export function RouteMapDayFilter({
   activeDay,
