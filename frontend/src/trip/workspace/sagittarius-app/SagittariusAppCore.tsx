@@ -47,6 +47,7 @@ import {
   resolveSelectedTripPlanId,
   tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
+import { resolveSelectedWorkspaceItem } from "@/src/trip/workspace/selected-itinerary-item";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
@@ -353,14 +354,17 @@ export function SagittariusApp({
     latestTripRef.current = trip;
   }, [latestTripRef, trip]);
 
-  /* v8 ignore next */
-  const selectedItem =
-    activePlanItems.find((item) => item.id === selectedItemId) ??
-    planItems[0] ??
-    activePlanItems[0];
-  const selectedDay =
-    selectedItem?.day ?? itineraryView.dayGroups[0]?.day ?? trip.startDate;
-  const selectedItemIdForView = selectedItem?.id ?? "";
+  const {
+    selectedDay,
+    selectedItem,
+    selectedItemIdForView,
+  } = resolveSelectedWorkspaceItem({
+    activePlanItems,
+    itineraryView,
+    planItems,
+    selectedItemId,
+    tripStartDate: trip.startDate,
+  });
   const {
     createItineraryNote,
     createStopNote,
@@ -387,7 +391,7 @@ export function SagittariusApp({
     isApiMode,
     participantSession,
     resolveApiClient: resolvedApiClient,
-    selectedItem,
+    selectedItem: selectedItem ?? null,
     selectedTripPlanId,
     setContextRailPreferredTab,
     setSelectedItemId,
