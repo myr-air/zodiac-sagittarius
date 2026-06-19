@@ -159,8 +159,11 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-role-panels.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ContextRail.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/ContextRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
@@ -350,6 +353,22 @@ describe("Sagittarius project scaffold", () => {
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
     expect(activityCellTypes).toContain("export interface ActivityCellProps");
+  });
+
+  it("keeps overview role panels split by reusable panel responsibility", () => {
+    const rolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewRolePanels.tsx"), "utf8");
+    const managerChecklist = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"), "utf8");
+    const snapshotPanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"), "utf8");
+    const rolePanelTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-role-panels.types.ts"), "utf8");
+
+    expect(rolePanels).toContain("./ManagerChecklistPanel");
+    expect(rolePanels).toContain("./OverviewSnapshotPanels");
+    expect(rolePanels).toContain("./overview-role-panels.types");
+    expect(rolePanels).not.toContain("SegmentedControl");
+    expect(rolePanels).not.toContain("interface ManagerOverviewPanelsProps");
+    expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
+    expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
+    expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {

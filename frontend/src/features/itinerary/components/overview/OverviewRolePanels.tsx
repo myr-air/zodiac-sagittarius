@@ -1,57 +1,10 @@
-import type { FormEvent } from "react";
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Locale } from "@/src/i18n/types";
-import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
-import { SegmentedControl } from "@/src/ui";
 import { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 import { OverviewFocusSection } from "./OverviewFocusSection";
-import { OverviewStopList, ViewerNextStopPanel } from "./OverviewSections";
-import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
 import { TravelerChecklistPanel } from "./TravelerChecklistPanel";
-import {
-  overviewHealthGridClassName,
-  overviewPanelClassName,
-  overviewPanelHealthClassName,
-  overviewPanelTitleClassName,
-  overviewPanelWideClassName,
-  overviewTaskAddButtonClassName,
-  overviewTaskFilterActiveClassName,
-  overviewTaskFiltersClassName,
-  overviewTaskPanelClassName,
-  overviewTaskToolbarClassName,
-} from "./overview-page.styles";
-
-type TaskScopeFilter = "mine" | "trip" | "all";
-type TaskStatusFilter = "all" | "open" | "done";
-
-interface OverviewChecklistPanelBaseProps {
-  trip: Trip;
-  locale: Locale;
-  items: ItineraryItem[];
-  groupSpendLabel: string;
-  nextStop: ItineraryItem | undefined;
-  nextDayItems: ItineraryItem[];
-  focusTodayHeading: string;
-  isCompleted: boolean;
-  openExpenses: () => void;
-  taskListLabels: OverviewTaskListLabels;
-  onToggleTask: (task: TripTask) => void;
-}
-
-interface TravelerOverviewPanelsProps extends OverviewChecklistPanelBaseProps {
-  foodStops: ItineraryItem[];
-  tripHighlights: ItineraryItem[];
-  focusSectionDetailFallback: string;
-  taskStatusFilter: TaskStatusFilter;
-  setTaskStatusFilter: (filter: TaskStatusFilter) => void;
-  visibleTasks: TripTask[];
-  newTaskTitle: string;
-  onTaskTitleChange: (title: string) => void;
-  onSubmitTask: (event: FormEvent<HTMLFormElement>) => void;
-  expenseNetLabel: string;
-  expenseSettlementSuggestionsLabel: string;
-}
+import { ManagerReadinessPanel, ManagerTaskChecklistPanel } from "./ManagerChecklistPanel";
+import { OverviewHighlightsPanel, ViewerNextStopSection } from "./OverviewSnapshotPanels";
+import type { ManagerOverviewPanelsProps, TravelerOverviewPanelsProps, ViewerOverviewPanelsProps } from "./overview-role-panels.types";
 
 export function TravelerOverviewPanels({
   trip,
@@ -97,13 +50,14 @@ export function TravelerOverviewPanels({
         emptyText={t.overview.empty.itinerary}
       />
 
-      <section className={`${overviewPanelClassName} ${overviewPanelWideClassName}`} aria-label={t.overview.sections.travelerHighlights}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="location" />
-          <h2>{t.overview.headings.highlights}</h2>
-        </div>
-        <OverviewStopList items={[...foodStops, ...tripHighlights].slice(0, 5)} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
-      </section>
+      <OverviewHighlightsPanel
+        ariaLabel={t.overview.sections.travelerHighlights}
+        emptyMessage={t.overview.empty.highlights}
+        items={[...foodStops, ...tripHighlights].slice(0, 5)}
+        locale={locale}
+        startDate={trip.startDate}
+        title={t.overview.headings.highlights}
+      />
 
       <TravelerChecklistPanel
         addPersonalTaskLabel={t.overview.addPersonalTask}
@@ -148,41 +102,29 @@ export function TravelerOverviewPanels({
   );
 }
 
-interface ViewerOverviewPanelsProps {
-  trip: Trip;
-  locale: Locale;
-  viewerHighlights: ItineraryItem[];
-  expenseGroupSpend: number;
-  nextStop: ItineraryItem | undefined;
-  openExpenses: () => void;
-}
-
 export function ViewerOverviewPanels({ trip, locale, nextStop, viewerHighlights, expenseGroupSpend, openExpenses }: ViewerOverviewPanelsProps) {
   const { t } = useI18n();
 
   return (
     <>
-      <section className={`${overviewPanelClassName} ${overviewPanelWideClassName}`} aria-label={t.overview.sections.viewerSnapshot}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="location" />
-          <h2>{t.overview.headings.viewerSnapshot}</h2>
-        </div>
-        <OverviewStopList items={viewerHighlights} startDate={trip.startDate} locale={locale} emptyMessage={t.overview.empty.highlights} />
-      </section>
+      <OverviewHighlightsPanel
+        ariaLabel={t.overview.sections.viewerSnapshot}
+        emptyMessage={t.overview.empty.highlights}
+        items={viewerHighlights}
+        locale={locale}
+        startDate={trip.startDate}
+        title={t.overview.headings.viewerSnapshot}
+      />
 
-      <section className={overviewPanelClassName} aria-label={t.overview.sections.nextStop}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="route" />
-          <h2>{t.overview.headings.nextStop}</h2>
-        </div>
-        <ViewerNextStopPanel
-          item={nextStop}
-          startDate={trip.startDate}
-          locale={locale}
-          emptyMessage={t.overview.empty.itinerary}
-          detailFallback={t.overview.focusDetails.viewerFallback}
-        />
-      </section>
+      <ViewerNextStopSection
+        ariaLabel={t.overview.sections.nextStop}
+        detailFallback={t.overview.focusDetails.viewerFallback}
+        emptyMessage={t.overview.empty.itinerary}
+        item={nextStop}
+        locale={locale}
+        startDate={trip.startDate}
+        title={t.overview.headings.nextStop}
+      />
 
       <OverviewExpenseShortcut
         icon="wallet"
@@ -202,19 +144,6 @@ export function ViewerOverviewPanels({ trip, locale, nextStop, viewerHighlights,
       />
     </>
   );
-}
-
-interface ManagerOverviewPanelsProps extends OverviewChecklistPanelBaseProps {
-  taskScopeFilter: TaskScopeFilter;
-  setTaskScopeFilter: (filter: TaskScopeFilter) => void;
-  taskStatusFilter: TaskStatusFilter;
-  setTaskStatusFilter: (filter: TaskStatusFilter) => void;
-  myOpenTasks: number;
-  sharedOpenTasks: number;
-  pendingSuggestions: number;
-  visibleTasks: TripTask[];
-  focusSectionDetailFallback: string;
-  openTaskDialog: () => void;
 }
 
 export function ManagerOverviewPanels({
@@ -260,17 +189,16 @@ export function ManagerOverviewPanels({
         emptyText={t.overview.empty.itinerary}
       />
 
-      <section className={`${overviewPanelClassName} ${overviewPanelHealthClassName}`} aria-label={t.overview.sections.readiness}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="check" />
-          <h2>{t.overview.headings.readiness}</h2>
-        </div>
-        <div className={overviewHealthGridClassName}>
-          <span><strong>{myOpenTasks}</strong> {t.overview.readiness.myChecklist}</span>
-          <span><strong>{sharedOpenTasks}</strong> {t.overview.readiness.sharedChecklist}</span>
-          <span><strong>{pendingSuggestions}</strong> {t.overview.readiness.pendingSuggestions}</span>
-        </div>
-      </section>
+      <ManagerReadinessPanel
+        ariaLabel={t.overview.sections.readiness}
+        myChecklistLabel={t.overview.readiness.myChecklist}
+        myOpenTasks={myOpenTasks}
+        pendingSuggestions={pendingSuggestions}
+        pendingSuggestionsLabel={t.overview.readiness.pendingSuggestions}
+        sharedChecklistLabel={t.overview.readiness.sharedChecklist}
+        sharedOpenTasks={sharedOpenTasks}
+        title={t.overview.headings.readiness}
+      />
 
       <OverviewExpenseShortcut
         icon="plus"
@@ -281,51 +209,32 @@ export function ManagerOverviewPanels({
         onClick={openExpenses}
       />
 
-      <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={t.overview.sections.tripChecklist}>
-        <div className={overviewPanelTitleClassName}>
-          <Icon name="check" />
-          <h2>{t.overview.headings.tripChecklist}</h2>
-        </div>
-        <div className={overviewTaskToolbarClassName}>
-          <SegmentedControl
-            aria-label={t.overview.filters.scopeLabel}
-            className={overviewTaskFiltersClassName}
-            selectedItemClassName={overviewTaskFilterActiveClassName}
-            value={taskScopeFilter}
-            options={[
-              { value: "mine", label: t.overview.filters.mine },
-              { value: "trip", label: t.overview.filters.trip },
-              { value: "all", label: t.overview.filters.all },
-            ]}
-            onChange={setTaskScopeFilter}
-          />
-          <SegmentedControl
-            aria-label={t.overview.filters.statusLabel}
-            className={overviewTaskFiltersClassName}
-            selectedItemClassName={overviewTaskFilterActiveClassName}
-            value={taskStatusFilter}
-            options={[
-              { value: "all", label: t.overview.filters.allStatuses },
-              { value: "open", label: t.overview.filters.open },
-              { value: "done", label: t.overview.filters.done },
-            ]}
-            onChange={setTaskStatusFilter}
-          />
-          <button className={overviewTaskAddButtonClassName} type="button" aria-label={t.overview.headings.addChecklist} title={t.overview.headings.addChecklist} onClick={openTaskDialog}>
-            <span aria-hidden="true">+</span>
-          </button>
-        </div>
-        <OverviewTaskList
-          tasks={visibleTasks}
-          trip={trip}
-          items={items}
-          labels={taskListLabels}
-          emptyMessage={t.overview.task.emptyFilter}
-          includeTripKindMeta
-          includeStopMeta
-          onToggleTask={onToggleTask}
-        />
-      </section>
+      <ManagerTaskChecklistPanel
+        addChecklistLabel={t.overview.headings.addChecklist}
+        allLabel={t.overview.filters.all}
+        allStatusesLabel={t.overview.filters.allStatuses}
+        ariaLabel={t.overview.sections.tripChecklist}
+        doneLabel={t.overview.filters.done}
+        emptyMessage={t.overview.task.emptyFilter}
+        includeStopMeta
+        includeTripKindMeta
+        items={items}
+        mineLabel={t.overview.filters.mine}
+        onAddTask={openTaskDialog}
+        onScopeFilterChange={setTaskScopeFilter}
+        onStatusFilterChange={setTaskStatusFilter}
+        onToggleTask={onToggleTask}
+        openLabel={t.overview.filters.open}
+        scopeFilter={taskScopeFilter}
+        scopeFilterLabel={t.overview.filters.scopeLabel}
+        statusFilter={taskStatusFilter}
+        statusFilterLabel={t.overview.filters.statusLabel}
+        taskListLabels={taskListLabels}
+        tasks={visibleTasks}
+        title={t.overview.headings.tripChecklist}
+        trip={trip}
+        tripLabel={t.overview.filters.trip}
+      />
     </>
   );
 }
