@@ -1,14 +1,12 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
+import { type ItineraryView } from "@/src/trip/itinerary";
 import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
 import { WeatherBriefingDrawer, WeatherForecastStrip } from "@/src/shared/components/weather";
-import { CockpitCard, HighlightBoard, OverviewHero } from "./overview";
+import { HighlightBoard, OverviewHero } from "./overview";
 import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {
-  overviewReadinessChipsClassName,
-  overviewCockpitClassName,
   overviewGridClassName,
   overviewPageClassName,
   overviewUndoToastClassName,
@@ -24,6 +22,7 @@ import {
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
 import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./overview/OverviewRolePanels";
+import { OverviewCockpit } from "./overview/OverviewCockpit";
 import { OverviewTaskDialog } from "./overview/OverviewTaskDialog";
 
 interface OverviewPageProps {
@@ -71,7 +70,6 @@ export function OverviewPage({
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
   const [undoTask, setUndoTask] = useState<TripTask | null>(null);
   const [selectedBriefingDate, setSelectedBriefingDate] = useState<string | null>(null);
-  const tripDays = getTripDates(trip.startDate, trip.endDate);
   /* v8 ignore next */
   const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
   const nextStop = sortedItems[0];
@@ -182,33 +180,29 @@ export function OverviewPage({
         onSaveOverrides={onSaveDailyBriefingOverrides}
       />
 
-      <section className={overviewCockpitClassName} aria-label="travel cockpit">
-        <CockpitCard
-          icon="route"
-          label={t.overview.cockpit.nextStop}
-          value={nextStop?.place ?? trip.destinationLabel}
-          detail={nextStop ? `${formatDayLabel(nextStop.day, trip.startDate, locale)} · ${nextStop.startTime}` : t.dates.stopCount({ count: items.length })}
-        />
-        <CockpitCard
-          icon="wallet"
-          label={t.overview.cockpit.budget}
-          ariaLabel={t.overview.money.openExpenses}
-          value={groupSpendLabel}
-          detail={t.overview.money.settlementSuggestions({ count: settlementCount })}
-          onClick={openExpenses}
-        />
-        <CockpitCard
-          icon="users"
-          label={t.overview.cockpit.crewReadiness}
-          value={t.dates.memberCount({ count: activeMembers })}
-          detail={(
-            <span className={overviewReadinessChipsClassName}>
-              <span>{t.dates.dayCount({ count: tripDays.length })}</span>
-              <span>{t.overview.readiness.alertSummary({ warnings: warningCount, suggestions: pendingSuggestions })}</span>
-            </span>
-          )}
-        />
-      </section>
+      <OverviewCockpit
+        activeMembers={activeMembers}
+        groupSpendLabel={groupSpendLabel}
+        itemCount={items.length}
+        labels={{
+          alertSummary: t.overview.readiness.alertSummary,
+          budget: t.overview.cockpit.budget,
+          crewReadiness: t.overview.cockpit.crewReadiness,
+          dayCount: t.dates.dayCount,
+          memberCount: t.dates.memberCount,
+          nextStop: t.overview.cockpit.nextStop,
+          openExpenses: t.overview.money.openExpenses,
+          settlementSuggestions: t.overview.money.settlementSuggestions,
+          stopCount: t.dates.stopCount,
+        }}
+        locale={locale}
+        nextStop={nextStop}
+        onOpenExpenses={openExpenses}
+        pendingSuggestions={pendingSuggestions}
+        settlementCount={settlementCount}
+        trip={trip}
+        warningCount={warningCount}
+      />
 
       <HighlightBoard
         items={highlightItems}

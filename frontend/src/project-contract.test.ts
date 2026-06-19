@@ -114,6 +114,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
@@ -371,6 +372,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"),
       "utf8",
     );
+    const overviewCockpit = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"),
+      "utf8",
+    );
     const overviewTaskDialog = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"),
       "utf8",
@@ -473,6 +478,10 @@ describe("Sagittarius project scaffold", () => {
     expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
+    expect(overviewPage).toContain("OverviewCockpit");
+    expect(overviewPage).not.toContain("overviewCockpitClassName");
+    expect(overviewCockpit).toContain("export function OverviewCockpit");
+    expect(overviewCockpit).toContain("overviewCockpitClassName");
     expect(overviewPage).toContain("OverviewTaskDialog");
     expect(overviewPage).not.toContain("taskDialogGridClassName");
     expect(overviewTaskDialog).toContain("export function OverviewTaskDialog");
