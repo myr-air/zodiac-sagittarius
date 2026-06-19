@@ -123,6 +123,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/use-route-live-map.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -435,6 +436,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"),
       "utf8",
     );
+    const routeLiveMapHook = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/route-map/use-route-live-map.ts"),
+      "utf8",
+    );
     const routeMapUtils = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/route-map/route-map.utils.ts"),
       "utf8",
@@ -555,6 +560,12 @@ describe("Sagittarius project scaffold", () => {
     expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
+    expect(routeMapView).toContain("useRouteLiveMap");
+    expect(routeMapView).not.toContain("maplibre-gl");
+    expect(routeMapView).not.toContain("function mountLiveMap");
+    expect(routeLiveMapHook).toContain("export function useRouteLiveMap");
+    expect(routeLiveMapHook).toContain("maplibre-gl");
+    expect(routeLiveMapHook).toContain("function mountLiveMap");
     expect(routeMapView).toContain("RouteMapUnresolvedPanel");
     expect(routeMapView).not.toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
