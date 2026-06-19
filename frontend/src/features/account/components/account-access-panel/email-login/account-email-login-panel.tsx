@@ -18,7 +18,7 @@ import {
   EmailLoginPasswordStep,
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
-import { PanelHeading } from "../account-portal-primitives";
+import { PanelHeading } from "../portal/account-portal-primitives";
 import { StatusMessage } from "../account-status-message";
 import { useEmailLoginPanelState } from "./use-email-login-panel-state";
 

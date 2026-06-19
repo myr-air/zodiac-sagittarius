@@ -13,8 +13,8 @@ import {
   cacheAccountPortalData,
   clearAccountPortalDataCache,
   getAccountPortalDataCache,
-} from "./account-access-panel-support";
-import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "./account-auth-support";
+} from "../account-access-panel-support";
+import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "../account-auth-support";
 
 interface UseAccountPortalDataOptions {
   accountClient: AccountApiClient;

@@ -8,7 +8,7 @@ import {
   arrayBufferToBase64Url,
   createPasskeyCredential,
   errorMessage,
-} from "./account-auth-support";
+} from "../account-auth-support";
 import { AccountSettingsEditor } from "./account-settings-editor";
 import { PanelHeading } from "./account-portal-primitives";
 

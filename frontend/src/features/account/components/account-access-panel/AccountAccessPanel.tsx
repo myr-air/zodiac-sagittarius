@@ -27,7 +27,11 @@ import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
   localizeAccessError,
 } from "./account-auth-support";
-import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
+import {
+  AccountPortalDashboard,
+  AccountPortalLoadingFrame,
+  useAccountPortalData,
+} from "./portal";
 import type { AuthFlow } from "./account-auth-chrome";
 import { EmailLoginPanel } from "./email-login";
 import {
@@ -63,9 +67,7 @@ import {
   tripAccessLanguageSwitchClassName,
 } from "./account-access-panel-layout";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
-import { AccountPortalDashboard } from "./account-portal-dashboard";
 import { StatusMessage } from "./account-status-message";
-import { useAccountPortalData } from "./use-account-portal-data";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;

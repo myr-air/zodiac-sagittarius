@@ -6,7 +6,7 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { getPortalNavItems } from "./account-access-panel-support";
+import { getPortalNavItems } from "../account-access-panel-support";
 
 const portalNavClassName =
   "portal-nav sticky top-4 grid gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3 shadow-[var(--shadow-soft)] max-[767px]:static max-[767px]:gap-2.5 max-[767px]:p-2.5";

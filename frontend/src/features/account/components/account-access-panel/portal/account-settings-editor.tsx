@@ -14,7 +14,7 @@ import {
   errorMessage,
   formatDateTime,
   profileToForm,
-} from "./account-auth-support";
+} from "../account-auth-support";
 import { SettingLine } from "./account-portal-primitives";
 
 export interface AccountSettingsEditorClassNames {
