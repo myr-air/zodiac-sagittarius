@@ -92,6 +92,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-error-codes.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-passkey-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
@@ -375,6 +377,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-wizard-support.ts"),
       "utf8",
     );
+    const accountAuthSupport = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/account-auth-support.ts"),
+      "utf8",
+    );
     const tripWizardFormSections = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
       "utf8",
@@ -427,6 +433,13 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
     expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
     expect(accountTripWizardSupport).not.toContain("function randomToken");
+    expect(accountAuthSupport).toContain("./account-access-error-codes");
+    expect(accountAuthSupport).toContain("./account-passkey-support");
+    expect(accountAuthSupport).not.toContain("accountLoadFailed:");
+    expect(accountAuthSupport).not.toContain("function createPasskeyCredential");
+    expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
+    expect(accountAuthSupport).not.toContain("function base64UrlToArrayBuffer");
+    expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-dates-step");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-destination-step");
