@@ -88,6 +88,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-api-requests.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
