@@ -29,15 +29,6 @@ export function formatDateTime(value: string | null | undefined): string {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
-export function toDateTimeLocalValue(value: string | null | undefined): string {
-  if (!value) return "";
-  return value.slice(0, 16);
-}
-
-export function fromDateTimeLocalValue(value: string): string | null {
-  return value ? value : null;
-}
-
 export function countBookingFolders(docs: BookingDoc[]): Record<BookingFolderId, number> {
   return bookingFolders.reduce((counts, folder) => {
     counts[folder.id] = docs.filter((doc) => bookingDocMatchesFolder(doc, folder.id)).length;

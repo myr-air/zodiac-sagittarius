@@ -317,6 +317,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx"),
       "utf8",
     );
+    const bookingsDocsSupport = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/bookings-docs/bookings-docs-page-support.ts"),
+      "utf8",
+    );
+    const bookingDialog = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx"),
+      "utf8",
+    );
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
@@ -327,6 +335,9 @@ describe("Sagittarius project scaffold", () => {
     expect(sagaCore).toContain("./WorkspaceDialogs");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
+    expect(bookingsDocsSupport).not.toContain("function toDateTimeLocalValue");
+    expect(bookingsDocsSupport).not.toContain("function fromDateTimeLocalValue");
+    expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");

@@ -10,9 +10,7 @@ import {
   compareBookingStartWithUndated,
   countBookingFolders,
   formatDateTime,
-  fromDateTimeLocalValue,
   statusBadgeClassName,
-  toDateTimeLocalValue,
   toggleId,
   typeIconClassName,
 } from "./bookings-docs-page-support";
@@ -72,9 +70,6 @@ describe("bookings docs page support", () => {
     expect(formatDateTime(null)).toBe("-");
     expect(formatDateTime("not-a-date")).toBe("not-a-date");
     expect(formatDateTime("2026-06-18T12:30:00.000Z")).toContain("Jun");
-    expect(toDateTimeLocalValue("2026-06-18T12:30:00.000Z")).toBe("2026-06-18T12:30");
-    expect(fromDateTimeLocalValue("2026-06-18T12:30")).toBe("2026-06-18T12:30");
-    expect(fromDateTimeLocalValue("")).toBeNull();
   });
 
   it("keeps selection and visual token helpers centralized", () => {
