@@ -5,9 +5,9 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { useWorkspaceAccountClaimActions } from "./use-workspace-account-claim-actions";
-import { useWorkspaceMemberAdminActions } from "./use-workspace-member-admin-actions";
-import { useWorkspaceTripSettingsActions } from "./use-workspace-trip-settings-actions";
+import { useWorkspaceAccountClaimActions } from "./administration/use-workspace-account-claim-actions";
+import { useWorkspaceMemberAdminActions } from "./administration/use-workspace-member-admin-actions";
+import { useWorkspaceTripSettingsActions } from "./administration/use-workspace-trip-settings-actions";
 
 interface UseWorkspaceAdministrationOptions {
   accountClient: AccountApiClient;
