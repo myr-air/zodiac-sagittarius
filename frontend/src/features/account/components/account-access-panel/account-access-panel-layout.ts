@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/cn";
-import { accountStepSummaryClassName, buildAccountAuthCardClassName } from "./account-email-login-styles";
+import { accountStepSummaryClassName, buildAccountAuthCardClassName } from "./email-login/account-email-login-styles";
 
 export const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
 export const accountToastStackClassName =

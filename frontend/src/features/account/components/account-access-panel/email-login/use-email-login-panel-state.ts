@@ -9,8 +9,8 @@ import {
   errorMessage,
   getPasskeyCredential,
   passwordLoginErrorMessage,
-} from "./account-auth-support";
-import type { AuthFlow } from "./account-auth-chrome";
+} from "../account-auth-support";
+import type { AuthFlow } from "../account-auth-chrome";
 import { accountEmailPattern, type AuthTransitionDirection } from "./account-email-login-styles";
 import {
   emailLoginStepHeading,

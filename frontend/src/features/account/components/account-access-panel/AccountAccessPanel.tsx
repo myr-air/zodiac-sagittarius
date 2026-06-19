@@ -29,7 +29,7 @@ import {
 } from "./account-auth-support";
 import { AccountPortalLoadingFrame } from "./account-portal-loading-frame";
 import type { AuthFlow } from "./account-auth-chrome";
-import { EmailLoginPanel } from "./account-email-login-panel";
+import { EmailLoginPanel } from "./email-login";
 import {
   accountAuthCardClassName,
   accountDashboardClassName,
