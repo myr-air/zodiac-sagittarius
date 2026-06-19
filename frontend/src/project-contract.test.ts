@@ -147,6 +147,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/TimePickerField.tsx"))).toBe(true);
@@ -352,6 +353,20 @@ describe("Sagittarius project scaffold", () => {
     expect(portalTripWizard).not.toContain("function regenerateCredentials");
     expect(portalTripWizardModel).toContain("export function usePortalTripWizardModel");
     expect(portalTripWizardModel).toContain("function regenerateCredentials");
+  });
+
+  it("keeps trip join gate authentication state split from render composition", () => {
+    const tripJoinGate = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"), "utf8");
+    const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"), "utf8");
+
+    expect(tripJoinGate).toContain("./use-trip-join-gate-state");
+    expect(tripJoinGate).not.toContain("useState");
+    expect(tripJoinGate).not.toContain("useEffect");
+    expect(tripJoinGate).not.toContain("verifyTripCredentials");
+    expect(tripJoinGate).not.toContain("function submitParticipant");
+    expect(tripJoinGateState).toContain("export function useTripJoinGateState");
+    expect(tripJoinGateState).toContain("verifyTripCredentials");
+    expect(tripJoinGateState).toContain("async function submitParticipant");
   });
 
   it("keeps ActivityCell split into render, model, meta, and typed props", () => {
