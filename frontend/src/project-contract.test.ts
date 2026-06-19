@@ -40,6 +40,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
@@ -308,6 +309,8 @@ describe("Sagittarius project scaffold", () => {
     const homeLanding = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8");
     const homeLandingMeta = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.meta.ts"), "utf8");
     const homeLandingStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.styles.ts"), "utf8");
+    const languageSwitch = readFileSync(join(frontendRoot, "src/i18n/LanguageSwitch.tsx"), "utf8");
+    const languageSwitchSupport = readFileSync(join(frontendRoot, "src/i18n/language-switch.support.ts"), "utf8");
     expect(homeLanding).toContain("LanguageSwitch");
     expect(homeLanding).toContain("./HomeLanding.meta");
     expect(homeLanding).toContain("./HomeLanding.styles");
@@ -317,6 +320,11 @@ describe("Sagittarius project scaffold", () => {
     expect(homeLandingMeta).toContain("previewDayKeys");
     expect(homeLandingStyles).toContain("homePageClassName");
     expect(homeLandingStyles).toContain("workflowToneClassNames");
+    expect(languageSwitch).toContain("./language-switch.support");
+    expect(languageSwitch).not.toContain("const triggerClassName");
+    expect(languageSwitch).not.toContain("function readStoredCurrency");
+    expect(languageSwitchSupport).toContain("export const triggerClassName");
+    expect(languageSwitchSupport).toContain("export function readStoredCurrency");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("Plan trips with friends");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
