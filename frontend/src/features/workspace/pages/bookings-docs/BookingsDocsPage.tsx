@@ -18,11 +18,13 @@ import * as bookingStyles from "./BookingsDocsPage.styles";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
 import {
   bookingDocMatchesFolder,
-  bookingDocMatchesQuery,
   bookingFolders,
-  compareBookingStartWithUndated,
   countBookingFolders,
   type BookingFolderId,
+} from "./booking-folders";
+import {
+  bookingDocMatchesQuery,
+  compareBookingStartWithUndated,
 } from "./bookings-docs-page-support";
 
 export type { BookingDocInput } from "./BookingsDocsPage.types";
