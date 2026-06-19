@@ -112,6 +112,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
 
@@ -369,6 +370,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"),
       "utf8",
     );
+    const routeMapUnresolvedPanel = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"),
+      "utf8",
+    );
     const routeMapUtils = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/route-map/route-map.utils.ts"),
       "utf8",
@@ -449,6 +454,10 @@ describe("Sagittarius project scaffold", () => {
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
+    expect(routeMapView).toContain("RouteMapUnresolvedPanel");
+    expect(routeMapView).not.toContain("unresolvedPanelListClassName");
+    expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
+    expect(routeMapUnresolvedPanel).toContain("export function RouteMapUnresolvedPanel");
     expect(routeMapUtils).not.toContain("export type { DayColorStyle");
     expect(stopDialog).toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("parseRouteActivity");

@@ -15,14 +15,6 @@ import {
   routeMapPanelClassName,
   routeMapRetryButtonClassName,
   routeMapStatusClassName,
-  unresolvedPanelActionsClassName,
-  unresolvedPanelButtonClassName,
-  unresolvedPanelClassName,
-  unresolvedPanelHeaderClassName,
-  unresolvedPanelItemClassName,
-  unresolvedPanelItemTitleClassName,
-  unresolvedPanelListClassName,
-  unresolvedPanelStatusClassName,
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
@@ -43,6 +35,7 @@ import {
 } from "./route-map.utils";
 import type { DayFilter, MapCoordinateResolutionResult } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
+import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
 import { StaticRouteFallback } from "./StaticRouteFallback";
 
 interface RouteMapViewProps {
@@ -323,53 +316,24 @@ export function RouteMapView({
             </>
           )}
           {visibleUnresolvedItems.length > 0 ? (
-            <div className={unresolvedPanelClassName} role="region" aria-label={t.map.unresolvedLabel}>
-              <div className={unresolvedPanelActionsClassName}>
-                <div className={unresolvedPanelHeaderClassName}>
-                  <Icon name="warning" />
-                  <span>{t.map.unresolvedTitle({ count: visibleUnresolvedItems.length })}</span>
-                </div>
-                <button
-                  type="button"
-                  className={unresolvedPanelButtonClassName}
-                  disabled={!onResolveMissingCoordinates || resolvingMissing}
-                  title={!onResolveMissingCoordinates ? t.map.resolveUnavailable : undefined}
-                  onClick={handleResolveMissingCoordinates}
-                >
-                  <Icon name="location" />
-                  {resolvingMissing
-                    ? t.map.resolvingMissing({ count: coordinateResolutionBatch.length })
-                    : t.map.resolveMissing({ count: coordinateResolutionBatch.length })}
-                </button>
-              </div>
-              {resolvingMissing ? (
-                <p className={unresolvedPanelStatusClassName}>
-                  {t.map.resolveProgress({
-                    count: coordinateResolutionBatch.length,
-                    total: visibleUnresolvedItems.length,
-                  })}
-                </p>
-              ) : resolutionResult ? (
-                <p className={unresolvedPanelStatusClassName}>
-                  {t.map.resolveResult(resolutionResult)}
-                </p>
-              ) : activeDay === "all" && visibleUnresolvedItems.length > coordinateResolutionBatch.length ? (
-                <p className={unresolvedPanelStatusClassName}>
-                  {t.map.resolveBatchHint({
-                    count: coordinateResolutionBatch.length,
-                    total: visibleUnresolvedItems.length,
-                  })}
-                </p>
-              ) : null}
-              <ol className={unresolvedPanelListClassName}>
-                {visibleUnresolvedItems.slice(0, 6).map((item) => (
-                  <li className={unresolvedPanelItemClassName} key={item.id}>
-                    <span className={unresolvedPanelItemTitleClassName}>{item.activity}</span>
-                    <span>{item.place}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <RouteMapUnresolvedPanel
+              activeDay={activeDay}
+              coordinateResolutionBatch={coordinateResolutionBatch}
+              copy={{
+                label: t.map.unresolvedLabel,
+                resolveBatchHint: t.map.resolveBatchHint,
+                resolveMissing: t.map.resolveMissing,
+                resolveProgress: t.map.resolveProgress,
+                resolveResult: t.map.resolveResult,
+                resolveUnavailable: t.map.resolveUnavailable,
+                resolvingMissing: t.map.resolvingMissing,
+                title: t.map.unresolvedTitle,
+              }}
+              onResolveMissingCoordinates={onResolveMissingCoordinates ? handleResolveMissingCoordinates : undefined}
+              resolutionResult={resolutionResult}
+              resolvingMissing={resolvingMissing}
+              visibleUnresolvedItems={visibleUnresolvedItems}
+            />
           ) : null}
           {liveMapState === "error" || !liveMapEnabled ? <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p> : null}
         </div>
