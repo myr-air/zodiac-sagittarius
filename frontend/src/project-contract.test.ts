@@ -333,6 +333,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"),
       "utf8",
     );
+    const sagittariusAccessGate = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"),
+      "utf8",
+    );
     const workspaceFacade = readFileSync(
       join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"),
       "utf8",
@@ -473,6 +477,12 @@ describe("Sagittarius project scaffold", () => {
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceFrame");
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(sagaCore).toContain("WorkspaceAccessBoundary");
+    expect(sagaCore).not.toContain("TripAccessLoadingFrame");
+    expect(sagaCore).not.toContain("TripWorkspaceAccessPanel");
+    expect(sagittariusAccessGate).toContain("export function WorkspaceAccessBoundary");
+    expect(sagittariusAccessGate).toContain("TripAccessLoadingFrame");
+    expect(sagittariusAccessGate).toContain("TripWorkspaceAccessPanel");
     expect(sagaCore).toContain("./WorkspaceDialogs");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");

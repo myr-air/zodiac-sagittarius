@@ -50,7 +50,6 @@ import { resolveSelectedWorkspaceItem } from "@/src/trip/workspace/selected-itin
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
-import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
 import { useBackendExpenseSummary } from "@/src/trip/workspace/use-backend-expense-summary";
 import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
@@ -76,7 +75,7 @@ import {
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
-import { TripWorkspaceAccessPanel } from "./access-gate";
+import { WorkspaceAccessBoundary } from "./access-gate";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview } from "./WorkspaceRolePreview";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
@@ -652,122 +651,107 @@ export function SagittariusApp({
     navigateWorkspaceView("expenses", appRoutes.tripExpenses(trip.id));
   }
 
-  if (
-    isAccountTripAccessPending ||
-    isTripLoading ||
-    shouldRedirectUnauthenticatedTripRoute
-  ) {
-    return <TripAccessLoadingFrame />;
-  }
-
-  if (canAccessPanel) {
-    if (routeTripId && accessMode === "trip-access" && !sessionRestored) {
-      return <TripAccessLoadingFrame />;
-    }
-
-    return (
-      <TripWorkspaceAccessPanel
-        accessMode={accessMode}
-        accountClient={accountClient}
-        accountSession={accountSession}
-        accountSessionLoaded={accountSessionLoaded}
-        accountSuccessRedirectHref={accountSuccessRedirectHref}
-        portalSection={portalSection}
-        apiClient={resolvedApiClient}
-        initialError={accessError}
-        initialJoinCode={initialJoinCode}
-        initialJoinToken={initialJoinToken}
-        trip={routeTripId ? undefined : trip}
-        onAccountSessionChange={changeAccountSession}
-        onAuthenticated={authenticateParticipant}
-        onCockpitLoaded={replaceCockpitFromApi}
-        onTripChange={replaceTripFromJoin}
-      />
-    );
-  }
-
-  if (requireJoin && !sessionMember) {
-    if (routeTripId) {
-      return <TripAccessLoadingFrame />;
-    }
-  }
-
   return (
-    <AppShell
-      activeView={currentView}
-      collapsed={sidebarCollapsed}
-      currentMember={currentMember}
-      onLeaveParticipantSession={
-        requireJoin ? leaveParticipantSession : undefined
-      }
-      onNavigateView={navigateWorkspaceView}
+    <WorkspaceAccessBoundary
+      accessMode={accessMode}
+      accountClient={accountClient}
+      accountSession={accountSession}
+      accountSessionLoaded={accountSessionLoaded}
+      accountSuccessRedirectHref={accountSuccessRedirectHref}
+      apiClient={resolvedApiClient}
+      canAccessPanel={canAccessPanel}
+      initialError={accessError}
+      initialJoinCode={initialJoinCode}
+      initialJoinToken={initialJoinToken}
+      isAccountTripAccessPending={isAccountTripAccessPending}
+      isTripLoading={isTripLoading}
+      portalSection={portalSection}
+      requireJoin={requireJoin}
+      routeTripId={routeTripId}
+      sessionMember={Boolean(sessionMember)}
+      sessionRestored={sessionRestored}
+      shouldRedirectUnauthenticatedTripRoute={shouldRedirectUnauthenticatedTripRoute}
       trip={trip}
-      onToggleCollapsed={toggleSidebarCollapsed}
+      onAccountSessionChange={changeAccountSession}
+      onAuthenticated={authenticateParticipant}
+      onCockpitLoaded={replaceCockpitFromApi}
+      onTripChange={replaceTripFromJoin}
     >
-      <main className={workspaceShellClassName}>
-        {requireJoin && !toastDismissed ? (
-          <WorkspaceToast
-            accountSession={accountSession}
-            memberUserId={currentMember.userId}
-            claimState={accountClaimState}
-            canClaim={Boolean(
-              accountSession && participantSession && !currentMember.userId,
-            )}
-            dismissing={toastDismissing}
-            onClaim={() => void claimCurrentMemberToAccount()}
-            onDismiss={dismissWorkspaceToast}
-          />
-        ) : null}
-        {!sessionMember ? (
-          <WorkspaceRolePreview
-            currentMemberId={currentMember.id}
-            members={trip.members}
-            onChangeMember={setCurrentMemberId}
-          />
-        ) : null}
-        <TripWorkspaceFrame
-          contextRailOpen={contextRailOpen}
-          importError={importItineraryError}
-          supportsContextRail={supportsContextRail}
-          rail={
-            <TripWorkspaceRail
-              enabled={supportsContextRail}
-              mounted={contextRailMounted}
-              railProps={{
-                trip: scopedTripForRecords,
-                selectedItem,
-                suggestions: scopedSuggestions,
-                stopNotes: scopedTripPlanRecords.stopNotes,
-                tasks: scopedTripPlanRecords.tasks,
-                bookingDocs: scopedTripPlanRecords.bookingDocs,
-                currentMember,
-                expenseSummary,
-                canEdit,
-                canCreateNote: canCreateStopNote,
-                canCreateSuggestion,
-                canReviewSuggestions,
-                canEditExpenses,
-                open: contextRailOpen,
-                preferredTab: contextRailPreferredTab,
-                onChangeBookingDocType: changeBookingDocType,
-                onChangeBookingDocQuickFields: changeBookingDocQuickFields,
-                onCreateNote: createStopNote,
-                onCreateExpense: createExpense,
-                onUpdateExpense: updateExpense,
-                onDeleteExpense: deleteExpense,
-                onDeleteNote: deleteStopNote,
-                onEditSelected: () => {
-                  if (selectedItem) editItem(selectedItem.id);
-                },
-                onReviewSuggestion: reviewSuggestion,
-                onSuggestSelected: suggestSelectedStop,
-                onToggleTaskStatus: toggleTaskStatus,
-                onUpdateNote: updateStopNote,
-                onClose: () => setContextRailVisibility(false),
-              }}
+      <AppShell
+        activeView={currentView}
+        collapsed={sidebarCollapsed}
+        currentMember={currentMember}
+        onLeaveParticipantSession={
+          requireJoin ? leaveParticipantSession : undefined
+        }
+        onNavigateView={navigateWorkspaceView}
+        trip={trip}
+        onToggleCollapsed={toggleSidebarCollapsed}
+      >
+        <main className={workspaceShellClassName}>
+          {requireJoin && !toastDismissed ? (
+            <WorkspaceToast
+              accountSession={accountSession}
+              memberUserId={currentMember.userId}
+              claimState={accountClaimState}
+              canClaim={Boolean(
+                accountSession && participantSession && !currentMember.userId,
+              )}
+              dismissing={toastDismissing}
+              onClaim={() => void claimCurrentMemberToAccount()}
+              onDismiss={dismissWorkspaceToast}
             />
-          }
-        >
+          ) : null}
+          {!sessionMember ? (
+            <WorkspaceRolePreview
+              currentMemberId={currentMember.id}
+              members={trip.members}
+              onChangeMember={setCurrentMemberId}
+            />
+          ) : null}
+          <TripWorkspaceFrame
+            contextRailOpen={contextRailOpen}
+            importError={importItineraryError}
+            supportsContextRail={supportsContextRail}
+            rail={
+              <TripWorkspaceRail
+                enabled={supportsContextRail}
+                mounted={contextRailMounted}
+                railProps={{
+                  trip: scopedTripForRecords,
+                  selectedItem,
+                  suggestions: scopedSuggestions,
+                  stopNotes: scopedTripPlanRecords.stopNotes,
+                  tasks: scopedTripPlanRecords.tasks,
+                  bookingDocs: scopedTripPlanRecords.bookingDocs,
+                  currentMember,
+                  expenseSummary,
+                  canEdit,
+                  canCreateNote: canCreateStopNote,
+                  canCreateSuggestion,
+                  canReviewSuggestions,
+                  canEditExpenses,
+                  open: contextRailOpen,
+                  preferredTab: contextRailPreferredTab,
+                  onChangeBookingDocType: changeBookingDocType,
+                  onChangeBookingDocQuickFields: changeBookingDocQuickFields,
+                  onCreateNote: createStopNote,
+                  onCreateExpense: createExpense,
+                  onUpdateExpense: updateExpense,
+                  onDeleteExpense: deleteExpense,
+                  onDeleteNote: deleteStopNote,
+                  onEditSelected: () => {
+                    if (selectedItem) editItem(selectedItem.id);
+                  },
+                  onReviewSuggestion: reviewSuggestion,
+                  onSuggestSelected: suggestSelectedStop,
+                  onToggleTaskStatus: toggleTaskStatus,
+                  onUpdateNote: updateStopNote,
+                  onClose: () => setContextRailVisibility(false),
+                }}
+              />
+            }
+          >
             <TripWorkspaceViews
               currentView={currentView}
               settingsProps={{
@@ -914,39 +898,40 @@ export function SagittariusApp({
                 onToggleContextRail: toggleContextRail,
               }}
             />
-        </TripWorkspaceFrame>
-        <WorkspaceDialogs
-          applyPendingItineraryImport={applyPendingItineraryImport}
-          clearPendingItineraryImport={clearPendingItineraryImport}
-          createStop={createStop}
-          currentMemberId={currentMember.id}
-          deleteSelectedStop={deleteSelectedStop}
-          deleteStop={deleteStop}
-          dialogDeleteItem={dialogDeleteItem}
-          dialogState={dialogState}
-          importPathOptions={pathOptions}
-          pendingItineraryImport={pendingItineraryImport}
-          promoteFoodRecommendation={promoteFoodRecommendation}
-          selectedDay={selectedDay}
-          selectedTripPathId={selectedTripPathId}
-          selectedTripPlanId={selectedTripPlanId}
-          setDialogDeleteItem={setDialogDeleteItem}
-          setDialogState={setDialogState}
-          setStopPlaceResolution={setStopPlaceResolution}
-          stopPlaceResolution={stopPlaceResolution}
-          trip={trip}
-          tripPlanOptions={trip.tripPlans ?? trip.planVariants}
-          updateSelectedStop={updateSelectedStop}
-          deleteCancelLabel={t.itinerary.row.confirmDeleteNo}
-          deleteConfirmLabel={t.itinerary.row.confirmDeleteYes}
-          deleteTitleForActivity={(activity) =>
-            t.itinerary.row.confirmDeleteTitle({ activity })
-          }
-          deleteBodyForActivity={(activity) =>
-            t.itinerary.row.confirmDeleteBody({ activity })
-          }
-        />
-      </main>
-    </AppShell>
+          </TripWorkspaceFrame>
+          <WorkspaceDialogs
+            applyPendingItineraryImport={applyPendingItineraryImport}
+            clearPendingItineraryImport={clearPendingItineraryImport}
+            createStop={createStop}
+            currentMemberId={currentMember.id}
+            deleteSelectedStop={deleteSelectedStop}
+            deleteStop={deleteStop}
+            dialogDeleteItem={dialogDeleteItem}
+            dialogState={dialogState}
+            importPathOptions={pathOptions}
+            pendingItineraryImport={pendingItineraryImport}
+            promoteFoodRecommendation={promoteFoodRecommendation}
+            selectedDay={selectedDay}
+            selectedTripPathId={selectedTripPathId}
+            selectedTripPlanId={selectedTripPlanId}
+            setDialogDeleteItem={setDialogDeleteItem}
+            setDialogState={setDialogState}
+            setStopPlaceResolution={setStopPlaceResolution}
+            stopPlaceResolution={stopPlaceResolution}
+            trip={trip}
+            tripPlanOptions={trip.tripPlans ?? trip.planVariants}
+            updateSelectedStop={updateSelectedStop}
+            deleteCancelLabel={t.itinerary.row.confirmDeleteNo}
+            deleteConfirmLabel={t.itinerary.row.confirmDeleteYes}
+            deleteTitleForActivity={(activity) =>
+              t.itinerary.row.confirmDeleteTitle({ activity })
+            }
+            deleteBodyForActivity={(activity) =>
+              t.itinerary.row.confirmDeleteBody({ activity })
+            }
+          />
+        </main>
+      </AppShell>
+    </WorkspaceAccessBoundary>
   );
 }
