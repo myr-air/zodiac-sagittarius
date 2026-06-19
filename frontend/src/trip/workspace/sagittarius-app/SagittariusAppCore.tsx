@@ -67,6 +67,7 @@ import {
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
   useWorkspaceSession,
+  useEffectivePlaceResolver,
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
@@ -213,16 +214,12 @@ export function SagittariusApp({
     routeTripId,
     tripId: trip.id,
   });
-  const effectivePlaceResolver = useMemo<PlaceResolver | null>(() => {
-    if (placeResolver) return placeResolver;
-    if (!resolvedApiClient?.resolvePlace || !participantSession) return null;
-    return (request) =>
-      resolvedApiClient.resolvePlace!(
-        trip.id,
-        participantSession.sessionToken,
-        request,
-      );
-  }, [participantSession, placeResolver, resolvedApiClient, trip.id]);
+  const effectivePlaceResolver = useEffectivePlaceResolver({
+    apiClient: resolvedApiClient,
+    participantSession,
+    placeResolver,
+    tripId: trip.id,
+  });
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember =
     sessionMember ??

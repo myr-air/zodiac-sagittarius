@@ -101,6 +101,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"),
       "utf8",
     );
+    const stopDialogModel = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"),
+      "utf8",
+    );
     const stopDialogForm = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts"),
       "utf8",
@@ -131,6 +135,10 @@ describe("Sagittarius workspace source boundaries", () => {
     );
     const portalTripWizard = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"),
+      "utf8",
+    );
+    const portalTripWizardModel = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"),
       "utf8",
     );
     const portalTripWizardActions = readFileSync(
@@ -428,7 +436,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("export function RouteMapUnresolvedPanel");
     expect(routeMapUtils).not.toContain("export type { DayColorStyle");
-    expect(stopDialog).toContain("applyStopActivityInput");
+    expect(stopDialogModel).toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("parseRouteActivity");
     expect(stopDialog).not.toContain("endOffsetDaysBetweenTimes");
     expect(stopDialogForm).toContain("export function applyStopStartTime");
@@ -462,8 +470,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(accountTripWizardSupport).not.toContain("function randomToken");
     expect(accountTripWizardSupport).toContain("export function applyTripDestinationCities");
     expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
-    expect(portalTripWizard).toContain("applyTripDestinationCities");
-    expect(portalTripWizard).toContain("applyTripCalendarDate");
+    expect(portalTripWizardModel).toContain("applyTripDestinationCities");
+    expect(portalTripWizardModel).toContain("applyTripCalendarDate");
     expect(portalTripWizard).toContain("PortalTripWizardActions");
     expect(portalTripWizard).not.toContain("Date.parse(`${date}T00:00:00`)");
     expect(portalTripWizard).not.toContain("appRoutes.portalMyTrips()");
