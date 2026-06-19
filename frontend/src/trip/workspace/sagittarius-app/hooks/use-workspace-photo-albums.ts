@@ -9,6 +9,7 @@ import {
   buildCreatePhotoAlbumRequest,
   buildPatchPhotoAlbumRequest,
   createLocalPhotoAlbum,
+  normalizePhotoAlbumCreateInput,
   removePhotoAlbumFromTrip,
   replacePhotoAlbumInTrip,
   updateLocalPhotoAlbumInTrip,
@@ -43,18 +44,13 @@ export function useWorkspacePhotoAlbums({
 }: UseWorkspacePhotoAlbumsOptions) {
   const createPhotoAlbum = useCallback(async (input: TripPhotoAlbumInput) => {
     if (!canEditPhotoAlbums) return;
-    const title = input.title.trim();
-    const url = input.url.trim();
-    if (!title || !url) return;
+    const photoAlbumInput = normalizePhotoAlbumCreateInput(input);
+    if (!photoAlbumInput) return;
     if (isApiMode && apiClient && participantSession) {
       const photoAlbum = await apiClient.createPhotoAlbum(
         trip.id,
         participantSession.sessionToken,
-        buildCreatePhotoAlbumRequest({
-          ...input,
-          title,
-          url,
-        }, {
+        buildCreatePhotoAlbumRequest(photoAlbumInput, {
           clientMutationId: nextClientMutationId("photo-album-create"),
         }),
       );
@@ -64,9 +60,9 @@ export function useWorkspacePhotoAlbums({
       return;
     }
 
-    const photoAlbum = createLocalPhotoAlbum(trip, input, {
-      title,
-      url,
+    const photoAlbum = createLocalPhotoAlbum(trip, photoAlbumInput, {
+      title: photoAlbumInput.title,
+      url: photoAlbumInput.url,
       createdBy: currentMemberId,
       updatedAt: workspaceLocalMutationTimestamp,
       nextPhotoAlbumId: nextLocalPhotoAlbumId,

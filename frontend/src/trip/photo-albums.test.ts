@@ -7,6 +7,7 @@ import {
   createLocalPhotoAlbum,
   filterPhotoAlbumLinks,
   findPhotoAlbumRelations,
+  normalizePhotoAlbumCreateInput,
   removePhotoAlbumFromTrip,
   replacePhotoAlbumInTrip,
   safePhotoAlbumCoverHref,
@@ -136,6 +137,41 @@ describe("photo album helpers", () => {
       day: null,
       description: null,
     });
+  });
+
+  it("normalizes required photo album create fields before workspace commands", () => {
+    expect(
+      normalizePhotoAlbumCreateInput({
+        access: "collaborative",
+        provider: "google_photos",
+        relatedItineraryItemIds: ["item-peak"],
+        title: "  Peak album  ",
+        url: "  https://photos.app.goo.gl/example  ",
+      }),
+    ).toMatchObject({
+      title: "Peak album",
+      url: "https://photos.app.goo.gl/example",
+    });
+
+    expect(
+      normalizePhotoAlbumCreateInput({
+        access: "collaborative",
+        provider: "google_photos",
+        relatedItineraryItemIds: [],
+        title: " ",
+        url: "https://photos.app.goo.gl/example",
+      }),
+    ).toBeNull();
+
+    expect(
+      normalizePhotoAlbumCreateInput({
+        access: "collaborative",
+        provider: "google_photos",
+        relatedItineraryItemIds: [],
+        title: "Peak album",
+        url: " ",
+      }),
+    ).toBeNull();
   });
 
   it("builds create and patch photo album API requests", () => {

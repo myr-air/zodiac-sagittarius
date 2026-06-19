@@ -108,6 +108,20 @@ export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
   };
 }
 
+export function normalizePhotoAlbumCreateInput(
+  input: PhotoAlbumInputForApi,
+): PhotoAlbumInputForApi | null {
+  const title = input.title.trim();
+  const url = input.url.trim();
+  if (!title || !url) return null;
+
+  return {
+    ...input,
+    title,
+    url,
+  };
+}
+
 export function buildCreatePhotoAlbumRequest(
   input: PhotoAlbumInputForApi,
   options: BuildCreatePhotoAlbumRequestOptions,
