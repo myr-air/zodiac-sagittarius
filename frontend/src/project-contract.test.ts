@@ -48,7 +48,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceViews.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/index.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/public-exports.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/public-exports.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
@@ -141,10 +141,6 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/index.ts"),
       "utf8",
     );
-    const publicExports = readFileSync(
-      join(frontendRoot, "src/trip/workspace/sagittarius-app/public-exports.ts"),
-      "utf8",
-    );
 
     expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
     expect(stories).toContain(
@@ -165,15 +161,13 @@ describe("Sagittarius project scaffold", () => {
     expect(hooksIndex).not.toContain("useWorkspaceRecordState");
     expect(sagittariusIndex).toContain("SagittariusApp");
     expect(sagittariusIndex).toContain("SagittariusAppCore");
-    expect(sagittariusIndex).toContain("export {");
-    expect(sagittariusIndex).toContain("from \"./public-exports\"");
+    expect(sagittariusIndex).not.toContain("public-exports");
+    expect(sagittariusIndex).not.toContain("bookingTypeForItineraryItem");
+    expect(sagittariusIndex).not.toContain("nextLocalTaskId");
+    expect(sagittariusIndex).not.toContain("normalizeInlineTimePatch");
     expect(workspaceItineraryImportHook).toContain(
       "export function useWorkspaceItineraryImport",
     );
-    expect(publicExports).toContain("export {");
-    expect(publicExports).toContain("bookingTypeForItineraryItem");
-    expect(publicExports).toContain("nextLocalTaskId");
-    expect(publicExports).toContain("normalizeInlineTimePatch");
   });
 
   it("keeps project-side routing docs current", () => {
