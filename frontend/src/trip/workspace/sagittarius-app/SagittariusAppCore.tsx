@@ -7,7 +7,6 @@ import {
   useState,
 } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell";
-import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
@@ -79,15 +78,15 @@ import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
+import { WorkspaceRolePreview } from "./WorkspaceRolePreview";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
+import { workspaceShellClassName } from "./sagittarius-app.styles";
 import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
 import type {
   ItineraryItem,
   Trip,
 } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
-
-const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent max-[1199px]:min-h-[calc(100dvh-48px)]";
 
 interface SagittariusAppProps {
   initialView?: PlanningView;
@@ -720,19 +719,11 @@ export function SagittariusApp({
           />
         ) : null}
         {!sessionMember ? (
-          <label className="sr-only">
-            Role preview
-            <Select
-              value={currentMember.id}
-              onChange={(event) => setCurrentMemberId(event.target.value)}
-            >
-              {trip.members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.displayName} ({member.role})
-                </option>
-              ))}
-            </Select>
-          </label>
+          <WorkspaceRolePreview
+            currentMemberId={currentMember.id}
+            members={trip.members}
+            onChangeMember={setCurrentMemberId}
+          />
         ) : null}
         <TripWorkspaceFrame
           contextRailOpen={contextRailOpen}
