@@ -91,6 +91,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/routes/invite-links.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
@@ -405,6 +406,7 @@ describe("Sagittarius project scaffold", () => {
     expect(memberSupport).toContain("@/src/routes/invite-links");
     expect(memberSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
+    expect(accountTripWizardSupport).toContain("./account-trip-credentials");
     expect(accountTripWizardSupport).toContain("./account-trip-destinations");
     expect(accountTripWizardSupport).toContain("./account-trip-dates");
     expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
@@ -415,6 +417,9 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).not.toContain("const tripCityOptions");
     expect(accountTripWizardSupport).not.toContain("function tripDestinationCards");
     expect(accountTripWizardSupport).not.toContain("function destinationRouteCode");
+    expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
+    expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
+    expect(accountTripWizardSupport).not.toContain("function randomToken");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
