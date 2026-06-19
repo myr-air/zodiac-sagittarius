@@ -1,0 +1,56 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildItineraryStoryItem,
+  buildItineraryStoryPathItems,
+  withStoryPrefix,
+} from "./itinerary-story-item-builders";
+
+describe("itinerary story item builders", () => {
+  it("builds a story item with stable defaults and patch overrides", () => {
+    const item = buildItineraryStoryItem(0, {
+      id: "story-item",
+      activity: "Story stop",
+      sortOrder: 240,
+    });
+
+    expect(item).toMatchObject({
+      id: "story-item",
+      activity: "Story stop",
+      durationMinutes: 60,
+      sortOrder: 240,
+      startTime: "08:00",
+    });
+  });
+
+  it("maps path rows into alternative story items", () => {
+    const [main, alternative] = buildItineraryStoryPathItems([
+      ["main-row", "08:00", 45, 100, "Main route", "Main", undefined, "main"],
+      ["alt-row", "08:15", 60, 200, "Plan A route", "Plan A", "path-a", "alternative"],
+    ] as const, {
+      pathGroupId: (row) => `group-${row[3]}`,
+    });
+
+    expect(main).toMatchObject({
+      id: "main-row",
+      pathGroupId: "group-100",
+      pathName: undefined,
+      pathRole: "main",
+    });
+    expect(alternative).toMatchObject({
+      id: "alt-row",
+      pathGroupId: "group-200",
+      pathId: "path-a",
+      pathName: "Plan A",
+      pathRole: "alternative",
+    });
+  });
+
+  it("prefixes story ids and path groups without mutating source rows", () => {
+    const source = [{ id: "item", pathGroupId: "group" }];
+
+    expect(withStoryPrefix(source, "story")).toEqual([
+      { id: "story-item", pathGroupId: "story-group" },
+    ]);
+    expect(source).toEqual([{ id: "item", pathGroupId: "group" }]);
+  });
+});

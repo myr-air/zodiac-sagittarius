@@ -1,0 +1,77 @@
+import { tripFixture } from "@/src/trip/trip-fixtures";
+import type { ItineraryItem } from "@/src/trip/types";
+import {
+  itineraryFixtureDay,
+} from "@/src/features/itinerary/testing";
+
+export type ItineraryStoryPathItemRow = readonly [
+  id: string,
+  startTime: string,
+  durationMinutes: number,
+  sortOrder: number,
+  activity: string,
+  pathName: string | undefined,
+  pathId: string | undefined,
+  pathRole: ItineraryItem["pathRole"],
+];
+
+export function buildItineraryStoryItem(
+  sourceIndex: number,
+  patch: Partial<ItineraryItem>,
+): ItineraryItem {
+  return {
+    ...tripFixture.planItems[sourceIndex],
+    startTime: "08:00",
+    durationMinutes: 60,
+    sortOrder: 100,
+    activity: "",
+    day: itineraryFixtureDay,
+    ...patch,
+  } as ItineraryItem;
+}
+
+export function buildItineraryStoryPathItems(
+  rows: readonly ItineraryStoryPathItemRow[],
+  options: {
+    pathGroupId?: (row: ItineraryStoryPathItemRow) => string | undefined;
+    sourceIndex?: number;
+  } = {},
+): ItineraryItem[] {
+  const sourceIndex = options.sourceIndex ?? 0;
+  return rows.map((row) => {
+    const [
+      id,
+      startTime,
+      durationMinutes,
+      sortOrder,
+      activity,
+      pathName,
+      pathId,
+      pathRole,
+    ] = row;
+    return buildItineraryStoryItem(sourceIndex, {
+      id,
+      startTime,
+      durationMinutes,
+      sortOrder,
+      activity,
+      activityType: "experience",
+      place: `${pathName} checkpoint`,
+      pathGroupId: options.pathGroupId?.(row),
+      pathId,
+      pathName: pathId ? pathName : undefined,
+      pathRole,
+    });
+  });
+}
+
+export function withStoryPrefix<T extends { id: string; pathGroupId?: string }>(
+  items: T[],
+  prefix: string,
+): T[] {
+  return items.map((item) => ({
+    ...item,
+    id: `${prefix}-${item.id}`,
+    pathGroupId: item.pathGroupId ? `${prefix}-${item.pathGroupId}` : item.pathGroupId,
+  }));
+}

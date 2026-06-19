@@ -2,6 +2,11 @@ import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src
 import type { ItineraryItem } from "@/src/trip/types";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import {
+  buildItineraryStoryItem,
+  buildItineraryStoryPathItems,
+  withStoryPrefix,
+} from "./itinerary-story-item-builders";
 import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing";
 import {
   mainPathOption,
@@ -27,6 +32,7 @@ export type SmartItineraryStoryArgs = Parameters<typeof SmartItineraryTable>[0];
 const day = itineraryFixtureDay;
 export const itineraryStoryDay = day;
 export { pathNameMain, pathNamePlanA, pathNamePlanB, pathNamePlanC };
+export { withStoryPrefix };
 
 const noop = () => {};
 
@@ -96,31 +102,8 @@ export const buildOwnerStoryArgs = (
   ...overrides,
 });
 
-function toScoped<T extends { id: string; pathGroupId?: string }>(items: T[], namespace: string): T[] {
-  return items.map((item) => ({
-    ...item,
-    id: `${namespace}-${item.id}`,
-    pathGroupId: item.pathGroupId ? `${namespace}-${item.pathGroupId}` : item.pathGroupId,
-  }));
-}
-
-const buildBaseItem = (
-  sourceIndex: number,
-  patch: Partial<ItineraryItem>,
-): ItineraryItem => {
-  return {
-    ...tripFixture.planItems[sourceIndex],
-    startTime: "08:00",
-    durationMinutes: 60,
-    sortOrder: 100,
-    activity: "",
-    day,
-    ...patch,
-  } as ItineraryItem;
-};
-
 export const branchGraphItemsBase: ItineraryItem[] = [
-  buildBaseItem(0, {
+  buildItineraryStoryItem(0, {
     id: "graph-main",
     startTime: "08:00",
     durationMinutes: 45,
@@ -129,7 +112,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     pathGroupId: "path-group-morning",
     pathRole: "main",
   }),
-  buildBaseItem(1, {
+  buildItineraryStoryItem(1, {
     id: "graph-rain",
     startTime: "08:20",
     durationMinutes: 80,
@@ -140,7 +123,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     pathName: "Rain plan",
     pathRole: "alternative",
   }),
-  buildBaseItem(2, {
+  buildItineraryStoryItem(2, {
     id: "graph-late",
     startTime: "09:45",
     durationMinutes: 45,
@@ -151,7 +134,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
     pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
-  buildBaseItem(3, {
+  buildItineraryStoryItem(3, {
     id: "graph-lunch",
     startTime: "11:15",
     durationMinutes: 60,
@@ -162,7 +145,7 @@ export const branchGraphItemsBase: ItineraryItem[] = [
 ];
 
 export const planAExampleItemsBase: ItineraryItem[] = [
-  buildBaseItem(0, {
+  buildItineraryStoryItem(0, {
     id: "plan-a-main-breakfast",
     startTime: "08:00",
     durationMinutes: 75,
@@ -171,7 +154,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     place: `${pathNameMain} checkpoint`,
     pathRole: "main",
   }),
-  buildBaseItem(1, {
+  buildItineraryStoryItem(1, {
     id: "plan-a-museum",
     startTime: "08:15",
     durationMinutes: 60,
@@ -182,7 +165,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
-  buildBaseItem(2, {
+  buildItineraryStoryItem(2, {
     id: "plan-a-cafe",
     startTime: "09:45",
     durationMinutes: 45,
@@ -193,7 +176,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
     pathName: pathNamePlanA,
     pathRole: "alternative",
   }),
-  buildBaseItem(3, {
+  buildItineraryStoryItem(3, {
     id: "plan-a-main-lunch",
     startTime: "11:00",
     durationMinutes: 60,
@@ -204,7 +187,7 @@ export const planAExampleItemsBase: ItineraryItem[] = [
   }),
 ];
 
-export const planABAlternativeItemsBase: ItineraryItem[] = [
+export const planABAlternativeItemsBase: ItineraryItem[] = buildItineraryStoryPathItems([
   [
     "plan-ab-main-breakfast",
     "08:00",
@@ -245,21 +228,9 @@ export const planABAlternativeItemsBase: ItineraryItem[] = [
     undefined,
     "main",
   ],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) =>
-  buildBaseItem(0, {
-    id: id as string,
-    startTime: startTime as string,
-    durationMinutes: durationMinutes as number,
-    sortOrder: sortOrder as number,
-    activity: activity as string,
-    activityType: "experience",
-    place: `${pathName} checkpoint`,
-    pathGroupId: "plan-ab-clean-branch",
-    pathId: pathId as string | undefined,
-    pathName: pathId ? (pathName as string) : undefined,
-    pathRole: pathRole as ItineraryItem["pathRole"],
-  }),
-);
+], {
+  pathGroupId: () => "plan-ab-clean-branch",
+});
 
 export const requestedPlanExampleItemsBase: ItineraryItem[] = [
   ["requested-main-0800", "08:00", 60, 100, `${pathNameMain} 08:00 block`, undefined, undefined, "main"],
@@ -271,7 +242,7 @@ export const requestedPlanExampleItemsBase: ItineraryItem[] = [
   ["requested-plan-a-1230", "12:30", 60, 510, `${pathNamePlanA} 12:30 branch`, pathIdStoryPlanA, pathNamePlanA, "alternative"],
   ["requested-main-1600", "16:00", 60, 600, `${pathNameMain} 16:00 block`, undefined, undefined, "main"],
 ].map(([id, startTime, durationMinutes, sortOrder, activity, pathId, pathName, pathRole]) =>
-  buildBaseItem(0, {
+  buildItineraryStoryItem(0, {
     id: id as string,
     startTime: startTime as string,
     durationMinutes: durationMinutes as number,
@@ -285,7 +256,7 @@ export const requestedPlanExampleItemsBase: ItineraryItem[] = [
   }),
 );
 
-export const stressPathItemsBase: ItineraryItem[] = [
+export const stressPathItemsBase: ItineraryItem[] = buildItineraryStoryPathItems([
   ["stress-0800-main", "08:00", 75, 100, "Harbour breakfast", pathNameMain, undefined, "main"],
   ["stress-0805-a", "08:05", 90, 110, "Museum sprint", pathNamePlanA, pathIdStoryPlanA, "alternative"],
   ["stress-0810-b", "08:10", 70, 120, "Market photo walk", pathNamePlanB, pathIdStoryPlanB, "alternative"],
@@ -302,24 +273,12 @@ export const stressPathItemsBase: ItineraryItem[] = [
   ["stress-1505-a", "15:05", 60, 410, "Cafe work block", pathNamePlanA, pathIdStoryPlanA, "alternative"],
   ["stress-1510-b", "15:10", 45, 420, "Souvenir window", pathNamePlanB, pathIdStoryPlanB, "alternative"],
   ["stress-1515-c", "15:15", 55, 430, "Quiet park break", pathNamePlanC, pathIdStoryPlanC, "alternative"],
-].map(([id, startTime, durationMinutes, sortOrder, activity, pathName, pathId, pathRole]) =>
-  buildBaseItem(0, {
-    id: id as string,
-    startTime: startTime as string,
-    durationMinutes: durationMinutes as number,
-    sortOrder: sortOrder as number,
-    activity: activity as string,
-    activityType: "experience",
-    place: `${pathName} checkpoint`,
-    pathGroupId: `stress-group-${Math.floor((sortOrder as number) / 100)}`,
-    pathId: pathId as string | undefined,
-    pathName: pathId ? (pathName as string) : undefined,
-    pathRole: pathRole as ItineraryItem["pathRole"],
-  }),
-);
+], {
+  pathGroupId: (row) => `stress-group-${Math.floor(row[3] / 100)}`,
+});
 
 export const windowOnlyDurationItemBase = [
-  buildBaseItem(0, {
+  buildItineraryStoryItem(0, {
     id: "window-only-duration",
     day,
     startTime: "09:00",
@@ -332,10 +291,6 @@ export const windowOnlyDurationItemBase = [
     pathRole: "main",
   }),
 ];
-
-export function withStoryPrefix<T extends { id: string; pathGroupId?: string }>(items: T[], prefix: string): T[] {
-  return toScoped(items, prefix);
-}
 
 export const denseTripFixture = buildDenseTripFixture();
 export const emptyTripFixture = buildEmptyTripFixture();

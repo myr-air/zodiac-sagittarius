@@ -243,4 +243,15 @@ describe("Storybook template catalog", () => {
       expect(line).toContain("accessMode:");
     });
   });
+
+  it("keeps itinerary story item builders separate from scenario fixtures", () => {
+    const storyFixtures = readFileSync(join("src", "features", "itinerary", "stories", "itinerary-story-fixtures.ts"), "utf8");
+    const storyItemBuilders = readFileSync(join("src", "features", "itinerary", "stories", "itinerary-story-item-builders.ts"), "utf8");
+
+    expect(storyFixtures).toContain("./itinerary-story-item-builders");
+    expect(storyFixtures).not.toContain("function buildItineraryStoryItem");
+    expect(storyItemBuilders).toContain("export function buildItineraryStoryItem");
+    expect(storyItemBuilders).toContain("export function buildItineraryStoryPathItems");
+    expect(storyItemBuilders).toContain("export function withStoryPrefix");
+  });
 });
