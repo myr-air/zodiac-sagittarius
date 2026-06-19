@@ -167,6 +167,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/SmartItineraryTable.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table.styles.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
@@ -331,6 +334,22 @@ describe("Sagittarius project scaffold", () => {
     expect(portalTripWizard).not.toContain("function regenerateCredentials");
     expect(portalTripWizardModel).toContain("export function usePortalTripWizardModel");
     expect(portalTripWizardModel).toContain("function regenerateCredentials");
+  });
+
+  it("keeps ActivityCell split into render, model, meta, and typed props", () => {
+    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
+    const activityCellMeta = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"), "utf8");
+    const activityCellModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"), "utf8");
+    const activityCellTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"), "utf8");
+
+    expect(activityCell).toContain("./activity-cell/use-activity-cell-model");
+    expect(activityCell).toContain("./activity-cell/ActivityCellMeta");
+    expect(activityCell).toContain("ActivityCellProps");
+    expect(activityCell).not.toContain("useState");
+    expect(activityCell).not.toContain("itemStatusLabel");
+    expect(activityCellMeta).toContain("export function ActivityCellMeta");
+    expect(activityCellModel).toContain("export function useActivityCellModel");
+    expect(activityCellTypes).toContain("export interface ActivityCellProps");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {

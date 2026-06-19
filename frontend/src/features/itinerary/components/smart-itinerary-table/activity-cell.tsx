@@ -1,36 +1,13 @@
-import { useState } from "react";
-import type {
-  BookingDoc,
-  ItineraryItem,
-} from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
-import type { Locale } from "@/src/i18n/types";
-import type { Messages } from "@/src/i18n/messages";
-import type { InlineItineraryItemPatch } from "../../lib";
-import type {
-  ItineraryBookingTemplate,
-  ItineraryBookingTicketInput,
-} from "@/src/trip/booking-docs";
-import { itemStatusLabel } from "./smart-itinerary-table-utils";
-import { formatDuration } from "../../lib";
 import { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
 import { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
 import { InlineActivityField } from "./activity-cell/InlineActivityField";
-import { ItineraryBookingButton } from "./activity-cell/BookingComponents";
 import { ActivityTimeButton } from "./activity-cell/TimeComponents";
 import { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
 import { ActivityActionButtons } from "./activity-cell/ActivityActionButtons";
 import {
-  activityActionClusterClassName,
-  activityActionsClassName,
   activityBodyClassName,
   activityCellClassName,
   activityMainLineClassName,
-  activityMetaClassName,
-  activityMetaStatusClassName,
-  activityMobileLineClassName,
-  activityMobileStatusClassName,
-  activityPillClassName,
   activitySentenceClassName,
   activityTimeRailClassName,
   activityTitleInputClassName,
@@ -40,7 +17,10 @@ import {
   activityTabletActionLayerClassName,
 } from "./smart-itinerary-table.styles";
 import { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
-import { ActivityMoreActionsButton, ActivitySubActivityToggle } from "./activity-cell/ActivityCellControls";
+import { ActivitySubActivityToggle } from "./activity-cell/ActivityCellControls";
+import { ActivityCellMeta } from "./activity-cell/ActivityCellMeta";
+import type { ActivityCellProps } from "./activity-cell/activity-cell.types";
+import { useActivityCellModel } from "./activity-cell/use-activity-cell-model";
 
 export function ActivityCell({
   canEdit,
@@ -61,73 +41,38 @@ export function ActivityCell({
   onOpenItemDetails,
   onSelectItem,
   onUpdateItemInline,
-}: {
-  canEdit: boolean;
-  item: ItineraryItem;
-  itineraryLabels: Messages["itinerary"];
-  locale: Locale;
-  selected: boolean;
-  subItems: ItineraryItem[];
-  bookingDocs: BookingDoc[];
-  bookingLinkItems: ItineraryItem[];
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => void | Promise<void>;
-  onDeleteItem?: (itemId: string) => void;
-  onEditItem?: (itemId: string) => void;
-  onOpenItemDetails: (itemId: string) => void;
-  onSelectItem: (itemId: string) => void;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
-}) {
-  const editable = canEdit && Boolean(onUpdateItemInline);
-  const status = item.status ? itemStatusLabel(item.status, locale) : null;
-  const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
-  const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
-  const [actionsExpanded, setActionsExpanded] = useState(false);
-  const [noteTarget, setNoteTarget] = useState<ItineraryItem | null>(null);
-  const showSubActivityToggle =
-    Boolean(onAddSubActivity) || subItems.length > 0;
-  const actionMenuLabel =
-    locale === "th"
-      ? `จัดการกิจกรรม ${item.activity}`
-      : `Activity actions for ${item.activity}`;
-  function openNoteModal(target: ItineraryItem, compact = false) {
-    if (compact) {
-      setActionsExpanded(false);
-    }
-    setNoteTarget(target);
-  }
+}: ActivityCellProps) {
+  const {
+    actionMenuLabel,
+    actionsExpanded,
+    editable,
+    noteTarget,
+    openNoteModal,
+    openSubActivityModal,
+    setActionsExpanded,
+    setNoteTarget,
+    setSubActivityModalOpen,
+    showSubActivityToggle,
+    status,
+    subActivitiesExpanded,
+    subActivityModalOpen,
+    toggleSubActivities,
+  } = useActivityCellModel({
+    canEdit,
+    item,
+    locale,
+    onAddSubActivity,
+    onUpdateItemInline,
+    subItems,
+  });
 
   const renderSubActivityButton = (compact = false) =>
     showSubActivityToggle ? (
       <ActivitySubActivityToggle
         activity={item.activity}
         expanded={subActivitiesExpanded}
-        onOpenCompact={() => {
-          if (compact) {
-            setActionsExpanded(false);
-          }
-          setSubActivityModalOpen(true);
-        }}
-        onToggleExpanded={() => {
-          if (compact) {
-            setActionsExpanded(false);
-          }
-          setSubActivitiesExpanded((current) => !current);
-        }}
+        onOpenCompact={() => openSubActivityModal(compact)}
+        onToggleExpanded={() => toggleSubActivities(compact)}
       />
     ) : null;
   const renderActivityActions = (compact = false) => (
@@ -208,64 +153,22 @@ export function ActivityCell({
           itineraryLabels={itineraryLabels}
           onUpdateItemInline={onUpdateItemInline}
         />
-        <div className={activityMobileLineClassName}>
-          {status ? <span className={activityMobileStatusClassName}>{status}</span> : null}
-          <ItineraryBookingButton
-            item={item}
-            itineraryLabels={itineraryLabels}
-            locale={locale}
-            onAddBookingForItem={onAddBookingForItem}
-            onSaveBookingForItem={onSaveBookingForItem}
-            onUnlinkBookingForItem={onUnlinkBookingForItem}
-            bookingDocs={bookingDocs}
-            bookingLinkItems={bookingLinkItems}
-          />
-          <span className={activityActionClusterClassName}>
-            {renderSubActivityButton(true)}
-            <ActivityMoreActionsButton
-              expanded={actionsExpanded}
-              label={actionMenuLabel}
-              onToggle={() => setActionsExpanded((current) => !current)}
-            />
-          </span>
-        </div>
-        <div className={activityMetaClassName}>
-          <div className={activityMetaStatusClassName}>
-            {status ? <span className={activityPillClassName}>{status}</span> : null}
-            <ItineraryBookingButton
-              item={item}
-              itineraryLabels={itineraryLabels}
-              locale={locale}
-              onAddBookingForItem={onAddBookingForItem}
-              onSaveBookingForItem={onSaveBookingForItem}
-              onUnlinkBookingForItem={onUnlinkBookingForItem}
-              bookingDocs={bookingDocs}
-              bookingLinkItems={bookingLinkItems}
-            />
-            {item.durationMinutes ? (
-              <span className={activityPillClassName}>
-                <Icon name="clock" className="size-3.5" />
-                {formatDuration(item.durationMinutes, locale)}
-              </span>
-            ) : null}
-            {item.transportation ? (
-              <span className="min-w-0 truncate">
-                {item.transportation}
-              </span>
-            ) : null}
-          </div>
-          <div className={activityActionClusterClassName}>
-            <span className={activityActionsClassName}>
-              {renderActivityActions()}
-            </span>
-            {renderSubActivityButton()}
-            <ActivityMoreActionsButton
-              expanded={actionsExpanded}
-              label={actionMenuLabel}
-              onToggle={() => setActionsExpanded((current) => !current)}
-            />
-          </div>
-        </div>
+        <ActivityCellMeta
+          actionMenuLabel={actionMenuLabel}
+          actionsExpanded={actionsExpanded}
+          bookingDocs={bookingDocs}
+          bookingLinkItems={bookingLinkItems}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          onAddBookingForItem={onAddBookingForItem}
+          onSaveBookingForItem={onSaveBookingForItem}
+          onToggleActions={() => setActionsExpanded((current) => !current)}
+          onUnlinkBookingForItem={onUnlinkBookingForItem}
+          renderActivityActions={renderActivityActions}
+          renderSubActivityButton={renderSubActivityButton}
+          status={status}
+        />
         {actionsExpanded ? (
           <div
             className={activityTabletActionLayerClassName}
