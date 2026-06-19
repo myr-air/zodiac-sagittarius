@@ -36,7 +36,11 @@ import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import {
+  type PlanningView,
+  workspaceViewShouldSyncBackendExpenseSummary,
+  workspaceViewSupportsContextRail,
+} from "@/src/trip/workspace/planning-view";
 import {
   initialSelectedTripPlanId,
   rememberSelectedTripPlanId,
@@ -277,12 +281,9 @@ export function SagittariusApp({
     sessionMember: Boolean(sessionMember),
     sessionRestored,
   });
-  const supportsContextRail =
-    currentView === "overview" ||
-    currentView === "itinerary" ||
-    currentView === "timeline";
+  const supportsContextRail = workspaceViewSupportsContextRail(currentView);
   const shouldSyncBackendExpenseSummary =
-    currentView === "expenses" || supportsContextRail;
+    workspaceViewShouldSyncBackendExpenseSummary(currentView);
   const hasSelectedBackendExpenseTripPlan = Boolean(
     selectedTripPlanId && tripHasPlan(trip, selectedTripPlanId),
   );
