@@ -1,6 +1,7 @@
 import type { TripCity, TripParticipantSession, TripRole } from "@/src/trip/types";
 import type { TripSummaryResponse } from "@/src/trip/api-client";
-import { createTripApiRequester } from "@/src/trip/api-client-transport";
+import { createJsonApiRequester } from "@/src/shared/api/json-api-requester";
+import { TripApiError } from "@/src/trip/api-error";
 import { accountApiRoutes } from "./api-routes";
 
 export type AccountSessionKind = "temporary" | "trusted";
@@ -223,9 +224,10 @@ export interface AccountApiClient {
 }
 
 export function createAccountApiClient(options: AccountApiClientOptions = {}): AccountApiClient {
-  const request = createTripApiRequester({
+  const request = createJsonApiRequester({
     baseUrl: options.baseUrl ?? "",
     fetcher: options.fetchImpl,
+    createError: (input) => new TripApiError(input),
   });
 
   function authHeaders(sessionToken: string) {
