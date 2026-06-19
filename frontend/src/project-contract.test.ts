@@ -183,6 +183,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table.styles.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts"))).toBe(true);
@@ -393,6 +394,19 @@ describe("Sagittarius project scaffold", () => {
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
     expect(types).toContain("export interface ActivityTimeButtonProps");
+  });
+
+  it("keeps activity-cell styles split from table-level styles", () => {
+    const tableStyles = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"), "utf8");
+    const activityCellStyles = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts"), "utf8");
+
+    expect(tableStyles).toContain("./activity-cell/activity-cell.styles");
+    expect(tableStyles).not.toContain("const activityCellClassName");
+    expect(tableStyles).not.toContain("const timeEditModalClassName");
+    expect(tableStyles).not.toContain("const ticketModalClassName");
+    expect(activityCellStyles).toContain("export const activityCellClassName");
+    expect(activityCellStyles).toContain("export const timeEditModalClassName");
+    expect(activityCellStyles).toContain("export const ticketModalClassName");
   });
 
   it("keeps sub-activity components split behind a compatibility barrel", () => {
