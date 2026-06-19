@@ -34,6 +34,29 @@ describe("booking doc matching", () => {
         visibility: "shared",
       }),
     ).toBe(duplicate);
+
+    expect(
+      findDuplicateBookingDoc([duplicate], {
+        confirmationCode: null,
+        currency: null,
+        endsAt: "2026-06-19T12:00+08:00",
+        externalLinks: [],
+        noteIds: [],
+        ownerMemberId: null,
+        priceAmount: null,
+        providerName: null,
+        relatedExpenseIds: [],
+        relatedItineraryItemIds: ["item-flight"],
+        relatedTaskIds: [],
+        startsAt: "2026-06-19T09:00+08:00",
+        status: "draft",
+        timezone: "Asia/Hong_Kong",
+        title: "later flight ticket",
+        travelerIds: ["member-owner"],
+        type: "flight",
+        visibility: "shared",
+      }),
+    ).toBeNull();
   });
 });
 
