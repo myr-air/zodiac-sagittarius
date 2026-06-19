@@ -52,6 +52,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/sagittarius-app.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceRolePreview.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks"))).toBe(true);
@@ -337,6 +338,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"),
       "utf8",
     );
+    const workspaceMainShell = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx"),
+      "utf8",
+    );
     const workspaceFacade = readFileSync(
       join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"),
       "utf8",
@@ -474,16 +479,22 @@ describe("Sagittarius project scaffold", () => {
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
     const sagittariusApp = sagaCore;
-    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceFrame");
-    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceRail");
-    expect(sagaCore).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(sagaCore).toContain("WorkspaceMainShell");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceFrame");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceRail");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(workspaceMainShell).toContain("export function WorkspaceMainShell");
+    expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceFrame");
+    expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceRail");
+    expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(sagaCore).toContain("WorkspaceAccessBoundary");
     expect(sagaCore).not.toContain("TripAccessLoadingFrame");
     expect(sagaCore).not.toContain("TripWorkspaceAccessPanel");
     expect(sagittariusAccessGate).toContain("export function WorkspaceAccessBoundary");
     expect(sagittariusAccessGate).toContain("TripAccessLoadingFrame");
     expect(sagittariusAccessGate).toContain("TripWorkspaceAccessPanel");
-    expect(sagaCore).toContain("./WorkspaceDialogs");
+    expect(sagaCore).not.toContain("./WorkspaceDialogs");
+    expect(workspaceMainShell).toContain("./WorkspaceDialogs");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -776,7 +787,8 @@ describe("Sagittarius project scaffold", () => {
     expect(sagittariusApp).not.toContain("function TripAccessLoadingFrame");
     expect(sagittariusApp).not.toContain("function WorkspaceToast");
     expect(sagittariusApp).not.toContain("Role preview");
-    expect(sagittariusApp).toContain("WorkspaceRolePreview");
+    expect(sagittariusApp).not.toContain("WorkspaceRolePreview");
+    expect(workspaceMainShell).toContain("WorkspaceRolePreview");
     expect(sagittariusApp).not.toContain("workspaceToastDismissClassName");
     expect(sagittariusApp).not.toContain("portalLoadingCardClassName");
     expect(sagittariusApp).not.toContain("function buildMapLink");
