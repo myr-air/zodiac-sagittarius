@@ -404,6 +404,7 @@ describe("Sagittarius project scaffold", () => {
     expect(memberSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
+    expect(accountTripWizardSupport).not.toContain("function buildInviteEmailHref");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");

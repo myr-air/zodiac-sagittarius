@@ -4,7 +4,7 @@ import type {
 } from "@/src/account/api-client";
 import type { TripCity } from "@/src/trip/types";
 
-export { buildInviteLink } from "@/src/routes/invite-links";
+export { buildInviteEmailHref, buildInviteLink } from "@/src/routes/invite-links";
 
 export type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
 
@@ -347,12 +347,6 @@ export function destinationRouteCode(destinations: string[]): string {
 
 export function generateJoinPassword(): string {
   return `${randomToken(4)}-${randomToken(4)}`;
-}
-
-export function buildInviteEmailHref(tripName: string, inviteLink: string): string {
-  const subject = `Join ${tripName}`;
-  const body = `Join this trip in Joii: ${inviteLink}`;
-  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export function randomToken(length: number): string {
