@@ -109,6 +109,11 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/currencies.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/currency-catalog.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/exchange-rates.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/expense-drafts.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/expense-draft-inputs.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/expense-create-drafts.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/expense-update-drafts.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/expense-local.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-time.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-api-requests.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
