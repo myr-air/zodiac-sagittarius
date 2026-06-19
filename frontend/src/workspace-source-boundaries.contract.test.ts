@@ -37,6 +37,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
+    const backendExpenseSummaryHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts"),
+      "utf8",
+    );
     const memberContextHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts"),
       "utf8",
@@ -391,6 +395,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("isLocalParticipantSession");
     expect(memberContextHook).toContain("findSessionMember");
     expect(memberContextHook).toContain("isLocalParticipantSession");
+    expect(sagaCore).toContain("useWorkspaceBackendExpenseSummary");
+    expect(sagaCore).not.toContain("useBackendExpenseSummary");
+    expect(sagaCore).not.toContain("workspaceViewShouldSyncBackendExpenseSummary");
+    expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
+    expect(backendExpenseSummaryHook).toContain("workspaceViewShouldSyncBackendExpenseSummary");
+    expect(backendExpenseSummaryHook).toContain("clearParticipantSession");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanState");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanSync");
     expect(sagaCore).not.toContain("queueMicrotask");
@@ -552,7 +562,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(tripWizardFormSections).not.toContain("function TripWizardInviteStep");
     expect(tripWizardFormSections).not.toContain("function TripWizardReviewSummary");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-backend-expense-summary");
+    expect(backendExpenseSummaryHook).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
     expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");

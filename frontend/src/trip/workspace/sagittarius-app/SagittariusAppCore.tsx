@@ -18,9 +18,6 @@ import {
   publicSagittariusApiBaseUrl,
 } from "@/src/api/sagittarius-api-clients";
 import {
-  clearParticipantSession,
-} from "@/src/trip/participant-session-storage";
-import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
 import {
@@ -32,17 +29,14 @@ import {
 } from "@/src/trip/place-resolution";
 import {
   type PlanningView,
-  workspaceViewShouldSyncBackendExpenseSummary,
   workspaceViewSupportsContextRail,
 } from "@/src/trip/workspace/planning-view";
 import {
   initialSelectedTripPlanId,
   rememberSelectedTripPlanId,
   resolveSelectedTripPlanId,
-  tripHasPlan,
 } from "@/src/trip/workspace/selected-trip-plan";
 import { resolveSelectedWorkspaceItem } from "@/src/trip/workspace/selected-itinerary-item";
-import { useBackendExpenseSummary } from "@/src/trip/workspace/use-backend-expense-summary";
 import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
@@ -54,6 +48,7 @@ import {
   useWorkspaceBookingCommands,
   useWorkspaceAccessGate,
   useWorkspaceApiCockpitEffects,
+  useWorkspaceBackendExpenseSummary,
   useWorkspaceItineraryImport,
   useWorkspaceItineraryUiActions,
   useWorkspaceParticipantSessionActions,
@@ -272,32 +267,22 @@ export function SagittariusApp({
     sessionRestored,
   });
   const supportsContextRail = workspaceViewSupportsContextRail(currentView);
-  const shouldSyncBackendExpenseSummary =
-    workspaceViewShouldSyncBackendExpenseSummary(currentView);
-  const hasSelectedBackendExpenseTripPlan = Boolean(
-    selectedTripPlanId && tripHasPlan(trip, selectedTripPlanId),
-  );
-  const handleBackendExpenseAuthFailure = useCallback(() => {
-    clearParticipantSession();
-    setParticipantSession(null);
-    setAccessError("unauthenticated");
-  }, [setAccessError, setParticipantSession]);
   const {
     backendExpenseSummary,
     refreshBackendExpenseSummary,
     resetBackendExpenseSummary,
     setBackendExpenseSummary,
-  } = useBackendExpenseSummary({
+  } = useWorkspaceBackendExpenseSummary({
     apiClient: resolvedApiClient,
     canViewExpenses,
-    enabled: shouldSyncBackendExpenseSummary,
-    hasSelectedTripPlan: hasSelectedBackendExpenseTripPlan,
+    currentView,
     isApiMode,
     isCockpitLoaded,
-    onUnauthenticated: handleBackendExpenseAuthFailure,
     participantSession,
     selectedTripPlanId,
-    tripId: trip.id,
+    setAccessError,
+    setParticipantSession,
+    trip,
   });
   const {
     createPhotoAlbum,
