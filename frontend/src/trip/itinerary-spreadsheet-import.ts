@@ -19,7 +19,7 @@ import type {
   ItineraryExportDocument,
   ItineraryExportItem,
   ItineraryExportRecords,
-} from "./itinerary-import-export";
+} from "./itinerary-import-export-types";
 
 type SpreadsheetColumnKey =
   | "day"
