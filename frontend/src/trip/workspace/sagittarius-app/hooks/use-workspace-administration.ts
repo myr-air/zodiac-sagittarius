@@ -1,35 +1,13 @@
-import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
-import {
-  appendTripParticipant,
-  buildCreateMemberRequest,
-  buildPatchMemberAccessStatusRequest,
-  buildPatchMemberPasswordRequest,
-  buildPatchMemberRoleRequest,
-  createTripParticipant,
-  resetTripParticipantClaim,
-  replaceTripParticipant,
-  setTripParticipantAccessStatus,
-  setTripParticipantPassword,
-  updateTripParticipantRole,
-} from "@/src/trip/auth";
-import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
-import {
-  applyTripSettingsToTrip,
-  buildShiftedItineraryItemDayRequests,
-  buildPatchTripSettingsRequest,
-  mergePatchedTripSettings,
-} from "@/src/trip/trip-settings";
-import { nextClientMutationId } from "@/src/trip/local-ids";
 import type {
   Trip,
-  TripMemberAccessStatus,
   TripParticipantSession,
-  TripRole,
 } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings";
+import { useWorkspaceAccountClaimActions } from "./use-workspace-account-claim-actions";
+import { useWorkspaceMemberAdminActions } from "./use-workspace-member-admin-actions";
+import { useWorkspaceTripSettingsActions } from "./use-workspace-trip-settings-actions";
 
 interface UseWorkspaceAdministrationOptions {
   accountClient: AccountApiClient;
@@ -67,292 +45,45 @@ export function useWorkspaceAdministration({
   replaceCockpitFromApi,
   updateApiTrip,
 }: UseWorkspaceAdministrationOptions) {
-  const claimCurrentMemberToAccount = useCallback(async () => {
-    if (!accountSession || !participantSession || !resolvedApiClient) return;
-    setAccountClaimState({ status: "saving", message: null });
-    try {
-      await accountClient.claimMember(
-        accountSession.sessionToken,
-        participantSession.tripId,
-        participantSession.memberId,
-        participantSession.sessionToken,
-      );
-      const cockpit = await resolvedApiClient.loadTrip(
-        participantSession.tripId,
-        participantSession.sessionToken,
-      );
-      replaceCockpitFromApi(cockpit);
-      setAccountClaimState({
-        status: "idle",
-        message: "ผูก temp identity เข้ากับ account แล้ว",
-      });
-    } catch (caught) {
-      setAccountClaimState({
-        status: "idle",
-        message:
-          caught instanceof Error ? caught.message : "Claim account ไม่สำเร็จ",
-      });
-    }
-  }, [
+  const {
+    claimCurrentMemberToAccount,
+    transferOwnerToAccountMember,
+  } = useWorkspaceAccountClaimActions({
     accountClient,
     accountSession,
     participantSession,
     resolvedApiClient,
     replaceCockpitFromApi,
     setAccountClaimState,
-  ]);
+  });
 
-  const transferOwnerToAccountMember = useCallback(
-    async (targetMemberId: string) => {
-      if (!accountSession || !participantSession || !resolvedApiClient) return;
-      setAccountClaimState({ status: "saving", message: null });
-      try {
-        await accountClient.transferOwner(
-          accountSession.sessionToken,
-          participantSession.tripId,
-          targetMemberId,
-        );
-        const cockpit = await resolvedApiClient.loadTrip(
-          participantSession.tripId,
-          participantSession.sessionToken,
-        );
-        replaceCockpitFromApi(cockpit);
-        setAccountClaimState({
-          status: "idle",
-          message: "โอนสิทธิ owner แล้ว trip ยังมี owner 1 คนเสมอ",
-        });
-      } catch (caught) {
-        setAccountClaimState({
-          status: "idle",
-          message:
-            caught instanceof Error ? caught.message : "โอน owner ไม่สำเร็จ",
-        });
-      }
-    },
-    [
-      accountClient,
-      accountSession,
-      participantSession,
-      resolvedApiClient,
-      replaceCockpitFromApi,
-      setAccountClaimState,
-    ],
-  );
+  const {
+    changeMemberAccessStatus,
+    changeMemberPassword,
+    changeMemberRole,
+    createMember,
+    resetMemberClaim,
+    rotateJoinInviteToken,
+  } = useWorkspaceMemberAdminActions({
+    canManagePeople,
+    commitTrip,
+    currentMemberId,
+    isApiMode,
+    participantSession,
+    resolvedApiClient,
+    setJoinInviteToken,
+    trip,
+  });
 
-  const resetMemberClaim = useCallback(async (memberId: string) => {
-    if (!canManagePeople) return;
-    if (isApiMode && resolvedApiClient && participantSession) {
-      const member = await resolvedApiClient.resetMemberClaim(
-        trip.id,
-        memberId,
-        participantSession.sessionToken,
-      );
-      commitTrip((current) => replaceTripParticipant(current, member));
-      return;
-    }
-    commitTrip((current) => resetTripParticipantClaim(current, memberId));
-  }, [
+  const saveTripSettings = useWorkspaceTripSettingsActions({
     canManagePeople,
     commitTrip,
     isApiMode,
     participantSession,
     resolvedApiClient,
     trip,
-  ]);
-
-  const changeMemberRole = useCallback(
-    async (memberId: string, role: Exclude<TripRole, "owner">) => {
-      /* v8 ignore next */
-      if (!canManagePeople) return;
-      if (isApiMode && resolvedApiClient && participantSession) {
-        const member = await resolvedApiClient.patchMember(
-          trip.id,
-          memberId,
-          participantSession.sessionToken,
-          buildPatchMemberRoleRequest(role),
-        );
-        commitTrip((current) => replaceTripParticipant(current, member));
-        return;
-      }
-      commitTrip((current) => updateTripParticipantRole(current, memberId, role));
-    },
-    [
-      canManagePeople,
-      commitTrip,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      trip,
-    ],
-  );
-
-  const changeMemberAccessStatus = useCallback(
-    async (memberId: string, accessStatus: TripMemberAccessStatus) => {
-      /* v8 ignore next */
-      if (!canManagePeople) return;
-      if (isApiMode && resolvedApiClient && participantSession) {
-        const member = await resolvedApiClient.patchMember(
-          trip.id,
-          memberId,
-          participantSession.sessionToken,
-          buildPatchMemberAccessStatusRequest(accessStatus),
-        );
-        commitTrip((current) => replaceTripParticipant(current, member));
-        return;
-      }
-      commitTrip((current) =>
-        setTripParticipantAccessStatus(current, memberId, accessStatus),
-      );
-    },
-    [
-      canManagePeople,
-      commitTrip,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      trip,
-    ],
-  );
-
-  const changeMemberPassword = useCallback(
-    async (memberId: string, password: string) => {
-      /* v8 ignore next */
-      if (!canManagePeople || memberId !== currentMemberId) return;
-      if (isApiMode && resolvedApiClient && participantSession) {
-        const member = await resolvedApiClient.patchMember(
-          trip.id,
-          memberId,
-          participantSession.sessionToken,
-          buildPatchMemberPasswordRequest(password),
-        );
-        commitTrip((current) => replaceTripParticipant(current, member));
-        return;
-      }
-      commitTrip((current) =>
-        setTripParticipantPassword(current, memberId, password),
-      );
-    },
-    [
-      canManagePeople,
-      commitTrip,
-      currentMemberId,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      trip,
-    ],
-  );
-
-  const createMember = useCallback(
-    async (input: {
-      displayName: string;
-      role: Exclude<TripRole, "owner">;
-    }) => {
-      /* v8 ignore next */
-      if (!canManagePeople) return;
-      if (isApiMode && resolvedApiClient && participantSession) {
-        const member = await resolvedApiClient.createMember(
-          trip.id,
-          participantSession.sessionToken,
-          buildCreateMemberRequest(input, { memberCount: trip.members.length }),
-        );
-        commitTrip((current) => appendTripParticipant(current, member));
-        return;
-      }
-      commitTrip((current) => createTripParticipant(current, input));
-    },
-    [
-      canManagePeople,
-      commitTrip,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      trip,
-    ],
-  );
-
-  const rotateJoinInviteToken = useCallback(async () => {
-    if (
-      !canManagePeople ||
-      !isApiMode ||
-      !resolvedApiClient ||
-      !participantSession?.sessionToken
-    )
-      return;
-    const response = await resolvedApiClient.rotateJoinInviteToken?.(
-      trip.id,
-      participantSession.sessionToken,
-    );
-    if (!response) return;
-    setJoinInviteToken(response.token);
-  }, [
-    canManagePeople,
-    isApiMode,
-    participantSession,
-    resolvedApiClient,
-    setJoinInviteToken,
-    trip,
-  ]);
-
-  const saveTripSettings = useCallback(
-    async (values: TripSettingsFormValues) => {
-      if (!canManagePeople) return;
-      const nextCountries = deriveTripCountriesFromDestination(
-        values.destinationLabel,
-        trip.countries ?? [],
-      );
-
-      if (isApiMode && resolvedApiClient && participantSession) {
-        const patchedTrip = await resolvedApiClient.patchTrip(
-          trip.id,
-          participantSession.sessionToken,
-          buildPatchTripSettingsRequest(
-            { ...values, countries: nextCountries },
-            {
-              clientMutationId: nextClientMutationId("trip-settings"),
-              expectedVersion: trip.version ?? 0,
-            },
-          ),
-        );
-        const shiftedItemRequests = buildShiftedItineraryItemDayRequests(
-          trip.itineraryItems,
-          trip.startDate,
-          values.startDate,
-          nextClientMutationId,
-        );
-        const patchedItems = await Promise.all(
-          shiftedItemRequests.map(({ itemId, request }) =>
-            resolvedApiClient.patchItineraryItem(
-              trip.id,
-              itemId,
-              participantSession.sessionToken,
-              request,
-            ),
-          ),
-        );
-        const patchedItemsById = new Map(
-          patchedItems.map((item) => [item.id, item]),
-        );
-        updateApiTrip((current) =>
-          mergePatchedTripSettings(current, patchedTrip, patchedItemsById),
-        );
-        return;
-      }
-
-      commitTrip((current) =>
-        applyTripSettingsToTrip(current, { ...values, countries: nextCountries }),
-      );
-    },
-    [
-      canManagePeople,
-      commitTrip,
-      isApiMode,
-      participantSession,
-      resolvedApiClient,
-      trip,
-      updateApiTrip,
-    ],
-  );
+    updateApiTrip,
+  });
 
   return {
     changeMemberAccessStatus,
