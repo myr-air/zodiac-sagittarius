@@ -10,8 +10,8 @@ import type {
 import {
   type InitialTripState,
   useWorkspaceRecordState,
-} from "./use-workspace-record-state";
-import { useWorkspaceRecordActions } from "./use-workspace-record-actions";
+} from "./records/use-workspace-record-state";
+import { useWorkspaceRecordActions } from "./records/use-workspace-record-actions";
 
 interface UseWorkspaceRecordsParams {
   canCreateSuggestion: boolean;

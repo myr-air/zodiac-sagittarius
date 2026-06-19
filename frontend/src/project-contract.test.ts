@@ -58,8 +58,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-administration.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-state.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-record-actions.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-record-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-record-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-commands.ts"))).toBe(true);
