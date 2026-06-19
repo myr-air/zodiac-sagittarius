@@ -173,6 +173,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalSections.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx"))).toBe(true);
@@ -369,13 +370,20 @@ describe("Sagittarius project scaffold", () => {
   it("keeps itinerary ticket modal form state split from modal render", () => {
     const ticketModal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx"), "utf8");
     const ticketFooter = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"), "utf8");
+    const ticketSections = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalSections.tsx"), "utf8");
     const ticketModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"), "utf8");
 
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(ticketModal).toContain("./ItineraryTicketModalFooter");
+    expect(ticketModal).toContain("./ItineraryTicketModalSections");
     expect(ticketModal).not.toContain("useState");
     expect(ticketModal).not.toContain("buildTicketSubmitInput");
+    expect(ticketModal).not.toContain("formatBookingSummary");
+    expect(ticketModal).not.toContain("DateTimePickerField");
     expect(ticketFooter).toContain("export function ItineraryTicketModalFooter");
+    expect(ticketSections).toContain("export function TicketModeToggle");
+    expect(ticketSections).toContain("export function TicketFieldGrid");
+    expect(ticketSections).toContain("export function LinkedActivitiesPicker");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("buildTicketSubmitInput");
   });

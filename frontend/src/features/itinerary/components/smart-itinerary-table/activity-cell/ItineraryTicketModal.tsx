@@ -1,35 +1,29 @@
 import { createPortal } from "react-dom";
 
-import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
-import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 
 import {
-  formatBookingSummary,
   ticketModalCopy,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
-import { toggleId } from "@/src/features/itinerary/lib";
 import {
   subActivityModalCloseClassName,
-  ticketExistingGridClassName,
-  ticketExistingOptionClassName,
-  ticketFieldClassName,
-  ticketFieldGridClassName,
-  ticketLinkedItemsClassName,
-  ticketLinkedOptionClassName,
   ticketModalBackdropClassName,
   ticketModalBodyClassName,
   ticketModalClassName,
   ticketModalHeaderClassName,
   ticketModalTitleClassName,
-  ticketModeButtonClassName,
-  ticketModeToggleClassName,
 } from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
 import { ItineraryTicketModalFooter } from "./ItineraryTicketModalFooter";
+import {
+  ExistingTicketList,
+  LinkedActivitiesPicker,
+  TicketFieldGrid,
+  TicketModeToggle,
+} from "./ItineraryTicketModalSections";
 import { useItineraryTicketModalModel } from "./use-itinerary-ticket-modal-model";
 
 export function ItineraryTicketModal({
@@ -117,101 +111,44 @@ export function ItineraryTicketModal({
           </button>
         </header>
         <div className={ticketModalBodyClassName}>
-          <div className={ticketModeToggleClassName}>
-            <button
-              type="button"
-              className={ticketModeButtonClassName}
-              aria-pressed={mode === "new"}
-              onClick={selectNewTicketMode}
-            >
-              <Icon name="plus" /> {copy.newTicket}
-            </button>
-            <button
-              type="button"
-              className={ticketModeButtonClassName}
-              aria-pressed={mode === "existing"}
-              disabled={!existingCandidates.length}
-              onClick={selectExistingTicketMode}
-            >
-              <Icon name="ticket" /> {copy.useExisting}
-            </button>
-          </div>
+          <TicketModeToggle
+            copy={copy}
+            existingCandidatesCount={existingCandidates.length}
+            mode={mode}
+            onSelectExistingTicketMode={selectExistingTicketMode}
+            onSelectNewTicketMode={selectNewTicketMode}
+          />
           {mode === "existing" ? (
-            <div
-              className={ticketExistingGridClassName}
-              role="radiogroup"
-              aria-label={copy.existingTickets}
-            >
-              {existingCandidates.map((booking) => (
-                <label className={ticketExistingOptionClassName} key={booking.id}>
-                  <input
-                    type="radio"
-                    checked={selectedBookingId === booking.id}
-                    onChange={() => selectExistingTicket(booking)}
-                  />
-                  <span>
-                    <strong>{booking.title}</strong>
-                    <span>
-                      {formatBookingSummary(booking, bookingLinkItems)}
-                    </span>
-                  </span>
-                </label>
-              ))}
-              {!existingCandidates.length ? (
-                <p className="m-0 text-xs font-bold text-(--color-text-muted)">
-                  {copy.noExisting}
-                </p>
-              ) : null}
-            </div>
+            <ExistingTicketList
+              bookingLinkItems={bookingLinkItems}
+              copy={copy}
+              existingCandidates={existingCandidates}
+              selectedBookingId={selectedBookingId}
+              onSelectExistingTicket={selectExistingTicket}
+            />
           ) : null}
-          <div className={ticketFieldGridClassName}>
-            <label className={ticketFieldClassName}>
-              <span>{copy.ticketTitle}</span>
-              <input value={title} onChange={(event) => setTitle(event.target.value)} />
-            </label>
-            <label className={ticketFieldClassName}>
-              <span>{copy.provider}</span>
-              <input value={providerName} onChange={(event) => setProviderName(event.target.value)} />
-            </label>
-            <label className={ticketFieldClassName}>
-              <span>{copy.confirmation}</span>
-              <input value={confirmationCode} onChange={(event) => setConfirmationCode(event.target.value)} />
-            </label>
-            <label className={ticketFieldClassName}>
-              <span>{copy.startsAt}</span>
-              <DateTimePickerField value={startsAt} onChange={setStartsAt} />
-            </label>
-            <label className={ticketFieldClassName}>
-              <span>{copy.endsAt}</span>
-              <DateTimePickerField value={endsAt} onChange={setEndsAt} />
-            </label>
-            <label className={cn(ticketFieldClassName, "col-span-full")}>
-              <span>{copy.notes}</span>
-              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
-            </label>
-          </div>
-          <section className="grid gap-1.5" aria-label={copy.linkedActivities}>
-            <strong className="text-xs font-extrabold text-(--color-text-muted)">
-              {copy.linkedActivities}
-            </strong>
-            <div className={ticketLinkedItemsClassName}>
-              {bookingLinkItems.map((candidate) => (
-                <label className={ticketLinkedOptionClassName} key={candidate.id}>
-                  <input
-                    type="checkbox"
-                    checked={relatedItineraryItemIds.includes(candidate.id)}
-                    disabled={candidate.id === item.id}
-                    onChange={() =>
-                      setRelatedItineraryItemIds((current: string[]) =>
-                        toggleId(current, candidate.id),
-                      )
-                    }
-                  />
-                  <span>{candidate.day} · {candidate.activity}</span>
-                </label>
-              ))}
-            </div>
-          </section>
+          <TicketFieldGrid
+            confirmationCode={confirmationCode}
+            copy={copy}
+            endsAt={endsAt}
+            notes={notes}
+            providerName={providerName}
+            startsAt={startsAt}
+            title={title}
+            onConfirmationCodeChange={setConfirmationCode}
+            onEndsAtChange={setEndsAt}
+            onNotesChange={setNotes}
+            onProviderNameChange={setProviderName}
+            onStartsAtChange={setStartsAt}
+            onTitleChange={setTitle}
+          />
+          <LinkedActivitiesPicker
+            bookingLinkItems={bookingLinkItems}
+            copy={copy}
+            itemId={item.id}
+            relatedItineraryItemIds={relatedItineraryItemIds}
+            onRelatedItineraryItemIdsChange={setRelatedItineraryItemIds}
+          />
         </div>
         <ItineraryTicketModalFooter
           copy={copy}
