@@ -1,5 +1,6 @@
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { Member, TripRole } from "@/src/trip/types";
+
+export { buildInviteLink } from "@/src/routes/invite-links";
 
 export type MemberRoleFilter = "all" | TripRole;
 export type MemberStatusFilter = "all" | "active" | "disabled" | "claimed" | "pending";
@@ -58,11 +59,4 @@ export function filterTripMembers({
 
     return matchesQuery && matchesRole && matchesStatus;
   });
-}
-
-export function buildInviteLink(joinId: string, token?: string | null): string {
-  /* v8 ignore next */
-  const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
-  if (token) return `${baseUrl}${appRoutes.join()}?token=${encodeURIComponent(token)}`;
-  return `${baseUrl}${appRoutes.join(joinId)}`;
 }

@@ -3,7 +3,8 @@ import type {
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
 import type { TripCity } from "@/src/trip/types";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+
+export { buildInviteLink } from "@/src/routes/invite-links";
 
 export type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
 
@@ -346,12 +347,6 @@ export function destinationRouteCode(destinations: string[]): string {
 
 export function generateJoinPassword(): string {
   return `${randomToken(4)}-${randomToken(4)}`;
-}
-
-export function buildInviteLink(joinCode: string, token?: string | null): string {
-  const basePath = token ? `${appRoutes.join()}?token=${encodeURIComponent(token)}` : appRoutes.join(joinCode);
-  if (typeof window === "undefined") return basePath;
-  return `${window.location.origin}${basePath}`;
 }
 
 export function buildInviteEmailHref(tripName: string, inviteLink: string): string {
