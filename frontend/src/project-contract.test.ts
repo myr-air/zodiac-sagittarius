@@ -117,6 +117,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"))).toBe(true);
@@ -418,7 +420,7 @@ describe("Sagittarius project scaffold", () => {
       "utf8",
     );
     const overviewPage = readFileSync(
-      join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"),
+      join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"),
       "utf8",
     );
     const overviewCockpit = readFileSync(

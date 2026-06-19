@@ -3,13 +3,13 @@ import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion,
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { type ItineraryView } from "@/src/trip/itinerary";
 import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
-import { HighlightBoard, OverviewHero } from "./overview";
-import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
+import { HighlightBoard, OverviewHero } from "./OverviewSections";
+import { type OverviewTaskListLabels } from "./OverviewTaskList";
 import {
   overviewGridClassName,
   overviewPageClassName,
   overviewUndoToastClassName,
-} from "./overview/overview-page.styles";
+} from "./overview-page.styles";
 import {
   buildDestinationVisual,
   buildHighlightItems,
@@ -20,10 +20,10 @@ import {
   photoBoardEmptyMessage,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
-import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./overview/OverviewRolePanels";
-import { OverviewCockpit } from "./overview/OverviewCockpit";
-import { OverviewTaskDialog } from "./overview/OverviewTaskDialog";
-import { OverviewWeatherBriefing } from "./overview/OverviewWeatherBriefing";
+import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
+import { OverviewCockpit } from "./OverviewCockpit";
+import { OverviewTaskDialog } from "./OverviewTaskDialog";
+import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
 
 interface OverviewPageProps {
   trip: Trip;
