@@ -4,7 +4,7 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type { Trip } from "@/src/trip/types";
 import type { TripCockpit } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
-import { useWorkspaceTripPlanMutationCommands } from "./use-workspace-trip-plan-mutation-commands";
+import { useWorkspaceTripPlanMutationCommands } from "./trip-plans/use-workspace-trip-plan-mutation-commands";
 
 interface UseWorkspaceTripPlanCommandsParams {
   canManageTripPlans: boolean;
