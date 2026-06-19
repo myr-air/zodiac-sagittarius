@@ -2,6 +2,7 @@ export { useWorkspaceAdministration } from "./use-workspace-administration";
 export { useWorkspaceExpenses } from "./use-workspace-expenses";
 export { useWorkspaceBookingCommands } from "./use-workspace-booking-commands";
 export { useWorkspaceAccessGate } from "./use-workspace-access-gate";
+export { useWorkspaceApiCockpitEffects } from "./use-workspace-api-cockpit-effects";
 export { useWorkspaceItineraryCommands } from "./use-workspace-itinerary-commands";
 export { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-actions";
 export { useWorkspaceItineraryImport } from "./use-workspace-itinerary-import";

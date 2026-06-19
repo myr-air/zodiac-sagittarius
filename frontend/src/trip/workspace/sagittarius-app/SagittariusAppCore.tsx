@@ -16,15 +16,12 @@ import {
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
-import { isAuthFailure } from "@/src/trip/api-errors";
 import {
   createAccountApiClient,
 } from "@/src/account/api-client";
 import {
   canTripRole,
-  buildUpdatePresenceRequest,
   findSessionMember,
-  replaceTripParticipant,
 } from "@/src/trip/auth";
 import {
   clearParticipantSession,
@@ -66,6 +63,7 @@ import {
   useWorkspacePhotoAlbums,
   useWorkspaceBookingCommands,
   useWorkspaceAccessGate,
+  useWorkspaceApiCockpitEffects,
   useWorkspaceItineraryImport,
   useWorkspaceItineraryUiActions,
   useWorkspaceParticipantSessionActions,
@@ -463,95 +461,21 @@ export function SagittariusApp({
     trip,
   });
 
-  useEffect(() => {
-    if (!isApiMode || !participantSession || !resolvedApiClient)
-      return undefined;
-    let cancelled = false;
-
-    void Promise.resolve().then(() => {
-      if (cancelled) return;
-      setIsCockpitLoaded(false);
-      resetDailyBriefings();
-    });
-
-    void resolvedApiClient
-      .loadTrip(participantSession.tripId, participantSession.sessionToken)
-      .then((cockpit) => {
-        if (cancelled) return;
-        const loadedTripPlanId = resolveSelectedTripPlanId(cockpit.trip);
-        replaceCockpitFromApi(cockpit);
-        setSelectedTripPlanId(loadedTripPlanId);
-        rememberSelectedTripPlanId(cockpit.trip, loadedTripPlanId);
-      })
-      .catch((caught) => {
-        if (cancelled) return;
-        if (isAuthFailure(caught)) {
-          clearParticipantSession();
-          setParticipantSession(null);
-          setAccessError("unauthenticated");
-          resetDailyBriefings();
-          setIsCockpitLoaded(false);
-          return;
-        }
-        setAccessError("trip load failed");
-        resetDailyBriefings();
-        setIsCockpitLoaded(false);
-      });
-
-    void resolvedApiClient
-      .listDailyBriefings(
-        participantSession.tripId,
-        participantSession.sessionToken,
-      )
-      .then((briefings) => {
-        if (cancelled) return;
-        replaceDailyBriefings(briefings);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        resetDailyBriefings();
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
+  useWorkspaceApiCockpitEffects({
     isApiMode,
     participantSession,
-    replaceDailyBriefings,
-    replaceWorkspaceRecords,
-    resetBackendExpenseSummary,
-    resetDailyBriefings,
+    rememberSelectedTripPlanId,
     replaceCockpitFromApi,
+    replaceDailyBriefings,
+    resetDailyBriefings,
     resolvedApiClient,
+    resolveSelectedTripPlanId,
     setAccessError,
+    setIsCockpitLoaded,
     setParticipantSession,
-  ]);
-
-  useEffect(() => {
-    if (!isApiMode || !participantSession || !resolvedApiClient)
-      return undefined;
-    let cancelled = false;
-
-    void Promise.resolve(
-      resolvedApiClient.updatePresence(
-        participantSession.tripId,
-        participantSession.sessionToken,
-        buildUpdatePresenceRequest("online", {
-          clientMutationId: nextClientMutationId("presence-online"),
-        }),
-      ),
-    )
-      .then((member) => {
-        if (cancelled || !member) return;
-        updateApiTrip((current) => replaceTripParticipant(current, member));
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isApiMode, participantSession, resolvedApiClient, updateApiTrip]);
+    setSelectedTripPlanId,
+    updateApiTrip,
+  });
 
   const navigateWorkspaceView = useCallback(
     (view: PlanningView, href: string) => {
