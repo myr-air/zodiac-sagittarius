@@ -89,6 +89,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/routes/invite-links.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
@@ -404,11 +405,16 @@ describe("Sagittarius project scaffold", () => {
     expect(memberSupport).toContain("@/src/routes/invite-links");
     expect(memberSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
+    expect(accountTripWizardSupport).toContain("./account-trip-destinations");
     expect(accountTripWizardSupport).toContain("./account-trip-dates");
     expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).not.toContain("function buildInviteEmailHref");
     expect(accountTripWizardSupport).not.toContain("function routeCalendarDays");
     expect(accountTripWizardSupport).not.toContain("function tripNightCount");
+    expect(accountTripWizardSupport).not.toContain("const tripCountryOptions");
+    expect(accountTripWizardSupport).not.toContain("const tripCityOptions");
+    expect(accountTripWizardSupport).not.toContain("function tripDestinationCards");
+    expect(accountTripWizardSupport).not.toContain("function destinationRouteCode");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
