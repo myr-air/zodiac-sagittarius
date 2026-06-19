@@ -7,6 +7,7 @@ import {
   bookingDraftTitleForItineraryItem,
   bookingTypeForBookingTemplate,
   bookingTypeForItineraryItem,
+  findDuplicateBookingDoc,
   uniqueStringIds,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem, Member } from "@/src/trip/types";
@@ -24,6 +25,16 @@ interface BookingTicketInputContext {
   defaultTimezone?: string | null;
   existingBookingDoc?: BookingDoc | null;
   members: Pick<Member, "id">[];
+}
+
+interface ResolveItineraryBookingTicketCommandInputContext
+  extends Omit<BookingTicketInputContext, "existingBookingDoc"> {
+  bookingDocs: BookingDoc[];
+}
+
+interface ItineraryBookingTicketCommandInput {
+  bookingDocInput: BookingDocInputLike;
+  existingBookingDoc: BookingDoc | null;
 }
 
 export function buildItineraryBookingDraftInput({
@@ -103,5 +114,33 @@ export function buildItineraryBookingTicketDocInput(
     relatedExpenseIds: existingBookingDoc?.relatedExpenseIds ?? [],
     noteIds: existingBookingDoc?.noteIds ?? [],
     notes: input.notes,
+  };
+}
+
+export function resolveItineraryBookingTicketCommandInput(
+  input: ItineraryBookingTicketInputLike,
+  {
+    bookingDocs,
+    currentMemberId,
+    defaultTimezone,
+    members,
+  }: ResolveItineraryBookingTicketCommandInputContext,
+): ItineraryBookingTicketCommandInput {
+  const explicitBookingDoc = input.bookingDocId
+    ? bookingDocs.find((candidate) => candidate.id === input.bookingDocId) ??
+      null
+    : null;
+  const bookingDocInput = buildItineraryBookingTicketDocInput(input, {
+    currentMemberId,
+    defaultTimezone,
+    existingBookingDoc: explicitBookingDoc,
+    members,
+  });
+
+  return {
+    bookingDocInput,
+    existingBookingDoc:
+      explicitBookingDoc ??
+      findDuplicateBookingDoc(bookingDocs, bookingDocInput),
   };
 }

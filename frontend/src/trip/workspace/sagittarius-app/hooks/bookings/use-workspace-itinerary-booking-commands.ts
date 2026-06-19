@@ -13,7 +13,7 @@ import {
 import type { BookingDoc, Trip } from "@/src/trip/types";
 import {
   buildItineraryBookingDraftInput,
-  buildItineraryBookingTicketDocInput,
+  resolveItineraryBookingTicketCommandInput,
 } from "./booking-command-inputs";
 
 interface UseWorkspaceItineraryBookingCommandsOptions {
@@ -95,21 +95,16 @@ export function useWorkspaceItineraryBookingCommands({
         (candidate) => candidate.id === input.itemId,
       );
       if (!item) return;
-      const explicitBookingDoc = input.bookingDocId
-        ? currentTrip.bookingDocs?.find(
-            (candidate) => candidate.id === input.bookingDocId,
-          )
-        : null;
-      const bookingDocInput = buildItineraryBookingTicketDocInput(input, {
+      const {
+        bookingDocInput,
+        existingBookingDoc,
+      } = resolveItineraryBookingTicketCommandInput(input, {
+        bookingDocs: currentTrip.bookingDocs ?? [],
         currentMemberId,
         defaultTimezone: trip.defaultTimezone,
-        existingBookingDoc: explicitBookingDoc,
         members: trip.members,
       });
       const relatedItineraryItemIds = bookingDocInput.relatedItineraryItemIds;
-      const existingBookingDoc =
-        explicitBookingDoc ??
-        findDuplicateBookingDoc(currentTrip.bookingDocs ?? [], bookingDocInput);
 
       if (existingBookingDoc) {
         await updateBookingDoc(existingBookingDoc.id, bookingDocInput);

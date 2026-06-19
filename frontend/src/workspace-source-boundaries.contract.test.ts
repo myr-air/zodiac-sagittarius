@@ -69,6 +69,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-selection.ts"),
       "utf8",
     );
+    const itineraryBookingCommands = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-itinerary-booking-commands.ts"),
+      "utf8",
+    );
+    const bookingCommandInputs = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts"),
+      "utf8",
+    );
     const itineraryViewModelHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
       "utf8",
@@ -639,6 +647,15 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceTripPlansHook).toContain("canSelectWorkspaceTripPlan");
     expect(workspaceTripPlansHook).toContain("resolveReloadedTripPlanSelection");
     expect(workspaceTripPlanSelection).toContain("planVariants.some");
+    expect(itineraryBookingCommands).toContain(
+      "resolveItineraryBookingTicketCommandInput",
+    );
+    expect(itineraryBookingCommands).not.toContain(
+      "buildItineraryBookingTicketDocInput",
+    );
+    expect(bookingCommandInputs).toContain(
+      "findDuplicateBookingDoc",
+    );
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");
