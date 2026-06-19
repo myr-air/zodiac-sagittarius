@@ -2,8 +2,6 @@
 
 import {
   useCallback,
-  useEffect,
-  useMemo,
   useState,
 } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -15,9 +13,6 @@ import {
 import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
-import {
-  buildItineraryView,
-} from "@/src/trip/itinerary";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,
@@ -31,7 +26,6 @@ import {
   rememberSelectedTripPlanId,
   resolveSelectedTripPlanId,
 } from "@/src/trip/workspace/selected-trip-plan";
-import { resolveSelectedWorkspaceItem } from "@/src/trip/workspace/selected-itinerary-item";
 import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
@@ -54,6 +48,7 @@ import {
   useWorkspaceRecords,
   useWorkspaceTripPlanCommands,
   useWorkspaceSession,
+  useWorkspaceItineraryViewModel,
   useEffectivePlaceResolver,
   useWorkspaceMemberContext,
   useWorkspaceSelectedTripPlanState,
@@ -295,28 +290,19 @@ export function SagittariusApp({
     setSelectedTripPlanId,
     trip,
   });
-  const itineraryView = useMemo(
-    () => buildItineraryView(planItems),
-    [planItems],
-  );
-  const mainItineraryView = useMemo(
-    () => buildItineraryView(mainPlanItems),
-    [mainPlanItems],
-  );
-  useEffect(() => {
-    latestTripRef.current = trip;
-  }, [latestTripRef, trip]);
-
   const {
+    itineraryView,
+    mainItineraryView,
     selectedDay,
     selectedItem,
     selectedItemIdForView,
-  } = resolveSelectedWorkspaceItem({
+  } = useWorkspaceItineraryViewModel({
     activePlanItems,
-    itineraryView,
+    latestTripRef,
+    mainPlanItems,
     planItems,
     selectedItemId,
-    tripStartDate: trip.startDate,
+    trip,
   });
   const {
     createItineraryNote,

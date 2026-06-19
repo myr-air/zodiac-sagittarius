@@ -37,6 +37,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
+    const itineraryViewModelHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
+      "utf8",
+    );
     const apiClientsHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts"),
       "utf8",
@@ -412,6 +416,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("workspaceViewShouldSyncBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("clearParticipantSession");
+    expect(sagaCore).toContain("useWorkspaceItineraryViewModel");
+    expect(sagaCore).not.toContain("buildItineraryView");
+    expect(sagaCore).not.toContain("resolveSelectedWorkspaceItem");
+    expect(itineraryViewModelHook).toContain("buildItineraryView");
+    expect(itineraryViewModelHook).toContain("resolveSelectedWorkspaceItem");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanState");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanSync");
     expect(sagaCore).not.toContain("queueMicrotask");
