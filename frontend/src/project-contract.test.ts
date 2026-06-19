@@ -40,6 +40,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceFrame.tsx"))).toBe(true);
@@ -224,6 +225,22 @@ describe("Sagittarius project scaffold", () => {
     expect(commands).toContain("| Frontend type safety | `frontend/` | `rtk bun run typecheck` |");
     expect(commands).toContain("| Real API e2e compatibility | Repository root | `rtk make frontend-e2e-local` |");
     expect(commands).toContain("| Aries profile gate before strong claims | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |");
+  });
+
+  it("keeps shared UI primitives split by responsibility", () => {
+    const uiIndex = readFileSync(join(frontendRoot, "src/ui/index.ts"), "utf8");
+    const primitives = readFileSync(join(frontendRoot, "src/ui/primitives.tsx"), "utf8");
+    const workspacePrimitives = readFileSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"), "utf8");
+
+    expect(uiIndex).toContain("./primitives");
+    expect(uiIndex).toContain("./workspace-primitives");
+    expect(primitives).toContain("export function Button");
+    expect(primitives).toContain("export function Badge");
+    expect(primitives).not.toContain("export function WorkspaceSurface");
+    expect(primitives).not.toContain("fieldControlClassName");
+    expect(workspacePrimitives).toContain("export function WorkspaceSurface");
+    expect(workspacePrimitives).toContain("export function WorkspacePage");
+    expect(workspacePrimitives).toContain("export const fieldControlClassName");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
