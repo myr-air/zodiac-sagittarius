@@ -1,6 +1,4 @@
 import type {
-  BookingDoc,
-  ExpenseSummary,
   PlanCheck,
   PlanSuggestion,
   PlanVariant,
@@ -9,7 +7,6 @@ import type {
   Trip,
   TripDailyBriefing,
   TripParticipantSession,
-  TripPhotoAlbumLink,
   PlaceResolutionResponse,
 } from "./types";
 import { parseItineraryImportDocument } from "./itinerary-import-export";
@@ -18,6 +15,7 @@ import {
   createTripApiRequester,
   serializeItineraryLocation,
 } from "./api-client-transport";
+import { createTripRecordApiClient } from "./api-client-records";
 import type {
   CreatePlanVariantApiRequest,
   JoinInviteTokenResponse,
@@ -28,7 +26,6 @@ import type {
 } from "./api-client-types";
 import {
   mapCockpitResponse,
-  mapExpense,
   mapItineraryItem,
   mapJoinTripResponse,
   mapMember,
@@ -37,7 +34,6 @@ import {
   mapTripSummary,
 } from "./api-response-mappers";
 import type {
-  ExpenseResponse,
   ItineraryItemResponse,
   JoinTripResponse,
   TripCockpitResponse,
@@ -376,81 +372,6 @@ export function createTripApiClient(options: TripApiClientOptions = {}): TripApi
       });
       return mapMember(member);
     },
-    getExpenseSummary(tripId, sessionToken, tripPlanId) {
-      return request<ExpenseSummary>(tripApiRoutes.expensesSummary(tripId, tripPlanId), {
-        method: "GET",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-    },
-    recordExpenseReminder(tripId, sessionToken, reminderRequest, tripPlanId) {
-      return request<ExpenseSummary>(tripApiRoutes.expenseReminders(tripId, tripPlanId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(reminderRequest),
-      });
-    },
-    async createExpense(tripId, sessionToken, expenseRequest) {
-      const expense = await request<ExpenseResponse>(tripApiRoutes.expenses(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(expenseRequest),
-      });
-      return mapExpense(expense);
-    },
-    async patchExpense(tripId, expenseId, sessionToken, expenseRequest) {
-      const expense = await request<ExpenseResponse>(tripApiRoutes.expense(tripId, expenseId), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(expenseRequest),
-      });
-      return mapExpense(expense);
-    },
-    async deleteExpense(tripId, expenseId, sessionToken) {
-      const expense = await request<ExpenseResponse>(tripApiRoutes.expense(tripId, expenseId), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-      return mapExpense(expense);
-    },
-    createBookingDoc(tripId, sessionToken, bookingRequest) {
-      return request<BookingDoc>(tripApiRoutes.bookings(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(bookingRequest),
-      });
-    },
-    patchBookingDoc(tripId, bookingId, sessionToken, bookingRequest) {
-      return request<BookingDoc>(tripApiRoutes.booking(tripId, bookingId), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(bookingRequest),
-      });
-    },
-    deleteBookingDoc(tripId, bookingId, sessionToken) {
-      return request<BookingDoc>(tripApiRoutes.booking(tripId, bookingId), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-    },
-    createPhotoAlbum(tripId, sessionToken, albumRequest) {
-      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbums(tripId), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(albumRequest),
-      });
-    },
-    patchPhotoAlbum(tripId, albumId, sessionToken, albumRequest) {
-      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbum(tripId, albumId), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-        body: JSON.stringify(albumRequest),
-      });
-    },
-    deletePhotoAlbum(tripId, albumId, sessionToken) {
-      return request<TripPhotoAlbumLink>(tripApiRoutes.photoAlbum(tripId, albumId), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
-    },
+    ...createTripRecordApiClient(request),
   };
 }
