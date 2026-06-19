@@ -3,15 +3,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountAccessPanel } from "@/src/features/account/components/account-access-panel";
 import {
-  createAccountApiClient,
   type AccountApiClient,
   type AccountSession,
 } from "./api-client";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  createTripApiClient,
   type TripApiClient,
 } from "@/src/trip/api-client";
+import {
+  createConfiguredAccountApiClient,
+  createConfiguredTripApiClient,
+} from "@/src/api/sagittarius-api-clients";
 import { persistParticipantSession } from "@/src/trip/participant-session-storage";
 import type { TripParticipantSession } from "@/src/trip/types";
 import {
@@ -45,18 +47,12 @@ export function AccountApp({
 }: AccountAppProps) {
   const resolvedAccountClient = useMemo(
     () =>
-      accountClient ??
-      createAccountApiClient({
-        baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
-      }),
+      accountClient ?? createConfiguredAccountApiClient(),
     [accountClient],
   );
   const resolvedApiClient = useMemo(
     () =>
-      apiClient ??
-      createTripApiClient({
-        baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
-      }),
+      apiClient ?? createConfiguredTripApiClient(),
     [apiClient],
   );
   const [accountSession, setAccountSession] = useState<AccountSession | null>(

@@ -11,13 +11,14 @@ import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  createTripApiClient,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
 import {
-  createAccountApiClient,
-} from "@/src/account/api-client";
+  createConfiguredAccountApiClient,
+  createConfiguredTripApiClient,
+  publicSagittariusApiBaseUrl,
+} from "@/src/api/sagittarius-api-clients";
 import {
   findSessionMember,
 } from "@/src/trip/auth";
@@ -120,17 +121,12 @@ export function SagittariusApp({
     () =>
       apiClient ??
       (dataSource === "api"
-        ? createTripApiClient({
-            baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
-          })
+        ? createConfiguredTripApiClient()
         : undefined),
     [apiClient, dataSource],
   );
   const accountClient = useMemo(
-    () =>
-      createAccountApiClient({
-        baseUrl: process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
-      }),
+    () => createConfiguredAccountApiClient(),
     [],
   );
   const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
@@ -832,8 +828,7 @@ export function SagittariusApp({
                 expenseSummary,
                 canEditExpenses,
                 selectedTripPlanId,
-                apiBaseUrl:
-                  process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL ?? "",
+                apiBaseUrl: publicSagittariusApiBaseUrl(),
                 onCreateExpense: createExpense,
                 onUpdateExpense: updateExpense,
                 onDeleteExpense: deleteExpense,
