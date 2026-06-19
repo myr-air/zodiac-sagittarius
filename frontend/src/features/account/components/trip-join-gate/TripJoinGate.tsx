@@ -30,7 +30,6 @@ import {
   joinAlertClassName,
   joinAlertStackClassName,
   joinEyebrowClassName,
-  joinFormClassName,
   joinHeroClassName,
   joinMarkClassName,
   joinPageClassName,
@@ -45,7 +44,6 @@ import {
   passwordInputRowClassName,
   passwordVisibilityButtonClassName,
   tripAccessContentClassName,
-  tripAccessFormClassName,
   tripAccessHeroClassName,
   tripAccessJoinMarkClassName,
   tripAccessJoinShellClassName,
@@ -53,6 +51,7 @@ import {
   tripAccessRightColumnClassName,
   tripAccessSubmitClassName,
 } from "./trip-join-gate.styles";
+import { TripJoinRoomForm } from "./TripJoinRoomForm";
 import { TripJoinGateVisual } from "./TripJoinGateVisual";
 
 export { tripFromJoinResponse } from "./trip-join-gate.support";
@@ -258,36 +257,24 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
           ) : null}
 
           {step === "room" ? (
-            <form className={cn(joinFormClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessFormClassName : "")} onSubmit={submitTripRoom}>
-              <label>
-                <span>{t.join.tripId}</span>
-                <input value={joinId} onChange={(event) => setJoinId(event.target.value)} autoComplete="username" required />
-              </label>
-              <label>
-                <span>{t.join.tripPassword}</span>
-                <span className={passwordInputRowClassName}>
-                  <input
-                    value={tripPassword}
-                    onChange={(event) => setTripPassword(event.target.value)}
-                    type={showTripPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={passwordVisibilityButtonClassName}
-                    aria-label={showTripPassword ? t.join.hideTripPassword : t.join.showTripPassword}
-                    onClick={() => setShowTripPassword((current) => !current)}
-                  >
-                    <Icon name={showTripPassword ? "eyeOff" : "eye"} />
-                  </button>
-                </span>
-              </label>
-              <Button type="submit" className={cn(joinSubmitClassName, isTripAccessVariant ? tripAccessSubmitClassName : "")} disabled={isSubmitting}>
-                <Icon name="check" />
-                {t.join.submitRoom}
-              </Button>
-            </form>
+            <TripJoinRoomForm
+              copy={{
+                hideTripPassword: t.join.hideTripPassword,
+                showTripPassword: t.join.showTripPassword,
+                submitRoom: t.join.submitRoom,
+                tripId: t.join.tripId,
+                tripPassword: t.join.tripPassword,
+              }}
+              isSubmitting={isSubmitting}
+              isTripAccessVariant={isTripAccessVariant}
+              joinId={joinId}
+              onJoinIdChange={setJoinId}
+              onPasswordChange={setTripPassword}
+              onSubmit={submitTripRoom}
+              onToggleTripPassword={() => setShowTripPassword((current) => !current)}
+              showTripPassword={showTripPassword}
+              tripPassword={tripPassword}
+            />
           ) : (
             <div className={cn(participantStepClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessParticipantStepClassName : "")}>
               <button
