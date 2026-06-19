@@ -1,9 +1,9 @@
 import { type CSSProperties, useMemo, useRef } from "react";
 import { cn } from "@/src/lib/cn";
-import type { ActivityPathGraphDayProps } from "./activity-path-graph/activity-path-graph.types";
+import type { ActivityPathGraphDayProps } from "./activity-path-graph.types";
 import { Select } from "@/src/ui";
-import { buildGraphEdges, buildEdgePath, buildGraphNodes, buildLaneXByPathId, buildPathMetaForDay, buildVisibleLanePathIds } from "./activity-path-graph/activity-path-graph.graph";
-import { buildFallbackGraphLayout, useRenderedGraphLayout } from "./activity-path-graph/activity-path-graph.layout";
+import { buildGraphEdges, buildEdgePath, buildGraphNodes, buildLaneXByPathId, buildPathMetaForDay, buildVisibleLanePathIds } from "./activity-path-graph.graph";
+import { buildFallbackGraphLayout, useRenderedGraphLayout } from "./activity-path-graph.layout";
 import {
   anchorClassName,
   dotClassName,
@@ -12,7 +12,7 @@ import {
   graphClassName,
   pathSelectClassName,
   selectedDotClassName,
-} from "./activity-path-graph/activity-path-graph.styles";
+} from "./activity-path-graph.styles";
 
 export function ActivityPathGraphDay({
   canEdit,

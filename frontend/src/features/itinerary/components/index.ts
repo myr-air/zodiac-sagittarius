@@ -1,4 +1,4 @@
-export { ActivityPathGraphDay } from "./ActivityPathGraphDay";
+export { ActivityPathGraphDay } from "./activity-path-graph";
 export { OverviewPage } from "./OverviewPage";
 export { ContextRail } from "./ContextRail";
 export { RouteMapView } from "./route-map";

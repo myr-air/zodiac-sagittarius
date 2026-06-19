@@ -7,7 +7,7 @@ import { formatDayLabel, itineraryPathOptionsForDay, mainItineraryPathId, type I
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
-import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
+import { ActivityPathGraphDay } from "../activity-path-graph";
 import { formatThaiDate, dayRouteLabel } from "@/src/features/itinerary/lib";
 import type { InlineItineraryItemPatch } from "../../lib";
 import type {
