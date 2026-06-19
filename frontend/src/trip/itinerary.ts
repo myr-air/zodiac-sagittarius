@@ -1,23 +1,27 @@
-import type { Locale } from "@/src/i18n/types";
 import type {
   ItineraryItem,
   Trip,
-  ValidationWarning,
 } from "./types";
 import {
   compareItineraryItemsWithinDay,
-  orderHierarchyItemsForDay,
-  sortItineraryItemsByDayAndHierarchy,
 } from "./itinerary-item-ordering";
 import { itineraryItemPathFieldsForTarget } from "./itinerary-path-selection";
-import {
-  buildOverlapWarnings,
-  getTimeWindowInterval,
-  validateHierarchyFields,
-  validateItemFields,
-} from "./itinerary-validation";
 export { parseTime } from "./itinerary-time";
-import { parseTime } from "./itinerary-time";
+export {
+  buildItineraryCommitmentsByItemId,
+  type ItineraryCommitmentSummary,
+} from "./itinerary-commitments";
+export {
+  buildItineraryView,
+  formatDayLabel,
+  getNowNext,
+  groupItemsByDay,
+  type ItineraryDayGroup,
+  type ItineraryRouteDayStat,
+  type ItineraryView,
+  sortItemsForDay,
+  validateItineraryItem,
+} from "./itinerary-view";
 export {
   type ItineraryPathOption,
   type ItineraryPathSelection,
@@ -31,40 +35,6 @@ export {
 } from "./itinerary-path-selection";
 
 export { mainItineraryPathId, itineraryItemPathId, humanizePathId, mainItineraryPathName } from "./itinerary-path-identifiers";
-
-export interface ItineraryDayGroup {
-  day: string;
-  items: ItineraryItem[];
-  warningCount: number;
-}
-
-export interface ItineraryRouteDayStat {
-  day: string;
-  itemCount: number;
-  coordinateItemCount: number;
-  warningCount: number;
-}
-
-export interface ItineraryView {
-  dayGroups: ItineraryDayGroup[];
-  sortedItems: ItineraryItem[];
-  warningCount: number;
-  routeDayStats: ItineraryRouteDayStat[];
-}
-
-export interface ItineraryCommitmentSummary {
-  bookingCount?: number;
-  expenseCount?: number;
-  noteCount?: number;
-  openTaskCount?: number;
-}
-
-interface BuildItineraryCommitmentsInput {
-  bookingDocs: Array<{ relatedItineraryItemIds: string[] }>;
-  expenses: Array<{ itineraryItemId?: string | null }>;
-  stopNotes: Array<{ itemId: string }>;
-  tasks: Array<{ relatedItemId?: string | null; status: string }>;
-}
 
 export type BuildItineraryItemDraftInput = Pick<
     ItineraryItem,
@@ -124,13 +94,6 @@ export function getTripDates(startDate: string, endDate: string): string[] {
     dates.push(cursor.toISOString().slice(0, 10));
   }
   return dates;
-}
-
-export function sortItemsForDay(items: ItineraryItem[], day: string): ItineraryItem[] {
-  return orderHierarchyItemsForDay(items
-    .filter((item) => item.day === day)
-    .slice()
-    .sort(compareItineraryItemsWithinDay));
 }
 
 export function getNextSortOrder(items: ItineraryItem[], day: string): number {
@@ -528,141 +491,4 @@ export function hasDescendantItem(
     currentItem = items.find((item) => item.id === currentItem?.parentItemId);
   }
   return false;
-}
-
-export function buildItineraryView(items: ItineraryItem[]): ItineraryView {
-  const sortedItems = sortItineraryItemsByDayAndHierarchy(items);
-
-  const dayBuckets = new Map<string, ItineraryItem[]>();
-  for (const item of sortedItems) {
-    const bucket = dayBuckets.get(item.day);
-    if (!bucket) {
-      dayBuckets.set(item.day, [item]);
-    } else {
-      bucket.push(item);
-    }
-  }
-
-  const dayGroups: ItineraryDayGroup[] = [];
-  const routeDayStats: ItineraryRouteDayStat[] = [];
-
-  let warningCount = 0;
-
-  for (const day of Array.from(dayBuckets.keys()).sort()) {
-    const dayItems = dayBuckets.get(day) ?? [];
-    const baseWarningsByItem = new Map<string, ValidationWarning[]>();
-
-    for (const item of dayItems) {
-      baseWarningsByItem.set(item.id, [
-        ...validateItemFields(item),
-        ...validateHierarchyFields(item, dayItems),
-      ]);
-    }
-
-    const overlapWarningsByItem = buildOverlapWarnings(dayItems);
-    for (const [itemId, overlapWarnings] of overlapWarningsByItem) {
-      baseWarningsByItem.set(itemId, [...(baseWarningsByItem.get(itemId) ?? []), ...overlapWarnings]);
-    }
-
-    const dayWarningCount = dayItems.reduce(
-      (total, item) => total + (baseWarningsByItem.get(item.id)?.length ?? 0),
-      0,
-    );
-
-    warningCount += dayWarningCount;
-    dayGroups.push({ day, items: dayItems, warningCount: dayWarningCount });
-    routeDayStats.push({
-      day,
-      itemCount: dayItems.length,
-      coordinateItemCount: dayItems.filter((item) => item.coordinates).length,
-      warningCount: dayWarningCount,
-    });
-  }
-
-  return { dayGroups, sortedItems, warningCount, routeDayStats };
-}
-
-export function buildItineraryCommitmentsByItemId({
-  bookingDocs,
-  expenses,
-  stopNotes,
-  tasks,
-}: BuildItineraryCommitmentsInput): Record<string, ItineraryCommitmentSummary> {
-  const commitments = new Map<string, ItineraryCommitmentSummary>();
-  const ensure = (itemId: string) => {
-    const current = commitments.get(itemId) ?? {};
-    commitments.set(itemId, current);
-    return current;
-  };
-
-  for (const booking of bookingDocs) {
-    for (const itemId of booking.relatedItineraryItemIds) {
-      const current = ensure(itemId);
-      current.bookingCount = (current.bookingCount ?? 0) + 1;
-    }
-  }
-  for (const expense of expenses) {
-    if (!expense.itineraryItemId) continue;
-    const current = ensure(expense.itineraryItemId);
-    current.expenseCount = (current.expenseCount ?? 0) + 1;
-  }
-  for (const task of tasks) {
-    if (!task.relatedItemId || task.status === "done") continue;
-    const current = ensure(task.relatedItemId);
-    current.openTaskCount = (current.openTaskCount ?? 0) + 1;
-  }
-  for (const note of stopNotes) {
-    const current = ensure(note.itemId);
-    current.noteCount = (current.noteCount ?? 0) + 1;
-  }
-
-  return Object.fromEntries(commitments);
-}
-
-export function groupItemsByDay(items: ItineraryItem[]): ItineraryDayGroup[] {
-  return buildItineraryView(items).dayGroups;
-}
-
-export function validateItineraryItem(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
-  const warnings = [
-    ...validateItemFields(item),
-    ...validateHierarchyFields(item, dayItems),
-  ];
-  const overlapWarnings = buildOverlapWarnings(dayItems);
-  const itemOverlapWarnings = overlapWarnings.get(item.id);
-  if (itemOverlapWarnings) warnings.push(...itemOverlapWarnings);
-  return warnings;
-}
-
-export function getNowNext(
-  items: ItineraryItem[],
-  day: string,
-  currentTime: string,
-): { current: ItineraryItem | null; next: ItineraryItem | null; fallbackReason: string | null } {
-  const nowMinutes = parseTime(currentTime);
-  if (nowMinutes === null) return { current: null, next: null, fallbackReason: "Current time is unavailable." };
-
-  const timedItems = sortItemsForDay(items, day)
-    .map((item) => getTimeWindowInterval(item))
-    .filter((entry): entry is { item: ItineraryItem; start: number; end: number } => entry !== null)
-    .sort((a, b) => a.start - b.start);
-
-  if (timedItems.length === 0) return { current: null, next: null, fallbackReason: "No timed stops for this day yet." };
-
-  const current = timedItems.find((entry) => nowMinutes >= entry.start && nowMinutes < entry.end);
-  const next = timedItems.find((entry) => entry.start > nowMinutes);
-
-  return {
-    current: current?.item ?? null,
-    next: next?.item ?? null,
-    fallbackReason: current || next ? null : "The day plan has ended.",
-  };
-}
-
-export function formatDayLabel(day: string, startDate: string, locale: Locale = "en"): string {
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const current = new Date(`${day}T00:00:00Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(current.getTime())) return day;
-  const dayNumber = Math.round((current.getTime() - start.getTime()) / 86_400_000) + 1;
-  return locale === "th" ? `วันที่ ${dayNumber}` : `Day ${dayNumber}`;
 }
