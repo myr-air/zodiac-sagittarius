@@ -2,8 +2,6 @@ import type {
   BookingDoc,
   EditableSuggestionPatch,
   Expense,
-  ExpenseComment,
-  ExpenseLineItem,
   ExpenseSummary,
   ItineraryCoordinates,
   ItineraryItem,
@@ -31,6 +29,25 @@ import type {
   TripCockpit,
 } from "./api-response-types";
 import type { ItineraryExportDocument } from "./itinerary-import-export";
+import type {
+  CreateBookingDocApiRequest,
+  CreateExpenseApiRequest,
+  CreatePhotoAlbumApiRequest,
+  PatchBookingDocApiRequest,
+  PatchExpenseApiRequest,
+  PatchPhotoAlbumApiRequest,
+  RecordExpenseReminderApiRequest,
+} from "./api-client-record-types";
+export type {
+  BookingDocExternalLinkApiRequest,
+  CreateBookingDocApiRequest,
+  CreateExpenseApiRequest,
+  CreatePhotoAlbumApiRequest,
+  PatchBookingDocApiRequest,
+  PatchExpenseApiRequest,
+  PatchPhotoAlbumApiRequest,
+  RecordExpenseReminderApiRequest,
+} from "./api-client-record-types";
 
 export interface TripApiClientOptions {
   baseUrl?: string;
@@ -255,71 +272,4 @@ export interface PatchMemberApiRequest {
 export interface UpdatePresenceApiRequest {
   clientMutationId: string;
   presence: Member["presence"];
-}
-
-export interface CreateExpenseApiRequest {
-  clientMutationId: string;
-  tripPlanId?: string | null;
-  title: string;
-  amountMinor: number;
-  currency?: string;
-  exchangeRateToSettlementCurrency?: number;
-  notes?: string | null;
-  receiptUrl?: string | null;
-  lineItems?: ExpenseLineItem[];
-  comments?: ExpenseComment[];
-  paidBy: string;
-  category: Expense["category"];
-  splits: Record<string, number>;
-  itineraryItemId?: string | null;
-}
-
-export interface RecordExpenseReminderApiRequest {
-  clientMutationId: string;
-  from: string;
-  to: string;
-  amountMinor: number;
-}
-
-export interface PatchExpenseApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  tripPlanId?: string | null;
-  title?: string;
-  amountMinor?: number;
-  currency?: string;
-  exchangeRateToSettlementCurrency?: number;
-  notes?: string | null;
-  receiptUrl?: string | null;
-  lineItems?: ExpenseLineItem[];
-  comments?: ExpenseComment[];
-  paidBy?: string;
-  category?: Expense["category"];
-  splits?: Record<string, number>;
-  itineraryItemId?: string | null;
-}
-
-export type BookingDocExternalLinkApiRequest = Omit<BookingDoc["externalLinks"][number], "id"> & {
-  id?: string;
-};
-
-export interface CreateBookingDocApiRequest extends Omit<BookingDoc, "id" | "tripId" | "createdBy" | "updatedAt" | "version" | "externalLinks"> {
-  clientMutationId: string;
-  externalLinks: BookingDocExternalLinkApiRequest[];
-}
-
-export interface PatchBookingDocApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  patch: Partial<Omit<CreateBookingDocApiRequest, "clientMutationId">>;
-}
-
-export interface CreatePhotoAlbumApiRequest extends Omit<TripPhotoAlbumLink, "id" | "tripId" | "createdBy" | "updatedAt" | "version"> {
-  clientMutationId: string;
-}
-
-export interface PatchPhotoAlbumApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  patch: Partial<Omit<CreatePhotoAlbumApiRequest, "clientMutationId">>;
 }
