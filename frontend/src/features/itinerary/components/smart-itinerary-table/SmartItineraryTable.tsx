@@ -14,17 +14,17 @@ import {
 } from "@/src/trip/itinerary";
 import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
 import { PageHeader } from "@/src/shared/components/page-header";
-import type { InlineItineraryItemPatch } from "../lib";
-import { SmartItineraryTableHeaderControls } from "./smart-itinerary-table/SmartItineraryTableHeaderControls";
-import { SmartItineraryTableMeta } from "./smart-itinerary-table/SmartItineraryTableMeta";
-import { SmartItineraryTableBody } from "./smart-itinerary-table/SmartItineraryTableBody";
+import type { InlineItineraryItemPatch } from "../../lib";
+import { SmartItineraryTableHeaderControls } from "./SmartItineraryTableHeaderControls";
+import { SmartItineraryTableMeta } from "./SmartItineraryTableMeta";
+import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import { useSmartItineraryTableState } from "./smart-itinerary-table/hooks/useSmartItineraryTableState";
+import { useSmartItineraryTableState } from "./hooks/useSmartItineraryTableState";
 
-import { tablePanelClassName, tableScrollClassName } from "./smart-itinerary-table.styles";
+import { tablePanelClassName, tableScrollClassName } from "../smart-itinerary-table.styles";
 
 interface SmartItineraryTableProps {
   canRestructure?: boolean;

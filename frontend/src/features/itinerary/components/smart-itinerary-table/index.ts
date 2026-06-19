@@ -1,0 +1,1 @@
+export { SmartItineraryTable } from "./SmartItineraryTable";

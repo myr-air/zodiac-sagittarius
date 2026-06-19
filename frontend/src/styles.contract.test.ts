@@ -12,7 +12,6 @@ describe("Calm Travel Ops CSS contract", () => {
     ...collectRuntimeSourceFiles("src/features/itinerary/components/context-rail"),
   ]);
   const smartTableSource = readSourceFiles([
-    "src/features/itinerary/components/SmartItineraryTable.tsx",
     "src/features/itinerary/components/smart-itinerary-table.styles.ts",
     ...collectRuntimeSourceFiles("src/features/itinerary/components/smart-itinerary-table"),
   ]);
