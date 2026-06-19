@@ -478,13 +478,20 @@ describe("Sagittarius project scaffold", () => {
   it("uses Next App Router with trip-scoped production routes", () => {
     expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
     const homeLanding = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8");
+    const homeLandingPreview = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLandingPreview.tsx"), "utf8");
     const homeLandingMeta = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.meta.ts"), "utf8");
     const homeLandingStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.styles.ts"), "utf8");
     const languageSwitch = readFileSync(join(frontendRoot, "src/i18n/LanguageSwitch.tsx"), "utf8");
     const languageSwitchSupport = readFileSync(join(frontendRoot, "src/i18n/language-switch.support.ts"), "utf8");
     expect(homeLanding).toContain("LanguageSwitch");
+    expect(homeLanding).toContain("./HomeLandingPreview");
     expect(homeLanding).toContain("./HomeLanding.meta");
     expect(homeLanding).toContain("./HomeLanding.styles");
+    expect(homeLanding).not.toContain("previewDayKeys");
+    expect(homeLanding).not.toContain("checkedChecklistKeys");
+    expect(homeLandingPreview).toContain("export function HomeLandingPreview");
+    expect(homeLandingPreview).toContain("previewDayKeys");
+    expect(homeLandingPreview).toContain("checkedChecklistKeys");
     expect(homeLanding).not.toContain("const homePageClassName");
     expect(homeLanding).not.toContain("const workflowStepMeta");
     expect(homeLandingMeta).toContain("workflowStepMeta");
