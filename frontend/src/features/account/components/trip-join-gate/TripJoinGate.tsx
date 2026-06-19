@@ -5,7 +5,6 @@ import { Icon } from "@/src/ui/icons";
 import { Badge, Button } from "@/src/ui";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import {
   claimTripParticipant,
@@ -15,13 +14,18 @@ import {
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
 import {
-  assertMainPlanPointerAliasesMatch,
-  TripApiError,
-  type JoinTripResponse,
   type TripApiClient,
   type TripCockpit,
 } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
+import {
+  errorMessage,
+  participantStatusLabel,
+  roleLabel,
+  tripFromJoinResponse,
+} from "./trip-join-gate.support";
+
+export { tripFromJoinResponse } from "./trip-join-gate.support";
 
 interface TripJoinGateProps {
   trip?: Trip;
@@ -409,69 +413,4 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
       </section>
     </PageElement>
   );
-}
-
-function roleLabel(role: Member["role"], labels: Messages["appShell"]["roles"]): string {
-  return labels[role];
-}
-
-function participantStatusLabel(member: Member, labels: Messages["join"]["memberStatus"]): string {
-  if (isTripParticipantDisabled(member)) return labels.disabled;
-  if (member.userId) return labels.linked;
-  if (member.claimPasswordHash || member.claimedAt) return labels.claimed;
-  return labels.ready;
-}
-
-export function tripFromJoinResponse(response: JoinTripResponse): Trip {
-  assertMainPlanPointerAliasesMatch(response.trip);
-  return {
-    id: response.trip.id,
-    joinId: response.trip.joinId,
-    joinPasswordHash: "",
-    name: response.trip.name,
-    destinationLabel: response.trip.destinationLabel,
-    startDate: response.trip.startDate,
-    endDate: response.trip.endDate,
-    /* v8 ignore next */
-    activePlanVariantId: response.trip.activePlanVariantId ?? "",
-    mainTripPlanId:
-      response.trip.mainTripPlanId ?? response.trip.activePlanVariantId ?? "",
-    planVariants: [],
-    members: response.claimableMembers.map((member) => ({
-      id: member.id,
-      displayName: member.displayName,
-      role: member.role,
-      presence: member.presence,
-      color: member.color,
-      userId: member.userId,
-      claimedAt: member.claimedAt,
-      lastSeenAt: member.lastSeenAt,
-      accessStatus: member.accessStatus,
-    })),
-    itineraryItems: [],
-    expenses: [],
-  };
-}
-
-function errorMessage(caught: unknown, fallback: string): string {
-  if (caught instanceof TripApiError) {
-    if (caught.status === 404) return fallback;
-    if (caught.status === 401 || caught.status === 403) return fallback;
-    if (caught.status === 400 || caught.code === "invalid_request") return fallback;
-    if (caught.status >= 500) return fallback;
-    return friendlyErrorText(caught.code, fallback);
-  }
-  if (caught instanceof Error) {
-    if (caught.message.includes('fetch') || caught.message.includes('Failed')) return fallback;
-    return fallback;
-  }
-  return fallback;
-}
-
-function friendlyErrorText(message: string, fallback: string): string {
-  const normalized = message.trim();
-  if (normalized === "404") return fallback;
-  if (normalized === "401" || normalized === "403") return fallback;
-  if (!normalized || /^\d{3}$/.test(normalized)) return fallback;
-  return normalized;
 }

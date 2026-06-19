@@ -102,6 +102,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/TimePickerField.tsx"))).toBe(true);
@@ -400,6 +401,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickers.tsx"),
       "utf8",
     );
+    const tripJoinGate = readFileSync(
+      join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"),
+      "utf8",
+    );
     const tripWizardFormSections = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
       "utf8",
@@ -474,6 +479,10 @@ describe("Sagittarius project scaffold", () => {
     expect(dateTimePickers).not.toContain("function CalendarContent");
     expect(dateTimePickers).not.toContain("function TimePickerContent");
     expect(dateTimePickers).not.toContain("createPortal");
+    expect(tripJoinGate).toContain("./trip-join-gate.support");
+    expect(tripJoinGate).not.toContain("function tripFromJoinResponse");
+    expect(tripJoinGate).not.toContain("function friendlyErrorText");
+    expect(tripJoinGate).not.toContain("assertMainPlanPointerAliasesMatch");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-dates-step");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-destination-step");

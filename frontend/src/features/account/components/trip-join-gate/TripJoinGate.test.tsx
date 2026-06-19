@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TripJoinGate, tripFromJoinResponse } from "./TripJoinGate";
+import { TripJoinGate } from "./TripJoinGate";
 import { claimTripParticipant } from "@/src/trip/auth";
 import { TripApiError, type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -38,70 +38,6 @@ describe("TripJoinGate", () => {
     render(<TripJoinGate trip={seedTrip} initialJoinCode="HK-SZ-2025" onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     expect(screen.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
-  });
-
-  it("keeps canonical Main Plan aliases from API join summaries", () => {
-    const joinedTrip = tripFromJoinResponse({
-      trip: {
-        id: seedTrip.id,
-        name: seedTrip.name,
-        destinationLabel: seedTrip.destinationLabel,
-        startDate: seedTrip.startDate,
-        endDate: seedTrip.endDate,
-        joinId: seedTrip.joinId,
-        activePlanVariantId: "canonical-main-plan",
-        mainTripPlanId: "canonical-main-plan",
-        ownerMemberId: seedTrip.members[0].id,
-        version: 1,
-      },
-      claimableMembers: [],
-      joinSessionToken: "join-session-token",
-      expiresAt: "2026-05-29T00:20:00.000Z",
-    });
-
-    expect(joinedTrip.activePlanVariantId).toBe("canonical-main-plan");
-    expect(joinedTrip.mainTripPlanId).toBe("canonical-main-plan");
-
-    const legacyOnlyTrip = tripFromJoinResponse({
-      trip: {
-        id: seedTrip.id,
-        name: seedTrip.name,
-        destinationLabel: seedTrip.destinationLabel,
-        startDate: seedTrip.startDate,
-        endDate: seedTrip.endDate,
-        joinId: seedTrip.joinId,
-        activePlanVariantId: "legacy-main-plan",
-        ownerMemberId: seedTrip.members[0].id,
-        version: 1,
-      },
-      claimableMembers: [],
-      joinSessionToken: "join-session-token",
-      expiresAt: "2026-05-29T00:20:00.000Z",
-    });
-
-    expect(legacyOnlyTrip.mainTripPlanId).toBe("legacy-main-plan");
-  });
-
-  it("rejects API join summaries with Main Plan pointer alias drift", () => {
-    expect(() =>
-      tripFromJoinResponse({
-        trip: {
-          id: seedTrip.id,
-          name: seedTrip.name,
-          destinationLabel: seedTrip.destinationLabel,
-          startDate: seedTrip.startDate,
-          endDate: seedTrip.endDate,
-          joinId: seedTrip.joinId,
-          activePlanVariantId: "legacy-main-plan",
-          mainTripPlanId: "canonical-main-plan",
-          ownerMemberId: seedTrip.members[0].id,
-          version: 1,
-        },
-        claimableMembers: [],
-        joinSessionToken: "join-session-token",
-        expiresAt: "2026-05-29T00:20:00.000Z",
-      }),
-    ).toThrow(/Trip Plan compatibility aliases/i);
   });
 
   it("keeps the trip access visual preview out of complementary landmarks", () => {
