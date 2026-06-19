@@ -3,12 +3,12 @@ import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
-import { StopDialogActions } from "./stop-dialog/StopDialogActions";
-import { StopDialogAdvancedFields } from "./stop-dialog/StopDialogAdvancedFields";
-import { StopDialogContextFields } from "./stop-dialog/StopDialogContextFields";
-import { StopDialogDetailSection } from "./stop-dialog/StopDialogDetailSection";
-import { StopDialogPlaceResolution } from "./stop-dialog/StopDialogPlaceResolution";
-import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
+import { StopDialogActions } from "./StopDialogActions";
+import { StopDialogAdvancedFields } from "./StopDialogAdvancedFields";
+import { StopDialogContextFields } from "./StopDialogContextFields";
+import { StopDialogDetailSection } from "./StopDialogDetailSection";
+import { StopDialogPlaceResolution } from "./StopDialogPlaceResolution";
+import { StopDialogTimeWindow } from "./StopDialogTimeWindow";
 import {
   applyStopActivityInput,
   applyStopDetailType,
@@ -19,7 +19,7 @@ import {
   buildInitialStopDetailValues,
   buildInitialStopFormValues,
   buildStopSubmitValues,
-} from "./stop-dialog/stop-dialog.form";
+} from "./stop-dialog.form";
 import {
   dialogErrorClassName,
   dialogFieldWideClassName,
@@ -28,8 +28,8 @@ import {
   modalBackdropClassName,
   stopDialogClassName,
   stopFormClassName,
-} from "./stop-dialog/stop-dialog.styles";
-import type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
+} from "./stop-dialog.styles";
+import type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
 import {
   type StopDetailType,
   type StopDetailValues,
@@ -37,9 +37,9 @@ import {
   stopDialogDetailTypeOptions,
   stopDialogFieldIds,
   stopDetailLabels,
-} from "./stop-dialog/stop-dialog.utils";
+} from "./stop-dialog.utils";
 
-export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
+export type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
 
 interface StopDialogProps {
   mode: "create" | "edit";

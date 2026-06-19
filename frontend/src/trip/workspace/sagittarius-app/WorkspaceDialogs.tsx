@@ -10,7 +10,7 @@ import type {
   PlanVariant,
   Trip,
 } from "@/src/trip/types";
-import type { StopFormValues } from "@/src/features/itinerary/components/StopDialog";
+import type { StopFormValues } from "@/src/features/itinerary/components";
 import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
