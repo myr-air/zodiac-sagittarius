@@ -92,6 +92,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
@@ -372,6 +373,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-wizard-support.ts"),
       "utf8",
     );
+    const tripWizardFormSections = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
+      "utf8",
+    );
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
@@ -420,6 +425,9 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
     expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
     expect(accountTripWizardSupport).not.toContain("function randomToken");
+    expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
+    expect(tripWizardFormSections).not.toContain("function TripWizardInviteStep");
+    expect(tripWizardFormSections).not.toContain("function TripWizardReviewSummary");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
