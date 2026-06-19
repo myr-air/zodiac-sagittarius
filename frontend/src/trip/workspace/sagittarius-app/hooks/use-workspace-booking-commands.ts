@@ -5,8 +5,8 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { useWorkspaceBookingDocCommands } from "./use-workspace-booking-doc-commands";
-import { useWorkspaceItineraryBookingCommands } from "./use-workspace-itinerary-booking-commands";
+import { useWorkspaceBookingDocCommands } from "./bookings/use-workspace-booking-doc-commands";
+import { useWorkspaceItineraryBookingCommands } from "./bookings/use-workspace-itinerary-booking-commands";
 
 interface UseWorkspaceBookingCommandsOptions {
   canEditBookings: boolean;

@@ -14,8 +14,8 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
-import { queueKeyedUpdate } from "../support/queued-updates";
+import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { queueKeyedUpdate } from "../../support/queued-updates";
 
 interface UseWorkspaceBookingDocUpdateCommandsOptions {
   apiClient?: TripApiClient;

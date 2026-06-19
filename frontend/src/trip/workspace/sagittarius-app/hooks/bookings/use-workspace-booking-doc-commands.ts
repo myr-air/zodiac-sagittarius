@@ -15,7 +15,7 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForBookingRecord } from "@/src/trip/workspace/trip-plan-records";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { useWorkspaceBookingDocUpdateCommands } from "./use-workspace-booking-doc-update-commands";
 
 interface UseWorkspaceBookingDocCommandsOptions {
