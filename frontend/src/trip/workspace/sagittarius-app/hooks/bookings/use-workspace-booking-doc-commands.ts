@@ -4,7 +4,9 @@ import {
   type BookingDocInputLike,
   buildCreateBookingDocRequest,
   createLocalBookingDoc,
+  normalizeBookingDocTitle,
   removeBookingDocFromTrip,
+  resolveBookingDocCreateTripPlanId,
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { isVersionConflict } from "@/src/trip/api-errors";
@@ -66,8 +68,12 @@ export function useWorkspaceBookingDocCommands({
   const createBookingDoc = useCallback(
     async (input: BookingDocInputLike): Promise<BookingDoc | null> => {
       if (!canEditBookings) return null;
-      const title = input.title.trim();
+      const title = normalizeBookingDocTitle(input);
       if (!title) return null;
+      const tripPlanId = resolveBookingDocCreateTripPlanId(trip, input, {
+        resolveTripPlanId: tripPlanIdForBookingRecord,
+        selectedTripPlanId,
+      });
       if (isApiMode && apiClient && participantSession) {
         const clientMutationId = nextClientMutationId("booking-doc-create");
         try {
@@ -78,9 +84,7 @@ export function useWorkspaceBookingDocCommands({
               {
                 ...input,
                 title,
-                tripPlanId:
-                  input.tripPlanId ??
-                  tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
+                tripPlanId,
               },
               { clientMutationId },
             ),
@@ -109,9 +113,7 @@ export function useWorkspaceBookingDocCommands({
 
       const bookingDoc = createLocalBookingDoc(trip, input, {
         title,
-        tripPlanId:
-          input.tripPlanId ??
-          tripPlanIdForBookingRecord(trip, input, selectedTripPlanId),
+        tripPlanId,
         createdBy: currentMemberId,
         updatedAt: workspaceLocalMutationTimestamp,
         nextBookingDocId: nextLocalBookingDocId,

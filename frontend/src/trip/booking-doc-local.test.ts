@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  bookingDocQuickFieldsInputFromRecord,
   bookingDocInputFromRecord,
   createLocalBookingDoc,
+  normalizeBookingDocTitle,
   removeBookingDocFromTrip,
   replaceBookingDocInTrip,
+  resolveBookingDocCreateTripPlanId,
   updateLocalBookingDocInTrip,
 } from "./booking-doc-local";
 import type { BookingDoc } from "./types";
@@ -57,6 +60,83 @@ describe("booking doc local trip mutations", () => {
     expect(replaced.bookingDocs[0]).toBe(replacement);
     expect(trip.bookingDocs[0]).toBe(original);
     expect(removed.bookingDocs.map((doc) => doc.id)).toEqual(["booking-1"]);
+  });
+
+  it("normalizes create titles and resolves booking create trip plans through one helper", () => {
+    const trip = {
+      activePlanVariantId: "plan-active",
+      itineraryItems: [{ id: "item-rain", planVariantId: "plan-rain" }],
+      mainTripPlanId: "plan-main",
+    };
+    const input = bookingDocInputFromRecord(bookingDoc(), {
+      relatedItineraryItemIds: ["item-rain"],
+      title: "  Ferry ticket  ",
+      tripPlanId: null,
+    });
+    const calls: Array<{
+      preferredTripPlanId?: string | null;
+      relatedItineraryItemIds: string[];
+    }> = [];
+
+    const tripPlanId = resolveBookingDocCreateTripPlanId(trip, input, {
+      selectedTripPlanId: "plan-selected",
+      resolveTripPlanId: (_trip, bookingInput, preferredTripPlanId) => {
+        calls.push({
+          preferredTripPlanId,
+          relatedItineraryItemIds: bookingInput.relatedItineraryItemIds,
+        });
+        return "plan-rain";
+      },
+    });
+
+    expect(normalizeBookingDocTitle(input)).toBe("Ferry ticket");
+    expect(tripPlanId).toBe("plan-rain");
+    expect(calls).toEqual([
+      {
+        preferredTripPlanId: "plan-selected",
+        relatedItineraryItemIds: ["item-rain"],
+      },
+    ]);
+  });
+
+  it("preserves explicit booking create trip plan ids ahead of selected plan fallback", () => {
+    const trip = {
+      activePlanVariantId: "plan-active",
+      itineraryItems: [],
+      mainTripPlanId: "plan-main",
+    };
+
+    expect(
+      resolveBookingDocCreateTripPlanId(
+        trip,
+        bookingDocInputFromRecord(bookingDoc(), {
+          tripPlanId: "plan-explicit",
+        }),
+        {
+          selectedTripPlanId: "plan-selected",
+          resolveTripPlanId: (_trip, _input, preferredTripPlanId) =>
+            preferredTripPlanId,
+        },
+      ),
+    ).toBe("plan-explicit");
+  });
+
+  it("projects quick-field edits only when provider or confirmation changes", () => {
+    const doc = bookingDoc({
+      confirmationCode: "ABC123",
+      providerName: "Ferry Co",
+    });
+
+    expect(bookingDocQuickFieldsInputFromRecord(doc, {})).toBeNull();
+    expect(
+      bookingDocQuickFieldsInputFromRecord(doc, {
+        confirmationCode: null,
+      }),
+    ).toEqual(expect.objectContaining({
+      confirmationCode: null,
+      providerName: "Ferry Co",
+      title: "Booking",
+    }));
   });
 });
 

@@ -12,17 +12,22 @@ export type {
   ItineraryBookingTicketInputLike,
 } from "./booking-doc-inputs";
 export {
+  bookingDocQuickFieldsInputFromRecord,
   bookingDocInputFromRecord,
   createLocalBookingDoc,
+  normalizeBookingDocTitle,
   removeBookingDocFromTrip,
   replaceBookingDocInTrip,
+  resolveBookingDocCreateTripPlanId,
   updateLocalBookingDocInTrip,
 } from "./booking-doc-local";
 export { findDuplicateBookingDoc } from "./booking-doc-matching";
 export type {
   LocalBookingDocOptions,
   LocalBookingDocUpdateOptions,
+  ResolveBookingDocCreateTripPlanIdOptions,
 } from "./booking-doc-local";
+export type { BookingDocQuickFieldsPatch } from "./booking-doc-local";
 export {
   buildBookingDocsSummary,
   canViewBookingDoc,

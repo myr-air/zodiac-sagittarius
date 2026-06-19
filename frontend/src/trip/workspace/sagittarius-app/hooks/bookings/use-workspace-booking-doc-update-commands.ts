@@ -2,8 +2,11 @@ import { useCallback, useRef } from "react";
 import type { MutableRefObject } from "react";
 import {
   type BookingDocInputLike,
+  type BookingDocQuickFieldsPatch,
   bookingDocInputFromRecord,
+  bookingDocQuickFieldsInputFromRecord,
   buildPatchBookingDocRequest,
+  normalizeBookingDocTitle,
   replaceBookingDocInTrip,
   updateLocalBookingDocInTrip,
 } from "@/src/trip/booking-docs";
@@ -62,7 +65,7 @@ export function useWorkspaceBookingDocUpdateCommands({
               buildPatchBookingDocRequest(
                 {
                   ...input,
-                  title: input.title.trim(),
+                  title: normalizeBookingDocTitle(input),
                 },
                 {
                   clientMutationId: nextClientMutationId("booking-doc-patch"),
@@ -91,7 +94,7 @@ export function useWorkspaceBookingDocUpdateCommands({
       }
       commitTrip((current) =>
         updateLocalBookingDocInTrip(current, bookingDocId, input, {
-          title: input.title.trim(),
+          title: normalizeBookingDocTitle(input),
           updatedAt: workspaceLocalMutationTimestamp,
         }),
       );
@@ -141,33 +144,16 @@ export function useWorkspaceBookingDocUpdateCommands({
   const changeBookingDocQuickFields = useCallback(
     async (
       bookingDocId: string,
-      patch: {
-        confirmationCode?: string | null;
-        providerName?: string | null;
-      },
+      patch: BookingDocQuickFieldsPatch,
     ) => {
       await queueBookingDocUpdate(bookingDocId, async () => {
         const bookingDoc = latestTripRef.current.bookingDocs?.find(
           (candidate) => candidate.id === bookingDocId,
         );
         if (!bookingDoc) return;
-        const providerName =
-          patch.providerName !== undefined
-            ? patch.providerName
-            : bookingDoc.providerName;
-        const confirmationCode =
-          patch.confirmationCode !== undefined
-            ? patch.confirmationCode
-            : bookingDoc.confirmationCode;
-        if (
-          providerName === bookingDoc.providerName &&
-          confirmationCode === bookingDoc.confirmationCode
-        )
-          return;
-        await runBookingDocUpdate(bookingDoc.id, bookingDocInputFromRecord(bookingDoc, {
-          providerName,
-          confirmationCode,
-        }));
+        const input = bookingDocQuickFieldsInputFromRecord(bookingDoc, patch);
+        if (!input) return;
+        await runBookingDocUpdate(bookingDoc.id, input);
       });
     },
     [queueBookingDocUpdate, runBookingDocUpdate, latestTripRef],

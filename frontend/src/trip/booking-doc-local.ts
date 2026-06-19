@@ -14,6 +14,38 @@ export interface LocalBookingDocUpdateOptions {
   updatedAt: string;
 }
 
+export interface ResolveBookingDocCreateTripPlanIdOptions<T> {
+  selectedTripPlanId?: string | null;
+  resolveTripPlanId: (
+    trip: T,
+    input: Pick<BookingDocInputLike, "relatedItineraryItemIds">,
+    preferredTripPlanId?: string | null,
+  ) => string | null | undefined;
+}
+
+export interface BookingDocQuickFieldsPatch {
+  confirmationCode?: string | null;
+  providerName?: string | null;
+}
+
+export function normalizeBookingDocTitle(
+  input: Pick<BookingDocInputLike, "title">,
+): string {
+  return input.title.trim();
+}
+
+export function resolveBookingDocCreateTripPlanId<T>(
+  trip: T,
+  input: Pick<BookingDocInputLike, "relatedItineraryItemIds" | "tripPlanId">,
+  options: ResolveBookingDocCreateTripPlanIdOptions<T>,
+): string | null | undefined {
+  return options.resolveTripPlanId(
+    trip,
+    input,
+    input.tripPlanId ?? options.selectedTripPlanId,
+  );
+}
+
 export function createLocalBookingDoc(
   trip: Pick<Trip, "id" | "bookingDocs">,
   input: BookingDocInputLike,
@@ -104,6 +136,32 @@ export function bookingDocInputFromRecord(
     notes: overrides.notes !== undefined ? overrides.notes : bookingDoc.notes,
     tripPlanId: overrides.tripPlanId !== undefined ? overrides.tripPlanId : bookingDoc.tripPlanId,
   };
+}
+
+export function bookingDocQuickFieldsInputFromRecord(
+  bookingDoc: BookingDoc,
+  patch: BookingDocQuickFieldsPatch,
+): BookingDocInputLike | null {
+  const providerName =
+    patch.providerName !== undefined
+      ? patch.providerName
+      : bookingDoc.providerName;
+  const confirmationCode =
+    patch.confirmationCode !== undefined
+      ? patch.confirmationCode
+      : bookingDoc.confirmationCode;
+
+  if (
+    providerName === bookingDoc.providerName &&
+    confirmationCode === bookingDoc.confirmationCode
+  ) {
+    return null;
+  }
+
+  return bookingDocInputFromRecord(bookingDoc, {
+    confirmationCode,
+    providerName,
+  });
 }
 
 export function removeBookingDocFromTrip<T extends Pick<Trip, "bookingDocs">>(
