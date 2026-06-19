@@ -9,6 +9,7 @@ import {
   buildPatchExpenseRequest,
   removeExpenseFromTrip,
   replaceExpenseInTrip,
+  resolveExpenseCreateDraftTripPlanId,
   updateLocalExpenseInTrip,
   type ExpenseInputLike,
   type ExpenseUpdateInputLike,
@@ -60,10 +61,13 @@ export function useWorkspaceExpenseMutationCommands({
           participantSession.sessionToken,
           buildCreateExpenseRequest(expenseDraft, {
             clientMutationId: nextClientMutationId("expense-create"),
-            tripPlanId: tripPlanIdForRecord(
+            tripPlanId: resolveExpenseCreateDraftTripPlanId(
               trip,
-              expenseDraft.itemId,
-              expenseDraft.tripPlanId ?? selectedTripPlanId,
+              expenseDraft,
+              {
+                selectedTripPlanId,
+                resolveTripPlanId: tripPlanIdForRecord,
+              },
             ),
           }),
         );

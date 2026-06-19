@@ -23,6 +23,7 @@ export {
   removeExpenseFromTrip,
   repeatExpenseLineItems,
   replaceExpenseInTrip,
+  resolveExpenseCreateDraftTripPlanId,
   updateLocalExpenseInTrip,
 } from "./expense-drafts";
 export type {

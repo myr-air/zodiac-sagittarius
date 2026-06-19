@@ -83,6 +83,20 @@ export interface BuildExpenseUpdateDraftOptions<
   ) => string | null | undefined;
 }
 
+export interface ResolveExpenseCreateDraftTripPlanIdOptions<
+  T extends Pick<
+    Trip,
+    "itineraryItems" | "mainTripPlanId" | "activePlanVariantId"
+  >,
+> {
+  selectedTripPlanId?: string | null;
+  resolveTripPlanId: (
+    trip: T,
+    recordId: string | null | undefined,
+    preferredTripPlanId?: string | null,
+  ) => string | null | undefined;
+}
+
 export function normalizeExpenseRepeatCount(value: number | undefined): number {
   if (!value || !Number.isFinite(value)) return 1;
   return Math.min(31, Math.max(1, Math.floor(value)));
@@ -175,6 +189,23 @@ export function appendExpensesToTrip<T extends Pick<Trip, "expenses">>(
     ...trip,
     expenses: [...trip.expenses, ...expenses],
   };
+}
+
+export function resolveExpenseCreateDraftTripPlanId<
+  T extends Pick<
+    Trip,
+    "itineraryItems" | "mainTripPlanId" | "activePlanVariantId"
+  >,
+>(
+  trip: T,
+  draft: Pick<ExpenseCreateDraft, "itemId" | "tripPlanId">,
+  options: ResolveExpenseCreateDraftTripPlanIdOptions<T>,
+): string | null | undefined {
+  return options.resolveTripPlanId(
+    trip,
+    draft.itemId,
+    draft.tripPlanId ?? options.selectedTripPlanId,
+  );
 }
 
 export function buildExpenseUpdateDraft<

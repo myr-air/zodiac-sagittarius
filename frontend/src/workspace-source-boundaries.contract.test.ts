@@ -97,6 +97,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/photo-albums.ts"),
       "utf8",
     );
+    const expenseMutationCommands = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts"),
+      "utf8",
+    );
+    const expenseDrafts = readFileSync(
+      join(frontendRoot, "src/trip/expense-drafts.ts"),
+      "utf8",
+    );
     const itineraryViewModelHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
       "utf8",
@@ -685,6 +693,10 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(photoAlbumsHook).not.toContain("const title = input.title.trim()");
     expect(photoAlbumsHook).not.toContain("const url = input.url.trim()");
     expect(photoAlbumsDomain).toContain("normalizePhotoAlbumCreateInput");
+    expect(expenseMutationCommands).toContain(
+      "resolveExpenseCreateDraftTripPlanId",
+    );
+    expect(expenseDrafts).toContain("resolveExpenseCreateDraftTripPlanId");
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");
