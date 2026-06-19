@@ -24,7 +24,7 @@ import type {
 } from "@/src/trip/booking-docs";
 import { useSmartItineraryTableState } from "./hooks/useSmartItineraryTableState";
 
-import { tablePanelClassName, tableScrollClassName } from "../smart-itinerary-table.styles";
+import { tablePanelClassName, tableScrollClassName } from "./smart-itinerary-table.styles";
 
 interface SmartItineraryTableProps {
   canRestructure?: boolean;

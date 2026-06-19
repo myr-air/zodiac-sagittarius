@@ -6,11 +6,11 @@ import {
   weatherIconForCondition,
 } from "@/src/trip/weather-briefings";
 import { Icon } from "@/src/ui/icons";
-import { buildWeatherTooltip } from "../smart-itinerary-table-utils";
+import { buildWeatherTooltip } from "./smart-itinerary-table-utils";
 import {
   dayWeatherChipClassName,
   dayWeatherSolarClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 
 export function DayWeatherChip({
   briefing,

@@ -32,7 +32,7 @@ import {
   timeEditNextDayClassName,
   timeEditPreviewClassName,
   timeEditPreviewValueClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
 
 export function ActivityTimeButton({

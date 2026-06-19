@@ -30,7 +30,7 @@ import {
   subActivityTextClassName,
   subActivityTitleInputClassName,
   activityMobileTypePickerClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 
 export function SubActivityModal({
   canEdit,

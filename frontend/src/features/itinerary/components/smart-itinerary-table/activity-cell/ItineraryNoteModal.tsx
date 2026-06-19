@@ -4,7 +4,7 @@ import type { Locale } from "@/src/i18n/types";
 import { Icon } from "@/src/ui/icons";
 import { useEscapeToClose } from "./use-escape-close";
 import { cn } from "@/src/lib/cn";
-import { subActivityModalCloseClassName } from "../../smart-itinerary-table.styles";
+import { subActivityModalCloseClassName } from "../smart-itinerary-table.styles";
 import {
   ticketFieldClassName,
   ticketModalBackdropClassName,
@@ -13,7 +13,7 @@ import {
   ticketModalFooterClassName,
   ticketModalHeaderClassName,
   ticketModalTitleClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export function ItineraryNoteModal({

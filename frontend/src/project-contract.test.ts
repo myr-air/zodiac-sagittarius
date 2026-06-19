@@ -128,6 +128,10 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/SmartItineraryTable.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table.styles.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ActivityPathGraphDay.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/index.ts"))).toBe(true);

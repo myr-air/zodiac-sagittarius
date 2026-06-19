@@ -11,7 +11,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import { itemStatusLabel } from "../smart-itinerary-table-utils";
+import { itemStatusLabel } from "./smart-itinerary-table-utils";
 import { formatDuration } from "../../lib";
 import { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
 import { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
@@ -38,7 +38,7 @@ import {
   activityTypeRailClassName,
   activityMobileTypePickerClassName,
   activityTabletActionLayerClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 import { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
 import { ActivityMoreActionsButton, ActivitySubActivityToggle } from "./activity-cell/ActivityCellControls";
 

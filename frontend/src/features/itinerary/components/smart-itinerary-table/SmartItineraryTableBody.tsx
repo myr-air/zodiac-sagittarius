@@ -10,7 +10,7 @@ import type {
 import type { CSSProperties } from "react";
 import { DayGroup } from "./day-group";
 import { SmartItineraryTableHead } from "./SmartItineraryTableHead";
-import { smartTableClassName } from "../smart-itinerary-table.styles";
+import { smartTableClassName } from "./smart-itinerary-table.styles";
 
 interface SmartItineraryTableBodyProps {
   collapsedDays: string[];

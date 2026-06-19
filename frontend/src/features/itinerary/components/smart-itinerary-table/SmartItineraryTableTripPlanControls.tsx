@@ -12,8 +12,8 @@ import {
   tripPlanNameInputClassName,
   tripPlanSecondaryButtonClassName,
   tripPlanSelectClassName,
-} from "../smart-itinerary-table.styles";
-import { formatTripPlanOptionLabel, tripPlanStatus } from "../smart-itinerary-table-utils";
+} from "./smart-itinerary-table.styles";
+import { formatTripPlanOptionLabel, tripPlanStatus } from "./smart-itinerary-table-utils";
 
 type SubmitTripPlanResult = boolean | void | Promise<boolean | void>;
 

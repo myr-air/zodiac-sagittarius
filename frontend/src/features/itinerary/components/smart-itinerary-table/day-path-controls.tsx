@@ -4,7 +4,7 @@ import {
   dayClearPathButtonClassName,
   dayPathControlsClassName,
   dayPathPickerClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 
 interface DayPathControlsProps {
   day: string;

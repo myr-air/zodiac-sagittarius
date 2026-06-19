@@ -2,7 +2,7 @@ import { Icon } from "@/src/ui/icons";
 import {
   activityTabletActionsClassName,
   subActivityToggleButtonClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 
 export function ActivitySubActivityToggle({
   activity,

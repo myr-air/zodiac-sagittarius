@@ -14,7 +14,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import { groupChildItemsByParent, groupTopLevelItems } from "../smart-itinerary-table-utils";
+import { groupChildItemsByParent, groupTopLevelItems } from "./smart-itinerary-table-utils";
 import {
   addStopInlineButtonClassName,
   addStopRowClassName,
@@ -29,7 +29,7 @@ import {
   graphCellClassName,
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 import { DayWeatherChip } from "./day-weather-chip";
 import { ActivityCell } from "./activity-cell";
 import { DayTitleEditor } from "./day-title-editor";

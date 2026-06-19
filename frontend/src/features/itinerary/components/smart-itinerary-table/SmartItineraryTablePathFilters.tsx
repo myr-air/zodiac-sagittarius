@@ -6,7 +6,7 @@ import {
   pathFilterPanelClassName,
   pathFilterSummaryClassName,
   showAllPathsToggleClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 
 type FilterOption = { id: string; name: string };
 

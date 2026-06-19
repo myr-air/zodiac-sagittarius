@@ -10,7 +10,7 @@ import {
   activityPlaceLineClassName,
   activityRouteLabelClassName,
   activityRouteLineClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 
 export function ActivityLocationLine({
   editable,

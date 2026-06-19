@@ -3,7 +3,7 @@ import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 
-import { activityIconButtonClassName } from "../../smart-itinerary-table.styles";
+import { activityIconButtonClassName } from "../smart-itinerary-table.styles";
 
 export function ActivityActionButtons({
   iconClassName,

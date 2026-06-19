@@ -20,8 +20,8 @@ import {
   travelSubtypeForItem,
   travelSubtypeOptions,
   fromDateTimeLocalValue,
-} from "../domain";
-import { readItineraryDetailString, toggleId, uniqueIds } from "../lib";
+} from "../../domain";
+import { readItineraryDetailString, toggleId, uniqueIds } from "../../lib";
 
 describe("smart-itinerary-table-helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {

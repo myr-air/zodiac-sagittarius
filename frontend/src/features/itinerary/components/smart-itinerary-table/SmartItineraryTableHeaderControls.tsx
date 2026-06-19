@@ -13,7 +13,7 @@ import {
   pageHeaderActionsClassName,
   pageHeaderNoteClassName,
   pathFilterSummaryClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
 

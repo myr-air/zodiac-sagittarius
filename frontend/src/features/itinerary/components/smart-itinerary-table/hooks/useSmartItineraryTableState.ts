@@ -18,12 +18,12 @@ import {
   formatSelectedPlanLabel,
   groupGraphItemsByDay,
   mergeTripDayGroups,
-} from "../../smart-itinerary-table-utils";
+} from "../smart-itinerary-table-utils";
 import {
   graphColumnLaneGap,
   graphColumnMinWidth,
   graphColumnSidePadding,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 
 interface UseSmartItineraryTableStateParams {
   pathOptions: ItineraryPathOption[];

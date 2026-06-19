@@ -3,7 +3,7 @@ import {
   dayTitleInputClassName,
   dayTitleMaxLength,
   dayTitleMinWidthCh,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 
 interface DayTitleEditorProps {
   canEdit: boolean;

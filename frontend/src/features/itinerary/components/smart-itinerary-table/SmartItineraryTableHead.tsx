@@ -1,7 +1,7 @@
 import {
   activityHeaderActivityClassName,
   activityHeaderGridClassName,
-} from "../smart-itinerary-table.styles";
+} from "./smart-itinerary-table.styles";
 
 interface SmartItineraryTableHeadProps {
   labels: {

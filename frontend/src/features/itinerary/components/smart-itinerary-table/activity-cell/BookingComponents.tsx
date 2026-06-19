@@ -19,7 +19,7 @@ import {
   activityBookingButtonClassName,
   activityBookingButtonEmptyClassName,
   activityBookingButtonLinkedClassName,
-} from "../../smart-itinerary-table.styles";
+} from "../smart-itinerary-table.styles";
 import { ItineraryTicketModal } from "./ItineraryTicketModal";
 
 export function ItineraryBookingButton({
