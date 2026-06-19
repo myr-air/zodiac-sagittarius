@@ -40,6 +40,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"))).toBe(true);
@@ -284,12 +285,17 @@ describe("Sagittarius project scaffold", () => {
   it("keeps shared UI primitives split by responsibility", () => {
     const uiIndex = readFileSync(join(frontendRoot, "src/ui/index.ts"), "utf8");
     const primitives = readFileSync(join(frontendRoot, "src/ui/primitives.tsx"), "utf8");
+    const primitiveStyles = readFileSync(join(frontendRoot, "src/ui/primitive-styles.ts"), "utf8");
     const workspacePrimitives = readFileSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"), "utf8");
 
     expect(uiIndex).toContain("./primitives");
     expect(uiIndex).toContain("./workspace-primitives");
     expect(primitives).toContain("export function Button");
     expect(primitives).toContain("export function Badge");
+    expect(primitives).toContain("./primitive-styles");
+    expect(primitives).not.toContain("const buttonBaseClassName");
+    expect(primitiveStyles).toContain("export const buttonBaseClassName");
+    expect(primitiveStyles).toContain("export const badgeBaseClassName");
     expect(primitives).not.toContain("export function WorkspaceSurface");
     expect(primitives).not.toContain("fieldControlClassName");
     expect(workspacePrimitives).toContain("export function WorkspaceSurface");
