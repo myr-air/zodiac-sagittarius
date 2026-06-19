@@ -454,6 +454,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"),
       "utf8",
     );
+    const tripJoinParticipantStep = readFileSync(
+      join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx"),
+      "utf8",
+    );
     const tripJoinGateStyles = readFileSync(
       join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"),
       "utf8",
@@ -561,9 +565,13 @@ describe("Sagittarius project scaffold", () => {
     expect(tripJoinGate).toContain("./trip-join-gate.support");
     expect(tripJoinGate).toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
+    expect(tripJoinGate).toContain("TripJoinParticipantStep");
     expect(tripJoinGate).not.toContain("joinFormClassName");
+    expect(tripJoinGate).not.toContain("participantGridClassName");
     expect(tripJoinRoomForm).toContain("export function TripJoinRoomForm");
     expect(tripJoinRoomForm).toContain("joinFormClassName");
+    expect(tripJoinParticipantStep).toContain("export function TripJoinParticipantStep");
+    expect(tripJoinParticipantStep).toContain("participantGridClassName");
     expect(tripJoinGate).not.toContain("tripAccessPhotoKrabiClassName");
     expect(tripJoinGateVisual).toContain("export function TripJoinGateVisual");
     expect(tripJoinGateVisual).toContain("tripAccessPhotoKrabiClassName");

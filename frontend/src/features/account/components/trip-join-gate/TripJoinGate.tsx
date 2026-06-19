@@ -1,8 +1,7 @@
 "use client";
 
-import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/src/ui/icons";
-import { Badge, Button } from "@/src/ui";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
@@ -20,8 +19,6 @@ import {
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import {
   errorMessage,
-  participantStatusLabel,
-  roleLabel,
   tripFromJoinResponse,
 } from "./trip-join-gate.support";
 import {
@@ -34,23 +31,13 @@ import {
   joinMarkClassName,
   joinPageClassName,
   joinShellClassName,
-  joinSubmitClassName,
-  participantAuthClassName,
-  participantAuthHelpClassName,
-  participantAvatarClassName,
-  participantCardClassName,
-  participantGridClassName,
-  participantStepClassName,
-  passwordInputRowClassName,
-  passwordVisibilityButtonClassName,
   tripAccessContentClassName,
   tripAccessHeroClassName,
   tripAccessJoinMarkClassName,
   tripAccessJoinShellClassName,
-  tripAccessParticipantStepClassName,
   tripAccessRightColumnClassName,
-  tripAccessSubmitClassName,
 } from "./trip-join-gate.styles";
+import { TripJoinParticipantStep } from "./TripJoinParticipantStep";
 import { TripJoinRoomForm } from "./TripJoinRoomForm";
 import { TripJoinGateVisual } from "./TripJoinGateVisual";
 
@@ -276,78 +263,33 @@ export function TripJoinGate({ trip, apiClient, embedded = false, variant = "def
               tripPassword={tripPassword}
             />
           ) : (
-            <div className={cn(participantStepClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessParticipantStepClassName : "")}>
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3.5 py-1.5 text-xs font-[850] text-(--color-text-muted) transition-all duration-150 hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) hover:border-(--color-primary-border) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.08)] focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-route) focus-visible:border-(--color-route-border)"
-                )}
-                onClick={() => setStep('room')}
-              >
-                <Icon name="chevronLeft" className="size-3.5" />
-                {t.join.backToRoom}
-              </button>
-              <div className={participantGridClassName} role="group" aria-label={t.join.participantListLabel}>
-                {participantMembers.map((member) => (
-                  <Fragment key={member.id}>
-                    <button
-                      className={participantCardClassName}
-                      disabled={isTripParticipantDisabled(member)}
-                      data-selected={member.id === selectedMemberId ? "true" : "false"}
-                      type="button"
-                      onClick={() => selectMember(member)}
-                    >
-                      <span className={participantAvatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">
-                        {member.displayName.slice(0, 1)}
-                      </span>
-                      <span>
-                        <strong>{member.displayName}</strong>
-                        <small>{roleLabel(member.role, t.appShell.roles)}</small>
-                      </span>
-                      <Badge tone={isTripParticipantDisabled(member) ? "danger" : (member.userId || member.claimPasswordHash || member.claimedAt) ? "success" : "warning"}>
-                        {participantStatusLabel(member, t.join.memberStatus)}
-                      </Badge>
-                    </button>
-                    {selectedMember?.id === member.id ? (
-                      <form className={participantAuthClassName} aria-label={selectedMember.displayName} onSubmit={submitParticipant}>
-                        <label>
-                          <span>
-                            {(selectedMember.claimPasswordHash || selectedMember.claimedAt)
-                              ? t.join.participantPassword({ name: selectedMember.displayName })
-                              : t.join.setParticipantPassword({ name: selectedMember.displayName })}
-                          </span>
-                          <span className={passwordInputRowClassName}>
-                            <input
-                              value={participantPassword}
-                              onChange={(event) => setParticipantPassword(event.target.value)}
-                              type={showParticipantPassword ? "text" : "password"}
-                              autoComplete="current-password"
-                            />
-                            <button
-                              type="button"
-                              className={passwordVisibilityButtonClassName}
-                              aria-label={showParticipantPassword ? t.join.hideParticipantPassword : t.join.showParticipantPassword}
-                              onClick={() => setShowParticipantPassword((current) => !current)}
-                            >
-                              <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
-                            </button>
-                          </span>
-                        </label>
-                        {!(selectedMember.claimPasswordHash || selectedMember.claimedAt) ? (
-                          <p className={participantAuthHelpClassName}>
-                            {t.join.participantHelp}
-                          </p>
-                        ) : null}
-                        <Button type="submit" className={cn(joinSubmitClassName, isTripAccessVariant ? tripAccessSubmitClassName : "")} disabled={isSubmitting}>
-                          <Icon name="check" />
-                          {(selectedMember.claimPasswordHash || selectedMember.claimedAt) ? t.common.actions.confirm : t.join.start}
-                        </Button>
-                      </form>
-                    ) : null}
-                  </Fragment>
-                ))}
-              </div>
-            </div>
+            <TripJoinParticipantStep
+              copy={{
+                backToRoom: t.join.backToRoom,
+                confirm: t.common.actions.confirm,
+                hideParticipantPassword: t.join.hideParticipantPassword,
+                memberStatus: t.join.memberStatus,
+                participantHelp: t.join.participantHelp,
+                participantListLabel: t.join.participantListLabel,
+                participantPassword: t.join.participantPassword,
+                roles: t.appShell.roles,
+                setParticipantPassword: t.join.setParticipantPassword,
+                showParticipantPassword: t.join.showParticipantPassword,
+                start: t.join.start,
+              }}
+              isSubmitting={isSubmitting}
+              isTripAccessVariant={isTripAccessVariant}
+              participantMembers={participantMembers}
+              participantPassword={participantPassword}
+              selectedMember={selectedMember}
+              selectedMemberId={selectedMemberId}
+              showParticipantPassword={showParticipantPassword}
+              onBackToRoom={() => setStep("room")}
+              onParticipantPasswordChange={setParticipantPassword}
+              onSelectMember={selectMember}
+              onSubmitParticipant={submitParticipant}
+              onToggleParticipantPassword={() => setShowParticipantPassword((current) => !current)}
+            />
           )}
         </div>
       </section>
