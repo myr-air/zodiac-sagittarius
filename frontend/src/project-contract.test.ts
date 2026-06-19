@@ -228,7 +228,18 @@ describe("Sagittarius project scaffold", () => {
 
   it("uses Next App Router with trip-scoped production routes", () => {
     expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
-    expect(readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8")).toContain("LanguageSwitch");
+    const homeLanding = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8");
+    const homeLandingMeta = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.meta.ts"), "utf8");
+    const homeLandingStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.styles.ts"), "utf8");
+    expect(homeLanding).toContain("LanguageSwitch");
+    expect(homeLanding).toContain("./HomeLanding.meta");
+    expect(homeLanding).toContain("./HomeLanding.styles");
+    expect(homeLanding).not.toContain("const homePageClassName");
+    expect(homeLanding).not.toContain("const workflowStepMeta");
+    expect(homeLandingMeta).toContain("workflowStepMeta");
+    expect(homeLandingMeta).toContain("previewDayKeys");
+    expect(homeLandingStyles).toContain("homePageClassName");
+    expect(homeLandingStyles).toContain("workflowToneClassNames");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("Plan trips with friends");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
