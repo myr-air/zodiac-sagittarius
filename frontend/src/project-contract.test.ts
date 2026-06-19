@@ -141,6 +141,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-invite-review.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx"))).toBe(true);
@@ -319,6 +320,17 @@ describe("Sagittarius project scaffold", () => {
     expect(appShellStyles).toContain("export const sideRailClassName");
     expect(appShellSupport).toContain("export function resolveViewFromPath");
     expect(appShellSupport).toContain("export function roleLabel");
+  });
+
+  it("keeps portal trip wizard model logic out of the render component", () => {
+    const portalTripWizard = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"), "utf8");
+    const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"), "utf8");
+
+    expect(portalTripWizard).toContain("./use-portal-trip-wizard-model");
+    expect(portalTripWizard).not.toContain("const [countryQuery");
+    expect(portalTripWizard).not.toContain("function regenerateCredentials");
+    expect(portalTripWizardModel).toContain("export function usePortalTripWizardModel");
+    expect(portalTripWizardModel).toContain("function regenerateCredentials");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
