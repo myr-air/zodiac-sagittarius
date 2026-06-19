@@ -2,25 +2,16 @@ import { type FormEvent, useMemo, useState } from "react";
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatDayLabel, getTripDates, type ItineraryView } from "@/src/trip/itinerary";
-import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
 import { WeatherBriefingDrawer, WeatherForecastStrip } from "@/src/shared/components/weather";
-import { Button, Select, TextInput } from "@/src/ui";
 import { CockpitCard, HighlightBoard, OverviewHero } from "./overview";
 import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {
-  dialogFieldWideClassName,
   overviewReadinessChipsClassName,
-  modalBackdropClassName,
   overviewCockpitClassName,
   overviewGridClassName,
   overviewPageClassName,
   overviewUndoToastClassName,
-  taskDialogActionsClassName,
-  taskDialogClassName,
-  taskDialogFormClassName,
-  taskDialogGridClassName,
-  taskDialogTitleRowClassName,
 } from "./overview/overview-page.styles";
 import {
   buildDestinationVisual,
@@ -33,6 +24,7 @@ import {
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
 import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./overview/OverviewRolePanels";
+import { OverviewTaskDialog } from "./overview/OverviewTaskDialog";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -293,46 +285,30 @@ export function OverviewPage({
         ) : null}
       </div>
       {isTaskDialogOpen ? (
-        <div className={modalBackdropClassName} role="presentation">
-          <section className={taskDialogClassName} role="dialog" aria-modal="true" aria-labelledby="task-dialog-title">
-            <div className={taskDialogTitleRowClassName}>
-              <h2 id="task-dialog-title">{t.overview.headings.addChecklist}</h2>
-              <button type="button" aria-label={t.overview.task.closeForm} onClick={closeTaskDialog}>
-                <Icon name="x" />
-              </button>
-            </div>
-
-            <form className={taskDialogFormClassName} onSubmit={submitTask}>
-              <div className={taskDialogGridClassName}>
-                <label className={dialogFieldWideClassName}>
-                  <span>{t.overview.task.titleLabel}</span>
-                  <TextInput value={newTaskTitle} onChange={(event) => setNewTaskTitle(event.target.value)} placeholder={t.overview.task.titlePlaceholder} />
-                </label>
-                <label>
-                  <span>{t.overview.task.visibilityLabel}</span>
-                  <Select value={newTaskVisibility} onChange={(event) => setNewTaskVisibility(event.target.value as TripTask["visibility"])}>
-                    <option value="private">{t.overview.task.private}</option>
-                    <option value="shared">{t.overview.task.shared}</option>
-                  </Select>
-                </label>
-                <label>
-                  <span>{t.overview.task.assigneeLabel}</span>
-                  <Select value={newTaskAssigneeId} disabled={newTaskVisibility === "private"} onChange={(event) => setNewTaskAssigneeId(event.target.value)}>
-                    <option value="">{t.overview.task.noAssignee}</option>
-                    {assignableMembers.map((member) => (
-                      <option key={member.id} value={member.id}>{member.displayName}</option>
-                    ))}
-                  </Select>
-                </label>
-              </div>
-
-              <div className={taskDialogActionsClassName}>
-                <Button type="button" variant="ghost" onClick={closeTaskDialog}>{t.overview.task.cancel}</Button>
-                <Button type="submit" disabled={!newTaskTitle.trim()}>{t.overview.task.submit}</Button>
-              </div>
-            </form>
-          </section>
-        </div>
+        <OverviewTaskDialog
+          assignableMembers={assignableMembers}
+          assigneeId={newTaskAssigneeId}
+          labels={{
+            assigneeLabel: t.overview.task.assigneeLabel,
+            cancel: t.overview.task.cancel,
+            closeForm: t.overview.task.closeForm,
+            noAssignee: t.overview.task.noAssignee,
+            private: t.overview.task.private,
+            shared: t.overview.task.shared,
+            submit: t.overview.task.submit,
+            title: t.overview.headings.addChecklist,
+            titleLabel: t.overview.task.titleLabel,
+            titlePlaceholder: t.overview.task.titlePlaceholder,
+            visibilityLabel: t.overview.task.visibilityLabel,
+          }}
+          onAssigneeChange={setNewTaskAssigneeId}
+          onClose={closeTaskDialog}
+          onSubmit={submitTask}
+          onTitleChange={setNewTaskTitle}
+          onVisibilityChange={setNewTaskVisibility}
+          title={newTaskTitle}
+          visibility={newTaskVisibility}
+        />
       ) : null}
       {undoTask ? (
         <div className={overviewUndoToastClassName} role="status">
