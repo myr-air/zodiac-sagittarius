@@ -92,6 +92,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
@@ -426,6 +428,10 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
     expect(accountTripWizardSupport).not.toContain("function randomToken");
     expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
+    expect(tripWizardFormSections).toContain("./portal-trip-wizard-dates-step");
+    expect(tripWizardFormSections).toContain("./portal-trip-wizard-destination-step");
+    expect(tripWizardFormSections).not.toContain("interface TripWizardDestinationStepProps");
+    expect(tripWizardFormSections).not.toContain("interface TripWizardDatesStepProps");
     expect(tripWizardFormSections).not.toContain("function TripWizardInviteStep");
     expect(tripWizardFormSections).not.toContain("function TripWizardReviewSummary");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
