@@ -18,11 +18,7 @@ import {
   publicSagittariusApiBaseUrl,
 } from "@/src/api/sagittarius-api-clients";
 import {
-  findSessionMember,
-} from "@/src/trip/auth";
-import {
   clearParticipantSession,
-  isLocalParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
   normalizeTripPlanAliases,
@@ -68,6 +64,7 @@ import {
   useWorkspaceTripPlanCommands,
   useWorkspaceSession,
   useEffectivePlaceResolver,
+  useWorkspaceMemberContext,
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,
 } from "./hooks";
@@ -221,15 +218,18 @@ export function SagittariusApp({
     placeResolver,
     tripId: trip.id,
   });
-  const sessionMember = findSessionMember(trip, participantSession);
-  const currentMember =
-    sessionMember ??
-    trip.members.find((member) => member.id === currentMemberId) ??
-    trip.members[0];
-  const isApiMode =
-    dataSource === "api" && !isLocalParticipantSession(participantSession);
-  const isTripLoading =
-    isApiMode && Boolean(participantSession) && !isCockpitLoaded;
+  const {
+    currentMember,
+    isApiMode,
+    isTripLoading,
+    sessionMember,
+  } = useWorkspaceMemberContext({
+    currentMemberId,
+    dataSource,
+    isCockpitLoaded,
+    participantSession,
+    trip,
+  });
   const {
     replaceDailyBriefings,
     resetDailyBriefings,

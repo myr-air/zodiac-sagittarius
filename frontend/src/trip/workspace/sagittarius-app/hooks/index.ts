@@ -7,6 +7,7 @@ export { useEffectivePlaceResolver } from "./use-effective-place-resolver";
 export { useWorkspaceItineraryCommands } from "./use-workspace-itinerary-commands";
 export { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-actions";
 export { useWorkspaceItineraryImport } from "./use-workspace-itinerary-import";
+export { useWorkspaceMemberContext } from "./use-workspace-member-context";
 export { useWorkspaceParticipantSessionActions } from "./use-workspace-participant-session-actions";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";

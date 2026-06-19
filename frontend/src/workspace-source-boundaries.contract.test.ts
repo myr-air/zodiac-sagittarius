@@ -37,6 +37,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
+    const memberContextHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts"),
+      "utf8",
+    );
     const selectedTripPlanHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts"),
       "utf8",
@@ -382,6 +386,11 @@ describe("Sagittarius workspace source boundaries", () => {
       'from "@/src/components/TimelineView"',
     ]);
     expect(sagaCore).toContain("WorkspaceMainShell");
+    expect(sagaCore).toContain("useWorkspaceMemberContext");
+    expect(sagaCore).not.toContain("findSessionMember");
+    expect(sagaCore).not.toContain("isLocalParticipantSession");
+    expect(memberContextHook).toContain("findSessionMember");
+    expect(memberContextHook).toContain("isLocalParticipantSession");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanState");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanSync");
     expect(sagaCore).not.toContain("queueMicrotask");
