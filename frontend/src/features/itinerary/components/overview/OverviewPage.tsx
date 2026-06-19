@@ -1,4 +1,3 @@
-import { type FormEvent, useMemo, useState } from "react";
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { type ItineraryView } from "@/src/trip/itinerary";
@@ -14,7 +13,6 @@ import {
   buildDestinationVisual,
   buildHighlightItems,
   getCountdownBadge,
-  isMyTask,
   managerNextStopDetail,
   overviewRoleLens,
   photoBoardEmptyMessage,
@@ -24,6 +22,7 @@ import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } f
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewTaskDialog } from "./OverviewTaskDialog";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
+import { useOverviewTaskState } from "./use-overview-task-state";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -62,13 +61,33 @@ export function OverviewPage({
     : (countdown.type === "incoming"
       ? (locale === "th" ? "จุดสตาร์ทแรกของทริป" : "First Stop Preview")
       : t.overview.focusToday);
-  const [taskScope, setTaskScope] = useState<"mine" | "trip" | "all">("mine");
-  const [taskStatusFilter, setTaskStatusFilter] = useState<"all" | "open" | "done">("all");
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
-  const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
-  const [undoTask, setUndoTask] = useState<TripTask | null>(null);
+  const {
+    closeTaskDialog,
+    isTaskDialogOpen,
+    myOpenTasks,
+    newTaskAssigneeId,
+    newTaskTitle,
+    newTaskVisibility,
+    openTaskDialog,
+    setNewTaskAssigneeId,
+    setNewTaskTitle,
+    setNewTaskVisibility,
+    setTaskScope,
+    setTaskStatusFilter,
+    sharedOpenTasks,
+    submitTask,
+    taskScope,
+    taskStatusFilter,
+    toggleTask,
+    undoTask,
+    undoTaskToggle,
+    visibleTasks,
+  } = useOverviewTaskState({
+    currentMemberId,
+    onCreateTask,
+    onToggleTaskStatus,
+    tasks,
+  });
   /* v8 ignore next */
   const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
   const nextStop = sortedItems[0];
@@ -87,55 +106,10 @@ export function OverviewPage({
   const isTravelerLens = roleLens === "traveler";
   const isViewerLens = roleLens === "viewer";
   const assignableMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled");
-  const myOpenTasks = tasks.filter((task) => task.status === "open" && isMyTask(task, currentMemberId)).length;
-  const sharedOpenTasks = tasks.filter((task) => task.status === "open" && task.visibility === "shared").length;
   const nextDayItems = nextStop ? sortedItems.filter((item) => item.day === nextStop.day).slice(0, 4) : [];
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
-  const visibleTasks = useMemo(
-    () =>
-      tasks.filter((task) => {
-        if (taskScope === "mine" && !isMyTask(task, currentMemberId)) return false;
-        if (taskScope === "trip" && task.visibility !== "shared") return false;
-        if (taskStatusFilter === "open") return task.status === "open";
-        if (taskStatusFilter === "done") return task.status === "done";
-        return true;
-      }),
-    [currentMemberId, taskScope, taskStatusFilter, tasks],
-  );
-
-  function submitTask(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = newTaskTitle.trim();
-    if (!title) return;
-    onCreateTask({ title, visibility: newTaskVisibility, assigneeId: newTaskAssigneeId || null });
-    setNewTaskTitle("");
-    setNewTaskVisibility("private");
-    setNewTaskAssigneeId("");
-    setTaskScope(newTaskVisibility === "shared" ? "trip" : "mine");
-    setTaskStatusFilter("all");
-    setIsTaskDialogOpen(false);
-  }
-
-  function closeTaskDialog() {
-    setIsTaskDialogOpen(false);
-    setNewTaskTitle("");
-    setNewTaskVisibility("private");
-    setNewTaskAssigneeId("");
-  }
-
-  function toggleTask(task: TripTask) {
-    onToggleTaskStatus(task.id);
-    setUndoTask(task);
-  }
-
-  function undoTaskToggle() {
-    if (!undoTask) return;
-    onToggleTaskStatus(undoTask.id);
-    setUndoTask(null);
-  }
-
   function openExpenses() {
     onOpenExpenses?.();
   }
@@ -264,7 +238,7 @@ export function OverviewPage({
             pendingSuggestions={pendingSuggestions}
             visibleTasks={visibleTasks}
             focusSectionDetailFallback={nextStop ? managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback) : t.overview.focusDetails.managerFallback}
-            openTaskDialog={() => setIsTaskDialogOpen(true)}
+            openTaskDialog={openTaskDialog}
           />
         ) : null}
       </div>

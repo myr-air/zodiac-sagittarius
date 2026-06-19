@@ -164,6 +164,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-role-panels.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/use-overview-task-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ContextRail.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/ContextRail.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
@@ -473,6 +474,22 @@ describe("Sagittarius project scaffold", () => {
     expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
     expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");
+  });
+
+  it("keeps overview task state split from page composition", () => {
+    const overviewPage = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"), "utf8");
+    const overviewTaskState = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/use-overview-task-state.ts"), "utf8");
+
+    expect(overviewPage).toContain("./use-overview-task-state");
+    expect(overviewPage).not.toContain("useState");
+    expect(overviewPage).not.toContain("useMemo");
+    expect(overviewPage).not.toContain("function submitTask");
+    expect(overviewPage).not.toContain("isMyTask");
+    expect(overviewTaskState).toContain("export function useOverviewTaskState");
+    expect(overviewTaskState).toContain("function submitTask");
+    expect(overviewTaskState).toContain("isMyTask");
+    expect(overviewTaskState).toContain("myOpenTasks");
+    expect(overviewTaskState).toContain("sharedOpenTasks");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
