@@ -53,6 +53,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/participant-post-auth-navigation.ts"),
       "utf8",
     );
+    const workspaceSessionHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-session.ts"),
+      "utf8",
+    );
+    const workspaceSessionRestore = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts"),
+      "utf8",
+    );
     const itineraryViewModelHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
       "utf8",
@@ -616,6 +624,10 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(participantSessionActions).toContain("resolveParticipantPostAuthHref");
     expect(participantSessionActions).not.toContain("decodeReturnTo");
     expect(participantPostAuthNavigation).toContain("resolveJoinPostAuthReturnTo");
+    expect(workspaceSessionHook).toContain("resolveWorkspaceSessionRestore");
+    expect(workspaceSessionHook).not.toContain("normalizeTripPlanAliases");
+    expect(workspaceSessionRestore).toContain("normalizeTripPlanAliases");
+    expect(workspaceSessionRestore).toContain("resolveSelectedTripPlanId");
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");

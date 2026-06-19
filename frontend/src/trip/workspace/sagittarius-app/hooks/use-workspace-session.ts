@@ -14,10 +14,12 @@ import {
   loadPersistedParticipantSession,
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
-import { normalizeTripPlanAliases } from "@/src/trip/trip-plans";
 import { loadPersistedTripDraft } from "@/src/trip/repository";
-import { resolveSelectedTripPlanId } from "@/src/trip/workspace/selected-trip-plan";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import {
+  resolveWorkspaceSessionRestore,
+  resolveWorkspaceSessionTrip,
+} from "./workspace-session-restore";
 
 type TripWorkspaceState = {
   trip: Trip;
@@ -64,22 +66,27 @@ export function useWorkspaceSession({
     });
     const timeout = window.setTimeout(() => {
       if (cancelled) return;
-      const persistedTrip = loadPersistedTripDraft(normalizeTripPlanAliases);
-      const nextTrip = normalizeTripPlanAliases(persistedTrip ?? initialTrip);
+      const persistedTrip = loadPersistedTripDraft();
+      const nextTrip = resolveWorkspaceSessionTrip(initialTrip, persistedTrip);
       const persistedSession = loadPersistedParticipantSession(
         requireJoin,
         nextTrip,
         isApiMode,
         routeTripId,
       );
+      const restored = resolveWorkspaceSessionRestore({
+        initialTrip,
+        persistedSession,
+        persistedTrip,
+      });
 
-      if (persistedTrip) {
-        setTripState({ trip: nextTrip, past: [], future: [] });
-        setSelectedTripPlanId(resolveSelectedTripPlanId(nextTrip));
+      if (restored.shouldReplaceTripState) {
+        setTripState({ trip: restored.nextTrip, past: [], future: [] });
+        setSelectedTripPlanId(restored.selectedTripPlanId!);
       }
-      if (persistedSession) {
-        setParticipantSession(persistedSession);
-        setCurrentMemberId(persistedSession.memberId);
+      if (restored.participantSession) {
+        setParticipantSession(restored.participantSession);
+        setCurrentMemberId(restored.currentMemberId!);
       } else {
         setParticipantSession(null);
       }
