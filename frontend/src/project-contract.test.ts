@@ -175,6 +175,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts"))).toBe(true);
@@ -374,6 +377,22 @@ describe("Sagittarius project scaffold", () => {
     expect(ticketFooter).toContain("export function ItineraryTicketModalFooter");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("buildTicketSubmitInput");
+  });
+
+  it("keeps activity time controls split behind a compatibility barrel", () => {
+    const barrel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeComponents.tsx"), "utf8");
+    const button = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx"), "utf8");
+    const modal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx"), "utf8");
+    const types = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts"), "utf8");
+
+    expect(barrel).toContain("./ActivityTimeButton");
+    expect(barrel).toContain("./TimeEditModal");
+    expect(barrel).toContain("./time-components.types");
+    expect(barrel).not.toContain("createPortal");
+    expect(button).toContain("export function ActivityTimeButton");
+    expect(button).not.toContain("createPortal");
+    expect(modal).toContain("export function TimeEditModal");
+    expect(types).toContain("export interface ActivityTimeButtonProps");
   });
 
   it("keeps sub-activity components split behind a compatibility barrel", () => {
