@@ -156,6 +156,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
@@ -490,6 +491,22 @@ describe("Sagittarius project scaffold", () => {
     expect(overviewTaskState).toContain("isMyTask");
     expect(overviewTaskState).toContain("myOpenTasks");
     expect(overviewTaskState).toContain("sharedOpenTasks");
+  });
+
+  it("keeps expenses page state split from page composition", () => {
+    const expensesPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.tsx"), "utf8");
+    const expensesState = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"), "utf8");
+
+    expect(expensesPage).toContain("./use-trip-expenses-page-state");
+    expect(expensesPage).not.toContain("useState");
+    expect(expensesPage).not.toContain("useMemo");
+    expect(expensesPage).not.toContain("buildExpenseCsv");
+    expect(expensesPage).not.toContain("refundSplits");
+    expect(expensesPage).not.toContain("function recordRefund");
+    expect(expensesState).toContain("export function useTripExpensesPageState");
+    expect(expensesState).toContain("buildExpenseCsv");
+    expect(expensesState).toContain("refundSplits");
+    expect(expensesState).toContain("function recordRefund");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
