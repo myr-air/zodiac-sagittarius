@@ -1,16 +1,11 @@
 import { useCallback, useRef } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import type { BookingDocInput } from "@/src/features/workspace/pages/bookings-docs";
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import {
+  type BookingDocInputLike,
   type ItineraryBookingTemplate,
   type ItineraryBookingTicketInput,
-  bookingDraftDetailsForItineraryItem,
-  bookingDraftTimeWindowForItineraryItem,
-  bookingDraftTitleForItineraryItem,
   bookingDocInputFromRecord,
-  bookingTypeForBookingTemplate,
-  bookingTypeForItineraryItem,
   buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   clearItineraryBookingTicketDetails,
@@ -20,7 +15,6 @@ import {
   replaceBookingDocInTrip,
   syncItineraryDetailsWithBookingTicket,
   updateLocalBookingDocInTrip,
-  uniqueStringIds,
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { isVersionConflict } from "@/src/trip/api-errors";
@@ -32,6 +26,10 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { tripPlanIdForBookingRecord } from "@/src/trip/workspace/trip-plan-records";
+import {
+  buildItineraryBookingDraftInput,
+  buildItineraryBookingTicketDocInput,
+} from "./booking-command-inputs";
 import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
 import { queueKeyedUpdate } from "../support/queued-updates";
 
@@ -78,7 +76,7 @@ export function useWorkspaceBookingCommands({
   );
 
   const createBookingDoc = useCallback(
-    async (input: BookingDocInput): Promise<BookingDoc | null> => {
+    async (input: BookingDocInputLike): Promise<BookingDoc | null> => {
       if (!canEditBookings) return null;
       const title = input.title.trim();
       if (!title) return null;
@@ -160,33 +158,13 @@ export function useWorkspaceBookingCommands({
       if (!canEditBookings) return;
       const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
       if (!item) return;
-      const draftDetails = bookingDraftDetailsForItineraryItem(item);
-      const timeWindow = bookingDraftTimeWindowForItineraryItem(item);
-      const bookingType =
-        template === "recommended"
-          ? bookingTypeForItineraryItem(item)
-          : bookingTypeForBookingTemplate(template);
-      const bookingDocInput: BookingDocInput = {
-        type: bookingType,
-        title: bookingDraftTitleForItineraryItem(item, bookingType),
-        status: "draft",
-        visibility: "shared",
-        ownerMemberId: currentMemberId,
-        providerName: draftDetails.providerName,
-        confirmationCode: draftDetails.confirmationCode,
-        startsAt: timeWindow.startsAt,
-        endsAt: timeWindow.endsAt,
-        timezone: trip.defaultTimezone ?? null,
-        priceAmount: null,
-        currency: null,
-        travelerIds: trip.members.map((member) => member.id),
-        externalLinks: [],
-        relatedItineraryItemIds: [item.id],
-        relatedTaskIds: [],
-        relatedExpenseIds: [],
-        noteIds: [],
-        notes: draftDetails.notes,
-      };
+      const bookingDocInput = buildItineraryBookingDraftInput({
+        currentMemberId,
+        defaultTimezone: trip.defaultTimezone,
+        item,
+        members: trip.members,
+        template,
+      });
       const matchingDraft = findDuplicateBookingDoc(
         latestTripRef.current.bookingDocs ?? [],
         bookingDocInput,
@@ -215,7 +193,7 @@ export function useWorkspaceBookingCommands({
   );
 
   const runBookingDocUpdate = useCallback(
-    async (bookingDocId: string, input: BookingDocInput) => {
+    async (bookingDocId: string, input: BookingDocInputLike) => {
       if (!canEditBookings) return;
       if (isApiMode && apiClient && participantSession) {
         for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -287,7 +265,7 @@ export function useWorkspaceBookingCommands({
   );
 
   const updateBookingDoc = useCallback(
-    async (bookingDocId: string, input: BookingDocInput) => {
+    async (bookingDocId: string, input: BookingDocInputLike) => {
       await queueBookingDocUpdate(bookingDocId, () =>
         runBookingDocUpdate(bookingDocId, input),
       );
@@ -303,42 +281,18 @@ export function useWorkspaceBookingCommands({
         (candidate) => candidate.id === input.itemId,
       );
       if (!item) return;
-      const relatedItineraryItemIds = uniqueStringIds([
-        ...input.relatedItineraryItemIds,
-        input.itemId,
-      ]);
       const explicitBookingDoc = input.bookingDocId
         ? currentTrip.bookingDocs?.find(
             (candidate) => candidate.id === input.bookingDocId,
           )
         : null;
-      const bookingDocInput: BookingDocInput = {
-        tripPlanId: explicitBookingDoc?.tripPlanId,
-        type: explicitBookingDoc?.type ?? input.type,
-        title: input.title,
-        status: explicitBookingDoc?.status ?? input.status,
-        visibility: explicitBookingDoc?.visibility ?? input.visibility,
-        ownerMemberId: explicitBookingDoc?.ownerMemberId ?? currentMemberId,
-        providerName: input.providerName,
-        confirmationCode: input.confirmationCode,
-        startsAt: input.startsAt,
-        endsAt: input.endsAt,
-        timezone: explicitBookingDoc?.timezone ?? trip.defaultTimezone ?? null,
-        priceAmount: explicitBookingDoc?.priceAmount ?? null,
-        currency: explicitBookingDoc?.currency ?? null,
-        travelerIds:
-          explicitBookingDoc?.travelerIds.length || input.travelerIds.length
-            ? explicitBookingDoc?.travelerIds.length
-              ? explicitBookingDoc.travelerIds
-              : input.travelerIds
-            : trip.members.map((member) => member.id),
-        externalLinks: explicitBookingDoc?.externalLinks ?? [],
-        relatedItineraryItemIds,
-        relatedTaskIds: explicitBookingDoc?.relatedTaskIds ?? [],
-        relatedExpenseIds: explicitBookingDoc?.relatedExpenseIds ?? [],
-        noteIds: explicitBookingDoc?.noteIds ?? [],
-        notes: input.notes,
-      };
+      const bookingDocInput = buildItineraryBookingTicketDocInput(input, {
+        currentMemberId,
+        defaultTimezone: trip.defaultTimezone,
+        existingBookingDoc: explicitBookingDoc,
+        members: trip.members,
+      });
+      const relatedItineraryItemIds = bookingDocInput.relatedItineraryItemIds;
       const existingBookingDoc =
         explicitBookingDoc ??
         findDuplicateBookingDoc(currentTrip.bookingDocs ?? [], bookingDocInput);

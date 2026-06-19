@@ -1,6 +1,8 @@
 import { useCallback } from "react";
-import type { BookingDocInput } from "@/src/features/workspace/pages/bookings-docs";
-import { bookingDocInputForExpenseEstimate } from "@/src/trip/booking-docs";
+import {
+  type BookingDocInputLike,
+  bookingDocInputForExpenseEstimate,
+} from "@/src/trip/booking-docs";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
   appendExpensesToTrip,
@@ -32,7 +34,7 @@ interface UseWorkspaceExpensesOptions {
   canEditBookings: boolean;
   canEditExpenses: boolean;
   commitTrip: (updater: (current: Trip) => Trip) => void;
-  createBookingDoc: (input: BookingDocInput) => Promise<unknown>;
+  createBookingDoc: (input: BookingDocInputLike) => Promise<unknown>;
   currentMemberId: string;
   isApiMode: boolean;
   participantSession: TripParticipantSession | null;
