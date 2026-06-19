@@ -373,6 +373,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/route-map/route-map.utils.ts"),
       "utf8",
     );
+    const stopDialog = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/StopDialog.tsx"),
+      "utf8",
+    );
+    const stopDialogForm = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts"),
+      "utf8",
+    );
     const tripSettingsPageSource = readFileSync(
       join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"),
       "utf8",
@@ -438,6 +446,11 @@ describe("Sagittarius project scaffold", () => {
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapUtils).not.toContain("export type { DayColorStyle");
+    expect(stopDialog).toContain("applyStopActivityInput");
+    expect(stopDialog).not.toContain("parseRouteActivity");
+    expect(stopDialog).not.toContain("endOffsetDaysBetweenTimes");
+    expect(stopDialogForm).toContain("export function applyStopStartTime");
+    expect(stopDialogForm).toContain("export function applyStopActivityInput");
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
     expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");
     expect(memberSupport).toContain("@/src/routes/invite-links");

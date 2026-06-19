@@ -10,6 +10,12 @@ import { StopDialogDetailSection } from "./stop-dialog/StopDialogDetailSection";
 import { StopDialogPlaceResolution } from "./stop-dialog/StopDialogPlaceResolution";
 import { StopDialogTimeWindow } from "./stop-dialog/StopDialogTimeWindow";
 import {
+  applyStopActivityInput,
+  applyStopDetailType,
+  applyStopEndTime,
+  applyStopStartTime,
+  applyStopTimeMode,
+  toggleStopNextDayEnd,
   buildInitialStopDetailValues,
   buildInitialStopFormValues,
   buildStopSubmitValues,
@@ -28,18 +34,10 @@ import {
   type StopDetailType,
   type StopDetailValues,
   detailTypeFromItem,
-  itemKindForStopDetailType,
-  resolveStopActivityType,
   stopDialogDetailTypeOptions,
   stopDialogFieldIds,
   stopDetailLabels,
 } from "./stop-dialog/stop-dialog.utils";
-import {
-  durationBetweenTimes,
-  endOffsetDaysBetweenTimes,
-  endWindowFromDuration,
-  parseRouteActivity,
-} from "./stop-dialog/stop-dialog-time";
 
 export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 
@@ -103,76 +101,20 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
   }
 
   function updateStartTime(startTime: string) {
-    const nextEndOffsetDays = values.endTime
-      ? endOffsetDaysBetweenTimes(startTime, values.endTime)
-      : 0;
-    const nextDuration = values.endTime
-      ? durationBetweenTimes(startTime, values.endTime, nextEndOffsetDays)
-      : null;
-    setValues((current) => ({
-      ...current,
-      startTime,
-      endOffsetDays: values.endTime ? nextEndOffsetDays : current.endOffsetDays,
-      durationMinutes: nextDuration,
-    }));
+    setValues((current) => applyStopStartTime(current, startTime));
   }
 
   function updateTimeMode(timeMode: ItineraryTimeMode) {
     setSubmitError(null);
-    setValues((current) =>
-      timeMode === "flexible"
-        ? {
-            ...current,
-            timeMode,
-            startTime: "",
-            endTime: null,
-            endOffsetDays: 0,
-            durationMinutes: null,
-          }
-        : {
-            ...current,
-            timeMode,
-          },
-    );
+    setValues((current) => applyStopTimeMode(current, timeMode));
   }
 
   function updateEndTime(nextEndTime: string) {
-    if (!nextEndTime) {
-      setValues((current) => ({
-        ...current,
-        endTime: null,
-        endOffsetDays: 0,
-        durationMinutes: null,
-      }));
-      return;
-    }
-    const nextEndOffsetDays = endOffsetDaysBetweenTimes(values.startTime, nextEndTime);
-    const nextDuration = durationBetweenTimes(
-      values.startTime,
-      nextEndTime,
-      nextEndOffsetDays,
-    );
-    setValues((current) => ({
-      ...current,
-      endTime: nextEndTime,
-      endOffsetDays: nextEndOffsetDays,
-      durationMinutes: nextDuration,
-    }));
+    setValues((current) => applyStopEndTime(current, nextEndTime));
   }
 
   function toggleNextDayEnd() {
-    if (!values.endTime) return;
-    const endOffsetDays = values.endOffsetDays > 0 ? 0 : 1;
-    const durationMinutes = durationBetweenTimes(
-      values.startTime,
-      values.endTime,
-      endOffsetDays,
-    );
-    setValues((current) => ({
-      ...current,
-      endOffsetDays,
-      durationMinutes,
-    }));
+    setValues((current) => toggleStopNextDayEnd(current));
   }
 
   function updateDetail<K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) {
@@ -181,57 +123,15 @@ export function StopDialog({ mode, endDate, initialDay, initialItem, initialPare
 
   function updateDetailType(nextDetailType: StopDetailType) {
     setDetailType(nextDetailType);
-    setValues((current) => {
-      const nextActivityType = resolveStopActivityType(nextDetailType, current.activityType);
-      return {
-        ...current,
-        activityType: nextActivityType,
-        itemKind: itemKindForStopDetailType(nextDetailType),
-        isPlanBlock:
-          nextDetailType === "transportation" && !current.parentItemId
-            ? true
-            : nextDetailType === "task"
-              ? false
-              : current.isPlanBlock,
-        timeMode: nextDetailType === "task" ? "flexible" : current.timeMode,
-        startTime: nextDetailType === "task" ? "" : current.startTime,
-        endTime: nextDetailType === "task" ? null : current.endTime,
-        endOffsetDays: nextDetailType === "task" ? 0 : current.endOffsetDays,
-        durationMinutes:
-          nextDetailType === "task" ? null : current.durationMinutes,
-      };
-    });
+    setValues((current) => applyStopDetailType(current, nextDetailType));
   }
 
   function updateActivity(activity: string) {
-    update("activity", activity);
-    const parsedRoute = parseRouteActivity(activity);
-    if (!parsedRoute) return;
-
-    updateDetailType("transportation");
-    setDetailValues((current) => ({
-      ...current,
-      destination: parsedRoute.destination,
-      origin: parsedRoute.origin,
-    }));
-    if (parsedRoute.startTime && parsedRoute.durationMinutes) {
-      const parsedEnd = endWindowFromDuration(
-        parsedRoute.startTime,
-        parsedRoute.durationMinutes,
-      );
-      setValues((current) => ({
-        ...current,
-        activity,
-        durationMinutes: parsedRoute.durationMinutes ?? current.durationMinutes,
-        startTime: parsedRoute.startTime ?? current.startTime,
-        ...(parsedEnd
-          ? {
-              endTime: parsedEnd.endTime,
-              endOffsetDays: parsedEnd.endOffsetDays,
-            }
-          : {}),
-      }));
-    }
+    setSubmitError(null);
+    const result = applyStopActivityInput({ activity, detailValues, values });
+    if (result.detailType) setDetailType(result.detailType);
+    if (result.detailValues) setDetailValues(result.detailValues);
+    setValues(result.values);
   }
 
   function buildSubmitValues(saveUnresolved: boolean): StopFormValues {

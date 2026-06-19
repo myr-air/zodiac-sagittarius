@@ -1,15 +1,22 @@
-import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
+import type { ItineraryItem, ItineraryTimeMode, PlaceResolutionCandidate } from "@/src/trip/types";
 import type { StopFormValues } from "./stop-dialog.types";
 import {
   type StopDetailType,
   type StopDetailValues,
   buildStructuredStopDetails,
   emptyStopDetailValues,
+  itemKindForStopDetailType,
   readStringDetail,
   resolveStopActivityType,
   structuredStopDetailValues,
 } from "./stop-dialog.utils";
-import { addMinutesToTime } from "./stop-dialog-time";
+import {
+  addMinutesToTime,
+  durationBetweenTimes,
+  endOffsetDaysBetweenTimes,
+  endWindowFromDuration,
+  parseRouteActivity,
+} from "./stop-dialog-time";
 
 export function buildInitialStopFormValues({
   initialDay,
@@ -101,5 +108,135 @@ export function buildStopSubmitValues({
     note: values.note.trim(),
     resolvedPlace: saveUnresolved ? undefined : selectedCandidate,
     saveUnresolved,
+  };
+}
+
+export function applyStopStartTime(values: StopFormValues, startTime: string): StopFormValues {
+  const nextEndOffsetDays = values.endTime
+    ? endOffsetDaysBetweenTimes(startTime, values.endTime)
+    : 0;
+  const nextDuration = values.endTime ? durationBetweenTimes(startTime, values.endTime, nextEndOffsetDays) : null;
+
+  return {
+    ...values,
+    startTime,
+    endOffsetDays: values.endTime ? nextEndOffsetDays : values.endOffsetDays,
+    durationMinutes: nextDuration,
+  };
+}
+
+export function applyStopTimeMode(values: StopFormValues, timeMode: ItineraryTimeMode): StopFormValues {
+  if (timeMode === "flexible") {
+    return {
+      ...values,
+      timeMode,
+      startTime: "",
+      endTime: null,
+      endOffsetDays: 0,
+      durationMinutes: null,
+    };
+  }
+
+  return {
+    ...values,
+    timeMode,
+  };
+}
+
+export function applyStopEndTime(values: StopFormValues, nextEndTime: string): StopFormValues {
+  if (!nextEndTime) {
+    return {
+      ...values,
+      endTime: null,
+      endOffsetDays: 0,
+      durationMinutes: null,
+    };
+  }
+
+  const nextEndOffsetDays = endOffsetDaysBetweenTimes(values.startTime, nextEndTime);
+  const nextDuration = durationBetweenTimes(values.startTime, nextEndTime, nextEndOffsetDays);
+
+  return {
+    ...values,
+    endTime: nextEndTime,
+    endOffsetDays: nextEndOffsetDays,
+    durationMinutes: nextDuration,
+  };
+}
+
+export function toggleStopNextDayEnd(values: StopFormValues): StopFormValues {
+  if (!values.endTime) return values;
+  const endOffsetDays = values.endOffsetDays > 0 ? 0 : 1;
+  const durationMinutes = durationBetweenTimes(values.startTime, values.endTime, endOffsetDays);
+
+  return {
+    ...values,
+    endOffsetDays,
+    durationMinutes,
+  };
+}
+
+export function applyStopDetailType(values: StopFormValues, nextDetailType: StopDetailType): StopFormValues {
+  const nextActivityType = resolveStopActivityType(nextDetailType, values.activityType);
+  return {
+    ...values,
+    activityType: nextActivityType,
+    itemKind: itemKindForStopDetailType(nextDetailType),
+    isPlanBlock:
+      nextDetailType === "transportation" && !values.parentItemId
+        ? true
+        : nextDetailType === "task"
+          ? false
+          : values.isPlanBlock,
+    timeMode: nextDetailType === "task" ? "flexible" : values.timeMode,
+    startTime: nextDetailType === "task" ? "" : values.startTime,
+    endTime: nextDetailType === "task" ? null : values.endTime,
+    endOffsetDays: nextDetailType === "task" ? 0 : values.endOffsetDays,
+    durationMinutes: nextDetailType === "task" ? null : values.durationMinutes,
+  };
+}
+
+export function applyStopActivityInput({
+  activity,
+  detailValues,
+  values,
+}: {
+  activity: string;
+  detailValues: StopDetailValues;
+  values: StopFormValues;
+}): {
+  detailType?: StopDetailType;
+  detailValues?: StopDetailValues;
+  values: StopFormValues;
+} {
+  const parsedRoute = parseRouteActivity(activity);
+  if (!parsedRoute) {
+    return {
+      values: { ...values, activity },
+    };
+  }
+
+  const parsedEnd = parsedRoute.startTime && parsedRoute.durationMinutes
+    ? endWindowFromDuration(parsedRoute.startTime, parsedRoute.durationMinutes)
+    : null;
+
+  return {
+    detailType: "transportation",
+    detailValues: {
+      ...detailValues,
+      destination: parsedRoute.destination,
+      origin: parsedRoute.origin,
+    },
+    values: {
+      ...applyStopDetailType({ ...values, activity }, "transportation"),
+      durationMinutes: parsedRoute.durationMinutes ?? values.durationMinutes,
+      startTime: parsedRoute.startTime ?? values.startTime,
+      ...(parsedEnd
+        ? {
+            endTime: parsedEnd.endTime,
+            endOffsetDays: parsedEnd.endOffsetDays,
+          }
+        : {}),
+    },
   };
 }
