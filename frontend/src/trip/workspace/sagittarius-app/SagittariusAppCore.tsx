@@ -10,8 +10,7 @@ import { AppShell } from "@/src/features/workspace/components/app-shell";
 import { StopDialog } from "@/src/features/itinerary/components";
 import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
-import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createTripApiClient,
   type TripApiClient,
@@ -30,7 +29,6 @@ import {
 import {
   clearParticipantSession,
   isLocalParticipantSession,
-  persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
 import {
   normalizeTripPlanAliases,
@@ -70,6 +68,7 @@ import {
   useWorkspaceAccessGate,
   useWorkspaceItineraryImport,
   useWorkspaceItineraryUiActions,
+  useWorkspaceParticipantSessionActions,
   useWorkspaceAdministration,
   useWorkspaceExpenses,
   useWorkspaceItineraryCommands,
@@ -84,7 +83,6 @@ import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
 import type {
   ItineraryItem,
   Trip,
-  TripParticipantSession,
 } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
@@ -716,40 +714,22 @@ export function SagittariusApp({
     trip,
   });
 
-  function authenticateParticipant(session: TripParticipantSession) {
-    setAccessError(null);
-    setParticipantSession(session);
-    setCurrentMemberId(session.memberId);
-    persistParticipantSession(session);
-
-    if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      const returnToParam = searchParams.get("rt");
-      const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
-      const safeReturnTo = resolveJoinPostAuthReturnTo(
-        returnTo,
-        session.tripId,
-      );
-      const postAuthHref =
-        safeReturnTo ??
-        (!routeTripId ? appRoutes.tripOverview(session.tripId) : null);
-      if (postAuthHref) {
-        replaceWorkspacePath(postAuthHref, session.tripId);
-      }
-    }
-  }
-
-  function leaveParticipantSession() {
-    setParticipantSession(null);
-    setCurrentMemberId(initialTrip.members[0].id);
-    setContextRailVisibility(false);
-    clearParticipantSession();
-    setIsCockpitLoaded(false);
-  }
-
-  function replaceTripFromJoin(nextTrip: Trip) {
-    resetTrip(nextTrip, { persist: !isApiMode });
-  }
+  const {
+    authenticateParticipant,
+    leaveParticipantSession,
+    replaceTripFromJoin,
+  } = useWorkspaceParticipantSessionActions({
+    initialTrip,
+    isApiMode,
+    replaceWorkspacePath,
+    resetTrip,
+    routeTripId,
+    setAccessError,
+    setContextRailVisibility,
+    setCurrentMemberId,
+    setIsCockpitLoaded,
+    setParticipantSession,
+  });
 
   function openExpensesWorkspace() {
     navigateWorkspaceView("expenses", appRoutes.tripExpenses(trip.id));
