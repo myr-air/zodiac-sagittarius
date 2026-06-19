@@ -4,9 +4,9 @@ import {
   formatDateTime,
   statusBadgeClassName,
   typeIconClassName,
-} from "./bookings-docs-page-support";
+} from "./booking-display";
 
-describe("bookings docs page support", () => {
+describe("booking display helpers", () => {
   it("formats booking date input values without changing stored semantics", () => {
     expect(formatDateTime(null)).toBe("-");
     expect(formatDateTime("not-a-date")).toBe("not-a-date");

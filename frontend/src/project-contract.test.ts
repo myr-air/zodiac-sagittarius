@@ -317,8 +317,8 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx"),
       "utf8",
     );
-    const bookingsDocsSupport = readFileSync(
-      join(frontendRoot, "src/features/workspace/pages/bookings-docs/bookings-docs-page-support.ts"),
+    const bookingDisplay = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-display.ts"),
       "utf8",
     );
     const bookingFolders = readFileSync(
@@ -347,12 +347,14 @@ describe("Sagittarius project scaffold", () => {
     expect(sagaCore).toContain("./WorkspaceDialogs");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
-    expect(bookingsDocsSupport).not.toContain("function toDateTimeLocalValue");
-    expect(bookingsDocsSupport).not.toContain("function fromDateTimeLocalValue");
-    expect(bookingsDocsSupport).not.toContain("function toggleId");
-    expect(bookingsDocsSupport).not.toContain("bookingFolders");
-    expect(bookingsDocsSupport).not.toContain("bookingDocMatchesQuery");
-    expect(bookingsDocsSupport).not.toContain("compareBookingStartWithUndated");
+    expect(bookingDisplay).toContain("export function formatDateTime");
+    expect(bookingDisplay).toContain("export function bookingTypeIcon");
+    expect(bookingDisplay).not.toContain("function toDateTimeLocalValue");
+    expect(bookingDisplay).not.toContain("function fromDateTimeLocalValue");
+    expect(bookingDisplay).not.toContain("function toggleId");
+    expect(bookingDisplay).not.toContain("bookingFolders");
+    expect(bookingDisplay).not.toContain("bookingDocMatchesQuery");
+    expect(bookingDisplay).not.toContain("compareBookingStartWithUndated");
     expect(bookingFolders).toContain("export const bookingFolders");
     expect(bookingFolders).toContain("export function countBookingFolders");
     expect(bookingList).toContain("export function bookingDocMatchesQuery");

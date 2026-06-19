@@ -5,7 +5,7 @@ import { Button, IconButton, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { type BookingCopy, formatEnumLabel } from "../BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import { formatDateTime, statusBadgeClassName } from "../bookings-docs-page-support";
+import { formatDateTime, statusBadgeClassName } from "../booking-display";
 
 type BookingDocRelations = ReturnType<typeof findBookingDocRelations>;
 

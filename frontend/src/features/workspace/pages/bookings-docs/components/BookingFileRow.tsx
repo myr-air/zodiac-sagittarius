@@ -10,7 +10,7 @@ import {
   formatDateTime,
   statusBadgeClassName,
   typeIconClassName,
-} from "../bookings-docs-page-support";
+} from "../booking-display";
 
 interface BookingFileRowProps {
   doc: BookingDoc;
