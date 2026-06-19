@@ -134,6 +134,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-invite-review.tsx"))).toBe(true);
@@ -521,6 +522,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"),
       "utf8",
     );
+    const portalTripWizardActions = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx"),
+      "utf8",
+    );
     const accountAuthSupport = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-auth-support.ts"),
       "utf8",
@@ -648,7 +653,13 @@ describe("Sagittarius project scaffold", () => {
     expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
     expect(portalTripWizard).toContain("applyTripDestinationCities");
     expect(portalTripWizard).toContain("applyTripCalendarDate");
+    expect(portalTripWizard).toContain("PortalTripWizardActions");
     expect(portalTripWizard).not.toContain("Date.parse(`${date}T00:00:00`)");
+    expect(portalTripWizard).not.toContain("appRoutes.portalMyTrips()");
+    expect(portalTripWizard).not.toContain("tripWizardActionsClassName");
+    expect(portalTripWizardActions).toContain("export function PortalTripWizardActions");
+    expect(portalTripWizardActions).toContain("appRoutes.portalMyTrips()");
+    expect(portalTripWizardActions).toContain("tripWizardActionsClassName");
     expect(accountAuthSupport).toContain("./account-access-error-codes");
     expect(accountAuthSupport).toContain("./account-passkey-support");
     expect(accountAuthSupport).not.toContain("accountLoadFailed:");

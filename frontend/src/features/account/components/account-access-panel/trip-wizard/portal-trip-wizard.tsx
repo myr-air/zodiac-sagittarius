@@ -1,12 +1,9 @@
 "use client";
 
 import { Dispatch, FormEvent, SetStateAction, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { TripCity } from "@/src/trip/types";
-import { Badge, Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
+import { Badge } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import {
@@ -38,6 +35,7 @@ import {
   TripWizardInviteStep,
   TripWizardReviewSummary,
 } from "./portal-trip-wizard-form-sections";
+import { PortalTripWizardActions } from "./portal-trip-wizard-actions";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
 import * as wizardStyles from "./portal-trip-wizard-styles";
@@ -323,29 +321,19 @@ export function PortalTripWizard({
         currentStepComplete={currentStepComplete}
         onActiveMobileStepChange={setActiveMobileStep}
       />
-      <div className={wizardStyles.tripWizardActionsClassName} role="group" aria-label="Create trip status">
-        <p className={wizardStyles.tripWizardActionStatusClassName}>
-          <Icon name={canSubmit ? "check" : "key"} />
-          {createStatusText}
-        </p>
-        <div className={wizardStyles.tripWizardActionSummaryClassName} aria-hidden="true">
-          <strong>{previewTripName}</strong>
-          <span>{destinationSummary}</span>
-          <span>{previewStartDate} - {previewEndDate} · {previewNightCount}</span>
-        </div>
-        <div className={wizardStyles.tripWizardActionButtonsClassName}>
-          <Button asChild type="button" variant="secondary">
-            <Link href={appRoutes.portalMyTrips()}>
-              <Icon name="chevronLeft" />
-              {wizard.actions.cancel}
-            </Link>
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !canSubmit}>
-            <Icon name="check" />
-            {isSubmitting ? wizard.actions.creating : wizard.actions.create}
-          </Button>
-        </div>
-      </div>
+      <PortalTripWizardActions
+        canSubmit={canSubmit}
+        cancelLabel={wizard.actions.cancel}
+        createLabel={wizard.actions.create}
+        createStatusText={createStatusText}
+        creatingLabel={wizard.actions.creating}
+        destinationSummary={destinationSummary}
+        isSubmitting={isSubmitting}
+        previewEndDate={previewEndDate}
+        previewNightCount={previewNightCount}
+        previewStartDate={previewStartDate}
+        previewTripName={previewTripName}
+      />
     </form>
   );
 }
