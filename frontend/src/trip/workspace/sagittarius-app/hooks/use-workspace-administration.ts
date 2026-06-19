@@ -16,13 +16,12 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
-import { shiftItineraryItemsToStartDate } from "@/src/trip/itinerary-time";
 import {
   applyTripSettingsToTrip,
+  buildShiftedItineraryItemDayRequests,
   buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
-import { buildShiftItineraryItemDayRequest } from "@/src/trip/itinerary-api-requests";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import type {
   Trip,
@@ -298,11 +297,6 @@ export function useWorkspaceAdministration({
   const saveTripSettings = useCallback(
     async (values: TripSettingsFormValues) => {
       if (!canManagePeople) return;
-      const shiftedItems = shiftItineraryItemsToStartDate(
-        trip.itineraryItems,
-        trip.startDate,
-        values.startDate,
-      );
       const nextCountries = deriveTripCountriesFromDestination(
         values.destinationLabel,
         trip.countries ?? [],
@@ -320,23 +314,19 @@ export function useWorkspaceAdministration({
             },
           ),
         );
-        const changedItems = shiftedItems.filter((shiftedItem) => {
-          const currentItem = trip.itineraryItems.find(
-            (item) => item.id === shiftedItem.id,
-          );
-          return currentItem && currentItem.day !== shiftedItem.day;
-        });
+        const shiftedItemRequests = buildShiftedItineraryItemDayRequests(
+          trip.itineraryItems,
+          trip.startDate,
+          values.startDate,
+          nextClientMutationId,
+        );
         const patchedItems = await Promise.all(
-          changedItems.map((item) =>
+          shiftedItemRequests.map(({ itemId, request }) =>
             resolvedApiClient.patchItineraryItem(
               trip.id,
-              item.id,
+              itemId,
               participantSession.sessionToken,
-              buildShiftItineraryItemDayRequest({
-                clientMutationId: nextClientMutationId("itinerary-day-shift"),
-                expectedVersion: item.version,
-                shiftedDay: item.day,
-              }),
+              request,
             ),
           ),
         );

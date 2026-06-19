@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyTripSettingsToTrip,
+  buildShiftedItineraryItemDayRequests,
   buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
@@ -59,6 +60,52 @@ describe("trip settings", () => {
       version: (seedTrip.version ?? 0) + 1,
     });
     expect(nextTrip.itineraryItems[0]?.day).toBe("2026-06-20");
+  });
+
+  it("builds itinerary day patch requests for API start date shifts", () => {
+    let mutationIndex = 0;
+    const items = [
+      { ...seedTrip.itineraryItems[0]!, id: "item-a", day: "2026-06-18", version: 2 },
+      { ...seedTrip.itineraryItems[1]!, id: "item-b", day: "2026-06-19", version: 3 },
+    ];
+    const requests = buildShiftedItineraryItemDayRequests(
+      items,
+      "2026-06-18",
+      "2026-06-20",
+      (prefix) => `${prefix}-${++mutationIndex}`,
+    );
+
+    expect(requests).toEqual(
+      [
+        {
+          itemId: "item-a",
+          request: {
+            clientMutationId: "itinerary-day-shift-1",
+            expectedVersion: 2,
+            patch: { day: "2026-06-20" },
+          },
+        },
+        {
+          itemId: "item-b",
+          request: {
+            clientMutationId: "itinerary-day-shift-2",
+            expectedVersion: 3,
+            patch: { day: "2026-06-21" },
+          },
+        },
+      ],
+    );
+  });
+
+  it("does not build itinerary day patch requests when the start date is unchanged", () => {
+    expect(
+      buildShiftedItineraryItemDayRequests(
+        seedTrip.itineraryItems,
+        seedTrip.startDate,
+        seedTrip.startDate,
+        () => "unused",
+      ),
+    ).toEqual([]);
   });
 
   it("merges API-patched trip settings while preserving the active plan fallback", () => {
