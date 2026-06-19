@@ -1,0 +1,119 @@
+import type { BookingDoc, Trip } from "./types";
+import type { BookingDocInputLike } from "./booking-doc-inputs";
+
+export interface LocalBookingDocOptions {
+  title: string;
+  tripPlanId: BookingDoc["tripPlanId"];
+  createdBy: string;
+  updatedAt: string;
+  nextBookingDocId: (bookingDocs: BookingDoc[]) => string;
+}
+
+export interface LocalBookingDocUpdateOptions {
+  title: string;
+  updatedAt: string;
+}
+
+export function createLocalBookingDoc(
+  trip: Pick<Trip, "id" | "bookingDocs">,
+  input: BookingDocInputLike,
+  options: LocalBookingDocOptions,
+): BookingDoc {
+  const bookingDocs = trip.bookingDocs ?? [];
+
+  return {
+    ...input,
+    id: options.nextBookingDocId(bookingDocs),
+    tripId: trip.id,
+    tripPlanId: options.tripPlanId,
+    title: options.title,
+    externalLinks: input.externalLinks.map((link, index) => ({
+      ...link,
+      id: link.id || `link-local-${index + 1}`,
+    })),
+    createdBy: options.createdBy,
+    updatedAt: options.updatedAt,
+    version: 1,
+  };
+}
+
+export function replaceBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDoc: BookingDoc,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).map((candidate) =>
+      candidate.id === bookingDoc.id ? bookingDoc : candidate,
+    ),
+  };
+}
+
+export function updateLocalBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDocId: string,
+  input: BookingDocInputLike,
+  options: LocalBookingDocUpdateOptions,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).map((bookingDoc) =>
+      bookingDoc.id === bookingDocId
+        ? {
+            ...bookingDoc,
+            ...input,
+            title: options.title,
+            externalLinks: input.externalLinks.map((link, index) => ({
+              ...link,
+              id:
+                link.id ||
+                bookingDoc.externalLinks[index]?.id ||
+                `link-local-${index + 1}`,
+            })),
+            updatedAt: options.updatedAt,
+            version: bookingDoc.version + 1,
+          }
+        : bookingDoc,
+    ),
+  };
+}
+
+export function bookingDocInputFromRecord(
+  bookingDoc: BookingDoc,
+  overrides: Partial<BookingDocInputLike> = {},
+): BookingDocInputLike {
+  return {
+    type: overrides.type ?? bookingDoc.type,
+    title: overrides.title ?? bookingDoc.title,
+    status: overrides.status ?? bookingDoc.status,
+    visibility: overrides.visibility ?? bookingDoc.visibility,
+    ownerMemberId: overrides.ownerMemberId !== undefined ? overrides.ownerMemberId : bookingDoc.ownerMemberId,
+    providerName: overrides.providerName !== undefined ? overrides.providerName : bookingDoc.providerName,
+    confirmationCode: overrides.confirmationCode !== undefined ? overrides.confirmationCode : bookingDoc.confirmationCode,
+    startsAt: overrides.startsAt !== undefined ? overrides.startsAt : bookingDoc.startsAt,
+    endsAt: overrides.endsAt !== undefined ? overrides.endsAt : bookingDoc.endsAt,
+    timezone: overrides.timezone !== undefined ? overrides.timezone : bookingDoc.timezone,
+    priceAmount: overrides.priceAmount !== undefined ? overrides.priceAmount : bookingDoc.priceAmount,
+    currency: overrides.currency !== undefined ? overrides.currency : bookingDoc.currency,
+    travelerIds: overrides.travelerIds ?? bookingDoc.travelerIds,
+    externalLinks: overrides.externalLinks ?? bookingDoc.externalLinks,
+    relatedItineraryItemIds: overrides.relatedItineraryItemIds ?? bookingDoc.relatedItineraryItemIds,
+    relatedTaskIds: overrides.relatedTaskIds ?? bookingDoc.relatedTaskIds,
+    relatedExpenseIds: overrides.relatedExpenseIds ?? bookingDoc.relatedExpenseIds,
+    noteIds: overrides.noteIds ?? bookingDoc.noteIds,
+    notes: overrides.notes !== undefined ? overrides.notes : bookingDoc.notes,
+    tripPlanId: overrides.tripPlanId !== undefined ? overrides.tripPlanId : bookingDoc.tripPlanId,
+  };
+}
+
+export function removeBookingDocFromTrip<T extends Pick<Trip, "bookingDocs">>(
+  trip: T,
+  bookingDocId: string,
+): T {
+  return {
+    ...trip,
+    bookingDocs: (trip.bookingDocs ?? []).filter(
+      (bookingDoc) => bookingDoc.id !== bookingDocId,
+    ),
+  };
+}

@@ -2,7 +2,6 @@ import type {
   BookingDoc,
   BookingDocStatus,
   BookingDocType,
-  BookingDocVisibility,
   Expense,
   ItineraryItem,
   Member,
@@ -11,61 +10,37 @@ import type {
   TripTask,
 } from "./types";
 import { itineraryDateTime, shiftIsoDate } from "./itinerary-time";
+import type {
+  BookingDocInputLike,
+  ItineraryBookingTemplate,
+  ItineraryBookingTicketInputLike,
+} from "./booking-doc-inputs";
 
 export {
   buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   serializeBookingDocInputForApi,
 } from "./booking-doc-api";
-
-export type ItineraryBookingTemplate =
-  | "recommended"
-  | "flight"
-  | "train"
-  | "hotel"
-  | "activity_ticket";
-
-export interface BookingDocInputLike {
-  tripPlanId?: string | null;
-  type: BookingDocType;
-  title: string;
-  status: BookingDocStatus;
-  visibility: BookingDocVisibility;
-  ownerMemberId?: string | null;
-  providerName?: string | null;
-  confirmationCode?: string | null;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  timezone?: string | null;
-  priceAmount?: number | null;
-  currency?: string | null;
-  travelerIds: string[];
-  externalLinks: BookingDoc["externalLinks"];
-  relatedItineraryItemIds: string[];
-  relatedTaskIds: string[];
-  relatedExpenseIds: string[];
-  noteIds: string[];
-  notes?: string | null;
-}
-
-export interface ItineraryBookingTicketInputLike {
-  bookingDocId?: string | null;
-  itemId: string;
-  template: ItineraryBookingTemplate;
-  type: BookingDocType;
-  title: string;
-  status: BookingDoc["status"];
-  visibility: BookingDoc["visibility"];
-  providerName?: string | null;
-  confirmationCode?: string | null;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  travelerIds: string[];
-  relatedItineraryItemIds: string[];
-  notes?: string | null;
-}
-
-export type ItineraryBookingTicketInput = ItineraryBookingTicketInputLike;
+export type {
+  BookingDocInputLike,
+  BuildCreateBookingDocRequestOptions,
+  BuildPatchBookingDocRequestOptions,
+  ItineraryBookingTemplate,
+  ItineraryBookingTicketInput,
+  ItineraryBookingTicketInputLike,
+} from "./booking-doc-inputs";
+export {
+  bookingDocInputFromRecord,
+  createLocalBookingDoc,
+  removeBookingDocFromTrip,
+  replaceBookingDocInTrip,
+  updateLocalBookingDocInTrip,
+} from "./booking-doc-local";
+export { findDuplicateBookingDoc } from "./booking-doc-matching";
+export type {
+  LocalBookingDocOptions,
+  LocalBookingDocUpdateOptions,
+} from "./booking-doc-local";
 
 export interface BookingDocsSummary {
   totalCostByCurrency: Record<string, number>;
@@ -89,28 +64,6 @@ export interface BookingDocRelations {
   expenses: Expense[];
   notes: StopNote[];
   travelers: Member[];
-}
-
-export interface LocalBookingDocOptions {
-  title: string;
-  tripPlanId: BookingDoc["tripPlanId"];
-  createdBy: string;
-  updatedAt: string;
-  nextBookingDocId: (bookingDocs: BookingDoc[]) => string;
-}
-
-export interface LocalBookingDocUpdateOptions {
-  title: string;
-  updatedAt: string;
-}
-
-export interface BuildCreateBookingDocRequestOptions {
-  clientMutationId: string;
-}
-
-export interface BuildPatchBookingDocRequestOptions {
-  clientMutationId: string;
-  expectedVersion: number;
 }
 
 export interface ExpenseEstimateBookingContext {
@@ -219,110 +172,6 @@ export function findBookingDocRelations(doc: BookingDoc, trip: Trip, tasks: Trip
   };
 }
 
-export function createLocalBookingDoc(
-  trip: Pick<Trip, "id" | "bookingDocs">,
-  input: BookingDocInputLike,
-  options: LocalBookingDocOptions,
-): BookingDoc {
-  const bookingDocs = trip.bookingDocs ?? [];
-
-  return {
-    ...input,
-    id: options.nextBookingDocId(bookingDocs),
-    tripId: trip.id,
-    tripPlanId: options.tripPlanId,
-    title: options.title,
-    externalLinks: input.externalLinks.map((link, index) => ({
-      ...link,
-      id: link.id || `link-local-${index + 1}`,
-    })),
-    createdBy: options.createdBy,
-    updatedAt: options.updatedAt,
-    version: 1,
-  };
-}
-
-export function replaceBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
-  trip: T,
-  bookingDoc: BookingDoc,
-): T {
-  return {
-    ...trip,
-    bookingDocs: (trip.bookingDocs ?? []).map((candidate) =>
-      candidate.id === bookingDoc.id ? bookingDoc : candidate,
-    ),
-  };
-}
-
-export function updateLocalBookingDocInTrip<T extends Pick<Trip, "bookingDocs">>(
-  trip: T,
-  bookingDocId: string,
-  input: BookingDocInputLike,
-  options: LocalBookingDocUpdateOptions,
-): T {
-  return {
-    ...trip,
-    bookingDocs: (trip.bookingDocs ?? []).map((bookingDoc) =>
-      bookingDoc.id === bookingDocId
-        ? {
-            ...bookingDoc,
-            ...input,
-            title: options.title,
-            externalLinks: input.externalLinks.map((link, index) => ({
-              ...link,
-              id:
-                link.id ||
-                bookingDoc.externalLinks[index]?.id ||
-                `link-local-${index + 1}`,
-            })),
-            updatedAt: options.updatedAt,
-            version: bookingDoc.version + 1,
-          }
-        : bookingDoc,
-    ),
-  };
-}
-
-export function bookingDocInputFromRecord(
-  bookingDoc: BookingDoc,
-  overrides: Partial<BookingDocInputLike> = {},
-): BookingDocInputLike {
-  return {
-    type: overrides.type ?? bookingDoc.type,
-    title: overrides.title ?? bookingDoc.title,
-    status: overrides.status ?? bookingDoc.status,
-    visibility: overrides.visibility ?? bookingDoc.visibility,
-    ownerMemberId: overrides.ownerMemberId !== undefined ? overrides.ownerMemberId : bookingDoc.ownerMemberId,
-    providerName: overrides.providerName !== undefined ? overrides.providerName : bookingDoc.providerName,
-    confirmationCode: overrides.confirmationCode !== undefined ? overrides.confirmationCode : bookingDoc.confirmationCode,
-    startsAt: overrides.startsAt !== undefined ? overrides.startsAt : bookingDoc.startsAt,
-    endsAt: overrides.endsAt !== undefined ? overrides.endsAt : bookingDoc.endsAt,
-    timezone: overrides.timezone !== undefined ? overrides.timezone : bookingDoc.timezone,
-    priceAmount: overrides.priceAmount !== undefined ? overrides.priceAmount : bookingDoc.priceAmount,
-    currency: overrides.currency !== undefined ? overrides.currency : bookingDoc.currency,
-    travelerIds: overrides.travelerIds ?? bookingDoc.travelerIds,
-    externalLinks: overrides.externalLinks ?? bookingDoc.externalLinks,
-    relatedItineraryItemIds: overrides.relatedItineraryItemIds ?? bookingDoc.relatedItineraryItemIds,
-    relatedTaskIds: overrides.relatedTaskIds ?? bookingDoc.relatedTaskIds,
-    relatedExpenseIds: overrides.relatedExpenseIds ?? bookingDoc.relatedExpenseIds,
-    noteIds: overrides.noteIds ?? bookingDoc.noteIds,
-    notes: overrides.notes !== undefined ? overrides.notes : bookingDoc.notes,
-    tripPlanId: overrides.tripPlanId !== undefined ? overrides.tripPlanId : bookingDoc.tripPlanId,
-  };
-}
-
-export function removeBookingDocFromTrip<T extends Pick<Trip, "bookingDocs">>(
-  trip: T,
-  bookingDocId: string,
-): T {
-  return {
-    ...trip,
-    bookingDocs: (trip.bookingDocs ?? []).filter(
-      (bookingDoc) => bookingDoc.id !== bookingDocId,
-    ),
-  };
-}
-
 export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
   const mode = typeof item.details?.mode === "string" ? item.details.mode.toLowerCase() : "";
   const transportation = item.transportation.toLowerCase();
@@ -384,27 +233,6 @@ export function clearItineraryBookingTicketDetails(
 
 export function uniqueStringIds(ids: string[]): string[] {
   return Array.from(new Set(ids.filter(Boolean)));
-}
-
-export function findDuplicateBookingDoc(
-  bookingDocs: BookingDoc[],
-  input: BookingDocInputLike,
-): BookingDoc | null {
-  const title = normalizeBookingMatchValue(input.title);
-  const startsAt = normalizeBookingDateTimeMatchValue(input.startsAt);
-  const endsAt = normalizeBookingDateTimeMatchValue(input.endsAt);
-  const relatedItemIds = new Set(input.relatedItineraryItemIds);
-  return (
-    bookingDocs.find((bookingDoc) => {
-      if (bookingDoc.type !== input.type) return false;
-      if (normalizeBookingMatchValue(bookingDoc.title) !== title) return false;
-      if (normalizeBookingDateTimeMatchValue(bookingDoc.startsAt) !== startsAt) return false;
-      if (normalizeBookingDateTimeMatchValue(bookingDoc.endsAt) !== endsAt) return false;
-      return bookingDoc.relatedItineraryItemIds.some((itemId) =>
-        relatedItemIds.has(itemId),
-      );
-    }) ?? null
-  );
 }
 
 export function bookingTypeForBookingTemplate(
@@ -560,19 +388,6 @@ function itineraryTravelModeForTicket(
   if (existingMode) return existingMode;
   if (input.type === "public_transport") return "transport";
   return null;
-}
-
-function normalizeBookingMatchValue(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase();
-}
-
-function normalizeBookingDateTimeMatchValue(
-  value: string | null | undefined,
-): string {
-  return normalizeBookingMatchValue(value).replace(
-    /(\d{2}:\d{2}):00(?=(?:[+-]\d\d:?\d\d|z)?$)/,
-    "$1",
-  );
 }
 
 function readItineraryDetailString(

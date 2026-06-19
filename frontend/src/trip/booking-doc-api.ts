@@ -7,7 +7,7 @@ import type {
   BookingDocInputLike,
   BuildCreateBookingDocRequestOptions,
   BuildPatchBookingDocRequestOptions,
-} from "./booking-docs";
+} from "./booking-doc-inputs";
 
 export function serializeBookingDocInputForApi(
   input: BookingDocInputLike & { tripPlanId?: string | null },
