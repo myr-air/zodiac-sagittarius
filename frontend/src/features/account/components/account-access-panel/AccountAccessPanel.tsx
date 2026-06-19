@@ -26,13 +26,14 @@ import {
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import {
   localizeAccessError,
-} from "./account-auth-support";
+  StatusMessage,
+  type AuthFlow,
+} from "./auth";
 import {
   AccountPortalDashboard,
   AccountPortalLoadingFrame,
   useAccountPortalData,
 } from "./portal";
-import type { AuthFlow } from "./account-auth-chrome";
 import { EmailLoginPanel } from "./email-login";
 import {
   accountAuthCardClassName,
@@ -67,7 +68,6 @@ import {
   tripAccessLanguageSwitchClassName,
 } from "./account-access-panel-layout";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
-import { StatusMessage } from "./account-status-message";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;

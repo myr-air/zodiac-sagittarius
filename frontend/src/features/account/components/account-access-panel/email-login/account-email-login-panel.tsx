@@ -2,7 +2,7 @@
 
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import { cn } from "@/src/lib/cn";
-import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "../account-auth-chrome";
+import { AccountAuthFlowSwitch, AccountAuthRouteTabs, type AuthFlow } from "../auth";
 import {
   accountEntryLoginFlowClassName,
   accountLoginFlowClassName,
@@ -19,7 +19,7 @@ import {
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
 import { PanelHeading } from "../portal/account-portal-primitives";
-import { StatusMessage } from "../account-status-message";
+import { StatusMessage } from "../auth";
 import { useEmailLoginPanelState } from "./use-email-login-panel-state";
 
 interface EmailLoginPanelProps {

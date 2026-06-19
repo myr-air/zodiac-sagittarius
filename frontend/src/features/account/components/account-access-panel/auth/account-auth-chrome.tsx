@@ -6,7 +6,7 @@ import { cn } from "@/src/lib/cn";
 import {
   accessLanguageSwitchClassName,
   accountEntryLanguageSwitchClassName,
-} from "./account-panel-shared-styles";
+} from "../account-panel-shared-styles";
 
 export type AuthFlow = "login" | "register";
 

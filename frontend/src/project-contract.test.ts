@@ -100,8 +100,15 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-destinations.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-credentials.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-error-codes.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-passkey-support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-error-codes.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-passkey-support.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-auth-support.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-auth-chrome.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/auth/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-access-error-codes.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-passkey-support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-auth-support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-auth-chrome.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-credentials-step.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-panel.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-step-content.tsx"))).toBe(false);
@@ -511,7 +518,7 @@ describe("Sagittarius project scaffold", () => {
       "utf8",
     );
     const accountAuthSupport = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/account-auth-support.ts"),
+      join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-auth-support.ts"),
       "utf8",
     );
     const emailLoginStepContent = readFileSync(

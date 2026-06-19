@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { AuthFlow } from "../account-auth-chrome";
+import type { AuthFlow } from "../auth";
 import { AccountField, AccountTertiaryAction } from "./account-email-login-fields";
 import { accountAlternateActionsClassName } from "./account-email-login-styles";
 import { Button } from "@/src/ui";

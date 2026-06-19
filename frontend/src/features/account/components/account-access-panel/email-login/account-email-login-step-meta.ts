@@ -1,6 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatDateTime } from "../account-auth-support";
-import type { AuthFlow } from "../account-auth-chrome";
+import { formatDateTime } from "../auth";
+import type { AuthFlow } from "../auth";
 
 export type EmailLoginAuthStep = "email" | "methods" | "password" | "setup";
 export type EmailLoginVisualStep = EmailLoginAuthStep | "otp";

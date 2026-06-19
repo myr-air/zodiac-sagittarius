@@ -10,7 +10,7 @@ import type {
 import { Badge, Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { errorMessage } from "../account-auth-support";
+import { errorMessage } from "../auth";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading, PortalListSkeleton } from "./account-portal-primitives";
 
