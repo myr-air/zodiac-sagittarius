@@ -3,7 +3,6 @@ import { nextClientMutationId, nextLocalTaskId } from "@/src/trip/local-ids";
 import {
   appendTask,
   buildCreateTaskRequest,
-  buildTaskCreateDraft,
   buildToggleTaskStatusRequest,
   createLocalTaskInList,
   replaceTask,
@@ -15,7 +14,7 @@ import type {
   TripParticipantSession,
   TripTask,
 } from "@/src/trip/types";
-import { tripPlanIdForRecord } from "@/src/trip/workspace/trip-plan-records";
+import { buildWorkspaceTaskCreateDraft } from "./workspace-record-command-inputs";
 
 interface UseWorkspaceTaskActionsParams {
   canEdit: boolean;
@@ -50,17 +49,12 @@ export function useWorkspaceTaskActions({
     assigneeId?: string | null;
     relatedItemId?: string | null;
   }) => {
-    const title = input.title.trim();
-    if (!title) return;
-    const taskDraft = buildTaskCreateDraft(input, {
-      title,
-      tripPlanId: tripPlanIdForRecord(
-        trip,
-        input.relatedItemId ?? null,
-        selectedTripPlanId,
-      ),
+    const taskDraft = buildWorkspaceTaskCreateDraft(input, {
       currentMemberId,
+      selectedTripPlanId,
+      trip,
     });
+    if (!taskDraft) return;
     if (isApiMode && resolveApiClient && participantSession) {
       const task = await resolveApiClient.createTask(
         trip.id,

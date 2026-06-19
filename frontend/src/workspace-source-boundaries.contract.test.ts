@@ -77,6 +77,18 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts"),
       "utf8",
     );
+    const taskActionsHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-task-actions.ts"),
+      "utf8",
+    );
+    const stopNoteActionsHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-stop-note-actions.ts"),
+      "utf8",
+    );
+    const recordCommandInputs = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.ts"),
+      "utf8",
+    );
     const itineraryViewModelHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
       "utf8",
@@ -656,6 +668,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(bookingCommandInputs).toContain(
       "findDuplicateBookingDoc",
     );
+    expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
+    expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
+    expect(stopNoteActionsHook).toContain("buildWorkspaceStopNoteCreateInput");
+    expect(stopNoteActionsHook).not.toContain("tripPlanIdForRecord");
+    expect(recordCommandInputs).toContain("tripPlanIdForRecord");
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");

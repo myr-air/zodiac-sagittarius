@@ -16,7 +16,7 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { tripPlanIdForRecord } from "@/src/trip/workspace/trip-plan-records";
+import { buildWorkspaceStopNoteCreateInput } from "./workspace-record-command-inputs";
 
 interface UseWorkspaceStopNoteActionsParams {
   canCreateStopNote: boolean;
@@ -48,21 +48,21 @@ export function useWorkspaceStopNoteActions({
   trip,
 }: UseWorkspaceStopNoteActionsParams) {
   const createStopNote = useCallback(async (input: { itemId: string; body: string }) => {
-    const body = input.body.trim();
-    if (!body || !canCreateStopNote) return;
+    if (!canCreateStopNote) return;
+    const noteInput = buildWorkspaceStopNoteCreateInput(input, {
+      selectedTripPlanId,
+      trip,
+    });
+    if (!noteInput) return;
     if (isApiMode && resolveApiClient && participantSession) {
       const note = await resolveApiClient.createStopNote(
         trip.id,
         participantSession.sessionToken,
         buildCreateStopNoteRequest(
-          { itemId: input.itemId, body },
+          noteInput,
           {
             clientMutationId: nextClientMutationId("stop-note-create"),
-            tripPlanId: tripPlanIdForRecord(
-              trip,
-              input.itemId,
-              selectedTripPlanId,
-            ),
+            tripPlanId: noteInput.tripPlanId,
           },
         ),
       );
@@ -73,15 +73,7 @@ export function useWorkspaceStopNoteActions({
       createLocalStopNoteInList(
         trip,
         current,
-        {
-          itemId: input.itemId,
-          tripPlanId: tripPlanIdForRecord(
-            trip,
-            input.itemId,
-            selectedTripPlanId,
-          ),
-          body,
-        },
+        noteInput,
         {
           authorId: currentMemberId,
           createdAt: new Date().toISOString(),
