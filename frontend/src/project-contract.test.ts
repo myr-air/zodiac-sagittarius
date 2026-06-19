@@ -155,6 +155,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerContent.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/date-time-picker.types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/shared/components/weather/weather-briefing-drawer-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker-menu.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
@@ -490,6 +491,19 @@ describe("Sagittarius project scaffold", () => {
     expect(weatherSummary).toContain("export function buildWeatherSummary");
     expect(weatherSummary).toContain("export function buildWeatherTooltip");
     expect(weatherChip).toContain("./weather-summary");
+  });
+
+  it("keeps weather briefing drawer formatting split from render", () => {
+    const drawer = readFileSync(join(frontendRoot, "src/shared/components/weather/WeatherBriefingDrawer.tsx"), "utf8");
+    const drawerModel = readFileSync(join(frontendRoot, "src/shared/components/weather/weather-briefing-drawer-model.ts"), "utf8");
+
+    expect(drawer).toContain("./weather-briefing-drawer-model");
+    expect(drawer).not.toContain("function formatWeatherSummary");
+    expect(drawer).not.toContain("function buildWeatherDetailLines");
+    expect(drawer).not.toContain("function weatherDrawerCopy");
+    expect(drawerModel).toContain("export function formatWeatherSummary");
+    expect(drawerModel).toContain("export function buildWeatherDetailLines");
+    expect(drawerModel).toContain("export function weatherDrawerCopy");
   });
 
   it("keeps StopDialog render split from form model state", () => {
