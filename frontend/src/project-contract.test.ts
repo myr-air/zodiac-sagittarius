@@ -121,6 +121,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-step-content.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-styles.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-email-login-panel-state.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-account-access-panel-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-credentials-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-methods-step.tsx"))).toBe(true);
@@ -367,6 +368,20 @@ describe("Sagittarius project scaffold", () => {
     expect(tripJoinGateState).toContain("export function useTripJoinGateState");
     expect(tripJoinGateState).toContain("verifyTripCredentials");
     expect(tripJoinGateState).toContain("async function submitParticipant");
+  });
+
+  it("keeps account access panel state split from render composition", () => {
+    const accountPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"), "utf8");
+    const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-account-access-panel-state.ts"), "utf8");
+
+    expect(accountPanel).toContain("./use-account-access-panel-state");
+    expect(accountPanel).not.toContain("useState");
+    expect(accountPanel).not.toContain("useEffect");
+    expect(accountPanel).not.toContain("useAccountPortalData");
+    expect(accountPanel).not.toContain("clearAccountPortalDataCache");
+    expect(accountPanelState).toContain("export function useAccountAccessPanelState");
+    expect(accountPanelState).toContain("useAccountPortalData");
+    expect(accountPanelState).toContain("clearAccountPortalDataCache");
   });
 
   it("keeps ActivityCell split into render, model, meta, and typed props", () => {

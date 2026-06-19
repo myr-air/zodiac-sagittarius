@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type {
   AccountApiClient,
   AccountSession,
@@ -12,21 +11,16 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { PortalSection } from "@/src/shared/portal";
 import {
-  clearAccountPortalDataCache,
-  isAccountEntryMode,
   mainLabel,
   type AccountAccessMode,
 } from "./account-access-panel-support";
 import { AccountAccessChrome } from "./account-access-panel-chrome";
 import {
-  localizeAccessError,
   StatusMessage,
-  type AuthFlow,
 } from "./auth";
 import {
   AccountPortalDashboard,
   AccountPortalLoadingFrame,
-  useAccountPortalData,
 } from "./portal";
 import { EmailLoginPanel } from "./email-login";
 import {
@@ -47,6 +41,7 @@ import {
   portalContentClassName,
   portalLoadingCardClassName,
 } from "./account-access-panel-layout";
+import { useAccountAccessPanelState } from "./use-account-access-panel-state";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
@@ -65,8 +60,6 @@ interface AccountAccessPanelProps {
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
   onTripChange: (trip: Trip) => void;
 }
-
-type AccessMode = "account" | "temp";
 
 export function AccountAccessPanel({
   accessMode = "combined",
@@ -87,61 +80,41 @@ export function AccountAccessPanel({
 }: AccountAccessPanelProps) {
   const { t } = useI18n();
   const accessMessages = t.access.messages;
-  const [clientPortalRedirected, setClientPortalRedirected] = useState(false);
-  const effectiveAccessMode = clientPortalRedirected ? "account-portal" : accessMode;
-  const [entryFlowOverride, setEntryFlowOverride] = useState<AuthFlow | null>(null);
-  const entryFlow = entryFlowOverride ?? (accessMode === "account-register" ? "register" : "login");
-  const effectiveEntryAccessMode = isAccountEntryMode(effectiveAccessMode)
-    ? entryFlow === "register" ? "account-register" : "account-login"
-    : effectiveAccessMode;
-  const forcedMode = effectiveAccessMode === "trip-access" ? "temp" : effectiveAccessMode === "combined" ? null : "account";
-  const isAccountEntry = effectiveAccessMode === "account-login" || effectiveAccessMode === "account-register";
-  const isPortalEntry = effectiveAccessMode === "account-portal";
-  const isTripAccessEntry = effectiveAccessMode === "trip-access";
-  const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
-  const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [pendingAccountSession, setPendingAccountSession] = useState<AccountSession | null>(null);
-  const displayError = error ? localizeAccessError(error, accessMessages) ?? error : localizeAccessError(initialError ?? null, accessMessages);
   const {
+    clearPortalSession,
+    displayError,
     displayedExplorer,
     displayedSettings,
     displayedStats,
     displayedTodos,
     displayedTrips,
     displayedVaultItems,
+    effectiveAccessMode,
+    effectiveEntryAccessMode,
+    entryFlow,
+    handleLoggedIn,
+    isAccountEntry,
+    isPortalEntry,
+    isTripAccessEntry,
+    message,
+    mode,
+    pendingAccountSession,
     refreshAccount,
+    setEntryFlowOverride,
+    setError,
+    setMessage,
+    setSelectedMode,
     setSettings,
     setVaultItems,
-  } = useAccountPortalData({
+  } = useAccountAccessPanelState({
+    accessMessages,
+    accessMode,
     accountClient,
     accountSession,
-    isAccountEntry,
+    accountSuccessRedirectHref,
+    initialError,
     onAccountSessionChange,
-    onError: setError,
   });
-
-  useEffect(() => {
-    if (!pendingAccountSession) {
-      return undefined;
-    }
-
-    const timeout = window.setTimeout(() => {
-      onAccountSessionChange(pendingAccountSession);
-      if (accountSuccessRedirectHref) {
-        if (pendingAccountSession.kind === "trusted") {
-          window.location.replace(accountSuccessRedirectHref);
-        } else {
-          window.history.replaceState(null, "", accountSuccessRedirectHref);
-          setClientPortalRedirected(true);
-        }
-      }
-      setPendingAccountSession(null);
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, [accountSuccessRedirectHref, onAccountSessionChange, pendingAccountSession]);
 
   return (
     <main
@@ -204,10 +177,7 @@ export function AccountAccessPanel({
             formError={displayError}
             showRouteTabs
             onFlowChange={setEntryFlowOverride}
-            onLoggedIn={(session) => {
-              setMessage(session.kind === "trusted" ? t.access.messages.trustedLogin : t.access.messages.temporaryLogin);
-              setPendingAccountSession(session);
-            }}
+            onLoggedIn={(session) => handleLoggedIn(session, t.access.messages)}
             onError={setError}
           />
         ) : !accountSessionLoaded && effectiveAccessMode === "account-portal" ? (
@@ -249,13 +219,11 @@ export function AccountAccessPanel({
             }}
             onLogout={async () => {
               await accountClient.logout(accountSession.sessionToken);
-              clearAccountPortalDataCache(accountSession.sessionToken);
-              onAccountSessionChange(null);
+              clearPortalSession(accountSession.sessionToken);
               setMessage(t.access.messages.loggedOut);
             }}
             onSessionCleared={() => {
-              clearAccountPortalDataCache(accountSession.sessionToken);
-              onAccountSessionChange(null);
+              clearPortalSession(accountSession.sessionToken);
             }}
             onMessage={setMessage}
             onError={setError}
@@ -268,10 +236,7 @@ export function AccountAccessPanel({
             formError={isAccountEntry ? displayError : null}
             showRouteTabs={isAccountEntry}
             onFlowChange={setEntryFlowOverride}
-            onLoggedIn={(session) => {
-              setMessage(session.kind === "trusted" ? t.access.messages.trustedLogin : t.access.messages.temporaryLogin);
-              setPendingAccountSession(session);
-            }}
+            onLoggedIn={(session) => handleLoggedIn(session, t.access.messages)}
             onError={setError}
           />
         )}
