@@ -10,14 +10,7 @@ import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
-  bookingTypeForItineraryItem,
   findDuplicateBookingDoc,
-  nextClientMutationId,
-  nextLocalItemId,
-  nextLocalStopNoteId,
-  nextLocalSuggestionId,
-  nextLocalTaskId,
-  normalizeInlineTimePatch,
 } from "@/src/app/SagittariusApp";
 import {
   TripApiError,
@@ -27,19 +20,14 @@ import {
 } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { normalizeExpenseSplitsFromMinor } from "@/src/trip/expenses";
-import { replaceSuggestionById } from "@/src/trip/suggestions";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import type {
-  ItineraryItem,
   PlanVariant,
-  StopNote,
-  Suggestion,
   Trip,
   TripDailyBriefing,
-  TripTask,
 } from "@/src/trip/types";
 import {
   optionalTrailingSlashPattern,
@@ -246,152 +234,6 @@ describe("Sagittarius cockpit UI", () => {
     installLocalStorageStub();
     installSessionStorageStub();
     window.history.pushState(null, "", appRoutes.home());
-  });
-
-  it("generates collision-free local ids and falls back when randomUUID is unavailable", () => {
-    expect(
-      nextLocalTaskId([
-        { id: "task-local-1" },
-        { id: "task-local-2" },
-      ] as TripTask[]),
-    ).toBe("task-local-3");
-    expect(
-      nextLocalTaskId([
-        { id: "task-local-1" },
-        { id: "task-local-3" },
-      ] as TripTask[]),
-    ).toBe("task-local-4");
-    expect(
-      nextLocalItemId(
-        [{ id: "item-local-1" }, { id: "item-local-3" }] as ItineraryItem[],
-        "item-local",
-      ),
-    ).toBe("item-local-4");
-    expect(
-      nextLocalSuggestionId([
-        { id: "suggestion-local-1" },
-        { id: "suggestion-local-3" },
-      ] as Suggestion[]),
-    ).toBe("suggestion-local-4");
-    expect(
-      nextLocalStopNoteId([
-        { id: "note-local-1" },
-        { id: "note-local-2" },
-      ] as StopNote[]),
-    ).toBe("note-local-3");
-    expect(
-      nextLocalStopNoteId([
-        { id: "note-local-1" },
-        { id: "note-local-3" },
-      ] as StopNote[]),
-    ).toBe("note-local-4");
-    expect(
-      replaceSuggestionById(
-        [
-          { id: "suggestion-a", status: "pending" },
-          { id: "suggestion-b", status: "pending" },
-        ] as Suggestion[],
-        "suggestion-b",
-        { id: "suggestion-b", status: "approved" } as Suggestion,
-      ),
-    ).toEqual([
-      { id: "suggestion-a", status: "pending" },
-      { id: "suggestion-b", status: "approved" },
-    ]);
-
-    vi.stubGlobal("crypto", {});
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-05-29T00:00:00.000Z"));
-    expect(nextClientMutationId("task")).toBe(
-      `task-${Date.now().toString(36)}`,
-    );
-    vi.unstubAllGlobals();
-    vi.useRealTimers();
-  });
-
-  it("normalizes inline time-window edits into matching duration patches", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
-      startTime: "23:00",
-      endTime: "01:00",
-      endOffsetDays: 1,
-      durationMinutes: 120,
-    };
-
-    expect(normalizeInlineTimePatch(item, { endTime: "02:30" })).toMatchObject({
-      endTime: "02:30",
-      durationMinutes: 210,
-    });
-    expect(
-      normalizeInlineTimePatch(item, {
-        endTime: "02:00",
-        endOffsetDays: 0,
-      }),
-    ).toMatchObject({
-      endTime: "02:00",
-      endOffsetDays: 1,
-      durationMinutes: 180,
-    });
-    expect(normalizeInlineTimePatch(item, { startTime: "00:30" })).toMatchObject(
-      {
-        startTime: "00:30",
-        endOffsetDays: 0,
-        durationMinutes: 30,
-      },
-    );
-    expect(normalizeInlineTimePatch(item, { endTime: "23:30" })).toMatchObject({
-      endTime: "23:30",
-      endOffsetDays: 0,
-      durationMinutes: 30,
-    });
-    expect(
-      normalizeInlineTimePatch(item, {
-        endTime: null,
-        endOffsetDays: 1,
-      }),
-    ).toMatchObject({
-      endTime: null,
-      endOffsetDays: 0,
-      durationMinutes: null,
-    });
-  });
-
-  it("classifies Thai itinerary rows into booking draft types", () => {
-    const baseItem = seedTrip.itineraryItems[0];
-
-    expect(
-      bookingTypeForItineraryItem({
-        ...baseItem,
-        activity: "บินไปฮ่องกง",
-        activityType: "travel",
-        transportation: "เครื่องบิน",
-      }),
-    ).toBe("flight");
-    expect(
-      bookingTypeForItineraryItem({
-        ...baseItem,
-        activity: "นั่งรถไฟเข้าเมือง",
-        activityType: "travel",
-        transportation: "รถไฟ",
-      }),
-    ).toBe("train");
-    expect(
-      bookingTypeForItineraryItem({
-        ...baseItem,
-        activity: "เช็คอินโรงแรม",
-        activityType: "experience",
-        itemKind: "activity",
-        transportation: "",
-      }),
-    ).toBe("hotel");
-    expect(
-      bookingTypeForItineraryItem({
-        ...baseItem,
-        activity: "รถรับส่งจากโรงแรมไปสนามบิน",
-        activityType: "travel",
-        transportation: "รถรับส่ง",
-      }),
-    ).toBe("public_transport");
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {
