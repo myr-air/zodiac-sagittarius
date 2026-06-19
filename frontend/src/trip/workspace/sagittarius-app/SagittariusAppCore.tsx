@@ -19,7 +19,6 @@ import {
   createAccountApiClient,
 } from "@/src/account/api-client";
 import {
-  canTripRole,
   findSessionMember,
 } from "@/src/trip/auth";
 import {
@@ -74,6 +73,7 @@ import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
+import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
 import type {
   ItineraryItem,
@@ -251,15 +251,18 @@ export function SagittariusApp({
     participantSession,
     trip,
   });
-  const canEdit = canTripRole(currentMember.role, "editItinerary");
-  const canCreateSuggestion = canTripRole(
-    currentMember.role,
-    "createSuggestion",
-  );
-  const canReviewSuggestions = canTripRole(
-    currentMember.role,
-    "reviewSuggestions",
-  );
+  const {
+    canCreateStopNote,
+    canCreateSuggestion,
+    canEdit,
+    canEditBookings,
+    canEditExpenses,
+    canEditPhotoAlbums,
+    canManagePeople,
+    canManageTripPlans,
+    canReviewSuggestions,
+    canViewExpenses,
+  } = deriveWorkspacePermissions(currentMember.role);
   const {
     canAccessPanel,
     isAccountTripAccessPending,
@@ -278,13 +281,6 @@ export function SagittariusApp({
     sessionMember: Boolean(sessionMember),
     sessionRestored,
   });
-  const canViewExpenses = canTripRole(currentMember.role, "viewExpenses");
-  const canEditExpenses = canTripRole(currentMember.role, "editExpenses");
-  const canManagePeople = canTripRole(currentMember.role, "managePeople");
-  const canManageTripPlans = canTripRole(currentMember.role, "manageTripPlans");
-  const canEditBookings = canEdit || canEditExpenses;
-  const canEditPhotoAlbums = canTripRole(currentMember.role, "managePhotoAlbums");
-  const canCreateStopNote = canCreateSuggestion || canEdit;
   const supportsContextRail =
     currentView === "overview" ||
     currentView === "itinerary" ||
