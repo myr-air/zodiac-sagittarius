@@ -9,15 +9,7 @@ import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassN
 import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import { PageHeader } from "@/src/shared/components/page-header";
-
-export interface TripSettingsFormValues {
-  name: string;
-  destinationLabel: string;
-  startDate: string;
-  endDate: string;
-  partySize: number;
-  defaultTimezone: string;
-}
+import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
 interface TripSettingsPageProps {
   canEdit: boolean;
