@@ -3,7 +3,6 @@ import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion,
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { type ItineraryView } from "@/src/trip/itinerary";
 import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
-import { WeatherBriefingDrawer, WeatherForecastStrip } from "@/src/shared/components/weather";
 import { HighlightBoard, OverviewHero } from "./overview";
 import { type OverviewTaskListLabels } from "./overview/OverviewTaskList";
 import {
@@ -24,6 +23,7 @@ import {
 import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./overview/OverviewRolePanels";
 import { OverviewCockpit } from "./overview/OverviewCockpit";
 import { OverviewTaskDialog } from "./overview/OverviewTaskDialog";
+import { OverviewWeatherBriefing } from "./overview/OverviewWeatherBriefing";
 
 interface OverviewPageProps {
   trip: Trip;
@@ -69,7 +69,6 @@ export function OverviewPage({
   const [newTaskVisibility, setNewTaskVisibility] = useState<TripTask["visibility"]>("private");
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
   const [undoTask, setUndoTask] = useState<TripTask | null>(null);
-  const [selectedBriefingDate, setSelectedBriefingDate] = useState<string | null>(null);
   /* v8 ignore next */
   const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
   const nextStop = sortedItems[0];
@@ -94,7 +93,6 @@ export function OverviewPage({
   const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
   const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
   const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
-  const selectedBriefing = dailyBriefings.find((briefing) => briefing.date === selectedBriefingDate) ?? null;
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
@@ -165,19 +163,11 @@ export function OverviewPage({
         currentMemberCard={currentMemberCard}
         countdown={countdown}
       />
-      <WeatherForecastStrip
-        briefings={dailyBriefings}
-        locale={locale}
-        selectedDate={selectedBriefingDate}
-        onSelect={setSelectedBriefingDate}
-      />
-      <WeatherBriefingDrawer
-        briefing={selectedBriefing}
-        locale={locale}
+      <OverviewWeatherBriefing
         canEdit={isManagerLens}
-        isOpen={Boolean(selectedBriefing)}
-        onClose={() => setSelectedBriefingDate(null)}
-        onSaveOverrides={onSaveDailyBriefingOverrides}
+        dailyBriefings={dailyBriefings}
+        locale={locale}
+        onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
       />
 
       <OverviewCockpit

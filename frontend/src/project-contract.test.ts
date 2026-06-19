@@ -116,6 +116,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
@@ -380,6 +381,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"),
       "utf8",
     );
+    const overviewWeatherBriefing = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"),
+      "utf8",
+    );
     const routeMapTypes = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/route-map/route-map.types.ts"),
       "utf8",
@@ -486,6 +491,10 @@ describe("Sagittarius project scaffold", () => {
     expect(overviewPage).not.toContain("taskDialogGridClassName");
     expect(overviewTaskDialog).toContain("export function OverviewTaskDialog");
     expect(overviewTaskDialog).toContain("taskDialogGridClassName");
+    expect(overviewPage).toContain("OverviewWeatherBriefing");
+    expect(overviewPage).not.toContain("WeatherBriefingDrawer");
+    expect(overviewWeatherBriefing).toContain("WeatherBriefingDrawer");
+    expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).toContain("RouteMapUnresolvedPanel");

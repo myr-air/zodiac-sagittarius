@@ -4,4 +4,5 @@ export { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 export { OverviewFocusSection } from "./OverviewFocusSection";
 export { OverviewTaskDialog } from "./OverviewTaskDialog";
 export { OverviewTaskList } from "./OverviewTaskList";
+export { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
 export { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
