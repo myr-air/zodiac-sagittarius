@@ -9,8 +9,8 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import type { PortalSection } from "@/src/shared/portal";
-import { AccountAccessPanel } from "./AccountAccessPanel";
-import type { AccountAccessMode } from "./account-access-panel-support";
+import { AccountAccessPanel } from "../AccountAccessPanel";
+import type { AccountAccessMode } from "../account-access-panel-support";
 import { createAccountClient, createTrustedAccountSession } from "./account-access-panel-test-clients";
 
 export * from "./account-access-panel-test-clients";

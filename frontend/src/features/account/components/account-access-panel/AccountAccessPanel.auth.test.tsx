@@ -9,7 +9,7 @@ import {
   installLocalStorageStub,
   renderAccountAccessPanel,
   switchToThai,
-} from "./account-access-panel-test-utils";
+} from "./testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel auth access", () => {
   beforeEach(() => {
