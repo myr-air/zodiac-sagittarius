@@ -12,9 +12,14 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { errorMessage } from "./account-auth-support";
-import { buildInviteLink, defaultTripForm, normalizedTripForm } from "./account-trip-wizard-support";
-import { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
-import { PortalTripWizard } from "./portal-trip-wizard";
+import {
+  buildInviteLink,
+  defaultTripForm,
+  normalizedTripForm,
+  PortalCreatedTripShare,
+  PortalTripWizard,
+  type CreatedTripShare,
+} from "./trip-wizard";
 
 interface PortalNewTripSectionClassNames {
   card: string;

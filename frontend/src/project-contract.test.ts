@@ -93,9 +93,13 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/place-resolution.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/routes/invite-links.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-destinations.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-dates.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-credentials.ts"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/index.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-destinations.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-credentials.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-error-codes.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-passkey-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-credentials-step.tsx"))).toBe(false);
@@ -109,9 +113,12 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-otp-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-password-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-setup-step.tsx"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-destination-step.tsx"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-invite-review.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard.tsx"))).toBe(false);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-dates-step.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-invite-review.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"))).toBe(true);
@@ -489,11 +496,11 @@ describe("Sagittarius project scaffold", () => {
       "utf8",
     );
     const accountTripWizardSupport = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/account-trip-wizard-support.ts"),
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts"),
       "utf8",
     );
     const portalTripWizard = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard.tsx"),
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"),
       "utf8",
     );
     const accountAuthSupport = readFileSync(
@@ -529,7 +536,7 @@ describe("Sagittarius project scaffold", () => {
       "utf8",
     );
     const tripWizardFormSections = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/portal-trip-wizard-form-sections.tsx"),
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx"),
       "utf8",
     );
     expect(workspaceFacade).toContain("./sagittarius-app");
