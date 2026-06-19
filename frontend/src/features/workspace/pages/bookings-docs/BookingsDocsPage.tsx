@@ -25,7 +25,7 @@ import {
 import {
   bookingDocMatchesQuery,
   compareBookingStartWithUndated,
-} from "./bookings-docs-page-support";
+} from "./booking-list";
 
 export type { BookingDocInput } from "./BookingsDocsPage.types";
 

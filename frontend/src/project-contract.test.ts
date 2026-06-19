@@ -325,6 +325,10 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-folders.ts"),
       "utf8",
     );
+    const bookingList = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-list.ts"),
+      "utf8",
+    );
     const bookingDialog = readFileSync(
       join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx"),
       "utf8",
@@ -347,8 +351,12 @@ describe("Sagittarius project scaffold", () => {
     expect(bookingsDocsSupport).not.toContain("function fromDateTimeLocalValue");
     expect(bookingsDocsSupport).not.toContain("function toggleId");
     expect(bookingsDocsSupport).not.toContain("bookingFolders");
+    expect(bookingsDocsSupport).not.toContain("bookingDocMatchesQuery");
+    expect(bookingsDocsSupport).not.toContain("compareBookingStartWithUndated");
     expect(bookingFolders).toContain("export const bookingFolders");
     expect(bookingFolders).toContain("export function countBookingFolders");
+    expect(bookingList).toContain("export function bookingDocMatchesQuery");
+    expect(bookingList).toContain("export function compareBookingStartWithUndated");
     expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
