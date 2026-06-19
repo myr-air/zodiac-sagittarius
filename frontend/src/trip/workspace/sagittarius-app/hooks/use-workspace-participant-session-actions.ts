@@ -1,11 +1,10 @@
 import { useCallback } from "react";
-import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import {
   clearParticipantSession,
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
-import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import { resolveParticipantPostAuthHref } from "./participant-post-auth-navigation";
 
 interface UseWorkspaceParticipantSessionActionsParams {
   initialTrip: Trip;
@@ -41,15 +40,11 @@ export function useWorkspaceParticipantSessionActions({
 
       if (typeof window !== "undefined") {
         const searchParams = new URLSearchParams(window.location.search);
-        const returnToParam = searchParams.get("rt");
-        const returnTo = returnToParam ? decodeReturnTo(returnToParam) : null;
-        const safeReturnTo = resolveJoinPostAuthReturnTo(
-          returnTo,
-          session.tripId,
-        );
-        const postAuthHref =
-          safeReturnTo ??
-          (!routeTripId ? appRoutes.tripOverview(session.tripId) : null);
+        const postAuthHref = resolveParticipantPostAuthHref({
+          encodedReturnTo: searchParams.get("rt"),
+          routeTripId,
+          tripId: session.tripId,
+        });
         if (postAuthHref) {
           replaceWorkspacePath(postAuthHref, session.tripId);
         }
