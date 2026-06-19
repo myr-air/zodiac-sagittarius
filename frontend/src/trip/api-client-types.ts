@@ -18,10 +18,8 @@ import type {
   Trip,
   TripDailyBriefing,
   TripJoinCredential,
-  TripMemberAccessStatus,
   TripParticipantSession,
   TripPhotoAlbumLink,
-  TripRole,
   TripTask,
 } from "./types";
 import type {
@@ -38,6 +36,12 @@ import type {
   PatchPhotoAlbumApiRequest,
   RecordExpenseReminderApiRequest,
 } from "./api-client-record-types";
+import type {
+  CreateMemberApiRequest,
+  JoinInviteTokenResponse,
+  PatchMemberApiRequest,
+  UpdatePresenceApiRequest,
+} from "./api-client-member-types";
 export type {
   BookingDocExternalLinkApiRequest,
   CreateBookingDocApiRequest,
@@ -48,15 +52,16 @@ export type {
   PatchPhotoAlbumApiRequest,
   RecordExpenseReminderApiRequest,
 } from "./api-client-record-types";
+export type {
+  CreateMemberApiRequest,
+  JoinInviteTokenResponse,
+  PatchMemberApiRequest,
+  UpdatePresenceApiRequest,
+} from "./api-client-member-types";
 
 export interface TripApiClientOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
-}
-
-export interface JoinInviteTokenResponse {
-  token: string;
-  expiresAt: string;
 }
 
 export interface TripApiClient {
@@ -253,23 +258,4 @@ export interface PatchStopNoteApiRequest {
   clientMutationId: string;
   expectedVersion: number;
   body: string;
-}
-
-export interface CreateMemberApiRequest {
-  displayName: string;
-  role: Exclude<TripRole, "owner">;
-  color: string;
-  participantPassword?: string;
-}
-
-export interface PatchMemberApiRequest {
-  displayName?: string;
-  role?: Exclude<TripRole, "owner">;
-  accessStatus?: TripMemberAccessStatus;
-  participantPassword?: string;
-}
-
-export interface UpdatePresenceApiRequest {
-  clientMutationId: string;
-  presence: Member["presence"];
 }
