@@ -16,6 +16,13 @@ export interface RouteDayGroup {
   points: RoutePoint[];
 }
 
+export interface MapCoordinateResolutionResult {
+  attempted: number;
+  failed: number;
+  resolved: number;
+  skipped: number;
+}
+
 export type MarkerStyle = CSSProperties & {
   "--day-color": string;
   "--route-marker-text-color": string;

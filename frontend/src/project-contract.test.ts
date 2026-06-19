@@ -337,6 +337,14 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/features/itinerary/lib/itinerary-time.ts"),
       "utf8",
     );
+    const routeMapTypes = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/route-map/route-map.types.ts"),
+      "utf8",
+    );
+    const routeMapView = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"),
+      "utf8",
+    );
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
@@ -363,6 +371,8 @@ describe("Sagittarius project scaffold", () => {
     expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
+    expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
+    expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
     expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");

@@ -41,7 +41,7 @@ import {
   getRouteCenter,
   hasCoordinates,
 } from "./route-map.utils";
-import type { DayFilter } from "./route-map.types";
+import type { DayFilter, MapCoordinateResolutionResult } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { StaticRouteFallback } from "./StaticRouteFallback";
 
@@ -56,13 +56,6 @@ interface RouteMapViewProps {
   onResolveMissingCoordinates?: (items: ItineraryItem[]) => Promise<MapCoordinateResolutionResult | void> | MapCoordinateResolutionResult | void;
   startDate: string;
   tripName: string;
-}
-
-export interface MapCoordinateResolutionResult {
-  attempted: number;
-  failed: number;
-  resolved: number;
-  skipped: number;
 }
 
 export function RouteMapView({
