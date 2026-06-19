@@ -75,7 +75,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { TripWorkspaceAccessPanel } from "./access-gate";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
-import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
+import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
 import type {
   ItineraryItem,
   Trip,

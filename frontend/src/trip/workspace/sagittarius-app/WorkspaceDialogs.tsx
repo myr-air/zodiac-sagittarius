@@ -15,7 +15,7 @@ import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
 import type { PendingItineraryImport } from "@/src/trip/workspace/itinerary-import-model";
-import type { ItineraryDialogState } from "./hooks/itinerary-dialog-state";
+import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
 
 interface WorkspaceDialogsProps {
   applyPendingItineraryImport: (target: ItineraryImportApplyTarget) => Promise<void>;

@@ -19,7 +19,7 @@ import type {
   TripParticipantSession,
   ItineraryItem,
 } from "@/src/trip/types";
-import { useWorkspaceItineraryImportApplyCommand } from "./use-workspace-itinerary-import-apply-command";
+import { useWorkspaceItineraryImportApplyCommand } from "./itinerary/use-workspace-itinerary-import-apply-command";
 
 interface UseWorkspaceItineraryImportOptions {
   canEdit: boolean;

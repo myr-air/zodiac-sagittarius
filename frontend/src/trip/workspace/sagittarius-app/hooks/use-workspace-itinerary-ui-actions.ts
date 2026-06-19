@@ -4,7 +4,7 @@ import type { StopFormValues } from "@/src/features/itinerary/components";
 import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { buildPromotedFoodRecommendationStop } from "../promote-food-recommendation";
-import type { ItineraryDialogState } from "./itinerary-dialog-state";
+import type { ItineraryDialogState } from "./itinerary/itinerary-dialog-state";
 
 interface UseWorkspaceItineraryUiActionsParams {
   canEdit: boolean;

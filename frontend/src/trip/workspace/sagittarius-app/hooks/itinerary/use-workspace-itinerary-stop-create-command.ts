@@ -28,7 +28,7 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import { resolveStopFormLocation } from "./stop-place-resolution-command";
 

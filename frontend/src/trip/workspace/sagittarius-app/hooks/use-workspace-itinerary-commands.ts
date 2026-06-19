@@ -19,13 +19,13 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import type { ItineraryDialogState } from "./itinerary-dialog-state";
-import { useWorkspaceItineraryAddCommands } from "./use-workspace-itinerary-add-commands";
-import { useWorkspaceItineraryDeleteCommand } from "./use-workspace-itinerary-delete-command";
-import { useWorkspaceItineraryInlineUpdateCommand } from "./use-workspace-itinerary-inline-update-command";
-import { useWorkspaceItineraryMapCommands } from "./use-workspace-itinerary-map-commands";
+import type { ItineraryDialogState } from "./itinerary/itinerary-dialog-state";
+import { useWorkspaceItineraryAddCommands } from "./itinerary/use-workspace-itinerary-add-commands";
+import { useWorkspaceItineraryDeleteCommand } from "./itinerary/use-workspace-itinerary-delete-command";
+import { useWorkspaceItineraryInlineUpdateCommand } from "./itinerary/use-workspace-itinerary-inline-update-command";
+import { useWorkspaceItineraryMapCommands } from "./itinerary/use-workspace-itinerary-map-commands";
 import { useWorkspaceItineraryMoveCommands } from "./itinerary/use-workspace-itinerary-move-commands";
-import { useWorkspaceItineraryStopSaveCommands } from "./use-workspace-itinerary-stop-save-commands";
+import { useWorkspaceItineraryStopSaveCommands } from "./itinerary/use-workspace-itinerary-stop-save-commands";
 
 interface UseWorkspaceItineraryCommandsParams {
   canEdit: boolean;
