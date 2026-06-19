@@ -4,6 +4,10 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type { Trip } from "@/src/trip/types";
 import type { TripCockpit } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
+import {
+  canSelectWorkspaceTripPlan,
+  resolveReloadedTripPlanSelection,
+} from "./trip-plans/workspace-trip-plan-selection";
 import { useWorkspaceTripPlanMutationCommands } from "./trip-plans/use-workspace-trip-plan-mutation-commands";
 
 interface UseWorkspaceTripPlanCommandsParams {
@@ -54,10 +58,12 @@ export function useWorkspaceTripPlanCommands({
       participantSession.sessionToken,
     );
     replaceCockpitFromApi(cockpit);
-    const reloadedTripPlanId =
-      preferredTripPlanId === null
-        ? initialSelectedTripPlanId(cockpit.trip)
-        : resolveSelectedTripPlanId(cockpit.trip, preferredTripPlanId);
+    const reloadedTripPlanId = resolveReloadedTripPlanSelection({
+      initialSelectedTripPlanId,
+      preferredTripPlanId,
+      resolveSelectedTripPlanId,
+      trip: cockpit.trip,
+    });
     setSelectedTripPlanId(reloadedTripPlanId);
     rememberSelectedTripPlanId(cockpit.trip, reloadedTripPlanId);
     latestTripRef.current = cockpit.trip;
@@ -75,9 +81,7 @@ export function useWorkspaceTripPlanCommands({
   ]);
 
   const selectTripPlan = useCallback((tripPlanId: string): boolean => {
-    if (!tripPlanId || !trip.planVariants.some((plan) => plan.id === tripPlanId)) {
-      return false;
-    }
+    if (!canSelectWorkspaceTripPlan(trip, tripPlanId)) return false;
     setSelectedTripPlanId(tripPlanId);
     rememberSelectedTripPlanId(trip, tripPlanId);
     return true;
