@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import {
   type TripApiClient,
@@ -21,6 +20,7 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
+import { useWorkspaceItineraryAddCommands } from "./use-workspace-itinerary-add-commands";
 import { useWorkspaceItineraryDeleteCommand } from "./use-workspace-itinerary-delete-command";
 import { useWorkspaceItineraryInlineUpdateCommand } from "./use-workspace-itinerary-inline-update-command";
 import { useWorkspaceItineraryMapCommands } from "./use-workspace-itinerary-map-commands";
@@ -89,16 +89,6 @@ export function useWorkspaceItineraryCommands({
   commitTrip,
   updateApiTrip,
 }: UseWorkspaceItineraryCommandsParams) {
-  const addStop = useCallback(
-    (day?: string, parentItemId?: string | null) => {
-      if (!canEdit) return;
-      setStopPlaceResolution({ state: "idle", candidates: [] });
-      setContextRailVisibility(false);
-      setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
-    },
-    [canEdit, setContextRailVisibility, setDialogState, setStopPlaceResolution],
-  );
-
   const updateItineraryItemInline = useWorkspaceItineraryInlineUpdateCommand({
     canEdit,
     canSaveItineraryErrorMessage,
@@ -114,23 +104,16 @@ export function useWorkspaceItineraryCommands({
     setTripPlanError,
   });
 
-  const addSubActivity = useCallback(
-    async (parentItemId: string) => {
-      const parentItem = trip.itineraryItems.find((item) => item.id === parentItemId);
-      if (!parentItem) return;
-      if (!parentItem.isPlanBlock) {
-        try {
-          setTripPlanError(null);
-          await updateItineraryItemInline(parentItem.id, { isPlanBlock: true });
-        } catch {
-          setTripPlanError(tripPlanErrorMessage);
-          return;
-        }
-      }
-      addStop(parentItem.day, parentItem.id);
-    },
-    [addStop, setTripPlanError, trip, tripPlanErrorMessage, updateItineraryItemInline],
-  );
+  const { addStop, addSubActivity } = useWorkspaceItineraryAddCommands({
+    canEdit,
+    setContextRailVisibility,
+    setDialogState,
+    setStopPlaceResolution,
+    setTripPlanError,
+    trip,
+    tripPlanErrorMessage,
+    updateItineraryItemInline,
+  });
 
   const {
     moveItem,
