@@ -161,6 +161,8 @@ describe("Sagittarius project scaffold", () => {
     expect(hooksIndex).toContain("useWorkspaceAdministration");
     expect(hooksIndex).toContain("useWorkspaceSession");
     expect(hooksIndex).toContain("useWorkspaceAccessGate");
+    expect(hooksIndex).not.toContain("useWorkspaceRecordActions");
+    expect(hooksIndex).not.toContain("useWorkspaceRecordState");
     expect(sagittariusIndex).toContain("SagittariusApp");
     expect(sagittariusIndex).toContain("SagittariusAppCore");
     expect(sagittariusIndex).toContain("export {");

@@ -1,11 +1,8 @@
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   ItineraryItem,
-  Suggestion,
-  StopNote,
   Trip,
   TripParticipantSession,
-  TripTask,
 } from "@/src/trip/types";
 import {
   type InitialTripState,
@@ -92,9 +89,3 @@ export function useWorkspaceRecords({
     tasks,
   };
 }
-
-export type WorkspaceRecordsState = {
-  stopNotes: StopNote[];
-  suggestions: Suggestion[];
-  tasks: TripTask[];
-};
