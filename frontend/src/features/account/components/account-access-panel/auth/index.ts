@@ -9,6 +9,7 @@ export {
 export {
   arrayBufferToBase64Url,
   base64UrlToArrayBuffer,
+  buildPasskeyLoginFinishInput,
   createPasskeyCredential,
   errorMessage,
   formatDateTime,

@@ -631,11 +631,18 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(portalTripWizardActions).toContain("tripWizardActionsClassName");
     expect(accountAuthSupport).toContain("./account-access-error-codes");
     expect(accountAuthSupport).toContain("./account-passkey-support");
+    expect(accountAuthSupport).toContain("buildPasskeyLoginFinishInput");
     expect(accountAuthSupport).not.toContain("accountLoadFailed:");
     expect(accountAuthSupport).not.toContain("function createPasskeyCredential");
     expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
     expect(accountAuthSupport).not.toContain("function base64UrlToArrayBuffer");
     expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
+    const emailLoginState = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-panel-state.ts"),
+      "utf8",
+    );
+    expect(emailLoginState).toContain("buildPasskeyLoginFinishInput");
+    expect(emailLoginState).not.toContain("arrayBufferToBase64Url");
     expect(emailLoginStepContent).toContain("./account-email-login-credentials-step");
     expect(emailLoginStepContent).toContain("./account-email-login-methods-step");
     expect(emailLoginStepContent).toContain("./account-email-login-otp-step");

@@ -1,4 +1,8 @@
-import type { AccountSettings } from "@/src/account/api-client";
+import type {
+  AccountApiClient,
+  AccountSettings,
+  PasskeyLoginStartResponse,
+} from "@/src/account/api-client";
 import { ACCESS_ERROR_CODES } from "./account-access-error-codes";
 
 export async function createPasskeyCredential(challenge: string, settings: AccountSettings) {
@@ -63,6 +67,8 @@ type AssertionCredential = PublicKeyCredential & {
   response: AuthenticatorAssertionResponse;
 };
 
+type PasskeyLoginFinishInput = Parameters<AccountApiClient["finishPasskeyLogin"]>[0];
+
 function assertCredentialApi(): CredentialsContainer {
   if (typeof navigator === "undefined" || !navigator.credentials) {
     throw new Error(ACCESS_ERROR_CODES.passkeyUnsupported);
@@ -124,4 +130,24 @@ export function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(byte);
   }
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/u, "");
+}
+
+export function buildPasskeyLoginFinishInput({
+  credential,
+  loginStart,
+  trustDevice,
+}: {
+  credential: AssertionCredential;
+  loginStart: Pick<PasskeyLoginStartResponse, "challengeId">;
+  trustDevice: boolean;
+}): PasskeyLoginFinishInput {
+  return {
+    challengeId: loginStart.challengeId,
+    credentialId: arrayBufferToBase64Url(credential.rawId),
+    clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
+    authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
+    signature: arrayBufferToBase64Url(credential.response.signature),
+    trustDevice,
+    deviceLabel: "",
+  };
 }

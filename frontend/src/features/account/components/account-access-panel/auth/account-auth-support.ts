@@ -6,7 +6,13 @@ import type { Messages } from "@/src/i18n/messages";
 import { ACCESS_ERROR_CODES } from "./account-access-error-codes";
 
 export { ACCESS_ERROR_CODES } from "./account-access-error-codes";
-export { arrayBufferToBase64Url, base64UrlToArrayBuffer, createPasskeyCredential, getPasskeyCredential } from "./account-passkey-support";
+export {
+  arrayBufferToBase64Url,
+  base64UrlToArrayBuffer,
+  buildPasskeyLoginFinishInput,
+  createPasskeyCredential,
+  getPasskeyCredential,
+} from "./account-passkey-support";
 
 export function errorMessage(caught: unknown, fallback: string, labels: Messages["access"]["messages"]): string {
   return localizeAccessError(rawErrorMessage(caught, fallback), labels) ?? fallback;

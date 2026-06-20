@@ -5,7 +5,7 @@ import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  arrayBufferToBase64Url,
+  buildPasskeyLoginFinishInput,
   errorMessage,
   getPasskeyCredential,
   passwordLoginErrorMessage,
@@ -196,15 +196,13 @@ export function useEmailLoginPanelState({
     try {
       const loginStart = await accountClient.startPasskeyLogin(normalizedEmail);
       const credential = await getPasskeyCredential(loginStart.challenge, loginStart.allowCredentials.map((credential) => credential.credentialId));
-      const session = await accountClient.finishPasskeyLogin({
-        challengeId: loginStart.challengeId,
-        credentialId: arrayBufferToBase64Url(credential.rawId),
-        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
-        authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
-        signature: arrayBufferToBase64Url(credential.response.signature),
-        trustDevice: activeFlow === "login" ? trustDevice : false,
-        deviceLabel: "",
-      });
+      const session = await accountClient.finishPasskeyLogin(
+        buildPasskeyLoginFinishInput({
+          credential,
+          loginStart,
+          trustDevice: activeFlow === "login" ? trustDevice : false,
+        }),
+      );
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
