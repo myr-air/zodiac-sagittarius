@@ -224,6 +224,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-assertions.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickerField.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/TimePickerField.tsx"))).toBe(true);

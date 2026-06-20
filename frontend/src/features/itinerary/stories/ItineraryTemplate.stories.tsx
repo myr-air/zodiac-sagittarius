@@ -21,6 +21,7 @@ import {
   stressPathOptions,
   withStoryPrefix,
 } from "./itinerary-story-fixtures";
+import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
 
 const branchGraphItems: ItineraryItem[] = withStoryPrefix(branchGraphItemsBase, "story");
 const planAExampleItems: ItineraryItem[] = withStoryPrefix(planAExampleItemsBase, "story");
@@ -208,8 +209,7 @@ export const TableOverflow: Story = {
     viewport: { defaultViewport: "mobile320" },
   },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
-    await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[520px]");
+    await expectItineraryResponsiveContract(canvasElement);
   },
 };
 export const BranchGraph: Story = {

@@ -23,8 +23,9 @@ import {
   pathNameMain,
   pathNamePlanA,
   pathNamePlanB,
+  pathNamePlanC,
 } from "./itinerary-story-fixtures";
-import { pathNamePlanC } from "@/src/trip/testing/itinerary-path-fixtures";
+import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
 
 const onStoryChangeDayPath = fn();
 const onStoryMoveItemToPath = fn();
@@ -47,12 +48,6 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-
-async function expectItineraryResponsiveContract(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".table-scroll")).toHaveClass("table-scroll", "overflow-x-auto", "max-w-full");
-  await expect(canvasElement.querySelector(".smart-table")).toHaveClass("smart-table", "min-w-[520px]");
-  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-}
 
 export const Owner: Story = {
   args: buildOwnerStoryArgs({

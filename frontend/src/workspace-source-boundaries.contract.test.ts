@@ -559,6 +559,29 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
+    const itineraryStoryFixtures = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/itinerary-story-fixtures.ts"),
+      "utf8",
+    );
+    const itineraryStoryPathScenarios = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"),
+      "utf8",
+    );
+    const itineraryPageStory = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/ItineraryPage.stories.tsx"),
+      "utf8",
+    );
+    const itineraryTemplateStory = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/ItineraryTemplate.stories.tsx"),
+      "utf8",
+    );
+    expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
+    expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
+    expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
+    expect(itineraryStoryPathScenarios).toContain("buildItineraryStoryPathItems");
+    expect(itineraryStoryPathScenarios).toContain("export const stressPathItemsBase");
+    expect(itineraryPageStory).toContain("./itinerary-story-assertions");
+    expect(itineraryTemplateStory).toContain("./itinerary-story-assertions");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
     expect(overviewPage).toContain("OverviewCockpit");
