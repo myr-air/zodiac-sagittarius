@@ -8,6 +8,8 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/expenses-reminders.test.ts",
   "src/trip/auth.test.ts",
   "src/trip/expenses-splits.test.ts",
+  "src/trip/itinerary-import-export.records.test.ts",
+  "src/trip/photo-albums.mutations.test.ts",
   "src/trip/stop-notes.test.ts",
   "src/trip/tasks.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.graph.test.tsx",
