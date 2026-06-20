@@ -16,7 +16,10 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceMainShell,
       workspaceAccessProps,
       workspaceShellProps,
+      workspacePageViewProps,
+      workspacePlanningViewProps,
       workspaceViewProps,
+      workspaceViewPropsTypes,
       workspaceFacade,
       appFacade,
       workspaceRecordsHook,
@@ -57,9 +60,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).toContain("./WorkspaceAppFrame");
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
-    expect(sagittariusApp).toContain("./workspace-access-props");
-    expect(sagittariusApp).toContain("./workspace-shell-props");
-    expect(sagittariusApp).toContain("./workspace-view-props");
+    expect(sagittariusApp).toContain("./props");
     expect(sagittariusApp).toContain("buildWorkspaceAccessProps");
     expect(sagittariusApp).toContain("buildWorkspaceShellProps");
     expect(sagittariusApp).toContain("buildWorkspaceViewsProps");
@@ -71,15 +72,21 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).not.toContain("timelineProps:");
     expect(workspaceAccessProps).toContain("export function buildWorkspaceAccessProps");
     expect(workspaceAccessProps).toContain("sessionRestored");
-    expect(workspaceAccessProps).toContain("./WorkspaceAppFrame");
+    expect(workspaceAccessProps).toContain("../WorkspaceAppFrame");
     expect(workspaceShellProps).toContain("export function buildWorkspaceShellProps");
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
-    expect(workspaceShellProps).toContain("./WorkspaceAppFrame");
+    expect(workspaceShellProps).toContain("../WorkspaceAppFrame");
     expect(workspaceViewProps).toContain("export function buildWorkspaceViewsProps");
-    expect(workspaceViewProps).toContain("settingsProps:");
-    expect(workspaceViewProps).toContain("timelineProps:");
-    expect(workspaceViewProps).toContain("@/src/trip/workspace/TripWorkspaceViews");
+    expect(workspaceViewProps).toContain("buildWorkspacePageViewProps");
+    expect(workspaceViewProps).toContain("buildWorkspacePlanningViewProps");
+    expect(workspaceViewProps).not.toContain("settingsProps:");
+    expect(workspaceViewProps).not.toContain("timelineProps:");
+    expect(workspacePageViewProps).toContain("settingsProps:");
+    expect(workspacePageViewProps).toContain("expensesProps:");
+    expect(workspacePlanningViewProps).toContain("overviewProps:");
+    expect(workspacePlanningViewProps).toContain("timelineProps:");
+    expect(workspaceViewPropsTypes).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(workspaceAppFrame).toContain("WorkspaceAccessBoundary");
     expect(workspaceAppFrame).toContain("WorkspaceMainShell");
     expect(workspaceAppFrame).not.toContain("useWorkspaceApiClients");

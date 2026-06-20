@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import type { WorkspaceAppFrame } from "./WorkspaceAppFrame";
+import type { WorkspaceAppFrame } from "../WorkspaceAppFrame";
 
 type WorkspaceShellProps = ComponentProps<typeof WorkspaceAppFrame>["shellProps"];
 

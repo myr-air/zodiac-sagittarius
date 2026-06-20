@@ -49,9 +49,11 @@ import {
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
-import { buildWorkspaceAccessProps } from "./workspace-access-props";
-import { buildWorkspaceShellProps } from "./workspace-shell-props";
-import { buildWorkspaceViewsProps } from "./workspace-view-props";
+import {
+  buildWorkspaceAccessProps,
+  buildWorkspaceShellProps,
+  buildWorkspaceViewsProps,
+} from "./props";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { Trip } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
