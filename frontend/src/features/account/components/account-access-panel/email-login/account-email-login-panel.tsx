@@ -7,18 +7,9 @@ import {
   accountEntryLoginFlowClassName,
   accountLoginFlowClassName,
   accountStepKickerClassName,
-  accountStepStageClassName,
-  accountStepStageDirectionClassNames,
 } from "./account-email-login-styles";
 import { AccountTrustDeviceField } from "./account-email-login-fields";
-import {
-  EmailLoginCredentialsStep,
-  EmailLoginMethodsStep,
-  EmailLoginOtpStep,
-  EmailLoginPasswordStep,
-  EmailLoginSetupStep,
-} from "./account-email-login-step-content";
-import { PanelHeading } from "../portal/account-portal-primitives";
+import { EmailLoginStepStage } from "./account-email-login-step-stage";
 import { StatusMessage } from "../auth";
 import { useEmailLoginPanelState } from "./use-email-login-panel-state";
 
@@ -113,131 +104,47 @@ export function EmailLoginPanel({
       >
         <span className={accountStepKickerClassName}>{stepLabel}</span>
         {formError ? <StatusMessage id={formErrorId} tone="danger">{formError}</StatusMessage> : null}
-        <div className={cn(accountStepStageClassName, accountStepStageDirectionClassNames[transitionDirection])} key={visualStep}>
-          <PanelHeading
-            icon={stepHeading.icon}
-            title={stepHeading.title}
-            detail={stepHeading.detail}
-          />
-          {challenge ? (
-            <EmailLoginOtpStep
-              activeFlow={activeFlow}
-              code={code}
-              codeHintId={codeHintId}
-              codeInputId={codeInputId}
-              disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
-              isSubmitting={isSubmitting}
-              labels={{
-                changeEmail: emailLoginMessages.changeEmail,
-                resendCode: emailLoginMessages.resendCode,
-                resendCooldown: (seconds) => emailLoginMessages.resendCooldown({ seconds }),
-                sentCodeTo: emailLoginMessages.sentCodeTo,
-                signInAccount: emailLoginMessages.signInAccount,
-                verificationCode: emailLoginMessages.verificationCode,
-                verificationCodeHint: emailLoginMessages.verificationCodeHint,
-                verifyEmail: emailLoginMessages.verifyEmail,
-              }}
-              normalizedEmail={normalizedEmail}
-              onChangeCode={updateCode}
-              onRequestEmailCode={() => void requestEmailCode()}
-              onResetChallenge={resetChallenge}
-              otpReady={otpReady}
-              resendCooldown={resendCooldown}
-              trustDeviceFields={trustDeviceFields}
-            />
-          ) : authStep === "email" ? (
-            <EmailLoginCredentialsStep
-              activeFlow={activeFlow}
-              disabledAlternateActions={!isEmailValid || isSubmitting}
-              disabledPrimary={!isEmailValid || !passwordReady || isSubmitting}
-              email={email}
-              emailHint={isEmailInvalid ? emailLoginMessages.emailInvalidHint : emailLoginMessages.emailHint}
-              emailHintId={emailHintId}
-              emailInputId={emailInputId}
-              isEmailInvalid={isEmailInvalid}
-              isPasswordInvalid={isPasswordInvalid}
-              labels={{
-                alternateSignInOptions: emailLoginMessages.alternateSignInOptions,
-                createWithPassword: emailLoginMessages.createWithPassword,
-                email: emailLoginMessages.email,
-                password: emailLoginMessages.password,
-                passwordHint: emailLoginMessages.passwordHint,
-                signInAccount: emailLoginMessages.signInAccount,
-                usePasskeyInstead: emailLoginMessages.usePasskeyInstead,
-                useSignInCodeInstead: emailLoginMessages.useSignInCodeInstead,
-              }}
-              onEmailChange={setEmail}
-              onPasswordChange={setPassword}
-              onRequestEmailCode={() => void requestEmailCode()}
-              onSignInWithPasskey={() => void signInWithPasskey()}
-              password={password}
-              passwordAutocomplete={passwordAutocomplete}
-              passwordHintId={passwordHintId}
-              passwordInputId={passwordInputId}
-              trustDeviceFields={trustDeviceFields}
-            />
-          ) : authStep === "methods" ? (
-            <EmailLoginMethodsStep
-              activeFlow={activeFlow}
-              isSubmitting={isSubmitting}
-              labels={{
-                changeEmail: emailLoginMessages.changeEmail,
-                createFor: emailLoginMessages.createFor,
-                createWithPassword: emailLoginMessages.createWithPassword,
-                sendRegisterCode: emailLoginMessages.sendRegisterCode,
-                sendSignInCode: emailLoginMessages.sendSignInCode,
-                signInAs: emailLoginMessages.signInAs,
-                signInWithPasskey: emailLoginMessages.signInWithPasskey,
-                signInWithPassword: emailLoginMessages.signInWithPassword,
-              }}
-              normalizedEmail={normalizedEmail}
-              onChangeEmail={changeEmail}
-              onRequestEmailCode={() => void requestEmailCode()}
-              onShowPasswordStep={showPasswordStep}
-              onSignInWithPasskey={() => void signInWithPasskey()}
-            />
-          ) : authStep === "setup" ? (
-            <EmailLoginSetupStep
-              displayName={displayName}
-              homeBase={homeBase}
-              isSubmitting={isSubmitting}
-              labels={{
-                createFor: emailLoginMessages.createFor,
-                displayName: emailLoginMessages.displayName,
-                finishSetup: emailLoginMessages.finishSetup,
-                homeBase: emailLoginMessages.homeBase,
-              }}
-              normalizedEmail={normalizedEmail}
-              onDisplayNameChange={setDisplayName}
-              onHomeBaseChange={setHomeBase}
-            />
-          ) : (
-            <EmailLoginPasswordStep
-              activeFlow={activeFlow}
-              isPasswordInvalid={isPasswordInvalid}
-              isSubmitting={isSubmitting}
-              labels={{
-                changeEmail: emailLoginMessages.changeEmail,
-                chooseAnotherMethod: emailLoginMessages.chooseAnotherMethod,
-                continueToOtp: emailLoginMessages.continueToOtp,
-                createFor: emailLoginMessages.createFor,
-                password: emailLoginMessages.password,
-                passwordHint: emailLoginMessages.passwordHint,
-                signInAs: emailLoginMessages.signInAs,
-                signInWithPassword: emailLoginMessages.signInWithPassword,
-              }}
-              normalizedEmail={normalizedEmail}
-              onChangeEmail={changeEmail}
-              onChooseMethods={chooseMethods}
-              onPasswordChange={setPassword}
-              password={password}
-              passwordAutocomplete={passwordAutocomplete}
-              passwordHintId={passwordHintId}
-              passwordInputId={passwordInputId}
-              trustDeviceFields={trustDeviceFields}
-            />
-          )}
-        </div>
+        <EmailLoginStepStage
+          activeFlow={activeFlow}
+          authStep={authStep}
+          code={code}
+          codeHintId={codeHintId}
+          codeInputId={codeInputId}
+          displayName={displayName}
+          email={email}
+          emailHintId={emailHintId}
+          emailInputId={emailInputId}
+          emailLoginMessages={emailLoginMessages}
+          hasChallenge={Boolean(challenge)}
+          homeBase={homeBase}
+          isEmailInvalid={isEmailInvalid}
+          isEmailValid={isEmailValid}
+          isPasswordInvalid={isPasswordInvalid}
+          isSubmitting={isSubmitting}
+          normalizedEmail={normalizedEmail}
+          otpReady={otpReady}
+          password={password}
+          passwordAutocomplete={passwordAutocomplete}
+          passwordHintId={passwordHintId}
+          passwordInputId={passwordInputId}
+          passwordReady={passwordReady}
+          resendCooldown={resendCooldown}
+          stepHeading={stepHeading}
+          transitionDirection={transitionDirection}
+          trustDeviceFields={trustDeviceFields}
+          visualStep={visualStep}
+          changeEmail={changeEmail}
+          chooseMethods={chooseMethods}
+          requestEmailCode={requestEmailCode}
+          resetChallenge={resetChallenge}
+          setDisplayName={setDisplayName}
+          setEmail={setEmail}
+          setHomeBase={setHomeBase}
+          setPassword={setPassword}
+          showPasswordStep={showPasswordStep}
+          signInWithPasskey={signInWithPasskey}
+          updateCode={updateCode}
+        />
       </form>
       {!challenge ? (
         <AccountAuthFlowSwitch activeFlow={activeFlow} onFlowChange={switchFlow} />
