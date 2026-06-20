@@ -1,9 +1,9 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
 import type { BookingDocInput } from "./BookingsDocsPage";
 import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
+import { bookingFlightTestDoc } from "./bookings-docs-test-fixtures";
 
 describe("BookingsDocsPage mutations", () => {
   it("submits new booking docs and edits existing records", async () => {
@@ -43,11 +43,14 @@ describe("BookingsDocsPage mutations", () => {
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Updated flight booking" } });
     await user.click(within(dialog).getByRole("button", { name: "Save booking" }));
 
-    expect(onUpdateBookingDoc).toHaveBeenCalledWith(seedTrip.bookingDocs![0].id, expect.objectContaining({
-      title: "Updated flight booking",
-      travelerIds: ["member-aom", "member-beam", "member-nam"],
-      relatedItineraryItemIds: ["item-flight-bkk-hkg", "item-arrive-hkg"],
-    }));
+    expect(onUpdateBookingDoc).toHaveBeenCalledWith(
+      bookingFlightTestDoc.id,
+      expect.objectContaining({
+        title: "Updated flight booking",
+        travelerIds: ["member-aom", "member-beam", "member-nam"],
+        relatedItineraryItemIds: ["item-flight-bkk-hkg", "item-arrive-hkg"],
+      }),
+    );
   });
 
   it("requests deletion only after confirmation", async () => {
@@ -63,6 +66,6 @@ describe("BookingsDocsPage mutations", () => {
 
     await user.click(screen.getAllByRole("button", { name: "Delete booking" })[0]);
     await user.click(within(screen.getByRole("dialog", { name: "Delete booking" })).getByRole("button", { name: "Delete booking" }));
-    expect(onDeleteBookingDoc).toHaveBeenCalledWith(seedTrip.bookingDocs![0].id);
+    expect(onDeleteBookingDoc).toHaveBeenCalledWith(bookingFlightTestDoc.id);
   });
 });
