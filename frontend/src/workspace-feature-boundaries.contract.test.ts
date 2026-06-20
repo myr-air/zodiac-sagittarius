@@ -54,7 +54,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryStoryPathItems,
       itineraryStoryPathOptions,
       itineraryPageStory,
-      itineraryPageStoryBuilders,
+      itineraryStoryBuilders,
       itineraryPageStoryPlays,
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
@@ -165,6 +165,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
     expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTripParticipantSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
     expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
@@ -185,11 +186,13 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryStoryPathItems).toContain("./itinerary-story-branch-items");
     expect(itineraryStoryPathItems).toContain("./itinerary-story-stress-items");
     expect(itineraryStoryPathOptions).toContain("export const stressPathOptions");
-    expect(itineraryPageStory).toContain("./ItineraryPage.stories.builders");
+    expect(itineraryPageStory).toContain("./itinerary-story-builders");
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("function ownerArgsStory");
-    expect(itineraryPageStoryBuilders).toContain("export function ownerArgsStory");
-    expect(itineraryPageStoryBuilders).toContain("export function viewportStory");
+    expect(itineraryTemplateStory).toContain("./itinerary-story-builders");
+    expect(itineraryTemplateStory).not.toContain("...Owner.args");
+    expect(itineraryStoryBuilders).toContain("export function ownerArgsStory");
+    expect(itineraryStoryBuilders).toContain("export function viewportStory");
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");

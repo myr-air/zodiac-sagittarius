@@ -45,7 +45,7 @@ import {
 import {
   ownerArgsStory,
   viewportStory,
-} from "./ItineraryPage.stories.builders";
+} from "./itinerary-story-builders";
 
 const meta = {
   title: "Pages/Itinerary",

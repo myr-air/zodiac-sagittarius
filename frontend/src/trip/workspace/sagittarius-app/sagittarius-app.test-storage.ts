@@ -25,15 +25,36 @@ export function persistTrustedAccountSession(
   storage: Pick<Storage, "setItem">,
   sessionToken = "playwright-account-session",
 ) {
+  persistAccountSession(storage, { sessionToken });
+}
+
+export function persistAccountSession(
+  storage: Pick<Storage, "setItem">,
+  {
+    createdAt = "2026-05-30T10:00:00.000Z",
+    expiresAt = "2030-01-01T10:00:00.000Z",
+    kind = "trusted",
+    sessionToken = "playwright-account-session",
+    trustedDeviceId = kind === "trusted" ? "device-1" : undefined,
+    userId = "11111111-1111-1111-1111-111111111111",
+  }: {
+    createdAt?: string;
+    expiresAt?: string;
+    kind?: "temporary" | "trusted";
+    sessionToken?: string;
+    trustedDeviceId?: string;
+    userId?: string;
+  } = {},
+) {
   storage.setItem(
     accountSessionStorageKey,
     JSON.stringify({
-      userId: "11111111-1111-1111-1111-111111111111",
+      userId,
       sessionToken,
-      kind: "trusted",
-      trustedDeviceId: "device-1",
-      createdAt: "2026-05-30T10:00:00.000Z",
-      expiresAt: "2030-01-01T10:00:00.000Z",
+      kind,
+      ...(trustedDeviceId ? { trustedDeviceId } : {}),
+      createdAt,
+      expiresAt,
     }),
   );
 }

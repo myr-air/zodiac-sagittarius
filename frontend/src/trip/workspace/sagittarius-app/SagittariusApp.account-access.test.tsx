@@ -7,7 +7,6 @@ import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
 import { accountSessionStorageKey } from "@/src/account/session-storage";
-import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
   optionalTrailingSlashPattern,
@@ -17,6 +16,8 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   mockAccountPortalApiFetch,
+  persistAccountSession,
+  persistTripParticipantSession,
   persistTrustedAccountSession,
   render,
   resetSagittariusAppTestEnvironment,
@@ -29,16 +30,13 @@ describe("Sagittarius cockpit account access", () => {
 
   it("does not restore temporary or expired account sessions from local storage", async () => {
     const storage = installLocalStorageStub();
-    storage.setItem(
-      accountSessionStorageKey,
-      JSON.stringify({
-        userId: "user-temp",
-        sessionToken: "temporary-account-token",
-        kind: "temporary",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2099-06-28T00:00:00.000Z",
-      }),
-    );
+    persistAccountSession(storage, {
+      userId: "user-temp",
+      sessionToken: "temporary-account-token",
+      kind: "temporary",
+      createdAt: "2026-05-29T00:00:00.000Z",
+      expiresAt: "2099-06-28T00:00:00.000Z",
+    });
 
     const { unmount } = render(<SagittariusApp requireJoin />);
 
@@ -51,16 +49,12 @@ describe("Sagittarius cockpit account access", () => {
     );
 
     unmount();
-    storage.setItem(
-      accountSessionStorageKey,
-      JSON.stringify({
-        userId: "user-expired",
-        sessionToken: "expired-account-token",
-        kind: "trusted",
-        createdAt: "2020-05-29T00:00:00.000Z",
-        expiresAt: "2020-06-28T00:00:00.000Z",
-      }),
-    );
+    persistAccountSession(storage, {
+      userId: "user-expired",
+      sessionToken: "expired-account-token",
+      createdAt: "2020-05-29T00:00:00.000Z",
+      expiresAt: "2020-06-28T00:00:00.000Z",
+    });
 
     render(<SagittariusApp requireJoin />);
 
@@ -115,16 +109,7 @@ describe("Sagittarius cockpit account access", () => {
   it("keeps account portal routes in the portal even when a trip session is persisted", async () => {
     const storage = installLocalStorageStub();
     persistTrustedAccountSession(storage);
-    storage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "persisted-trip-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(storage);
     const fetchSpy = mockAccountPortalApiFetch({
       trips: [
         {

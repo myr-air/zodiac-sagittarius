@@ -8,7 +8,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
-import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
   appRoutes,
@@ -18,6 +17,7 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   mockWindowLocation,
+  persistTripParticipantSession,
   render,
   renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
@@ -69,16 +69,10 @@ describe("Sagittarius cockpit access", () => {
 
   it("keeps account routes isolated from restored local participant sessions", async () => {
     const storage = installLocalStorageStub();
-    storage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[1].id,
-        sessionToken: "local-restored-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(storage, {
+      memberId: seedTrip.members[1].id,
+      sessionToken: "local-restored-session",
+    });
 
     render(<SagittariusApp accessMode="account-login" requireJoin />);
 
