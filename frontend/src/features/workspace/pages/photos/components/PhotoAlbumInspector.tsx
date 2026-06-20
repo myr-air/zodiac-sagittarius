@@ -1,4 +1,4 @@
-import { findPhotoAlbumRelations, safePhotoAlbumHref } from "@/src/trip/photo-albums";
+import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-albums";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -9,7 +9,7 @@ import { photoAccessLabel, photoAlbumLinkHost, photoProviderLabel } from "../Tri
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
   copy: PhotoCopy;
-  relations: ReturnType<typeof findPhotoAlbumRelations> | null;
+  relations: PhotoAlbumRelations | null;
 }
 
 export function PhotoAlbumInspector({

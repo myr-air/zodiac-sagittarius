@@ -1,4 +1,4 @@
-import { type findBookingDocRelations } from "@/src/trip/booking-docs";
+import type { BookingDocRelations } from "@/src/trip/booking-docs";
 import type { BookingDoc } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Button, IconButton, WorkspaceSurface } from "@/src/ui";
@@ -7,8 +7,6 @@ import type { BookingCopy } from "../BookingsDocsPage.copy";
 import { formatEnumLabel } from "../booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { formatDateTime, statusBadgeClassName } from "../booking-display";
-
-type BookingDocRelations = ReturnType<typeof findBookingDocRelations>;
 
 interface BookingInspectorProps {
   booking: BookingDoc | null;

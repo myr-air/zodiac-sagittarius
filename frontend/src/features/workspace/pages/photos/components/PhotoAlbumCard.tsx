@@ -1,4 +1,4 @@
-import { safePhotoAlbumCoverHref, safePhotoAlbumHref } from "@/src/trip/photo-albums";
+import { findPhotoAlbumRelations, safePhotoAlbumCoverHref, safePhotoAlbumHref } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Badge, Button, IconButton } from "@/src/ui";
@@ -29,7 +29,7 @@ export function PhotoAlbumCard({
   onDelete,
 }: PhotoAlbumCardProps) {
   const href = safePhotoAlbumHref(album.url);
-  const owner = trip.members.find((member) => member.id === album.ownerMemberId);
+  const relations = findPhotoAlbumRelations(album, trip);
   const coverHref = safePhotoAlbumCoverHref(album.coverUrl);
   return (
     <article className={cn(photoStyles.albumCardClassName, selected && photoStyles.selectedAlbumClassName)}>
@@ -50,7 +50,7 @@ export function PhotoAlbumCard({
         </span>
       </button>
       <div className="grid gap-2 text-xs font-bold text-(--color-text-muted)">
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {owner?.displayName ?? copy.noOwner}</span>
+        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {relations.owner?.displayName ?? copy.noOwner}</span>
         <span className="flex min-w-0 items-center gap-1.5"><Icon name="calendar" /> {album.day ?? copy.tripLevel}</span>
         {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
       </div>
