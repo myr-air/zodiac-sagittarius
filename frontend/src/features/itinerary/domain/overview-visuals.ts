@@ -1,4 +1,5 @@
-export type DestinationTone = "harbor" | "city" | "coast" | "market";
+export const destinationToneValues = ["harbor", "city", "coast", "market"] as const;
+export type DestinationTone = (typeof destinationToneValues)[number];
 
 export interface DestinationVisual {
   tone: DestinationTone;
