@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { ActionBar, Button, FloatingActionButton, Icon, IconButton, SegmentedControl, Select, SwapButton, TextInput } from "@/src/ui";
+import { cssCheckPlay } from "./ui.stories.plays";
 
 const buttonsMeta = {
   title: "Design System/Buttons",
@@ -27,18 +27,7 @@ export const Mobile: ButtonStory = {
 };
 export const CssCheck: ButtonStory = {
   args: { children: "Submit", variant: "primary" },
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole("button", { name: /submit/i });
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();
-    const expected = primaryColor.match(/^#([0-9a-f]{6})$/i);
-    if (expected === null) {
-      throw new Error("--color-primary is not a valid hex color token");
-    }
-    const red = Number.parseInt(expected[1].slice(0, 2), 16);
-    const green = Number.parseInt(expected[1].slice(2, 4), 16);
-    const blue = Number.parseInt(expected[1].slice(4, 6), 16);
-    await expect(getComputedStyle(button).backgroundColor).toBe(`rgb(${red}, ${green}, ${blue})`);
-  },
+  play: cssCheckPlay,
 };
 
 export const IconOnly: ButtonStory = {

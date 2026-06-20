@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { SuggestionPanel } from "./SuggestionPanel";
+import { emptyPlay } from "./SuggestionPanel.stories.plays";
 import {
   conflictedSuggestionPanelStoryArgs,
   emptySuggestionPanelStoryArgs,
@@ -29,9 +29,7 @@ export const Thai: Story = {
 
 export const Empty: Story = {
   args: emptySuggestionPanelStoryArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { name: /Suggestions \(0\)|คำแนะนำ \(0\)/ })).toBeVisible();
-  },
+  play: emptyPlay,
 };
 
 export const ConflictedHeavy: Story = {

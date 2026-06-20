@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { Badge, Panel } from "@/src/ui";
+import { galleryPlay } from "./Badge.stories.plays";
 
 const meta = {
   title: "Design System/Badges",
@@ -33,9 +33,5 @@ export const Gallery: Story = {
       <Badge tone="danger">ปิดใช้งาน</Badge>
     </Panel>
   ),
-  play: async ({ canvas }) => {
-    const badge = canvas.getByText("พร้อมแล้ว");
-    await expect(badge).toHaveClass("badge--success");
-    await expect(badge).toHaveClass("bg-(--color-success-soft)");
-  },
+  play: galleryPlay,
 };

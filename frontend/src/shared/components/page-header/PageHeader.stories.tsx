@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader, PageUserCard } from "./PageHeader";
+import { friendlyPlay } from "./PageHeader.stories.plays";
 
 const meta = {
   title: "Design System/Page Header",
@@ -30,7 +30,5 @@ export const Friendly: Story = {
     aside: <PageUserCard color={tripFixture.currentMembers.owner.color} name={tripFixture.currentMembers.owner.displayName} label="จัดทริปกับเพื่อน" />,
     motif: <TravelMotif tone="postcard" />,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { name: tripFixture.trip.name })).toBeVisible();
-  },
+  play: friendlyPlay,
 };
