@@ -42,6 +42,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/storage/browser-session-json.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/testing/browser-storage.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/testing/storybook-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);
@@ -229,6 +230,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);

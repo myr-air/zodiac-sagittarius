@@ -189,6 +189,20 @@ describe("Storybook template catalog", () => {
     expect(stories).toContain('parameters: { locale: "th" }');
   });
 
+  it("keeps repeated story callback placeholders centralized", () => {
+    const localNoopDefinitions = collectStoryFiles().flatMap((file) => {
+      const story = readFileSync(file, "utf8");
+      return [
+        ...story.matchAll(/const noop = (?:async )?\(\) => \{\};/g),
+      ].map((match) => `${file}:${match.index ?? 0}`);
+    });
+
+    expect(localNoopDefinitions).toEqual([]);
+    expect(readFileSync(join("src", "testing", "storybook-actions.ts"), "utf8")).toContain(
+      "export function noop",
+    );
+  });
+
   it("documents split account and trip access routes", () => {
     const stories = storyText();
     [

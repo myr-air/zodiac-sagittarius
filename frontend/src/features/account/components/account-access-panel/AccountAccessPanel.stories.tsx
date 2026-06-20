@@ -5,6 +5,7 @@ import type {
   AccountSettingsUpdateRequest,
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
+import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { AccountAccessPanel } from "./AccountAccessPanel";
@@ -184,8 +185,6 @@ const accountClient: AccountApiClient = {
 const tripApiClient = {
   rotateJoinInviteToken: async () => ({ token: "created-token", expiresAt: "2026-06-30T00:00:00.000Z" }),
 } as unknown as TripApiClient;
-
-const noop = () => {};
 
 const meta = {
   title: "Pages/Account Access",

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, within } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 
-const noop = () => {};
 const denseTrip = buildDenseTripFixture();
 const singleMemberTrip = {
   ...tripFixture.trip,

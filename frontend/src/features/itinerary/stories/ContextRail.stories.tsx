@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { ContextRail } from "@/src/features/itinerary/components";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
 
-const noop = () => {};
 const selectedItem =
   tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
   tripFixture.planItems[0];

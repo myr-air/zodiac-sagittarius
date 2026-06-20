@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import type { ItineraryItem } from "@/src/trip/types";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { StopDialog } from "@/src/features/itinerary/components";
 
-const noop = () => {};
 const storyItem = tripFixture.planItems[0];
 
 function categoryItem(overrides: Partial<ItineraryItem>): ItineraryItem {

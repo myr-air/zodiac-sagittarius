@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { BookingDoc } from "@/src/trip/types";
 import type { BookingDocInput } from "./BookingsDocsPage";
 import { BookingsDocsPage } from "./BookingsDocsPage";
 
-const noop = () => {};
 const onStoryCreateBookingDoc = fn();
 const onStoryUpdateBookingDoc = fn();
 const denseBookingDocs: BookingDoc[] = Array.from({ length: 16 }, (_, index) => {

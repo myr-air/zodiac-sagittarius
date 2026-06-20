@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { TripExpensesPage } from "./TripExpensesPage";
 
-const noop = () => {};
 const onStoryUpdateExpense = fn();
 const denseTrip = buildDenseTripFixture();
 const emptyTrip = buildEmptyTripFixture();

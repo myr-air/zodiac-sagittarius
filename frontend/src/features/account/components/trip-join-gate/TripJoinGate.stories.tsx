@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "./TripJoinGate";
 
-const noop = () => {};
 const inviteTokenApiClient = {
   resolveJoinInviteToken: async () => ({
     trip: {

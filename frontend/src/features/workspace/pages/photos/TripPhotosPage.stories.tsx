@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { TripPhotosPage } from "./TripPhotosPage";
 
-const noop = () => {};
 const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 18 }, (_, index) => {
   const base = tripFixture.trip.photoAlbumLinks?.[index % (tripFixture.trip.photoAlbumLinks?.length || 1)];
 

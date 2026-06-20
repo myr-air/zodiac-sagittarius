@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import { asyncNoop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripSettingsPage } from "./TripSettingsPage";
-
-const noop = async () => {};
 
 const meta = {
   title: "Pages/Trip Settings",
@@ -31,7 +30,7 @@ export const Owner: Story = {
     canEdit: true,
     currentMember: tripFixture.currentMembers.owner,
     trip: seedTrip,
-    onSave: noop,
+    onSave: asyncNoop,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Trip settings/i })).toHaveClass("trip-settings-page");

@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TimelineView } from "@/src/features/itinerary/components";
-
-const noop = () => {};
 
 const meta = {
   title: "Templates/Timeline",
