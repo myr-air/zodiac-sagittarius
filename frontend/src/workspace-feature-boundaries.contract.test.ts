@@ -126,6 +126,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestAccountApi).toContain("export function mockAccountTripMemberSessionFetch");
     expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
     expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-briefing-fixtures");
+    expect(
+      sagittariusAppTestFixtures.match(/dailyBriefingFixture/g) ?? [],
+    ).toHaveLength(1);
     expect(sagittariusAppTestBriefingFixtures).toContain("export function dailyBriefingFixture");
     expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-plan-fixtures");
     expect(sagittariusAppTestFixtures).not.toContain("function dailyBriefingFixture");
