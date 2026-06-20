@@ -1,4 +1,3 @@
-import { FormEvent, ChangeEvent, useState } from "react";
 import { Button, Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Expense, Trip } from "@/src/trip/types";
@@ -11,6 +10,10 @@ import {
   moduleListClassName,
 } from "./context-rail.styles";
 import { ContextRailExpenseItem } from "./ContextRailExpenseItem";
+import {
+  contextRailExpenseCategoryOptions,
+  useContextRailExpenseForm,
+} from "./use-context-rail-expense-form";
 
 interface ContextRailExpensesSectionProps {
   selectedItemId?: string;
@@ -48,59 +51,24 @@ export function ContextRailExpensesSection({
   onDeleteExpense,
 }: ContextRailExpensesSectionProps) {
   const { t } = useI18n();
-  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const [expenseTitle, setExpenseTitle] = useState("");
-  const [expenseAmount, setExpenseAmount] = useState("");
-  const [expensePaidBy, setExpensePaidBy] = useState(members[0]?.id ?? "");
-  const [expenseCategory, setExpenseCategory] = useState<Expense["category"]>("food");
-
-  function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = expenseTitle.trim();
-    const amount = Number(expenseAmount);
-    if (!title || !Number.isFinite(amount) || amount < 0) return;
-    if (editingExpenseId) {
-      onUpdateExpense({
-        expenseId: editingExpenseId,
-        title,
-        amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
-      });
-    } else {
-      onCreateExpense({
-        itemId: selectedItemId ?? null,
-        title,
-        amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
-      });
-    }
-    setEditingExpenseId(null);
-    setExpenseTitle("");
-    setExpenseAmount("");
-  }
-
-  function startEditingExpense(expense: Expense) {
-    setEditingExpenseId(expense.id);
-    setExpenseTitle(expense.title);
-    setExpenseAmount(String(expense.amount));
-    setExpensePaidBy(expense.paidBy);
-    setExpenseCategory(expense.category);
-  }
-
-  const categoryOptions: Expense["category"][] = [
-    "food",
-    "transport",
-    "tickets",
-    "stay",
-    "shopping",
-    "settlement",
-  ];
-
-  function onAmountChange(event: ChangeEvent<HTMLInputElement>) {
-    setExpenseAmount(event.target.value);
-  }
+  const {
+    editingExpenseId,
+    expenseAmount,
+    expenseCategory,
+    expensePaidBy,
+    expenseTitle,
+    onAmountChange,
+    setExpenseCategory,
+    setExpensePaidBy,
+    setExpenseTitle,
+    startEditingExpense,
+    submitExpense,
+  } = useContextRailExpenseForm({
+    defaultPaidBy: members[0]?.id ?? "",
+    onCreateExpense,
+    onUpdateExpense,
+    selectedItemId,
+  });
 
   return (
     <section
@@ -173,7 +141,7 @@ export function ContextRailExpensesSection({
               setExpenseCategory(event.target.value as Expense["category"])
             }
           >
-            {categoryOptions.map((category) => (
+            {contextRailExpenseCategoryOptions.map((category) => (
               <option value={category} key={category}>
                 {category}
               </option>
