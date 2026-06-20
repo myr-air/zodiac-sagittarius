@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
 import {
+  accountAccessModeValues,
   accountPanelModeValues,
   cacheAccountPortalData,
   clearAccountPortalDataCache,
@@ -24,6 +25,16 @@ const emptyPortalData: AccountPortalDataCache = {
 };
 
 describe("account access panel support", () => {
+  it("defines access modes in route specificity order", () => {
+    expect(accountAccessModeValues).toEqual([
+      "combined",
+      "account-login",
+      "account-register",
+      "account-portal",
+      "trip-access",
+    ]);
+  });
+
   it("defines the account entry panel modes in tab order", () => {
     expect(accountPanelModeValues).toEqual(["account", "temp"]);
   });
