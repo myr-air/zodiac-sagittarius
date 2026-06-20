@@ -15,16 +15,18 @@ export {
   validateItineraryItem,
 } from "./itinerary-view";
 export {
-  type ItineraryPathOption,
   type ItineraryPathSelection,
   type ItineraryPathSelectionAction,
-  deriveItineraryPathOptions,
   itineraryItemPathFieldsForTarget,
-  itineraryPathOptionsForDay,
   resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
 } from "./itinerary-path-selection";
+export {
+  type ItineraryPathOption,
+  deriveItineraryPathOptions,
+  itineraryPathOptionsForDay,
+} from "./itinerary-path-options";
 export {
   humanizePathId,
   itineraryItemPathId,

@@ -1,10 +1,8 @@
-import type { ItineraryItem, ItineraryPath, ItineraryPathScope } from "./types";
+import type { ItineraryItem } from "./types";
 import { itineraryItemPathId } from "./itinerary-path-identifiers";
 import {
   mainItineraryPathId,
-  mainItineraryPathName,
 } from "./itinerary-path-identifiers";
-import { humanizePathId } from "./itinerary-path-identifiers";
 import { sortItineraryItemsByDayAndHierarchy } from "./itinerary-item-ordering";
 
 export interface ItineraryPathSelection {
@@ -19,13 +17,6 @@ export type ItineraryPathSelectionAction =
   | { type: "clear-day-path"; day: string }
   | { type: "clear-all-day-paths" }
   | { type: "toggle-show-all-paths"; showAll: boolean };
-
-export interface ItineraryPathOption {
-  id: string;
-  name: string;
-  scope: ItineraryPathScope;
-  day?: string;
-}
 
 export function resolveItineraryPathItems(
   items: ItineraryItem[],
@@ -129,66 +120,10 @@ export function itineraryItemPathFieldsForTarget(
   return { pathGroupId, pathId, pathName, pathRole: "alternative" };
 }
 
-export function deriveItineraryPathOptions(
-  items: ItineraryItem[],
-  paths: ItineraryPath[] = [],
-): ItineraryPathOption[] {
-  const options = new Map<string, ItineraryPathOption>();
-  options.set(mainItineraryPathId, {
-    id: mainItineraryPathId,
-    name: mainItineraryPathName,
-    scope: "trip",
-  });
-
-  for (const path of paths) {
-    options.set(path.id, {
-      id: path.id,
-      name: path.name,
-      scope: path.scope,
-      day: path.day,
-    });
-  }
-
-  for (const item of items) {
-    if (
-      item.pathRole !== "alternative" ||
-      !item.pathId ||
-      options.has(item.pathId)
-    )
-      continue;
-    const generatedDay = generatedDayFromPathId(item.pathId);
-    options.set(item.pathId, {
-      id: item.pathId,
-      name: item.pathName || humanizePathId(item.pathId),
-      scope: generatedDay ? "day" : "trip",
-      day: generatedDay || undefined,
-    });
-  }
-
-  return Array.from(options.values());
-}
-
-export function itineraryPathOptionsForDay(
-  pathOptions: ItineraryPathOption[],
-  day: string,
-): ItineraryPathOption[] {
-  return pathOptions.filter(
-    (option) =>
-      option.id === mainItineraryPathId ||
-      option.scope === "trip" ||
-      option.day === day,
-  );
-}
-
 function itineraryPathGroupKey(item: ItineraryItem): string {
   return item.pathGroupId || `${item.day}:${item.startTime}:${item.sortOrder}:${item.id}`;
 }
 
 function itineraryPathGroupHasAlternatives(items: ItineraryItem[]): boolean {
   return items.some((item) => item.pathRole === "alternative" || Boolean(item.pathId));
-}
-
-function generatedDayFromPathId(pathId: string): string | null {
-  const match = pathId.match(/^path-(\d{4}-\d{2}-\d{2})-sub-[a-z]+$/i);
-  return match?.[1] ?? null;
 }
