@@ -66,6 +66,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-client.itinerary.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.sessions.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.trip-plans.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/booking-docs-api-requests.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs-estimates.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/expenses-reminders.test.ts"))).toBe(true);
