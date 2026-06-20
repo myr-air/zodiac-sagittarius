@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type {
-  BookingDoc,
-  ItineraryItem,
-  Member,
-} from "@/src/trip/types";
 import {
   buildItineraryBookingDraftInput,
   buildItineraryBookingTicketDocInput,
   resolveItineraryBookingTicketCommandInput,
 } from "./booking-command-inputs";
-
-const members: Pick<Member, "id">[] = [
-  { id: "member-owner" },
-  { id: "member-traveler" },
-];
+import {
+  bookingCommandMembers,
+  bookingDoc,
+  itineraryItem,
+} from "./booking-command-inputs.test-support";
 
 describe("booking command inputs", () => {
   it("builds itinerary booking draft input from an itinerary item", () => {
@@ -34,7 +29,7 @@ describe("booking command inputs", () => {
         place: "The Peak",
         startTime: "10:30",
       }),
-      members,
+      members: bookingCommandMembers,
       template: "recommended",
     });
 
@@ -106,7 +101,7 @@ describe("booking command inputs", () => {
           currentMemberId: "member-owner",
           defaultTimezone: "Asia/Hong_Kong",
           existingBookingDoc,
-          members,
+          members: bookingCommandMembers,
         },
       ),
     ).toMatchObject({
@@ -149,7 +144,7 @@ describe("booking command inputs", () => {
         {
           currentMemberId: "member-owner",
           defaultTimezone: "Asia/Hong_Kong",
-          members,
+          members: bookingCommandMembers,
         },
       ),
     ).toMatchObject({
@@ -189,7 +184,7 @@ describe("booking command inputs", () => {
         bookingDocs: [existingBookingDoc],
         currentMemberId: "member-owner",
         defaultTimezone: "Asia/Hong_Kong",
-        members,
+        members: bookingCommandMembers,
       },
     );
 
@@ -230,7 +225,7 @@ describe("booking command inputs", () => {
         bookingDocs: [duplicateBookingDoc],
         currentMemberId: "member-owner",
         defaultTimezone: "Asia/Hong_Kong",
-        members,
+        members: bookingCommandMembers,
       },
     );
 
@@ -240,58 +235,3 @@ describe("booking command inputs", () => {
     ]);
   });
 });
-
-function itineraryItem(input: Partial<ItineraryItem>): ItineraryItem {
-  return {
-    id: "item-1",
-    tripId: "trip-1",
-    planVariantId: "plan-main",
-    day: "2026-06-18",
-    sortOrder: 1,
-    startTime: "",
-    endTime: "",
-    activity: "Activity",
-    activityType: "experience",
-    place: "",
-    linkLabel: "",
-    mapLink: "",
-    durationMinutes: null,
-    transportation: "",
-    details: {},
-    note: "",
-    createdBy: "member-owner",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-    version: 1,
-    ...input,
-  };
-}
-
-function bookingDoc(input: Partial<BookingDoc> = {}): BookingDoc {
-  return {
-    id: "booking-1",
-    tripId: "trip-1",
-    type: "other",
-    title: "Booking",
-    status: "draft",
-    visibility: "shared",
-    ownerMemberId: null,
-    providerName: null,
-    confirmationCode: null,
-    startsAt: null,
-    endsAt: null,
-    timezone: null,
-    priceAmount: null,
-    currency: null,
-    travelerIds: [],
-    externalLinks: [],
-    relatedItineraryItemIds: [],
-    relatedTaskIds: [],
-    relatedExpenseIds: [],
-    noteIds: [],
-    notes: null,
-    createdBy: "member-owner",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-    version: 1,
-    ...input,
-  };
-}
