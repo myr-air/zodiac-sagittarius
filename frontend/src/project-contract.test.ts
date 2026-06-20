@@ -78,6 +78,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.paths.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-repository.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-albums.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-albums.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
@@ -353,7 +354,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/StopDialog.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.category-details.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.place-resolution.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.test-support.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts"))).toBe(true);
