@@ -68,6 +68,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       photoAlbumDialogState,
       expenseSummary,
       expenseSettlements,
+      expensePageOptions,
+      expensePageSupport,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -115,6 +117,12 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(expenseSettlements).toContain("export function attachReminderHistory");
     expect(expenseSettlements).toContain("export function upsertExpenseReminder");
     expect(expenseSettlements).toContain("function expenseReminderKey");
+    expect(expensePageSupport).toContain("./expense-page-options");
+    expect(expensePageSupport).not.toContain("const categoryTones");
+    expect(expensePageSupport).not.toContain("export const expenseCategories");
+    expect(expensePageOptions).toContain("export const expenseCategories");
+    expect(expensePageOptions).toContain("export const expenseSplitModes");
+    expect(expensePageOptions).toContain("function categoryTone");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-fixtures");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
