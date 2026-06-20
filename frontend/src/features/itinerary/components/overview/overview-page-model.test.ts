@@ -41,7 +41,7 @@ describe("overview page model", () => {
     expect(model.pendingSuggestions).toBe(1);
     expect(model.activeMembers).toBeGreaterThan(0);
     expect(model.nextStop?.day).toBe(seedTrip.startDate);
-    expect(model.groupSpendLabel).toMatch(/^HK\$/);
+    expect(model.groupSpendLabel).toBe("HK$1,672.00");
     expect(model.highlightItems.length).toBeGreaterThan(0);
   });
 

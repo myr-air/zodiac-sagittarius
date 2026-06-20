@@ -6,6 +6,7 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import type { ItineraryView } from "@/src/trip/itinerary";
+import { formatMoney } from "@/src/trip/expense-money";
 import {
   buildDestinationVisual,
   buildHighlightItems,
@@ -75,7 +76,10 @@ export function buildOverviewPageModel({
     currentMember,
     focusTodayHeading,
     foodStops: sortedItems.filter((item) => item.activityType === "food").slice(0, 3),
-    groupSpendLabel: `HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`,
+    groupSpendLabel: formatMoney(
+      expenseSummary.groupSpend,
+      expenseSummary.settlementCurrency ?? "HKD",
+    ),
     heroVisual: buildDestinationVisual(trip.destinationLabel),
     highlightItems: buildHighlightItems(sortedItems),
     isCompleted,

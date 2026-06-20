@@ -70,13 +70,13 @@ export function ContextRailExpensesSection({
       <h3 className={detailHeadingClassName}>{t.contextRail.expenses.title}</h3>
       <div className={expenseGridClassName}>
         <span>{t.contextRail.expenses.perPerson}</span>
-        <strong>HK${perPerson}</strong>
+        <strong>{perPerson}</strong>
         <span>
           {t.contextRail.expenses.totalFor({
             count: Math.max(0, members.length - 1),
           })}
         </span>
-        <strong>HK${groupSpend}</strong>
+        <strong>{groupSpend}</strong>
       </div>
       <div className={moduleListClassName}>
         {expenses.map((expense) => (
