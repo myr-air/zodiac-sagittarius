@@ -173,6 +173,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"),
       "utf8",
     );
+    const overviewSummaryBand = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/overview/OverviewSummaryBand.tsx"),
+      "utf8",
+    );
     const overviewCockpit = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"),
       "utf8",
@@ -612,8 +616,10 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(itineraryTemplateStory).toContain("./itinerary-story-assertions");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
-    expect(overviewPage).toContain("OverviewCockpit");
+    expect(overviewPage).toContain("OverviewSummaryBand");
+    expect(overviewPage).not.toContain("OverviewCockpit");
     expect(overviewPage).not.toContain("overviewCockpitClassName");
+    expect(overviewSummaryBand).toContain("OverviewCockpit");
     expect(overviewCockpit).toContain("export function OverviewCockpit");
     expect(overviewCockpit).toContain("overviewCockpitClassName");
     expect(overviewPage).toContain("OverviewTaskLayer");
@@ -624,7 +630,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(overviewTaskLayer).toContain("overviewUndoToastClassName");
     expect(overviewTaskDialog).toContain("export function OverviewTaskDialog");
     expect(overviewTaskDialog).toContain("taskDialogGridClassName");
-    expect(overviewPage).toContain("OverviewWeatherBriefing");
+    expect(overviewPage).not.toContain("OverviewWeatherBriefing");
+    expect(overviewSummaryBand).toContain("OverviewWeatherBriefing");
     expect(overviewPage).not.toContain("WeatherBriefingDrawer");
     expect(overviewWeatherBriefing).toContain("WeatherBriefingDrawer");
     expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");

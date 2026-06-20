@@ -1,8 +1,7 @@
 import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { type ItineraryView } from "@/src/trip/itinerary";
-import { formatTripRange, PageUserCard } from "@/src/shared/components/page-header";
-import { HighlightBoard, OverviewHero } from "./OverviewSections";
+import { PageUserCard } from "@/src/shared/components/page-header";
 import { type OverviewTaskListLabels } from "./OverviewTaskList";
 import {
   overviewGridClassName,
@@ -10,13 +9,11 @@ import {
 } from "./overview-page.styles";
 import {
   managerNextStopDetail,
-  photoBoardEmptyMessage,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
 import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
-import { OverviewCockpit } from "./OverviewCockpit";
+import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
-import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
 import { buildOverviewPageModel } from "./overview-page-model";
 import { useOverviewTaskState } from "./use-overview-task-state";
 
@@ -129,56 +126,24 @@ export function OverviewPage({
 
   return (
     <section className={overviewPageClassName} aria-label={t.overview.pageLabel}>
-      <OverviewHero
-        title={trip.name}
-        roleTitle={t.overview.roleHeadings[roleLens]}
-        destinationLabel={trip.destinationLabel}
-        dateRange={formatTripRange(trip.startDate, trip.endDate, locale)}
-        activeMembersLabel={t.dates.activeMembers({ count: activeMembers })}
-        groupSpendLabel={groupSpendLabel}
-        settlementCount={settlementCount}
-        visual={heroVisual}
-        currentMemberCard={currentMemberCard}
-        countdown={countdown}
-      />
-      <OverviewWeatherBriefing
-        canEdit={isManagerLens}
-        dailyBriefings={dailyBriefings}
-        locale={locale}
-        onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
-      />
-
-      <OverviewCockpit
+      <OverviewSummaryBand
         activeMembers={activeMembers}
+        countdown={countdown}
+        currentMemberCard={currentMemberCard}
+        dailyBriefings={dailyBriefings}
         groupSpendLabel={groupSpendLabel}
-        itemCount={items.length}
-        labels={{
-          alertSummary: t.overview.readiness.alertSummary,
-          budget: t.overview.cockpit.budget,
-          crewReadiness: t.overview.cockpit.crewReadiness,
-          dayCount: t.dates.dayCount,
-          memberCount: t.dates.memberCount,
-          nextStop: t.overview.cockpit.nextStop,
-          openExpenses: t.overview.money.openExpenses,
-          settlementSuggestions: t.overview.money.settlementSuggestions,
-          stopCount: t.dates.stopCount,
-        }}
-        locale={locale}
+        heroVisual={heroVisual}
+        highlightItems={highlightItems}
+        isManagerLens={isManagerLens}
+        items={items}
         nextStop={nextStop}
-        onOpenExpenses={openExpenses}
         pendingSuggestions={pendingSuggestions}
+        roleLens={roleLens}
         settlementCount={settlementCount}
         trip={trip}
         warningCount={warningCount}
-      />
-
-      <HighlightBoard
-        items={highlightItems}
-        startDate={trip.startDate}
-        locale={locale}
-        emptyMessage={isManagerLens ? t.overview.empty.highlights : photoBoardEmptyMessage(t.overview.empty.highlights)}
-        title={t.overview.highlightBoard.title}
-        subtitle={t.overview.highlightBoard.subtitle}
+        onOpenExpenses={openExpenses}
+        onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
       />
 
       <div className={overviewGridClassName}>
