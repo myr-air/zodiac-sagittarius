@@ -69,8 +69,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(bookingDisplay).not.toContain("compareBookingStartWithUndated");
     expect(bookingFolders).toContain("export const bookingFolders");
     expect(bookingFolders).toContain("export function countBookingFolders");
-    expect(bookingList).toContain("export function bookingDocMatchesQuery");
-    expect(bookingList).toContain("export function compareBookingStartWithUndated");
+    expect(bookingList).toContain("@/src/trip/booking-docs");
+    expect(bookingList).toContain("bookingDocMatchesQuery");
+    expect(bookingList).toContain("compareBookingStartWithUndated");
+    expect(bookingList).not.toContain("export function bookingDocMatchesQuery");
+    expect(bookingList).not.toContain("export function compareBookingStartWithUndated");
     expect(bookingDialog).toContain("./useBookingDialogState");
     expect(bookingDialog).not.toContain("useState");
     expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-time");

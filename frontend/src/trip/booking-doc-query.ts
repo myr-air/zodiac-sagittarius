@@ -136,8 +136,29 @@ export function filterBookingDocs(
     }
 
     if (!query) return true;
-    return searchableBookingDocText(doc, trip).includes(query);
+    return bookingDocMatchesQuery(doc, trip, query);
   });
+}
+
+export function compareBookingStartWithUndated(left: BookingDoc, right: BookingDoc): number {
+  return bookingDocStartTime(left) - bookingDocStartTime(right) ||
+    left.title.localeCompare(right.title);
+}
+
+export function bookingDocMatchesQuery(doc: BookingDoc, trip: Trip, query: string): boolean {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  if (!normalizedQuery) return true;
+  return searchableBookingDocValues(doc, trip).some((value) =>
+    value.toLocaleLowerCase().includes(normalizedQuery),
+  );
+}
+
+export function bookingDocLinkedContext(doc: BookingDoc, trip: Trip): string {
+  const itemsById = new Map(trip.itineraryItems.map((item) => [item.id, item]));
+  return doc.relatedItineraryItemIds
+    .map((itemId) => itemsById.get(itemId)?.activity)
+    .filter(Boolean)
+    .join(", ");
 }
 
 export function findBookingDocRelations(
@@ -164,7 +185,7 @@ export function findBookingDocRelations(
   };
 }
 
-function searchableBookingDocText(doc: BookingDoc, trip: Trip): string {
+function searchableBookingDocValues(doc: BookingDoc, trip: Trip): string[] {
   const linkedItems = new Set(doc.relatedItineraryItemIds);
   const linkedActivities = trip.itineraryItems
     .filter((item) => linkedItems.has(item.id))
@@ -180,17 +201,22 @@ function searchableBookingDocText(doc: BookingDoc, trip: Trip): string {
     doc.providerName,
     doc.confirmationCode,
     doc.notes,
+    bookingDocLinkedContext(doc, trip),
     linkedActivities,
     travelerNames,
     ...doc.externalLinks.flatMap((link) => [
       link.label,
+      link.url,
       link.provider,
       link.accessNote,
     ]),
   ]
-    .filter(Boolean)
-    .join(" ")
-    .toLocaleLowerCase();
+    .filter((value): value is string => Boolean(value));
+}
+
+function bookingDocStartTime(doc: BookingDoc): number {
+  const startsAt = Date.parse(doc.startsAt ?? "");
+  return Number.isFinite(startsAt) ? startsAt : Number.POSITIVE_INFINITY;
 }
 
 function roundMoney(value: number): number {

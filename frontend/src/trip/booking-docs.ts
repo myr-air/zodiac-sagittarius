@@ -30,7 +30,10 @@ export type {
 export type { BookingDocQuickFieldsPatch } from "./booking-doc-local";
 export {
   buildBookingDocsSummary,
+  bookingDocLinkedContext,
+  bookingDocMatchesQuery,
   canViewBookingDoc,
+  compareBookingStartWithUndated,
   filterBookingDocs,
   findBookingDocRelations,
 } from "./booking-doc-query";
