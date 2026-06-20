@@ -75,6 +75,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/expenses-statements.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-hierarchy.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.records.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.hierarchy.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-suggestions.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-context.test.ts"))).toBe(true);
@@ -295,6 +296,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.splits.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.test-support.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/ItineraryPage.stories.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/ItineraryTemplate.stories.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-assertions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);

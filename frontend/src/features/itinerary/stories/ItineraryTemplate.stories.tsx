@@ -1,82 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import type { ItineraryItem } from "@/src/trip/types";
+import { buildDenseTripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
   buildOwnerStoryArgs,
-  itineraryStoryDay,
-  branchGraphItemsBase,
   branchGraphPathOptions,
-  planAExampleItemsBase,
-  planABAlternativeItemsBase,
   planABPathOptions,
-  requestedPlanExampleItemsBase,
-  stressPathItemsBase,
   pathNameMain,
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
   planAPathOptions,
   stressPathOptions,
-  withStoryPrefix,
 } from "./itinerary-story-fixtures";
+import {
+  branchGraphItems,
+  buildTemplateOverflowItems,
+  hierarchyBlockItems,
+  hierarchyWarningItems,
+  planABAlternativeItems,
+  planAExampleItems,
+  requestedPlanExampleItems,
+  stressPathItems,
+} from "./ItineraryTemplate.stories.support";
 import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
-
-const branchGraphItems: ItineraryItem[] = withStoryPrefix(branchGraphItemsBase, "story");
-const planAExampleItems: ItineraryItem[] = withStoryPrefix(planAExampleItemsBase, "story");
-const planABAlternativeItems: ItineraryItem[] = withStoryPrefix(planABAlternativeItemsBase, "story");
-const requestedPlanExampleItems: ItineraryItem[] = withStoryPrefix(requestedPlanExampleItemsBase, "story");
-const stressPathItems: ItineraryItem[] = withStoryPrefix(stressPathItemsBase, "story");
-
-const hierarchyBlockItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
-    id: "story-flight-block",
-    activity: "Flight to Hong Kong",
-    activityType: "travel",
-    itemKind: "travel",
-    isPlanBlock: true,
-    parentItemId: null,
-    day: itineraryStoryDay,
-    startTime: "04:00",
-    endTime: "13:00",
-    durationMinutes: 540,
-    status: "confirmed",
-    priority: "must",
-    sortOrder: 100,
-  },
-  {
-    ...tripFixture.planItems[1],
-    id: "story-flight-checkin",
-    activity: "Check in",
-    activityType: "travel",
-    itemKind: "preparation",
-    parentItemId: "story-flight-block",
-    day: itineraryStoryDay,
-    startTime: "06:00",
-    endTime: "06:45",
-    durationMinutes: 45,
-    status: "planned",
-    priority: "normal",
-    sortOrder: 200,
-  },
-  {
-    ...tripFixture.planItems[2],
-    id: "story-flight-immigration",
-    activity: "Immigration",
-    activityType: "travel",
-    itemKind: "preparation",
-    parentItemId: "story-flight-block",
-    day: itineraryStoryDay,
-    startTime: "11:15",
-    endTime: "12:15",
-    durationMinutes: 60,
-    status: "planned",
-    priority: "high",
-    sortOrder: 300,
-  },
-];
 
 const meta = {
   title: "Templates/Itinerary",
@@ -134,54 +81,7 @@ export const HierarchyBlocks: Story = {
 export const HierarchyWarnings: Story = {
   args: {
     ...Owner.args,
-    items: [
-      {
-        ...tripFixture.planItems[0],
-        id: "story-plain-parent",
-        activity: "Plain parent",
-        isPlanBlock: false,
-        parentItemId: null,
-        day: itineraryStoryDay,
-        startTime: "09:00",
-        endTime: "10:00",
-        durationMinutes: 60,
-        sortOrder: 100,
-      },
-      {
-        ...tripFixture.planItems[1],
-        id: "story-child-under-plain-parent",
-        activity: "Child under plain parent",
-        parentItemId: "story-plain-parent",
-        day: itineraryStoryDay,
-        startTime: "09:15",
-        endTime: "09:45",
-        durationMinutes: 30,
-        sortOrder: 200,
-      },
-      {
-        ...tripFixture.planItems[2],
-        id: "story-window-block",
-        activity: "Window block",
-        isPlanBlock: true,
-        parentItemId: null,
-        day: itineraryStoryDay,
-        startTime: "10:00",
-        endTime: "11:00",
-        durationMinutes: 60,
-        sortOrder: 300,
-      },
-      {
-        ...tripFixture.planItems[3],
-        id: "story-child-outside-window",
-        activity: "Child outside window",
-        parentItemId: "story-window-block",
-        day: itineraryStoryDay,
-        startTime: "09:30",
-        endTime: "11:30",
-        durationMinutes: 120,
-        sortOrder: 400,
-      },
-    ],
+    items: hierarchyWarningItems,
     selectedItemId: "story-child-under-plain-parent",
     dayPathOverrides: {},
   },
@@ -194,13 +94,7 @@ export const HierarchyWarnings: Story = {
 export const TableOverflow: Story = {
   args: {
     ...Owner.args,
-    items: stressPathItems.map((item, index) => ({
-      ...item,
-      id: `overflow-${item.id}`,
-      activity: `${item.activity} with long operational copy for table overflow validation ${index + 1}`,
-      place: `${item.place} · gate notes, booking reference, and meet-up details`,
-      transport: "Airport Express transfer with luggage coordination",
-    })),
+    items: buildTemplateOverflowItems(),
     graphItems: stressPathItems,
     selectedItemId: "overflow-stress-0800-main",
     showAllPaths: true,
