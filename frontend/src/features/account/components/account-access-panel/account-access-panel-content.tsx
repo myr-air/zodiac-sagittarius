@@ -9,18 +9,16 @@ import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
 import { StatusMessage, type AuthFlow } from "./auth";
 import {
-  AccountPortalDashboard,
   AccountPortalLoadingFrame,
 } from "./portal";
 import { EmailLoginPanel } from "./email-login";
 import {
   accountAuthCardClassName,
   accountDashboardClassName,
-  accountPortalDashboardClassNames,
   portalContentClassName,
   portalLoadingCardClassName,
 } from "./account-access-panel-layout";
-import { buildAccountPortalDashboardHandlers } from "./account-access-panel-portal-handlers";
+import { AccountAccessPanelPortalContent } from "./account-access-panel-portal-content";
 import type { UseAccountAccessPanelState } from "./use-account-access-panel-state";
 
 interface AccountAccessPanelContentProps {
@@ -117,41 +115,17 @@ export function AccountAccessPanelContent({
   }
 
   if (accountSession) {
-    const portalHandlers = buildAccountPortalDashboardHandlers({
-      accountClient,
-      accountSession,
-      apiClient,
-      messages,
-      onAuthenticated,
-      onCockpitLoaded,
-      onTripChange,
-      state,
-    });
-
     return (
-      <AccountPortalDashboard
+      <AccountAccessPanelPortalContent
         accountClient={accountClient}
-        apiClient={apiClient}
         accountSession={accountSession}
-        classNames={accountPortalDashboardClassNames}
-        isLoading={!state.displayedSettings}
-        settings={state.displayedSettings}
-        stats={state.displayedStats}
-        explorer={state.displayedExplorer}
-        trips={state.displayedTrips}
-        todos={state.displayedTodos}
-        vaultItems={state.displayedVaultItems}
-        key={portalSection}
+        apiClient={apiClient}
+        messages={messages}
         portalSection={portalSection}
-        onSettingsChanged={state.setSettings}
-        onVaultItemCreated={(item) =>
-          state.setVaultItems((current) => [item, ...current])
-        }
-        onCreatedTrip={portalHandlers.onCreatedTrip}
-        onLogout={portalHandlers.onLogout}
-        onSessionCleared={portalHandlers.onSessionCleared}
-        onMessage={state.setMessage}
-        onError={state.setError}
+        state={state}
+        onAuthenticated={onAuthenticated}
+        onCockpitLoaded={onCockpitLoaded}
+        onTripChange={onTripChange}
       />
     );
   }
