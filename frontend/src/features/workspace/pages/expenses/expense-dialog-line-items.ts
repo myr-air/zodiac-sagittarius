@@ -1,3 +1,4 @@
+import { nextLocalExpenseLineItemId } from "@/src/trip/local-ids";
 import type { Expense, ExpenseLineItem, Member } from "@/src/trip/types";
 
 export interface EditableExpenseLineItem {
@@ -9,10 +10,10 @@ export interface EditableExpenseLineItem {
 
 export function emptyExpenseLineItem(
   members: Member[],
-  index: number,
+  lineItems: EditableExpenseLineItem[] = [],
 ): EditableExpenseLineItem {
   return {
-    id: `line-${Date.now().toString(36)}-${index}`,
+    id: nextLocalExpenseLineItemId(lineItems),
     title: "",
     amount: "",
     participantIds: members.map((member) => member.id),
@@ -24,7 +25,7 @@ export function initialExpenseLineItems(
   members: Member[],
 ): EditableExpenseLineItem[] {
   if (!expense?.lineItems?.length) {
-    return [emptyExpenseLineItem(members, 1)];
+    return [emptyExpenseLineItem(members)];
   }
 
   return expense.lineItems.map((lineItem) => ({

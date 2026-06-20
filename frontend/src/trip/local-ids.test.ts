@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   nextClientMutationId,
   nextLocalBookingDocId,
+  nextLocalExpenseCommentId,
   nextLocalExpenseId,
+  nextLocalExpenseLineItemId,
   nextLocalItemId,
   nextLocalPhotoAlbumId,
   nextLocalPlanVariantId,
@@ -13,6 +15,8 @@ import {
 import type {
   BookingDoc,
   Expense,
+  ExpenseComment,
+  ExpenseLineItem,
   ItineraryItem,
   PlanVariant,
   StopNote,
@@ -78,6 +82,18 @@ describe("local ids", () => {
         { id: "expense-local-3" },
       ] as Expense[]),
     ).toBe("expense-local-4");
+    expect(
+      nextLocalExpenseLineItemId([
+        { id: "line-local-1" },
+        { id: "line-local-3" },
+      ] as ExpenseLineItem[]),
+    ).toBe("line-local-4");
+    expect(
+      nextLocalExpenseCommentId([
+        { id: "comment-local-1" },
+        { id: "comment-local-3" },
+      ] as ExpenseComment[]),
+    ).toBe("comment-local-4");
   });
 
   it("uses crypto UUIDs for client mutation ids when available", () => {

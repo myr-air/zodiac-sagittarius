@@ -30,7 +30,7 @@ export function useExpenseSplitEditor({ expense, members }: UseExpenseSplitEdito
     } else if (nextMode === "percentage") {
       setSplitValues(expenseSplitValuesForMode(members, "0"));
     } else if (nextMode === "itemized" && !lineItems.length) {
-      setLineItems([emptyExpenseLineItem(members, 1)]);
+      setLineItems([emptyExpenseLineItem(members)]);
     }
   }
 
@@ -49,7 +49,7 @@ export function useExpenseSplitEditor({ expense, members }: UseExpenseSplitEdito
   }
 
   function addLineItem() {
-    setLineItems((current) => [...current, emptyExpenseLineItem(members, current.length + 1)]);
+    setLineItems((current) => [...current, emptyExpenseLineItem(members, current)]);
   }
 
   function updateSplitValue(memberId: string, value: string) {

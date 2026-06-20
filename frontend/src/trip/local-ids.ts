@@ -1,6 +1,8 @@
 import type {
   BookingDoc,
   Expense,
+  ExpenseComment,
+  ExpenseLineItem,
   ItineraryItem,
   PlanVariant,
   StopNote,
@@ -129,6 +131,36 @@ export function nextLocalExpenseId(expenses: Expense[]): string {
   while (existingIds.has(id)) {
     index += 1;
     id = `expense-local-${index}`;
+  }
+  return id;
+}
+
+export function nextLocalExpenseLineItemId(
+  lineItems: Array<Pick<ExpenseLineItem, "id">>,
+): string {
+  const existingIds = new Set(lineItems.map((lineItem) => lineItem.id));
+  let index =
+    lineItems.filter((lineItem) => lineItem.id.startsWith("line-local-"))
+      .length + 1;
+  let id = `line-local-${index}`;
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `line-local-${index}`;
+  }
+  return id;
+}
+
+export function nextLocalExpenseCommentId(
+  comments: Array<Pick<ExpenseComment, "id">>,
+): string {
+  const existingIds = new Set(comments.map((comment) => comment.id));
+  let index =
+    comments.filter((comment) => comment.id.startsWith("comment-local-"))
+      .length + 1;
+  let id = `comment-local-${index}`;
+  while (existingIds.has(id)) {
+    index += 1;
+    id = `comment-local-${index}`;
   }
   return id;
 }

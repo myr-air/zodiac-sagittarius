@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { nextLocalExpenseCommentId } from "@/src/trip/local-ids";
 import type { Expense, ExpenseComment, Member } from "@/src/trip/types";
 
 interface UseExpenseCommentsInput {
@@ -21,7 +22,7 @@ export function useExpenseComments({
     setComments((current) => [
       ...current,
       {
-        id: `comment-${Date.now().toString(36)}-${current.length + 1}`,
+        id: nextLocalExpenseCommentId(current),
         authorId: currentMember.id,
         body,
         createdAt: new Date().toISOString(),
