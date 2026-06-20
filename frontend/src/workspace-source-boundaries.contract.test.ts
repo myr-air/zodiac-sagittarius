@@ -24,6 +24,7 @@ describe("Sagittarius workspace source boundaries", () => {
       appFacade,
       workspaceRecordsHook,
       importHook,
+      accessContextHook,
       accessGateHook,
       uiStateHook,
       accessState,
@@ -105,7 +106,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(apiClientsHook).toContain("createConfiguredTripApiClient");
     expect(apiClientsHook).toContain("createConfiguredAccountApiClient");
     expect(apiClientsHook).toContain("publicSagittariusApiBaseUrl");
-    expect(sagaCore).toContain("useWorkspaceMemberContext");
+    expect(sagaCore).toContain("useWorkspaceAccessContext");
+    expect(sagaCore).not.toContain("useWorkspaceMemberContext");
+    expect(accessContextHook).toContain("useWorkspaceMemberContext");
+    expect(accessContextHook).toContain("deriveWorkspacePermissions");
+    expect(accessContextHook).toContain("useWorkspaceAccessGate");
     expect(sagaCore).not.toContain("findSessionMember");
     expect(sagaCore).not.toContain("isLocalParticipantSession");
     expect(memberContextHook).toContain("findSessionMember");

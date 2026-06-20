@@ -25,7 +25,7 @@ import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navig
 import {
   useWorkspacePhotoAlbums,
   useWorkspaceBookingCommands,
-  useWorkspaceAccessGate,
+  useWorkspaceAccessContext,
   useWorkspaceApiCockpitEffects,
   useWorkspaceApiClients,
   useWorkspaceBackendExpenseSummary,
@@ -41,7 +41,6 @@ import {
   useWorkspaceSession,
   useWorkspaceItineraryViewModel,
   useEffectivePlaceResolver,
-  useWorkspaceMemberContext,
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,
   useWorkspaceUiState,
@@ -54,7 +53,6 @@ import {
   buildWorkspaceShellProps,
   buildWorkspaceViewsProps,
 } from "./props";
-import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { Trip } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
@@ -196,15 +194,36 @@ export function SagittariusApp({
     tripId: trip.id,
   });
   const {
+    canAccessPanel,
+    canCreateStopNote,
+    canCreateSuggestion,
+    canEdit,
+    canEditBookings,
+    canEditExpenses,
+    canEditPhotoAlbums,
+    canManagePeople,
+    canManageTripPlans,
+    canReviewSuggestions,
+    canViewExpenses,
     currentMember,
+    isAccountTripAccessPending,
     isApiMode,
     isTripLoading,
     sessionMember,
-  } = useWorkspaceMemberContext({
+    shouldRedirectUnauthenticatedTripRoute,
+  } = useWorkspaceAccessContext({
+    accessError,
+    accessMode,
+    accountSession,
+    accountSessionLoaded,
+    accountTripAccessDeniedRouteId,
     currentMemberId,
     dataSource,
     isCockpitLoaded,
     participantSession,
+    requireJoin,
+    routeTripId,
+    sessionRestored,
     trip,
   });
   const {
@@ -217,36 +236,6 @@ export function SagittariusApp({
     isApiMode,
     participantSession,
     trip,
-  });
-  const {
-    canCreateStopNote,
-    canCreateSuggestion,
-    canEdit,
-    canEditBookings,
-    canEditExpenses,
-    canEditPhotoAlbums,
-    canManagePeople,
-    canManageTripPlans,
-    canReviewSuggestions,
-    canViewExpenses,
-  } = deriveWorkspacePermissions(currentMember.role);
-  const {
-    canAccessPanel,
-    isAccountTripAccessPending,
-    shouldRedirectUnauthenticatedTripRoute,
-  } = useWorkspaceAccessGate({
-    accessMode,
-    accountSession,
-    accountSessionLoaded,
-    accountTripAccessDeniedRouteId,
-    accessError,
-    isApiMode,
-    isTripLoading,
-    participantSession,
-    routeTripId,
-    requireJoin,
-    sessionMember: Boolean(sessionMember),
-    sessionRestored,
   });
   const supportsContextRail = workspaceViewSupportsContextRail(currentView);
   const {

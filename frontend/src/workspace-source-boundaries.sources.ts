@@ -15,6 +15,7 @@ export const workspaceBoundarySourcePaths = {
   workspaceFacade: "src/trip/workspace/SagittariusApp.tsx",
   workspaceRecordsHook: "src/trip/workspace/use-trip-workspace-records.ts",
   importHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts",
+  accessContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-context.ts",
   accessGateHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts",
   uiStateHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-ui-state.ts",
   accessState: "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts",

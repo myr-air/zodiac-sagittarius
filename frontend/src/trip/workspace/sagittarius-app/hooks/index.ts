@@ -1,6 +1,7 @@
 export { useWorkspaceAdministration } from "./use-workspace-administration";
 export { useWorkspaceExpenses } from "./use-workspace-expenses";
 export { useWorkspaceBookingCommands } from "./use-workspace-booking-commands";
+export { useWorkspaceAccessContext } from "./use-workspace-access-context";
 export { useWorkspaceAccessGate } from "./use-workspace-access-gate";
 export { useWorkspaceApiCockpitEffects } from "./use-workspace-api-cockpit-effects";
 export { useWorkspaceApiClients } from "./use-workspace-api-clients";
