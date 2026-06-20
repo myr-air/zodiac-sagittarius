@@ -20,6 +20,7 @@ import {
   portalContentClassName,
   portalLoadingCardClassName,
 } from "./account-access-panel-layout";
+import { buildAccountPortalDashboardHandlers } from "./account-access-panel-portal-handlers";
 import type { UseAccountAccessPanelState } from "./use-account-access-panel-state";
 
 interface AccountAccessPanelContentProps {
@@ -116,6 +117,17 @@ export function AccountAccessPanelContent({
   }
 
   if (accountSession) {
+    const portalHandlers = buildAccountPortalDashboardHandlers({
+      accountClient,
+      accountSession,
+      apiClient,
+      messages,
+      onAuthenticated,
+      onCockpitLoaded,
+      onTripChange,
+      state,
+    });
+
     return (
       <AccountPortalDashboard
         accountClient={accountClient}
@@ -135,28 +147,9 @@ export function AccountAccessPanelContent({
         onVaultItemCreated={(item) =>
           state.setVaultItems((current) => [item, ...current])
         }
-        onCreatedTrip={async (session, options) => {
-          if (options?.openTrip !== false) {
-            onAuthenticated(session);
-            if (apiClient) {
-              const cockpit = await apiClient.loadTrip(
-                session.tripId,
-                session.sessionToken,
-              );
-              onTripChange(cockpit.trip);
-              onCockpitLoaded?.(cockpit);
-            }
-          }
-          await state.refreshAccount(accountSession.sessionToken);
-        }}
-        onLogout={async () => {
-          await accountClient.logout(accountSession.sessionToken);
-          state.clearPortalSession(accountSession.sessionToken);
-          state.setMessage(messages.messages.loggedOut);
-        }}
-        onSessionCleared={() => {
-          state.clearPortalSession(accountSession.sessionToken);
-        }}
+        onCreatedTrip={portalHandlers.onCreatedTrip}
+        onLogout={portalHandlers.onLogout}
+        onSessionCleared={portalHandlers.onSessionCleared}
         onMessage={state.setMessage}
         onError={state.setError}
       />

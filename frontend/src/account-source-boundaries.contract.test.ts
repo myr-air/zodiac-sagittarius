@@ -6,8 +6,10 @@ describe("Sagittarius account source boundaries", () => {
   it("keeps account access, email login, portal, and trip join code split by responsibility", () => {
     const {
       accountAccessPanel,
+      accountAccessPanelContent,
       accountAccessChrome,
       accountAccessShellClasses,
+      accountAccessPortalHandlers,
       accountAccessModes,
       accountPortalNavItems,
       accountPortalDataCache,
@@ -62,6 +64,10 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
+    expect(accountAccessPanelContent).toContain("buildAccountPortalDashboardHandlers");
+    expect(accountAccessPanelContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
+    expect(accountAccessPortalHandlers).toContain("export function buildAccountPortalDashboardHandlers");
+    expect(accountAccessPortalHandlers).toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessChrome).toContain("export function AccountAccessChrome");
     expect(accountAccessChrome).toContain("accountHeroClassName");
     expect(accountAccessChrome).toContain("accountModeTabsClassName");
