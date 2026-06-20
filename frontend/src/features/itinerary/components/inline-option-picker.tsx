@@ -3,6 +3,7 @@ import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
 import { Icon, type IconName } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { InlineOptionPickerMenu } from "./inline-option-picker-menu";
+import { inlineOptionPickerMenuPosition } from "./inline-option-picker-position";
 
 export interface InlineOptionPickerOption {
   icon?: IconName;
@@ -66,20 +67,16 @@ export function InlineOptionPicker({
     function updatePosition() {
       const rect = buttonRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const menuHeight = Math.min(260, options.length * 34 + 8);
-      const spaceBelow = window.innerHeight - rect.bottom - 8;
-      const top =
-        spaceBelow >= menuHeight
-          ? rect.bottom + 6
-          : Math.max(8, rect.top - menuHeight - 6);
-      setPosition({
-        left: Math.min(
-          Math.max(8, rect.left),
-          Math.max(8, window.innerWidth - Math.max(rect.width, 180) - 8),
-        ),
-        top,
-        width: Math.max(rect.width, 180),
-      });
+      setPosition(
+        inlineOptionPickerMenuPosition({
+          anchorRect: rect,
+          optionCount: options.length,
+          viewport: {
+            height: window.innerHeight,
+            width: window.innerWidth,
+          },
+        }),
+      );
     }
 
     updatePosition();

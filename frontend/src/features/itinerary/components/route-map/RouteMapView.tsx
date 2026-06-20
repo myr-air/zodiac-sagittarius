@@ -1,30 +1,20 @@
 import { useMemo } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import type { ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import {
-  mapSourceNoteClassName,
-  routeLiveMapClassName,
-  routeLiveMapPendingClassName,
-  routeMapCanvasClassName,
   routeMapLayoutClassName,
   routeMapPanelClassName,
-  routeMapRetryButtonClassName,
-  routeMapStatusClassName,
 } from "./route-map.config";
 import {
   activeDayLabel,
 } from "./route-map.utils";
 import { fallbackRouteViewport } from "./route-map.viewport";
 import type { MapCoordinateResolutionResult } from "./route-map.types";
-import { liveMapStatusText } from "./route-map.live-status";
-import { RouteMapDayFilter } from "./RouteMapDayFilter";
-import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
-import { StaticRouteFallback } from "./StaticRouteFallback";
+import { RouteMapCanvas } from "./RouteMapCanvas";
 import { useRouteMapViewState } from "./use-route-map-view-state";
 import { useRouteLiveMap } from "./use-route-live-map";
 
@@ -107,63 +97,24 @@ export function RouteMapView({
       />
 
       <div className={routeMapLayoutClassName}>
-        <div className={routeMapCanvasClassName} data-live-map-state={liveMapState} aria-label={t.map.canvasLabel}>
-          <RouteMapDayFilter
-            activeDay={activeDay}
-            allDaysLabel={t.map.allDays}
-            filterLabel={t.map.filterLabel}
-            routeDayGroups={routeDayGroups}
-            onChange={setActiveDay}
-          />
-
-          {liveMapState !== "ready" ? (
-            <StaticRouteFallback
-              routeDayGroups={visibleRouteDayGroups}
-              routePoints={visibleRoutePoints}
-              stopListLabel={t.map.visibleStopsLabel}
-            />
-          ) : null}
-
-          {liveMapState !== "error" ? (
-            <>
-              <div className={cn(routeLiveMapClassName, liveMapState !== "ready" && routeLiveMapPendingClassName)} ref={mapContainerRef} aria-hidden="true" />
-              {liveMapState !== "ready" ? <p className={routeMapStatusClassName}>{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p> : null}
-            </>
-          ) : (
-            <>
-              <div className={routeMapStatusClassName} role="status">
-                <p className="m-0">{liveMapStatusText(liveMapState, t.map.liveLoading, t.map.liveError)}</p>
-                {liveMapEnabled && liveMapAvailability === "auto" ? (
-                  <button className={routeMapRetryButtonClassName} type="button" onClick={retryLiveMap}>
-                    <Icon name="redo" />
-                    {t.map.retryLiveMap}
-                  </button>
-                ) : null}
-              </div>
-            </>
-          )}
-          {visibleUnresolvedItems.length > 0 ? (
-            <RouteMapUnresolvedPanel
-              activeDay={activeDay}
-              coordinateResolutionBatch={coordinateResolutionBatch}
-              copy={{
-                label: t.map.unresolvedLabel,
-                resolveBatchHint: t.map.resolveBatchHint,
-                resolveMissing: t.map.resolveMissing,
-                resolveProgress: t.map.resolveProgress,
-                resolveResult: t.map.resolveResult,
-                resolveUnavailable: t.map.resolveUnavailable,
-                resolvingMissing: t.map.resolvingMissing,
-                title: t.map.unresolvedTitle,
-              }}
-              onResolveMissingCoordinates={onResolveMissingCoordinates ? handleResolveMissingCoordinates : undefined}
-              resolutionResult={resolutionResult}
-              resolvingMissing={resolvingMissing}
-              visibleUnresolvedItems={visibleUnresolvedItems}
-            />
-          ) : null}
-          {liveMapState === "error" || !liveMapEnabled ? <p className={mapSourceNoteClassName}>{t.map.sourceNote}</p> : null}
-        </div>
+        <RouteMapCanvas
+          activeDay={activeDay}
+          coordinateResolutionBatch={coordinateResolutionBatch}
+          copy={t.map}
+          liveMapAvailability={liveMapAvailability}
+          liveMapEnabled={liveMapEnabled}
+          liveMapState={liveMapState}
+          mapContainerRef={mapContainerRef}
+          onActiveDayChange={setActiveDay}
+          onResolveMissingCoordinates={onResolveMissingCoordinates ? handleResolveMissingCoordinates : undefined}
+          onRetryLiveMap={retryLiveMap}
+          resolutionResult={resolutionResult}
+          resolvingMissing={resolvingMissing}
+          routeDayGroups={routeDayGroups}
+          visibleRouteDayGroups={visibleRouteDayGroups}
+          visibleRoutePoints={visibleRoutePoints}
+          visibleUnresolvedItems={visibleUnresolvedItems}
+        />
       </div>
     </section>
   );

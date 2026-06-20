@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import type { InlineOptionPickerOption } from "./inline-option-picker";
+import { inlineOptionPickerSideMenuPosition } from "./inline-option-picker-position";
 
 const floatingOptionMenuClassName =
   "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
@@ -54,26 +55,21 @@ export function InlineOptionPickerMenu({
   const hasSideMenu =
     activeSubOptions.length > 0 && Boolean(commitSubOption) && Boolean(activeOption);
   const sideMenuWidth = Math.max(position.width, 180);
-  const sideMenuTop = Math.min(
-    Math.max(8, position.top + activeIndex * 34),
-    Math.max(
-      8,
-      typeof window === "undefined"
-        ? position.top
-        : window.innerHeight -
-            Math.min(260, activeSubOptions.length * 34 + 8) -
-            8,
-    ),
-  );
-  const sideMenuLeft =
-    typeof window === "undefined"
-      ? position.left + position.width + 6
-      : sideMenuFloatingLeft(
-          position.left,
-          position.width,
-          sideMenuWidth,
-          window.innerWidth,
-        );
+  const sideMenuPosition = inlineOptionPickerSideMenuPosition({
+    activeIndex,
+    menuLeft: position.left,
+    menuTop: position.top,
+    menuWidth: position.width,
+    sideMenuWidth,
+    sideOptionCount: activeSubOptions.length,
+    viewport: {
+      height: typeof window === "undefined" ? position.top + 260 : window.innerHeight,
+      width:
+        typeof window === "undefined"
+          ? position.left + position.width + sideMenuWidth + 14
+          : window.innerWidth,
+    },
+  });
 
   return createPortal(
     <>
@@ -146,7 +142,7 @@ export function InlineOptionPickerMenu({
           className={cn(floatingOptionMenuClassName, "w-[180px]")}
           role="listbox"
           aria-label={`${activeOption.label} options`}
-          style={{ left: sideMenuLeft, top: sideMenuTop, width: sideMenuWidth }}
+          style={{ left: sideMenuPosition.left, top: sideMenuPosition.top, width: sideMenuWidth }}
         >
           {activeSubOptions.map((option) => (
             <button
@@ -171,19 +167,4 @@ export function InlineOptionPickerMenu({
     </>,
     document.body,
   );
-}
-
-function sideMenuFloatingLeft(
-  menuLeft: number,
-  menuWidth: number,
-  sideMenuWidth: number,
-  viewportWidth: number,
-): number {
-  const margin = 8;
-  const gap = 6;
-  const right = menuLeft + menuWidth + gap;
-  if (right + sideMenuWidth <= viewportWidth - margin) return right;
-  const left = menuLeft - sideMenuWidth - gap;
-  if (left >= margin) return left;
-  return Math.max(margin, viewportWidth - sideMenuWidth - margin);
 }

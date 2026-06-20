@@ -33,14 +33,31 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps inline option picker menu rendering split from trigger state", () => {
     const picker = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker.tsx");
     const pickerMenu = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker-menu.tsx");
+    const pickerPosition = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker-position.ts");
 
     expect(picker).toContain("./inline-option-picker-menu");
+    expect(picker).toContain("./inline-option-picker-position");
     expect(picker).not.toContain("createPortal");
     expect(picker).not.toContain("floatingOptionMenuClassName");
-    expect(picker).not.toContain("sideMenuFloatingLeft");
+    expect(picker).not.toContain("window.innerHeight - rect.bottom");
     expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
     expect(pickerMenu).toContain("createPortal");
-    expect(pickerMenu).toContain("sideMenuFloatingLeft");
+    expect(pickerMenu).toContain("./inline-option-picker-position");
+    expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
+    expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
+    expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");
+  });
+
+  it("keeps route map canvas rendering split from map page orchestration", () => {
+    const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
+    const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+
+    expect(mapView).toContain("./RouteMapCanvas");
+    expect(mapView).not.toContain("routeMapCanvasClassName");
+    expect(mapView).not.toContain("StaticRouteFallback");
+    expect(mapCanvas).toContain("export function RouteMapCanvas");
+    expect(mapCanvas).toContain("StaticRouteFallback");
+    expect(mapCanvas).toContain('type RouteMapCanvasCopy = Messages["map"]');
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
