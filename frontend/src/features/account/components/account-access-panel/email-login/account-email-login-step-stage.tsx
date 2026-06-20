@@ -5,7 +5,7 @@ import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import type { IconName } from "@/src/ui/icons";
 import type { AuthFlow } from "../auth";
-import { PanelHeading } from "../portal/account-portal-primitives";
+import { PanelHeading } from "../account-panel-heading";
 import {
   accountStepStageClassName,
   accountStepStageDirectionClassNames,

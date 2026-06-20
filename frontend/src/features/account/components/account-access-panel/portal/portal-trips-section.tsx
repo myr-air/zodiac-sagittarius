@@ -5,7 +5,8 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import { PanelHeading, PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
+import { PanelHeading } from "../account-panel-heading";
+import { PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
 
 interface PortalTripsSectionClassNames {
   section: string;

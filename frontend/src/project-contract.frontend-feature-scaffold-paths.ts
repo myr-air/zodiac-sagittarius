@@ -6,6 +6,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-credentials.ts",
   "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx",
+  "src/features/account/components/account-access-panel/account-panel-heading.tsx",
   "src/features/account/components/account-access-panel/auth/index.ts",
   "src/features/account/components/account-access-panel/auth/account-access-error-codes.ts",
   "src/features/account/components/account-access-panel/auth/account-passkey-support.ts",

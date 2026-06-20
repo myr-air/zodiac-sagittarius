@@ -10,7 +10,7 @@ import {
   errorMessage,
 } from "../auth";
 import { AccountSettingsEditor } from "./account-settings-editor";
-import { PanelHeading } from "./account-portal-primitives";
+import { PanelHeading } from "../account-panel-heading";
 
 interface PortalSettingsSectionClassNames {
   avatar: string;

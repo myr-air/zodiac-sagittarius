@@ -3,7 +3,8 @@ import { Badge } from "@/src/ui";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import { PanelHeading, PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
+import { PanelHeading } from "../account-panel-heading";
+import { PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
 
 export function PortalTodosSection({
   className,
