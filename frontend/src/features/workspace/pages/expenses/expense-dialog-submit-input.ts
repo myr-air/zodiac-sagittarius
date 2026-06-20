@@ -1,6 +1,6 @@
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
-import type { ExpenseDialogCalculatedState } from "./expense-dialog-support";
+import type { ExpenseDialogCalculatedState } from "./expense-dialog-calculation";
 import type { ExpenseInput } from "./expense-page-types";
 
 interface ExpenseDialogSubmitInputOptions {

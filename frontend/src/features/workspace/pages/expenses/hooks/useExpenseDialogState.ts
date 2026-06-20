@@ -3,8 +3,8 @@ import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
-  canSubmitExpenseDialog,
-} from "../expense-dialog-support";
+} from "../expense-dialog-calculation";
+import { canSubmitExpenseDialog } from "../expense-dialog-submit-guard";
 import { initialExpenseTripPlanId } from "../expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../expense-dialog-submit-input";
 import type { ExpenseInput, ExpenseUpdateInput } from "../expense-page-types";

@@ -1,6 +1,6 @@
 import { formatMoney } from "@/src/trip/expenses";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import type { ExpenseDialogCalculatedState } from "../expense-dialog-support";
+import type { ExpenseDialogCalculatedState } from "../expense-dialog-calculation";
 
 interface ExpenseDialogSummaryProps {
   calculation: ExpenseDialogCalculatedState;

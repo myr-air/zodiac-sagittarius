@@ -43,13 +43,6 @@ export interface ExpenseDialogCalculatedState {
   validLineItems: ExpenseLineItem[];
 }
 
-interface ExpenseDialogSubmitGuardInput {
-  isSaving: boolean;
-  state: ExpenseDialogCalculatedState;
-  title: string;
-}
-
-
 export function calculateExpenseDialogState({
   amount,
   currency,
@@ -96,17 +89,4 @@ export function calculateExpenseDialogState({
     splits,
     validLineItems,
   };
-}
-
-export function canSubmitExpenseDialog({ isSaving, state, title }: ExpenseDialogSubmitGuardInput): boolean {
-  return (
-    !isSaving
-    && Boolean(title.trim())
-    && Number.isFinite(state.amountNumber)
-    && state.amountNumber > 0
-    && !state.splitMismatch
-    && state.hasValidExchangeRate
-    && !state.invalidItemizedLines
-    && state.hasValidRepeatCount
-  );
 }
