@@ -10,6 +10,7 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessModes,
       accountPortalNavItems,
       accountPortalDataCache,
+      accountTripDates,
       accountTripWizardSupport,
       accountTripWizardSteps,
       portalTripWizard,
@@ -86,11 +87,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).toContain("./account-trip-credentials");
     expect(accountTripWizardSupport).toContain("@/src/trip/trip-destinations");
-    expect(accountTripWizardSupport).toContain("./account-trip-dates");
+    expect(accountTripWizardSupport).not.toContain("./account-trip-dates");
     expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).not.toContain("function buildInviteEmailHref");
     expect(accountTripWizardSupport).not.toContain("function routeCalendarDays");
     expect(accountTripWizardSupport).not.toContain("function tripNightCount");
+    expect(accountTripWizardSupport).not.toContain("function applyTripCalendarDate");
     expect(accountTripWizardSupport).not.toContain("const tripCountryOptions");
     expect(accountTripWizardSupport).not.toContain("const tripCityOptions");
     expect(accountTripWizardSupport).not.toContain("function tripDestinationCards");
@@ -101,7 +103,8 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountTripWizardSupport).not.toContain("const tripWizardSteps");
     expect(accountTripWizardSupport).not.toContain("function tripStepComplete");
     expect(accountTripWizardSupport).toContain("export function applyTripDestinationCities");
-    expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
+    expect(accountTripDates).toContain("export function applyTripCalendarDate");
+    expect(accountTripDates).toContain("export function nextTripWizardDateSelectionStep");
     expect(accountTripWizardSteps).toContain("export const tripWizardSteps");
     expect(accountTripWizardSteps).toContain("export function tripStepComplete");
     expect(portalTripWizardModel).toContain("applyTripCalendarDate");

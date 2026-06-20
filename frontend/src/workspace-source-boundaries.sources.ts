@@ -145,6 +145,7 @@ export const workspaceBoundarySourcePaths = {
   accountAccessModes: "src/features/account/components/account-access-panel/account-access-modes.ts",
   accountPortalNavItems: "src/features/account/components/account-access-panel/account-portal-nav-items.ts",
   accountPortalDataCache: "src/features/account/components/account-access-panel/account-portal-data-cache.ts",
+  accountTripDates: "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts",
   accountTripWizardSupport: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",
   accountTripWizardSteps: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-steps.ts",
   portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",

@@ -6,10 +6,12 @@ import {
   applyTripCalendarDate,
   applyTripEndDate,
   applyTripStartDate,
-  generateJoinPassword,
   nextTripWizardDateSelectionStep,
-  randomToken,
   type TripWizardDateSelectionStep,
+} from "./account-trip-dates";
+import {
+  generateJoinPassword,
+  randomToken,
 } from "./account-trip-wizard-support";
 import { buildPortalTripWizardCredentials } from "./portal-trip-wizard-credentials";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";

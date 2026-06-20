@@ -1,30 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import {
-  applyTripCalendarDate,
   applyTripDestinationCities,
-  applyTripEndDate,
-  applyTripStartDate,
   citySuggestions,
   buildInviteEmailHref,
   buildInviteLink,
   destinationRouteCode,
   generateJoinIdForTrip,
-  nextTripWizardDateSelectionStep,
   normalizedTripForm,
-  routeCalendarDays,
   tripDestinationCards,
-  tripNightCount,
-  tripWizardDateSelectionStepValues,
 } from "./account-trip-wizard-support";
 
 describe("account trip wizard support", () => {
-  it("keeps date selection steps in calendar toggle order", () => {
-    expect(tripWizardDateSelectionStepValues).toEqual(["depart", "return"]);
-    expect(nextTripWizardDateSelectionStep("depart")).toBe("return");
-    expect(nextTripWizardDateSelectionStep("return")).toBe("depart");
-  });
-
   it("generates route-aware join codes from destination cities", () => {
     expect(destinationRouteCode(["Thailand", "Tokyo"])).toBe("TYO");
     expect(destinationRouteCode(["Japan"])).toBe("JP");
@@ -77,11 +64,6 @@ describe("account trip wizard support", () => {
       nights: "2 nights",
       countryName: "Japan",
     });
-    expect(tripNightCount("2026-06-21", "2026-06-24", "en")).toBe("3 nights (4 days)");
-
-    const days = routeCalendarDays("2026-06-21", "2026-06-21", "2026-06-24");
-    expect(days.find((day) => day.value === "2026-06-21")).toMatchObject({ dateState: "start", tourDay: 1 });
-    expect(days.find((day) => day.value === "2026-06-24")).toMatchObject({ dateState: "end", tourDay: 4 });
   });
 
   it("keeps destination city and country fields in sync", () => {
@@ -101,46 +83,6 @@ describe("account trip wizard support", () => {
     });
   });
 
-  it("keeps trip date ranges ordered from direct date inputs", () => {
-    const form = {
-      ...baseTripForm(),
-      endDate: "2026-06-24",
-      startDate: "2026-06-21",
-    };
-
-    expect(applyTripStartDate(form, "2026-06-25")).toMatchObject({
-      endDate: "2026-06-25",
-      startDate: "2026-06-24",
-    });
-    expect(applyTripEndDate(form, "2026-06-20")).toMatchObject({
-      endDate: "2026-06-21",
-      startDate: "2026-06-20",
-    });
-  });
-
-  it("advances calendar date selection between departure and return dates", () => {
-    const form = {
-      ...baseTripForm(),
-      endDate: "2026-06-24",
-      startDate: "2026-06-21",
-    };
-
-    expect(applyTripCalendarDate(form, "2026-06-25", "depart")).toMatchObject({
-      form: {
-        endDate: "2026-06-25",
-        startDate: "2026-06-25",
-      },
-      selectingDateStep: "return",
-    });
-
-    expect(applyTripCalendarDate(form, "2026-06-20", "return")).toMatchObject({
-      form: {
-        endDate: "2026-06-21",
-        startDate: "2026-06-20",
-      },
-      selectingDateStep: "depart",
-    });
-  });
 });
 
 function baseTripForm(): AccountTripCreateRequest {

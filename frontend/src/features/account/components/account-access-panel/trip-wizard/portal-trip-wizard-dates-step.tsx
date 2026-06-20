@@ -7,10 +7,10 @@ import type { TripCity } from "@/src/trip/types";
 import { Button, SwapButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import {
-  defaultTripOriginCity,
   routeCalendarDays,
   type TripWizardDateSelectionStep,
-} from "./account-trip-wizard-support";
+} from "./account-trip-dates";
+import { defaultTripOriginCity } from "./account-trip-wizard-support";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
