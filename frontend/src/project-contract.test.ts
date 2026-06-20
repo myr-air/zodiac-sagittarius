@@ -232,6 +232,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/photos/use-trip-photos-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);

@@ -1,9 +1,3 @@
-import { useMemo, useState } from "react";
-import {
-  buildPhotoAlbumSummary,
-  filterPhotoAlbumLinks,
-  findPhotoAlbumRelations,
-} from "@/src/trip/photo-albums";
 import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
@@ -16,12 +10,11 @@ import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy } from "./TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
 import {
-  countPhotoProviders,
   photoProviderLabel,
   photoProviders,
-  type PhotoProviderFilter,
 } from "./TripPhotosPage.support";
 import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
+import { useTripPhotosPageState } from "./use-trip-photos-page-state";
 
 export type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
 
@@ -46,30 +39,28 @@ export function TripPhotosPage({
 }: TripPhotosPageProps) {
   const { locale } = useI18n();
   const copy = photoCopy[locale];
-  const [activeProvider, setActiveProvider] = useState<PhotoProviderFilter>("all");
-  const [selectedAlbumId, setSelectedAlbumId] = useState(photoAlbumLinks[0]?.id ?? "");
-  const [dialogAlbum, setDialogAlbum] = useState<TripPhotoAlbumLink | "new" | null>(null);
-  const [deleteAlbum, setDeleteAlbum] = useState<TripPhotoAlbumLink | null>(null);
-  const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
-  const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
-  const visibleAlbums = useMemo(() => filterPhotoAlbumLinks(photoAlbumLinks, { provider: activeProvider }), [activeProvider, photoAlbumLinks]);
-  const selectedAlbum = visibleAlbums.find((album) => album.id === selectedAlbumId) ?? visibleAlbums[0] ?? null;
-  const selectedRelations = selectedAlbum ? findPhotoAlbumRelations(selectedAlbum, trip) : null;
-
-  async function submitAlbum(input: TripPhotoAlbumInput) {
-    if (dialogAlbum === "new") {
-      await onCreatePhotoAlbum(input);
-    } else if (dialogAlbum) {
-      await onUpdatePhotoAlbum(dialogAlbum.id, input);
-    }
-    setDialogAlbum(null);
-  }
-
-  async function confirmDelete() {
-    if (!deleteAlbum) return;
-    await onDeletePhotoAlbum(deleteAlbum.id);
-    setDeleteAlbum(null);
-  }
+  const {
+    activeProvider,
+    confirmDelete,
+    deleteAlbum,
+    dialogAlbum,
+    providerCounts,
+    selectedAlbum,
+    selectedRelations,
+    setActiveProvider,
+    setDeleteAlbum,
+    setDialogAlbum,
+    setSelectedAlbumId,
+    submitAlbum,
+    summary,
+    visibleAlbums,
+  } = useTripPhotosPageState({
+    onCreatePhotoAlbum,
+    onDeletePhotoAlbum,
+    onUpdatePhotoAlbum,
+    photoAlbumLinks,
+    trip,
+  });
 
   return (
     <WorkspacePage className={photoStyles.pageClassName} aria-label={copy.pageLabel} role="region">
