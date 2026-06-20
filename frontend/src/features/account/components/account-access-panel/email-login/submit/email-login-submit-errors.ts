@@ -1,9 +1,9 @@
 import type { Messages } from "@/src/i18n/messages";
-import type { AuthFlow } from "../auth";
+import type { AuthFlow } from "../../auth";
 import {
   errorMessage,
   passwordLoginErrorMessage,
-} from "../auth";
+} from "../../auth";
 
 interface EmailLoginSubmitErrorContext {
   emailLoginMessages: Messages["access"]["emailLogin"];

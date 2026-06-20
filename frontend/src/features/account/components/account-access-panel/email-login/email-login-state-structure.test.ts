@@ -39,10 +39,10 @@ describe("email login state structure", () => {
 
   it("keeps auth submit actions out of the main login panel hook", () => {
     const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
-    const submitActions = readEmailLoginSource("use-email-login-submit-actions.ts");
-    const submitErrors = readEmailLoginSource("email-login-submit-errors.ts");
-    const submitRoute = readEmailLoginSource("email-login-submit-route.ts");
-    const submitRunner = readEmailLoginSource("email-login-submit-runner.ts");
+    const submitActions = readEmailLoginSource("submit/use-email-login-submit-actions.ts");
+    const submitErrors = readEmailLoginSource("submit/email-login-submit-errors.ts");
+    const submitRoute = readEmailLoginSource("submit/email-login-submit-route.ts");
+    const submitRunner = readEmailLoginSource("submit/email-login-submit-runner.ts");
 
     expect(panelState).toContain("useEmailLoginSubmitActions");
     expect(panelState).not.toContain("finishEmailCodeLogin");

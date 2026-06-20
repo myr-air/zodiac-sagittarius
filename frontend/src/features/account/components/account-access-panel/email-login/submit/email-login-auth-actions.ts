@@ -3,11 +3,11 @@ import type {
   AccountSession,
   EmailLoginStartResponse,
 } from "@/src/account/api-client";
-import type { AuthFlow } from "../auth";
+import type { AuthFlow } from "../../auth";
 import {
   buildPasskeyLoginFinishInput,
   getPasskeyCredential,
-} from "../auth";
+} from "../../auth";
 
 const deviceLabel = "";
 

@@ -8,8 +8,8 @@ import type {
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import type { AuthFlow } from "../auth";
-import type { EmailLoginAuthStep } from "./account-email-login-step-meta";
+import type { AuthFlow } from "../../auth";
+import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
 import {
   finishEmailCodeLogin,
   finishEmailPasswordLogin,

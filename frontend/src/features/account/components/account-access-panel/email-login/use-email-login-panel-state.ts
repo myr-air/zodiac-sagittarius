@@ -12,7 +12,7 @@ import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-st
 import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 import { useEmailLoginStepNavigation, type AuthTransitionDirection } from "./use-email-login-step-navigation";
-import { useEmailLoginSubmitActions } from "./use-email-login-submit-actions";
+import { useEmailLoginSubmitActions } from "./submit/use-email-login-submit-actions";
 
 interface UseEmailLoginPanelStateProps {
   accountClient: AccountApiClient;

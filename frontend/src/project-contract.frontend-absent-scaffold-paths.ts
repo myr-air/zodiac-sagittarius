@@ -15,12 +15,18 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/account-email-login-step-content.tsx",
   "src/features/account/components/account-access-panel/account-email-login-styles.ts",
   "src/features/account/components/account-access-panel/use-email-login-panel-state.ts",
+  "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts",
+  "src/features/account/components/account-access-panel/email-login/email-login-submit-errors.ts",
+  "src/features/account/components/account-access-panel/email-login/email-login-submit-route.ts",
+  "src/features/account/components/account-access-panel/email-login/email-login-submit-runner.ts",
+  "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts",
   "src/features/account/components/account-access-panel/account-portal-dashboard.tsx",
   "src/features/account/components/account-access-panel/account-portal-primitives.tsx",
   "src/features/account/components/account-access-panel/use-account-portal-data.ts",
   "src/features/account/components/account-access-panel/portal-trip-wizard-dates-step.tsx",
   "src/features/account/components/account-access-panel/portal-trip-wizard.tsx",
   "src/features/itinerary/components/OverviewPage.tsx",
+  "src/features/itinerary/domain/overview.test.ts",
   "src/features/itinerary/components/overview/OverviewRolePanels.tsx",
   "src/features/itinerary/components/ContextRail.tsx",
   "src/features/itinerary/components/SmartItineraryTable.tsx",
@@ -31,4 +37,3 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/itinerary/components/StopDialog.tsx",
   "src/features/itinerary/components/RouteMapView.tsx",
 ] as const;
-
