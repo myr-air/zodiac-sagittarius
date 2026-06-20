@@ -93,6 +93,8 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/itinerary-import-model.ts",
   "src/trip/workspace/itinerary-import-records.test.ts",
   "src/trip/workspace/itinerary-import-routing.test.ts",
+  "src/trip/workspace/itinerary-import-api-records.test.ts",
+  "src/trip/workspace/itinerary-import-api-requests.test.ts",
   "src/trip/workspace/itinerary-import-api.ts",
   "src/trip/workspace/itinerary-import-api-records.ts",
   "src/trip/workspace/itinerary-import-api-requests.ts",
