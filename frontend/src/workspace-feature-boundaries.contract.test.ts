@@ -12,6 +12,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       bookingDialogState,
       sagaCore,
       sagittariusAppTestAccountApi,
+      sagittariusAppTestBriefingFixtures,
+      sagittariusAppTestFixtures,
+      sagittariusAppTestPlanFixtures,
       sagittariusAppTestStorage,
       sagittariusAppTestSupport,
       itineraryTimeLib,
@@ -113,13 +116,22 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(expenseSettlements).toContain("export function upsertExpenseReminder");
     expect(expenseSettlements).toContain("function expenseReminderKey");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
+    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-fixtures");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
+    expect(sagittariusAppTestSupport).not.toContain("function dailyBriefingFixture");
     expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
     expect(sagittariusAppTestSupport).not.toContain("Object.defineProperty(window, \"localStorage\"");
     expect(sagittariusAppTestSupport).not.toContain("createMemoryStorage");
     expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
     expect(sagittariusAppTestAccountApi).toContain("export function mockAccountTripMemberSessionFetch");
     expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
+    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-briefing-fixtures");
+    expect(sagittariusAppTestBriefingFixtures).toContain("export function dailyBriefingFixture");
+    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-plan-fixtures");
+    expect(sagittariusAppTestFixtures).not.toContain("function dailyBriefingFixture");
+    expect(sagittariusAppTestFixtures).not.toContain("function tripWithPlans");
+    expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
+    expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
     expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
     expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
     expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
