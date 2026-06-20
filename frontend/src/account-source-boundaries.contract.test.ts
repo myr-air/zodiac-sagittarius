@@ -25,6 +25,8 @@ describe("Sagittarius account source boundaries", () => {
       tripWizardFormSections,
       accountAccessStory,
       accountAccessStorySupport,
+      accountAccessTestClients,
+      accountAccessTestFixtures,
       accountSettingsEditor,
       accountSettingsEditorState,
       emailLoginState,
@@ -53,6 +55,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStorySupport).not.toContain("AccountSettingsUpdateRequest");
     expect(accountAccessStorySupport).toContain("export const accountLoginStoryArgs");
     expect(accountAccessStorySupport).toContain("export const portalDashboardStoryArgs");
+    expect(accountAccessTestClients).toContain("./account-access-panel-test-fixtures");
+    expect(accountAccessTestClients).toContain("export function createAccountClient");
+    expect(accountAccessTestClients).not.toContain("export const accountSettings");
+    expect(accountAccessTestClients).not.toContain("export const accountTrip");
+    expect(accountAccessTestFixtures).toContain("export const accountSettings");
+    expect(accountAccessTestFixtures).toContain("export const accountTrip");
 
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).toContain("./account-trip-credentials");

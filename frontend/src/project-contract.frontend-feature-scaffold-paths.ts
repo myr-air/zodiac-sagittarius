@@ -14,6 +14,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/AccountAccessPanel.stories.plays.ts",
   "src/features/account/components/account-access-panel/testing/account-access-panel-test-utils.tsx",
   "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
+  "src/features/account/components/account-access-panel/testing/account-access-panel-test-fixtures.ts",
   "src/features/account/components/account-access-panel/AccountAccessPanel.auth-routes.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder-flow.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder-share.test.tsx",

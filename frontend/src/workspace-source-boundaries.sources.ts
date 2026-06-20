@@ -120,6 +120,8 @@ export const workspaceBoundarySourcePaths = {
   itineraryTemplateStory: "src/features/itinerary/stories/ItineraryTemplate.stories.tsx",
   itineraryTemplateStoryPlays: "src/features/itinerary/stories/ItineraryTemplate.stories.plays.ts",
   accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
+  accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
+  accountAccessTestFixtures: "src/features/account/components/account-access-panel/testing/account-access-panel-test-fixtures.ts",
   accountAccessStorySupport: "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
   accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
   accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
