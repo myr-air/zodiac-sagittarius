@@ -9,20 +9,14 @@ import type {
   TripTask,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Icon } from "@/src/ui/icons";
-import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
+import { ContextRailExpensesOnlyPanel } from "./ContextRailExpensesOnlyPanel";
 import { ContextRailSelectedStopPanel } from "./ContextRailSelectedStopPanel";
-import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
 import { useContextRailState } from "./context-rail.state";
 import { ContextRailTab } from "./context-rail.utils";
 import {
   contextRailClassName,
   contextRailClosedClassName,
   contextRailOpenClassName,
-  inspectorCloseButtonClassName,
-  inspectorTitleClassName,
-  inspectorTitleHeadingClassName,
-  railInspectorClassName,
 } from "./context-rail.styles";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
@@ -98,10 +92,6 @@ export function ContextRail({
   onClose,
 }: ContextRailProps) {
   const { t } = useI18n();
-  const expenseTotals = formatContextRailExpenseTotals(
-    expenseSummary,
-    trip.members.length,
-  );
   const {
     activeTab,
     setActiveTab,
@@ -164,32 +154,18 @@ export function ContextRail({
           onReviewSuggestion={onReviewSuggestion}
         />
       ) : (
-        <div className={railInspectorClassName}>
-          <div className={inspectorTitleClassName}>
-            <h2 className={inspectorTitleHeadingClassName}>
-              {t.contextRail.expenses.title}
-            </h2>
-            <button
-              className={inspectorCloseButtonClassName}
-              type="button"
-              aria-label={t.contextRail.closeDetails}
-              onClick={onClose}
-            >
-              <Icon name="chevronRight" />
-            </button>
-          </div>
-          <ContextRailExpensesSection
-            selectedItemId={undefined}
-            expenses={selectedExpenses}
-            members={trip.members}
-            perPerson={expenseTotals.perPerson}
-            groupSpend={expenseTotals.groupSpend}
-            canEditExpenses={canEditExpenses}
-            onCreateExpense={onCreateExpense}
-            onUpdateExpense={onUpdateExpense}
-            onDeleteExpense={onDeleteExpense}
-          />
-        </div>
+        <ContextRailExpensesOnlyPanel
+          canEditExpenses={canEditExpenses}
+          closeLabel={t.contextRail.closeDetails}
+          expenseSummary={expenseSummary}
+          expenses={selectedExpenses}
+          members={trip.members}
+          title={t.contextRail.expenses.title}
+          onClose={onClose}
+          onCreateExpense={onCreateExpense}
+          onDeleteExpense={onDeleteExpense}
+          onUpdateExpense={onUpdateExpense}
+        />
       )}
     </aside>
   );
