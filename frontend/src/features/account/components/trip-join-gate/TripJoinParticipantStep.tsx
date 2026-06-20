@@ -58,7 +58,13 @@ export function TripJoinParticipantStep({
   onToggleParticipantPassword,
 }: TripJoinParticipantStepProps) {
   return (
-    <div className={cn(participantStepClassName, isTripAccessVariant ? tripAccessContentClassName : "", isTripAccessVariant ? tripAccessParticipantStepClassName : "")}>
+    <div
+      className={cn(
+        participantStepClassName,
+        isTripAccessVariant ? tripAccessContentClassName : "",
+        isTripAccessVariant ? tripAccessParticipantStepClassName : "",
+      )}
+    >
       <button
         type="button"
         className={cn(
@@ -69,7 +75,11 @@ export function TripJoinParticipantStep({
         <Icon name="chevronLeft" className="size-3.5" />
         {copy.backToRoom}
       </button>
-      <div className={participantGridClassName} role="group" aria-label={copy.participantListLabel}>
+      <div
+        className={participantGridClassName}
+        role="group"
+        aria-label={copy.participantListLabel}
+      >
         {participantMembers.map((member) => (
           <Fragment key={member.id}>
             <button
@@ -79,14 +89,26 @@ export function TripJoinParticipantStep({
               type="button"
               onClick={() => onSelectMember(member)}
             >
-              <span className={participantAvatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">
+              <span
+                className={participantAvatarClassName}
+                style={{ backgroundColor: member.color }}
+                aria-hidden="true"
+              >
                 {member.displayName.slice(0, 1)}
               </span>
               <span>
                 <strong>{member.displayName}</strong>
                 <small>{roleLabel(member.role, copy.roles)}</small>
               </span>
-              <Badge tone={isTripParticipantDisabled(member) ? "danger" : (member.userId || member.claimPasswordHash || member.claimedAt) ? "success" : "warning"}>
+              <Badge
+                tone={
+                  isTripParticipantDisabled(member)
+                    ? "danger"
+                    : member.userId || member.claimPasswordHash || member.claimedAt
+                      ? "success"
+                      : "warning"
+                }
+              >
                 {participantStatusLabel(member, copy.memberStatus)}
               </Badge>
             </button>

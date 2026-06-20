@@ -45,10 +45,16 @@ export function TripJoinParticipantAuthForm({
   onSubmitParticipant,
   onToggleParticipantPassword,
 }: TripJoinParticipantAuthFormProps) {
-  const isClaimed = Boolean(selectedMember.claimPasswordHash || selectedMember.claimedAt);
+  const isClaimed = Boolean(
+    selectedMember.claimPasswordHash || selectedMember.claimedAt,
+  );
 
   return (
-    <form className={participantAuthClassName} aria-label={selectedMember.displayName} onSubmit={onSubmitParticipant}>
+    <form
+      className={participantAuthClassName}
+      aria-label={selectedMember.displayName}
+      onSubmit={onSubmitParticipant}
+    >
       <label>
         <span>
           {isClaimed
@@ -58,14 +64,20 @@ export function TripJoinParticipantAuthForm({
         <span className={passwordInputRowClassName}>
           <input
             value={participantPassword}
-            onChange={(event) => onParticipantPasswordChange(event.target.value)}
+            onChange={(event) =>
+              onParticipantPasswordChange(event.target.value)
+            }
             type={showParticipantPassword ? "text" : "password"}
             autoComplete="current-password"
           />
           <button
             type="button"
             className={passwordVisibilityButtonClassName}
-            aria-label={showParticipantPassword ? copy.hideParticipantPassword : copy.showParticipantPassword}
+            aria-label={
+              showParticipantPassword
+                ? copy.hideParticipantPassword
+                : copy.showParticipantPassword
+            }
             onClick={onToggleParticipantPassword}
           >
             <Icon name={showParticipantPassword ? "eyeOff" : "eye"} />
@@ -73,11 +85,16 @@ export function TripJoinParticipantAuthForm({
         </span>
       </label>
       {!isClaimed ? (
-        <p className={participantAuthHelpClassName}>
-          {copy.participantHelp}
-        </p>
+        <p className={participantAuthHelpClassName}>{copy.participantHelp}</p>
       ) : null}
-      <Button type="submit" className={cn(joinSubmitClassName, isTripAccessVariant ? tripAccessSubmitClassName : "")} disabled={isSubmitting}>
+      <Button
+        type="submit"
+        className={cn(
+          joinSubmitClassName,
+          isTripAccessVariant ? tripAccessSubmitClassName : "",
+        )}
+        disabled={isSubmitting}
+      >
         <Icon name="check" />
         {isClaimed ? copy.confirm : copy.start}
       </Button>
