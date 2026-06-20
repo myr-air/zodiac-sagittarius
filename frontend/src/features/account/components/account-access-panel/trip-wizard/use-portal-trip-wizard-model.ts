@@ -7,6 +7,7 @@ import {
   applyTripEndDate,
   applyTripStartDate,
   generateJoinPassword,
+  nextTripWizardDateSelectionStep,
   randomToken,
   type TripWizardDateSelectionStep,
 } from "./account-trip-wizard-support";
@@ -113,7 +114,7 @@ export function usePortalTripWizardModel({
 
   function selectCalendarDate(date: string) {
     onChange((current) => applyTripCalendarDate(current, date, selectingDateStep).form);
-    setSelectingDateStep((current) => (current === "depart" ? "return" : "depart"));
+    setSelectingDateStep(nextTripWizardDateSelectionStep);
   }
 
   function clearTravelDates() {

@@ -10,10 +10,12 @@ import {
   buildInviteLink,
   destinationRouteCode,
   generateJoinIdForTrip,
+  nextTripWizardDateSelectionStep,
   normalizedTripForm,
   routeCalendarDays,
   tripDestinationCards,
   tripNightCount,
+  tripWizardDateSelectionStepValues,
   tripWizardSteps,
 } from "./account-trip-wizard-support";
 
@@ -26,6 +28,12 @@ describe("account trip wizard support", () => {
       "invite",
       "preview",
     ]);
+  });
+
+  it("keeps date selection steps in calendar toggle order", () => {
+    expect(tripWizardDateSelectionStepValues).toEqual(["depart", "return"]);
+    expect(nextTripWizardDateSelectionStep("depart")).toBe("return");
+    expect(nextTripWizardDateSelectionStep("return")).toBe("depart");
   });
 
   it("generates route-aware join codes from destination cities", () => {

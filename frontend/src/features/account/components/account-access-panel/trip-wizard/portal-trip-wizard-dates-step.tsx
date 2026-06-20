@@ -10,6 +10,7 @@ import {
   defaultTripOriginCity,
   routeCalendarDays,
   tripWizardSteps,
+  type TripWizardDateSelectionStep,
 } from "./account-trip-wizard-support";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
@@ -20,7 +21,7 @@ interface TripWizardDatesStepProps {
   previewEndDate: string;
   previewStartDate: string;
   selectedDestinationCities: TripCity[];
-  selectingDateStep: "depart" | "return";
+  selectingDateStep: TripWizardDateSelectionStep;
   t: {
     access: {
       dashboard: {

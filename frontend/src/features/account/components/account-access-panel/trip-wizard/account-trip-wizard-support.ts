@@ -33,7 +33,8 @@ export type {
 export { formatPreviewTravelDate, routeCalendarDays, tripNightCount } from "./account-trip-dates";
 export type { RouteCalendarDay } from "./account-trip-dates";
 
-export type TripWizardDateSelectionStep = "depart" | "return";
+export const tripWizardDateSelectionStepValues = ["depart", "return"] as const;
+export type TripWizardDateSelectionStep = (typeof tripWizardDateSelectionStepValues)[number];
 
 export const tripWizardSteps = [
   { id: "trip", label: "Trip", regionLabel: "Trip details step", nextCopy: "Next: add destination detail" },
@@ -161,6 +162,12 @@ export function applyTripCalendarDate(
     form: applyTripEndDate(form, date),
     selectingDateStep: "depart",
   };
+}
+
+export function nextTripWizardDateSelectionStep(
+  step: TripWizardDateSelectionStep,
+): TripWizardDateSelectionStep {
+  return step === "depart" ? "return" : "depart";
 }
 
 export function uniqueList(values: string[]): string[] {
