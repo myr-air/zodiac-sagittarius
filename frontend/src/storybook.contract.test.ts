@@ -172,4 +172,36 @@ describe("Storybook template catalog", () => {
     expect(storyItemBuilders).toContain("export function buildItineraryStoryPathItems");
     expect(storyItemBuilders).toContain("export function withStoryPrefix");
   });
+
+  it("keeps itinerary story path options split from item scenario datasets", () => {
+    const pathScenarios = readProjectFile(
+      "src",
+      "features",
+      "itinerary",
+      "stories",
+      "itinerary-story-path-scenarios.ts",
+    );
+    const pathOptions = readProjectFile(
+      "src",
+      "features",
+      "itinerary",
+      "stories",
+      "itinerary-story-path-options.ts",
+    );
+    const pathItems = readProjectFile(
+      "src",
+      "features",
+      "itinerary",
+      "stories",
+      "itinerary-story-path-items.ts",
+    );
+
+    expect(pathScenarios).toContain("./itinerary-story-path-options");
+    expect(pathScenarios).toContain("./itinerary-story-path-items");
+    expect(pathScenarios).not.toContain("buildItineraryStoryItem");
+    expect(pathOptions).toContain("branchGraphPathOptions");
+    expect(pathOptions).not.toContain("buildItineraryStoryPathItems");
+    expect(pathItems).toContain("buildItineraryStoryPathItems");
+    expect(pathItems).not.toContain("branchGraphPathOptions");
+  });
 });
