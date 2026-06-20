@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { roleLabel } from "@/src/trip/member-labels";
 import type { Member } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import {
@@ -23,7 +24,6 @@ import {
   memberFallbackIconClassName,
   memberSwitchButtonClassName,
 } from "./AppShell.styles";
-import { roleLabel } from "./app-shell.support";
 
 interface AppShellMemberCardProps {
   collapsed: boolean;

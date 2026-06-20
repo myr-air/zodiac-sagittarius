@@ -1,6 +1,5 @@
 import { decodeTripId } from "@/src/trip/ids";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
-import type { Member } from "@/src/trip/types";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 
 export function resolveViewFromPath(pathname: string, tripId: string, initialView: PlanningView): PlanningView {
@@ -28,8 +27,4 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   if (viewSegment === "expenses") return "expenses";
   if (viewSegment === "settings") return "settings";
   return initialView;
-}
-
-export function roleLabel(role: Member["role"], roles: Record<Member["role"], string>): string {
-  return roles[role];
 }

@@ -7,10 +7,6 @@ import {
 } from "@/src/trip/api-client";
 import type { Member, Trip } from "@/src/trip/types";
 
-export function roleLabel(role: Member["role"], labels: Messages["appShell"]["roles"]): string {
-  return labels[role];
-}
-
 export function participantStatusLabel(member: Member, labels: Messages["join"]["memberStatus"]): string {
   if (isTripParticipantDisabled(member)) return labels.disabled;
   if (member.userId) return labels.linked;
