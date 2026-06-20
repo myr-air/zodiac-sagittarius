@@ -14,13 +14,16 @@ import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { errorMessage } from "../auth";
 import {
-  buildInviteLink,
   defaultTripForm,
   normalizedTripForm,
   PortalCreatedTripShare,
   PortalTripWizard,
   type CreatedTripShare,
 } from "../trip-wizard";
+import {
+  buildPortalCreatedTripShare,
+  resolvePortalCreatedTripInviteToken,
+} from "./portal-new-trip-section-state";
 
 interface PortalNewTripSectionClassNames {
   card: string;
@@ -63,18 +66,8 @@ export function PortalNewTripSection({
     try {
       const normalizedForm = normalizedTripForm(overrideForm ?? tripForm, defaultOwnerDisplayName);
       const response = await accountClient.createTrip(accountSession.sessionToken, normalizedForm);
-      let inviteToken: string | null = null;
-      try {
-        const invite = await apiClient?.rotateJoinInviteToken?.(response.trip.id, response.memberSession.sessionToken);
-        inviteToken = invite?.token ?? null;
-      } catch {
-        inviteToken = null;
-      }
-      setCreatedTripShare({
-        inviteLink: buildInviteLink(response.trip.joinId, inviteToken),
-        joinId: response.trip.joinId,
-        name: response.trip.name,
-      });
+      const inviteToken = await resolvePortalCreatedTripInviteToken(apiClient, response);
+      setCreatedTripShare(buildPortalCreatedTripShare(response, inviteToken));
       resetCopyState();
       await onCreatedTrip(response.memberSession, { openTrip: false });
       setTripForm(defaultTripForm(settings?.profile.displayName, settings?.profile));
