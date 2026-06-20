@@ -101,14 +101,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps StopDialog render split from form model state", () => {
     const stopDialog = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialog.tsx");
     const stopDialogModel = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts");
+    const stopDialogTypes = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.types.ts");
 
     expect(stopDialog).toContain("./use-stop-dialog-model");
     expect(stopDialog).not.toContain("useState");
+    expect(stopDialog).not.toContain("interface StopDialogProps");
     expect(stopDialog).not.toContain("buildStopSubmitValues");
     expect(stopDialog).not.toContain("applyStopActivityInput");
     expect(stopDialogModel).toContain("export function useStopDialogModel");
     expect(stopDialogModel).toContain("buildStopSubmitValues");
     expect(stopDialogModel).toContain("applyStopActivityInput");
+    expect(stopDialogTypes).toContain("export interface StopDialogProps");
   });
 
   it("keeps stop dialog detail serialization split from utility ids", () => {

@@ -1,5 +1,6 @@
 import type {
   ActivityType,
+  ItineraryItem,
   ItineraryItemKind,
   ItineraryItemPriority,
   ItineraryItemStatus,
@@ -34,4 +35,22 @@ export interface StopFormValues {
 export interface StopManualPathOption {
   id: string;
   name: string;
+}
+
+export interface StopDialogProps {
+  mode: "create" | "edit";
+  endDate?: string;
+  initialDay?: string;
+  initialItem?: ItineraryItem;
+  initialParentItemId?: string | null;
+  manualPathOptions?: StopManualPathOption[];
+  onClose: () => void;
+  onDelete?: () => void;
+  onPromoteFoodRecommendation?: () => void;
+  onSubmit: (values: StopFormValues) => void | Promise<void>;
+  placeResolution?: {
+    state: "idle" | "resolving" | "ambiguous" | "unresolved";
+    candidates: PlaceResolutionCandidate[];
+  };
+  startDate?: string;
 }

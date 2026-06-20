@@ -2,13 +2,13 @@ import type { BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/s
 import { cn } from "@/src/lib/cn";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Select } from "@/src/ui";
+import type { BookingCopy } from "../BookingsDocsPage.copy";
 import {
   bookingStatuses,
   bookingTypes,
   bookingVisibilities,
-  type BookingCopy,
   formatEnumLabel,
-} from "../BookingsDocsPage.copy";
+} from "../booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { BookingDialogState } from "./useBookingDialogState";
 

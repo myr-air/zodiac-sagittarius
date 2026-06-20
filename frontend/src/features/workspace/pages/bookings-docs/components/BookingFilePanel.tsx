@@ -2,7 +2,8 @@ import type { BookingDoc, BookingDocStatus, Trip } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { type BookingCopy, bookingStatuses, formatEnumLabel } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../BookingsDocsPage.copy";
+import { bookingStatuses, formatEnumLabel } from "../booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { BookingFileRow } from "./BookingFileRow";
 

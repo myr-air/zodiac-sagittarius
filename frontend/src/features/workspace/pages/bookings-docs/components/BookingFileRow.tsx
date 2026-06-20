@@ -2,7 +2,8 @@ import type { BookingDoc, Trip } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { type BookingCopy, formatEnumLabel } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../BookingsDocsPage.copy";
+import { formatEnumLabel } from "../booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { bookingDocLinkedContext } from "../booking-list";
 import {

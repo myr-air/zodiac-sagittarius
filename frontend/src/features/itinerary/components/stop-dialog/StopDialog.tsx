@@ -1,4 +1,3 @@
-import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
@@ -17,30 +16,13 @@ import {
   stopDialogClassName,
   stopFormClassName,
 } from "./stop-dialog.styles";
-import type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
+import type { StopDialogProps } from "./stop-dialog.types";
 import { useStopDialogModel } from "./use-stop-dialog-model";
 import {
   type StopDetailType,
   stopDialogDetailTypeOptions,
   stopDetailLabels,
 } from "./stop-dialog.utils";
-
-export type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
-
-interface StopDialogProps {
-  mode: "create" | "edit";
-  endDate?: string;
-  initialDay?: string;
-  initialItem?: ItineraryItem;
-  initialParentItemId?: string | null;
-  manualPathOptions?: StopManualPathOption[];
-  onClose: () => void;
-  onDelete?: () => void;
-  onPromoteFoodRecommendation?: () => void;
-  onSubmit: (values: StopFormValues) => void | Promise<void>;
-  placeResolution?: { state: "idle" | "resolving" | "ambiguous" | "unresolved"; candidates: PlaceResolutionCandidate[] };
-  startDate?: string;
-}
 
 const detailTypeOptions: StopDetailType[] = stopDialogDetailTypeOptions;
 
