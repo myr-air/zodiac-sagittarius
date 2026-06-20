@@ -18,6 +18,7 @@ import { ContextRailNotesSection } from "./ContextRailNotesSection";
 import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
 import { ContextRailStopDetailSection } from "./ContextRailStopDetailSection";
 import { ContextRailTabs } from "./ContextRailTabs";
+import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
 import { ContextRailTab } from "./context-rail.utils";
 import {
   inspectorCloseButtonClassName,
@@ -103,10 +104,10 @@ export function ContextRailSelectedStopPanel({
   currentMember,
 }: ContextRailSelectedStopPanelProps) {
   const { t } = useI18n();
-  const groupSpend = expenseSummary.groupSpend.toLocaleString("en-HK");
-  const perPerson = Math.round(
-    expenseSummary.groupSpend / Math.max(1, trip.members.length - 1),
-  ).toLocaleString("en-HK");
+  const expenseTotals = formatContextRailExpenseTotals(
+    expenseSummary,
+    trip.members.length,
+  );
 
   return (
     <div className={railInspectorClassName}>
@@ -178,8 +179,8 @@ export function ContextRailSelectedStopPanel({
         selectedItemId={selectedItem.id}
         expenses={selectedExpenses}
         members={trip.members}
-        perPerson={perPerson}
-        groupSpend={groupSpend}
+        perPerson={expenseTotals.perPerson}
+        groupSpend={expenseTotals.groupSpend}
         canEditExpenses={canEditExpenses}
         onCreateExpense={onCreateExpense}
         onUpdateExpense={onUpdateExpense}

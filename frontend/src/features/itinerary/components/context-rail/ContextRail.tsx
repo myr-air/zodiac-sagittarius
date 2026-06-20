@@ -12,6 +12,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailSelectedStopPanel } from "./ContextRailSelectedStopPanel";
+import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
 import { useContextRailState } from "./context-rail.state";
 import { ContextRailTab } from "./context-rail.utils";
 import {
@@ -97,6 +98,10 @@ export function ContextRail({
   onClose,
 }: ContextRailProps) {
   const { t } = useI18n();
+  const expenseTotals = formatContextRailExpenseTotals(
+    expenseSummary,
+    trip.members.length,
+  );
   const {
     activeTab,
     setActiveTab,
@@ -177,10 +182,8 @@ export function ContextRail({
             selectedItemId={undefined}
             expenses={selectedExpenses}
             members={trip.members}
-            perPerson={Math.round(
-              expenseSummary.groupSpend / Math.max(1, trip.members.length - 1),
-            ).toLocaleString("en-HK")}
-            groupSpend={expenseSummary.groupSpend.toLocaleString("en-HK")}
+            perPerson={expenseTotals.perPerson}
+            groupSpend={expenseTotals.groupSpend}
             canEditExpenses={canEditExpenses}
             onCreateExpense={onCreateExpense}
             onUpdateExpense={onUpdateExpense}
