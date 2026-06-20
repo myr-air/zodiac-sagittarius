@@ -161,6 +161,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx"),
       "utf8",
     );
+    const bookingDialogState = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts"),
+      "utf8",
+    );
     const itineraryTimeLib = readFileSync(
       join(frontendRoot, "src/features/itinerary/lib/itinerary-time.ts"),
       "utf8",
@@ -547,8 +551,14 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(bookingFolders).toContain("export function countBookingFolders");
     expect(bookingList).toContain("export function bookingDocMatchesQuery");
     expect(bookingList).toContain("export function compareBookingStartWithUndated");
-    expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-time");
-    expect(bookingDialog).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
+    expect(bookingDialog).toContain("./useBookingDialogState");
+    expect(bookingDialog).not.toContain("useState");
+    expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
+    expect(bookingDialogState).toContain("export function useBookingDialogState");
+    expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
+    expect(bookingDialogState).toContain("function submit");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
     expect(overviewPage).toContain("OverviewCockpit");
