@@ -8,7 +8,7 @@ import {
 } from "./route-map-live-map-test-support";
 import { renderLiveRouteMap } from "./route-map-live-map-view-test-support";
 import {
-  routeMapItems,
+  routeMapCoordinateItemEastOf,
   routeMapUnresolvedItems,
 } from "./route-map-test-support";
 
@@ -38,7 +38,7 @@ describe("RouteMapView live map", () => {
 
   it("centers a live map around one coordinate with a fly-to transition", async () => {
     renderLiveRouteMap({
-      items: [routeMapItems.find((item) => item.coordinates && item.coordinates.lng > 110)!],
+      items: [routeMapCoordinateItemEastOf(110)],
     });
 
     await waitFor(() => expect(maplibreMock.maps[0]?.flyTo).toHaveBeenCalled());

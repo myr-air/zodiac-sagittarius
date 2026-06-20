@@ -7,7 +7,7 @@ import {
   travelSubtypeForItem,
   travelSubtypeIcons,
   travelSubtypeOptions,
-} from "./itinerary-activity-types";
+} from "./itinerary-travel-subtypes";
 
 type TicketModalCopy = {
   cancel: string;

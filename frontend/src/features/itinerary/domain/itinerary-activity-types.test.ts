@@ -3,30 +3,9 @@ import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
   buildActivitySubtypePatch,
   buildActivityTypePatch,
-  normalizeTravelSubtype,
-  travelSubtypeForItem,
-  withoutTravelSubtypeDetails,
 } from "./itinerary-activity-types";
 
 describe("itinerary-activity-types", () => {
-  it("normalizes explicit and inferred travel subtypes", () => {
-    expect(normalizeTravelSubtype("plane")).toBe("flight");
-    expect(normalizeTravelSubtype("MTR")).toBe("train");
-    expect(normalizeTravelSubtype("unknown")).toBeNull();
-
-    expect(
-      travelSubtypeForItem(
-        buildItineraryItem({
-          activity: "Airport shuttle",
-          activityType: "travel",
-          activitySubtype: null,
-          transportation: "Hotel shuttle",
-          details: {},
-        }),
-      ),
-    ).toBe("shuttle");
-  });
-
   it("removes travel subtype details when switching away from travel", () => {
     const item = buildItineraryItem({
       activity: "Dinner",
@@ -39,9 +18,6 @@ describe("itinerary-activity-types", () => {
       },
     });
 
-    expect(withoutTravelSubtypeDetails(item.details)).toEqual({
-      provider: "MTR",
-    });
     expect(buildActivityTypePatch(item, "food")).toEqual({
       activityType: "food",
       activitySubtype: null,

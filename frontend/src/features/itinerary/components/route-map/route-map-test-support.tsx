@@ -35,6 +35,19 @@ export function routeMapCoordinateItems() {
   return routeMapItems.filter(hasValidCoordinates);
 }
 
+export function routeMapCoordinateItemEastOf(longitude: number): ItineraryItem {
+  const item = routeMapItems.find(
+    (candidate) =>
+      hasValidCoordinates(candidate) &&
+      candidate.coordinates !== undefined &&
+      candidate.coordinates.lng > longitude,
+  );
+  if (!item) {
+    throw new Error(`Missing route map coordinate fixture east of ${longitude}`);
+  }
+  return item;
+}
+
 export function routeMapDayCoordinateItems(day = hongKongDay, limit?: number) {
   const items = routeMapItems.filter((item) => item.day === day && hasValidCoordinates(item));
   return typeof limit === "number" ? items.slice(0, limit) : items;

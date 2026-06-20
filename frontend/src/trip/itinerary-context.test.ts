@@ -45,7 +45,7 @@ describe("itinerary warnings, dates, and on-trip context", () => {
   it("finds validation issues without relying on color alone", () => {
     const dayItems = sortItemsForDay(seedTrip.itineraryItems, hongKongDay);
     const missing = getTripFixtureItineraryItem("item-arrive-hkg");
-    const dimsum = dayItems.find((item) => item.id === "item-dimdim")!;
+    const dimsum = getTripFixtureItineraryItem("item-dimdim");
     const overlapFixture = { ...dimsum, id: "item-overlap-fixture", startTime: "09:00", durationMinutes: 90 };
 
     expect(validateItineraryItem(missing, [missing]).map((warning) => warning.code)).toContain("missing-duration");

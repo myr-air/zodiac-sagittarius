@@ -17,12 +17,14 @@ import {
   activityTypeOptions,
   buildActivitySubtypePatch,
   buildActivityTypePatch,
+} from "./itinerary-activity-types";
+import {
   normalizeTravelSubtype,
   travelSubtypeForItem,
   travelSubtypeOptions,
   type TravelSubtype,
   withoutTravelSubtypeDetails,
-} from "./itinerary-activity-types";
+} from "./itinerary-travel-subtypes";
 import {
   bookingDocTypeForItemTemplate,
   bookingIconForItem,
