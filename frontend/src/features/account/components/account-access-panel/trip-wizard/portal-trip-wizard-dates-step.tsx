@@ -2,7 +2,6 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import type { TripCity } from "@/src/trip/types";
 import { Button, SwapButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -10,8 +9,8 @@ import {
   routeCalendarDays,
   type TripWizardDateSelectionStep,
 } from "./account-trip-dates";
-import { defaultTripOriginCity } from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
+import { TripWizardDateFields } from "./portal-trip-wizard-date-fields";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardDatesStepProps {
@@ -91,35 +90,15 @@ export function TripWizardDatesStep({
       </div>
       <fieldset className={wizardStyles.tripRouteCalendarClassName} role="group" aria-label={wizard.fields.routeCalendar}>
         <legend>{wizard.fields.routeCalendar}</legend>
-        <div className={wizardStyles.tripCalendarSummaryClassName}>
-          <label>
-            <span>{wizard.fields.depart}</span>
-            <DatePickerField aria-label={t.access.dashboard.createTrip.labels.startDate} value={tripForm.startDate} onChange={onUpdateStartDate} />
-          </label>
-          <label>
-            <span>{wizard.fields.return}</span>
-            <DatePickerField aria-label={t.access.dashboard.createTrip.labels.endDate} value={tripForm.endDate} onChange={onUpdateEndDate} />
-          </label>
-        </div>
-        <div className={wizardStyles.tripCalendarSummaryClassName}>
-          <label>
-            <span>{wizard.fields.partySize}</span>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={tripForm.partySize ?? 1}
-              onChange={(event) => onChange((current) => ({ ...current, partySize: Math.max(1, Number(event.target.value) || 1) }))}
-            />
-          </label>
-          <label>
-            <span>{wizard.fields.defaultTimezone}</span>
-            <input
-              value={tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || defaultTripOriginCity.timezone}
-              onChange={(event) => onChange((current) => ({ ...current, defaultTimezone: event.target.value }))}
-            />
-          </label>
-        </div>
+        <TripWizardDateFields
+          selectedDestinationCities={selectedDestinationCities}
+          t={t}
+          tripForm={tripForm}
+          wizard={wizard}
+          onChange={onChange}
+          onUpdateEndDate={onUpdateEndDate}
+          onUpdateStartDate={onUpdateStartDate}
+        />
         <strong>{previewStartDate} - {previewEndDate}</strong>
         <div className={wizardStyles.tripCalendarGridClassName}>
           {calendarDays.map((day) => (
