@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Member, Trip } from "@/src/trip/types";
@@ -9,13 +8,9 @@ import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import { PageHeader } from "@/src/shared/components/page-header";
 import {
-  canSubmitTripSettings,
-  countStopsOutsideSettingsRange,
-  hasInvalidTripSettingsDateRange,
-  normalizeTripSettingsForm,
   tripSettingsStateKey,
-  tripToSettingsForm,
 } from "./TripSettingsPage.support";
+import { useTripSettingsFormState } from "./use-trip-settings-form-state";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
 interface TripSettingsPageProps {
@@ -52,30 +47,21 @@ export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripS
 
 function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
   const { t } = useI18n();
-  const [form, setForm] = useState<TripSettingsFormValues>(() => tripToSettingsForm(trip));
-  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [error, setError] = useState<string | null>(null);
-
-  const invalidDateRange = hasInvalidTripSettingsDateRange(form);
-  const outsideStopCount = useMemo(
-    () => countStopsOutsideSettingsRange(trip, form),
-    [form, trip],
-  );
-  const canSubmit = canSubmitTripSettings({ canEdit, form, invalidDateRange, status });
-
-  async function submitSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canSubmit) return;
-    setStatus("saving");
-    setError(null);
-    try {
-      await onSave(normalizeTripSettingsForm(form));
-      setStatus("saved");
-    } catch {
-      setStatus("idle");
-      setError(t.tripSettings.saveFailed);
-    }
-  }
+  const {
+    canSubmit,
+    error,
+    form,
+    invalidDateRange,
+    outsideStopCount,
+    setForm,
+    status,
+    submitSettings,
+  } = useTripSettingsFormState({
+    canEdit,
+    saveFailedMessage: t.tripSettings.saveFailed,
+    trip,
+    onSave,
+  });
 
   return (
     <WorkspacePage className={pageClassName} aria-label={t.tripSettings.pageLabel}>

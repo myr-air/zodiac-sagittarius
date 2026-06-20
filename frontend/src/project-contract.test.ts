@@ -232,6 +232,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker-menu.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts"))).toBe(true);
