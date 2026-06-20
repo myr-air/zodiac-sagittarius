@@ -39,6 +39,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/project-contract.scaffold-paths.ts",
   "src/account-source-boundaries.contract.test.ts",
   "src/project-account-architecture.contract.test.ts",
+  "src/project-itinerary-activity-cell.contract.test.ts",
   "src/project-itinerary-architecture.contract.test.ts",
   "src/project-itinerary-architecture.test-support.ts",
   "src/project-frontend-architecture.contract.test.ts",

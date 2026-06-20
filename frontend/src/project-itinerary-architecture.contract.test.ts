@@ -2,22 +2,6 @@ import { describe, expect, it } from "vitest";
 import { readItineraryArchitectureSource } from "./project-itinerary-architecture.test-support";
 
 describe("Sagittarius itinerary architecture contracts", () => {
-  it("keeps ActivityCell split into render, model, meta, and typed props", () => {
-    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
-    const activityCellMeta = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx");
-    const activityCellModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts");
-    const activityCellTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts");
-
-    expect(activityCell).toContain("./activity-cell/use-activity-cell-model");
-    expect(activityCell).toContain("./activity-cell/ActivityCellMeta");
-    expect(activityCell).toContain("ActivityCellProps");
-    expect(activityCell).not.toContain("useState");
-    expect(activityCell).not.toContain("itemStatusLabel");
-    expect(activityCellMeta).toContain("export function ActivityCellMeta");
-    expect(activityCellModel).toContain("export function useActivityCellModel");
-    expect(activityCellTypes).toContain("export interface ActivityCellProps");
-  });
-
   it("keeps itinerary day group header split from row body rendering", () => {
     const dayGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.tsx");
     const dayGroupHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx");
@@ -85,58 +69,6 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketSections).toContain("export function LinkedActivitiesPicker");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("buildTicketSubmitInput");
-  });
-
-  it("keeps activity time controls split into direct modules", () => {
-    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
-    const subActivityList = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx");
-    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
-    const button = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx");
-    const modal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx");
-    const types = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts");
-
-    expect(activityCell).toContain("./activity-cell/ActivityTimeButton");
-    expect(activityCell).not.toContain("TimeComponents");
-    expect(subActivityList).toContain("./ActivityTimeButton");
-    expect(subActivityList).not.toContain("TimeComponents");
-    expect(exports).toContain("./activity-cell/ActivityTimeButton");
-    expect(exports).toContain("./activity-cell/TimeEditModal");
-    expect(exports).not.toContain("TimeComponents");
-    expect(button).toContain("export function ActivityTimeButton");
-    expect(button).not.toContain("createPortal");
-    expect(modal).toContain("export function TimeEditModal");
-    expect(types).toContain("export interface ActivityTimeButtonProps");
-  });
-
-  it("keeps activity-cell styles split from table-level styles", () => {
-    const tableStyles = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts");
-    const activityCellStyles = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts");
-
-    expect(tableStyles).toContain("./activity-cell/activity-cell.styles");
-    expect(tableStyles).not.toContain("const activityCellClassName");
-    expect(tableStyles).not.toContain("const timeEditModalClassName");
-    expect(tableStyles).not.toContain("const ticketModalClassName");
-    expect(activityCellStyles).toContain("export const activityCellClassName");
-    expect(activityCellStyles).toContain("export const timeEditModalClassName");
-    expect(activityCellStyles).toContain("export const ticketModalClassName");
-  });
-
-  it("keeps sub-activity components split into direct modules", () => {
-    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
-    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
-    const list = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx");
-    const modal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx");
-    const types = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts");
-
-    expect(activityCell).toContain("./activity-cell/SubActivityList");
-    expect(activityCell).toContain("./activity-cell/SubActivityModal");
-    expect(activityCell).not.toContain("SubActivityComponents");
-    expect(exports).toContain("./activity-cell/SubActivityList");
-    expect(exports).toContain("./activity-cell/SubActivityModal");
-    expect(exports).not.toContain("SubActivityComponents");
-    expect(list).toContain("export function SubActivityList");
-    expect(modal).toContain("export function SubActivityModal");
-    expect(types).toContain("export interface SubActivitySharedProps");
   });
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
