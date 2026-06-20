@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { MapLoadState } from "@/src/shared/map-load-state";
 import type { TripCity } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
@@ -31,7 +32,7 @@ export function TripPreviewLiveMap({ originCity, destinationCities }: { originCi
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const markersRef = useRef<Array<import("maplibre-gl").Marker>>([]);
-  const [mapState, setMapState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [mapState, setMapState] = useState<MapLoadState>("idle");
   const liveMapEnabled = process.env.NODE_ENV !== "test";
 
   useEffect(() => {
