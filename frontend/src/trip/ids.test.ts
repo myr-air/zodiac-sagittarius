@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { decodeTripId, encodeTripId, shortTripId } from "@/src/trip/ids";
+import {
+  decodeTripId,
+  encodeTripId,
+  shortIdModeValues,
+  shortTripId,
+} from "@/src/trip/ids";
 
 describe("shortTripId", () => {
+  it("keeps short id modes in default preference order", () => {
+    expect(shortIdModeValues).toEqual(["front", "back"]);
+  });
+
   it("cuts from front by default", () => {
     expect(shortTripId("018f4e80-5788-7de0-a45c-8a555d17fc2d")).toBe("018f4e80");
   });

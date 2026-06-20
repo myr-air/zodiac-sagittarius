@@ -1,4 +1,5 @@
-export type ShortIdMode = "front" | "back";
+export const shortIdModeValues = ["front", "back"] as const;
+export type ShortIdMode = (typeof shortIdModeValues)[number];
 
 export interface ShortTripIdOptions {
   mode?: ShortIdMode;
