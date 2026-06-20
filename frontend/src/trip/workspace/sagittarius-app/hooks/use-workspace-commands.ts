@@ -74,33 +74,7 @@ export function useWorkspaceCommands({
   tripPlanErrorMessage,
   updateApiTrip,
 }: UseWorkspaceCommandsParams) {
-  const {
-    addStop,
-    addSubActivity,
-    applyPendingItineraryImport,
-    changeBookingDocQuickFields,
-    changeBookingDocType,
-    clearPendingItineraryImport,
-    createBookingDoc,
-    createExpense,
-    createItineraryBookingDraft,
-    createStop,
-    deleteBookingDoc,
-    deleteExpense,
-    deleteStop,
-    duplicateExpenseAsEstimate,
-    importItineraryError,
-    moveItemToPath,
-    pendingItineraryImport,
-    recordPaybackReminder,
-    resolveMissingMapCoordinates,
-    saveItineraryBookingTicket,
-    unlinkBookingFromItineraryItem,
-    updateBookingDoc,
-    updateExpense,
-    updateItineraryItemInline,
-    updateSelectedStop,
-  } = useWorkspacePlanningCommands({
+  const planningCommands = useWorkspacePlanningCommands({
     activeMemberId,
     canEdit,
     canEditBookings,
@@ -139,17 +113,7 @@ export function useWorkspaceCommands({
     updateApiTrip,
   });
 
-  const {
-    changeMemberAccessStatus,
-    changeMemberPassword,
-    changeMemberRole,
-    claimCurrentMemberToAccount,
-    createMember,
-    resetMemberClaim,
-    saveTripSettings,
-    rotateJoinInviteToken,
-    transferOwnerToAccountMember,
-  } = useWorkspaceAdministration({
+  const administrationCommands = useWorkspaceAdministration({
     accountClient,
     accountSession,
     canManagePeople,
@@ -165,15 +129,9 @@ export function useWorkspaceCommands({
     updateApiTrip,
   });
 
-  const {
-    deleteSelectedStop,
-    editItem,
-    openItemDetails,
-    promoteFoodRecommendation,
-    selectItem,
-  } = useWorkspaceItineraryUiActions({
+  const itineraryUiActions = useWorkspaceItineraryUiActions({
     canEdit,
-    createStop,
+    createStop: planningCommands.createStop,
     dialogState,
     setContextRailPreferredTab,
     setContextRailVisibility,
@@ -184,11 +142,7 @@ export function useWorkspaceCommands({
     trip,
   });
 
-  const {
-    authenticateParticipant,
-    leaveParticipantSession,
-    replaceTripFromJoin,
-  } = useWorkspaceParticipantSessionActions({
+  const participantSessionActions = useWorkspaceParticipantSessionActions({
     initialTrip,
     isApiMode,
     replaceWorkspacePath,
@@ -202,47 +156,9 @@ export function useWorkspaceCommands({
   });
 
   return {
-    addStop,
-    addSubActivity,
-    applyPendingItineraryImport,
-    authenticateParticipant,
-    changeBookingDocQuickFields,
-    changeBookingDocType,
-    changeMemberAccessStatus,
-    changeMemberPassword,
-    changeMemberRole,
-    claimCurrentMemberToAccount,
-    clearPendingItineraryImport,
-    createBookingDoc,
-    createExpense,
-    createItineraryBookingDraft,
-    createMember,
-    createStop,
-    deleteBookingDoc,
-    deleteExpense,
-    deleteSelectedStop,
-    deleteStop,
-    duplicateExpenseAsEstimate,
-    editItem,
-    importItineraryError,
-    leaveParticipantSession,
-    moveItemToPath,
-    openItemDetails,
-    pendingItineraryImport,
-    promoteFoodRecommendation,
-    recordPaybackReminder,
-    replaceTripFromJoin,
-    resetMemberClaim,
-    resolveMissingMapCoordinates,
-    rotateJoinInviteToken,
-    saveItineraryBookingTicket,
-    saveTripSettings,
-    selectItem,
-    transferOwnerToAccountMember,
-    unlinkBookingFromItineraryItem,
-    updateBookingDoc,
-    updateExpense,
-    updateItineraryItemInline,
-    updateSelectedStop,
+    ...planningCommands,
+    ...administrationCommands,
+    ...itineraryUiActions,
+    ...participantSessionActions,
   };
 }
