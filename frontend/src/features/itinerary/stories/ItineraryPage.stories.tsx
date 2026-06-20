@@ -52,6 +52,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+type StoryArgs = NonNullable<Story["args"]>;
+type StoryParameters = NonNullable<Story["parameters"]>;
 
 export const Owner: Story = {
   args: buildOwnerStoryArgs({
@@ -63,13 +65,32 @@ export const Owner: Story = {
   play: ownerPlay,
 };
 
-export const InlineQuickEdit: Story = {
-  args: {
-    ...Owner.args,
-    onUpdateItemInline: onStoryInlineQuickEdit,
-  },
-  play: inlineQuickEditPlay,
-};
+function ownerArgsStory(
+  args: Partial<StoryArgs>,
+  play?: Story["play"],
+  parameters?: StoryParameters,
+): Story {
+  return {
+    args: { ...Owner.args, ...args },
+    ...(parameters ? { parameters } : {}),
+    ...(play ? { play } : {}),
+  };
+}
+
+function viewportStory(
+  defaultViewport: string,
+  play: Story["play"],
+  args: Partial<StoryArgs> = {},
+): Story {
+  return ownerArgsStory(args, play, {
+    viewport: { defaultViewport },
+  });
+}
+
+export const InlineQuickEdit: Story = ownerArgsStory(
+  { onUpdateItemInline: onStoryInlineQuickEdit },
+  inlineQuickEditPlay,
+);
 
 export const OwnerThai: Story = {
   args: Owner.args,
@@ -77,182 +98,104 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const TimeWindowDuration: Story = {
-  args: {
-    ...Owner.args,
-    items: pageWindowOnlyDurationItems,
-    selectedItemId: "page-window-only-duration",
-  },
-};
+export const TimeWindowDuration: Story = ownerArgsStory({
+  items: pageWindowOnlyDurationItems,
+  selectedItemId: "page-window-only-duration",
+});
 
-export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    role: "viewer",
-  },
-  play: viewerPlay,
-};
+export const Viewer: Story = ownerArgsStory({ role: "viewer" }, viewerPlay);
 
-export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    role: "traveler",
-  },
-  play: travelerPlay,
-};
+export const Traveler: Story = ownerArgsStory({ role: "traveler" }, travelerPlay);
 
-export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    items: denseTripFixture.itineraryItems,
-    selectedItemId: "",
-  },
-};
+export const Dense: Story = ownerArgsStory({
+  items: denseTripFixture.itineraryItems,
+  selectedItemId: "",
+});
 
-export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    items: emptyTripFixture.itineraryItems,
-    selectedItemId: "",
-  },
-};
+export const Empty: Story = ownerArgsStory({
+  items: emptyTripFixture.itineraryItems,
+  selectedItemId: "",
+});
 
-export const OverlapConflictWarning: Story = {
-  args: {
-    ...Owner.args,
-    selectedItemId: "overlap-dim-sum",
-    items: pageOverlapConflictItems,
-  },
-  play: overlapConflictWarningPlay,
-};
+export const OverlapConflictWarning: Story = ownerArgsStory({
+  selectedItemId: "overlap-dim-sum",
+  items: pageOverlapConflictItems,
+}, overlapConflictWarningPlay);
 
-export const PlanAExample: Story = {
-  args: {
-    ...Owner.args,
-    items: pagePlanAExampleItems,
-    graphItems: pagePlanAExampleItems,
-    selectedItemId: "page-plan-a-main-breakfast",
-    showAllPaths: true,
-    pathOptions: planAPathOptions,
-  },
-  play: planAExamplePlay,
-};
+export const PlanAExample: Story = ownerArgsStory({
+  items: pagePlanAExampleItems,
+  graphItems: pagePlanAExampleItems,
+  selectedItemId: "page-plan-a-main-breakfast",
+  showAllPaths: true,
+  pathOptions: planAPathOptions,
+}, planAExamplePlay);
 
-export const PlanABAlternatives: Story = {
-  args: {
-    ...Owner.args,
-    items: pagePlanABAlternativeItems,
-    graphItems: pagePlanABAlternativeItems,
-    selectedItemId: "page-plan-ab-main-breakfast",
-    showAllPaths: true,
-    pathOptions: planABPathOptions,
-  },
-  play: planABAlternativesPlay,
-};
+export const PlanABAlternatives: Story = ownerArgsStory({
+  items: pagePlanABAlternativeItems,
+  graphItems: pagePlanABAlternativeItems,
+  selectedItemId: "page-plan-ab-main-breakfast",
+  showAllPaths: true,
+  pathOptions: planABPathOptions,
+}, planABAlternativesPlay);
 
-export const PathAndDurationInteractions: Story = {
-  args: {
-    ...Owner.args,
-    items: pagePlanABAlternativeItems,
-    graphItems: pagePlanABAlternativeItems,
-    selectedItemId: "page-plan-ab-main-breakfast",
-    showAllPaths: false,
-    pathOptions: planABPathOptions,
-    onChangeDayPath: onStoryChangeDayPath,
-    onMoveItemToPath: onStoryMoveItemToPath,
-    onToggleShowAllPaths: onStoryToggleShowAllPaths,
-    onUpdateItemInline: onStoryUpdateItemInline,
-  },
-  play: pathAndDurationInteractionsPlay,
-};
+export const PathAndDurationInteractions: Story = ownerArgsStory({
+  items: pagePlanABAlternativeItems,
+  graphItems: pagePlanABAlternativeItems,
+  selectedItemId: "page-plan-ab-main-breakfast",
+  showAllPaths: false,
+  pathOptions: planABPathOptions,
+  onChangeDayPath: onStoryChangeDayPath,
+  onMoveItemToPath: onStoryMoveItemToPath,
+  onToggleShowAllPaths: onStoryToggleShowAllPaths,
+  onUpdateItemInline: onStoryUpdateItemInline,
+}, pathAndDurationInteractionsPlay);
 
-export const BranchGraph: Story = {
-  args: {
-    ...Owner.args,
-    items: pageBranchGraphItems,
-    graphItems: pageBranchGraphItems,
-    selectedItemId: "page-graph-main",
-    showAllPaths: true,
-    pathOptions: branchGraphPathOptions,
-  },
-  play: branchGraphPlay,
-};
+export const BranchGraph: Story = ownerArgsStory({
+  items: pageBranchGraphItems,
+  graphItems: pageBranchGraphItems,
+  selectedItemId: "page-graph-main",
+  showAllPaths: true,
+  pathOptions: branchGraphPathOptions,
+}, branchGraphPlay);
 
-export const RequestedPlanExample: Story = {
-  args: {
-    ...Owner.args,
-    items: pageRequestedPlanExampleItems,
-    graphItems: pageRequestedPlanExampleItems,
-    selectedItemId: "page-requested-main-0800",
-    showAllPaths: true,
-    pathOptions: planAPathOptions,
-  },
-  play: requestedPlanExamplePlay,
-};
+export const RequestedPlanExample: Story = ownerArgsStory({
+  items: pageRequestedPlanExampleItems,
+  graphItems: pageRequestedPlanExampleItems,
+  selectedItemId: "page-requested-main-0800",
+  showAllPaths: true,
+  pathOptions: planAPathOptions,
+}, requestedPlanExamplePlay);
 
-export const StressPaths: Story = {
-  args: {
-    ...Owner.args,
-    items: pageStressPathItems,
-    graphItems: pageStressPathItems,
-    selectedItemId: "page-stress-0800-main",
-    showAllPaths: true,
-    pathOptions: stressPathOptions,
-  },
-  play: stressPathsPlay,
-};
+export const StressPaths: Story = ownerArgsStory({
+  items: pageStressPathItems,
+  graphItems: pageStressPathItems,
+  selectedItemId: "page-stress-0800-main",
+  showAllPaths: true,
+  pathOptions: stressPathOptions,
+}, stressPathsPlay);
 
-export const TableOverflow: Story = {
-  args: {
-    ...Owner.args,
-    items: buildPageOverflowItems(),
-    graphItems: pageStressPathItems,
-    selectedItemId: "page-overflow-page-stress-0800-main",
-    showAllPaths: true,
-    pathOptions: stressPathOptions,
-  },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: tableOverflowPlay,
-};
+export const TableOverflow: Story = viewportStory("mobile320", tableOverflowPlay, {
+  items: buildPageOverflowItems(),
+  graphItems: pageStressPathItems,
+  selectedItemId: "page-overflow-page-stress-0800-main",
+  showAllPaths: true,
+  pathOptions: stressPathOptions,
+});
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: responsivePlay,
-};
+export const Tablet: Story = viewportStory("tablet768", responsivePlay);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsivePlay,
-};
+export const Desktop1024: Story = viewportStory("desktop1024", responsivePlay);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: responsivePlay,
-};
+export const Desktop1440: Story = viewportStory("desktop1440", responsivePlay);
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStory("mobile320", mobilePlay);
 
-export const MobileInspectorQuickEdit: Story = {
-  args: {
-    ...Owner.args,
-    onUpdateItemInline: onStoryInlineQuickEdit,
-  },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobileInspectorQuickEditPlay,
-};
+export const MobileInspectorQuickEdit: Story = viewportStory(
+  "mobile320",
+  mobileInspectorQuickEditPlay,
+  { onUpdateItemInline: onStoryInlineQuickEdit },
+);
 
-export const MobileViewer: Story = {
-  args: {
-    ...Owner.args,
-    role: "viewer",
-  },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const MobileViewer: Story = viewportStory("mobile320", mobilePlay, {
+  role: "viewer",
+});
