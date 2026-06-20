@@ -1,6 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { StopDialog } from "@/src/features/itinerary/components";
+import {
+  activityFormPlay,
+  ambiguousPlacePlay,
+  createPlay,
+  editPlay,
+  foodFormPlay,
+  noteTaskFormPlay,
+  shoppingFormPlay,
+  stayFormPlay,
+  thaiPlay,
+  transportationFormPlay,
+} from "./StopDialog.stories.plays";
 import {
   activityStoryItem,
   ambiguousPlaceResolution,
@@ -26,18 +37,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Create: Story = {
   args: stopDialogCreateArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");
-    await expect(canvas.getByRole("textbox", { name: /^Activity$/i })).toBeVisible();
-  },
+  play: createPlay,
 };
 
 export const Edit: Story = {
   args: stopDialogEditArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("dialog", { name: /Edit details/i })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /Delete stop/i })).toBeVisible();
-  },
+  play: editPlay,
 };
 
 export const AmbiguousPlace: Story = {
@@ -45,10 +50,7 @@ export const AmbiguousPlace: Story = {
     ...Create.args,
     placeResolution: ambiguousPlaceResolution,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText(/Central Market Kuala Lumpur/i)).toBeVisible();
-    await expect(canvas.getByText(/Central Market Annexe/i)).toBeVisible();
-  },
+  play: ambiguousPlacePlay,
 };
 
 export const TransportationForm: Story = {
@@ -56,14 +58,7 @@ export const TransportationForm: Story = {
     ...Edit.args,
     initialItem: transportationStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("dialog", { name: /Edit details/i })).toBeVisible();
-    await expect(canvas.getByLabelText("Type")).toHaveValue("transportation");
-    await expect(canvas.getByLabelText("From")).toHaveValue("Don Mueang International Airport");
-    await expect(canvas.getByLabelText("To")).toHaveValue("Hong Kong International Airport");
-    await expect(canvas.getByLabelText("Ticket / pass")).toHaveValue("FD ticket");
-    await expect(canvas.queryByLabelText("Transportation")).not.toBeInTheDocument();
-  },
+  play: transportationFormPlay,
 };
 
 export const ActivityForm: Story = {
@@ -71,13 +66,7 @@ export const ActivityForm: Story = {
     ...Edit.args,
     initialItem: activityStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
-    await expect(canvas.getByLabelText("Provider")).toHaveValue("Central Market");
-    await expect(canvas.getByLabelText("Meeting point")).toHaveValue("South entrance");
-    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
-    await expect(canvas.queryByLabelText("Transportation")).not.toBeInTheDocument();
-  },
+  play: activityFormPlay,
 };
 
 export const FoodForm: Story = {
@@ -85,11 +74,7 @@ export const FoodForm: Story = {
     ...Edit.args,
     initialItem: foodStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
-    await expect(canvas.getByLabelText("Provider")).toHaveValue("Central Market");
-    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("Lunch shortlist");
-  },
+  play: foodFormPlay,
 };
 
 export const StayForm: Story = {
@@ -97,12 +82,7 @@ export const StayForm: Story = {
     ...Edit.args,
     initialItem: stayStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("stay");
-    await expect(canvas.getByLabelText("Check-in / out")).toHaveValue("15:00 check-in / 11:00 check-out");
-    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("WK-2409");
-    await expect(canvas.getByLabelText("Bag / luggage detail")).toHaveValue("Leave bags before the food walk");
-  },
+  play: stayFormPlay,
 };
 
 export const ShoppingForm: Story = {
@@ -110,11 +90,7 @@ export const ShoppingForm: Story = {
     ...Edit.args,
     initialItem: shoppingStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
-    await expect(canvas.getByLabelText("Provider")).toHaveValue("");
-    await expect(canvas.getByLabelText("Booking ref")).toHaveValue("");
-  },
+  play: shoppingFormPlay,
 };
 
 export const NoteTaskForm: Story = {
@@ -122,21 +98,13 @@ export const NoteTaskForm: Story = {
     ...Edit.args,
     initialItem: noteTaskStoryItem,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Type")).toHaveValue("task");
-    await expect(canvas.getByLabelText("Detail")).toHaveValue("Check passenger names before ticket issue");
-    await expect(canvas.getByLabelText("Related place")).toHaveValue("Shared booking sheet");
-    await expect(canvas.getByText("More details")).toBeVisible();
-  },
+  play: noteTaskFormPlay,
 };
 
 export const Mobile: Story = {
   args: Create.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");
-    await expect(canvas.getByRole("textbox", { name: /^Activity$/i })).toBeVisible();
-  },
+  play: createPlay,
 };
 
 export const Tablet: Story = {
@@ -160,7 +128,5 @@ export const Desktop1440: Story = {
 export const Thai: Story = {
   args: Edit.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("dialog", { name: /แก้ไขรายละเอียด/i })).toBeVisible();
-  },
+  play: thaiPlay,
 };
