@@ -3,13 +3,6 @@ import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import {
-  applyTripCalendarDate,
-  applyTripEndDate,
-  applyTripStartDate,
-  nextTripWizardDateSelectionStep,
-  type TripWizardDateSelectionStep,
-} from "./account-trip-dates";
-import {
   generateJoinPassword,
   randomToken,
 } from "./account-trip-wizard-support";
@@ -21,6 +14,7 @@ import {
 } from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import { usePortalTripWizardCredentialSync } from "./use-portal-trip-wizard-credential-sync";
+import { usePortalTripWizardDateActions } from "./use-portal-trip-wizard-date-actions";
 import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
 
@@ -43,8 +37,8 @@ export function usePortalTripWizardModel({
   const wizard = t.access.dashboard.createTrip.wizard;
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
   const { copyText, hasCopied: hasCopiedJoinCode } = useCopyFeedbackState();
-  const [selectingDateStep, setSelectingDateStep] = useState<TripWizardDateSelectionStep>("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
+  const dateActions = usePortalTripWizardDateActions({ onChange });
   const {
     activeMobileStep,
     mobileStepButtonRefs,
@@ -99,28 +93,6 @@ export function usePortalTripWizardModel({
     );
   }
 
-  function swapTravelDates() {
-    onChange((current) => ({ ...current, startDate: current.endDate, endDate: current.startDate }));
-  }
-
-  function updateStartDate(date: string) {
-    onChange((current) => applyTripStartDate(current, date));
-  }
-
-  function updateEndDate(date: string) {
-    onChange((current) => applyTripEndDate(current, date));
-  }
-
-  function selectCalendarDate(date: string) {
-    onChange((current) => applyTripCalendarDate(current, date, selectingDateStep).form);
-    setSelectingDateStep(nextTripWizardDateSelectionStep);
-  }
-
-  function clearTravelDates() {
-    onChange((current) => ({ ...current, startDate: "", endDate: "" }));
-    setSelectingDateStep("depart");
-  }
-
   async function copyJoinCode() {
     const text = derivedState.joinCode.trim();
     if (!text) return;
@@ -149,20 +121,15 @@ export function usePortalTripWizardModel({
     activeMobileStep,
     ...destinationState,
     changeOwnerDisplayName,
-    clearTravelDates,
     copyJoinCode,
+    ...dateActions,
     hasCopiedJoinCode,
     mobileStepButtonRefs,
     mobileStepClassName,
     regenerateCredentials,
-    selectCalendarDate,
-    selectingDateStep,
     setActiveMobileStep,
     submitWizard,
-    swapTravelDates,
     t,
-    updateEndDate,
-    updateStartDate,
     wizard,
   };
 }
