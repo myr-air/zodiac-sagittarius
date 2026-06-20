@@ -10,6 +10,10 @@ import {
   bookingDocTypeOptions,
   formatBookingDocTypeLabel,
 } from "./context-rail.utils";
+import {
+  buildBookingDocQuickFieldPatch,
+  type BookingDocQuickFieldKey,
+} from "./booking-doc-quick-fields";
 
 interface ContextRailBookingDocItemProps {
   bookingDoc: BookingDoc;
@@ -45,23 +49,19 @@ function getDraftValue(target: HTMLInputElement): string {
 function handleQuickFieldCommit(
   event: ChangeEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
   bookingDoc: BookingDoc,
-  key: "providerName" | "confirmationCode",
+  key: BookingDocQuickFieldKey,
   onChangeBookingDocQuickFields?: ContextRailBookingDocItemProps["onChangeBookingDocQuickFields"],
 ) {
   if ("key" in event && event.key !== "Enter") return;
   event.preventDefault();
 
-  const target = event.currentTarget;
-  const value = getDraftValue(target);
-  const existingValue =
-    key === "providerName"
-      ? bookingDoc.providerName ?? ""
-      : bookingDoc.confirmationCode ?? "";
-  if (value === existingValue) return;
-
-  onChangeBookingDocQuickFields?.(bookingDoc.id, {
-    [key]: value || null,
-  });
+  const patch = buildBookingDocQuickFieldPatch(
+    bookingDoc,
+    key,
+    getDraftValue(event.currentTarget),
+  );
+  if (!patch) return;
+  onChangeBookingDocQuickFields?.(bookingDoc.id, patch);
 }
 
 export function ContextRailBookingDocItem({
