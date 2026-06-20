@@ -193,11 +193,12 @@ describe("Storybook template catalog", () => {
       "features",
       "itinerary",
       "stories",
+      "fixtures",
       "itinerary-story-path-items.ts",
     );
 
     expect(pathScenarios).toContain("./itinerary-story-path-options");
-    expect(pathScenarios).toContain("./itinerary-story-path-items");
+    expect(pathScenarios).toContain("./fixtures/itinerary-story-path-items");
     expect(pathScenarios).not.toContain("buildItineraryStoryItem");
     expect(pathOptions).toContain("branchGraphPathOptions");
     expect(pathOptions).not.toContain("buildItineraryStoryPathItems");

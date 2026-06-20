@@ -8,13 +8,13 @@ import type { ItineraryItem } from "@/src/trip/types";
 import {
   buildItineraryStoryItem,
   buildItineraryStoryPathItems,
-} from "./itinerary-story-item-builders";
+} from "../itinerary-story-item-builders";
 import {
   pathNameMain,
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
-} from "./itinerary-story-path-options";
+} from "../itinerary-story-path-options";
 
 export const branchGraphItemsBase: ItineraryItem[] = [
   buildItineraryStoryItem(0, {

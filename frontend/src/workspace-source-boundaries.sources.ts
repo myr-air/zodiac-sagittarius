@@ -126,7 +126,7 @@ export const workspaceBoundarySourcePaths = {
   tripWizardFormSections: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
   itineraryStoryFixtures: "src/features/itinerary/stories/itinerary-story-fixtures.ts",
   itineraryStoryPathScenarios: "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
-  itineraryStoryPathItems: "src/features/itinerary/stories/itinerary-story-path-items.ts",
+  itineraryStoryPathItems: "src/features/itinerary/stories/fixtures/itinerary-story-path-items.ts",
   itineraryStoryPathOptions: "src/features/itinerary/stories/itinerary-story-path-options.ts",
   itineraryPageStory: "src/features/itinerary/stories/ItineraryPage.stories.tsx",
   itineraryPageStoryPlays: "src/features/itinerary/stories/ItineraryPage.stories.plays.ts",
