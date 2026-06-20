@@ -47,6 +47,7 @@ describe("email login state structure", () => {
     const submitErrors = readEmailLoginSource("submit/email-login-submit-errors.ts");
     const submitRoute = readEmailLoginSource("submit/email-login-submit-route.ts");
     const submitRunner = readEmailLoginSource("submit/email-login-submit-runner.ts");
+    const codeRequestActions = readEmailLoginSource("submit/use-email-login-code-request-actions.ts");
     const signInActions = readEmailLoginSource("submit/use-email-login-sign-in-actions.ts");
 
     expect(panelState).toContain("useEmailLoginSubmitActions");
@@ -58,13 +59,20 @@ describe("email login state structure", () => {
     expect(submitActions).toContain("export function useEmailLoginSubmitActions");
     expect(submitActions).toContain("finishEmailCodeLogin");
     expect(submitActions).toContain("finishEmailRegistrationSetup");
-    expect(submitActions).toContain("runEmailLoginSubmission");
     expect(submitActions).toContain("selectEmailLoginSubmitHandler");
     expect(submitActions).toContain("./email-login-submit-errors");
+    expect(submitActions).toContain("useEmailLoginCodeRequestActions");
     expect(submitActions).toContain("useEmailLoginSignInActions");
+    expect(submitActions).not.toContain("startEmailLogin");
+    expect(submitActions).not.toContain("emailLoginStartError");
     expect(submitActions).not.toContain("finishEmailPasswordLogin");
     expect(submitActions).not.toContain("signInWithEmailPasskey");
     expect(submitActions).not.toContain("passwordLoginErrorMessage");
+    expect(codeRequestActions).toContain("export function useEmailLoginCodeRequestActions");
+    expect(codeRequestActions).toContain("startEmailLogin");
+    expect(codeRequestActions).toContain("emailLoginStartError");
+    expect(codeRequestActions).toContain("runEmailLoginSubmission");
+    expect(codeRequestActions).toContain("./email-login-submit-errors");
     expect(signInActions).toContain("export function useEmailLoginSignInActions");
     expect(signInActions).toContain("finishEmailPasswordLogin");
     expect(signInActions).toContain("signInWithEmailPasskey");

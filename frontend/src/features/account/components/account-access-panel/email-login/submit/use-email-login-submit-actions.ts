@@ -9,10 +9,10 @@ import { selectEmailLoginSubmitHandler } from "./email-login-submit-route";
 import {
   emailLoginInvalidCodeError,
   emailLoginPasswordSetupError,
-  emailLoginStartError,
 } from "./email-login-submit-errors";
 import type { UseEmailLoginSubmitActionsProps } from "./use-email-login-submit-actions-params";
 import { runEmailLoginSubmission } from "./email-login-submit-runner";
+import { useEmailLoginCodeRequestActions } from "./use-email-login-code-request-actions";
 import { useEmailLoginSignInActions } from "./use-email-login-sign-in-actions";
 
 export function useEmailLoginSubmitActions({
@@ -44,6 +44,21 @@ export function useEmailLoginSubmitActions({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const errorContext = { emailLoginMessages, messages };
   const {
+    requestEmailCode,
+  } = useEmailLoginCodeRequestActions({
+    accountClient,
+    activeFlow,
+    emailLoginMessages,
+    isEmailValid,
+    messages,
+    normalizedEmail,
+    onError,
+    passwordReady,
+    setChallenge,
+    setIsSubmitting,
+    startResendCooldown,
+  });
+  const {
     signInWithPasskey,
     signInWithPassword,
   } = useEmailLoginSignInActions({
@@ -60,22 +75,6 @@ export function useEmailLoginSubmitActions({
     setIsSubmitting,
     trustDevice,
   });
-
-  async function requestEmailCode() {
-    if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
-    await runEmailLoginSubmission({
-      onError: (caught) => {
-        onError(emailLoginStartError(caught, errorContext));
-      },
-      setIsSubmitting,
-      run: async () => {
-        const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
-        setChallenge(nextChallenge);
-        startResendCooldown();
-        onError(null);
-      },
-    });
-  }
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
