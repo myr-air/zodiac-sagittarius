@@ -54,7 +54,8 @@ export const itineraryItemPriorityValues = [
 export type ItineraryItemPriority = (typeof itineraryItemPriorityValues)[number];
 export type ItineraryItemDetails = Record<string, unknown>;
 
-export type AdvisorySeverity = "info" | "warning" | "critical";
+export const advisorySeverityValues = ["info", "warning", "critical"] as const;
+export type AdvisorySeverity = (typeof advisorySeverityValues)[number];
 
 export interface ItineraryAdvisory {
   code: string;
@@ -62,7 +63,8 @@ export interface ItineraryAdvisory {
   severity: AdvisorySeverity;
 }
 
-export type ItineraryPathScope = "day" | "trip";
+export const itineraryPathScopeValues = ["day", "trip"] as const;
+export type ItineraryPathScope = (typeof itineraryPathScopeValues)[number];
 export const itineraryPathRoleValues = ["main", "alternative"] as const;
 export type ItineraryPathRole = (typeof itineraryPathRoleValues)[number];
 
