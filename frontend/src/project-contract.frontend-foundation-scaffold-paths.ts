@@ -45,6 +45,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/project-production-e2e.contract.test.ts",
   "src/project-production-release.contract.test.ts",
   "src/project-production-routing.contract.test.ts",
+  "src/storybook.contract.page-states.ts",
+  "src/storybook.contract.required-states.ts",
   "src/storybook.contract.test-support.ts",
   "src/workspace-feature-boundaries.contract.test.ts",
   "src/workspace-source-boundaries.contract.test.ts",

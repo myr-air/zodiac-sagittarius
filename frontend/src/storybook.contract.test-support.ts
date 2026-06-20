@@ -18,7 +18,10 @@ export function storyText() {
   return collectStoryFiles().map((file) => readProjectFile(file)).join("\n");
 }
 
-export function expectStoryExports(file: string, stateNames: string[]) {
+export function expectStoryExports(
+  file: string,
+  stateNames: readonly string[],
+) {
   const story = readProjectFile("src", file);
 
   stateNames.forEach((stateName) => {
