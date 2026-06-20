@@ -41,6 +41,7 @@ describe("email login state structure", () => {
     const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
     const submitActions = readEmailLoginSource("use-email-login-submit-actions.ts");
     const submitRoute = readEmailLoginSource("email-login-submit-route.ts");
+    const submitRunner = readEmailLoginSource("email-login-submit-runner.ts");
 
     expect(panelState).toContain("useEmailLoginSubmitActions");
     expect(panelState).not.toContain("finishEmailCodeLogin");
@@ -53,11 +54,15 @@ describe("email login state structure", () => {
     expect(submitActions).toContain("finishEmailPasswordLogin");
     expect(submitActions).toContain("finishEmailRegistrationSetup");
     expect(submitActions).toContain("signInWithEmailPasskey");
+    expect(submitActions).toContain("runEmailLoginSubmission");
     expect(submitActions).toContain("selectEmailLoginSubmitHandler");
     expect(submitRoute).toContain("export function selectEmailLoginSubmitRoute");
     expect(submitRoute).toContain("export function selectEmailLoginSubmitHandler");
     expect(submitRoute).not.toContain("useState");
     expect(submitRoute).not.toContain("finishEmail");
+    expect(submitRunner).toContain("export async function runEmailLoginSubmission");
+    expect(submitRunner).toContain("setIsSubmitting(true)");
+    expect(submitRunner).toContain("setIsSubmitting(false)");
   });
 
   it("keeps step transition state out of styles and the main login panel hook", () => {

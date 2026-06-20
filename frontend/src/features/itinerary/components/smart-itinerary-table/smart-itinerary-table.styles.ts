@@ -1,48 +1,5 @@
 const tablePanelClassName =
   "table-panel grid h-auto min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] overflow-visible bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:overflow-hidden max-[520px]:px-0 max-[520px]:py-0 max-[520px]:pb-0";
-const pageHeaderActionsClassName =
-  "page-header-actions relative z-[20] grid w-[min(560px,100%)] min-w-0 justify-items-end gap-2 overflow-visible max-[1199px]:w-full max-[1199px]:justify-items-stretch";
-const pageHeaderNoteClassName =
-  "page-header-note m-0 text-right text-xs font-bold text-(--color-warning-strong) max-[1199px]:text-left";
-const headerControlsButtonClassName =
-  "itinerary-header-controls-button inline-flex min-h-9 max-w-full items-center justify-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text) transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) aria-[expanded=true]:border-(--color-primary-border) aria-[expanded=true]:bg-(--color-primary-soft) aria-[expanded=true]:text-(--color-primary-strong) [&_.icon]:size-4";
-const headerControlsPanelClassName =
-  "itinerary-header-controls absolute right-0 top-[calc(100%_+_8px)] z-[30] grid max-h-[min(72vh,620px)] w-[min(640px,calc(100vw_-_32px))] min-w-0 origin-top-right overflow-y-auto overscroll-contain rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary)_22%,var(--color-border))] bg-(--color-surface) p-0 text-left shadow-[0_8px_8px_rgb(55_47_38_/_0.10)] [transition:opacity_160ms_var(--motion-ease-out),transform_160ms_var(--motion-ease-out),box-shadow_160ms_var(--motion-ease-out)] will-change-[opacity,transform] data-[state=closed]:pointer-events-none data-[state=closed]:-translate-y-1.5 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0 data-[state=open]:translate-y-0 data-[state=open]:scale-100 data-[state=open]:opacity-100 motion-reduce:transform-none motion-reduce:transition-none max-[767px]:fixed max-[767px]:inset-x-3 max-[767px]:top-20 max-[767px]:max-h-[calc(100vh_-_96px)] max-[767px]:w-auto max-[767px]:origin-top";
-const headerControlsTitleBarClassName =
-  "grid min-w-0 gap-1 border-b border-(--color-border) bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-subtle)_100%)] px-4 py-3";
-const headerControlsTitleClassName =
-  "flex min-w-0 items-center justify-between gap-3 text-sm font-extrabold text-(--color-text)";
-const headerControlsContentClassName = "grid min-w-0 gap-0";
-const headerControlsSectionClassName =
-  "grid min-w-0 gap-3 border-b border-(--color-border) px-4 py-3 last:border-b-0";
-const headerControlsSectionHeaderClassName =
-  "flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-bold text-(--color-text-muted) [&_strong]:text-(--color-text)";
-const headerControlsGridClassName =
-  "grid min-w-0 grid-cols-[minmax(220px,1fr)_minmax(150px,180px)] items-end gap-2 rounded-(--radius-sm) bg-(--color-surface-subtle) p-2 max-[640px]:grid-cols-1";
-const tripPlanFieldClassName =
-  "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const tripPlanSelectClassName =
-  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none transition-[border-color,box-shadow] duration-150 focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
-const tripPlanActionsClassName =
-  "grid min-w-0 grid-cols-2 gap-2 max-[640px]:grid-cols-1";
-const tripPlanCreateFormClassName =
-  "trip-plan-create-form col-span-full grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2 max-[640px]:grid-cols-1";
-const tripPlanNameFieldClassName =
-  "grid min-w-0 gap-1 text-[11px] font-extrabold text-(--color-text-muted)";
-const tripPlanNameInputClassName =
-  "min-h-10 w-full min-w-0 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-bold text-(--color-text) outline-none placeholder:text-(--color-text-muted) focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-50";
-const tripPlanButtonClassName =
-  "min-h-10 rounded-(--radius-sm) px-3 text-xs font-extrabold";
-const tripPlanSecondaryButtonClassName =
-  "inline-flex min-h-10 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold text-(--color-text-muted) transition-colors hover:enabled:border-(--color-route-border) hover:enabled:bg-(--color-route-soft) hover:enabled:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
-const pathFilterSummaryClassName =
-  "min-w-0 truncate text-xs font-semibold text-(--color-text-muted)";
-const showAllPathsToggleClassName =
-  "show-all-paths-toggle inline-grid min-h-9 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-extrabold text-(--color-route) transition-[background,border-color,color] duration-150 hover:bg-(--color-route-soft) has-[:checked]:border-(--color-primary-border) has-[:checked]:bg-(--color-primary-soft) has-[:checked]:text-(--color-primary-strong) [&_input]:size-4 [&_input]:accent-[var(--color-primary)]";
-const pathFilterPanelClassName =
-  "itinerary-filter-panel grid min-w-0 grid-cols-[repeat(auto-fit,minmax(118px,1fr))] gap-1.5";
-const pathFilterOptionClassName =
-  "inline-grid min-h-9 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-surface) px-2.5 text-xs font-semibold text-(--color-route) transition-[background,border-color,color] duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) [&_span]:truncate";
 const tableScrollClassName =
   "table-scroll m-0 h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [contain:paint] max-[520px]:overflow-x-hidden max-[520px]:rounded-none max-[520px]:border-x-0 max-[520px]:shadow-none";
 const smartTableClassName =
@@ -168,6 +125,31 @@ export {
 } from "./activity-cell/activity-cell.styles";
 
 export {
+  headerControlsButtonClassName,
+  headerControlsContentClassName,
+  headerControlsGridClassName,
+  headerControlsPanelClassName,
+  headerControlsSectionClassName,
+  headerControlsSectionHeaderClassName,
+  headerControlsTitleBarClassName,
+  headerControlsTitleClassName,
+  pageHeaderActionsClassName,
+  pageHeaderNoteClassName,
+  pathFilterOptionClassName,
+  pathFilterPanelClassName,
+  pathFilterSummaryClassName,
+  showAllPathsToggleClassName,
+  tripPlanActionsClassName,
+  tripPlanButtonClassName,
+  tripPlanCreateFormClassName,
+  tripPlanFieldClassName,
+  tripPlanNameFieldClassName,
+  tripPlanNameInputClassName,
+  tripPlanSecondaryButtonClassName,
+  tripPlanSelectClassName,
+} from "./smart-itinerary-table-header.styles";
+
+export {
   addStopRowClassName,
   activityHeaderActivityClassName,
   activityHeaderGridClassName,
@@ -191,31 +173,9 @@ export {
   graphColumnLaneGap,
   graphColumnMinWidth,
   graphColumnSidePadding,
-  headerControlsButtonClassName,
-  headerControlsContentClassName,
-  headerControlsGridClassName,
-  headerControlsPanelClassName,
-  headerControlsSectionClassName,
-  headerControlsSectionHeaderClassName,
-  headerControlsTitleBarClassName,
-  headerControlsTitleClassName,
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
-  pageHeaderActionsClassName,
-  pageHeaderNoteClassName,
-  pathFilterOptionClassName,
-  pathFilterPanelClassName,
-  pathFilterSummaryClassName,
-  showAllPathsToggleClassName,
   smartTableClassName,
   tablePanelClassName,
   tableScrollClassName,
-  tripPlanActionsClassName,
-  tripPlanButtonClassName,
-  tripPlanCreateFormClassName,
-  tripPlanFieldClassName,
-  tripPlanNameFieldClassName,
-  tripPlanNameInputClassName,
-  tripPlanSecondaryButtonClassName,
-  tripPlanSelectClassName,
 };

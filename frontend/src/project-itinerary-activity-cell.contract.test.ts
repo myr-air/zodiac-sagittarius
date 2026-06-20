@@ -72,18 +72,26 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(types).toContain("export interface ActivityTimeButtonProps");
   });
 
-  it("keeps activity-cell styles split from table-level styles", () => {
+  it("keeps smart itinerary styles split by table, header, and activity cell responsibility", () => {
     const tableStyles = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts",
+    );
+    const headerStyles = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-header.styles.ts",
     );
     const activityCellStyles = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts",
     );
 
     expect(tableStyles).toContain("./activity-cell/activity-cell.styles");
+    expect(tableStyles).toContain("./smart-itinerary-table-header.styles");
+    expect(tableStyles).not.toContain("const headerControlsPanelClassName");
+    expect(tableStyles).not.toContain("const pathFilterPanelClassName");
     expect(tableStyles).not.toContain("const activityCellClassName");
     expect(tableStyles).not.toContain("const timeEditModalClassName");
     expect(tableStyles).not.toContain("const ticketModalClassName");
+    expect(headerStyles).toContain("export const headerControlsPanelClassName");
+    expect(headerStyles).toContain("export const pathFilterPanelClassName");
     expect(activityCellStyles).toContain("export const activityCellClassName");
     expect(activityCellStyles).toContain("export const timeEditModalClassName");
     expect(activityCellStyles).toContain("export const ticketModalClassName");
