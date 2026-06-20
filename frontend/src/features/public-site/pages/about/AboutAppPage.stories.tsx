@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { HttpResponse, http } from "msw";
-import { expect } from "storybook/test";
 import { AboutAppPage } from "./AboutAppPage";
+import {
+  apiUnavailablePlay,
+  mobilePlay,
+  readyPlay,
+  tabletPlay,
+  thaiPlay,
+} from "./AboutAppPage.stories.plays";
 
 const webVersion = {
   apiHost: "api.joii.test",
@@ -46,11 +52,7 @@ export const Ready: Story = {
   args: {
     webVersion,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
-    await expect(await canvas.findByText("API connected")).toBeVisible();
-    await expect(await canvas.findByText("sagittarius-api v0.1.5")).toBeVisible();
-  },
+  play: readyPlay,
 };
 
 export const ApiUnavailable: Story = {
@@ -62,48 +64,35 @@ export const ApiUnavailable: Story = {
       runtimeMode: "local",
     },
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
-    await expect(await canvas.findByText("API version unavailable")).toBeVisible();
-  },
+  play: apiUnavailablePlay,
 };
 
 export const Thai: Story = {
   args: Ready.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { name: "เกี่ยวกับ Joii" })).toBeVisible();
-    await expect(await canvas.findByText("เชื่อมต่อ API แล้ว")).toBeVisible();
-    await expect(canvas.getByRole("heading", { name: "เวอร์ชันแอป" })).toBeVisible();
-  },
+  play: thaiPlay,
 };
 
 export const Mobile: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
-    await expect(canvasElement.querySelector(".about-hero > [aria-hidden='true']")).toHaveClass("hidden", "md:block");
-  },
+  play: mobilePlay,
 };
 
 export const Tablet: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
-    await expect(canvasElement.querySelector(".about-hero")).toHaveClass("md:grid-cols-[minmax(0,1fr)_300px]");
-  },
+  play: tabletPlay,
 };
 
 export const Desktop1024: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: Tablet.play,
+  play: tabletPlay,
 };
 
 export const Desktop1440: Story = {
   args: Ready.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: Tablet.play,
+  play: tabletPlay,
 };
