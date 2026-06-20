@@ -27,7 +27,8 @@ export {
   workspaceSurfaceClassName,
 } from "./workspace-primitive-styles";
 
-type WorkspaceSurfaceElement = "section" | "form" | "nav" | "aside" | "div";
+export const workspaceSurfaceElementValues = ["section", "form", "nav", "aside", "div"] as const;
+export type WorkspaceSurfaceElement = (typeof workspaceSurfaceElementValues)[number];
 
 export function workspacePageClassName(kind: WorkspacePageKind = "standard", className = ""): string {
   return cn(workspacePageBaseClassName, workspacePageKindClassNames[kind], className);
@@ -71,43 +72,12 @@ export function WorkspaceSurface({
   ...props
 }: WorkspaceSurfaceProps) {
   const surfaceClassName = cn(workspaceSurfaceClassName, workspaceSurfaceDensityClassNames[density], className);
-
-  if (as === "form") {
-    return (
-      <form className={surfaceClassName} {...(props as FormHTMLAttributes<HTMLFormElement>)}>
-        {children}
-      </form>
-    );
-  }
-
-  if (as === "nav") {
-    return (
-      <nav className={surfaceClassName} {...(props as HTMLAttributes<HTMLElement>)}>
-        {children}
-      </nav>
-    );
-  }
-
-  if (as === "aside") {
-    return (
-      <aside className={surfaceClassName} {...(props as HTMLAttributes<HTMLElement>)}>
-        {children}
-      </aside>
-    );
-  }
-
-  if (as === "div") {
-    return (
-      <div className={surfaceClassName} {...(props as HTMLAttributes<HTMLDivElement>)}>
-        {children}
-      </div>
-    );
-  }
+  const SurfaceElement = as ?? "section";
 
   return (
-    <section className={surfaceClassName} {...(props as HTMLAttributes<HTMLElement>)}>
+    <SurfaceElement className={surfaceClassName} {...(props as FormHTMLAttributes<HTMLFormElement> & HTMLAttributes<HTMLElement>)}>
       {children}
-    </section>
+    </SurfaceElement>
   );
 }
 

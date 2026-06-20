@@ -18,6 +18,7 @@ import {
   WorkspacePage,
   WorkspaceSurface,
   fieldControlClassName,
+  workspaceSurfaceElementValues,
   workspacePageClassName,
 } from "@/src/ui";
 
@@ -62,6 +63,8 @@ describe("shared UI primitives", () => {
   });
 
   it("renders reusable workspace layout, surface, and field primitives", () => {
+    expect(workspaceSurfaceElementValues).toEqual(["section", "form", "nav", "aside", "div"]);
+
     render(
       <WorkspacePage className="photos-page" kind="workspace" aria-label="Workspace">
         <WorkspaceSurface as="form" aria-label="Trip details" className="settings-form">
