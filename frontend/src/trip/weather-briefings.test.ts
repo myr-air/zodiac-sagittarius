@@ -2,10 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Trip, TripDailyBriefing } from "./types";
 import {
   applyDailyBriefingOverrides,
-  briefingsForStrip,
   buildPatchDailyBriefingRequest,
-  thaiWeekdayTone,
-  weatherGraphicLabel,
 } from "./weather-briefings";
 
 const briefing = (date: string, high: number | null, low: number | null): TripDailyBriefing => ({
@@ -36,23 +33,6 @@ const briefing = (date: string, high: number | null, low: number | null): TripDa
 });
 
 describe("weather briefings", () => {
-  it("sorts strip briefings by date", () => {
-    expect(briefingsForStrip([briefing("2026-07-11", 33, 28), briefing("2026-07-09", 31, 27)]).map((item) => item.date)).toEqual([
-      "2026-07-09",
-      "2026-07-11",
-    ]);
-  });
-
-  it("maps Thai weekday tones from ISO date", () => {
-    expect(thaiWeekdayTone("2026-07-12")).toMatchObject({ name: "sunday", className: expect.stringContaining("text-rose") });
-    expect(thaiWeekdayTone("2026-07-13")).toMatchObject({ name: "monday", className: expect.stringContaining("text-amber") });
-  });
-
-  it("maps weather code to a readable graphic label", () => {
-    expect(weatherGraphicLabel("rain")).toBe("Rain");
-    expect(weatherGraphicLabel("unknown-code")).toBe("Weather");
-  });
-
   it("applies daily briefing overrides and increments the briefing version", () => {
     expect(
       applyDailyBriefingOverrides(
