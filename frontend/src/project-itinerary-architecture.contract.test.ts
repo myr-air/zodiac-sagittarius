@@ -80,6 +80,21 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModel).toContain("buildTicketSubmitInput");
   });
 
+  it("keeps activity cell title editing and actions split from shell layout", () => {
+    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx");
+    const titleLine = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellTitleLine.tsx");
+    const actionGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx");
+
+    expect(activityCell).toContain("./ActivityCellTitleLine");
+    expect(activityCell).toContain("./ActivityCellActionGroup");
+    expect(activityCell).not.toContain("./InlineActivityField");
+    expect(activityCell).not.toContain("./ActivityActionButtons");
+    expect(titleLine).toContain("export function ActivityCellTitleLine");
+    expect(titleLine).toContain("InlineActivityField");
+    expect(actionGroup).toContain("export function ActivityCellActionGroup");
+    expect(actionGroup).toContain("ActivityActionButtons");
+  });
+
   it("keeps itinerary table weather formatting split from path utilities", () => {
     const tableUtils = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts");
     const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/weather-summary.ts");

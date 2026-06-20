@@ -1,15 +1,12 @@
 import { ActivityLocationLine } from "./ActivityLocationLine";
 import { ActivityTypePicker } from "./ActivityTypePicker";
-import { InlineActivityField } from "./InlineActivityField";
 import { ActivityTimeButton } from "./ActivityTimeButton";
-import { ActivityActionButtons } from "./ActivityActionButtons";
+import { ActivityCellActionGroup } from "./ActivityCellActionGroup";
+import { ActivityCellTitleLine } from "./ActivityCellTitleLine";
 import {
   activityBodyClassName,
   activityCellClassName,
-  activityMainLineClassName,
-  activitySentenceClassName,
   activityTimeRailClassName,
-  activityTitleInputClassName,
   activityTypePickerClassName,
   activityTypeRailClassName,
   activityMobileTypePickerClassName,
@@ -75,21 +72,17 @@ export function ActivityCell({
       />
     ) : null;
   const renderActivityActions = (compact = false) => (
-    <ActivityActionButtons
+    <ActivityCellActionGroup
+      compact={compact}
       item={item}
       itineraryLabels={itineraryLabels}
       locale={locale}
-      onActionComplete={
-        compact ? () => setActionsExpanded(false) : undefined
-      }
+      onAddNoteForItem={onAddNoteForItem}
+      onCompactActionComplete={() => setActionsExpanded(false)}
       onDeleteItem={onDeleteItem}
       onEditItem={onEditItem}
       onOpenItemDetails={onOpenItemDetails}
-      onOpenNoteForItem={
-        onAddNoteForItem
-          ? (target) => openNoteModal(target, compact)
-          : undefined
-      }
+      onOpenNoteForItem={openNoteModal}
     />
   );
 
@@ -127,25 +120,12 @@ export function ActivityCell({
         />
       </div>
       <div className={activityBodyClassName}>
-        <div className={activityMainLineClassName}>
-          <div className={activitySentenceClassName}>
-            <InlineActivityField
-              ariaLabel={itineraryLabels.row.inlineActivity({
-                activity: item.activity,
-              })}
-              autoSize
-              className={activityTitleInputClassName}
-              disabled={!editable}
-              key={`${item.id}:activity:${item.activity}`}
-              maxLength={90}
-              placeholder="Activity"
-              value={item.activity}
-              onCommit={(activity) =>
-                onUpdateItemInline?.(item.id, { activity: activity || item.activity })
-              }
-            />
-          </div>
-        </div>
+        <ActivityCellTitleLine
+          editable={editable}
+          item={item}
+          itineraryLabels={itineraryLabels}
+          onUpdateItemInline={onUpdateItemInline}
+        />
         <ActivityLocationLine
           editable={editable}
           item={item}
