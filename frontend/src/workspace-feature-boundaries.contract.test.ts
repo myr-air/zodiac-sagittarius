@@ -37,6 +37,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryStoryFixtures,
       itineraryStoryPathScenarios,
       itineraryPageStory,
+      itineraryPageStoryPlays,
       itineraryTemplateStory,
       tripSettingsPage,
       tripSettingsSupport,
@@ -69,7 +70,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
     expect(itineraryStoryPathScenarios).toContain("buildItineraryStoryPathItems");
     expect(itineraryStoryPathScenarios).toContain("export const stressPathItemsBase");
-    expect(itineraryPageStory).toContain("./itinerary-story-assertions");
+    expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
+    expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
+    expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStory).toContain("./itinerary-story-assertions");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");

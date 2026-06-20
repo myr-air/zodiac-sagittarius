@@ -92,6 +92,7 @@ export const workspaceBoundarySourcePaths = {
   itineraryStoryFixtures: "src/features/itinerary/stories/itinerary-story-fixtures.ts",
   itineraryStoryPathScenarios: "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
   itineraryPageStory: "src/features/itinerary/stories/ItineraryPage.stories.tsx",
+  itineraryPageStoryPlays: "src/features/itinerary/stories/ItineraryPage.stories.plays.ts",
   itineraryTemplateStory: "src/features/itinerary/stories/ItineraryTemplate.stories.tsx",
   accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
   accountAccessStorySupport: "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
