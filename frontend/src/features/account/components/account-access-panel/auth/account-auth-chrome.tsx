@@ -8,7 +8,8 @@ import {
   accountEntryLanguageSwitchClassName,
 } from "../account-panel-shared-styles";
 
-export type AuthFlow = "login" | "register";
+export const authFlowValues = ["login", "register"] as const;
+export type AuthFlow = (typeof authFlowValues)[number];
 
 const accountEntryTabsClassName = "account-entry-tabs grid grid-cols-2 gap-0 border-b border-(--color-border) px-[34px] pb-3.5 max-[520px]:px-0";
 const accountEntryTabClassName =

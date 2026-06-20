@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { AuthFlow } from "../auth";
 import {
   buildEmailLoginStepMeta,
   emailLoginStepHeading,
@@ -40,7 +41,7 @@ describe("email login step metadata", () => {
   });
 
   it("selects heading metadata for each non-OTP step", () => {
-    const cases: Array<[EmailLoginAuthStep, "login" | "register", string, string, string]> = [
+    const cases: Array<[EmailLoginAuthStep, AuthFlow, string, string, string]> = [
       ["email", "login", "users", "Login title", "Login detail"],
       ["email", "register", "users", "Register title", "Register detail"],
       ["methods", "login", "users", "Method title", "Method detail"],
