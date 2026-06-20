@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import {
   claimTripParticipant,
   createTripParticipantSession,
@@ -9,6 +9,7 @@ import {
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import { errorMessage, tripFromJoinResponse } from "./trip-join-gate.support";
+import { useTripJoinInviteTokenResolution } from "./use-trip-join-invite-token-resolution";
 
 interface TripJoinGateErrorCopy {
   participantPassword: string;
@@ -49,7 +50,6 @@ export function useTripJoinGateState({
   const [showParticipantPassword, setShowParticipantPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const resolvedInitialJoinTokenRef = useRef(false);
 
   /* v8 ignore next */
   const activeTrip = joinedTrip ?? trip ?? null;
@@ -60,38 +60,24 @@ export function useTripJoinGateState({
   /* v8 ignore next */
   const participantMembers = activeTrip?.members ?? [];
 
-  useEffect(() => {
-    if (
-      resolvedInitialJoinTokenRef.current ||
-      !initialJoinToken ||
-      !apiClient?.resolveJoinInviteToken
-    ) {
-      return;
-    }
-    let cancelled = false;
-    resolvedInitialJoinTokenRef.current = true;
-    apiClient.resolveJoinInviteToken(initialJoinToken)
-      .then((response) => {
-        if (cancelled) return;
-        const nextTrip = tripFromJoinResponse(response);
-        setJoinedTrip(nextTrip);
-        setJoinSessionToken(response.joinSessionToken);
-        setSelectedMemberId(null);
-        setError(null);
-        setStep("participant");
-      })
-      .catch((caught) => {
-        if (cancelled) return;
-        setError(errorMessage(caught, errors.tripCredentials));
-        setStep("room");
-      })
-      .finally(() => {
-        if (!cancelled) setIsSubmitting(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [apiClient, errors.tripCredentials, initialJoinToken]);
+  useTripJoinInviteTokenResolution({
+    apiClient,
+    fallbackError: errors.tripCredentials,
+    initialJoinToken,
+    onError: (message) => {
+      setError(message);
+      setStep("room");
+    },
+    onResolved: (response) => {
+      const nextTrip = tripFromJoinResponse(response);
+      setJoinedTrip(nextTrip);
+      setJoinSessionToken(response.joinSessionToken);
+      setSelectedMemberId(null);
+      setError(null);
+      setStep("participant");
+    },
+    onSettled: () => setIsSubmitting(false),
+  });
 
   async function submitTripRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
