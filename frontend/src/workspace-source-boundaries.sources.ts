@@ -13,6 +13,7 @@ export const workspaceBoundarySourcePaths = {
   workspaceRailProps: "src/trip/workspace/sagittarius-app/props/workspace-rail-props.ts",
   workspaceToastProps: "src/trip/workspace/sagittarius-app/props/workspace-toast-props.ts",
   workspaceCoreFrameProps: "src/trip/workspace/sagittarius-app/props/workspace-core-frame-props.ts",
+  workspaceCoreRecordProps: "src/trip/workspace/sagittarius-app/props/workspace-core-record-props.ts",
   workspacePageViewProps: "src/trip/workspace/sagittarius-app/props/workspace-page-view-props.ts",
   workspacePlanningViewProps: "src/trip/workspace/sagittarius-app/props/workspace-planning-view-props.ts",
   workspaceFrameActionProps: "src/trip/workspace/sagittarius-app/props/workspace-frame-action-props.ts",

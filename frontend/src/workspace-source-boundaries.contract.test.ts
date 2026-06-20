@@ -20,6 +20,7 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceRailProps,
       workspaceToastProps,
       workspaceCoreFrameProps,
+      workspaceCoreRecordProps,
       workspaceFrameActionProps,
       workspaceFrameProps,
       workspacePageViewProps,
@@ -46,6 +47,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).toContain("buildWorkspaceCoreFrameProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceFrameProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
+    expect(workspaceCoreFrameProps).toContain("buildWorkspaceCoreRecordProps");
+    expect(workspaceCoreRecordProps).toContain(
+      "export function buildWorkspaceCoreRecordProps",
+    );
+    expect(workspaceCoreRecordProps).toContain("scopedTripPlanRecords");
+    expect(workspaceCoreRecordProps).toContain("selectedItemIdForView");
     expect(sagittariusApp).not.toContain("buildWorkspaceAccessProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceShellProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceViewsProps");

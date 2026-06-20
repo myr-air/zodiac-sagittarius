@@ -5,6 +5,7 @@ import type {
 } from "../hooks";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "../types";
 import { buildWorkspaceFrameProps } from "./workspace-frame-props";
+import { buildWorkspaceCoreRecordProps } from "./workspace-core-record-props";
 
 type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;
 type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
@@ -38,6 +39,7 @@ export function buildWorkspaceCoreFrameProps({
   t,
 }: BuildWorkspaceCoreFramePropsInput) {
   return buildWorkspaceFrameProps({
+    ...buildWorkspaceCoreRecordProps(planning),
     accessError: setup.accessError,
     accessMode,
     accountClaimState: setup.accountClaimState,
@@ -49,7 +51,6 @@ export function buildWorkspaceCoreFrameProps({
     apiBaseUrl: setup.apiBaseUrl,
     applyPendingItineraryImport: commands.applyPendingItineraryImport,
     authenticateParticipant: commands.authenticateParticipant,
-    bookingDocs: planning.scopedTripPlanRecords.bookingDocs,
     canAccessPanel: setup.canAccessPanel,
     canCreateStopNote: setup.canCreateStopNote,
     canCreateSuggestion: setup.canCreateSuggestion,
@@ -83,12 +84,10 @@ export function buildWorkspaceCoreFrameProps({
     dialogState: setup.dialogState,
     dismissWorkspaceToast: setup.dismissWorkspaceToast,
     editItem: commands.editItem,
-    expenseSummary: planning.expenseSummary,
     effectivePlaceResolver: setup.effectivePlaceResolver,
     importItineraryError: commands.importItineraryError,
     initialJoinCode,
     initialJoinToken,
-    itineraryView: planning.itineraryView,
     isAccountTripAccessPending: setup.isAccountTripAccessPending,
     isApiMode: setup.isApiMode,
     isToastDismissing: setup.toastDismissing,
@@ -96,7 +95,6 @@ export function buildWorkspaceCoreFrameProps({
     isTripPlanBusy: setup.isTripPlanBusy,
     joinInviteToken: setup.joinInviteToken,
     leaveParticipantSession: commands.leaveParticipantSession,
-    mainItineraryView: planning.mainItineraryView,
     mainPlanItems: setup.mainPlanItems,
     navigateWorkspaceView: setup.navigateWorkspaceView,
     onAccountSessionChange: setup.changeAccountSession,
@@ -156,12 +154,6 @@ export function buildWorkspaceCoreFrameProps({
     rotateJoinInviteToken: commands.rotateJoinInviteToken,
     routeTripId,
     saveDailyBriefingOverrides: setup.saveDailyBriefingOverrides,
-    scopedSuggestions: planning.scopedSuggestions,
-    scopedTripForRecords: planning.scopedTripForRecords,
-    scopedTripPlanRecords: planning.scopedTripPlanRecords,
-    selectedDay: planning.selectedDay,
-    selectedItem: planning.selectedItem,
-    selectedItemIdForView: planning.selectedItemIdForView,
     selectedTripPathId: setup.selectedTripPathId,
     selectedTripPlanId: setup.selectedTripPlanId,
     sessionMember: setup.sessionMember,
@@ -179,7 +171,6 @@ export function buildWorkspaceCoreFrameProps({
     suggestSelectedStop: planning.suggestSelectedStop,
     supportsContextRail: setup.supportsContextRail,
     t,
-    tasks: planning.scopedTripPlanRecords.tasks,
     toastDismissed: setup.toastDismissed,
     transferOwnerToAccountMember: commands.transferOwnerToAccountMember,
     toggleContextRailCollapsed: setup.toggleSidebarCollapsed,
