@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type {
   ItineraryItem,
   TripDailyBriefing,
@@ -11,11 +11,8 @@ import {
   type ItineraryView,
 } from "@/src/trip/itinerary";
 import { canTripRole } from "@/src/trip/auth";
-import { itineraryItemPathId } from "@/src/trip/itinerary-path-identifiers";
 import {
   buildGraphColumnWidth,
-  dedupePathOptions,
-  formatSelectedPlanLabel,
   groupGraphItemsByDay,
   mergeTripDayGroups,
 } from "../smart-itinerary-table-utils";
@@ -24,6 +21,7 @@ import {
   graphColumnMinWidth,
   graphColumnSidePadding,
 } from "../smart-itinerary-table.styles";
+import { useSmartItineraryPathFilters } from "./useSmartItineraryPathFilters";
 
 interface UseSmartItineraryTableStateParams {
   pathOptions: ItineraryPathOption[];
@@ -86,35 +84,23 @@ export function useSmartItineraryTableState({
   selectedNamesLabel,
 }: UseSmartItineraryTableStateParams): SmartItineraryTableState {
   const allDisplayItems = graphItems ?? items;
-  const filterOptions = dedupePathOptions(pathOptions, allDisplayItems);
   const canEdit = role === "owner" || role === "organizer" || role === "traveler";
   const canManageTripPlans = canTripRole(role, "manageTripPlans");
   const canRestructureItems = canEdit && canRestructure;
-  const [selectedPathIds, setSelectedPathIds] = useState<string[]>(() =>
-    filterOptions.map((option) => option.id),
-  );
   const [collapsedDays, setCollapsedDays] = useState<string[]>([]);
-  const knownFilterIdsRef = useRef<string[]>(
-    filterOptions.map((option) => option.id),
-  );
-
-  const selectedPathIdSet = useMemo(
-    () => new Set(selectedPathIds),
-    [selectedPathIds],
-  );
-
-  const displayItems = useMemo(
-    () =>
-      allDisplayItems.filter((item) => selectedPathIdSet.has(itineraryItemPathId(item))),
-    [allDisplayItems, selectedPathIdSet],
-  );
-
-  const selectedFilterLabel = formatSelectedPlanLabel(
+  const {
+    displayItems,
     filterOptions,
+    selectedFilterLabel,
     selectedPathIds,
+    selectedPathIdSet,
+    togglePlanFilter,
+  } = useSmartItineraryPathFilters({
+    items: allDisplayItems,
+    pathOptions,
     selectedCountLabel,
     selectedNamesLabel,
-  );
+  });
   const displayDayGroups = groupItemsByDay(displayItems);
   const groups = mergeTripDayGroups(
     displayDayGroups,
@@ -147,34 +133,11 @@ export function useSmartItineraryTableState({
     "--graph-column-width": `${graphColumnWidth}px`,
   } as CSSProperties;
 
-  useEffect(() => {
-    setSelectedPathIds((current) => {
-      const optionIds = filterOptions.map((option: { id: string; name: string }) => option.id);
-      const previousOptionIds = knownFilterIdsRef.current;
-      const nextIds = optionIds.filter(
-        (id: string) => current.includes(id) || !previousOptionIds.includes(id),
-      );
-      knownFilterIdsRef.current = optionIds;
-      return nextIds.length === current.length &&
-        nextIds.every((id: string, index: number) => id === current[index])
-        ? current
-        : nextIds;
-    });
-  }, [filterOptions]);
-
   function toggleDay(day: string) {
     setCollapsedDays((current) =>
       current.includes(day)
         ? current.filter((item) => item !== day)
         : [...current, day],
-    );
-  }
-
-  function togglePlanFilter(pathId: string) {
-    setSelectedPathIds((current) =>
-      current.includes(pathId)
-        ? current.filter((item) => item !== pathId)
-        : [...current, pathId],
     );
   }
 

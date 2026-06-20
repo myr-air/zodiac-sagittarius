@@ -109,6 +109,18 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(weatherChip).toContain("./weather-summary");
   });
 
+  it("keeps smart itinerary path filter state split from table derived state", () => {
+    const tableState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryTableState.ts");
+    const pathFilters = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryPathFilters.ts");
+
+    expect(tableState).toContain("./useSmartItineraryPathFilters");
+    expect(tableState).not.toContain("knownFilterIdsRef");
+    expect(tableState).not.toContain("itineraryItemPathId");
+    expect(pathFilters).toContain("export function useSmartItineraryPathFilters");
+    expect(pathFilters).toContain("knownFilterIdsRef");
+    expect(pathFilters).toContain("itineraryItemPathId");
+  });
+
   it("keeps weather briefing drawer formatting split from render", () => {
     const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
     const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/weather-briefing-drawer-model.ts");
@@ -141,13 +153,19 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps stop dialog detail serialization split from utility ids", () => {
     const stopDialogUtils = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts");
     const stopDialogDetails = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-details.ts");
+    const stopDialogDetailDefinitions = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-detail-definitions.ts");
 
     expect(stopDialogUtils).toContain("./stop-dialog-details");
     expect(stopDialogUtils).toContain("export const stopDialogFieldIds");
     expect(stopDialogUtils).not.toContain("export function buildStructuredStopDetails");
     expect(stopDialogUtils).not.toContain("function trimmedStopDetailValues");
+    expect(stopDialogDetails).toContain("./stop-dialog-detail-definitions");
     expect(stopDialogDetails).toContain("export function buildStructuredStopDetails");
     expect(stopDialogDetails).toContain("function trimmedStopDetailValues");
+    expect(stopDialogDetails).not.toContain("export function stopDetailLabels");
+    expect(stopDialogDetails).not.toContain("export const emptyStopDetailValues");
+    expect(stopDialogDetailDefinitions).toContain("export function stopDetailLabels");
+    expect(stopDialogDetailDefinitions).toContain("export const emptyStopDetailValues");
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {
