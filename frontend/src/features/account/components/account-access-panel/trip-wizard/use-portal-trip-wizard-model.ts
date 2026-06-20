@@ -1,6 +1,7 @@
 import { type Dispatch, type FormEvent, type SetStateAction, useEffect, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import {
   applyTripCalendarDate,
   applyTripEndDate,
@@ -33,7 +34,7 @@ export function usePortalTripWizardModel({
   const { locale, t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
-  const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
+  const { copyText, hasCopied: hasCopiedJoinCode } = useCopyFeedbackState();
   const [selectingDateStep, setSelectingDateStep] = useState<TripWizardDateSelectionStep>("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
   const {
@@ -123,12 +124,7 @@ export function usePortalTripWizardModel({
   async function copyJoinCode() {
     const text = derivedState.joinCode.trim();
     if (!text) return;
-    try {
-      await navigator.clipboard?.writeText(text);
-      setHasCopiedJoinCode(true);
-    } catch {
-      setHasCopiedJoinCode(false);
-    }
+    await copyText(text);
   }
 
   function submitWizard(event: FormEvent<HTMLFormElement>) {

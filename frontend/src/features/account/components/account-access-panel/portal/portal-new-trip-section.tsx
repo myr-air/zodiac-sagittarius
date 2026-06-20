@@ -10,6 +10,7 @@ import { Icon } from "@/src/ui/icons";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { errorMessage } from "../auth";
 import {
@@ -51,7 +52,11 @@ export function PortalNewTripSection({
   const [tripForm, setTripForm] = useState(() => defaultTripForm(settings?.profile.displayName, settings?.profile));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdTripShare, setCreatedTripShare] = useState<CreatedTripShare | null>(null);
-  const [hasCopiedCreatedInvite, setHasCopiedCreatedInvite] = useState(false);
+  const {
+    copyText,
+    hasCopied: hasCopiedCreatedInvite,
+    resetCopyState,
+  } = useCopyFeedbackState();
 
   async function submitTrip(overrideForm?: AccountTripCreateRequest) {
     setIsSubmitting(true);
@@ -70,7 +75,7 @@ export function PortalNewTripSection({
         joinId: response.trip.joinId,
         name: response.trip.name,
       });
-      setHasCopiedCreatedInvite(false);
+      resetCopyState();
       await onCreatedTrip(response.memberSession, { openTrip: false });
       setTripForm(defaultTripForm(settings?.profile.displayName, settings?.profile));
       onMessage(t.access.dashboard.createTrip.success);
@@ -84,12 +89,7 @@ export function PortalNewTripSection({
 
   async function copyCreatedInviteLink() {
     if (!createdTripShare) return;
-    try {
-      await navigator.clipboard?.writeText(createdTripShare.inviteLink);
-      setHasCopiedCreatedInvite(true);
-    } catch {
-      setHasCopiedCreatedInvite(false);
-    }
+    await copyText(createdTripShare.inviteLink);
   }
 
   return (

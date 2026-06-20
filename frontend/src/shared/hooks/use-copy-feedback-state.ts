@@ -33,6 +33,7 @@ export function useCopyFeedbackState({
   }
 
   return {
+    hasCopied: copyState === "copied",
     copyState,
     copyText,
     markCopyError: () => setCopyState("error"),

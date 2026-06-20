@@ -25,6 +25,7 @@ describe("useCopyFeedbackState", () => {
     });
 
     expect(writeText).toHaveBeenCalledWith("Trip invite");
+    expect(result.current.hasCopied).toBe(true);
     expect(result.current.copyState).toBe("copied");
 
     act(() => {
@@ -32,6 +33,7 @@ describe("useCopyFeedbackState", () => {
     });
 
     expect(result.current.copyState).toBe("idle");
+    expect(result.current.hasCopied).toBe(false);
   });
 
   it("reports copy errors without running the success callback", async () => {
@@ -51,5 +53,6 @@ describe("useCopyFeedbackState", () => {
     expect(copied).toBe(false);
     expect(afterCopy).not.toHaveBeenCalled();
     expect(result.current.copyState).toBe("error");
+    expect(result.current.hasCopied).toBe(false);
   });
 });
