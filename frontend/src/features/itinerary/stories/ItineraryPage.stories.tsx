@@ -1,22 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import type { ItineraryItem } from "@/src/trip/types";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import { pathIdMain, pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
 import {
   itineraryStoryDay,
-  branchGraphItemsBase,
   branchGraphPathOptions,
-  planAExampleItemsBase,
   planAPathOptions,
-  planABAlternativeItemsBase,
   planABPathOptions,
-  requestedPlanExampleItemsBase,
-  stressPathItemsBase,
   stressPathOptions,
-  windowOnlyDurationItemBase,
-  withStoryPrefix,
   buildOwnerStoryArgs,
   denseTripFixture,
   emptyTripFixture,
@@ -25,19 +17,21 @@ import {
   pathNamePlanB,
   pathNamePlanC,
 } from "./itinerary-story-fixtures";
+import {
+  buildPageOverflowItems,
+  onStoryChangeDayPath,
+  onStoryInlineQuickEdit,
+  onStoryMoveItemToPath,
+  onStoryToggleShowAllPaths,
+  onStoryUpdateItemInline,
+  pageBranchGraphItems,
+  pagePlanABAlternativeItems,
+  pagePlanAExampleItems,
+  pageRequestedPlanExampleItems,
+  pageStressPathItems,
+  pageWindowOnlyDurationItems,
+} from "./ItineraryPage.stories.support";
 import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
-
-const onStoryChangeDayPath = fn();
-const onStoryMoveItemToPath = fn();
-const onStoryToggleShowAllPaths = fn();
-const onStoryUpdateItemInline = fn();
-const onStoryInlineQuickEdit = fn();
-const pageBranchGraphItems: ItineraryItem[] = withStoryPrefix(branchGraphItemsBase, "page");
-const pagePlanAExampleItems: ItineraryItem[] = withStoryPrefix(planAExampleItemsBase, "page");
-const pageWindowOnlyDurationItems: ItineraryItem[] = withStoryPrefix(windowOnlyDurationItemBase, "page");
-const pagePlanABAlternativeItems: ItineraryItem[] = withStoryPrefix(planABAlternativeItemsBase, "page");
-const pageRequestedPlanExampleItems: ItineraryItem[] = withStoryPrefix(requestedPlanExampleItemsBase, "page");
-const pageStressPathItems: ItineraryItem[] = withStoryPrefix(stressPathItemsBase, "page");
 
 const meta = {
   title: "Pages/Itinerary",
@@ -302,13 +296,7 @@ export const StressPaths: Story = {
 export const TableOverflow: Story = {
   args: {
     ...Owner.args,
-    items: pageStressPathItems.map((item, index) => ({
-      ...item,
-      id: `page-overflow-${item.id}`,
-      activity: `${item.activity} with long operational copy for page-level overflow validation ${index + 1}`,
-      place: `${item.place} - gate notes, booking reference, and meet-up details`,
-      transport: "Airport Express transfer with luggage coordination",
-    })),
+    items: buildPageOverflowItems(),
     graphItems: pageStressPathItems,
     selectedItemId: "page-overflow-page-stress-0800-main",
     showAllPaths: true,
