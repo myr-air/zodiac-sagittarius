@@ -62,6 +62,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-client.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.booking-photo.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.expenses.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client.imports.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.itinerary.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs-estimates.test.ts"))).toBe(true);
@@ -264,6 +265,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.settlements.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.test-support.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-assertions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
