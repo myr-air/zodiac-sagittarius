@@ -10,22 +10,17 @@ import {
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   openItineraryHeaderControls,
   persistTripParticipantSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit UI", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("opens an empty trip timeline without a selected itinerary item", async () => {
