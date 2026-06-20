@@ -60,6 +60,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.overview.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.expenses.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.workspace.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/workspace-source-boundaries.blocked-terms.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/workspace-source-boundaries.sources.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
