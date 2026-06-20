@@ -7,7 +7,7 @@ import {
 } from "@/src/trip/auth";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
-import { errorMessage, tripFromJoinResponse } from "./trip-join-gate.support";
+import { errorMessage, tripFromJoinResponse } from "../trip-join-gate.support";
 
 interface TripJoinGateErrorCopy {
   participantPassword: string;

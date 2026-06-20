@@ -1,5 +1,7 @@
 export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/api-client.test-support.ts",
+  "src/trip/real-api.e2e.test.ts",
+  "src/trip/real-api.e2e-support.ts",
   "src/trip/api-client.cockpit-map.test.ts",
   "src/trip/api-client.cockpit-sources.test.ts",
   "src/trip/api-client.session-routes.test.ts",

@@ -11,8 +11,8 @@ function readTripJoinGateSource(fileName: string) {
 
 describe("trip join gate state structure", () => {
   it("keeps invite-token resolution out of the main join gate state hook", () => {
-    const stateSource = readTripJoinGateSource("use-trip-join-gate-state.ts");
-    const inviteTokenSource = readTripJoinGateSource("use-trip-join-invite-token-resolution.ts");
+    const stateSource = readTripJoinGateSource("state/use-trip-join-gate-state.ts");
+    const inviteTokenSource = readTripJoinGateSource("state/use-trip-join-invite-token-resolution.ts");
 
     expect(stateSource).toContain("useTripJoinInviteTokenResolution");
     expect(stateSource).not.toContain("resolveJoinInviteToken(initialJoinToken)");
@@ -21,8 +21,8 @@ describe("trip join gate state structure", () => {
   });
 
   it("keeps join form field state out of the main join gate state hook", () => {
-    const stateSource = readTripJoinGateSource("use-trip-join-gate-state.ts");
-    const formStateSource = readTripJoinGateSource("use-trip-join-gate-form-state.ts");
+    const stateSource = readTripJoinGateSource("state/use-trip-join-gate-state.ts");
+    const formStateSource = readTripJoinGateSource("state/use-trip-join-gate-form-state.ts");
 
     expect(stateSource).toContain("useTripJoinGateFormState");
     expect(stateSource).not.toMatch(/const \[joinId,\s*setJoinId\]/);
@@ -35,8 +35,8 @@ describe("trip join gate state structure", () => {
   });
 
   it("keeps join submit commands out of the main join gate state hook", () => {
-    const stateSource = readTripJoinGateSource("use-trip-join-gate-state.ts");
-    const submitActionsSource = readTripJoinGateSource("use-trip-join-gate-submit-actions.ts");
+    const stateSource = readTripJoinGateSource("state/use-trip-join-gate-state.ts");
+    const submitActionsSource = readTripJoinGateSource("submit/use-trip-join-gate-submit-actions.ts");
 
     expect(stateSource).toContain("useTripJoinGateSubmitActions");
     expect(stateSource).not.toContain("verifyTripCredentials");

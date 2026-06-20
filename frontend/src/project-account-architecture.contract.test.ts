@@ -31,11 +31,11 @@ describe("Sagittarius account architecture contracts", () => {
 
   it("keeps trip join gate authentication state split from render composition", () => {
     const tripJoinGate = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"), "utf8");
-    const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"), "utf8");
-    const tripJoinGateFormState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"), "utf8");
-    const tripJoinGateSubmitActions = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-submit-actions.ts"), "utf8");
+    const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/state/use-trip-join-gate-state.ts"), "utf8");
+    const tripJoinGateFormState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/state/use-trip-join-gate-form-state.ts"), "utf8");
+    const tripJoinGateSubmitActions = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/submit/use-trip-join-gate-submit-actions.ts"), "utf8");
 
-    expect(tripJoinGate).toContain("./use-trip-join-gate-state");
+    expect(tripJoinGate).toContain("./state/use-trip-join-gate-state");
     expect(tripJoinGate).not.toContain("useState");
     expect(tripJoinGate).not.toContain("useEffect");
     expect(tripJoinGate).not.toContain("verifyTripCredentials");
