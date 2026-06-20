@@ -193,6 +193,14 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/itinerary/components/route-map/route-map.types.ts"),
       "utf8",
     );
+    const smartItineraryTable = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"),
+      "utf8",
+    );
+    const smartItineraryTablePageHeader = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx"),
+      "utf8",
+    );
     const routeMapView = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"),
       "utf8",
@@ -620,6 +628,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(overviewPage).not.toContain("WeatherBriefingDrawer");
     expect(overviewWeatherBriefing).toContain("WeatherBriefingDrawer");
     expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
+    expect(smartItineraryTable).toContain("SmartItineraryTablePageHeader");
+    expect(smartItineraryTable).not.toContain("@/src/shared/components/page-header");
+    expect(smartItineraryTable).not.toContain("SmartItineraryTableHeaderControls");
+    expect(smartItineraryTablePageHeader).toContain("PageHeader");
+    expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableHeaderControls");
+    expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableMeta");
     expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).toContain("useRouteLiveMap");

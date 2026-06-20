@@ -13,11 +13,9 @@ import {
   type ItineraryView,
 } from "@/src/trip/itinerary";
 import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
-import { PageHeader } from "@/src/shared/components/page-header";
 import type { InlineItineraryItemPatch } from "../../lib";
-import { SmartItineraryTableHeaderControls } from "./SmartItineraryTableHeaderControls";
-import { SmartItineraryTableMeta } from "./SmartItineraryTableMeta";
 import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
+import { SmartItineraryTablePageHeader } from "./SmartItineraryTablePageHeader";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
@@ -163,46 +161,32 @@ export function SmartItineraryTable({
       aria-label={t.itinerary.pageLabel}
       id="itinerary"
     >
-      <PageHeader
-        allowOverflow
-        title={t.itinerary.title}
-        subtitle={tripName}
-        meta={
-          <SmartItineraryTableMeta
-            groupsCount={groups.length}
-            itemsCount={items.length}
-            locale={locale}
-            startDate={startDate}
-            endDate={endDate}
-            tDates={t.dates}
-            tItinerary={t.itinerary}
-            totalMinutes={totalMinutes}
-            warningCount={warningCount}
-          />
-        }
-        aside={
-          <SmartItineraryTableHeaderControls
-            canEdit={canEdit}
-            canManageTripPlans={canManageTripPlans}
-            filterOptions={filterOptions}
-            selectedFilterLabel={selectedFilterLabel}
-            selectedPathIds={new Set(selectedPathIds)}
-            selectedTripPlanId={selectedTripPlanId}
-            showAllPaths={showAllPaths}
-            onChangeShowAllPaths={onToggleShowAllPaths}
-            onTogglePathFilter={togglePlanFilter}
-            onChangeTripPlan={onChangeTripPlan}
-            onChangeTripPlanStatus={onChangeTripPlanStatus}
-            onCreateTripPlan={onCreateTripPlan}
-            onRenameTripPlan={onRenameTripPlan}
-            onSetMainTripPlan={onSetMainTripPlan}
-            tripPlans={tripPlans}
-            mainTripPlanId={mainTripPlanId}
-            tripPlanError={tripPlanError}
-            isTripPlanBusy={isTripPlanBusy}
-            itineraryLabels={t.itinerary}
-          />
-        }
+      <SmartItineraryTablePageHeader
+        canEdit={canEdit}
+        canManageTripPlans={canManageTripPlans}
+        endDate={endDate}
+        filterOptions={filterOptions}
+        groupsCount={groups.length}
+        isTripPlanBusy={isTripPlanBusy}
+        itemsCount={items.length}
+        mainTripPlanId={mainTripPlanId}
+        onChangeShowAllPaths={onToggleShowAllPaths}
+        onChangeTripPlan={onChangeTripPlan}
+        onChangeTripPlanStatus={onChangeTripPlanStatus}
+        onCreateTripPlan={onCreateTripPlan}
+        onRenameTripPlan={onRenameTripPlan}
+        onSetMainTripPlan={onSetMainTripPlan}
+        onTogglePathFilter={togglePlanFilter}
+        selectedFilterLabel={selectedFilterLabel}
+        selectedPathIds={selectedPathIds}
+        selectedTripPlanId={selectedTripPlanId}
+        showAllPaths={showAllPaths}
+        startDate={startDate}
+        totalMinutes={totalMinutes}
+        tripName={tripName}
+        tripPlanError={tripPlanError}
+        tripPlans={tripPlans}
+        warningCount={warningCount}
       />
       <div
         className={tableScrollClassName}

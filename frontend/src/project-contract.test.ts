@@ -267,6 +267,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/SmartItineraryTable.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/index.ts"))).toBe(true);
