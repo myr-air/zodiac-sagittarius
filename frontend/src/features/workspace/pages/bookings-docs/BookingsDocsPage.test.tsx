@@ -1,15 +1,13 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import type { BookingDoc, Member } from "@/src/trip/types";
-import { BookingsDocsPage, type BookingDocInput } from "./BookingsDocsPage";
-import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
+import type { BookingDocInput } from "./BookingsDocsPage";
+import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
 
 describe("BookingsDocsPage", () => {
   it("renders booking folders, a file list, and selected booking inspector", () => {
-    renderPage();
+    renderBookingsDocsPage();
 
     expect(screen.getByRole("region", { name: "Bookings & Docs" })).toHaveClass("bookings-docs-page", "bg-transparent");
     expect(document.querySelector(".page-header")).toHaveClass("page-header", "bg-(--color-surface)", "max-[1199px]:rounded-none", "max-[767px]:hidden");
@@ -44,7 +42,7 @@ describe("BookingsDocsPage", () => {
 
   it("opens the mobile preview as a bottom drawer from the file list", async () => {
     const user = userEvent.setup();
-    renderPage();
+    renderBookingsDocsPage();
 
     const inspector = document.querySelector(".booking-inspector");
     expect(inspector).toHaveClass("max-[1199px]:translate-y-full");
@@ -58,7 +56,7 @@ describe("BookingsDocsPage", () => {
 
   it("browses booking docs by friendly folders instead of table filters", async () => {
     const user = userEvent.setup();
-    renderPage();
+    renderBookingsDocsPage();
 
     await user.click(screen.getByRole("button", { name: /Stays/i }));
     expect(screen.getByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).toBeInTheDocument();
@@ -79,7 +77,7 @@ describe("BookingsDocsPage", () => {
 
   it("locks sensitive records for viewers while leaving shared rows visible", () => {
     const viewer = seedTrip.members.find((member) => member.role === "viewer")!;
-    renderPage({ currentMember: viewer });
+    renderBookingsDocsPage({ currentMember: viewer });
 
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Select Explorer Friend passport/i })).not.toBeInTheDocument();
@@ -88,7 +86,7 @@ describe("BookingsDocsPage", () => {
 
   it("filters the file list by search text, status, and external-link folder", async () => {
     const user = userEvent.setup();
-    renderPage();
+    renderBookingsDocsPage();
 
     await user.type(screen.getByPlaceholderText("Search bookings, docs, links"), "Joii");
     expect(screen.getByRole("button", { name: /Select Tsim Sha Tsui hotel stay/i })).toBeInTheDocument();
@@ -115,7 +113,7 @@ describe("BookingsDocsPage", () => {
     const user = userEvent.setup();
     const onCreateBookingDoc = vi.fn();
     const onUpdateBookingDoc = vi.fn();
-    renderPage({ onCreateBookingDoc, onUpdateBookingDoc });
+    renderBookingsDocsPage({ onCreateBookingDoc, onUpdateBookingDoc });
 
     await user.click(screen.getAllByRole("button", { name: "Add booking" })[0]);
     let dialog = screen.getByRole("dialog", { name: "Add booking" });
@@ -158,7 +156,7 @@ describe("BookingsDocsPage", () => {
   it("requests deletion only after confirmation", async () => {
     const user = userEvent.setup();
     const onDeleteBookingDoc = vi.fn();
-    renderPage({ onDeleteBookingDoc });
+    renderBookingsDocsPage({ onDeleteBookingDoc });
 
     await user.click(screen.getByRole("button", { name: /Transport/i }));
     await user.click(screen.getAllByRole("button", { name: "Delete booking" })[0]);
@@ -171,27 +169,3 @@ describe("BookingsDocsPage", () => {
     expect(onDeleteBookingDoc).toHaveBeenCalledWith(seedTrip.bookingDocs![0].id);
   });
 });
-
-function renderPage(overrides: Partial<{
-  currentMember: Member;
-  bookingDocs: BookingDoc[];
-  onCreateBookingDoc: (input: BookingDocInput) => void;
-  onUpdateBookingDoc: (bookingDocId: string, input: BookingDocInput) => void;
-  onDeleteBookingDoc: (bookingDocId: string) => void;
-}> = {}) {
-  const currentMember = overrides.currentMember ?? seedTrip.members[0];
-
-  return renderWithI18n(
-    <BookingsDocsPage
-      trip={seedTrip}
-      tasks={bookingDocTestTasks}
-      currentMember={currentMember}
-      bookingDocs={overrides.bookingDocs ?? seedTrip.bookingDocs ?? []}
-      canEditBookings={currentMember.role === "owner" || currentMember.role === "organizer"}
-      onCreateBookingDoc={overrides.onCreateBookingDoc ?? vi.fn()}
-      onUpdateBookingDoc={overrides.onUpdateBookingDoc ?? vi.fn()}
-      onDeleteBookingDoc={overrides.onDeleteBookingDoc ?? vi.fn()}
-    />,
-    { locale: "en" },
-  );
-}

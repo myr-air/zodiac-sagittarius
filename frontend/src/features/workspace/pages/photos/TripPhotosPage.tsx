@@ -77,10 +77,30 @@ export function TripPhotosPage({
       />
 
       <div className={photoStyles.summaryClassName} aria-label={copy.summaryLabel}>
-        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="cloud" label={copy.savedDestinations} value={copy.albums(summary.total)} />
-        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="users" label={copy.sharedUploads} value={copy.collaborative(summary.collaborative)} />
-        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="import" label={copy.uploadRequests} value={copy.requests(summary.uploadRequests)} />
-        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="warning" label={copy.needsAccessNote} value={copy.missing(summary.missingAccessNotes)} />
+        <WorkspaceSummaryStat
+          className={photoStyles.statClassName}
+          icon="cloud"
+          label={copy.savedDestinations}
+          value={copy.albums(summary.total)}
+        />
+        <WorkspaceSummaryStat
+          className={photoStyles.statClassName}
+          icon="users"
+          label={copy.sharedUploads}
+          value={copy.collaborative(summary.collaborative)}
+        />
+        <WorkspaceSummaryStat
+          className={photoStyles.statClassName}
+          icon="import"
+          label={copy.uploadRequests}
+          value={copy.requests(summary.uploadRequests)}
+        />
+        <WorkspaceSummaryStat
+          className={photoStyles.statClassName}
+          icon="warning"
+          label={copy.needsAccessNote}
+          value={copy.missing(summary.missingAccessNotes)}
+        />
       </div>
 
       <div className={photoStyles.contentClassName}>

@@ -1,68 +1,13 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import type { Member, TripPhotoAlbumLink } from "@/src/trip/types";
-import { TripPhotosPage, type TripPhotoAlbumInput } from "./TripPhotosPage";
-
-const albums: TripPhotoAlbumLink[] = [
-  {
-    id: "album-google",
-    tripId: seedTrip.id,
-    title: "Google Photos group album",
-    provider: "google_photos",
-    url: "https://photos.app.goo.gl/group",
-    access: "collaborative",
-    ownerMemberId: "member-aom",
-    relatedItineraryItemIds: ["item-victoria-peak"],
-    day: "2026-06-18",
-    description: "Shared album for everyone",
-    accessNote: "Everyone can add photos",
-    coverUrl: "https://images.example.test/hong-kong-album.jpg",
-    createdBy: "member-aom",
-    updatedAt: "2026-06-08T00:00:00.000Z",
-    version: 1,
-  },
-  {
-    id: "album-dropbox",
-    tripId: seedTrip.id,
-    title: "Dropbox upload request",
-    provider: "dropbox",
-    url: "https://www.dropbox.com/request/example",
-    access: "upload_request",
-    ownerMemberId: "member-beam",
-    relatedItineraryItemIds: [],
-    day: null,
-    description: null,
-    accessNote: null,
-    coverUrl: null,
-    createdBy: "member-beam",
-    updatedAt: "2026-06-08T00:00:00.000Z",
-    version: 1,
-  },
-  {
-    id: "album-unsafe",
-    tripId: seedTrip.id,
-    title: "Unsafe import",
-    provider: "custom",
-    url: "javascript:alert(1)",
-    access: "view_only",
-    ownerMemberId: null,
-    relatedItineraryItemIds: [],
-    day: null,
-    description: null,
-    accessNote: null,
-    coverUrl: null,
-    createdBy: "member-aom",
-    updatedAt: "2026-06-08T00:00:00.000Z",
-    version: 1,
-  },
-];
+import type { TripPhotoAlbumInput } from "./TripPhotosPage";
+import { renderTripPhotosPage } from "./TripPhotosPage.test-support";
 
 describe("TripPhotosPage", () => {
   it("renders the album hub, summary, provider filters, safe links, and inspector", () => {
-    renderPage();
+    renderTripPhotosPage();
 
     expect(screen.getByRole("region", { name: "Photos & Albums" })).toHaveClass("trip-photos-page", "bg-transparent");
     expect(screen.getByText("3 albums").closest(".photos-stat")).toHaveClass(
@@ -92,7 +37,7 @@ describe("TripPhotosPage", () => {
 
   it("filters albums by provider", async () => {
     const user = userEvent.setup();
-    renderPage();
+    renderTripPhotosPage();
 
     await user.click(screen.getByRole("button", { name: "Dropbox, 1 albums" }));
 
@@ -104,7 +49,7 @@ describe("TripPhotosPage", () => {
     const user = userEvent.setup();
     const onCreatePhotoAlbum = vi.fn();
     const onUpdatePhotoAlbum = vi.fn();
-    renderPage({ onCreatePhotoAlbum, onUpdatePhotoAlbum });
+    renderTripPhotosPage({ onCreatePhotoAlbum, onUpdatePhotoAlbum });
 
     await user.click(screen.getByRole("button", { name: "Add album" }));
     let dialog = screen.getByRole("dialog", { name: "Add album" });
@@ -140,13 +85,13 @@ describe("TripPhotosPage", () => {
     const user = userEvent.setup();
     const viewer = seedTrip.members.find((member) => member.role === "viewer")!;
     const onDeletePhotoAlbum = vi.fn();
-    const { unmount } = renderPage({ currentMember: viewer, onDeletePhotoAlbum });
+    const { unmount } = renderTripPhotosPage({ currentMember: viewer, onDeletePhotoAlbum });
 
     expect(screen.queryByRole("button", { name: "Add album" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit album" })).not.toBeInTheDocument();
 
     unmount();
-    renderPage({ onDeletePhotoAlbum });
+    renderTripPhotosPage({ onDeletePhotoAlbum });
     await user.click(screen.getAllByRole("button", { name: "Delete album" })[0]);
     expect(screen.getByRole("dialog", { name: "Delete album" })).toBeInTheDocument();
     await user.click(within(screen.getByRole("dialog", { name: "Delete album" })).getByRole("button", { name: "Delete album" }));
@@ -154,34 +99,3 @@ describe("TripPhotosPage", () => {
     expect(onDeletePhotoAlbum).toHaveBeenCalledWith("album-google");
   });
 });
-
-function renderPage(overrides: Partial<{
-  currentMember: Member;
-  photoAlbumLinks: TripPhotoAlbumLink[];
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void;
-  onDeletePhotoAlbum: (albumId: string) => void;
-}> = {}) {
-  return renderWithI18n(renderPageElement(overrides), { locale: "en" });
-}
-
-function renderPageElement(overrides: Partial<{
-  currentMember: Member;
-  photoAlbumLinks: TripPhotoAlbumLink[];
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void;
-  onDeletePhotoAlbum: (albumId: string) => void;
-}> = {}) {
-  const currentMember = overrides.currentMember ?? seedTrip.members[0];
-  return (
-    <TripPhotosPage
-      trip={seedTrip}
-      currentMember={currentMember}
-      photoAlbumLinks={overrides.photoAlbumLinks ?? albums}
-      canEditPhotoAlbums={currentMember.role === "owner" || currentMember.role === "organizer" || currentMember.role === "traveler"}
-      onCreatePhotoAlbum={overrides.onCreatePhotoAlbum ?? vi.fn()}
-      onUpdatePhotoAlbum={overrides.onUpdatePhotoAlbum ?? vi.fn()}
-      onDeletePhotoAlbum={overrides.onDeletePhotoAlbum ?? vi.fn()}
-    />
-  );
-}

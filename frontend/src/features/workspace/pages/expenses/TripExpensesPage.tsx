@@ -95,10 +95,36 @@ export function TripExpensesPage({
       />
 
       <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
-        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="wallet" label={t.expenses.stats.tripSpend} value={formatMoney(expenseSummary.groupSpend, settlementCurrency)} />
-        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="check" label={t.expenses.stats.yourBalance} value={expenseSummary.currentUserNetLabel} tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"} valueToneClassNames={summaryValueToneClassNames} />
-        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="users" label={t.expenses.stats.owedToYou} value={formatMoney(owedToYou, settlementCurrency)} tone="positive" valueToneClassNames={summaryValueToneClassNames} />
-        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="warning" label={t.expenses.stats.youOwe} value={formatMoney(youOwe, settlementCurrency)} tone="negative" valueToneClassNames={summaryValueToneClassNames} />
+        <WorkspaceSummaryStat
+          className={expenseStyles.statClassName}
+          icon="wallet"
+          label={t.expenses.stats.tripSpend}
+          value={formatMoney(expenseSummary.groupSpend, settlementCurrency)}
+        />
+        <WorkspaceSummaryStat
+          className={expenseStyles.statClassName}
+          icon="check"
+          label={t.expenses.stats.yourBalance}
+          tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"}
+          value={expenseSummary.currentUserNetLabel}
+          valueToneClassNames={summaryValueToneClassNames}
+        />
+        <WorkspaceSummaryStat
+          className={expenseStyles.statClassName}
+          icon="users"
+          label={t.expenses.stats.owedToYou}
+          tone="positive"
+          value={formatMoney(owedToYou, settlementCurrency)}
+          valueToneClassNames={summaryValueToneClassNames}
+        />
+        <WorkspaceSummaryStat
+          className={expenseStyles.statClassName}
+          icon="warning"
+          label={t.expenses.stats.youOwe}
+          tone="negative"
+          value={formatMoney(youOwe, settlementCurrency)}
+          valueToneClassNames={summaryValueToneClassNames}
+        />
       </div>
 
       <div className={expenseStyles.contentGridClassName}>
