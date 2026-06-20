@@ -14,6 +14,11 @@ import { errorMessage } from "../auth";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading } from "../account-panel-heading";
 import { PortalListSkeleton } from "./account-portal-primitives";
+import {
+  buildPortalVaultCreateRequest,
+  createEmptyPortalVaultForm,
+  portalVaultCloudProviders,
+} from "./portal-vault-section-state";
 
 interface PortalVaultSectionClassNames {
   empty: string;
@@ -25,7 +30,6 @@ interface PortalVaultSectionClassNames {
 const cloudProviderPanelClassName = "cloud-provider-panel grid gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_span]:block [&_span]:text-[13px] [&_span]:leading-5 [&_span]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-(--color-text)";
 const cloudProviderGridClassName = "cloud-provider-grid grid grid-cols-4 gap-2 max-[767px]:grid-cols-2";
 const cloudProviderButtonClassName = "cloud-provider-button inline-flex min-h-[46px] items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) text-xs font-[850] text-(--color-text) transition-[border-color,background,color] duration-[180ms] hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:bg-(--color-primary-soft) focus-visible:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:hover:border-(--color-border) disabled:hover:bg-(--color-surface-muted) disabled:hover:text-(--color-text-muted)";
-const cloudProviders = ["Google Drive", "iCloud", "Dropbox", "OneDrive"];
 
 export function PortalVaultSection({
   accountClient,
@@ -47,21 +51,17 @@ export function PortalVaultSection({
   vaultItems: AccountVaultItemSummary[];
 }) {
   const { t } = useI18n();
-  const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>({ kind: "note", title: "", detail: "", externalUrl: "" });
+  const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>(createEmptyPortalVaultForm);
 
   async function submitVaultItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const title = vaultForm.title.trim();
-    if (!title) return;
+    const vaultRequest = buildPortalVaultCreateRequest(vaultForm);
+    if (!vaultRequest) return;
+
     try {
-      const item = await accountClient.createVaultItem(accountSession.sessionToken, {
-        ...vaultForm,
-        title,
-        detail: vaultForm.detail.trim(),
-        externalUrl: vaultForm.externalUrl?.trim() || null,
-      });
+      const item = await accountClient.createVaultItem(accountSession.sessionToken, vaultRequest);
       onVaultItemCreated(item);
-      setVaultForm({ kind: "note", title: "", detail: "", externalUrl: "" });
+      setVaultForm(createEmptyPortalVaultForm());
       onMessage(t.access.portal.vaultCreate.success);
       onError(null);
     } catch (caught) {
@@ -78,7 +78,7 @@ export function PortalVaultSection({
           <span id="cloud-provider-status">Link paste only for now. Save a provider URL in the external link field; direct cloud connection is not enabled yet.</span>
         </div>
         <div className={cloudProviderGridClassName}>
-          {cloudProviders.map((provider) => (
+          {portalVaultCloudProviders.map((provider) => (
             <button
               aria-describedby="cloud-provider-status"
               className={cloudProviderButtonClassName}
