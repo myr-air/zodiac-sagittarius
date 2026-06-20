@@ -2,8 +2,19 @@ import type { Locale } from "@/src/i18n/types";
 import { formatDateTime } from "../auth";
 import type { AuthFlow } from "../auth";
 
-export type EmailLoginAuthStep = "email" | "methods" | "password" | "setup";
-export type EmailLoginVisualStep = EmailLoginAuthStep | "otp";
+export const emailLoginAuthStepValues = [
+  "email",
+  "methods",
+  "password",
+  "setup",
+] as const;
+export type EmailLoginAuthStep = (typeof emailLoginAuthStepValues)[number];
+
+export const emailLoginVisualStepValues = [
+  ...emailLoginAuthStepValues,
+  "otp",
+] as const;
+export type EmailLoginVisualStep = (typeof emailLoginVisualStepValues)[number];
 
 export function resolveEmailLoginVisualStep(authStep: EmailLoginAuthStep, hasChallenge: boolean): EmailLoginVisualStep {
   return hasChallenge ? "otp" : authStep;

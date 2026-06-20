@@ -1,6 +1,12 @@
 import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
 
-export type EmailLoginSubmitRoute = "setup" | "code" | "password" | "email";
+export const emailLoginSubmitRouteValues = [
+  "setup",
+  "code",
+  "password",
+  "email",
+] as const;
+export type EmailLoginSubmitRoute = (typeof emailLoginSubmitRouteValues)[number];
 
 export type EmailLoginSubmitHandlers<Handler> = Record<EmailLoginSubmitRoute, Handler>;
 

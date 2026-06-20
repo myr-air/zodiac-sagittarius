@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { selectEmailLoginSubmitHandler, selectEmailLoginSubmitRoute } from "./email-login-submit-route";
+import {
+  emailLoginSubmitRouteValues,
+  selectEmailLoginSubmitHandler,
+  selectEmailLoginSubmitRoute,
+} from "./email-login-submit-route";
 
 const handlers = {
   setup: "setup-handler",
@@ -9,6 +13,15 @@ const handlers = {
 };
 
 describe("selectEmailLoginSubmitRoute", () => {
+  it("keeps submit routes in handler lookup order", () => {
+    expect(emailLoginSubmitRouteValues).toEqual([
+      "setup",
+      "code",
+      "password",
+      "email",
+    ]);
+  });
+
   it("keeps setup submission isolated from challenge state", () => {
     expect(selectEmailLoginSubmitRoute({ authStep: "setup", hasChallenge: false })).toBe("setup");
     expect(selectEmailLoginSubmitRoute({ authStep: "setup", hasChallenge: true })).toBe("setup");

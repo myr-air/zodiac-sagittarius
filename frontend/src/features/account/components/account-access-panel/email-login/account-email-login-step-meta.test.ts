@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { AuthFlow } from "../auth";
 import {
   buildEmailLoginStepMeta,
+  emailLoginAuthStepValues,
   emailLoginStepHeading,
   emailLoginStepProgress,
+  emailLoginVisualStepValues,
   resolveEmailLoginVisualStep,
   type EmailLoginAuthStep,
 } from "./account-email-login-step-meta";
@@ -27,6 +29,22 @@ const headingLabels = {
 };
 
 describe("email login step metadata", () => {
+  it("keeps auth and visual steps in canonical order", () => {
+    expect(emailLoginAuthStepValues).toEqual([
+      "email",
+      "methods",
+      "password",
+      "setup",
+    ]);
+    expect(emailLoginVisualStepValues).toEqual([
+      "email",
+      "methods",
+      "password",
+      "setup",
+      "otp",
+    ]);
+  });
+
   it("uses the OTP visual step while a challenge is active", () => {
     expect(resolveEmailLoginVisualStep("email", true)).toBe("otp");
     expect(resolveEmailLoginVisualStep("password", false)).toBe("password");
