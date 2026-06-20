@@ -1,11 +1,15 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { formatReminderDate } from "@/src/trip/expense-reminder-display";
 import { formatMoney } from "@/src/trip/expenses";
+import { memberInitial } from "@/src/trip/member-labels";
+import { findMemberById } from "@/src/trip/member-lookup";
+import { tripPlanName } from "@/src/trip/trip-plan-display";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone, formatReminderDate, memberById, memberInitial, tripPlanName } from "../expense-page-support";
+import { categoryTone } from "../expense-page-options";
 
 interface ExpenseOverviewPanelsProps {
   trip: Trip;
@@ -67,8 +71,8 @@ export function ExpenseOverviewPanels({
         {expenseSummary.settlementSuggestions.length ? (
           <div className={expenseStyles.balanceListClassName}>
             {expenseSummary.settlementSuggestions.map((suggestion) => {
-              const from = memberById(trip.members, suggestion.from);
-              const to = memberById(trip.members, suggestion.to);
+              const from = findMemberById(trip.members, suggestion.from);
+              const to = findMemberById(trip.members, suggestion.to);
               return (
                 <div className={expenseStyles.settlementRowClassName} key={`${suggestion.from}-${suggestion.to}-${suggestion.amount}`}>
                   <span className={expenseStyles.balanceMetaClassName}>

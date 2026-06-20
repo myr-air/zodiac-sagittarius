@@ -21,7 +21,6 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       expenseSummary,
       expenseSettlements,
       expensePageOptions,
-      expensePageSupport,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -81,9 +80,6 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(expenseSettlements).toContain("export function attachReminderHistory");
     expect(expenseSettlements).toContain("export function upsertExpenseReminder");
     expect(expenseSettlements).toContain("function expenseReminderKey");
-    expect(expensePageSupport).toContain("./expense-page-options");
-    expect(expensePageSupport).not.toContain("const categoryTones");
-    expect(expensePageSupport).not.toContain("export const expenseCategories");
     expect(expensePageOptions).toContain("export const expenseCategories");
     expect(expensePageOptions).toContain("export const expenseSplitModes");
     expect(expensePageOptions).toContain("function categoryTone");

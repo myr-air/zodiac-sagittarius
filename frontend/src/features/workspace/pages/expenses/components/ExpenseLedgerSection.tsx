@@ -1,9 +1,11 @@
 import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
+import { memberInitial } from "@/src/trip/member-labels";
+import { findMemberById } from "@/src/trip/member-lookup";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone, memberById, memberInitial } from "../expense-page-support";
+import { categoryTone } from "../expense-page-options";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
@@ -90,7 +92,7 @@ export function ExpenseLedgerSection({
           </thead>
           <tbody className={expenseStyles.tableBodyClassName}>
             {filteredExpenses.map((expense) => {
-              const payer = memberById(members, expense.paidBy);
+              const payer = findMemberById(members, expense.paidBy);
               const linkedItem = expense.itineraryItemId ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId) : null;
               const tone = categoryTone(expense.category);
               return (

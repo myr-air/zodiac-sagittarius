@@ -176,7 +176,6 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/expense-page-filters.ts",
   "src/features/workspace/pages/expenses/expense-page-filters.test.ts",
   "src/features/workspace/pages/expenses/expense-page-options.ts",
-  "src/features/workspace/pages/expenses/expense-page-support.ts",
   "src/features/workspace/pages/expenses/TripExpensesPage.actual-actions.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.overview.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.plan-scope.test.tsx",

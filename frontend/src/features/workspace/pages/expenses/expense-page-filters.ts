@@ -1,8 +1,8 @@
 import { expenseAmountInSettlementCurrency } from "@/src/trip/expenses";
+import { findMemberById } from "@/src/trip/member-lookup";
 import type { Expense, ItineraryItem, Member } from "@/src/trip/types";
 
 import type { ExpenseCategoryFilter } from "./expense-page-types";
-import { memberById } from "./expense-page-support";
 
 export interface ExpenseFilterInput {
   categoryFilter: ExpenseCategoryFilter;
@@ -48,7 +48,7 @@ export function filterExpenses({
 }: ExpenseFilterInput): Expense[] {
   const normalizedQuery = query.trim().toLocaleLowerCase();
   return expenses.filter((expense) => {
-    const payer = memberById(members, expense.paidBy);
+    const payer = findMemberById(members, expense.paidBy);
     const linkedItem = expense.itineraryItemId
       ? itineraryItems.find((item) => item.id === expense.itineraryItemId)
       : null;

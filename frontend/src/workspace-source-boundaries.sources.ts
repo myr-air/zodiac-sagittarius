@@ -73,7 +73,6 @@ export const workspaceBoundarySourcePaths = {
   expenseSummary: "src/trip/expense-summary.ts",
   expenseSettlements: "src/trip/expense-settlements.ts",
   expensePageOptions: "src/features/workspace/pages/expenses/expense-page-options.ts",
-  expensePageSupport: "src/features/workspace/pages/expenses/expense-page-support.ts",
   itineraryViewModelHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts",
   apiClientsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts",
   setupContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-setup-context.ts",
