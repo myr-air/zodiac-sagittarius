@@ -12,8 +12,7 @@ import {
   overviewTaskToolbarClassName,
   personalTaskFormClassName,
 } from "./overview-page.styles";
-
-type TaskStatusFilter = "all" | "open" | "done";
+import type { TaskStatusFilter } from "./overview-role-panels.types";
 
 export function TravelerChecklistPanel({
   addPersonalTaskLabel,
