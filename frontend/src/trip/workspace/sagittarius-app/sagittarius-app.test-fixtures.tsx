@@ -1,5 +1,4 @@
 export { dailyBriefingFixture } from "./sagittarius-app.test-briefing-fixtures";
-export { dailyBriefingFixture } from "./sagittarius-app.test-briefing-fixtures";
 export {
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
