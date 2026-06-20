@@ -1,55 +1,27 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { Icon } from "@/src/ui/icons";
-import { workflowStepMeta } from "./HomeLanding.meta";
 import { HomeLandingPreview } from "./HomeLandingPreview";
+import { HomeFinalCta, HomeLandingFooter, HomeLandingNav, HomeWorkflowSection } from "./HomeLandingSections";
 import {
   homeAvatarStackClassName,
-  homeBrandClassName,
-  homeBrandMarkClassName,
-  homeFeatureBandClassName,
-  homeFeatureTextClassName,
-  homeFeatureTitleClassName,
-  homeFooterBrandClassName,
-  homeFooterClassName,
-  homeFooterCopyClassName,
-  homeFooterLinkClassName,
-  homeFooterLinksClassName,
   homeHeroActionsClassName,
   homeHeroClassName,
   homeHeroCopyClassName,
   homeHeroDetailClassName,
   homeHeroRouteClassName,
   homeHeroTitleClassName,
-  homeLanguageSwitchClassName,
   homeLargeButtonClassName,
-  homeLinkButtonClassName,
-  homeNavActionsClassName,
-  homeNavClassName,
-  homeNavSecondaryActionsClassName,
   homePageClassName,
   homePrimaryButtonClassName,
   homeSecondaryButtonClassName,
   homeSocialProofClassName,
   homeSocialProofTextClassName,
   homeTitleSceneClassName,
-  homeWorkflowClassName,
-  homeWorkflowDetailClassName,
-  homeWorkflowGridClassName,
-  homeWorkflowHighlightClassName,
-  homeWorkflowIconClassName,
-  homeWorkflowItemClassName,
-  homeWorkflowItemTextClassName,
-  homeWorkflowItemTitleClassName,
-  homeWorkflowNumberClassName,
-  homeWorkflowTitleClassName,
-  workflowToneClassNames,
 } from "./HomeLanding.styles";
 
 export function HomeLanding() {
@@ -58,30 +30,7 @@ export function HomeLanding() {
 
   return (
     <main className={homePageClassName} aria-labelledby="home-title">
-      <nav className={homeNavClassName} aria-label={landing.navLabel}>
-        <Link className={homeBrandClassName} href="/" aria-label={landing.brandHomeLabel}>
-          <span className={homeBrandMarkClassName} aria-hidden="true">
-            <svg viewBox="0 0 48 48">
-              <path d="M13 35 35 13M22 13h13v13" />
-              <path d="M12 18c8 2 16 8 18 18" />
-            </svg>
-          </span>
-          Joii
-        </Link>
-
-        <div className={homeNavActionsClassName}>
-          <div className={homeNavSecondaryActionsClassName}>
-            <LanguageSwitch className={homeLanguageSwitchClassName} />
-            <Link className={homeLinkButtonClassName} href={appRoutes.login()}>
-              {landing.actions.login}
-            </Link>
-          </div>
-          <Link className={cn(homePrimaryButtonClassName, "max-[420px]:col-span-full")} href={appRoutes.join()}>
-            {landing.actions.tripAccess}
-            <Icon name="key" />
-          </Link>
-        </div>
-      </nav>
+      <HomeLandingNav landing={landing} />
 
       <section className={homeHeroClassName} aria-labelledby="home-title">
         <svg className={homeHeroRouteClassName} viewBox="0 0 1440 420" aria-hidden="true" focusable="false">
@@ -122,64 +71,9 @@ export function HomeLanding() {
         <HomeLandingPreview landing={landing} />
       </section>
 
-      <section className={homeWorkflowClassName} id="workflow" aria-labelledby="workflow-title">
-        <h2 className={homeWorkflowTitleClassName} id="workflow-title">
-          {landing.workflow.titleLead} <span className={homeWorkflowHighlightClassName}>{landing.workflow.titleHighlight}</span>
-        </h2>
-        <p className={homeWorkflowDetailClassName}>{landing.workflow.detail}</p>
-        <div className={homeWorkflowGridClassName}>
-          {workflowStepMeta.map((step, index) => {
-            const toneClassNames = workflowToneClassNames[step.tone];
-
-            return (
-              <article className={homeWorkflowItemClassName} data-tone={step.tone} key={step.key}>
-                <span className={cn(homeWorkflowNumberClassName, toneClassNames.number)}>{index + 1}</span>
-                <span className={cn(homeWorkflowIconClassName, toneClassNames.icon)} aria-hidden="true">
-                  <Icon name={step.icon} />
-                </span>
-                <h3 className={homeWorkflowItemTitleClassName}>{landing.workflow.steps[step.key].title}</h3>
-                <p className={homeWorkflowItemTextClassName}>{landing.workflow.steps[step.key].text}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className={homeFeatureBandClassName} aria-label={landing.finalCta.label}>
-        <div>
-          <h2 className={homeFeatureTitleClassName}>{landing.finalCta.title}</h2>
-          <p className={homeFeatureTextClassName}>{landing.finalCta.detail}</p>
-        </div>
-        <Link className={cn(homePrimaryButtonClassName, homeLargeButtonClassName)} href={appRoutes.register()}>
-          {landing.actions.createTrip}
-          <Icon name="plus" />
-        </Link>
-      </section>
-
-      <footer className={homeFooterClassName}>
-        <div className={homeFooterBrandClassName}>
-          <Link className={homeBrandClassName} href="/" aria-label={landing.brandHomeLabel}>
-            <span className={homeBrandMarkClassName} aria-hidden="true">
-              <svg viewBox="0 0 48 48">
-                <path d="M13 35 35 13M22 13h13v13" />
-                <path d="M12 18c8 2 16 8 18 18" />
-              </svg>
-            </span>
-            Joii
-          </Link>
-          <p className={homeFooterCopyClassName}>{landing.footer.copy}</p>
-        </div>
-
-        <div className={homeFooterLinksClassName}>
-          <Link className={homeFooterLinkClassName} href={appRoutes.login()}>{landing.actions.login}</Link>
-          <Link className={homeFooterLinkClassName} href={appRoutes.join()}>{landing.actions.tripAccess}</Link>
-          <Link className={homeFooterLinkClassName} href={appRoutes.register()}>{landing.actions.createAccount}</Link>
-          <a className={homeFooterLinkClassName} href="https://github.com/GLINCKER/thesvg" target="_blank" rel="noreferrer">
-            <Image src="/icons/github-thesvg.svg" alt="" width={16} height={16} />
-            {landing.footer.svgSource}
-          </a>
-        </div>
-      </footer>
+      <HomeWorkflowSection landing={landing} />
+      <HomeFinalCta landing={landing} />
+      <HomeLandingFooter landing={landing} />
     </main>
   );
 }
