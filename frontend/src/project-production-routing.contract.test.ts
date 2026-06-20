@@ -1,0 +1,503 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import {
+  collectProductCopyFiles,
+  collectSourceFiles,
+  composeServiceBlock,
+  envFileValue,
+  frontendRoot,
+  productCopySourceRoots,
+  repoRoot,
+} from "./project-contract.helpers";
+
+describe("Sagittarius production and routing contracts", () => {
+  it("uses Next App Router with trip-scoped production routes", () => {
+    expect(readFileSync(join(frontendRoot, "app/page.tsx"), "utf8")).toContain("HomeLanding");
+    const homeLanding = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.tsx"), "utf8");
+    const homeLandingPreview = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLandingPreview.tsx"), "utf8");
+    const homeLandingMeta = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.meta.ts"), "utf8");
+    const homeLandingStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.styles.ts"), "utf8");
+    const languageSwitch = readFileSync(join(frontendRoot, "src/i18n/LanguageSwitch.tsx"), "utf8");
+    const languageSwitchSupport = readFileSync(join(frontendRoot, "src/i18n/language-switch.support.ts"), "utf8");
+    expect(homeLanding).toContain("LanguageSwitch");
+    expect(homeLanding).toContain("./HomeLandingPreview");
+    expect(homeLanding).toContain("./HomeLanding.meta");
+    expect(homeLanding).toContain("./HomeLanding.styles");
+    expect(homeLanding).not.toContain("previewDayKeys");
+    expect(homeLanding).not.toContain("checkedChecklistKeys");
+    expect(homeLandingPreview).toContain("export function HomeLandingPreview");
+    expect(homeLandingPreview).toContain("previewDayKeys");
+    expect(homeLandingPreview).toContain("checkedChecklistKeys");
+    expect(homeLanding).not.toContain("const homePageClassName");
+    expect(homeLanding).not.toContain("const workflowStepMeta");
+    expect(homeLandingMeta).toContain("workflowStepMeta");
+    expect(homeLandingMeta).toContain("previewDayKeys");
+    expect(homeLandingStyles).toContain("homePageClassName");
+    expect(homeLandingStyles).toContain("workflowToneClassNames");
+    expect(languageSwitch).toContain("./language-switch.support");
+    expect(languageSwitch).not.toContain("const triggerClassName");
+    expect(languageSwitch).not.toContain("function readStoredCurrency");
+    expect(languageSwitchSupport).toContain("export const triggerClassName");
+    expect(languageSwitchSupport).toContain("export function readStoredCurrency");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/en.home.ts"), "utf8")).toContain("Plan trips with friends");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/th.home.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
+    expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/portal/page.tsx"))).toBe(true);
+    [
+      "app/portal/my-trips/page.tsx",
+      "app/portal/explorer/page.tsx",
+      "app/portal/to-dos/page.tsx",
+      "app/portal/vault/page.tsx",
+      "app/portal/settings/page.tsx",
+      "app/portal/sign-out/page.tsx",
+    ].forEach((routeFile) => expect(existsSync(join(frontendRoot, routeFile))).toBe(true));
+    expect(readFileSync(join(frontendRoot, "app/access/page.tsx"), "utf8")).toContain("appRoutes.portal()");
+    expect(readFileSync(join(frontendRoot, "app/login/page.tsx"), "utf8")).toContain("redirect(appRoutes.login())");
+    expect(readFileSync(join(frontendRoot, "app/register/page.tsx"), "utf8")).toContain("redirect(appRoutes.register())");
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/itinerary/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/map/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/timeline/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/trips/[tripId]/members/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "app/join/demo/page.tsx"))).toBe(false);
+    expect(readFileSync(join(frontendRoot, "app/join/[joinCode]/page.tsx"), "utf8")).toContain("initialJoinCode={decodedJoinCode}");
+    expect(readFileSync(join(frontendRoot, "app/layout.tsx"), "utf8")).toContain("Joii");
+  });
+
+  it("keeps the Calm Travel Ops design tokens in globals", () => {
+    const css = readFileSync(join(frontendRoot, "app/globals.css"), "utf8");
+
+    expect(css).toContain("--color-primary: #c24f16");
+    expect(css).toContain("--color-route: #2563eb");
+    expect(css).toContain("--color-warning: #b45309");
+  });
+
+  it("uses Trip Plan language in product copy instead of rollout compatibility names", () => {
+    const messagesRoot = join(frontendRoot, "src/i18n/messages");
+    const messages = readdirSync(messagesRoot)
+      .filter((entry) => entry.endsWith(".ts"))
+      .map((entry) => readFileSync(join(messagesRoot, entry), "utf8"))
+      .join("\n");
+
+    expect(messages).toContain("Trip Plan");
+    expect(messages).not.toMatch(/\bTrip Sheet\b/i);
+    expect(messages).not.toMatch(/\bPlan Variant\b/i);
+  });
+
+  it("keeps production frontend copy on Trip Plan terminology", () => {
+    const productCopy = productCopySourceRoots
+      .flatMap((root) => collectProductCopyFiles(join(frontendRoot, root)))
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n");
+
+    expect(productCopy).toContain("Trip Plan");
+    expect(productCopy).not.toMatch(/\bTrip Sheet\b/i);
+    expect(productCopy).not.toMatch(/\bPlan Variant\b/i);
+    expect(productCopy).not.toMatch(/\bplan variant\b/);
+    expect(productCopy).not.toMatch(/\btrip sheet\b/i);
+  });
+
+  it("documents the Rust/PostgreSQL API data contract", () => {
+    const spec = readFileSync(join(repoRoot, "docs/api-data-spec.md"), "utf8");
+
+    expect(spec).toContain("CREATE TABLE trips");
+    expect(spec).toContain("CREATE TABLE itinerary_items");
+    expect(spec).toContain("GET /api/v1/trips/:tripId");
+    expect(spec).toContain("POST /api/v1/trip-join-sessions");
+    expect(spec).toContain("CREATE TABLE trip_member_sessions");
+    expect(spec).toContain("CREATE TABLE trip_join_sessions");
+    expect(spec).toContain("PATCH /api/v1/trips/:tripId/itinerary-items/:itemId");
+    expect(spec).toContain("wss://api.sagittarius.local/api/v1/trips/:tripId/events/stream");
+    expect(spec).toContain("itinerary_item.updated");
+    expect(spec).toContain("clientMutationId");
+  });
+
+  it("documents the backend vertical slice verification command", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+
+    expect(makefile).toContain("TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test");
+    expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST)');
+    expect(makefile).toContain("backend-daily-briefings-contract: db-init-test");
+    expect(makefile).toContain('DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST) -p sagittarius-api --test daily_briefings_contract');
+  });
+
+  it("keeps incremental database migrations independent in db-init targets", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+
+    expect(makefile).toContain("backend/migrations/0004_account_password_auth.sql");
+    expect(makefile).toContain("backend/migrations/0005_account_portal.sql");
+    expect(makefile).toContain("backend/migrations/0006_trip_countries.sql");
+    expect(makefile).toContain("backend/migrations/0010_itinerary_activity_paths.sql");
+    expect(makefile).toContain("backend/migrations/0011_expense_reminders.sql");
+    expect(makefile).toContain("backend/migrations/0025_trip_plan_compatibility.sql");
+    expect(makefile).toContain("backend/migrations/0026_plan_scoped_records.sql");
+    expect(makefile).toContain("backend/migrations/0027_itinerary_hierarchy_time_windows.sql");
+    expect(makefile).toContain("backend/migrations/0028_plan_check_trip_plan_scope.sql");
+    expect(makefile).toContain("backend/migrations/0029_expense_reminder_trip_plan_scope.sql");
+    expect(makefile).toContain("backend/migrations/0031_itinerary_activity_type_default.sql");
+    expect(makefile).toContain("table_name='account_vault_items'");
+    expect(makefile).toContain("table_name='trips' AND column_name='countries'");
+    expect(makefile).toContain("table_name='itinerary_items' AND column_name='path_id'");
+    expect(makefile).toContain("table_name='expense_reminders'");
+    expect(makefile).toContain("table_name='trip_tasks' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("table_name='plan_checks' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("table_name='expense_reminders' AND column_name='trip_plan_id'");
+    expect(makefile).toContain("pg_get_constraintdef(oid) LIKE '%default%'");
+    expect(makefile).not.toMatch(/elif ! \$\(PSQL\)[\s\S]*account_vault_items/);
+  });
+
+  it("keeps the real API e2e runnable from a seeded local backend", () => {
+    const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+
+    expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
+    expect(packageJson.scripts?.["test:e2e:auth-browser"]).toBe("bun run scripts/run-local-real-browser-auth-e2e.ts");
+    expect(packageJson.scripts?.["test:api-trace-smoke"]).toBe("bun run scripts/run-local-api-trace-smoke.ts");
+    expect(packageJson.scripts?.["test:perf-smoke"]).toBe("bun run scripts/run-local-perf-smoke.ts");
+    expect(packageJson.scripts?.["test:production-env"]).toBe("bun run scripts/check-production-env.ts");
+    expect(packageJson.scripts?.["test:release-signoff"]).toBe("bun run scripts/check-release-signoff.ts");
+    expect(packageJson.scripts?.["test:staging-preflight"]).toBe("bun run scripts/check-staging-preflight.ts");
+    expect(packageJson.scripts?.["test:staging-signoff"]).toBe("bun run scripts/check-staging-signoff.ts");
+    expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-local-api-trace-smoke.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-local-perf-smoke.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/check-production-env.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/check-release-signoff.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/check-staging-preflight.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/check-staging-signoff.ts"))).toBe(true);
+    const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
+    expect(authBrowserE2e).toContain('run("bun", ["run", "build"]');
+    expect(authBrowserE2e).toContain('spawnLogged("frontend", "bun", ["run", "start"]');
+    expect(authBrowserE2e).toContain('EMAIL_DELIVERY: "log"');
+    expect(authBrowserE2e).toContain("Set password and continue");
+    expect(authBrowserE2e).toContain("Verify email");
+    expect(authBrowserE2e).not.toContain('name: /^Continue$/');
+    expect(authBrowserE2e).not.toContain('name: /^Use password$/');
+    expect(authBrowserE2e).not.toContain('name: /^Create my trip space$/');
+    expect(authBrowserE2e).not.toContain('["run", "next", "dev"');
+    const releaseSignoff = readFileSync(join(frontendRoot, "scripts/check-release-signoff.ts"), "utf8");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_API_BASE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_FRONTEND_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_BROWSER_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_NO_P1_P2");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_API_BASE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_FRONTEND_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_BROWSER_SIGNOFF");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_PREFLIGHT_PASSED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ROLLBACK_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED");
+    expect(releaseSignoff).toContain("SAGITTARIUS_STAGING_NO_P1_P2");
+    expect(releaseSignoff).toContain("must not point at localhost");
+    expect(releaseSignoff).toContain("must not use placeholder domain");
+    expect(releaseSignoff).toContain("must be a real owner, not TBD");
+    const seedE2e = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/bin/seed_e2e.rs"), "utf8");
+    expect(seedE2e).toContain('const RESET_CONFIRMATION_ENV: &str = "SAGITTARIUS_ALLOW_E2E_DB_RESET"');
+    expect(seedE2e).toContain('const TEST_DATABASE_NAME: &str = "sagittarius_test"');
+    expect(seedE2e).toContain("database_name_from_url");
+    expect(seedE2e).toContain("0005_account_portal.sql");
+    expect(seedE2e).toContain("0006_trip_countries.sql");
+    expect(seedE2e).toContain("0010_itinerary_activity_paths.sql");
+    expect(seedE2e).toContain("0011_expense_reminders.sql");
+    expect(seedE2e).toContain("0012_expense_exchange_rates.sql");
+    expect(seedE2e).toContain("0013_expense_receipts_itemization.sql");
+    expect(seedE2e).toContain("0014_expense_notes.sql");
+    expect(seedE2e).toContain("0015_expense_comments.sql");
+    expect(seedE2e).toContain("0025_trip_plan_compatibility.sql");
+    expect(seedE2e).toContain("0026_plan_scoped_records.sql");
+    expect(seedE2e).toContain("0027_itinerary_hierarchy_time_windows.sql");
+    expect(seedE2e).toContain("0028_plan_check_trip_plan_scope.sql");
+    expect(seedE2e).toContain("0029_expense_reminder_trip_plan_scope.sql");
+    expect(seedE2e).toContain("0031_itinerary_activity_type_default.sql");
+    for (const script of [
+      "scripts/run-local-real-api-e2e.ts",
+      "scripts/run-local-real-browser-auth-e2e.ts",
+      "scripts/run-local-api-trace-smoke.ts",
+      "scripts/run-local-perf-smoke.ts",
+      "scripts/run-local-production-browser-qa.ts",
+    ]) {
+      expect(readFileSync(join(frontendRoot, script), "utf8")).toContain('SAGITTARIUS_ALLOW_E2E_DB_RESET: "1"');
+    }
+    expect(makefile).toContain("frontend-e2e-local:");
+    expect(makefile).toContain("frontend-e2e-local: db-init-test");
+    expect(makefile).toContain("bun run test:e2e:local");
+    expect(makefile).toContain("frontend-e2e-auth-browser: db-init-test");
+    expect(makefile).toContain("bun run test:e2e:auth-browser");
+  });
+
+  it("documents the runtime internal API proxy used by production Docker", () => {
+    const routeFile = join(frontendRoot, "app/api/v1/[...path]/route.ts");
+    const routeHandler = readFileSync(routeFile, "utf8");
+
+    expect(existsSync(routeFile)).toBe(true);
+    expect(routeHandler).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
+    expect(routeHandler).toContain("/api/v1/");
+    expect(routeHandler).toContain("GET");
+    expect(routeHandler).toContain("POST");
+    expect(routeHandler).toContain("PATCH");
+    expect(routeHandler).toContain("DELETE");
+    expect(routeHandler).toContain("OPTIONS");
+    expect(routeHandler).toContain("HEAD");
+  });
+
+  it("splits runtime env examples from release signoff evidence", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const dockerCompose = readFileSync(join(repoRoot, "docker-compose.yml"), "utf8");
+    const frontendDockerfile = readFileSync(join(repoRoot, "frontend/Dockerfile"), "utf8");
+    const localEnvExample = readFileSync(join(repoRoot, ".env.local.example"), "utf8");
+    const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
+    const releaseSignoffEnvExample = readFileSync(join(repoRoot, ".env.release-signoff.example"), "utf8");
+    const gitignore = readFileSync(join(repoRoot, ".gitignore"), "utf8");
+    const apiServiceBlock = composeServiceBlock(dockerCompose, "sagittarius-server");
+    const webServiceBlock = composeServiceBlock(dockerCompose, "sagittarius-web");
+    const databaseHost = new URL(envFileValue(productionEnvExample, "DATABASE_URL")).hostname;
+    const internalApiHost = new URL(
+      envFileValue(productionEnvExample, "SAGITTARIUS_INTERNAL_API_BASE_URL"),
+    ).hostname;
+
+    expect(makefile).toContain("PRODUCTION_COMPOSE_FILE ?= docker-compose.yml");
+    expect(makefile).not.toContain("docker-compose.production.yml");
+    expect(makefile).toContain("SIGNOFF_ENV_FILE ?= .env.release-signoff");
+    expect(makefile).toContain(
+      'SIGNOFF_ENV_SOURCE := $(if $(filter /%,$(SIGNOFF_ENV_FILE)),$(SIGNOFF_ENV_FILE),./$(SIGNOFF_ENV_FILE))',
+    );
+    expect(makefile).toContain("release-signoff-check:");
+    expect(makefile).toContain("staging-signoff-check: release-signoff-check");
+    expect(makefile).toContain("production-deploy-gate: production-env-file-check release-signoff-check");
+    expect(makefile).toContain(
+      'set -a; . "$(SIGNOFF_ENV_SOURCE)"; set +a; cd $(FRONTEND_DIR) && bun run test:release-signoff',
+    );
+
+    for (const localDefault of [
+      "DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius",
+      "TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test",
+      "PGADMIN_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres",
+      "SAGITTARIUS_BIND_ADDR=127.0.0.1:5181",
+      "SAGITTARIUS_ENV=development",
+      "SAGITTARIUS_SEED_SAMPLE_DATA=1",
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=http://127.0.0.1:5181",
+      "RUST_LOG=info,tower_http=info,sagittarius_api=info",
+    ]) {
+      expect(localEnvExample).toContain(localDefault);
+    }
+
+    for (const runtimeName of [
+      "DATABASE_URL",
+      "SAGITTARIUS_ENV",
+      "SAGITTARIUS_SEED_SAMPLE_DATA",
+      "SAGITTARIUS_ALLOWED_ORIGINS",
+      "PASSKEY_ALLOWED_ORIGINS",
+      "NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL",
+      "SAGITTARIUS_INTERNAL_API_BASE_URL",
+      "EMAIL_DELIVERY",
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USERNAME",
+      "SMTP_PASSWORD",
+      "EMAIL_FROM",
+      "SENDMAIL_COMMAND",
+      "RUST_LOG",
+    ]) {
+      expect(productionEnvExample).toContain(`${runtimeName}=`);
+    }
+
+    for (const signoffName of [
+      "SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_API_BASE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_PASSED",
+      "SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_ENVIRONMENT",
+      "SAGITTARIUS_SIGNOFF_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_FRONTEND_URL",
+      "SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_NO_P1_P2",
+      "SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED",
+      "SAGITTARIUS_ALERT_RUNBOOK_URL",
+      "SAGITTARIUS_ALERT_SINK_NAME",
+      "SAGITTARIUS_FEATURE_OWNER",
+      "SAGITTARIUS_ROLLBACK_OWNER",
+    ]) {
+      expect(releaseSignoffEnvExample).toContain(`${signoffName}=`);
+    }
+
+    expect(releaseSignoffEnvExample).not.toContain("SAGITTARIUS_STAGING_");
+    expect(apiServiceBlock).toContain("context: .");
+    expect(apiServiceBlock).toContain("dockerfile: backend/Dockerfile");
+    expect(webServiceBlock).toContain("context: .");
+    expect(webServiceBlock).toContain("dockerfile: frontend/Dockerfile");
+    expect(frontendDockerfile).toContain("COPY --chown=bun:bun --from=builder /app/frontend/.next ./.next");
+    expect(internalApiHost).toBe("sagittarius-api");
+    expect(apiServiceBlock).toMatch(/aliases:\n\s+- sagittarius-api/);
+    expect(databaseHost).toBe("zodiac-postgres");
+    expect(dockerCompose).toMatch(/ophiuchus:\n\s+external: true\n\s+name: ophiuchus-network/);
+    expect(apiServiceBlock).toContain("ophiuchus:");
+    expect(gitignore).toContain(".env");
+    expect(gitignore).toContain(".env.local");
+    expect(gitignore).toContain(".env.production");
+    expect(gitignore).toContain(".env.release-signoff");
+  });
+
+  it("keeps production-readiness gates repeatable from the root Makefile", () => {
+    const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
+    const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const apiMod = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/api/mod.rs"), "utf8");
+    const apiMain = readFileSync(join(repoRoot, "backend/crates/sagittarius-api/src/main.rs"), "utf8");
+    const productionEnvCheck = readFileSync(join(frontendRoot, "scripts/check-production-env.ts"), "utf8");
+    const productionEnvExample = readFileSync(join(repoRoot, ".env.production.example"), "utf8");
+    const authBrowserE2e = readFileSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"), "utf8");
+    const workflow = readFileSync(join(repoRoot, ".github/workflows/production-readiness.yml"), "utf8");
+
+    expect(existsSync(join(repoRoot, ".dockerignore"))).toBe(true);
+    expect(existsSync(join(repoRoot, "backend/Dockerfile"))).toBe(true);
+    expect(existsSync(join(repoRoot, "frontend/Dockerfile"))).toBe(true);
+    expect(makefile).toContain("production-readiness-fast: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test");
+    expect(makefile).toContain("production-readiness-local: production-readiness-fast perf-smoke");
+    expect(makefile).toContain("container-build:");
+    expect(makefile).toContain("staging-preflight: db-ensure-psql");
+    expect(makefile).toContain("staging-signoff-check:");
+    expect(makefile).toContain("production-env-check:");
+    expect(makefile).toContain("api-trace-smoke: db-init-test");
+    expect(makefile).toContain("perf-smoke: db-init-test");
+    expect(makefile).toContain("db-rollback-stop-notes-test:");
+    expect(makefile).toContain("ROLLBACK_TEST_DATABASE_NAME ?= sagittarius_rollback_test");
+    expect(makefile).toContain("DROP TABLE IF EXISTS stop_notes");
+    expect(apiMod).toContain(".route(\"/health\", get(health::liveness))");
+    expect(apiMod).toContain(".route(\"/readiness\", get(health::readiness))");
+    expect(apiMod).toContain("DefaultOnRequest::new().level(Level::INFO)");
+    expect(apiMod).toContain("DefaultOnResponse::new().level(Level::INFO)");
+    expect(apiMod).toContain("SAGITTARIUS_ALLOWED_ORIGINS");
+    expect(apiMod).not.toContain("AllowOrigin::mirror_request()");
+    expect(apiMain).toContain("EnvFilter::try_from_default_env()");
+    expect(apiMain).toContain("SAGITTARIUS_SEED_SAMPLE_DATA");
+    expect(apiMain).toContain("TASK_ESIM_ID");
+    expect(apiMain).toContain("EXPENSE_ID");
+    expect(apiMain).not.toContain("gen_random_uuid()");
+    expect(productionEnvCheck).toContain("EMAIL_DELIVERY");
+    expect(productionEnvCheck).toContain("PASSKEY_ALLOWED_ORIGINS");
+    expect(productionEnvCheck).toContain("SMTP_PASSWORD");
+    expect(productionEnvCheck).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL");
+    expect(productionEnvCheck).not.toMatch(/\bstaging\b/i);
+    expect(productionEnvExample).not.toMatch(/\bstaging\b/i);
+    for (const signoffOnlyName of [
+      "SAGITTARIUS_ALERT_RUNBOOK_URL",
+      "SAGITTARIUS_ALERT_SINK_NAME",
+      "SAGITTARIUS_FEATURE_OWNER",
+      "SAGITTARIUS_ROLLBACK_OWNER",
+      "SAGITTARIUS_SIGNOFF_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_API_BASE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_BROWSER_PASSED",
+      "SAGITTARIUS_SIGNOFF_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_SIGNOFF_ENVIRONMENT",
+      "SAGITTARIUS_SIGNOFF_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_FRONTEND_URL",
+      "SAGITTARIUS_SIGNOFF_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_NO_P1_P2",
+      "SAGITTARIUS_SIGNOFF_PREFLIGHT_PASSED",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_SIGNOFF_ROLLBACK_VERIFIED",
+      "SAGITTARIUS_STAGING_ALERT_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_ALERT_ROUTING_VERIFIED",
+      "SAGITTARIUS_STAGING_API_BASE_URL",
+      "SAGITTARIUS_STAGING_BROWSER_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_BROWSER_SIGNOFF",
+      "SAGITTARIUS_STAGING_DB_MIGRATION_VERIFIED",
+      "SAGITTARIUS_STAGING_ENVIRONMENT",
+      "SAGITTARIUS_STAGING_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_FRONTEND_URL",
+      "SAGITTARIUS_STAGING_ISSUE_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_MIGRATION_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_NO_P1_P2",
+      "SAGITTARIUS_STAGING_PREFLIGHT_PASSED",
+      "SAGITTARIUS_STAGING_ROLLBACK_EVIDENCE_URL",
+      "SAGITTARIUS_STAGING_ROLLBACK_VERIFIED",
+    ]) {
+      expect(productionEnvCheck).not.toContain(signoffOnlyName);
+      expect(productionEnvExample).not.toContain(signoffOnlyName);
+    }
+    expect(productionEnvCheck).toContain("must not use placeholder domain");
+    const stagingPreflight = readFileSync(join(frontendRoot, "scripts/check-staging-preflight.ts"), "utf8");
+    const productionBrowserQa = readFileSync(join(frontendRoot, "scripts/run-local-production-browser-qa.ts"), "utf8");
+    expect(productionBrowserQa).toContain('EMAIL_DELIVERY: "log"');
+    expect(productionBrowserQa).toContain("Set password and continue");
+    expect(productionBrowserQa).toContain("Verify email");
+    expect(productionBrowserQa).not.toContain('name: /^Continue$/');
+    expect(productionBrowserQa).not.toContain('name: /^Use password$/');
+    expect(productionBrowserQa).not.toContain('name: /^Create my trip space$/');
+    expect(productionBrowserQa).toContain("appRoutes.tripItinerary(tripId)");
+    expect(productionBrowserQa).toContain("appRoutes.tripMembers(tripId)");
+    expect(productionBrowserQa).not.toContain('a[href="/trips/${tripId}/itinerary"]');
+    expect(productionBrowserQa).not.toContain('a[href="/trips/${tripId}/members"]');
+    expect(stagingPreflight).toContain("SAGITTARIUS_REQUIRE_PREFLIGHT_API_CHECK");
+    expect(stagingPreflight).toContain("/api/v1/health");
+    expect(stagingPreflight).toContain("/api/v1/readiness");
+    expect(authBrowserE2e).toContain('EMAIL_DELIVERY: "log"');
+    expect(authBrowserE2e).toContain('SAGITTARIUS_ENV: "development"');
+    expect(authBrowserE2e).toContain('SAGITTARIUS_ALLOW_LOCAL_CORS: "1"');
+    expect(authBrowserE2e).toContain("SAGITTARIUS_INTERNAL_API_BASE_URL: apiBaseUrl");
+    expect(packageJson.scripts?.start).toContain("${HOSTNAME:-127.0.0.1}");
+    expect(workflow).toContain("postgres:17-alpine");
+    expect(workflow).toContain("bun install --frozen-lockfile");
+    expect(workflow).toContain("bunx playwright install --with-deps chromium");
+    expect(workflow).toContain('SAGITTARIUS_PERF_SMOKE_MAX_P95_MS: "3000"');
+    expect(workflow).toContain("make production-readiness-fast PSQL=psql");
+    expect(workflow).toContain("name: Production container image build");
+    expect(workflow).toContain("make container-build");
+    expect(workflow).toContain(
+      "make container-production-build PRODUCTION_ENV_FILE=.env.production.example",
+    );
+    expect(workflow).toContain("name: Release safety script checks");
+    expect(workflow).toContain("bun run test:release-signoff");
+    expect(workflow).toContain("bun run test:production-env");
+  });
+
+  it("keeps production source free of unimplemented runtime placeholders", () => {
+    const sourceRoots = [
+      join(frontendRoot, "app"),
+      join(frontendRoot, "src"),
+      join(repoRoot, "backend/crates/sagittarius-api/src"),
+    ];
+    const blocked = /\b(?:unimplemented!|todo!)\s*\(|not implemented|coming soon/i;
+    const offenders = sourceRoots
+      .flatMap((root) => collectSourceFiles(root))
+      .filter((filePath) => filePath !== fileURLToPath(import.meta.url))
+      .filter((filePath) => blocked.test(readFileSync(filePath, "utf8")))
+      .map((filePath) => filePath.replace(`${repoRoot}/`, ""));
+
+    expect(offenders).toEqual([]);
+  });
+});
