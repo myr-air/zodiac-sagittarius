@@ -1,18 +1,10 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import {
-  finishEmailCodeLogin,
-  finishEmailRegistrationSetup,
-} from "./email-login-auth-actions";
 import { selectEmailLoginSubmitHandler } from "./email-login-submit-route";
-import {
-  emailLoginInvalidCodeError,
-  emailLoginPasswordSetupError,
-} from "./email-login-submit-errors";
 import type { UseEmailLoginSubmitActionsProps } from "./use-email-login-submit-actions-params";
-import { runEmailLoginSubmission } from "./email-login-submit-runner";
 import { useEmailLoginCodeRequestActions } from "./use-email-login-code-request-actions";
+import { useEmailLoginRegistrationActions } from "./use-email-login-registration-actions";
 import { useEmailLoginSignInActions } from "./use-email-login-sign-in-actions";
 
 export function useEmailLoginSubmitActions({
@@ -42,7 +34,6 @@ export function useEmailLoginSubmitActions({
   updateCode,
 }: UseEmailLoginSubmitActionsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const errorContext = { emailLoginMessages, messages };
   const {
     requestEmailCode,
   } = useEmailLoginCodeRequestActions({
@@ -75,6 +66,33 @@ export function useEmailLoginSubmitActions({
     setIsSubmitting,
     trustDevice,
   });
+  const {
+    submitCode,
+    submitSetup,
+  } = useEmailLoginRegistrationActions({
+    accountClient,
+    activeFlow,
+    challenge,
+    code,
+    displayName,
+    emailLoginMessages,
+    fallbackName,
+    goToSetupStep,
+    locale,
+    messages,
+    normalizedEmail,
+    onError,
+    onLoggedIn,
+    otpReady,
+    password,
+    passwordReady,
+    setChallenge,
+    setIsSubmitting,
+    setVerifiedRegistrationSession,
+    trustDevice,
+    updateCode,
+    verifiedRegistrationSession,
+  });
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,58 +112,6 @@ export function useEmailLoginSubmitActions({
       return;
     }
     await signInWithPassword();
-  }
-
-  async function submitCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!challenge || !otpReady) return;
-    await runEmailLoginSubmission({
-      onError: (caught) => {
-        onError(emailLoginInvalidCodeError(caught, errorContext));
-      },
-      setIsSubmitting,
-      run: async () => {
-        const session = await finishEmailCodeLogin({
-          accountClient,
-          activeFlow,
-          challenge,
-          code,
-          trustDevice,
-        });
-        if (activeFlow === "register") {
-          setVerifiedRegistrationSession(session);
-          goToSetupStep();
-          setChallenge(null);
-          updateCode("");
-          onError(null);
-          return;
-        }
-        onLoggedIn(session);
-      },
-    });
-  }
-
-  async function submitSetup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!verifiedRegistrationSession || !passwordReady) return;
-    await runEmailLoginSubmission({
-      onError: (caught) => {
-        onError(emailLoginPasswordSetupError(caught, errorContext));
-      },
-      setIsSubmitting,
-      run: async () => {
-        const session = await finishEmailRegistrationSetup({
-          accountClient,
-          displayName,
-          fallbackName,
-          locale,
-          normalizedEmail,
-          password,
-        });
-        onLoggedIn(session);
-        onError(null);
-      },
-    });
   }
 
   return {
