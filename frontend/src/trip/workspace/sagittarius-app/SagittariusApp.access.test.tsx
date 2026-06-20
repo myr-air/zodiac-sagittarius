@@ -19,6 +19,7 @@ import {
   installLocalStorageStub,
   mockWindowLocation,
   render,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -105,14 +106,7 @@ describe("Sagittarius cockpit access", () => {
       search: `?rt=${encodeURIComponent(encodeReturnTo(safeReturnTo))}`,
     });
     const apiClient = createApiClientForTrip(seedTrip);
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        requireJoin
-        dataSource="api"
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({ apiClient });
 
     fireEvent.change(screen.getByLabelText(/Trip ID/i), {
       target: { value: "HK-SZ-2025" },
@@ -159,14 +153,7 @@ describe("Sagittarius cockpit access", () => {
         search: "",
       });
 
-      render(
-        <SagittariusApp
-          accessMode="trip-access"
-          requireJoin
-          dataSource="api"
-          routeTripId={seedTrip.id}
-        />,
-      );
+      renderApiTripAccessSagittariusApp({ routeTripId: seedTrip.id });
 
       await waitFor(() =>
         expect(replaceMock).toHaveBeenCalledWith(

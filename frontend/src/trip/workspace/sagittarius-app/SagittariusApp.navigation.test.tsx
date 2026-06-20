@@ -13,6 +13,7 @@ import {
   createApiClientForTrip,
   persistTripParticipantSession,
   render,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -27,15 +28,10 @@ describe("Sagittarius cockpit navigation", () => {
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        requireJoin
-        dataSource="api"
-        routeTripId={seedTrip.id}
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      routeTripId: seedTrip.id,
+      apiClient,
+    });
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole("link", { name: /แผนการเดินทาง/i }));
@@ -52,15 +48,10 @@ describe("Sagittarius cockpit navigation", () => {
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        requireJoin
-        dataSource="api"
-        routeTripId={seedTrip.id}
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      routeTripId: seedTrip.id,
+      apiClient,
+    });
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
     expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute(

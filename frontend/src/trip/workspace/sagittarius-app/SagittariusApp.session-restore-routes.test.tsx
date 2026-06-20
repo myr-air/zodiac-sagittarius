@@ -10,6 +10,7 @@ import {
   mockWindowLocation,
   persistTripParticipantSession,
   render,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -29,14 +30,7 @@ describe("Sagittarius cockpit session restore routes", () => {
     });
     const apiClient = createApiClientForTrip(seedTrip);
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        requireJoin
-        dataSource="api"
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({ apiClient });
 
     await waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith(
@@ -64,14 +58,7 @@ describe("Sagittarius cockpit session restore routes", () => {
     });
     const apiClient = createApiClientForTrip(seedTrip);
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        requireJoin
-        dataSource="api"
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({ apiClient });
 
     await waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith(

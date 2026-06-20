@@ -3,9 +3,6 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  SagittariusApp,
-} from "@/src/app/SagittariusApp";
 import { accountApiRoutes } from "@/src/account/api-routes";
 import { accountSessionStorageKey } from "@/src/account/session-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
@@ -18,7 +15,7 @@ import {
   mockAccountTripMemberSessionFetch,
   mockRejectedAccountTripMemberSessionFetch,
   persistTrustedAccountSession,
-  render,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -45,15 +42,10 @@ describe("Sagittarius cockpit account trip access", () => {
     });
 
     try {
-      render(
-        <SagittariusApp
-          accessMode="trip-access"
-          requireJoin
-          dataSource="api"
-          routeTripId={seedTrip.id}
-          apiClient={apiClient}
-        />,
-      );
+      renderApiTripAccessSagittariusApp({
+        routeTripId: seedTrip.id,
+        apiClient,
+      });
 
       expect(
         screen.getByRole("main", { name: /Opening trip/i }),
@@ -110,15 +102,10 @@ describe("Sagittarius cockpit account trip access", () => {
     });
 
     try {
-      render(
-        <SagittariusApp
-          accessMode="trip-access"
-          requireJoin
-          dataSource="api"
-          routeTripId={seedTrip.id}
-          apiClient={apiClient}
-        />,
-      );
+      renderApiTripAccessSagittariusApp({
+        routeTripId: seedTrip.id,
+        apiClient,
+      });
 
       await waitFor(() =>
         expect(fetchSpy).toHaveBeenCalledWith(
