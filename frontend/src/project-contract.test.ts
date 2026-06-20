@@ -78,6 +78,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-suggestions.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-context.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-api-merges.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.paths.test.ts"))).toBe(true);
@@ -380,6 +381,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/route-map-live-map-test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/use-route-map-view-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/use-route-live-map.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);

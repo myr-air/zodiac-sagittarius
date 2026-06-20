@@ -2,79 +2,21 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { RouteMapView } from "./RouteMapView";
+import {
+  getMaplibreMock,
+  resetMaplibreMock,
+  triggerLiveMapEvent,
+} from "./route-map-live-map-test-support";
 import { renderWithThaiI18n, hongKongDay } from "./route-map-test-support";
+import { RouteMapView } from "./RouteMapView";
 
-const maplibreMock = vi.hoisted(() => ({
-  maps: [] as Array<{
-    addControl: ReturnType<typeof vi.fn>;
-    addLayer: ReturnType<typeof vi.fn>;
-    addSource: ReturnType<typeof vi.fn>;
-    getSource: ReturnType<typeof vi.fn>;
-    fitBounds: ReturnType<typeof vi.fn>;
-    flyTo: ReturnType<typeof vi.fn>;
-    getLayer: ReturnType<typeof vi.fn>;
-    removeLayer: ReturnType<typeof vi.fn>;
-    removeSource: ReturnType<typeof vi.fn>;
-    remove: ReturnType<typeof vi.fn>;
-    setPaintProperty: ReturnType<typeof vi.fn>;
-  }>,
-  markers: [] as Array<{ element: HTMLElement; remove: ReturnType<typeof vi.fn> }>,
-  loadDelay: 0,
-  throwOnCreate: false,
-}));
-
-vi.mock("maplibre-gl", () => ({
-  Map: vi.fn().mockImplementation(function (options: { container: HTMLElement }) {
-    if (maplibreMock.throwOnCreate) throw new Error("map failed");
-    const handlers = new Map<string, () => void>();
-    const map = {
-      addControl: vi.fn(),
-      addLayer: vi.fn(),
-      addSource: vi.fn(),
-      getSource: vi.fn(() => ({ type: "geojson" })),
-      fitBounds: vi.fn(),
-      flyTo: vi.fn(),
-      getLayer: vi.fn(() => true),
-      removeLayer: vi.fn(),
-      removeSource: vi.fn(),
-      remove: vi.fn(),
-      setPaintProperty: vi.fn(),
-      on: vi.fn((event: string, callback: () => void) => {
-        handlers.set(event, callback);
-        if (event === "load") window.setTimeout(callback, maplibreMock.loadDelay);
-      }),
-    };
-    const chromeButton = document.createElement("button");
-    options.container.append(chromeButton);
-    Object.assign(map, { trigger: (event: string) => handlers.get(event)?.() });
-    maplibreMock.maps.push(map);
-    return map;
-  }),
-  Marker: vi.fn().mockImplementation(function ({ element }: { element: HTMLElement }) {
-    const marker = {
-      element,
-      addTo: vi.fn(() => marker),
-      getElement: () => element,
-      remove: vi.fn(),
-      setLngLat: vi.fn(() => marker),
-    };
-    maplibreMock.markers.push(marker);
-    return marker;
-  }),
-  NavigationControl: vi.fn().mockImplementation(function () {
-    return {};
-  }),
-}));
+const maplibreMock = getMaplibreMock();
 
 describe("RouteMapView live map", () => {
   const render = renderWithThaiI18n;
 
   afterEach(() => {
-    maplibreMock.maps.length = 0;
-    maplibreMock.markers.length = 0;
-    maplibreMock.loadDelay = 0;
-    maplibreMock.throwOnCreate = false;
+    resetMaplibreMock();
     vi.useRealTimers();
     vi.unstubAllEnvs();
   });
@@ -181,7 +123,7 @@ describe("RouteMapView live map", () => {
     );
 
     await waitFor(() => expect(maplibreMock.maps[0]).toBeTruthy());
-    (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
+    triggerLiveMapEvent(maplibreMock.maps[0], "error");
     await waitFor(() => expect(screen.getByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" })).toBeInTheDocument());
 
     await user.click(screen.getByRole("button", { name: "ลองโหลดแผนที่สดอีกครั้ง" }));
@@ -297,7 +239,7 @@ describe("RouteMapView live map", () => {
     );
     await waitFor(() => expect(maplibreMock.maps[0]).toBeTruthy());
 
-    (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
+    triggerLiveMapEvent(maplibreMock.maps[0], "error");
     await waitFor(() => expect(screen.getByText("Hong Kong")).toBeInTheDocument());
     expect(screen.getByRole("status")).toHaveTextContent("โหลดแผนที่สดไม่สำเร็จ แสดงแผนผังสำรองไว้ก่อน");
 
@@ -324,7 +266,7 @@ describe("RouteMapView live map", () => {
     expect(maplibreMock.maps[0]!.removeLayer).not.toHaveBeenCalled();
 
     unmount();
-    (maplibreMock.maps[0] as typeof maplibreMock.maps[number] & { trigger: (event: string) => void }).trigger("error");
+    triggerLiveMapEvent(maplibreMock.maps[0], "error");
     expect(screen.queryByText("Hong Kong")).not.toBeInTheDocument();
   });
 
