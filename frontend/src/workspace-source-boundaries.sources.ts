@@ -1,493 +1,119 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export function readWorkspaceBoundarySources(frontendRoot: string) {
-  const sagaCore = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"),
-    "utf8",
-  );
-  const sagittariusAccessGate = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"),
-    "utf8",
-  );
-  const workspaceAppFrame = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx"),
-    "utf8",
-  );
-  const workspaceMainShell = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx"),
-    "utf8",
-  );
-  const workspaceFacade = readFileSync(
-    join(frontendRoot, "src/trip/workspace/SagittariusApp.tsx"),
-    "utf8",
-  );
-  const appFacade = readFileSync(join(frontendRoot, "src/app/SagittariusApp.tsx"), "utf8");
-  const workspaceRecordsHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/use-trip-workspace-records.ts"),
-    "utf8",
-  );
-  const importHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
-    "utf8",
-  );
-  const accessGateHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts"),
-    "utf8",
-  );
-  const uiStateHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-ui-state.ts"),
-    "utf8",
-  );
-  const accessState = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts"),
-    "utf8",
-  );
-  const participantSessionActions = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-participant-session-actions.ts"),
-    "utf8",
-  );
-  const participantPostAuthNavigation = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/participant-post-auth-navigation.ts"),
-    "utf8",
-  );
-  const workspaceSessionHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-session.ts"),
-    "utf8",
-  );
-  const workspaceSessionRestore = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts"),
-    "utf8",
-  );
-  const workspaceTripPlansHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-trip-plans.ts"),
-    "utf8",
-  );
-  const workspaceTripPlanSelection = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-selection.ts"),
-    "utf8",
-  );
-  const itineraryBookingCommands = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-itinerary-booking-commands.ts"),
-    "utf8",
-  );
-  const bookingCommandInputs = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts"),
-    "utf8",
-  );
-  const taskActionsHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-task-actions.ts"),
-    "utf8",
-  );
-  const stopNoteActionsHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-stop-note-actions.ts"),
-    "utf8",
-  );
-  const recordCommandInputs = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.ts"),
-    "utf8",
-  );
-  const photoAlbumsHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"),
-    "utf8",
-  );
-  const photoAlbumsDomain = readFileSync(
-    join(frontendRoot, "src/trip/photo-albums.ts"),
-    "utf8",
-  );
-  const photoAlbumApi = readFileSync(
-    join(frontendRoot, "src/trip/photo-album-api.ts"),
-    "utf8",
-  );
-  const photoAlbumLocal = readFileSync(
-    join(frontendRoot, "src/trip/photo-album-local.ts"),
-    "utf8",
-  );
-  const photoAlbumQuery = readFileSync(
-    join(frontendRoot, "src/trip/photo-album-query.ts"),
-    "utf8",
-  );
-  const expenseMutationCommands = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts"),
-    "utf8",
-  );
-  const expenseDrafts = readFileSync(
-    join(frontendRoot, "src/trip/expense-drafts.ts"),
-    "utf8",
-  );
-  const itineraryViewModelHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts"),
-    "utf8",
-  );
-  const apiClientsHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts"),
-    "utf8",
-  );
-  const backendExpenseSummaryHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts"),
-    "utf8",
-  );
-  const cockpitReplacementHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-cockpit-replacement.ts"),
-    "utf8",
-  );
-  const memberContextHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts"),
-    "utf8",
-  );
-  const selectedTripPlanHook = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts"),
-    "utf8",
-  );
-  const workspaceDialogs = readFileSync(
-    join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx"),
-    "utf8",
-  );
-  const bookingDisplay = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-display.ts"),
-    "utf8",
-  );
-  const bookingFolders = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-folders.ts"),
-    "utf8",
-  );
-  const bookingList = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/bookings-docs/booking-list.ts"),
-    "utf8",
-  );
-  const bookingDialog = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx"),
-    "utf8",
-  );
-  const bookingDialogState = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts"),
-    "utf8",
-  );
-  const itineraryTimeLib = readFileSync(
-    join(frontendRoot, "src/features/itinerary/lib/itinerary-time.ts"),
-    "utf8",
-  );
-  const overviewPage = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"),
-    "utf8",
-  );
-  const overviewSummaryBand = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewSummaryBand.tsx"),
-    "utf8",
-  );
-  const overviewCockpit = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"),
-    "utf8",
-  );
-  const overviewTaskDialog = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"),
-    "utf8",
-  );
-  const overviewTaskLayer = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskLayer.tsx"),
-    "utf8",
-  );
-  const overviewWeatherBriefing = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx"),
-    "utf8",
-  );
-  const routeMapTypes = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/route-map/route-map.types.ts"),
-    "utf8",
-  );
-  const smartItineraryTable = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"),
-    "utf8",
-  );
-  const smartItineraryTablePageHeader = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx"),
-    "utf8",
-  );
-  const routeMapView = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"),
-    "utf8",
-  );
-  const routeMapUnresolvedPanel = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"),
-    "utf8",
-  );
-  const routeLiveMapHook = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/route-map/use-route-live-map.ts"),
-    "utf8",
-  );
-  const routeMapUtils = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/route-map/route-map.utils.ts"),
-    "utf8",
-  );
-  const stopDialog = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"),
-    "utf8",
-  );
-  const stopDialogStory = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/StopDialog.stories.tsx"),
-    "utf8",
-  );
-  const stopDialogStorySupport = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/StopDialog.stories.support.ts"),
-    "utf8",
-  );
-  const stopDialogModel = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"),
-    "utf8",
-  );
-  const stopDialogForm = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts"),
-    "utf8",
-  );
-  const stopDialogTimeFields = readFileSync(
-    join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts"),
-    "utf8",
-  );
-  const tripSettingsPageSource = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"),
-    "utf8",
-  );
-  const tripSettingsIndexSource = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/trip-settings/index.ts"),
-    "utf8",
-  );
-  const memberSupport = readFileSync(
-    join(frontendRoot, "src/features/workspace/pages/members/TripMembersPage.support.ts"),
-    "utf8",
-  );
-  const accountAccessPanel = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"),
-    "utf8",
-  );
-  const accountAccessChrome = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx"),
-    "utf8",
-  );
-  const accountTripWizardSupport = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts"),
-    "utf8",
-  );
-  const portalTripWizard = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"),
-    "utf8",
-  );
-  const portalTripWizardModel = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"),
-    "utf8",
-  );
-  const portalTripWizardDerivedState = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts"),
-    "utf8",
-  );
-  const portalTripWizardActions = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx"),
-    "utf8",
-  );
-  const accountAuthSupport = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/auth/account-auth-support.ts"),
-    "utf8",
-  );
-  const emailLoginStepContent = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx"),
-    "utf8",
-  );
-  const dateTimePickers = readFileSync(
-    join(frontendRoot, "src/shared/components/date-time-pickers/DateTimePickers.tsx"),
-    "utf8",
-  );
-  const tripJoinGate = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"),
-    "utf8",
-  );
-  const tripJoinGateChrome = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx"),
-    "utf8",
-  );
-  const tripJoinGateVisual = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"),
-    "utf8",
-  );
-  const tripJoinRoomForm = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"),
-    "utf8",
-  );
-  const tripJoinParticipantStep = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx"),
-    "utf8",
-  );
-  const tripJoinGateStyles = readFileSync(
-    join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"),
-    "utf8",
-  );
-  const tripWizardFormSections = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx"),
-    "utf8",
-  );
+export const workspaceBoundarySourcePaths = {
+  sagaCore: "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx",
+  sagittariusAccessGate: "src/trip/workspace/sagittarius-app/access-gate.tsx",
+  workspaceAppFrame: "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx",
+  workspaceMainShell: "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx",
+  workspaceFacade: "src/trip/workspace/SagittariusApp.tsx",
+  workspaceRecordsHook: "src/trip/workspace/use-trip-workspace-records.ts",
+  importHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts",
+  accessGateHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts",
+  uiStateHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-ui-state.ts",
+  accessState: "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts",
+  participantSessionActions: "src/trip/workspace/sagittarius-app/hooks/use-workspace-participant-session-actions.ts",
+  participantPostAuthNavigation: "src/trip/workspace/sagittarius-app/hooks/participant-post-auth-navigation.ts",
+  workspaceSessionHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-session.ts",
+  workspaceSessionRestore: "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts",
+  workspaceTripPlansHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-trip-plans.ts",
+  workspaceTripPlanSelection: "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-selection.ts",
+  itineraryBookingCommands: "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-itinerary-booking-commands.ts",
+  bookingCommandInputs: "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts",
+  taskActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-task-actions.ts",
+  stopNoteActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-stop-note-actions.ts",
+  recordCommandInputs: "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.ts",
+  photoAlbumsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts",
+  photoAlbumsDomain: "src/trip/photo-albums.ts",
+  photoAlbumApi: "src/trip/photo-album-api.ts",
+  photoAlbumLocal: "src/trip/photo-album-local.ts",
+  photoAlbumQuery: "src/trip/photo-album-query.ts",
+  expenseMutationCommands: "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts",
+  expenseDrafts: "src/trip/expense-drafts.ts",
+  itineraryViewModelHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts",
+  apiClientsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts",
+  backendExpenseSummaryHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts",
+  cockpitReplacementHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-cockpit-replacement.ts",
+  memberContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts",
+  selectedTripPlanHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts",
+  workspaceDialogs: "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx",
+  bookingDisplay: "src/features/workspace/pages/bookings-docs/booking-display.ts",
+  bookingFolders: "src/features/workspace/pages/bookings-docs/booking-folders.ts",
+  bookingList: "src/features/workspace/pages/bookings-docs/booking-list.ts",
+  bookingDialog: "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx",
+  bookingDialogState: "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts",
+  itineraryTimeLib: "src/features/itinerary/lib/itinerary-time.ts",
+  overviewPage: "src/features/itinerary/components/overview/OverviewPage.tsx",
+  overviewSummaryBand: "src/features/itinerary/components/overview/OverviewSummaryBand.tsx",
+  overviewCockpit: "src/features/itinerary/components/overview/OverviewCockpit.tsx",
+  overviewTaskDialog: "src/features/itinerary/components/overview/OverviewTaskDialog.tsx",
+  overviewTaskLayer: "src/features/itinerary/components/overview/OverviewTaskLayer.tsx",
+  overviewWeatherBriefing: "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx",
+  routeMapTypes: "src/features/itinerary/components/route-map/route-map.types.ts",
+  smartItineraryTable: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx",
+  smartItineraryTablePageHeader: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx",
+  routeMapView: "src/features/itinerary/components/route-map/RouteMapView.tsx",
+  routeMapUnresolvedPanel: "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx",
+  routeLiveMapHook: "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  routeMapUtils: "src/features/itinerary/components/route-map/route-map.utils.ts",
+  stopDialog: "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
+  stopDialogStory: "src/features/itinerary/stories/StopDialog.stories.tsx",
+  stopDialogStorySupport: "src/features/itinerary/stories/StopDialog.stories.support.ts",
+  stopDialogModel: "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts",
+  stopDialogForm: "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts",
+  stopDialogTimeFields: "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts",
+  tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
+  tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
+  memberSupport: "src/features/workspace/pages/members/TripMembersPage.support.ts",
+  accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
+  accountAccessChrome: "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx",
+  accountTripWizardSupport: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",
+  portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
+  portalTripWizardModel: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts",
+  portalTripWizardDerivedState: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts",
+  portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx",
+  accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
+  emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
+  dateTimePickers: "src/shared/components/date-time-pickers/DateTimePickers.tsx",
+  tripJoinGate: "src/features/account/components/trip-join-gate/TripJoinGate.tsx",
+  tripJoinGateChrome: "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx",
+  tripJoinGateVisual: "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx",
+  tripJoinRoomForm: "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx",
+  tripJoinParticipantStep: "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx",
+  tripJoinGateStyles: "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts",
+  tripWizardFormSections: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
+  itineraryStoryFixtures: "src/features/itinerary/stories/itinerary-story-fixtures.ts",
+  itineraryStoryPathScenarios: "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
+  itineraryPageStory: "src/features/itinerary/stories/ItineraryPage.stories.tsx",
+  itineraryTemplateStory: "src/features/itinerary/stories/ItineraryTemplate.stories.tsx",
+  accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
+  accountAccessStorySupport: "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
+  accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
+  accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
+  emailLoginState: "src/features/account/components/account-access-panel/email-login/use-email-login-panel-state.ts",
+  emailLoginAuthActions: "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts",
+  emailLoginFormState: "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts",
+  emailLoginSubmitActions: "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts",
+  emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts",
+  emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
+  emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",
+  appFacade: "src/app/SagittariusApp.tsx",
+  tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
+  tripSettingsSupport: "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts",
+  tripSettingsFormState: "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts",
+} as const;
 
-  const itineraryStoryFixtures = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/itinerary-story-fixtures.ts"),
-    "utf8",
-  );
-  const itineraryStoryPathScenarios = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"),
-    "utf8",
-  );
-  const itineraryPageStory = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/ItineraryPage.stories.tsx"),
-    "utf8",
-  );
-  const itineraryTemplateStory = readFileSync(
-    join(frontendRoot, "src/features/itinerary/stories/ItineraryTemplate.stories.tsx"),
-    "utf8",
-  );
-  const accountAccessStory = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx"),
-    "utf8",
-  );
-  const accountAccessStorySupport = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts"),
-    "utf8",
-  );
-  const accountSettingsEditor = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx"),
-    "utf8",
-  );
-  const accountSettingsEditorState = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts"),
-    "utf8",
-  );
-  const emailLoginState = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-panel-state.ts"),
-    "utf8",
-  );
-  const emailLoginAuthActions = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts"),
-    "utf8",
-  );
-  const emailLoginFormState = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts"),
-    "utf8",
-  );
-  const emailLoginSubmitActions = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts"),
-    "utf8",
-  );
-  const emailLoginResendCooldown = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"),
-    "utf8",
-  );
-  const emailLoginPanel = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx"),
-    "utf8",
-  );
-  const emailLoginStepStage = readFileSync(
-    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx"),
-    "utf8",
-  );
-  const tripSettingsPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"), "utf8");
-  const tripSettingsSupport = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts"), "utf8");
-  const tripSettingsFormState = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts"), "utf8");
+export type WorkspaceBoundarySourceName = keyof typeof workspaceBoundarySourcePaths;
 
+export type WorkspaceBoundarySources = {
+  [Name in WorkspaceBoundarySourceName]: string;
+};
 
-  return {
-    sagaCore,
-    sagittariusAccessGate,
-    workspaceAppFrame,
-    workspaceMainShell,
-    workspaceFacade,
-    appFacade,
-    workspaceRecordsHook,
-    importHook,
-    accessGateHook,
-    uiStateHook,
-    accessState,
-    participantSessionActions,
-    participantPostAuthNavigation,
-    workspaceSessionHook,
-    workspaceSessionRestore,
-    workspaceTripPlansHook,
-    workspaceTripPlanSelection,
-    itineraryBookingCommands,
-    bookingCommandInputs,
-    taskActionsHook,
-    stopNoteActionsHook,
-    recordCommandInputs,
-    photoAlbumsHook,
-    photoAlbumsDomain,
-    photoAlbumApi,
-    photoAlbumLocal,
-    photoAlbumQuery,
-    expenseMutationCommands,
-    expenseDrafts,
-    itineraryViewModelHook,
-    apiClientsHook,
-    backendExpenseSummaryHook,
-    cockpitReplacementHook,
-    memberContextHook,
-    selectedTripPlanHook,
-    workspaceDialogs,
-    bookingDisplay,
-    bookingFolders,
-    bookingList,
-    bookingDialog,
-    bookingDialogState,
-    itineraryTimeLib,
-    overviewPage,
-    overviewSummaryBand,
-    overviewCockpit,
-    overviewTaskDialog,
-    overviewTaskLayer,
-    overviewWeatherBriefing,
-    routeMapTypes,
-    smartItineraryTable,
-    smartItineraryTablePageHeader,
-    routeMapView,
-    routeMapUnresolvedPanel,
-    routeLiveMapHook,
-    routeMapUtils,
-    stopDialog,
-    stopDialogStory,
-    stopDialogStorySupport,
-    stopDialogModel,
-    stopDialogForm,
-    stopDialogTimeFields,
-    tripSettingsPageSource,
-    tripSettingsIndexSource,
-    memberSupport,
-    accountAccessPanel,
-    accountAccessChrome,
-    accountTripWizardSupport,
-    portalTripWizard,
-    portalTripWizardModel,
-    portalTripWizardDerivedState,
-    portalTripWizardActions,
-    accountAuthSupport,
-    emailLoginStepContent,
-    dateTimePickers,
-    tripJoinGate,
-    tripJoinGateChrome,
-    tripJoinGateVisual,
-    tripJoinRoomForm,
-    tripJoinParticipantStep,
-    tripJoinGateStyles,
-    tripWizardFormSections,
-    itineraryStoryFixtures,
-    itineraryStoryPathScenarios,
-    itineraryPageStory,
-    itineraryTemplateStory,
-    accountAccessStory,
-    accountAccessStorySupport,
-    accountSettingsEditor,
-    accountSettingsEditorState,
-    emailLoginState,
-    emailLoginAuthActions,
-    emailLoginFormState,
-    emailLoginSubmitActions,
-    emailLoginResendCooldown,
-    emailLoginPanel,
-    emailLoginStepStage,
-    tripSettingsPage,
-    tripSettingsSupport,
-    tripSettingsFormState,
-  };
+export function readWorkspaceBoundarySources(frontendRoot: string): WorkspaceBoundarySources {
+  return Object.fromEntries(
+    Object.entries(workspaceBoundarySourcePaths).map(([name, sourcePath]) => [
+      name,
+      readFileSync(join(frontendRoot, sourcePath), "utf8"),
+    ]),
+  ) as WorkspaceBoundarySources;
 }

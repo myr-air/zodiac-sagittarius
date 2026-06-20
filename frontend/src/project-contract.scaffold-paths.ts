@@ -28,6 +28,7 @@ export const frontendScaffoldPathsPresent = [
   "src/i18n/messages/th.workspace-pages.ts",
   "src/project-contract.helpers.ts",
   "src/project-contract.scaffold-paths.ts",
+  "src/project-production-release.contract.test.ts",
   "src/project-production-routing.contract.test.ts",
   "src/workspace-source-boundaries.blocked-terms.ts",
   "src/workspace-source-boundaries.sources.ts",
