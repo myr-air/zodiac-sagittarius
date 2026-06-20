@@ -8,9 +8,9 @@ import { Icon } from "@/src/ui/icons";
 import {
   citySuggestions,
   tripDestinationCards,
-  tripWizardSteps,
   type TripCityOption,
 } from "./account-trip-wizard-support";
+import { tripWizardSteps } from "./account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 

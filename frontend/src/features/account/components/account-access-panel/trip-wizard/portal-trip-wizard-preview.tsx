@@ -9,10 +9,9 @@ import { cn } from "@/src/lib/cn";
 import {
   destinationRouteCode,
   tripCityFromFormOrigin,
-  tripWizardSteps,
   type TripDestinationCard,
-  type TripWizardStepId,
 } from "./account-trip-wizard-support";
+import { tripWizardSteps, type TripWizardStepId } from "./account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
 import { TripPreviewLiveMap } from "./trip-preview-map";
 import * as wizardStyles from "./portal-trip-wizard-styles";

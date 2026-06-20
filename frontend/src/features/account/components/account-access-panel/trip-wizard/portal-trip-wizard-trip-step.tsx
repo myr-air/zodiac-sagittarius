@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { tripWizardSteps } from "./account-trip-wizard-support";
+import { tripWizardSteps } from "./account-trip-wizard-steps";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardTripStepProps {

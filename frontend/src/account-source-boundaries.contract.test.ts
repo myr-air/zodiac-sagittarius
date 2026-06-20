@@ -11,6 +11,7 @@ describe("Sagittarius account source boundaries", () => {
       accountPortalNavItems,
       accountPortalDataCache,
       accountTripWizardSupport,
+      accountTripWizardSteps,
       portalTripWizard,
       portalTripWizardMainPanel,
       portalTripWizardModel,
@@ -97,8 +98,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
     expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
     expect(accountTripWizardSupport).not.toContain("function randomToken");
+    expect(accountTripWizardSupport).not.toContain("const tripWizardSteps");
+    expect(accountTripWizardSupport).not.toContain("function tripStepComplete");
     expect(accountTripWizardSupport).toContain("export function applyTripDestinationCities");
     expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
+    expect(accountTripWizardSteps).toContain("export const tripWizardSteps");
+    expect(accountTripWizardSteps).toContain("export function tripStepComplete");
     expect(portalTripWizardModel).toContain("applyTripCalendarDate");
     expect(portalTripWizardModel).toContain("buildPortalTripWizardDerivedState");
     expect(portalTripWizardModel).toContain("usePortalTripWizardDestinationState");

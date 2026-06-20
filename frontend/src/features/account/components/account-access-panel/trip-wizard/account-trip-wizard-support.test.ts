@@ -16,20 +16,9 @@ import {
   tripDestinationCards,
   tripNightCount,
   tripWizardDateSelectionStepValues,
-  tripWizardSteps,
 } from "./account-trip-wizard-support";
 
 describe("account trip wizard support", () => {
-  it("keeps trip wizard steps in canonical flow order", () => {
-    expect(tripWizardSteps.map((step) => step.id)).toEqual([
-      "trip",
-      "place",
-      "dates",
-      "invite",
-      "preview",
-    ]);
-  });
-
   it("keeps date selection steps in calendar toggle order", () => {
     expect(tripWizardDateSelectionStepValues).toEqual(["depart", "return"]);
     expect(nextTripWizardDateSelectionStep("depart")).toBe("return");

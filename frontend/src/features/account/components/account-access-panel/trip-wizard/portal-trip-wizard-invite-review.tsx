@@ -3,7 +3,7 @@
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { tripWizardSteps } from "./account-trip-wizard-support";
+import { tripWizardSteps } from "./account-trip-wizard-steps";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardInviteStepProps {

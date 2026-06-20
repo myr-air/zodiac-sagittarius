@@ -6,10 +6,9 @@ import {
   routeCalendarDays,
   tripDestinationCards,
   tripNightCount,
-  tripStepComplete,
   uniqueList,
-  type TripWizardStepId,
 } from "./account-trip-wizard-support";
+import { tripStepComplete, type TripWizardStepId } from "./account-trip-wizard-steps";
 import {
   buildPortalTripWizardCredentials,
   isValidPortalTripWizardJoinPassword,

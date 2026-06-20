@@ -9,9 +9,9 @@ import { Icon } from "@/src/ui/icons";
 import {
   defaultTripOriginCity,
   routeCalendarDays,
-  tripWizardSteps,
   type TripWizardDateSelectionStep,
 } from "./account-trip-wizard-support";
+import { tripWizardSteps } from "./account-trip-wizard-steps";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardDatesStepProps {
