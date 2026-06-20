@@ -25,6 +25,10 @@ export const workspaceBoundarySourcePaths = {
   sagittariusAppTestPlanFixtures: "src/trip/workspace/sagittarius-app/sagittarius-app.test-plan-fixtures.ts",
   sagittariusAppTestStorage: "src/trip/workspace/sagittarius-app/sagittarius-app.test-storage.ts",
   sagittariusAppTestSupport: "src/trip/workspace/sagittarius-app/sagittarius-app.test-support.tsx",
+  sagittariusAppUiTest: "src/trip/workspace/sagittarius-app/SagittariusApp.test.tsx",
+  sagittariusAppAccessTest: "src/trip/workspace/sagittarius-app/SagittariusApp.access.test.tsx",
+  sagittariusAppAccountTripAccessTest:
+    "src/trip/workspace/sagittarius-app/SagittariusApp.account-trip-access.test.tsx",
   workspaceRecordsHook: "src/trip/workspace/use-trip-workspace-records.ts",
   itineraryImportModel: "src/trip/workspace/itinerary-import-model.ts",
   itineraryImportApiRequests: "src/trip/workspace/itinerary-import-api-requests.ts",

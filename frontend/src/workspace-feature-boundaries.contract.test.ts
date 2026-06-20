@@ -17,6 +17,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       sagittariusAppTestPlanFixtures,
       sagittariusAppTestStorage,
       sagittariusAppTestSupport,
+      sagittariusAppUiTest,
+      sagittariusAppAccessTest,
+      sagittariusAppAccountTripAccessTest,
       itineraryTimeLib,
       overviewPage,
       overviewSummaryBand,
@@ -134,6 +137,14 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestSupport).toContain("export function renderApiTripAccessSagittariusApp");
     expect(sagittariusAppTestSupport).toContain("dataSource=\"api\"");
     expect(sagittariusAppTestSupport).toContain("await loginApiTrip(user)");
+    [
+      sagittariusAppUiTest,
+      sagittariusAppAccessTest,
+      sagittariusAppAccountTripAccessTest,
+    ].forEach((testSource) => {
+      expect(testSource).toContain("renderApiTripAccessSagittariusApp");
+      expect(testSource).not.toContain('accessMode="trip-access"');
+    });
     expect(sagittariusAppTestSupport).not.toContain("function dailyBriefingFixture");
     expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
     expect(sagittariusAppTestSupport).not.toContain("Object.defineProperty(window, \"localStorage\"");
