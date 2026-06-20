@@ -9,7 +9,12 @@ export interface TripCity {
   longitude: number;
 }
 
-export type PlaceResolutionStatus = "resolved" | "ambiguous" | "unresolved";
+export const placeResolutionStatusValues = [
+  "resolved",
+  "ambiguous",
+  "unresolved",
+] as const;
+export type PlaceResolutionStatus = (typeof placeResolutionStatusValues)[number];
 
 export interface PlaceResolutionCandidate {
   name: string;
