@@ -626,6 +626,20 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(accountAccessChrome).toContain("accountHeroClassName");
     expect(accountAccessChrome).toContain("accountModeTabsClassName");
     expect(accountAccessChrome).toContain("appRoutes.home()");
+    const accountAccessStory = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx"),
+      "utf8",
+    );
+    const accountAccessStorySupport = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts"),
+      "utf8",
+    );
+    expect(accountAccessStory).toContain("./account-access-panel.stories.support");
+    expect(accountAccessStory).not.toContain("AccountApiClient");
+    expect(accountAccessStory).not.toContain("const accountSettings");
+    expect(accountAccessStorySupport).toContain("export const accountStoryClient");
+    expect(accountAccessStorySupport).toContain("export const accountLoginStoryArgs");
+    expect(accountAccessStorySupport).toContain("export const portalDashboardStoryArgs");
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).toContain("./account-trip-credentials");
     expect(accountTripWizardSupport).toContain("./account-trip-destinations");
