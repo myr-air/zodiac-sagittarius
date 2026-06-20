@@ -164,6 +164,8 @@ export const workspaceBoundarySourcePaths = {
   timelineTemplateStory: "src/features/itinerary/stories/TimelineTemplate.stories.tsx",
   mapPageStory: "src/features/itinerary/stories/workspace/MapPage.stories.tsx",
   mapTemplateStory: "src/features/itinerary/stories/workspace/MapTemplate.stories.tsx",
+  homeLandingStory: "src/features/public-site/pages/home/HomeLanding.stories.tsx",
+  aboutAppPageStory: "src/features/public-site/pages/about/AboutAppPage.stories.tsx",
   accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
   accountAccessFixtures: "src/features/account/components/account-access-panel/account-access-panel-fixtures.ts",
   accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",

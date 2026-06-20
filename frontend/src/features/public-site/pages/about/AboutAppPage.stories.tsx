@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { HttpResponse, http } from "msw";
+import {
+  argsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
 import { AboutAppPage } from "./AboutAppPage";
 import {
   apiUnavailablePlay,
@@ -47,6 +51,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const aboutStory = argsStory<Story>;
+const viewportStoryForAbout = viewportStory<Story>;
 
 export const Ready: Story = {
   args: {
@@ -67,32 +73,30 @@ export const ApiUnavailable: Story = {
   play: apiUnavailablePlay,
 };
 
-export const Thai: Story = {
-  args: Ready.args,
-  parameters: { locale: "th" },
-  play: thaiPlay,
-};
+export const Thai: Story = aboutStory(Ready.args ?? {}, {}, thaiPlay, {
+  locale: "th",
+});
 
-export const Mobile: Story = {
-  args: Ready.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForAbout(
+  Ready.args ?? {},
+  "mobile320",
+  mobilePlay,
+);
 
-export const Tablet: Story = {
-  args: Ready.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: tabletPlay,
-};
+export const Tablet: Story = viewportStoryForAbout(
+  Ready.args ?? {},
+  "tablet768",
+  tabletPlay,
+);
 
-export const Desktop1024: Story = {
-  args: Ready.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: tabletPlay,
-};
+export const Desktop1024: Story = viewportStoryForAbout(
+  Ready.args ?? {},
+  "desktop1024",
+  tabletPlay,
+);
 
-export const Desktop1440: Story = {
-  args: Ready.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: tabletPlay,
-};
+export const Desktop1440: Story = viewportStoryForAbout(
+  Ready.args ?? {},
+  "desktop1440",
+  tabletPlay,
+);

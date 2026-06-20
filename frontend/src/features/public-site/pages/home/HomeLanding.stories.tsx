@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import {
+  argsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
 import { HomeLanding } from "./HomeLanding";
 import {
   compactHeroPlay,
@@ -21,40 +25,27 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const landingStory = argsStory<Story>;
+const viewportStoryForLanding = viewportStory<Story>;
 
 export const PixelPerfect: Story = {
   play: pixelPerfectPlay,
 };
 
-export const Thai: Story = {
-  parameters: { locale: "th" },
-  play: thaiPlay,
-};
+export const Thai: Story = landingStory({}, {}, thaiPlay, { locale: "th" });
 
-export const Tablet: Story = {
-  parameters: {
-    viewport: { defaultViewport: "tablet768" },
-  },
-  play: compactHeroPlay,
-};
+export const Tablet: Story = viewportStoryForLanding({}, "tablet768", compactHeroPlay);
 
-export const Desktop1024: Story = {
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: compactHeroPlay,
-};
+export const Desktop1024: Story = viewportStoryForLanding(
+  {},
+  "desktop1024",
+  compactHeroPlay,
+);
 
-export const Desktop1440: Story = {
-  parameters: {
-    viewport: { defaultViewport: "desktop1440" },
-  },
-  play: desktop1440Play,
-};
+export const Desktop1440: Story = viewportStoryForLanding(
+  {},
+  "desktop1440",
+  desktop1440Play,
+);
 
-export const Mobile: Story = {
-  parameters: {
-    viewport: { defaultViewport: "mobile320" },
-  },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForLanding({}, "mobile320", mobilePlay);

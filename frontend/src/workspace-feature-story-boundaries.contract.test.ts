@@ -23,6 +23,8 @@ describe("Sagittarius workspace feature story boundaries", () => {
       timelineTemplateStory,
       mapPageStory,
       mapTemplateStory,
+      homeLandingStory,
+      aboutAppPageStory,
       stopDialogStory,
       bookingsDocsPageStory,
       tripJoinGateStory,
@@ -70,6 +72,10 @@ describe("Sagittarius workspace feature story boundaries", () => {
       expect(storySource).not.toContain("args: Owner.args");
     });
     expect(appShellStory).not.toContain("defaultViewport:");
+    [homeLandingStory, aboutAppPageStory].forEach((storySource) => {
+      expect(storySource).toContain("@/src/shared/storybook/story-builders");
+      expect(storySource).not.toContain("defaultViewport:");
+    });
     [contextRailStory, stopDialogStory].forEach((storySource) => {
       expect(storySource).toContain("@/src/shared/storybook/story-builders");
       expect(storySource).not.toContain("defaultViewport:");
