@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { viewportStory } from "@/src/shared/storybook/story-builders";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { defaultPlay, thaiSelectedPlay } from "./LanguageSwitch.stories.plays";
 
@@ -12,6 +13,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const languageViewportStory = viewportStory<Story>;
 
 export const Default: Story = {
   play: defaultPlay,
@@ -21,7 +23,8 @@ export const ThaiSelected: Story = {
   play: thaiSelectedPlay,
 };
 
-export const CompactRail: Story = {
-  args: { className: "side-rail-language" },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-};
+export const CompactRail: Story = languageViewportStory(
+  { className: "side-rail-language" },
+  "mobile320",
+  undefined,
+);

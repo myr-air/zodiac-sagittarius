@@ -82,13 +82,11 @@ export const Viewer: Story = {
   args: { initialView: "itinerary", initialMemberId: viewerMemberId },
   play: expectReadOnlyItineraryWorkspace,
 };
-export const Desktop1024Overview: Story = {
-  args: { initialView: "overview" },
-  parameters: {
-    viewport: { defaultViewport: "desktop1024" },
-  },
-  play: expectDesktopOverviewWorkspace,
-};
+export const Desktop1024Overview: Story = appViewportStory(
+  "overview",
+  "desktop1024",
+  expectDesktopOverviewWorkspace,
+);
 export const Desktop1440Overview: Story = appViewportStory("overview", "desktop1440", expectDesktopOverviewWorkspace);
 export const Desktop1024Itinerary: Story = appViewportStory("itinerary", "desktop1024", expectItineraryView);
 export const Desktop1440Itinerary: Story = appViewportStory("itinerary", "desktop1440", expectItineraryView);

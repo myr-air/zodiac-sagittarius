@@ -10,8 +10,13 @@ describe("Sagittarius workspace feature story boundaries", () => {
       itineraryStoryPathScenarios,
       itineraryStoryPathItems,
       itineraryStoryPathOptions,
+      sagittariusAppStory,
       itineraryPageStory,
       storyBuilders,
+      languageSwitchStory,
+      uiPrimitivesStory,
+      weatherForecastStripStory,
+      weatherBriefingDrawerStory,
       itineraryPageStoryPlays,
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
@@ -53,6 +58,16 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(storyBuilders).toContain("export function argsStory");
     expect(storyBuilders).toContain("export function ownerArgsStory");
     expect(storyBuilders).toContain("export function viewportStory");
+    expect(sagittariusAppStory).not.toContain("defaultViewport:");
+    [
+      languageSwitchStory,
+      uiPrimitivesStory,
+      weatherForecastStripStory,
+      weatherBriefingDrawerStory,
+    ].forEach((storySource) => {
+      expect(storySource).toContain("@/src/shared/storybook/story-builders");
+      expect(storySource).not.toContain("defaultViewport:");
+    });
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");

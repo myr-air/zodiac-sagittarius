@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { viewportStory } from "@/src/shared/storybook/story-builders";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
 import { partialDataPlay } from "./WeatherBriefingDrawer.stories.plays";
@@ -13,6 +14,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const drawerViewportStory = viewportStory<Story>;
 
 const drawerBriefing = {
   ...weatherBriefings[1],
@@ -51,8 +53,8 @@ export const TravelerDrawer: Story = {
   },
 };
 
-export const MobileSheet: Story = {
-  args: {
+export const MobileSheet: Story = drawerViewportStory(
+  {
     briefing: drawerBriefing,
     locale: "en",
     canEdit: true,
@@ -60,8 +62,9 @@ export const MobileSheet: Story = {
     onClose: () => {},
     onSaveOverrides: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-};
+  "mobile320",
+  undefined,
+);
 
 export const PartialData: Story = {
   args: {

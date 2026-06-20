@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { viewportStory } from "@/src/shared/storybook/story-builders";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherForecastStrip } from "./WeatherForecastStrip";
 import { emptyPlay } from "./WeatherForecastStrip.stories.plays";
@@ -13,6 +14,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const forecastViewportStory = viewportStory<Story>;
 
 export const AtmosphericGlass: Story = {
   args: {
@@ -23,15 +25,16 @@ export const AtmosphericGlass: Story = {
   },
 };
 
-export const MobileOverflow: Story = {
-  args: {
+export const MobileOverflow: Story = forecastViewportStory(
+  {
     briefings: weatherBriefings,
     locale: "en",
     selectedDate: null,
     onSelect: () => {},
   },
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-};
+  "mobile320",
+  undefined,
+);
 
 export const Thai: Story = {
   args: {
