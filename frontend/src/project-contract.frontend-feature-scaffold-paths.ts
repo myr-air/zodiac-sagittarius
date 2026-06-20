@@ -86,6 +86,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/trip-join-gate/state/use-trip-join-gate-form-state.ts",
   "src/features/account/components/trip-join-gate/state/use-trip-join-invite-token-resolution.ts",
   "src/features/account/components/trip-join-gate/submit/use-trip-join-gate-submit-actions.ts",
+  "src/features/account/components/trip-join-gate/submit/use-trip-join-gate-submit-actions-params.ts",
   "src/features/public-site/pages/home/HomeLanding.stories.plays.ts",
   "src/features/public-site/pages/home/HomeLandingSections.tsx",
   "src/features/public-site/pages/home/HomeLandingPreview.sections.tsx",

@@ -1,41 +1,12 @@
-import type { Dispatch, FormEvent, SetStateAction } from "react";
+import type { FormEvent } from "react";
 import {
   claimTripParticipant,
   createTripParticipantSession,
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
-import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
-import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import { errorMessage, tripFromJoinResponse } from "../trip-join-gate.support";
-
-interface TripJoinGateErrorCopy {
-  participantPassword: string;
-  shortPassword: string;
-  tripCredentials: string;
-  tripLoad: string;
-}
-
-interface UseTripJoinGateSubmitActionsArgs {
-  activeTrip: Trip | null;
-  apiClient?: TripApiClient;
-  errors: TripJoinGateErrorCopy;
-  joinId: string;
-  joinSessionToken: string | null;
-  onAuthenticated: (session: TripParticipantSession) => void;
-  onCockpitLoaded?: (cockpit: TripCockpit) => void;
-  onTripChange: (trip: Trip) => void;
-  participantPassword: string;
-  selectedMember: Member | null;
-  setError: Dispatch<SetStateAction<string | null>>;
-  setIsSubmitting: Dispatch<SetStateAction<boolean>>;
-  setJoinedTrip: Dispatch<SetStateAction<Trip | null>>;
-  setJoinSessionToken: Dispatch<SetStateAction<string | null>>;
-  setSelectedMemberId: Dispatch<SetStateAction<string | null>>;
-  setStep: Dispatch<SetStateAction<"room" | "participant">>;
-  trip?: Trip;
-  tripPassword: string;
-}
+import type { UseTripJoinGateSubmitActionsArgs } from "./use-trip-join-gate-submit-actions-params";
 
 export function useTripJoinGateSubmitActions({
   activeTrip,
