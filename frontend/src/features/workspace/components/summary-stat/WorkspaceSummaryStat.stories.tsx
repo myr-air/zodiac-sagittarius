@@ -55,7 +55,12 @@ export const Negative: Story = {
 };
 
 export const AllTones: Story = {
-  args: Default.args,
+  args: {
+    className: statClassName,
+    icon: "wallet",
+    label: "Trip spend",
+    value: "$2,430",
+  },
   render: () => (
     <div className="flex flex-wrap gap-3">
       {workspaceSummaryStatToneValues.map((tone) => (
