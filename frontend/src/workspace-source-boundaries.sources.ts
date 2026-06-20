@@ -207,7 +207,8 @@ export const workspaceBoundarySourcePaths = {
   homeLandingStory: "src/features/public-site/pages/home/HomeLanding.stories.tsx",
   aboutAppPageStory: "src/features/public-site/pages/about/AboutAppPage.stories.tsx",
   accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
-  accountAccessFixtures: "src/features/account/components/account-access-panel/account-access-panel-fixtures.ts",
+  accountAccessFixtures:
+    "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
   accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
   accountAccessPasskeyTestUtils:
     "src/features/account/components/account-access-panel/testing/account-access-panel-passkey-test-utils.ts",

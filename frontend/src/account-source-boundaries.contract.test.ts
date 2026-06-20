@@ -96,7 +96,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStorySupport).toContain("export const portalDashboardStoryArgs");
     expect(accountAccessFixtures).toContain("export const accountSettings");
     expect(accountAccessFixtures).toContain("export const accountTrip");
-    expect(accountAccessTestClients).toContain("../account-access-panel-fixtures");
+    expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-fixtures");
     expect(accountAccessTestClients).toContain("export function createAccountClient");
     expect(accountAccessTestClients).not.toContain("export const accountSettings");
     expect(accountAccessTestClients).not.toContain("export const accountTrip");
