@@ -6,38 +6,18 @@ import type {
   ItineraryTimeMode,
 } from "@/src/trip/types";
 import {
+  itineraryItemKindValues,
+  itineraryItemPriorityValues,
+  itineraryItemStatusValues,
+  itineraryTimeModeValues,
+} from "@/src/trip/trip-itinerary-types";
+import {
   advancedDetailsClassName,
   advancedDetailsGridClassName,
   dialogFieldWideClassName,
 } from "./stop-dialog.styles";
 import type { StopFormValues } from "./stop-dialog.types";
 import { stopDialogFieldIds } from "./stop-dialog.utils";
-
-const itemKindOptions: ItineraryItemKind[] = [
-  "travel",
-  "activity",
-  "lodging",
-  "meal",
-  "note",
-  "preparation",
-  "foodRecommendation",
-];
-
-const timeModeOptions: ItineraryTimeMode[] = ["scheduled", "flexible"];
-const statusOptions: ItineraryItemStatus[] = [
-  "idea",
-  "planned",
-  "booked",
-  "confirmed",
-  "done",
-  "skipped",
-];
-const priorityOptions: ItineraryItemPriority[] = [
-  "low",
-  "normal",
-  "high",
-  "must",
-];
 
 export function StopDialogAdvancedFields({
   advancedLabel,
@@ -68,7 +48,7 @@ export function StopDialogAdvancedFields({
               onUpdate("itemKind", event.target.value as ItineraryItemKind)
             }
           >
-            {itemKindOptions.map((option) => (
+            {itineraryItemKindValues.map((option) => (
               <option value={option} key={option}>{option}</option>
             ))}
           </Select>
@@ -82,7 +62,7 @@ export function StopDialogAdvancedFields({
               onUpdateTimeMode(event.target.value as ItineraryTimeMode)
             }
           >
-            {timeModeOptions.map((option) => (
+            {itineraryTimeModeValues.map((option) => (
               <option value={option} key={option}>{option}</option>
             ))}
           </Select>
@@ -96,7 +76,7 @@ export function StopDialogAdvancedFields({
               onUpdate("status", event.target.value as ItineraryItemStatus)
             }
           >
-            {statusOptions.map((option) => (
+            {itineraryItemStatusValues.map((option) => (
               <option value={option} key={option}>{option}</option>
             ))}
           </Select>
@@ -110,7 +90,7 @@ export function StopDialogAdvancedFields({
               onUpdate("priority", event.target.value as ItineraryItemPriority)
             }
           >
-            {priorityOptions.map((option) => (
+            {itineraryItemPriorityValues.map((option) => (
               <option value={option} key={option}>{option}</option>
             ))}
           </Select>

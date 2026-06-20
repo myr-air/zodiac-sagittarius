@@ -1,9 +1,57 @@
-export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default";
-export type ActivitySubtype = "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle";
-export type ItineraryItemKind = "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation";
-export type ItineraryTimeMode = "scheduled" | "flexible";
-export type ItineraryItemStatus = "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped";
-export type ItineraryItemPriority = "low" | "normal" | "high" | "must";
+export const activityTypeValues = [
+  "travel",
+  "food",
+  "shopping",
+  "attraction",
+  "experience",
+  "stay",
+  "default",
+] as const;
+export type ActivityType = (typeof activityTypeValues)[number];
+
+export const activitySubtypeValues = [
+  "flight",
+  "train",
+  "bus",
+  "taxi",
+  "ferry",
+  "walk",
+  "car",
+  "shuttle",
+] as const;
+export type ActivitySubtype = (typeof activitySubtypeValues)[number];
+
+export const itineraryItemKindValues = [
+  "travel",
+  "activity",
+  "lodging",
+  "meal",
+  "note",
+  "preparation",
+  "foodRecommendation",
+] as const;
+export type ItineraryItemKind = (typeof itineraryItemKindValues)[number];
+
+export const itineraryTimeModeValues = ["scheduled", "flexible"] as const;
+export type ItineraryTimeMode = (typeof itineraryTimeModeValues)[number];
+
+export const itineraryItemStatusValues = [
+  "idea",
+  "planned",
+  "booked",
+  "confirmed",
+  "done",
+  "skipped",
+] as const;
+export type ItineraryItemStatus = (typeof itineraryItemStatusValues)[number];
+
+export const itineraryItemPriorityValues = [
+  "low",
+  "normal",
+  "high",
+  "must",
+] as const;
+export type ItineraryItemPriority = (typeof itineraryItemPriorityValues)[number];
 export type ItineraryItemDetails = Record<string, unknown>;
 
 export type AdvisorySeverity = "info" | "warning" | "critical";
@@ -15,7 +63,8 @@ export interface ItineraryAdvisory {
 }
 
 export type ItineraryPathScope = "day" | "trip";
-export type ItineraryPathRole = "main" | "alternative";
+export const itineraryPathRoleValues = ["main", "alternative"] as const;
+export type ItineraryPathRole = (typeof itineraryPathRoleValues)[number];
 
 export interface ItineraryPath {
   id: string;

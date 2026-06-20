@@ -1,28 +1,12 @@
 import type { Locale } from "@/src/i18n/types";
-import type { ItineraryItem } from "@/src/trip/types";
+import { activitySubtypeValues } from "@/src/trip/trip-itinerary-types";
+import type { ActivitySubtype, ItineraryItem } from "@/src/trip/types";
 import { type IconName } from "@/src/ui/icons";
 import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 
-export type TravelSubtype =
-  | "flight"
-  | "train"
-  | "bus"
-  | "taxi"
-  | "ferry"
-  | "walk"
-  | "car"
-  | "shuttle";
+export type TravelSubtype = ActivitySubtype;
 
-export const travelSubtypes: TravelSubtype[] = [
-  "flight",
-  "train",
-  "bus",
-  "taxi",
-  "ferry",
-  "walk",
-  "car",
-  "shuttle",
-];
+export const travelSubtypes = activitySubtypeValues;
 
 export const travelSubtypeIcons: Record<TravelSubtype, IconName> = {
   bus: "bus",
