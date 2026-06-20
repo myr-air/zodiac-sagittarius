@@ -37,7 +37,9 @@ export {
 export {
   installLocalStorageStub,
   installSessionStorageStub,
+  loadPersistedTripDraft,
   persistAccountSession,
+  persistTripDraft,
   persistTripParticipantSession,
   persistTrustedAccountSession,
 } from "./sagittarius-app.test-storage";

@@ -1,7 +1,9 @@
 import { accountSessionStorageKey } from "@/src/account/session-storage";
 import { createMemoryStorage } from "@/src/testing/browser-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
+import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
+import type { Trip } from "@/src/trip/types";
 
 export function installLocalStorageStub() {
   const storage = createMemoryStorage();
@@ -85,4 +87,17 @@ export function persistTripParticipantSession(
       expiresAt,
     }),
   );
+}
+
+export function persistTripDraft(
+  storage: Pick<Storage, "setItem">,
+  trip: Trip,
+) {
+  storage.setItem(tripStorageKey, JSON.stringify(trip));
+}
+
+export function loadPersistedTripDraft(
+  storage: Pick<Storage, "getItem">,
+): Trip {
+  return JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
 }

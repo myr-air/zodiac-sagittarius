@@ -58,6 +58,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryPageStoryPlays,
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
+      timelinePageStory,
+      timelineTemplateStory,
+      mapPageStory,
+      mapTemplateStory,
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
@@ -165,7 +169,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
     expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("export function loadPersistedTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
+    expect(sagittariusAppTestStorage).toContain("export function persistTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistTripParticipantSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
     expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
@@ -198,6 +204,15 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");
     expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
+    [
+      timelinePageStory,
+      timelineTemplateStory,
+      mapPageStory,
+      mapTemplateStory,
+    ].forEach((storySource) => {
+      expect(storySource).toContain("itinerary-story-builders");
+      expect(storySource).not.toContain("...Owner.args");
+    });
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
 

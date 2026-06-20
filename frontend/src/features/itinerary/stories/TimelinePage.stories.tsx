@@ -18,6 +18,10 @@ import {
   timelineOwnerStoryArgs,
   timelinePlanABAlternativeItems,
 } from "./TimelinePage.stories.support";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "./itinerary-story-builders";
 
 const meta = {
   title: "Pages/Timeline",
@@ -28,6 +32,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: timelineOwnerStoryArgs,
@@ -39,72 +45,42 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const Traveler: Story = {
-  args: Owner.args,
-  play: travelerPlay,
-};
+export const Traveler: Story = ownerStory(Owner.args, {}, travelerPlay);
 
-export const Viewer: Story = {
-  args: Owner.args,
-  play: Traveler.play,
-};
+export const Viewer: Story = ownerStory(Owner.args, {}, Traveler.play);
 
-export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    items: denseTimelineItems,
-    selectedItemId: "",
-  },
-  play: densePlay,
-};
+export const Dense: Story = ownerStory(Owner.args, {
+  items: denseTimelineItems,
+  selectedItemId: "",
+}, densePlay);
 
-export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    items: emptyTimelineItems,
-    selectedItemId: "",
-  },
-  play: emptyPlay,
-};
+export const Empty: Story = ownerStory(Owner.args, {
+  items: emptyTimelineItems,
+  selectedItemId: "",
+}, emptyPlay);
 
-export const PlanABAlternatives: Story = {
-  args: {
-    ...Owner.args,
-    items: timelinePlanABAlternativeItems,
-    selectedItemId: "timeline-plan-ab-main-breakfast",
-  },
-  play: planABAlternativesPlay,
-};
+export const PlanABAlternatives: Story = ownerStory(Owner.args, {
+  items: timelinePlanABAlternativeItems,
+  selectedItemId: "timeline-plan-ab-main-breakfast",
+}, planABAlternativesPlay);
 
-export const AdvisoryWarning: Story = {
-  args: {
-    ...Owner.args,
-    items: timelineAdvisoryItems,
-    selectedItemId: "timeline-advisory-main",
-  },
-  play: advisoryWarningPlay,
-};
+export const AdvisoryWarning: Story = ownerStory(Owner.args, {
+  items: timelineAdvisoryItems,
+  selectedItemId: "timeline-advisory-main",
+}, advisoryWarningPlay);
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: tabletPlay,
-};
+export const Tablet: Story = viewportStoryForOwner(Owner.args, "tablet768", tabletPlay);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsivePlay,
-};
+export const Desktop1024: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1024",
+  responsivePlay,
+);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: responsivePlay,
-};
+export const Desktop1440: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1440",
+  responsivePlay,
+);
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForOwner(Owner.args, "mobile320", mobilePlay);

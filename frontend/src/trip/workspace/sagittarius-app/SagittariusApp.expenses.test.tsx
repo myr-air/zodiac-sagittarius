@@ -6,12 +6,12 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type { Trip } from "@/src/trip/types";
 import {
   installLocalStorageStub,
+  loadPersistedTripDraft,
   openItineraryHeaderControls,
+  persistTripDraft,
   render,
   tripWithPlans,
   resetSagittariusAppTestEnvironment,
@@ -63,7 +63,7 @@ describe("Sagittarius cockpit expenses", () => {
     const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
     expect(within(expenseTable).getByText("Late night taxi")).toBeInTheDocument();
     expect(expenseTable).toHaveTextContent("HK$100.00");
-    const persistedTrip = JSON.parse(localStorage.getItem(tripStorageKey)!) as Trip;
+    const persistedTrip = loadPersistedTripDraft(localStorage);
     expect(
       persistedTrip.expenses.find((expense) => expense.title === "Late night taxi"),
     ).toMatchObject({
@@ -76,7 +76,7 @@ describe("Sagittarius cockpit expenses", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -104,7 +104,7 @@ describe("Sagittarius cockpit expenses", () => {
     await waitFor(() => {
       expect(within(expenseTable).getByText("Rain plan taxi")).toBeInTheDocument();
     });
-    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const persistedTrip = loadPersistedTripDraft(storage);
     expect(
       persistedTrip.expenses.find((expense) => expense.title === "Rain plan taxi"),
     ).toMatchObject({
@@ -119,7 +119,7 @@ describe("Sagittarius cockpit expenses", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     render(<SagittariusApp initialView="expenses" />);
 
@@ -134,7 +134,7 @@ describe("Sagittarius cockpit expenses", () => {
     );
 
     await waitFor(() => {
-      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      const persistedTrip = loadPersistedTripDraft(storage);
       expect(
         persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
       ).toMatchObject({
@@ -150,10 +150,10 @@ describe("Sagittarius cockpit expenses", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify({
+    persistTripDraft(storage, {
       ...draftTrip,
       bookingDocs: [],
-    }));
+    });
 
     render(<SagittariusApp initialView="expenses" />);
 
@@ -165,7 +165,7 @@ describe("Sagittarius cockpit expenses", () => {
     );
 
     await waitFor(() => {
-      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      const persistedTrip = loadPersistedTripDraft(storage);
       expect(persistedTrip.expenses).toHaveLength(draftTrip.expenses.length);
       expect(persistedTrip.bookingDocs).toEqual([
         expect.objectContaining({
@@ -188,7 +188,7 @@ describe("Sagittarius cockpit expenses", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     render(<SagittariusApp initialView="expenses" />);
 
@@ -200,7 +200,7 @@ describe("Sagittarius cockpit expenses", () => {
     );
 
     await waitFor(() => {
-      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      const persistedTrip = loadPersistedTripDraft(storage);
       expect(
         persistedTrip.expenses.find((expense) => expense.id === "expense-dimsum"),
       ).toBeTruthy();

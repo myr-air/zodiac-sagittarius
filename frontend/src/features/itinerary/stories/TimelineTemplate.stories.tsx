@@ -6,6 +6,7 @@ import {
   timelineOwnerStoryArgs,
 } from "./TimelinePage.stories.support";
 import { ownerPlay, ownerThaiPlay } from "./TimelineTemplate.stories.plays";
+import { ownerArgsStory } from "./itinerary-story-builders";
 
 const meta = {
   title: "Templates/Timeline",
@@ -17,6 +18,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
 
 export const Owner: Story = {
   args: timelineOwnerStoryArgs,
@@ -29,22 +31,16 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const Traveler: Story = {
-  args: Owner.args,
-  play: Owner.play,
-};
+export const Traveler: Story = ownerStory(Owner.args, {}, Owner.play);
 
-export const Viewer: Story = {
-  args: Owner.args,
-  play: Owner.play,
-};
+export const Viewer: Story = ownerStory(Owner.args, {}, Owner.play);
 
-export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    items: denseTimelineItems,
-    selectedItemId: "",
-  },
-};
+export const Dense: Story = ownerStory(Owner.args, {
+  items: denseTimelineItems,
+  selectedItemId: "",
+});
 
-export const Empty: Story = { args: { ...Owner.args, items: emptyTimelineItems, selectedItemId: "" } };
+export const Empty: Story = ownerStory(Owner.args, {
+  items: emptyTimelineItems,
+  selectedItemId: "",
+});

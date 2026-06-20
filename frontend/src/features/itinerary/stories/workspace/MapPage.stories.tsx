@@ -15,6 +15,10 @@ import {
   responsivePlay,
   stopsWithoutCoordinatesPlay,
 } from "./MapPage.stories.plays";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "../itinerary-story-builders";
 
 const meta = {
   title: "Pages/Map",
@@ -25,6 +29,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: mapOwnerStoryArgs,
@@ -36,82 +42,48 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const Traveler: Story = {
-  args: Owner.args,
-};
+export const Traveler: Story = ownerStory(Owner.args, {});
 
-export const Viewer: Story = {
-  args: Owner.args,
-};
+export const Viewer: Story = ownerStory(Owner.args, {});
 
-export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    items: denseMapItems,
-  },
-};
+export const Dense: Story = ownerStory(Owner.args, {
+  items: denseMapItems,
+});
 
-export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    items: emptyMapItems,
-  },
-};
+export const Empty: Story = ownerStory(Owner.args, {
+  items: emptyMapItems,
+});
 
-export const LiveMapLoading: Story = {
-  args: {
-    ...Owner.args,
-    liveMapAvailability: "loading",
-    liveMapEnabled: true,
-  },
-  play: liveMapLoadingPlay,
-};
+export const LiveMapLoading: Story = ownerStory(Owner.args, {
+  liveMapAvailability: "loading",
+  liveMapEnabled: true,
+}, liveMapLoadingPlay);
 
-export const LiveMapFailure: Story = {
-  args: {
-    ...Owner.args,
-    liveMapAvailability: "error",
-    liveMapEnabled: true,
-  },
-  play: liveMapFailurePlay,
-};
+export const LiveMapFailure: Story = ownerStory(Owner.args, {
+  liveMapAvailability: "error",
+  liveMapEnabled: true,
+}, liveMapFailurePlay);
 
-export const PlanABAlternatives: Story = {
-  args: {
-    ...Owner.args,
-    items: mapPlanABAlternativeItems,
-  },
-  play: planABAlternativesPlay,
-};
+export const PlanABAlternatives: Story = ownerStory(Owner.args, {
+  items: mapPlanABAlternativeItems,
+}, planABAlternativesPlay);
 
-export const StopsWithoutCoordinates: Story = {
-  args: {
-    ...Owner.args,
-    items: mapStopsWithoutCoordinatesItems,
-  },
-  play: stopsWithoutCoordinatesPlay,
-};
+export const StopsWithoutCoordinates: Story = ownerStory(Owner.args, {
+  items: mapStopsWithoutCoordinatesItems,
+}, stopsWithoutCoordinatesPlay);
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: responsivePlay,
-};
+export const Tablet: Story = viewportStoryForOwner(Owner.args, "tablet768", responsivePlay);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsivePlay,
-};
+export const Desktop1024: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1024",
+  responsivePlay,
+);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: responsivePlay,
-};
+export const Desktop1440: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1440",
+  responsivePlay,
+);
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: responsivePlay,
-};
+export const Mobile: Story = viewportStoryForOwner(Owner.args, "mobile320", responsivePlay);

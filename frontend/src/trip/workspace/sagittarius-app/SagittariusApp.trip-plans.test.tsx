@@ -7,14 +7,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
-import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
-import type {
-  Trip,
-} from "@/src/trip/types";
 import {
   installLocalStorageStub,
+  loadPersistedTripDraft,
   openItineraryHeaderControls,
+  persistTripDraft,
   render,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
@@ -50,9 +48,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     expect(
       screen.queryByRole("row", { name: /Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-    const persistedTrip = JSON.parse(
-      window.localStorage.getItem(tripStorageKey)!,
-    ) as Trip;
+    const persistedTrip = loadPersistedTripDraft(window.localStorage);
     expect(persistedTrip.activePlanVariantId).toBe(seedTrip.activePlanVariantId);
     expect(persistedTrip.mainTripPlanId).toBe(
       seedTrip.mainTripPlanId ?? seedTrip.activePlanVariantId,
@@ -67,7 +63,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -84,7 +80,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     expect(
       screen.queryByRole("row", { name: /Dim Dim Sum/i }),
     ).not.toBeInTheDocument();
-    const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+    const persistedTrip = loadPersistedTripDraft(storage);
     expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
     expect(persistedTrip.mainTripPlanId).toBe(draftTrip.mainTripPlanId);
     expect(persistedTrip.planVariants).toEqual(persistedTrip.tripPlans);
@@ -100,7 +96,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     const { unmount } = render(<SagittariusApp initialView="itinerary" />);
 
@@ -134,7 +130,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     const user = userEvent.setup();
     const storage = installLocalStorageStub();
     const draftTrip = tripWithPlans();
-    storage.setItem(tripStorageKey, JSON.stringify(draftTrip));
+    persistTripDraft(storage, draftTrip);
 
     render(<SagittariusApp initialView="itinerary" />);
 
@@ -146,7 +142,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
     await user.click(screen.getByRole("button", { name: "ใช้เป็นแผนหลัก" }));
 
     await waitFor(() => {
-      const persistedTrip = JSON.parse(storage.getItem(tripStorageKey)!) as Trip;
+      const persistedTrip = loadPersistedTripDraft(storage);
       expect(persistedTrip.activePlanVariantId).toBe("plan-variant-backup");
       expect(persistedTrip.mainTripPlanId).toBe("plan-variant-backup");
       expect(
@@ -164,10 +160,7 @@ describe("Sagittarius cockpit Trip Plans", () => {
 
   it("shows plan-scoped records on secondary detail pages for the selected Trip Plan", async () => {
     const storage = installLocalStorageStub();
-    storage.setItem(
-      tripStorageKey,
-      JSON.stringify(tripWithPlansAndPlanScopedRecords()),
-    );
+    persistTripDraft(storage, tripWithPlansAndPlanScopedRecords());
 
     const { unmount } = render(<SagittariusApp initialView="expenses" />);
 

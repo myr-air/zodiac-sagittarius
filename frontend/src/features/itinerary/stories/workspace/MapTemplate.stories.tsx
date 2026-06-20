@@ -6,6 +6,7 @@ import {
   mapOwnerStoryArgs,
 } from "./MapPage.stories.support";
 import { ownerThaiPlay } from "./MapTemplate.stories.plays";
+import { ownerArgsStory } from "../itinerary-story-builders";
 
 const meta = {
   title: "Templates/Map",
@@ -17,6 +18,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
 
 export const Owner: Story = {
   args: mapOwnerStoryArgs,
@@ -28,10 +30,10 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const Traveler: Story = { args: Owner.args };
+export const Traveler: Story = ownerStory(Owner.args, {});
 
-export const Viewer: Story = { args: Owner.args };
+export const Viewer: Story = ownerStory(Owner.args, {});
 
-export const Dense: Story = { args: { ...Owner.args, items: denseMapItems } };
+export const Dense: Story = ownerStory(Owner.args, { items: denseMapItems });
 
-export const Empty: Story = { args: { ...Owner.args, items: emptyMapItems } };
+export const Empty: Story = ownerStory(Owner.args, { items: emptyMapItems });
