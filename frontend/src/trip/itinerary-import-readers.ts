@@ -2,18 +2,22 @@ import type {
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
-  TripPlan,
 } from "./types";
+import { isRecord, unsupportedImportFileError } from "./itinerary-import-reader-utils";
 
-const unsupportedImportFileMessage = "Unsupported itinerary import file.";
-
-export function unsupportedImportFileError(): Error {
-  return new Error(unsupportedImportFileMessage);
-}
-
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+export { isRecord, unsupportedImportFileError } from "./itinerary-import-reader-utils";
+export {
+  readActivityType,
+  readOptionalActivitySubtype,
+  readOptionalItemKind,
+  readOptionalPathRole,
+  readOptionalPlanStatus,
+  readOptionalPriority,
+  readOptionalStatus,
+  readOptionalTimeMode,
+  readPlanVariantKind,
+  statusFromPlanKind,
+} from "./itinerary-import-enum-readers";
 
 export function readRecordArray<T>(
   item: Record<string, unknown>,
@@ -56,16 +60,6 @@ export function readOptionalString(
   return value;
 }
 
-export function readOptionalPathRole(
-  item: Record<string, unknown>,
-  key: string,
-): ItineraryItem["pathRole"] | undefined {
-  const value = item[key];
-  if (value === undefined || value === null) return undefined;
-  if (value === "main" || value === "alternative") return value;
-  throw unsupportedImportFileError();
-}
-
 export function readString(item: Record<string, unknown>, key: string): string {
   const value = item[key];
   if (typeof value !== "string") throw unsupportedImportFileError();
@@ -90,127 +84,6 @@ export function readOptionalNumber(
     throw unsupportedImportFileError();
   }
   return value;
-}
-
-export function readActivityType(value: unknown): ItineraryItem["activityType"] {
-  if (
-    value === "travel" ||
-    value === "food" ||
-    value === "shopping" ||
-    value === "attraction" ||
-    value === "experience" ||
-    value === "stay" ||
-    value === "default"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function readOptionalActivitySubtype(
-  value: unknown,
-): ItineraryItem["activitySubtype"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "flight" ||
-    value === "train" ||
-    value === "bus" ||
-    value === "taxi" ||
-    value === "ferry" ||
-    value === "walk" ||
-    value === "car" ||
-    value === "shuttle"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function readOptionalItemKind(
-  value: unknown,
-): ItineraryItem["itemKind"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "travel" ||
-    value === "activity" ||
-    value === "lodging" ||
-    value === "meal" ||
-    value === "note" ||
-    value === "preparation" ||
-    value === "foodRecommendation"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function readPlanVariantKind(value: unknown): TripPlan["kind"] {
-  if (
-    value === "main" ||
-    value === "backup" ||
-    value === "draft" ||
-    value === "split"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function readOptionalPlanStatus(value: unknown): TripPlan["status"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "main" ||
-    value === "backup" ||
-    value === "draft" ||
-    value === "proposal"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function statusFromPlanKind(kind: TripPlan["kind"]): TripPlan["status"] {
-  return kind === "split" ? "proposal" : kind;
-}
-
-export function readOptionalTimeMode(
-  value: unknown,
-): ItineraryItem["timeMode"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (value === "scheduled" || value === "flexible") return value;
-  throw unsupportedImportFileError();
-}
-
-export function readOptionalStatus(
-  value: unknown,
-): ItineraryItem["status"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "idea" ||
-    value === "planned" ||
-    value === "booked" ||
-    value === "confirmed" ||
-    value === "done" ||
-    value === "skipped"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
-}
-
-export function readOptionalPriority(
-  value: unknown,
-): ItineraryItem["priority"] | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (
-    value === "low" ||
-    value === "normal" ||
-    value === "high" ||
-    value === "must"
-  ) {
-    return value;
-  }
-  throw unsupportedImportFileError();
 }
 
 export function readCoordinates(value: unknown): ItineraryCoordinates | undefined {
