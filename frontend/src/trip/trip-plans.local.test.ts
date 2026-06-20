@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLocalTripPlan } from "@/src/trip/trip-plans";
+import { createLocalTripPlan } from "@/src/trip/trip-plan-local";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip } from "@/src/trip/types";
 import { plan } from "./trip-plans.test-support";
