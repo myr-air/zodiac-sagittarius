@@ -1,6 +1,6 @@
-import type { Trip } from "@/src/trip/types";
 export { memberInitial } from "@/src/trip/member-labels";
 export { findMemberById as memberById } from "@/src/trip/member-lookup";
+export { tripPlanName } from "@/src/trip/trip-plan-display";
 
 export {
   categoryTone,
@@ -10,11 +10,6 @@ export {
   type CategoryTone,
   type ExpenseCategoryFilter,
 } from "./expense-page-options";
-
-export function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {
-  const plans = trip.tripPlans ?? trip.planVariants;
-  return plans.find((plan) => plan.id === tripPlanId)?.name ?? tripPlanId ?? "Unassigned";
-}
 
 export function formatReminderDate(value: string, locale: string): string {
   const date = new Date(value);
