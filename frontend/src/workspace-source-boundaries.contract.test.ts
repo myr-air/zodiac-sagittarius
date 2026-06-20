@@ -10,6 +10,7 @@ describe("Sagittarius workspace source boundaries", () => {
   it("keeps workspace orchestration split by responsibility", () => {
     const {
       sagaCore,
+      workspaceContextsHook,
       sagittariusAccessGate,
       workspaceAppFrame,
       workspaceMainShell,
@@ -34,6 +35,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(appFacade).not.toContain('"use client"');
     const sagittariusApp = sagaCore;
     expect(sagittariusApp).toContain("./WorkspaceAppFrame");
+    expect(sagittariusApp).toContain("useSagittariusWorkspaceContexts");
+    expect(workspaceContextsHook).toContain("useWorkspaceSetupContext");
+    expect(workspaceContextsHook).toContain("useWorkspacePlanningContext");
+    expect(workspaceContextsHook).toContain("useWorkspaceCommands");
+    expect(workspaceContextsHook).not.toContain("WorkspaceAppFrame");
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
     expect(sagittariusApp).toContain("./props");

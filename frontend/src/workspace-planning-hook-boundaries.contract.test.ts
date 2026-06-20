@@ -6,6 +6,7 @@ describe("Sagittarius workspace planning hook source boundaries", () => {
   it("keeps planning state, records, view-model, and selected-plan hooks split by responsibility", () => {
     const {
       sagaCore,
+      workspaceContextsHook,
       workspaceTripPlansHook,
       workspaceTripPlanSelection,
       itineraryViewModelHook,
@@ -18,7 +19,8 @@ describe("Sagittarius workspace planning hook source boundaries", () => {
       selectedTripPlanHook,
     } = readWorkspaceBoundarySources(frontendRoot);
 
-    expect(sagaCore).toContain("useWorkspacePlanningContext");
+    expect(sagaCore).toContain("useSagittariusWorkspaceContexts");
+    expect(workspaceContextsHook).toContain("useWorkspacePlanningContext");
     expect(sagaCore).not.toContain("useWorkspaceCockpitReplacement");
     expect(sagaCore).not.toContain("normalizeTripPlanAliases");
     expect(cockpitReplacementHook).toContain("export function useWorkspaceCockpitReplacement");

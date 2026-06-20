@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 export const workspaceBoundarySourcePaths = {
   sagaCore: "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx",
+  workspaceContextsHook: "src/trip/workspace/sagittarius-app/hooks/use-sagittarius-workspace-contexts.ts",
   sagittariusAccessGate: "src/trip/workspace/sagittarius-app/access-gate.tsx",
   workspaceAppFrame: "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx",
   workspaceMainShell: "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx",

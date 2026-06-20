@@ -1,4 +1,5 @@
 export { useWorkspaceAdministration } from "./use-workspace-administration";
+export { useSagittariusWorkspaceContexts } from "./use-sagittarius-workspace-contexts";
 export { useWorkspaceExpenses } from "./use-workspace-expenses";
 export { useWorkspaceBookingCommands } from "./use-workspace-booking-commands";
 export { useWorkspaceAccessContext } from "./use-workspace-access-context";

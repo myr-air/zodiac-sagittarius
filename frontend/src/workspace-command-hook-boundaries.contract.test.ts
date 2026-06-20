@@ -6,6 +6,7 @@ describe("Sagittarius workspace command hook source boundaries", () => {
   it("keeps workspace commands, record inputs, photo albums, and expense drafts split by responsibility", () => {
     const {
       sagaCore,
+      workspaceContextsHook,
       workspaceCommandsHook,
       itineraryBookingCommands,
       bookingCommandInputs,
@@ -26,7 +27,8 @@ describe("Sagittarius workspace command hook source boundaries", () => {
 
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).not.toContain("useWorkspaceRecords");
-    expect(sagaCore).toContain("useWorkspaceCommands");
+    expect(sagaCore).toContain("useSagittariusWorkspaceContexts");
+    expect(workspaceContextsHook).toContain("useWorkspaceCommands");
     expect(sagaCore).not.toContain("useWorkspaceAdministration");
     expect(sagaCore).not.toContain("useWorkspaceBookingCommands");
     expect(sagaCore).not.toContain("useWorkspaceItineraryCommands");
