@@ -11,13 +11,12 @@ import {
   passwordLoginErrorMessage,
 } from "../auth";
 import type { AuthFlow } from "../auth";
-import { accountEmailPattern, type AuthTransitionDirection } from "./account-email-login-styles";
+import type { AuthTransitionDirection } from "./account-email-login-styles";
 import {
-  emailLoginStepHeading,
-  emailLoginStepProgress,
-  resolveEmailLoginVisualStep,
+  buildEmailLoginStepMeta,
   type EmailLoginAuthStep,
 } from "./account-email-login-step-meta";
+import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 
 interface UseEmailLoginPanelStateProps {
   accountClient: AccountApiClient;
@@ -47,20 +46,27 @@ export function useEmailLoginPanelState({
   const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const normalizedEmail = email.trim();
-  const isEmailValid = accountEmailPattern.test(normalizedEmail);
-  const isEmailInvalid = normalizedEmail.length > 0 && !isEmailValid;
-  const passwordReady = password.length >= 8;
-  const isPasswordInvalid = password.length > 0 && !passwordReady;
-  const otpReady = /^\d{6}$/.test(code);
-  const emailInputId = `account-${activeFlow}-email`;
-  const emailHintId = `${emailInputId}-hint`;
-  const passwordInputId = `account-${activeFlow}-password`;
-  const passwordHintId = `${passwordInputId}-hint`;
-  const codeInputId = `account-${activeFlow}-code`;
-  const codeHintId = `${codeInputId}-hint`;
-  const formErrorId = `account-${activeFlow}-error`;
-  const passwordAutocomplete = activeFlow === "register" ? "new-password" : "current-password";
+  const {
+    codeHintId,
+    codeInputId,
+    emailHintId,
+    emailInputId,
+    formErrorId,
+    isEmailInvalid,
+    isEmailValid,
+    isPasswordInvalid,
+    normalizedEmail,
+    otpReady,
+    passwordAutocomplete,
+    passwordHintId,
+    passwordInputId,
+    passwordReady,
+  } = buildEmailLoginPanelDerivedState({
+    activeFlow,
+    code,
+    email,
+    password,
+  });
 
   useEffect(() => {
     if (!challenge || resendCooldown <= 0) return undefined;
@@ -261,12 +267,7 @@ export function useEmailLoginPanelState({
     window.history.replaceState(null, "", nextHref);
   }
 
-  const visualStep = resolveEmailLoginVisualStep(authStep, Boolean(challenge));
-  const stepProgress = emailLoginStepProgress(activeFlow, visualStep);
-  const stepLabel = activeFlow === "register"
-    ? t.access.emailLogin.stepRegister(stepProgress)
-    : t.access.emailLogin.stepLogin(stepProgress);
-  const stepHeading = emailLoginStepHeading({
+  const stepMeta = buildEmailLoginStepMeta({
     activeFlow,
     authStep,
     challengeExpiresAt: challenge?.expiresAt,
@@ -300,11 +301,11 @@ export function useEmailLoginPanelState({
     passwordInputId,
     passwordReady,
     resendCooldown,
-    stepHeading,
-    stepLabel,
+    stepHeading: stepMeta.heading,
+    stepLabel: stepMeta.label,
     transitionDirection,
     trustDevice,
-    visualStep,
+    visualStep: stepMeta.visualStep,
     changeEmail,
     chooseMethods,
     requestEmailCode,

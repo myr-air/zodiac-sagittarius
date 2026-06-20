@@ -39,6 +39,11 @@ interface EmailLoginHeadingMessages {
   verifyTitle: string;
 }
 
+interface EmailLoginStepMessages extends EmailLoginHeadingMessages {
+  stepLogin: (params: { current: number; total: number }) => string;
+  stepRegister: (params: { current: number; total: number }) => string;
+}
+
 export function emailLoginStepHeading({
   activeFlow,
   authStep,
@@ -88,5 +93,36 @@ export function emailLoginStepHeading({
     detail: activeFlow === "register" ? messages.registerCredentialsDetail : messages.loginCredentialsDetail,
     icon: "users" as const,
     title: activeFlow === "register" ? messages.registerCredentialsTitle : messages.loginCredentialsTitle,
+  };
+}
+
+export function buildEmailLoginStepMeta({
+  activeFlow,
+  authStep,
+  challengeExpiresAt,
+  locale,
+  messages,
+}: {
+  activeFlow: AuthFlow;
+  authStep: EmailLoginAuthStep;
+  challengeExpiresAt?: string | null;
+  locale: Locale;
+  messages: EmailLoginStepMessages;
+}) {
+  const visualStep = resolveEmailLoginVisualStep(authStep, Boolean(challengeExpiresAt));
+  const progress = emailLoginStepProgress(activeFlow, visualStep);
+  const label = activeFlow === "register" ? messages.stepRegister(progress) : messages.stepLogin(progress);
+  const heading = emailLoginStepHeading({
+    activeFlow,
+    authStep,
+    challengeExpiresAt,
+    locale,
+    messages,
+  });
+
+  return {
+    heading,
+    label,
+    visualStep,
   };
 }

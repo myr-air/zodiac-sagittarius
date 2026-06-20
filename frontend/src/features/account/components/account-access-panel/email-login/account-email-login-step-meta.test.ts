@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildEmailLoginStepMeta,
   emailLoginStepHeading,
   emailLoginStepProgress,
   resolveEmailLoginVisualStep,
@@ -19,6 +20,8 @@ const headingLabels = {
   registerPasswordDetail: "Register password detail",
   setupDetail: "Setup detail",
   setupTitle: "Setup title",
+  stepLogin: ({ current, total }: { current: number; total: number }) => `Login ${current}/${total}`,
+  stepRegister: ({ current, total }: { current: number; total: number }) => `Register ${current}/${total}`,
   verifyTitle: "Verify title",
 };
 
@@ -61,6 +64,23 @@ describe("email login step metadata", () => {
     })).toMatchObject({
       icon: "settings",
       title: "Verify title",
+    });
+  });
+
+  it("builds panel step metadata from the active challenge state", () => {
+    expect(buildEmailLoginStepMeta({
+      activeFlow: "register",
+      authStep: "email",
+      challengeExpiresAt: "2026-06-17T12:00:00.000Z",
+      locale: "en",
+      messages: headingLabels,
+    })).toMatchObject({
+      label: "Register 2/3",
+      visualStep: "otp",
+      heading: {
+        icon: "settings",
+        title: "Verify title",
+      },
     });
   });
 });
