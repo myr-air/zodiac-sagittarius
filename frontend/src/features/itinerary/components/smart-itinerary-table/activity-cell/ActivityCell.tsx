@@ -1,10 +1,10 @@
-import { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
-import { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
-import { InlineActivityField } from "./activity-cell/InlineActivityField";
-import { ActivityTimeButton } from "./activity-cell/ActivityTimeButton";
-import { SubActivityList } from "./activity-cell/SubActivityList";
-import { SubActivityModal } from "./activity-cell/SubActivityModal";
-import { ActivityActionButtons } from "./activity-cell/ActivityActionButtons";
+import { ActivityLocationLine } from "./ActivityLocationLine";
+import { ActivityTypePicker } from "./ActivityTypePicker";
+import { InlineActivityField } from "./InlineActivityField";
+import { ActivityTimeButton } from "./ActivityTimeButton";
+import { SubActivityList } from "./SubActivityList";
+import { SubActivityModal } from "./SubActivityModal";
+import { ActivityActionButtons } from "./ActivityActionButtons";
 import {
   activityBodyClassName,
   activityCellClassName,
@@ -16,12 +16,12 @@ import {
   activityTypeRailClassName,
   activityMobileTypePickerClassName,
   activityTabletActionLayerClassName,
-} from "./smart-itinerary-table.styles";
-import { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
-import { ActivitySubActivityToggle } from "./activity-cell/ActivityCellControls";
-import { ActivityCellMeta } from "./activity-cell/ActivityCellMeta";
-import type { ActivityCellProps } from "./activity-cell/activity-cell.types";
-import { useActivityCellModel } from "./activity-cell/use-activity-cell-model";
+} from "../smart-itinerary-table.styles";
+import { ItineraryNoteModal } from "./ItineraryNoteModal";
+import { ActivitySubActivityToggle } from "./ActivityCellControls";
+import { ActivityCellMeta } from "./ActivityCellMeta";
+import type { ActivityCellProps } from "./activity-cell.types";
+import { useActivityCellModel } from "./use-activity-cell-model";
 
 export function ActivityCell({
   canEdit,
@@ -235,7 +235,3 @@ export function ActivityCell({
     </div>
   );
 }
-
-export { InlineActivityField } from "./activity-cell/InlineActivityField";
-export { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
-export { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
