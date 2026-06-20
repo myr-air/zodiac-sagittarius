@@ -153,14 +153,20 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps StopDialog render split from form model state", () => {
     const stopDialog = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialog.tsx");
+    const stopDialogFormFields = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialogFormFields.tsx");
     const stopDialogModel = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts");
     const stopDialogTypes = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.types.ts");
 
     expect(stopDialog).toContain("./use-stop-dialog-model");
+    expect(stopDialog).toContain("./StopDialogFormFields");
     expect(stopDialog).not.toContain("useState");
     expect(stopDialog).not.toContain("interface StopDialogProps");
     expect(stopDialog).not.toContain("buildStopSubmitValues");
     expect(stopDialog).not.toContain("applyStopActivityInput");
+    expect(stopDialog).not.toContain("StopDialogPrimaryFields");
+    expect(stopDialogFormFields).toContain("export function StopDialogFormFields");
+    expect(stopDialogFormFields).toContain("StopDialogPrimaryFields");
+    expect(stopDialogFormFields).toContain("StopDialogPlaceResolution");
     expect(stopDialogModel).toContain("export function useStopDialogModel");
     expect(stopDialogModel).toContain("buildStopSubmitValues");
     expect(stopDialogModel).toContain("applyStopActivityInput");

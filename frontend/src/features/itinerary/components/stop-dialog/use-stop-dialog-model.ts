@@ -162,3 +162,5 @@ export function useStopDialogModel({
     values,
   };
 }
+
+export type StopDialogModel = ReturnType<typeof useStopDialogModel>;
