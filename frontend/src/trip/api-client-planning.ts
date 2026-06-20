@@ -16,10 +16,12 @@ import {
   mapTask,
   mapTripPlanResponse,
   mapTripSummary,
-  type TripPlanResponse,
-  type TripSummaryResponse,
-  type TripTaskResponse,
-} from "./api-response-mappers";
+} from "./api-response-planning-mappers";
+import type {
+  TripPlanResponse,
+  TripSummaryResponse,
+  TripTaskResponse,
+} from "./api-response-types";
 
 type TripPlanningApiClient = Pick<
   TripApiClient,

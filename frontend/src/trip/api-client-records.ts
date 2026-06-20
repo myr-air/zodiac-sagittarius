@@ -8,8 +8,10 @@ import type { TripApiRequester } from "./api-client-transport";
 import type { TripApiClient } from "./api-client-types";
 import {
   mapExpense,
-  type ExpenseResponse,
-} from "./api-response-mappers";
+} from "./api-response-record-mappers";
+import type {
+  ExpenseResponse,
+} from "./api-response-types";
 
 type TripRecordApiClient = Pick<
   TripApiClient,

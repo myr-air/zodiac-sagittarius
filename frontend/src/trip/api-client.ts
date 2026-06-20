@@ -11,17 +11,19 @@ import type {
 } from "./api-client-types";
 import {
   mapCockpitResponse,
+} from "./api-response-cockpit-mappers";
+import {
   mapTripSummary,
-} from "./api-response-mappers";
+} from "./api-response-planning-mappers";
 import type {
   TripCockpitResponse,
   TripSummaryResponse,
-} from "./api-response-mappers";
+} from "./api-response-types";
 export { TripApiError } from "./api-error";
 export {
   assertMainPlanPointerAliasesMatch,
-  mapCockpitResponse,
-} from "./api-response-mappers";
+} from "./api-response-planning-mappers";
+export { mapCockpitResponse } from "./api-response-cockpit-mappers";
 export type {
   ExpenseResponse,
   ItineraryItemResponse,
@@ -34,7 +36,7 @@ export type {
   TripPlanResponse,
   TripSummaryResponse,
   TripTaskResponse,
-} from "./api-response-mappers";
+} from "./api-response-types";
 export type {
   BookingDocExternalLinkApiRequest,
   CreateBookingDocApiRequest,

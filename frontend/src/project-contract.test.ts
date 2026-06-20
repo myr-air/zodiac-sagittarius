@@ -41,6 +41,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
@@ -103,6 +105,11 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-client-planning.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-record-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-response-cockpit-mappers.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-response-itinerary-mappers.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-response-member-mappers.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-response-planning-mappers.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-response-record-mappers.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-record-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/seed-records.ts"))).toBe(true);
@@ -665,8 +672,8 @@ describe("Sagittarius project scaffold", () => {
     expect(languageSwitch).not.toContain("function readStoredCurrency");
     expect(languageSwitchSupport).toContain("export const triggerClassName");
     expect(languageSwitchSupport).toContain("export function readStoredCurrency");
-    expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("Plan trips with friends");
-    expect(readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/en.ts"), "utf8")).toContain("Plan trips with friends");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/th.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
@@ -703,7 +710,10 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("uses Trip Plan language in product copy instead of rollout compatibility names", () => {
-    const messages = readFileSync(join(frontendRoot, "src/i18n/messages.ts"), "utf8");
+    const messages = [
+      readFileSync(join(frontendRoot, "src/i18n/messages/en.ts"), "utf8"),
+      readFileSync(join(frontendRoot, "src/i18n/messages/th.ts"), "utf8"),
+    ].join("\n");
 
     expect(messages).toContain("Trip Plan");
     expect(messages).not.toMatch(/\bTrip Sheet\b/i);

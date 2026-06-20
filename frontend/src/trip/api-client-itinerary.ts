@@ -12,8 +12,10 @@ import {
 import type { TripApiClient } from "./api-client-types";
 import {
   mapItineraryItem,
-  type ItineraryItemResponse,
-} from "./api-response-mappers";
+} from "./api-response-itinerary-mappers";
+import type {
+  ItineraryItemResponse,
+} from "./api-response-types";
 
 type TripItineraryApiClient = Pick<
   TripApiClient,

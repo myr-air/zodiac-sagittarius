@@ -6,11 +6,15 @@ import type {
   TripApiClient,
 } from "./api-client-types";
 import {
-  mapJoinTripResponse,
   mapMember,
-  type JoinTripResponse,
-  type TripMemberResponse,
-} from "./api-response-mappers";
+} from "./api-response-member-mappers";
+import {
+  mapJoinTripResponse,
+} from "./api-response-planning-mappers";
+import type {
+  JoinTripResponse,
+  TripMemberResponse,
+} from "./api-response-types";
 
 type TripMemberApiClient = Pick<
   TripApiClient,
