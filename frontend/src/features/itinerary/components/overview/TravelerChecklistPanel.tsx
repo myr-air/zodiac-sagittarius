@@ -12,7 +12,10 @@ import {
   overviewTaskToolbarClassName,
   personalTaskFormClassName,
 } from "./overview-page.styles";
-import type { TaskStatusFilter } from "./overview-role-panels.types";
+import {
+  taskStatusFilterValues,
+  type TaskStatusFilter,
+} from "./overview-role-panels.types";
 
 export function TravelerChecklistPanel({
   addPersonalTaskLabel,
@@ -57,6 +60,12 @@ export function TravelerChecklistPanel({
   visibleTasks: TripTask[];
   onTaskStatusFilterChange: (filter: TaskStatusFilter) => void;
 }) {
+  const statusFilterLabels: Record<TaskStatusFilter, string> = {
+    all: allLabel,
+    done: doneLabel,
+    open: openLabel,
+  };
+
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
       <div className={overviewPanelTitleClassName}>
@@ -69,11 +78,10 @@ export function TravelerChecklistPanel({
           className={overviewTaskFiltersClassName}
           selectedItemClassName={overviewTaskFilterActiveClassName}
           value={taskStatusFilter}
-          options={[
-            { value: "all", label: allLabel },
-            { value: "open", label: openLabel },
-            { value: "done", label: doneLabel },
-          ]}
+          options={taskStatusFilterValues.map((value) => ({
+            label: statusFilterLabels[value],
+            value,
+          }))}
           onChange={onTaskStatusFilterChange}
         />
       </div>

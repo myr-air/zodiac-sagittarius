@@ -13,7 +13,12 @@ import {
   overviewTaskPanelClassName,
   overviewTaskToolbarClassName,
 } from "./overview-page.styles";
-import type { TaskScopeFilter, TaskStatusFilter } from "./overview-role-panels.types";
+import {
+  taskScopeFilterValues,
+  taskStatusFilterValues,
+  type TaskScopeFilter,
+  type TaskStatusFilter,
+} from "./overview-role-panels.types";
 
 interface ManagerReadinessPanelProps {
   ariaLabel: string;
@@ -104,6 +109,17 @@ export function ManagerTaskChecklistPanel({
   trip,
   tripLabel,
 }: ManagerTaskChecklistPanelProps) {
+  const scopeFilterLabels: Record<TaskScopeFilter, string> = {
+    all: allLabel,
+    mine: mineLabel,
+    trip: tripLabel,
+  };
+  const statusFilterLabels: Record<TaskStatusFilter, string> = {
+    all: allStatusesLabel,
+    done: doneLabel,
+    open: openLabel,
+  };
+
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
       <div className={overviewPanelTitleClassName}>
@@ -116,11 +132,10 @@ export function ManagerTaskChecklistPanel({
           className={overviewTaskFiltersClassName}
           selectedItemClassName={overviewTaskFilterActiveClassName}
           value={scopeFilter}
-          options={[
-            { value: "mine", label: mineLabel },
-            { value: "trip", label: tripLabel },
-            { value: "all", label: allLabel },
-          ]}
+          options={taskScopeFilterValues.map((value) => ({
+            label: scopeFilterLabels[value],
+            value,
+          }))}
           onChange={onScopeFilterChange}
         />
         <SegmentedControl
@@ -128,11 +143,10 @@ export function ManagerTaskChecklistPanel({
           className={overviewTaskFiltersClassName}
           selectedItemClassName={overviewTaskFilterActiveClassName}
           value={statusFilter}
-          options={[
-            { value: "all", label: allStatusesLabel },
-            { value: "open", label: openLabel },
-            { value: "done", label: doneLabel },
-          ]}
+          options={taskStatusFilterValues.map((value) => ({
+            label: statusFilterLabels[value],
+            value,
+          }))}
           onChange={onStatusFilterChange}
         />
         <button className={overviewTaskAddButtonClassName} type="button" aria-label={addChecklistLabel} title={addChecklistLabel} onClick={onAddTask}>
