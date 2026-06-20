@@ -6,11 +6,11 @@ import type { TripCity } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import {
-  citySuggestions,
   tripDestinationCards,
   type TripCityOption,
 } from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
+import { TripWizardDestinationSearch } from "./portal-trip-wizard-destination-search";
 import { TripWizardSelectedDestinations } from "./portal-trip-wizard-selected-destinations";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
@@ -72,8 +72,6 @@ export function TripWizardDestinationStep({
   tripForm,
   wizard,
 }: TripWizardDestinationStepProps) {
-  const suggestedCities = citySuggestions(cityQuery || countryQuery, selectedDestinationCities);
-
   return (
     <section className={mobileStepClassName("place")} role="region" aria-label={tripWizardSteps[1].regionLabel} data-mobile-active={activeMobileStep === "place" ? "true" : "false"}>
       <div className={wizardStyles.tripStepHeadingClassName}>
@@ -81,32 +79,16 @@ export function TripWizardDestinationStep({
         <span>{wizard.steps.place.detail}</span>
       </div>
       <div className={wizardStyles.tripCountryPickerClassName}>
-        <label className={wizardStyles.tripCountrySearchClassName}>
-          <span>{wizard.fields.originCity}</span>
-          <input aria-label={wizard.fields.originCity} value={tripForm.originLabel} readOnly />
-        </label>
-        <div className={wizardStyles.tripCountrySearchClassName}>
-          <label>
-            <span className="sr-only">{wizard.fields.searchDestinationCities}</span>
-            <input
-              aria-label={wizard.fields.searchDestinationCities}
-              ref={destinationSearchRef}
-              value={cityQuery}
-              onChange={(event) => onCityQueryChange(event.target.value)}
-              placeholder={wizard.placeholders.destinationSearch}
-            />
-          </label>
-          {suggestedCities.length ? (
-            <div className={wizardStyles.tripCountrySuggestionsClassName} aria-label="Destination city suggestions">
-              {suggestedCities.map((city) => (
-                <button type="button" key={`${city.city}-${city.countryCode}`} aria-label={`${city.city}, ${city.country}`} onClick={() => onSelectDestinationCity(city)}>
-                  <strong>{city.city}</strong>
-                  <span>{city.country} · {city.countryCode} · {city.timezone}</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
+        <TripWizardDestinationSearch
+          cityQuery={cityQuery}
+          destinationSearchRef={destinationSearchRef}
+          originLabel={tripForm.originLabel}
+          selectedDestinationCities={selectedDestinationCities}
+          suggestionQuery={cityQuery || countryQuery}
+          wizard={wizard}
+          onCityQueryChange={onCityQueryChange}
+          onSelectDestinationCity={onSelectDestinationCity}
+        />
         <TripWizardSelectedDestinations
           destinationCards={destinationCards}
           emptyLabel={wizard.empty.selectedDestinations}
