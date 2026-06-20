@@ -20,6 +20,7 @@ import {
   finishEmailRegistrationSetup,
   signInWithEmailPasskey,
 } from "./email-login-auth-actions";
+import { selectEmailLoginSubmitHandler } from "./email-login-submit-route";
 
 interface UseEmailLoginSubmitActionsProps {
   accountClient: AccountApiClient;
@@ -208,13 +209,15 @@ export function useEmailLoginSubmitActions({
     isSubmitting,
     requestEmailCode,
     signInWithPasskey,
-    submitForm:
-      authStep === "setup"
-        ? submitSetup
-        : challenge
-          ? submitCode
-          : authStep === "password"
-            ? submitPassword
-            : submitEmail,
+    submitForm: selectEmailLoginSubmitHandler({
+      authStep,
+      handlers: {
+        setup: submitSetup,
+        code: submitCode,
+        password: submitPassword,
+        email: submitEmail,
+      },
+      hasChallenge: challenge !== null,
+    }),
   };
 }
