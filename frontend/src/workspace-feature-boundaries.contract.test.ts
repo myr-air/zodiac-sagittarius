@@ -42,6 +42,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryPageStory,
       itineraryPageStoryPlays,
       itineraryTemplateStory,
+      itineraryTemplateStoryPlays,
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
@@ -66,7 +67,12 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(bookingDialog).not.toContain("useState");
     expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
+    expect(bookingDialog).not.toContain("DateTimePickerField");
+    expect(bookingDialog).not.toContain("CheckboxGroup");
+    expect(bookingDialog).toContain("BookingDialogFields");
+    expect(bookingDialog).toContain("BookingDialogLinks");
     expect(bookingDialogState).toContain("export function useBookingDialogState");
+    expect(bookingDialogState).toContain("export type BookingDialogState");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
@@ -86,7 +92,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
-    expect(itineraryTemplateStory).toContain("./itinerary-story-assertions");
+    expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");
+    expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
+    expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
 

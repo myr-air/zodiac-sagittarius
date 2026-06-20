@@ -1,4 +1,4 @@
-import { Icon } from "@/src/ui/icons";
+import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import * as memberStyles from "../TripMembersPage.styles";
 
 interface MemberSummaryStatsProps {
@@ -22,31 +22,36 @@ interface MemberSummaryStatsProps {
 export function MemberSummaryStats({ labels, stats, summaryLabel }: MemberSummaryStatsProps) {
   return (
     <section className={memberStyles.memberStatGridClassName} aria-label={summaryLabel}>
-      <div className={memberStyles.memberStatClassName}>
-        <Icon name="users" />
-        <span>{labels.total}</span>
-        <strong>{stats.total}</strong>
-      </div>
-      <div className={memberStyles.memberStatClassName}>
-        <Icon name="check" />
-        <span>{labels.active}</span>
-        <strong>{stats.active}</strong>
-      </div>
-      <div className={memberStyles.memberStatClassName}>
-        <Icon name="warning" />
-        <span>{labels.pending}</span>
-        <strong>{stats.pending}</strong>
-      </div>
-      <div className={memberStyles.memberStatClassName}>
-        <Icon name="check" />
-        <span>{labels.joined}</span>
-        <strong>{stats.joined}</strong>
-      </div>
-      <div className={memberStyles.memberStatClassName}>
-        <Icon name="alertCircle" />
-        <span>{labels.disabled}</span>
-        <strong>{stats.disabled}</strong>
-      </div>
+      <WorkspaceSummaryStat
+        className={memberStyles.memberStatClassName}
+        icon="users"
+        label={labels.total}
+        value={String(stats.total)}
+      />
+      <WorkspaceSummaryStat
+        className={memberStyles.memberStatClassName}
+        icon="check"
+        label={labels.active}
+        value={String(stats.active)}
+      />
+      <WorkspaceSummaryStat
+        className={memberStyles.memberStatClassName}
+        icon="warning"
+        label={labels.pending}
+        value={String(stats.pending)}
+      />
+      <WorkspaceSummaryStat
+        className={memberStyles.memberStatClassName}
+        icon="check"
+        label={labels.joined}
+        value={String(stats.joined)}
+      />
+      <WorkspaceSummaryStat
+        className={memberStyles.memberStatClassName}
+        icon="alertCircle"
+        label={labels.disabled}
+        value={String(stats.disabled)}
+      />
     </section>
   );
 }

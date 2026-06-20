@@ -147,3 +147,5 @@ export function useBookingDialogState({
     visibility,
   };
 }
+
+export type BookingDialogState = ReturnType<typeof useBookingDialogState>;
