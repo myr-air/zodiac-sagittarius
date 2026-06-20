@@ -8,10 +8,11 @@ import {
   itineraryPathRoleValues,
   itineraryTimeModeValues,
 } from "./trip-itinerary-types";
+import {
+  planStatusValues,
+  planVariantKindValues,
+} from "./trip-plan-types";
 import { readEnum, readOptionalEnum } from "./itinerary-import-reader-utils";
-
-const planVariantKinds = ["main", "backup", "draft", "split"] as const;
-const planStatuses = ["main", "backup", "draft", "proposal"] as const;
 
 export function readActivityType(value: unknown): ItineraryItem["activityType"] {
   return readEnum(value, activityTypeValues);
@@ -30,11 +31,11 @@ export function readOptionalItemKind(
 }
 
 export function readPlanVariantKind(value: unknown): TripPlan["kind"] {
-  return readEnum(value, planVariantKinds);
+  return readEnum(value, planVariantKindValues);
 }
 
 export function readOptionalPlanStatus(value: unknown): TripPlan["status"] | undefined {
-  return readOptionalEnum(value, planStatuses);
+  return readOptionalEnum(value, planStatusValues);
 }
 
 export function statusFromPlanKind(kind: TripPlan["kind"]): TripPlan["status"] {

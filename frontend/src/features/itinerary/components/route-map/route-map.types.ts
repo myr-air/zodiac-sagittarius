@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export type DayFilter = "all" | string;
+export type RouteLiveMapState = "idle" | "loading" | "ready" | "error";
 
 export interface RoutePoint {
   item: ItineraryItem;

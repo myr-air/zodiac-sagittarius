@@ -11,8 +11,14 @@ import {
   routeMapRetryButtonClassName,
   routeMapStatusClassName,
 } from "./route-map.config";
-import { liveMapStatusText, type RouteLiveMapState } from "./route-map.live-status";
-import type { DayFilter, MapCoordinateResolutionResult, RouteDayGroup, RoutePoint } from "./route-map.types";
+import { liveMapStatusText } from "./route-map.live-status";
+import type {
+  DayFilter,
+  MapCoordinateResolutionResult,
+  RouteDayGroup,
+  RouteLiveMapState,
+  RoutePoint,
+} from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
 import { StaticRouteFallback } from "./StaticRouteFallback";

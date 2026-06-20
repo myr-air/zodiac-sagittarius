@@ -1,4 +1,4 @@
-export type RouteLiveMapState = "idle" | "loading" | "ready" | "error";
+import type { RouteLiveMapState } from "./route-map.types";
 
 export function liveMapStatusText(
   state: RouteLiveMapState,

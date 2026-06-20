@@ -4,9 +4,11 @@ import {
   readOptionalActivitySubtype,
   readOptionalItemKind,
   readOptionalPathRole,
+  readOptionalPlanStatus,
   readOptionalPriority,
   readOptionalStatus,
   readOptionalTimeMode,
+  readPlanVariantKind,
 } from "./itinerary-import-enum-readers";
 
 describe("itinerary import enum readers", () => {
@@ -22,6 +24,11 @@ describe("itinerary import enum readers", () => {
     );
   });
 
+  it("reads trip plan enum values from the canonical trip plan type values", () => {
+    expect(readPlanVariantKind("split")).toBe("split");
+    expect(readOptionalPlanStatus("proposal")).toBe("proposal");
+  });
+
   it("keeps optional enum fields absent for nullish import values", () => {
     expect(readOptionalActivitySubtype(undefined)).toBeUndefined();
     expect(readOptionalItemKind(null)).toBeUndefined();
@@ -29,6 +36,7 @@ describe("itinerary import enum readers", () => {
     expect(readOptionalStatus(null)).toBeUndefined();
     expect(readOptionalPriority(undefined)).toBeUndefined();
     expect(readOptionalPathRole({ pathRole: null }, "pathRole")).toBeUndefined();
+    expect(readOptionalPlanStatus(undefined)).toBeUndefined();
   });
 
   it("rejects unsupported imported enum values", () => {
@@ -40,6 +48,12 @@ describe("itinerary import enum readers", () => {
       "Unsupported itinerary import file.",
     );
     expect(() => readOptionalPathRole({ pathRole: "backup" }, "pathRole")).toThrow(
+      "Unsupported itinerary import file.",
+    );
+    expect(() => readPlanVariantKind("proposal")).toThrow(
+      "Unsupported itinerary import file.",
+    );
+    expect(() => readOptionalPlanStatus("split")).toThrow(
       "Unsupported itinerary import file.",
     );
   });

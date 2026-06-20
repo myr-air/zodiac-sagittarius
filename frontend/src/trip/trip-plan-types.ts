@@ -1,5 +1,8 @@
-export type PlanStatus = "main" | "backup" | "draft" | "proposal";
-export type PlanVariantKind = "main" | "backup" | "draft" | "split";
+export const planStatusValues = ["main", "backup", "draft", "proposal"] as const;
+export type PlanStatus = (typeof planStatusValues)[number];
+
+export const planVariantKindValues = ["main", "backup", "draft", "split"] as const;
+export type PlanVariantKind = (typeof planVariantKindValues)[number];
 
 export interface PlanVariant {
   id: string;
