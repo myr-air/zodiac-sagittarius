@@ -1,20 +1,16 @@
 import type {
   BookingDoc,
-  EditableSuggestionPatch,
   Expense,
   ExpenseSummary,
-  ItineraryCoordinates,
   ItineraryItem,
   Member,
   PlaceResolutionRequest,
   PlaceResolutionResponse,
   PlanCheck,
-  PlanStatus,
   PlanSuggestion,
   PlanVariant,
   StopNote,
   Suggestion,
-  SuggestionType,
   Trip,
   TripDailyBriefing,
   TripJoinCredential,
@@ -42,6 +38,27 @@ import type {
   PatchMemberApiRequest,
   UpdatePresenceApiRequest,
 } from "./api-client-member-types";
+import type {
+  CreateItineraryItemApiRequest,
+  CreateStopNoteApiRequest,
+  CreateSuggestionApiRequest,
+  ImportItineraryApiRequest,
+  PatchItineraryItemApiRequest,
+  PatchStopNoteApiRequest,
+  ReorderItineraryItemsApiRequest,
+} from "./api-client-itinerary-types";
+import type {
+  CreatePlanVariantApiRequest,
+  CreateTaskApiRequest,
+  PatchPlanSuggestionApiRequest,
+  PatchPlanVariantApiRequest,
+  PatchTaskApiRequest,
+  PublishPlanVariantApiRequest,
+} from "./api-client-planning-types";
+import type {
+  PatchDailyBriefingApiRequest,
+  PatchTripApiRequest,
+} from "./api-client-trip-types";
 export type {
   BookingDocExternalLinkApiRequest,
   CreateBookingDocApiRequest,
@@ -58,6 +75,27 @@ export type {
   PatchMemberApiRequest,
   UpdatePresenceApiRequest,
 } from "./api-client-member-types";
+export type {
+  CreateItineraryItemApiRequest,
+  CreateStopNoteApiRequest,
+  CreateSuggestionApiRequest,
+  ImportItineraryApiRequest,
+  PatchItineraryItemApiRequest,
+  PatchStopNoteApiRequest,
+  ReorderItineraryItemsApiRequest,
+} from "./api-client-itinerary-types";
+export type {
+  CreatePlanVariantApiRequest,
+  CreateTaskApiRequest,
+  PatchPlanSuggestionApiRequest,
+  PatchPlanVariantApiRequest,
+  PatchTaskApiRequest,
+  PublishPlanVariantApiRequest,
+} from "./api-client-planning-types";
+export type {
+  PatchDailyBriefingApiRequest,
+  PatchTripApiRequest,
+} from "./api-client-trip-types";
 
 export interface TripApiClientOptions {
   baseUrl?: string;
@@ -114,148 +152,4 @@ export interface TripApiClient {
   createPhotoAlbum(tripId: string, sessionToken: string, request: CreatePhotoAlbumApiRequest): Promise<TripPhotoAlbumLink>;
   patchPhotoAlbum(tripId: string, albumId: string, sessionToken: string, request: PatchPhotoAlbumApiRequest): Promise<TripPhotoAlbumLink>;
   deletePhotoAlbum(tripId: string, albumId: string, sessionToken: string): Promise<TripPhotoAlbumLink>;
-}
-
-export interface CreateTaskApiRequest {
-  clientMutationId: string;
-  tripPlanId?: string | null;
-  title: string;
-  visibility: TripTask["visibility"];
-  kind?: TripTask["kind"];
-  assigneeId?: string | null;
-  relatedItemId?: string | null;
-}
-
-export interface ImportItineraryApiRequest {
-  fileName?: string;
-  contentType?: string;
-  mode?: "auto" | "json" | "ai";
-  content: string;
-}
-
-export interface PatchTripApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  name?: string;
-  destinationLabel?: string;
-  countries?: string[];
-  partySize?: number;
-  defaultTimezone?: string;
-  startDate?: string;
-  endDate?: string;
-  activePlanVariantId?: string;
-}
-
-export interface PatchDailyBriefingApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  dayTitle?: string | null;
-  outfitAdvice?: string | null;
-  festivalNote?: string | null;
-  factsNote?: string | null;
-}
-
-export interface CreatePlanVariantApiRequest {
-  clientMutationId: string;
-  name: string;
-  kind?: PlanVariant["kind"];
-  status?: PlanStatus;
-  description?: string;
-  sourceTripPlanId?: string;
-  creationMode?: "blank" | "duplicate-current" | "import";
-}
-
-export interface PatchPlanVariantApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  patch: Partial<Pick<PlanVariant, "name" | "kind" | "status" | "description">>;
-}
-
-export interface PublishPlanVariantApiRequest {
-  clientMutationId: string;
-  previousMainNextStatus?: Exclude<PlanStatus, "main">;
-}
-
-export interface PatchTaskApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  patch: Partial<Pick<TripTask, "title" | "status" | "assigneeId" | "relatedItemId">>;
-}
-
-export interface PatchItineraryItemApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  patch: Partial<Pick<ItineraryItem, "pathGroupId" | "pathId" | "pathName" | "pathRole" | "parentItemId" | "itemKind" | "timeMode" | "isPlanBlock" | "status" | "priority" | "day" | "sortOrder" | "durationMinutes" | "activity" | "activityType" | "activitySubtype" | "place" | "transportation" | "details" | "note">> & {
-    startTime?: string | null;
-    endTime?: string | null;
-    endOffsetDays?: number;
-    address?: string | null;
-    coordinates?: ItineraryCoordinates | null;
-    mapLink?: string | null;
-  };
-}
-
-export interface CreateItineraryItemApiRequest {
-  clientMutationId: string;
-  planVariantId: string;
-  pathGroupId?: string;
-  pathId?: string;
-  pathName?: string;
-  pathRole?: ItineraryItem["pathRole"];
-  parentItemId?: string | null;
-  itemKind?: ItineraryItem["itemKind"];
-  timeMode?: ItineraryItem["timeMode"];
-  isPlanBlock?: boolean;
-  status?: ItineraryItem["status"];
-  priority?: ItineraryItem["priority"];
-  day: string;
-  startTime?: string | null;
-  endTime?: string | null;
-  endOffsetDays?: number;
-  activity: string;
-  activityType: ItineraryItem["activityType"];
-  activitySubtype?: ItineraryItem["activitySubtype"] | null;
-  place: string;
-  mapLink?: string | null;
-  address?: string | null;
-  coordinates?: ItineraryCoordinates | null;
-  durationMinutes?: number | null;
-  transportation?: string | null;
-  details?: ItineraryItem["details"] | null;
-  note?: string | null;
-}
-
-export interface ReorderItineraryItemsApiRequest {
-  clientMutationId: string;
-  planVariantId: string;
-  day: string;
-  itemIds: string[];
-}
-
-export interface PatchPlanSuggestionApiRequest {
-  expectedVersion: number;
-  status: PlanSuggestion["status"];
-  snoozedUntil?: string | null;
-}
-
-export interface CreateSuggestionApiRequest {
-  clientMutationId: string;
-  type: SuggestionType;
-  targetItemId: string | null;
-  planVariantId: string;
-  sourceVersion: number | null;
-  proposedPatch: EditableSuggestionPatch;
-}
-
-export interface CreateStopNoteApiRequest {
-  clientMutationId: string;
-  tripPlanId?: string | null;
-  itineraryItemId: string;
-  body: string;
-}
-
-export interface PatchStopNoteApiRequest {
-  clientMutationId: string;
-  expectedVersion: number;
-  body: string;
 }

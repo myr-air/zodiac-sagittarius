@@ -109,11 +109,14 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/auth-member-palette.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-errors.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-itinerary.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client-itinerary-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-members.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-member-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-planning.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client-planning-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-record-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client-trip-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-response-cockpit-mappers.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-response-itinerary-mappers.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-response-member-mappers.ts"))).toBe(true);
