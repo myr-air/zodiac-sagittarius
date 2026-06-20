@@ -9,7 +9,7 @@ import {
   citySuggestions,
   tripDestinationCards,
   type TripCityOption,
-} from "./account-trip-wizard-support";
+} from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
 import * as wizardStyles from "./portal-trip-wizard-styles";

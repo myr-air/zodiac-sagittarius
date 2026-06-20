@@ -1,12 +1,12 @@
 import { type Dispatch, type SetStateAction, useRef, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import type { TripCity } from "@/src/trip/types";
+import { applyTripDestinationCities } from "./account-trip-form";
 import {
-  applyTripDestinationCities,
   customTripCity,
   tripCityFromOption,
   type TripCityOption,
-} from "./account-trip-wizard-support";
+} from "./account-trip-destinations";
 
 interface PortalTripWizardDestinationStateOptions {
   onChange: Dispatch<SetStateAction<AccountTripCreateRequest>>;

@@ -10,7 +10,7 @@ import {
   routeCalendarDays,
   type TripWizardDateSelectionStep,
 } from "./account-trip-dates";
-import { defaultTripOriginCity } from "./account-trip-wizard-support";
+import { defaultTripOriginCity } from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 

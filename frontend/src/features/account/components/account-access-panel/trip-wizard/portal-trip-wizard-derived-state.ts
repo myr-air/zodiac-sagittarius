@@ -8,8 +8,10 @@ import {
 import {
   destinationRouteCode,
   tripDestinationCards,
+} from "./account-trip-destinations";
+import {
   uniqueList,
-} from "./account-trip-wizard-support";
+} from "./account-trip-form";
 import { tripStepComplete, type TripWizardStepId } from "./account-trip-wizard-steps";
 import {
   buildPortalTripWizardCredentials,
