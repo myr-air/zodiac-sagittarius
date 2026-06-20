@@ -1,9 +1,7 @@
+import type { BookingDocQuickFieldsPatch } from "@/src/trip/booking-docs";
 import type { BookingDocType, Expense } from "@/src/trip/types";
 
-export type ContextRailBookingDocQuickFieldsPatch = {
-  confirmationCode?: string | null;
-  providerName?: string | null;
-};
+export type ContextRailBookingDocQuickFieldsPatch = BookingDocQuickFieldsPatch;
 
 export type ContextRailBookingDocTypeChangeHandler = (
   bookingDocId: string,
