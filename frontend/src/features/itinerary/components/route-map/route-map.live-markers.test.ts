@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { routeMapCoordinateItems } from "./route-map-test-support";
 import type { RouteDayGroup, RoutePoint } from "./route-map.types";
 import {
   type LiveRouteMarkerRegistry,
@@ -17,7 +17,7 @@ describe("route map live marker utilities", () => {
         }
       },
     } as unknown as typeof import("maplibre-gl");
-    const [baseA, baseB] = tripFixture.planItems.filter((item) => item.coordinates);
+    const [baseA, baseB] = routeMapCoordinateItems();
     const itemA = {
       ...baseA!,
       id: "marker-a",

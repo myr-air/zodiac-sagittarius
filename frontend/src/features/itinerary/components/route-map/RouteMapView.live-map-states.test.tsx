@@ -7,7 +7,7 @@ import {
   resetMaplibreMock,
   triggerLiveMapEvent,
 } from "./route-map-live-map-test-support";
-import { renderWithThaiI18n } from "./route-map-test-support";
+import { renderWithThaiI18n, routeMapItems } from "./route-map-test-support";
 import { RouteMapView } from "./RouteMapView";
 
 const maplibreMock = getMaplibreMock();
@@ -27,7 +27,7 @@ describe("RouteMapView live map states", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -45,7 +45,7 @@ describe("RouteMapView live map states", () => {
     const { rerender } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapAvailability="loading"
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
@@ -60,7 +60,7 @@ describe("RouteMapView live map states", () => {
     rerender(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapAvailability="error"
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
@@ -80,7 +80,7 @@ describe("RouteMapView live map states", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -104,7 +104,7 @@ describe("RouteMapView live map states", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
