@@ -96,7 +96,6 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.overview-tasks.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore-routes.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore.test.tsx"))).toBe(true);
-    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore-routes.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.settings.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans-api.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans.test.tsx"))).toBe(true);
@@ -137,6 +136,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/app/SagittariusApp.stories.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/api-client-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/account/api-client-auth.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/account/api-client-auth.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/account/api-client.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripAccessLoadingFrame.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/WorkspaceToast.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
