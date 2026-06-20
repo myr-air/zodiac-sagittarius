@@ -1,43 +1,15 @@
 import { expect } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { FormEvent } from "react";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   ManagerOverviewPanels,
   TravelerOverviewPanels,
   ViewerOverviewPanels,
 } from "@/src/features/itinerary/components/overview";
-import type { Locale } from "@/src/i18n/types";
-
-const overviewTaskListLabels = {
-  assignee: {
-    private: "Private",
-    shared: "Shared",
-    tripMember: "Trip member",
-    unassigned: "Unassigned",
-  },
-  kind: {
-    booking: "Booking",
-    prep: "Prep",
-    planStop: "Plan stop",
-  },
-};
-
-const nextStop = tripFixture.planItems[0]!;
-const nextDayItems = tripFixture.planItems.slice(1, 4);
-
-const basePanelProps = {
-  trip: tripFixture.trip,
-  locale: "en" as const satisfies Locale,
-  items: tripFixture.planItems,
-  groupSpendLabel: "HK$2,300",
-  nextStop,
-  nextDayItems,
-  focusTodayHeading: "Today and next focus",
-  isCompleted: false,
-  openExpenses: () => {},
-  taskListLabels: overviewTaskListLabels,
-};
+import {
+  managerOverviewPanelStoryProps,
+  travelerOverviewPanelStoryProps,
+  viewerOverviewPanelStoryProps,
+} from "./OverviewRolePanels.stories.support";
 
 const meta = {
   title: "Components/Overview/Role Panels",
@@ -51,19 +23,7 @@ export const Traveler: Story = {
   render: () => (
     <div className="p-4 bg-(--color-page)">
       <TravelerOverviewPanels
-        {...basePanelProps}
-        onToggleTask={() => {}}
-        foodStops={tripFixture.planItems.slice(0, 2)}
-        tripHighlights={tripFixture.planItems.slice(2, 5)}
-        focusSectionDetailFallback="Traveler focus detail"
-        taskStatusFilter="all"
-        setTaskStatusFilter={() => {}}
-        visibleTasks={tripFixture.tasks}
-        newTaskTitle="Pack an adapter"
-        onTaskTitleChange={() => {}}
-        onSubmitTask={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}
-        expenseNetLabel={tripFixture.expenseSummaries.traveler.currentUserNetLabel}
-        expenseSettlementSuggestionsLabel="Pending settlements: 2"
+        {...travelerOverviewPanelStoryProps}
       />
     </div>
   ),
@@ -78,10 +38,7 @@ export const Viewer: Story = {
   render: () => (
     <div className="p-4 bg-(--color-page)">
       <ViewerOverviewPanels
-        {...basePanelProps}
-        viewerHighlights={tripFixture.planItems.slice(0, 3)}
-        expenseGroupSpend={tripFixture.expenseSummaries.viewer.groupSpend}
-        nextStop={nextStop}
+        {...viewerOverviewPanelStoryProps}
       />
     </div>
   ),
@@ -96,18 +53,7 @@ export const Manager: Story = {
   render: () => (
     <div className="p-4 bg-(--color-page)">
       <ManagerOverviewPanels
-        {...basePanelProps}
-        onToggleTask={() => {}}
-        taskScopeFilter="mine"
-        setTaskScopeFilter={() => {}}
-        taskStatusFilter="open"
-        setTaskStatusFilter={() => {}}
-        myOpenTasks={3}
-        sharedOpenTasks={5}
-        pendingSuggestions={2}
-        visibleTasks={tripFixture.tasks}
-        focusSectionDetailFallback="Manager focus detail"
-        openTaskDialog={() => {}}
+        {...managerOverviewPanelStoryProps}
       />
     </div>
   ),
