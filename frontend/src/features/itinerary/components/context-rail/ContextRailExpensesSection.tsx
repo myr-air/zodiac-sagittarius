@@ -14,6 +14,10 @@ import {
   contextRailExpenseCategoryOptions,
   useContextRailExpenseForm,
 } from "./use-context-rail-expense-form";
+import type {
+  ContextRailCreateExpenseInput,
+  ContextRailUpdateExpenseInput,
+} from "./context-rail.types";
 
 interface ContextRailExpensesSectionProps {
   selectedItemId?: string;
@@ -22,20 +26,8 @@ interface ContextRailExpensesSectionProps {
   perPerson: string;
   groupSpend: string;
   canEditExpenses: boolean;
-  onCreateExpense: (input: {
-    itemId: string | null;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
-  onUpdateExpense: (input: {
-    expenseId: string;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
+  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
+  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
   onDeleteExpense: (expenseId: string) => void;
 }
 

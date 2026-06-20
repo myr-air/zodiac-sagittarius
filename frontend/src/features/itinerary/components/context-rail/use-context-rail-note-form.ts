@@ -1,11 +1,15 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import type { ItineraryItem, StopNote } from "@/src/trip/types";
+import type {
+  ContextRailCreateNoteInput,
+  ContextRailUpdateNoteInput,
+} from "./context-rail.types";
 
 interface UseContextRailNoteFormOptions {
   itemId: ItineraryItem["id"] | undefined;
-  onCreateNote: (input: { itemId: string; body: string }) => void;
-  onUpdateNote: (input: { noteId: string; body: string }) => void;
+  onCreateNote: (input: ContextRailCreateNoteInput) => void;
+  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
 }
 
 export function useContextRailNoteForm({

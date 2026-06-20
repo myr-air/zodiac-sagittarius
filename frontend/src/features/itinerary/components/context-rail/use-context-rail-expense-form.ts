@@ -1,24 +1,16 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import type { Expense } from "@/src/trip/types";
+import type {
+  ContextRailCreateExpenseInput,
+  ContextRailUpdateExpenseInput,
+} from "./context-rail.types";
 
 interface UseContextRailExpenseFormOptions {
   selectedItemId?: string;
   defaultPaidBy: string;
-  onCreateExpense: (input: {
-    itemId: string | null;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
-  onUpdateExpense: (input: {
-    expenseId: string;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
+  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
+  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
 }
 
 export const contextRailExpenseCategoryOptions: Expense["category"][] = [

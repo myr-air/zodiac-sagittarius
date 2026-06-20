@@ -4,6 +4,10 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { memberDisplayName } from "./context-rail.utils";
 import { useContextRailNoteForm } from "./use-context-rail-note-form";
 import type {
+  ContextRailCreateNoteInput,
+  ContextRailUpdateNoteInput,
+} from "./context-rail.types";
+import type {
   ItineraryItem,
   Member,
   StopNote,
@@ -36,9 +40,9 @@ interface ContextRailNotesSectionProps {
   currentMember: Member;
   canCreateNote: boolean;
   canEdit: boolean;
-  onCreateNote: (input: { itemId: string; body: string }) => void;
+  onCreateNote: (input: ContextRailCreateNoteInput) => void;
   onDeleteNote: (noteId: string) => void;
-  onUpdateNote: (input: { noteId: string; body: string }) => void;
+  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
 }
 
 export function ContextRailNotesSection({

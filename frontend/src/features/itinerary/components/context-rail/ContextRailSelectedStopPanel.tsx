@@ -2,7 +2,6 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type {
   BookingDoc,
-  BookingDocType,
   Expense,
   ExpenseSummary,
   ItineraryItem,
@@ -26,6 +25,14 @@ import {
   inspectorTitleHeadingClassName,
   railInspectorClassName,
 } from "./context-rail.styles";
+import type {
+  ContextRailBookingDocQuickFieldsChangeHandler,
+  ContextRailBookingDocTypeChangeHandler,
+  ContextRailCreateExpenseInput,
+  ContextRailCreateNoteInput,
+  ContextRailUpdateExpenseInput,
+  ContextRailUpdateNoteInput,
+} from "./context-rail.types";
 
 interface ContextRailSelectedStopPanelProps {
   selectedItem: ItineraryItem;
@@ -49,35 +56,14 @@ interface ContextRailSelectedStopPanelProps {
   onEditSelected: () => void;
   onSuggestSelected: () => void;
   onToggleTaskStatus: (taskId: string) => void;
-  onChangeBookingDocType?: (
-    bookingDocId: string,
-    type: BookingDocType,
-  ) => void | Promise<void>;
-  onChangeBookingDocQuickFields?: (
-    bookingDocId: string,
-    patch: {
-      confirmationCode?: string | null;
-      providerName?: string | null;
-    },
-  ) => void | Promise<void>;
-  onCreateNote: (input: { itemId: string; body: string }) => void;
-  onCreateExpense: (input: {
-    itemId: string | null;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
-  onUpdateExpense: (input: {
-    expenseId: string;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
+  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
+  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
+  onCreateNote: (input: ContextRailCreateNoteInput) => void;
+  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
+  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
   onDeleteExpense: (expenseId: string) => void;
   onDeleteNote: (noteId: string) => void;
-  onUpdateNote: (input: { noteId: string; body: string }) => void;
+  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
   onReviewSuggestion: (
     suggestionId: string,
     decision: "approved" | "rejected",

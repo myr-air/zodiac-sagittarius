@@ -2,7 +2,6 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type {
   BookingDoc,
-  BookingDocType,
   ItineraryItem,
   TripTask,
 } from "@/src/trip/types";
@@ -18,23 +17,18 @@ import {
 } from "./context-rail.styles";
 import { ContextRailBookingDocItem } from "./ContextRailBookingDocItem";
 import { taskKindLabel } from "./context-rail.utils";
+import type {
+  ContextRailBookingDocQuickFieldsChangeHandler,
+  ContextRailBookingDocTypeChangeHandler,
+} from "./context-rail.types";
 
 interface ContextRailBookingSectionProps {
   advisories: NonNullable<ItineraryItem["advisories"]>;
   bookingDocs: BookingDoc[];
   tasks: TripTask[];
   canEdit: boolean;
-  onChangeBookingDocType?: (
-    bookingDocId: string,
-    type: BookingDocType,
-  ) => void | Promise<void>;
-  onChangeBookingDocQuickFields?: (
-    bookingDocId: string,
-    patch: {
-      confirmationCode?: string | null;
-      providerName?: string | null;
-    },
-  ) => void | Promise<void>;
+  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
+  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
   onToggleTaskStatus: (taskId: string) => void;
 }
 

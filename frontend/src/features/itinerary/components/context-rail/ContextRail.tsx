@@ -1,7 +1,5 @@
 import type {
   BookingDoc,
-  BookingDocType,
-  Expense,
   ExpenseSummary,
   ItineraryItem,
   Member,
@@ -25,6 +23,14 @@ import {
   inspectorTitleHeadingClassName,
   railInspectorClassName,
 } from "./context-rail.styles";
+import type {
+  ContextRailBookingDocQuickFieldsChangeHandler,
+  ContextRailBookingDocTypeChangeHandler,
+  ContextRailCreateExpenseInput,
+  ContextRailCreateNoteInput,
+  ContextRailUpdateExpenseInput,
+  ContextRailUpdateNoteInput,
+} from "./context-rail.types";
 
 interface ContextRailProps {
   trip: Trip;
@@ -42,32 +48,11 @@ interface ContextRailProps {
   canEditExpenses: boolean;
   open: boolean;
   preferredTab?: ContextRailTab;
-  onChangeBookingDocType?: (
-    bookingDocId: string,
-    type: BookingDocType,
-  ) => void | Promise<void>;
-  onChangeBookingDocQuickFields?: (
-    bookingDocId: string,
-    patch: {
-      confirmationCode?: string | null;
-      providerName?: string | null;
-    },
-  ) => void | Promise<void>;
-  onCreateNote: (input: { itemId: string; body: string }) => void;
-  onCreateExpense: (input: {
-    itemId: string | null;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
-  onUpdateExpense: (input: {
-    expenseId: string;
-    title: string;
-    amount: number;
-    paidBy: string;
-    category: Expense["category"];
-  }) => void;
+  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
+  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
+  onCreateNote: (input: ContextRailCreateNoteInput) => void;
+  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
+  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
   onDeleteExpense: (expenseId: string) => void;
   onDeleteNote: (noteId: string) => void;
   onEditSelected: () => void;
@@ -77,7 +62,7 @@ interface ContextRailProps {
   ) => void;
   onSuggestSelected: () => void;
   onToggleTaskStatus: (taskId: string) => void;
-  onUpdateNote: (input: { noteId: string; body: string }) => void;
+  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
   onClose: () => void;
 }
 

@@ -14,6 +14,10 @@ import {
   buildBookingDocQuickFieldPatch,
   type BookingDocQuickFieldKey,
 } from "./booking-doc-quick-fields";
+import type {
+  ContextRailBookingDocQuickFieldsChangeHandler,
+  ContextRailBookingDocTypeChangeHandler,
+} from "./context-rail.types";
 
 interface ContextRailBookingDocItemProps {
   bookingDoc: BookingDoc;
@@ -29,17 +33,8 @@ interface ContextRailBookingDocItemProps {
     referenceFor: (input: { title: string }) => string;
     referencePlaceholder: string;
   };
-  onChangeBookingDocType?: (
-    bookingDocId: string,
-    type: BookingDocType,
-  ) => void | Promise<void>;
-  onChangeBookingDocQuickFields?: (
-    bookingDocId: string,
-    patch: {
-      confirmationCode?: string | null;
-      providerName?: string | null;
-    },
-  ) => void | Promise<void>;
+  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
+  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
 }
 
 function getDraftValue(target: HTMLInputElement): string {
