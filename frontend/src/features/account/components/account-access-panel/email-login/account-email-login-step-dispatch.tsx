@@ -18,6 +18,7 @@ import {
   EmailLoginPasswordStep,
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
+import { buildEmailLoginStepDisabledState } from "./email-login-step-disabled-state";
 
 export interface EmailLoginStepContentProps {
   activeFlow: AuthFlow;
@@ -96,6 +97,14 @@ export function EmailLoginStepContent({
   signInWithPasskey,
   updateCode,
 }: EmailLoginStepContentProps) {
+  const disabledState = buildEmailLoginStepDisabledState({
+    activeFlow,
+    isEmailValid,
+    isSubmitting,
+    passwordReady,
+    resendCooldown,
+  });
+
   if (hasChallenge) {
     return (
       <EmailLoginOtpStep
@@ -103,7 +112,7 @@ export function EmailLoginStepContent({
         code={code}
         codeHintId={codeHintId}
         codeInputId={codeInputId}
-        disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
+        disabledResend={disabledState.codeResend}
         isSubmitting={isSubmitting}
         labels={emailLoginOtpLabels(emailLoginMessages)}
         normalizedEmail={normalizedEmail}
@@ -121,8 +130,8 @@ export function EmailLoginStepContent({
     return (
       <EmailLoginCredentialsStep
         activeFlow={activeFlow}
-        disabledAlternateActions={!isEmailValid || isSubmitting}
-        disabledPrimary={!isEmailValid || !passwordReady || isSubmitting}
+        disabledAlternateActions={disabledState.alternateActions}
+        disabledPrimary={disabledState.credentialsPrimary}
         email={email}
         emailHint={isEmailInvalid ? emailLoginMessages.emailInvalidHint : emailLoginMessages.emailHint}
         emailHintId={emailHintId}
