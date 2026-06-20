@@ -1,4 +1,13 @@
-import { parseTime } from "./itinerary";
+import {
+  findOverlappingActivityBranch,
+  sortBranchItems,
+} from "./itinerary-activity-branch-detection";
+import {
+  buildManualActivityPathOptions,
+  nextAvailableSubPath,
+  pathFieldsForManualTarget,
+  type ManualActivityPathOption,
+} from "./itinerary-activity-branch-paths";
 import {
   itineraryItemPathId,
   mainItineraryPathId,
@@ -12,10 +21,7 @@ export interface ItineraryActivityBranchPlacement {
   changedExistingItems: ItineraryItem[];
 }
 
-export interface ManualActivityPathOption {
-  id: string;
-  name: string;
-}
+export type { ManualActivityPathOption } from "./itinerary-activity-branch-paths";
 
 export function applyItemToActivityBranch(
   trip: Trip,
@@ -123,80 +129,10 @@ export function deriveManualActivityPathOptions(
 ): ManualActivityPathOption[] {
   const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
   if (!item) return [{ id: mainItineraryPathId, name: mainItineraryPathName }];
-  const branchItems = findOverlappingActivityBranch(trip.itineraryItems, item);
-  const options = new Map<string, ManualActivityPathOption>([
-    [mainItineraryPathId, { id: mainItineraryPathId, name: mainItineraryPathName }],
-  ]);
-  for (const branchItem of sortBranchItems(branchItems)) {
-    if (branchItem.pathRole === "alternative" && branchItem.pathId) {
-      options.set(branchItem.pathId, {
-        id: branchItem.pathId,
-        name: branchItem.pathName ?? subPathNameFromId(branchItem.pathId),
-      });
-    }
-  }
-  const usedPathIds = new Set(Array.from(options.keys()));
-  let index = 0;
-  while (options.size < Math.max(2, branchItems.length + 1)) {
-    const subPath = nextAvailableSubPath(item.day, usedPathIds, index);
-    options.set(subPath.pathId, { id: subPath.pathId, name: subPath.pathName });
-    usedPathIds.add(subPath.pathId);
-    index = subPathIndexFromId(subPath.pathId) + 1;
-  }
-  return Array.from(options.values());
-}
-
-function findOverlappingActivityBranch(
-  items: ItineraryItem[],
-  item: ItineraryItem,
-): ItineraryItem[] {
-  const branchItemsById = new Map<string, ItineraryItem>([[item.id, item]]);
-  let added = true;
-  while (added) {
-    added = false;
-    for (const candidate of items) {
-      if (
-        candidate.day !== item.day ||
-        candidate.planVariantId !== item.planVariantId ||
-        branchItemsById.has(candidate.id)
-      )
-        continue;
-      const overlapsBranch = Array.from(branchItemsById.values()).some(
-        (branchItem) => overlapsItem(branchItem, candidate),
-      );
-      if (overlapsBranch) {
-        branchItemsById.set(candidate.id, candidate);
-        added = true;
-      }
-    }
-  }
-  return Array.from(branchItemsById.values());
-}
-
-function overlapsItem(
-  left: Pick<ItineraryItem, "day" | "startTime" | "durationMinutes">,
-  right: Pick<ItineraryItem, "day" | "startTime" | "durationMinutes">,
-): boolean {
-  if (left.day !== right.day) return false;
-  const leftStart = parseTime(left.startTime);
-  const rightStart = parseTime(right.startTime);
-  if (leftStart === null || rightStart === null)
-    return left.startTime === right.startTime;
-  const leftEnd = leftStart + (left.durationMinutes ?? 45);
-  const rightEnd = rightStart + (right.durationMinutes ?? 45);
-  return rightStart < leftEnd && leftStart < rightEnd;
-}
-
-function sortBranchItems(items: ItineraryItem[]): ItineraryItem[] {
-  return [...items].sort((left, right) => {
-    const leftStart = parseTime(left.startTime);
-    const rightStart = parseTime(right.startTime);
-    const timeCompare =
-      (leftStart ?? Number.MAX_SAFE_INTEGER) -
-      (rightStart ?? Number.MAX_SAFE_INTEGER);
-    if (timeCompare !== 0) return timeCompare;
-    return left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
-  });
+  return buildManualActivityPathOptions(
+    item.day,
+    sortBranchItems(findOverlappingActivityBranch(trip.itineraryItems, item)),
+  );
 }
 
 function cascadePathFieldsToSubActivities(
@@ -251,68 +187,6 @@ function buildActivityBranchPlacement(
     item,
     changedExistingItems,
   };
-}
-
-function pathFieldsForManualTarget(
-  day: string,
-  pathId: string,
-): Pick<ItineraryItem, "pathId" | "pathName" | "pathRole"> {
-  if (pathId === mainItineraryPathId)
-    return { pathId: undefined, pathName: undefined, pathRole: "main" };
-  return {
-    pathId,
-    pathName: subPathNameFromId(pathId) || subPathForIndex(day, 0).pathName,
-    pathRole: "alternative",
-  };
-}
-
-function nextAvailableSubPath(
-  day: string,
-  usedPathIds: Set<string>,
-  startIndex: number,
-): { pathId: string; pathName: string } {
-  let index = startIndex;
-  let path = subPathForIndex(day, index);
-  while (usedPathIds.has(path.pathId)) {
-    index += 1;
-    path = subPathForIndex(day, index);
-  }
-  return path;
-}
-
-function subPathForIndex(day: string, index: number): { pathId: string; pathName: string } {
-  const label = subPathLabel(index);
-  return {
-    pathId: `path-${day}-sub-${label.toLowerCase()}`,
-    pathName: `Plan ${label}`,
-  };
-}
-
-function subPathLabel(index: number): string {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  if (index < letters.length) return letters[index] ?? "A";
-  const prefix = letters[Math.floor(index / letters.length) - 1] ?? "Z";
-  const suffix = letters[index % letters.length] ?? "Z";
-  return `${prefix}${suffix}`;
-}
-
-function subPathIndexFromId(pathId: string): number {
-  const match = pathId.match(/-sub-([a-z]+)$/i);
-  if (!match) return -1;
-  const value = match[1]?.toUpperCase() ?? "";
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  if (value.length === 1) return letters.indexOf(value);
-  if (value.length === 2)
-    return (
-      (letters.indexOf(value[0] ?? "A") + 1) * letters.length +
-      letters.indexOf(value[1] ?? "A")
-    );
-  return -1;
-}
-
-function subPathNameFromId(pathId: string): string {
-  const index = subPathIndexFromId(pathId);
-  return index >= 0 ? `Plan ${subPathLabel(index)}` : pathId;
 }
 
 function samePathFields(left: ItineraryItem, right: ItineraryItem): boolean {

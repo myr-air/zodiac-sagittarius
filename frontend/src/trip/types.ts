@@ -4,6 +4,16 @@ import type {
   ExpenseReminder,
   TripPhotoAlbumLink,
 } from "./trip-record-types";
+import type { Member } from "./trip-member-types";
+import type { TripTask } from "./trip-task-types";
+export type {
+  Member,
+  TripCapability,
+  TripJoinCredential,
+  TripMemberAccessStatus,
+  TripParticipantSession,
+  TripRole,
+} from "./trip-member-types";
 export type {
   BookingDoc,
   BookingDocExternalLink,
@@ -20,20 +30,12 @@ export type {
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,
 } from "./trip-record-types";
-
-export type TripRole = "owner" | "organizer" | "traveler" | "viewer";
-export type TripMemberAccessStatus = "active" | "disabled";
-
-export type TripCapability =
-  | "viewPlan"
-  | "editItinerary"
-  | "reviewSuggestions"
-  | "createSuggestion"
-  | "viewExpenses"
-  | "editExpenses"
-  | "managePeople"
-  | "manageTripPlans"
-  | "managePhotoAlbums";
+export type {
+  TripTask,
+  TripTaskKind,
+  TripTaskStatus,
+  TripTaskVisibility,
+} from "./trip-task-types";
 
 export type PlanStatus = "main" | "backup" | "draft" | "proposal";
 export type PlanVariantKind = "main" | "backup" | "draft" | "split";
@@ -52,19 +54,6 @@ export interface ItineraryAdvisory {
   code: string;
   label: string;
   severity: AdvisorySeverity;
-}
-
-export interface Member {
-  id: string;
-  displayName: string;
-  role: TripRole;
-  presence: "online" | "away" | "offline";
-  color: string;
-  userId?: string | null;
-  claimPasswordHash?: string | null;
-  claimedAt?: string | null;
-  lastSeenAt?: string | null;
-  accessStatus?: TripMemberAccessStatus;
 }
 
 export interface PlanVariant {
@@ -241,23 +230,6 @@ export interface ItineraryItem {
   version: number;
 }
 
-export type TripTaskStatus = "open" | "done";
-export type TripTaskVisibility = "private" | "shared";
-export type TripTaskKind = "prep" | "booking";
-
-export interface TripTask {
-  id: string;
-  tripPlanId?: string | null;
-  title: string;
-  status: TripTaskStatus;
-  visibility: TripTaskVisibility;
-  kind?: TripTaskKind;
-  createdBy: string;
-  assigneeId?: string | null;
-  relatedItemId?: string | null;
-  version?: number;
-}
-
 export interface StopNote {
   id: string;
   tripId: string;
@@ -300,19 +272,6 @@ export interface Trip {
   tasks?: TripTask[];
   expenseReminders?: ExpenseReminder[];
   version?: number;
-}
-
-export interface TripJoinCredential {
-  joinId: string;
-  password: string;
-}
-
-export interface TripParticipantSession {
-  tripId: string;
-  memberId: string;
-  sessionToken: string;
-  createdAt: string;
-  expiresAt: string;
 }
 
 export type ValidationWarningCode =
