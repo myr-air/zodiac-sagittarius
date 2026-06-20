@@ -144,6 +144,7 @@ export const workspaceBoundarySourcePaths = {
   tripJoinParticipantStep: "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx",
   tripJoinGateStyles: "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts",
   tripWizardFormSections: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
+  membersPageStory: "src/features/workspace/pages/members/MembersPage.stories.tsx",
   itineraryStoryFixtures: "src/features/itinerary/stories/itinerary-story-fixtures.ts",
   itineraryStoryPathScenarios: "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
   itineraryStoryPathItems: "src/features/itinerary/stories/fixtures/itinerary-story-path-items.ts",
