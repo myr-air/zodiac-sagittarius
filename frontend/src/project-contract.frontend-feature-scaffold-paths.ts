@@ -162,6 +162,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/expense-page-actions.test.ts",
   "src/features/workspace/pages/expenses/expense-page-filters.ts",
   "src/features/workspace/pages/expenses/expense-page-filters.test.ts",
+  "src/features/workspace/pages/expenses/expense-dialog-submit-input.ts",
+  "src/features/workspace/pages/expenses/expense-dialog-submit-input.test.ts",
   "src/features/workspace/pages/expenses/ExpensesPage.stories.support.ts",
   "src/features/workspace/pages/expenses/ExpensesPage.stories.plays.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",

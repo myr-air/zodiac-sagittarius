@@ -3,10 +3,10 @@ import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
-  buildExpenseDialogSubmitInput,
   canSubmitExpenseDialog,
   initialExpenseTripPlanId,
 } from "../expense-dialog-support";
+import { buildExpenseDialogSubmitInput } from "../expense-dialog-submit-input";
 import type { ExpenseInput, ExpenseUpdateInput } from "../expense-page-types";
 import { useExpenseComments } from "./useExpenseComments";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
