@@ -8,6 +8,7 @@ import type {
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatTripRange } from "@/src/shared/components/page-header";
 import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain";
+import type { OverviewRoleLens } from "@/src/features/itinerary/domain";
 import { HighlightBoard, OverviewHero } from "./OverviewSections";
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
@@ -24,7 +25,7 @@ interface OverviewSummaryBandProps {
   items: ItineraryItem[];
   nextStop?: ItineraryItem;
   pendingSuggestions: number;
-  roleLens: "manager" | "traveler" | "viewer";
+  roleLens: OverviewRoleLens;
   settlementCount: number;
   trip: Trip;
   warningCount: number;

@@ -4,6 +4,7 @@ import {
   isMyTask,
   managerNextStopDetail,
   overviewRoleLens,
+  overviewRoleLensValues,
   stopLabel,
   taskKindLabel,
   travelerNextStopDetail,
@@ -12,6 +13,10 @@ import {
 import { overviewItem } from "./overview.test-support";
 
 describe("overview role helpers", () => {
+  it("keeps role lenses in summary display order", () => {
+    expect(overviewRoleLensValues).toEqual(["manager", "traveler", "viewer"]);
+  });
+
   it("derives role lens from member role", () => {
     const owner = { id: "m1", displayName: "Owner", role: "owner", presence: "online", color: "#000" } as Member;
     const traveler = { id: "m2", displayName: "Traveler", role: "traveler", presence: "online", color: "#000" } as Member;

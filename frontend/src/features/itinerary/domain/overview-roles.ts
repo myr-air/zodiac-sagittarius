@@ -1,6 +1,7 @@
 import type { ItineraryItem, Member, TripTask } from "@/src/trip/types";
 
-export type OverviewRoleLens = "manager" | "traveler" | "viewer";
+export const overviewRoleLensValues = ["manager", "traveler", "viewer"] as const;
+export type OverviewRoleLens = (typeof overviewRoleLensValues)[number];
 
 export function overviewRoleLens(member?: Member): OverviewRoleLens {
   if (member?.role === "owner" || member?.role === "organizer") return "manager";
