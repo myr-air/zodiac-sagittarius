@@ -191,6 +191,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/ExpensesPage.stories.plays.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseComments.ts",
+  "src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts",
   "src/features/workspace/pages/members/use-trip-members-page-state.ts",
   "src/features/workspace/pages/members/MembersPage.stories.plays.ts",
   "src/features/workspace/pages/members/MembersPage.stories.support.ts",

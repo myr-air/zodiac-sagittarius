@@ -1,10 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { slugifyFilePart } from "@/src/lib/file-names";
-import {
-  buildExpenseCsv,
-  buildExpenseStatement,
-  buildPaybackReminder,
-} from "@/src/trip/expenses";
+import { useMemo, useState } from "react";
+import { buildExpenseStatement } from "@/src/trip/expenses";
 import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import {
   buildRefundExpenseInput,
@@ -18,9 +13,9 @@ import {
 } from "./expense-page-filters";
 import type {
   ExpenseCategoryFilter,
-  ExpenseCopyState,
   ExpenseDialogTarget,
 } from "./expense-page-types";
+import { useExpenseLedgerActions } from "./hooks/useExpenseLedgerActions";
 
 interface UseTripExpensesPageStateArgs {
   currentMember: Member;
@@ -46,7 +41,6 @@ export function useTripExpensesPageState({
     useState<ExpenseCategoryFilter>("all");
   const [payerFilter, setPayerFilter] = useState("all");
   const [dialogExpense, setDialogExpense] = useState<ExpenseDialogTarget>(null);
-  const [copyState, setCopyState] = useState<ExpenseCopyState>("idle");
 
   const settlementCurrency = expenseSummary.settlementCurrency ?? "HKD";
   const currentNet = expenseSummary.netByMember[currentMember.id] ?? 0;
@@ -56,10 +50,17 @@ export function useTripExpensesPageState({
     () => buildExpenseStatement({ trip, expenseSummary }),
     [expenseSummary, trip],
   );
-  const csv = useMemo(
-    () => buildExpenseCsv({ trip, expenseSummary }),
-    [expenseSummary, trip],
-  );
+  const {
+    copyPaybackReminder,
+    copyState,
+    copyStatement,
+    downloadCsv,
+  } = useExpenseLedgerActions({
+    expenseSummary,
+    onRecordPaybackReminder,
+    statement,
+    trip,
+  });
   const inferredScopeExpenses = useMemo(
     () => filterInferredScopeExpenses(trip.expenses),
     [trip.expenses],
@@ -80,47 +81,10 @@ export function useTripExpensesPageState({
     [categoryFilter, payerFilter, query, trip.expenses, trip.itineraryItems, trip.members],
   );
 
-  useEffect(() => {
-    if (copyState === "idle") return undefined;
-    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
-    return () => window.clearTimeout(timeout);
-  }, [copyState]);
-
   function clearFilters() {
     setQuery("");
     setCategoryFilter("all");
     setPayerFilter("all");
-  }
-
-  async function copyStatement() {
-    try {
-      await navigator.clipboard.writeText(statement);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
-  }
-
-  async function copyPaybackReminder(suggestion: SettlementSuggestion) {
-    try {
-      await navigator.clipboard.writeText(buildPaybackReminder({ trip, suggestion }));
-      await onRecordPaybackReminder?.(suggestion);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
-  }
-
-  function downloadCsv() {
-    const blob = new Blob([`${csv}\n`], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = window.document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${slugifyFilePart(trip.name)}-expenses.csv`;
-    window.document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
   }
 
   function recordSettlement(suggestion: SettlementSuggestion) {
