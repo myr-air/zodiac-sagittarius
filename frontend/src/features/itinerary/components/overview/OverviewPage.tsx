@@ -11,7 +11,9 @@ import {
   managerNextStopDetail,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
-import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
+import { ManagerOverviewPanels } from "./ManagerOverviewPanels";
+import { TravelerOverviewPanels } from "./TravelerOverviewPanels";
+import { ViewerOverviewPanels } from "./ViewerOverviewPanels";
 import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
 import { buildOverviewPageModel } from "./overview-page-model";

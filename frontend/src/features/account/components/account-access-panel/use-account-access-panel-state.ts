@@ -27,6 +27,8 @@ interface UseAccountAccessPanelStateArgs {
   onAccountSessionChange: (session: AccountSession | null) => void;
 }
 
+export type UseAccountAccessPanelState = ReturnType<typeof useAccountAccessPanelState>;
+
 export function useAccountAccessPanelState({
   accessMessages,
   accessMode,

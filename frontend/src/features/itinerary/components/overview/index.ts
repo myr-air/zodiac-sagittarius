@@ -8,4 +8,6 @@ export { OverviewTaskDialog } from "./OverviewTaskDialog";
 export { OverviewTaskLayer } from "./OverviewTaskLayer";
 export { OverviewTaskList } from "./OverviewTaskList";
 export { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
-export { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
+export { ManagerOverviewPanels } from "./ManagerOverviewPanels";
+export { TravelerOverviewPanels } from "./TravelerOverviewPanels";
+export { ViewerOverviewPanels } from "./ViewerOverviewPanels";

@@ -1,11 +1,13 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ReactElement } from "react";
+import type { FormEvent, ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import type { Locale } from "@/src/i18n/types";
-import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
+import { ManagerOverviewPanels } from "./ManagerOverviewPanels";
+import { TravelerOverviewPanels } from "./TravelerOverviewPanels";
+import { ViewerOverviewPanels } from "./ViewerOverviewPanels";
 
 const overviewTaskListLabels = {
   assignee: {
@@ -54,7 +56,7 @@ describe("OverviewRolePanels", () => {
         visibleTasks={tripFixtureTasks}
         newTaskTitle="Pack charger"
         onTaskTitleChange={vi.fn()}
-        onSubmitTask={(event) => event.preventDefault()}
+        onSubmitTask={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}
         expenseNetLabel={tripFixture.expenseSummaries.traveler.currentUserNetLabel}
         expenseSettlementSuggestionsLabel="Pending settlements: 2"
       />,

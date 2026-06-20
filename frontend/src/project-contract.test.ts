@@ -258,6 +258,10 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSummaryBand.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpitCard.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerOverviewPanels.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/TravelerOverviewPanels.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ViewerOverviewPanels.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewRolePanels.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewTaskDialog.tsx"))).toBe(true);
@@ -492,13 +496,20 @@ describe("Sagittarius project scaffold", () => {
 
   it("keeps account access panel state split from render composition", () => {
     const accountPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"), "utf8");
+    const accountPanelContent = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel-content.tsx"), "utf8");
     const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-account-access-panel-state.ts"), "utf8");
 
     expect(accountPanel).toContain("./use-account-access-panel-state");
+    expect(accountPanel).toContain("./account-access-panel-content");
     expect(accountPanel).not.toContain("useState");
     expect(accountPanel).not.toContain("useEffect");
     expect(accountPanel).not.toContain("useAccountPortalData");
     expect(accountPanel).not.toContain("clearAccountPortalDataCache");
+    expect(accountPanel).not.toContain("./EmailLoginPanel");
+    expect(accountPanel).not.toContain("../trip-join-gate/TripJoinGate");
+    expect(accountPanelContent).toContain("./email-login");
+    expect(accountPanelContent).toContain("@/src/features/account/components/trip-join-gate");
+    expect(accountPanelContent).toContain("./portal");
     expect(accountPanelState).toContain("export function useAccountAccessPanelState");
     expect(accountPanelState).toContain("useAccountPortalData");
     expect(accountPanelState).toContain("clearAccountPortalDataCache");
@@ -694,16 +705,21 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {
-    const rolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewRolePanels.tsx"), "utf8");
+    const managerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerOverviewPanels.tsx"), "utf8");
+    const travelerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/TravelerOverviewPanels.tsx"), "utf8");
+    const viewerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ViewerOverviewPanels.tsx"), "utf8");
     const managerChecklist = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"), "utf8");
     const snapshotPanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"), "utf8");
     const rolePanelTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-role-panels.types.ts"), "utf8");
 
-    expect(rolePanels).toContain("./ManagerChecklistPanel");
-    expect(rolePanels).toContain("./OverviewSnapshotPanels");
-    expect(rolePanels).toContain("./overview-role-panels.types");
-    expect(rolePanels).not.toContain("SegmentedControl");
-    expect(rolePanels).not.toContain("interface ManagerOverviewPanelsProps");
+    expect(managerRolePanels).toContain("./ManagerChecklistPanel");
+    expect(managerRolePanels).toContain("./overview-role-panels.types");
+    expect(travelerRolePanels).toContain("./TravelerChecklistPanel");
+    expect(travelerRolePanels).toContain("./OverviewSnapshotPanels");
+    expect(viewerRolePanels).toContain("./OverviewSnapshotPanels");
+    expect(managerRolePanels).not.toContain("SegmentedControl");
+    expect(travelerRolePanels).not.toContain("interface TravelerOverviewPanelsProps");
+    expect(viewerRolePanels).not.toContain("interface ViewerOverviewPanelsProps");
     expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
     expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");

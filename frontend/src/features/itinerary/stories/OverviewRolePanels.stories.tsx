@@ -1,7 +1,12 @@
 import { expect } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import type { FormEvent } from "react";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "@/src/features/itinerary/components/overview/OverviewRolePanels";
+import {
+  ManagerOverviewPanels,
+  TravelerOverviewPanels,
+  ViewerOverviewPanels,
+} from "@/src/features/itinerary/components/overview";
 import type { Locale } from "@/src/i18n/types";
 
 const overviewTaskListLabels = {
@@ -56,7 +61,7 @@ export const Traveler: Story = {
         visibleTasks={tripFixture.tasks}
         newTaskTitle="Pack an adapter"
         onTaskTitleChange={() => {}}
-        onSubmitTask={(event) => event.preventDefault()}
+        onSubmitTask={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}
         expenseNetLabel={tripFixture.expenseSummaries.traveler.currentUserNetLabel}
         expenseSettlementSuggestionsLabel="Pending settlements: 2"
       />
