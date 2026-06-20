@@ -1,6 +1,4 @@
-import { ChangeEvent, KeyboardEvent } from "react";
 import { Icon } from "@/src/ui/icons";
-import { Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type {
   BookingDoc,
@@ -10,9 +8,6 @@ import type {
 } from "@/src/trip/types";
 import {
   bookingAdvisoryClassName,
-  bookingDocClassName,
-  bookingDocQuickFieldClassName,
-  bookingDocTypeSelectClassName,
   bookingTaskClassName,
   bookingTaskLabelClassName,
   bookingTaskMetaClassName,
@@ -21,8 +16,8 @@ import {
   emptyWarningClassName,
   moduleListClassName,
 } from "./context-rail.styles";
-import { bookingDocTypeOptions, taskKindLabel } from "./context-rail.utils";
-import { formatBookingDocTypeLabel } from "./context-rail.utils";
+import { ContextRailBookingDocItem } from "./ContextRailBookingDocItem";
+import { taskKindLabel } from "./context-rail.utils";
 
 interface ContextRailBookingSectionProps {
   advisories: NonNullable<ItineraryItem["advisories"]>;
@@ -41,30 +36,6 @@ interface ContextRailBookingSectionProps {
     },
   ) => void | Promise<void>;
   onToggleTaskStatus: (taskId: string) => void;
-}
-
-function getDraftValue(target: HTMLInputElement): string {
-  return (target.dataset.draftValue ?? target.value).trim();
-}
-
-function handleQuickFieldCommit(
-  event: ChangeEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
-  bookingDoc: BookingDoc,
-  key: "providerName" | "confirmationCode",
-  onChangeBookingDocQuickFields?: ContextRailBookingSectionProps["onChangeBookingDocQuickFields"],
-) {
-  if ("key" in event && event.key !== "Enter") return;
-  event.preventDefault();
-
-  const target = event.currentTarget;
-  const value = getDraftValue(target);
-  const existingValue =
-    key === "providerName" ? bookingDoc.providerName ?? "" : bookingDoc.confirmationCode ?? "";
-  if (value === existingValue) return;
-
-  onChangeBookingDocQuickFields?.(bookingDoc.id, {
-    [key]: value || null,
-  });
 }
 
 export function ContextRailBookingSection({
@@ -101,97 +72,14 @@ export function ContextRailBookingSection({
       </div>
       <ul className={`stop-booking-doc-list ${moduleListClassName}`}>
         {bookingDocs.map((bookingDoc) => (
-          <li className={bookingDocClassName} key={bookingDoc.id}>
-            <strong>{bookingDoc.title}</strong>
-            <span>
-              {t.contextRail.booking.booking} · {bookingDoc.status}
-            </span>
-            <label className="grid gap-1">
-              <span>{t.contextRail.booking.type}</span>
-              <Select
-                aria-label={t.contextRail.booking.typeFor({
-                  title: bookingDoc.title,
-                })}
-                className={bookingDocTypeSelectClassName}
-                disabled={!canEdit || !onChangeBookingDocType}
-                value={bookingDoc.type}
-                onChange={(event) =>
-                  void onChangeBookingDocType?.(
-                    bookingDoc.id,
-                    event.target.value as BookingDocType,
-                  )
-                }
-              >
-                {bookingDocTypeOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {formatBookingDocTypeLabel(type)}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="grid gap-1">
-              <span>{t.contextRail.booking.provider}</span>
-              <input
-                aria-label={t.contextRail.booking.providerFor({
-                  title: bookingDoc.title,
-                })}
-                className={bookingDocQuickFieldClassName}
-                defaultValue={bookingDoc.providerName ?? ""}
-                disabled={!canEdit || !onChangeBookingDocQuickFields}
-                placeholder={t.contextRail.booking.providerPlaceholder}
-                onChange={(event) => {
-                  event.currentTarget.dataset.draftValue = event.target.value;
-                }}
-                onBlur={(event) =>
-                  handleQuickFieldCommit(
-                    event,
-                    bookingDoc,
-                    "providerName",
-                    onChangeBookingDocQuickFields,
-                  )
-                }
-                onKeyDown={(event) =>
-                  handleQuickFieldCommit(
-                    event,
-                    bookingDoc,
-                    "providerName",
-                    onChangeBookingDocQuickFields,
-                  )
-                }
-              />
-            </label>
-            <label className="grid gap-1">
-              <span>{t.contextRail.booking.reference}</span>
-              <input
-                aria-label={t.contextRail.booking.referenceFor({
-                  title: bookingDoc.title,
-                })}
-                className={bookingDocQuickFieldClassName}
-                defaultValue={bookingDoc.confirmationCode ?? ""}
-                disabled={!canEdit || !onChangeBookingDocQuickFields}
-                placeholder={t.contextRail.booking.referencePlaceholder}
-                onChange={(event) => {
-                  event.currentTarget.dataset.draftValue = event.target.value;
-                }}
-                onBlur={(event) =>
-                  handleQuickFieldCommit(
-                    event,
-                    bookingDoc,
-                    "confirmationCode",
-                    onChangeBookingDocQuickFields,
-                  )
-                }
-                onKeyDown={(event) =>
-                  handleQuickFieldCommit(
-                    event,
-                    bookingDoc,
-                    "confirmationCode",
-                    onChangeBookingDocQuickFields,
-                  )
-                }
-              />
-            </label>
-          </li>
+          <ContextRailBookingDocItem
+            bookingDoc={bookingDoc}
+            canEdit={canEdit}
+            copy={t.contextRail.booking}
+            key={bookingDoc.id}
+            onChangeBookingDocType={onChangeBookingDocType}
+            onChangeBookingDocQuickFields={onChangeBookingDocQuickFields}
+          />
         ))}
         {!bookingDocs.length ? (
           <li className={emptyWarningClassName}>
