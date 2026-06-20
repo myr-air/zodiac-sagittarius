@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { WorkspaceSummaryStat } from "./WorkspaceSummaryStat";
+import {
+  WorkspaceSummaryStat,
+  workspaceSummaryStatToneValues,
+} from "./WorkspaceSummaryStat";
 
 const meta = {
   title: "Design System/Workspace Summary Stat",
@@ -17,6 +20,7 @@ const statClassName =
 const valueToneClassNames = {
   positive: "text-[#15803d]",
   negative: "text-[#b91c1c]",
+  neutral: "text-(--color-text)",
 };
 
 export const Default: Story = {
@@ -48,4 +52,23 @@ export const Negative: Story = {
     value: "$48",
     valueToneClassNames,
   },
+};
+
+export const AllTones: Story = {
+  args: Default.args,
+  render: () => (
+    <div className="flex flex-wrap gap-3">
+      {workspaceSummaryStatToneValues.map((tone) => (
+        <WorkspaceSummaryStat
+          className={statClassName}
+          icon={tone === "positive" ? "check" : tone === "negative" ? "warning" : "wallet"}
+          key={tone}
+          label={`${tone} balance`}
+          tone={tone}
+          value={tone === "positive" ? "+$120" : tone === "negative" ? "$48" : "$0"}
+          valueToneClassNames={valueToneClassNames}
+        />
+      ))}
+    </div>
+  ),
 };

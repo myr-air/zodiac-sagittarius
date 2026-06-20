@@ -1,8 +1,19 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { WorkspaceSummaryStat } from "./WorkspaceSummaryStat";
+import {
+  WorkspaceSummaryStat,
+  workspaceSummaryStatToneValues,
+} from "./WorkspaceSummaryStat";
 
 describe("WorkspaceSummaryStat", () => {
+  it("defines summary stat tones in emphasis order", () => {
+    expect(workspaceSummaryStatToneValues).toEqual([
+      "positive",
+      "negative",
+      "neutral",
+    ]);
+  });
+
   it("renders a labelled workspace metric with an icon", () => {
     render(
       <WorkspaceSummaryStat

@@ -1,7 +1,12 @@
 import { cn } from "@/src/lib/cn";
 import { Icon, type IconName } from "@/src/ui/icons";
 
-export type WorkspaceSummaryStatTone = "positive" | "negative" | "neutral";
+export const workspaceSummaryStatToneValues = [
+  "positive",
+  "negative",
+  "neutral",
+] as const;
+export type WorkspaceSummaryStatTone = (typeof workspaceSummaryStatToneValues)[number];
 
 interface WorkspaceSummaryStatProps {
   className: string;
