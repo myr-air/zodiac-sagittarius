@@ -23,6 +23,7 @@ export interface PhotoAlbumFilters {
 }
 
 export interface PhotoAlbumRelations {
+  createdBy: Member | null;
   owner: Member | null;
   itineraryItems: ItineraryItem[];
 }
@@ -76,6 +77,7 @@ export function findPhotoAlbumRelations(
 ): PhotoAlbumRelations {
   const relatedItemIds = new Set(album.relatedItineraryItemIds);
   return {
+    createdBy: trip.members.find((member) => member.id === album.createdBy) ?? null,
     owner: trip.members.find((member) => member.id === album.ownerMemberId) ?? null,
     itineraryItems: trip.itineraryItems.filter((item) => relatedItemIds.has(item.id)),
   };

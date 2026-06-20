@@ -114,7 +114,7 @@ export function TripPhotosPage({
           onSelectAlbum={setSelectedAlbumId}
         />
 
-        <PhotoAlbumInspector album={selectedAlbum} relations={selectedRelations} trip={trip} copy={copy} />
+        <PhotoAlbumInspector album={selectedAlbum} relations={selectedRelations} copy={copy} />
       </div>
 
       {dialogAlbum ? (

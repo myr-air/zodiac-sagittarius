@@ -1,5 +1,5 @@
 import { findPhotoAlbumRelations, safePhotoAlbumHref } from "@/src/trip/photo-albums";
-import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
+import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../TripPhotosPage.copy";
@@ -10,14 +10,12 @@ interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
   copy: PhotoCopy;
   relations: ReturnType<typeof findPhotoAlbumRelations> | null;
-  trip: Trip;
 }
 
 export function PhotoAlbumInspector({
   album,
   copy,
   relations,
-  trip,
 }: PhotoAlbumInspectorProps) {
   if (!album) {
     return (
@@ -27,7 +25,6 @@ export function PhotoAlbumInspector({
     );
   }
   const href = safePhotoAlbumHref(album.url);
-  const createdBy = trip.members.find((member) => member.id === album.createdBy);
   const linkHost = photoAlbumLinkHost(href);
   return (
     <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
@@ -65,7 +62,7 @@ export function PhotoAlbumInspector({
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.owner}</strong>
         <span>{relations?.owner?.displayName ?? copy.noOwnerAssigned}</span>
-        <span className="text-xs text-(--color-text-muted)">{copy.createdBy(createdBy?.displayName ?? album.createdBy)}</span>
+        <span className="text-xs text-(--color-text-muted)">{copy.createdBy(relations?.createdBy?.displayName ?? album.createdBy)}</span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.relatedStops}</strong>

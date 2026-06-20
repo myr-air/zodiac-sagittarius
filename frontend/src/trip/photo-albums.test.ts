@@ -125,10 +125,11 @@ describe("photo album helpers", () => {
     ).toBeNull();
   });
 
-  it("finds owner and itinerary relations for the inspector", () => {
+  it("finds creator, owner, and itinerary relations for the inspector", () => {
     const trip = tripFixture(albums);
     const relations = findPhotoAlbumRelations(albums[0], trip);
 
+    expect(relations.createdBy?.displayName).toBe("Aom");
     expect(relations.owner?.displayName).toBe("Aom");
     expect(relations.itineraryItems.map((item) => item.activity)).toEqual(["Victoria Peak"]);
   });
