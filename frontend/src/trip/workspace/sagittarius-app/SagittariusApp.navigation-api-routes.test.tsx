@@ -5,7 +5,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
-  persistTripParticipantSession,
+  installApiSession,
   renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -17,7 +17,7 @@ describe("Sagittarius cockpit navigation API routes", () => {
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
-    persistTripParticipantSession(window.sessionStorage);
+    installApiSession();
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
@@ -37,7 +37,7 @@ describe("Sagittarius cockpit navigation API routes", () => {
   });
 
   it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
-    persistTripParticipantSession(window.sessionStorage);
+    installApiSession();
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 

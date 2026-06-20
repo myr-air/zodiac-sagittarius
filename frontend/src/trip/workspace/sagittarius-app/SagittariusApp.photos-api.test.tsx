@@ -21,7 +21,7 @@ describe("Sagittarius cockpit photos API mode", () => {
 
   it("creates photo albums through the API client in API mode", async () => {
     const user = userEvent.setup();
-    installApiSession("api-photos-session");
+    installApiSession({ sessionToken: "api-photos-session" });
     const apiAlbum = {
       ...(seedTrip.photoAlbumLinks ?? [])[0],
       id: "018f4e89-1111-7000-8000-000000009999",

@@ -6,6 +6,7 @@ import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
+  installApiSession,
   installLocalStorageStub,
   persistTripParticipantSession,
   render,
@@ -19,7 +20,7 @@ describe("Sagittarius cockpit session restore failures", () => {
 
   it("recovers to access instead of hanging when persisted API hydration is unauthenticated", async () => {
     installLocalStorageStub();
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       sessionToken: "expired-session-token",
     });
     const apiClient = createApiClientForTrip(seedTrip);

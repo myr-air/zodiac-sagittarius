@@ -11,6 +11,7 @@ import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
+  installApiSession,
   installLocalStorageStub,
   openItineraryHeaderControls,
   persistTripParticipantSession,
@@ -37,7 +38,7 @@ describe("Sagittarius cockpit UI", () => {
         },
       ],
     };
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       tripId: emptyTrip.id,
       memberId: emptyTrip.members[0].id,
       sessionToken: "empty-trip-session",

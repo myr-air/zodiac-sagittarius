@@ -112,8 +112,10 @@ export async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
 }
 
-export function installApiSession(sessionToken: string) {
-  persistTripParticipantSessionForApi(window.sessionStorage, { sessionToken });
+export function installApiSession(
+  session: Parameters<typeof persistTripParticipantSessionForApi>[1] = {},
+) {
+  persistTripParticipantSessionForApi(window.sessionStorage, session);
 }
 
 export async function renderApiSagittariusApp(

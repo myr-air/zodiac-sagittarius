@@ -6,8 +6,8 @@ import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
   createDeferred,
+  installApiSession,
   installLocalStorageStub,
-  persistTripParticipantSession,
   render,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -20,7 +20,7 @@ describe("Sagittarius cockpit session restore cancellation", () => {
   it("ignores late API hydration when the app unmounts during a persisted session load", async () => {
     installLocalStorageStub();
     const deferred = createDeferred<TripCockpit>();
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       sessionToken: "slow-session-token",
     });
     const apiClient = createApiClientForTrip(seedTrip);

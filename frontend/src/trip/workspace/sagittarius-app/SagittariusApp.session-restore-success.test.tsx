@@ -4,8 +4,8 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
+  installApiSession,
   installLocalStorageStub,
-  persistTripParticipantSession,
   render,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -33,7 +33,7 @@ describe("Sagittarius cockpit session restore success", () => {
         },
       ],
     };
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       tripId: apiTrip.id,
       memberId: apiTrip.members[0].id,
       sessionToken: "account-created-session-token",

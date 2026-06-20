@@ -6,6 +6,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { appRoutes, encodeReturnTo, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
+  installApiSession,
   installLocalStorageStub,
   mockWindowLocation,
   persistTripParticipantSession,
@@ -91,7 +92,7 @@ describe("Sagittarius cockpit session restore routes", () => {
         },
       ],
     };
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       tripId: apiTrip.id,
       memberId: apiTrip.members[0].id,
       sessionToken: "canonical-route-session-token",
@@ -127,7 +128,7 @@ describe("Sagittarius cockpit session restore routes", () => {
     });
 
     const apiClient = createApiClientForTrip(seedTrip);
-    persistTripParticipantSession(window.sessionStorage, {
+    installApiSession({
       tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
       memberId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
       sessionToken: "other-trip-session-token",
