@@ -5,6 +5,7 @@ export {
 export {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
+  expenseSplitModeValues,
   expenseSplitsToMinor,
   normalizeExpenseSplitsFromMinor,
   type ExpenseSplitMode,

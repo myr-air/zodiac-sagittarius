@@ -4,6 +4,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
+import { expenseCategoryValues } from "./trip-record-types";
 import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripTask } from "./types";
 
 export type TripFixtureRole = "owner" | "organizer" | "traveler" | "viewer";
@@ -192,7 +193,7 @@ export function buildDenseTripFixture(): Trip {
       currency: "HKD",
       paidBy: denseMembers[index % denseMembers.length].id,
       splits: Object.fromEntries(splitMemberIds.map((memberId) => [memberId, Math.round((amount / splitMemberIds.length) * 100) / 100])),
-      category: ["food", "transport", "tickets", "stay", "shopping", "settlement"][index % 6] as Expense["category"],
+      category: expenseCategoryValues[index % expenseCategoryValues.length],
       itineraryItemId: denseItems[index % denseItems.length].id,
       version: 1,
     };

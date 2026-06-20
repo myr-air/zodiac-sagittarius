@@ -1,4 +1,5 @@
-import type { ExpenseSplitMode } from "@/src/trip/expenses";
+import { expenseSplitModeValues } from "@/src/trip/expenses";
+import { expenseCategoryValues } from "@/src/trip/trip-record-types";
 import type { Expense } from "@/src/trip/types";
 
 export type CategoryTone = {
@@ -8,22 +9,9 @@ export type CategoryTone = {
   text: string;
 };
 
-export const expenseCategories = [
-  "food",
-  "transport",
-  "tickets",
-  "stay",
-  "shopping",
-  "settlement",
-] satisfies Expense["category"][];
+export const expenseCategories = expenseCategoryValues;
 
-export const expenseSplitModes = [
-  "equal",
-  "exact",
-  "shares",
-  "percentage",
-  "itemized",
-] satisfies ExpenseSplitMode[];
+export const expenseSplitModes = expenseSplitModeValues;
 
 const categoryTones: Record<Expense["category"], CategoryTone> = {
   food: { background: "#fff7ed", border: "#fed7aa", dot: "#f97316", text: "#9a3412" },

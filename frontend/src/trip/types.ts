@@ -65,6 +65,7 @@ export type {
   BookingDocType,
   BookingDocVisibility,
   Expense,
+  ExpenseCategory,
   ExpenseComment,
   ExpenseLineItem,
   ExpenseReminder,

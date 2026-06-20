@@ -1,7 +1,14 @@
 import { roundMoney } from "./expense-money";
 import type { ExpenseLineItem } from "./types";
 
-export type ExpenseSplitMode = "equal" | "exact" | "shares" | "percentage" | "itemized";
+export const expenseSplitModeValues = [
+  "equal",
+  "exact",
+  "shares",
+  "percentage",
+  "itemized",
+] as const;
+export type ExpenseSplitMode = (typeof expenseSplitModeValues)[number];
 
 interface BuildExpenseSplitsInput {
   amount: number;

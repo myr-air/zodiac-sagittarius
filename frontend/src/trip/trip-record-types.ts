@@ -1,3 +1,13 @@
+export const expenseCategoryValues = [
+  "food",
+  "transport",
+  "tickets",
+  "stay",
+  "shopping",
+  "settlement",
+] as const;
+export type ExpenseCategory = (typeof expenseCategoryValues)[number];
+
 export interface Expense {
   id: string;
   tripId?: string;
@@ -13,7 +23,7 @@ export interface Expense {
   comments?: ExpenseComment[];
   paidBy: string;
   splits: Record<string, number>;
-  category: "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement";
+  category: ExpenseCategory;
   itineraryItemId?: string | null;
   version?: number;
 }
@@ -123,15 +133,22 @@ export interface BookingDoc {
   version: number;
 }
 
-export type TripPhotoAlbumProvider =
-  | "google_photos"
-  | "icloud"
-  | "google_drive"
-  | "dropbox"
-  | "onedrive"
-  | "custom";
+export const tripPhotoAlbumProviderValues = [
+  "google_photos",
+  "icloud",
+  "google_drive",
+  "dropbox",
+  "onedrive",
+  "custom",
+] as const;
+export type TripPhotoAlbumProvider = (typeof tripPhotoAlbumProviderValues)[number];
 
-export type TripPhotoAlbumAccess = "view_only" | "collaborative" | "upload_request";
+export const tripPhotoAlbumAccessValues = [
+  "view_only",
+  "collaborative",
+  "upload_request",
+] as const;
+export type TripPhotoAlbumAccess = (typeof tripPhotoAlbumAccessValues)[number];
 
 export interface TripPhotoAlbumLink {
   id: string;

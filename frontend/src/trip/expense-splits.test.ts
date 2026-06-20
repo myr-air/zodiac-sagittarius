@@ -2,11 +2,22 @@ import { describe, expect, it } from "vitest";
 import {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
+  expenseSplitModeValues,
   expenseSplitsToMinor,
   normalizeExpenseSplitsFromMinor,
 } from "./expense-splits";
 
 describe("expense splits", () => {
+  it("keeps split modes in canonical display order", () => {
+    expect(expenseSplitModeValues).toEqual([
+      "equal",
+      "exact",
+      "shares",
+      "percentage",
+      "itemized",
+    ]);
+  });
+
   it("allocates equal, share, and percentage splits without losing cents", () => {
     expect(buildExpenseSplits({ amount: 100, memberIds: ["a", "b", "c"], mode: "equal" })).toEqual({
       a: 33.34,

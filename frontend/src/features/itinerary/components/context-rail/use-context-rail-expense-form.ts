@@ -1,5 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
+import { expenseCategoryValues } from "@/src/trip/trip-record-types";
 import type { Expense } from "@/src/trip/types";
 import type {
   ContextRailCreateExpenseInput,
@@ -13,14 +14,7 @@ interface UseContextRailExpenseFormOptions {
   onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
 }
 
-export const contextRailExpenseCategoryOptions: Expense["category"][] = [
-  "food",
-  "transport",
-  "tickets",
-  "stay",
-  "shopping",
-  "settlement",
-];
+export const contextRailExpenseCategoryOptions = expenseCategoryValues;
 
 export function useContextRailExpenseForm({
   selectedItemId,

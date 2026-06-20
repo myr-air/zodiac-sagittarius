@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { photoCopy } from "./TripPhotosPage.copy";
-import { countPhotoProviders, photoAccessLabel, photoAlbumLinkHost, photoProviderLabel } from "./TripPhotosPage.support";
+import {
+  countPhotoProviders,
+  photoAccessLabel,
+  photoAccessOptions,
+  photoAlbumLinkHost,
+  photoProviderLabel,
+  photoProviderOptions,
+} from "./TripPhotosPage.support";
 
 const albumBase: Omit<TripPhotoAlbumLink, "id" | "provider"> = {
   tripId: "trip-1",
@@ -19,6 +26,22 @@ function album(id: string, provider: TripPhotoAlbumLink["provider"]): TripPhotoA
 }
 
 describe("TripPhotosPage support", () => {
+  it("exports canonical provider and access option order", () => {
+    expect(photoProviderOptions).toEqual([
+      "google_photos",
+      "icloud",
+      "google_drive",
+      "dropbox",
+      "onedrive",
+      "custom",
+    ]);
+    expect(photoAccessOptions).toEqual([
+      "view_only",
+      "collaborative",
+      "upload_request",
+    ]);
+  });
+
   it("counts all photo providers from one album source", () => {
     expect(countPhotoProviders([
       album("photos-1", "google_photos"),
