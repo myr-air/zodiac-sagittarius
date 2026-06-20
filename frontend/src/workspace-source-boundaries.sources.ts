@@ -118,6 +118,7 @@ export const workspaceBoundarySourcePaths = {
   stopDialogForm: "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts",
   stopDialogTimeFields: "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts",
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
+  tripSettingsPageStory: "src/features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx",
   tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
   memberSupport: "src/features/workspace/pages/members/TripMembersPage.support.ts",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",

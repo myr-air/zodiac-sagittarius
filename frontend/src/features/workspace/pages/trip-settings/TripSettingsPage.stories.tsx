@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
 import { TripSettingsPage } from "./TripSettingsPage";
 import {
   ownerPlay,
@@ -24,6 +28,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: tripSettingsOwnerStoryArgs,
@@ -40,37 +46,35 @@ export const Traveler: Story = {
   play: Viewer.play,
 };
 
-export const Thai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: thaiPlay,
-};
+export const Thai: Story = ownerStory(Owner.args, {}, thaiPlay, {
+  locale: "th",
+});
 
 export const PlanImpactWarning: Story = {
   args: tripSettingsPlanImpactStoryArgs,
   play: planImpactWarningPlay,
 };
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: responsivePlay,
-};
+export const Mobile: Story = viewportStoryForOwner(
+  Owner.args,
+  "mobile320",
+  responsivePlay,
+);
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: responsivePlay,
-};
+export const Tablet: Story = viewportStoryForOwner(
+  Owner.args,
+  "tablet768",
+  responsivePlay,
+);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsivePlay,
-};
+export const Desktop1024: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1024",
+  responsivePlay,
+);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: responsivePlay,
-};
+export const Desktop1440: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1440",
+  responsivePlay,
+);
