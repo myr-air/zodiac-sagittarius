@@ -19,6 +19,7 @@ export {
 } from "./sagittarius-app.test-account-api";
 
 export {
+  apiSeedTrip,
   apiTripWithPlans,
   dailyBriefingFixture,
   tripWithPlans,
@@ -28,6 +29,7 @@ export {
 export {
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   persistTrustedAccountSession,
 } from "./sagittarius-app.test-storage";
 

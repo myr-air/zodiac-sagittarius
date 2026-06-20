@@ -7,13 +7,13 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -26,17 +26,7 @@ describe("Sagittarius cockpit navigation", () => {
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {
     const user = userEvent.setup();
-    installLocalStorageStub();
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "persisted-trip-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage);
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
@@ -61,17 +51,7 @@ describe("Sagittarius cockpit navigation", () => {
   });
 
   it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
-    installLocalStorageStub();
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "persisted-trip-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage);
     window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 

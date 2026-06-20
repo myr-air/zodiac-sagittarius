@@ -17,6 +17,7 @@ import {
   installLocalStorageStub,
   installSessionStorageStub,
   openItineraryHeaderControls,
+  persistTripParticipantSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -40,16 +41,11 @@ describe("Sagittarius cockpit UI", () => {
         },
       ],
     };
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: emptyTrip.id,
-        memberId: emptyTrip.members[0].id,
-        sessionToken: "empty-trip-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      tripId: emptyTrip.id,
+      memberId: emptyTrip.members[0].id,
+      sessionToken: "empty-trip-session",
+    });
 
     render(
       <SagittariusApp
@@ -74,16 +70,11 @@ describe("Sagittarius cockpit UI", () => {
 
   it("starts hydration from the join gate even when a remembered participant session exists", async () => {
     installLocalStorageStub();
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: "member-aom",
-        sessionToken: "local_hydration_test",
-        createdAt: "2026-05-28T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.localStorage, {
+      memberId: "member-aom",
+      sessionToken: "local_hydration_test",
+      createdAt: "2026-05-28T00:00:00.000Z",
+    });
 
     render(<SagittariusApp initialView="members" requireJoin />);
 

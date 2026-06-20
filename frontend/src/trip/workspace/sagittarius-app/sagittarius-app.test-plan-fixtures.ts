@@ -4,6 +4,13 @@ import type {
   Trip,
 } from "@/src/trip/types";
 
+export function apiSeedTrip(): Trip {
+  return {
+    ...seedTrip,
+    members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+  };
+}
+
 export function tripWithPlans(): Trip {
   const mainPlan = seedTrip.planVariants.find(
     (variant) => variant.id === seedTrip.activePlanVariantId,
@@ -48,7 +55,7 @@ export function tripWithPlans(): Trip {
 export function apiTripWithPlans(): Trip {
   return {
     ...tripWithPlans(),
-    members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+    members: apiSeedTrip().members,
   };
 }
 

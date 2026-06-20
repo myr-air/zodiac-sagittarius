@@ -7,6 +7,7 @@ import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  apiSeedTrip,
   createApiClientForTrip,
   dailyBriefingFixture,
   installLocalStorageStub,
@@ -25,10 +26,9 @@ describe("Sagittarius cockpit overview API sessions", () => {
   it("hydrates a persisted API session from the backend", async () => {
     installLocalStorageStub();
     const apiTrip = {
-      ...seedTrip,
+      ...apiSeedTrip(),
       name: "Persisted API Trip",
       joinPasswordHash: "",
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
     window.localStorage.setItem(
       tripParticipantSessionStorageKey,
@@ -146,10 +146,9 @@ describe("Sagittarius cockpit overview API sessions", () => {
     const user = userEvent.setup();
     installLocalStorageStub();
     const apiTrip = {
-      ...seedTrip,
+      ...apiSeedTrip(),
       name: "Weather API Trip",
       joinPasswordHash: "",
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
     const briefing = dailyBriefingFixture(apiTrip.id, "2026-07-12");
     window.localStorage.setItem(

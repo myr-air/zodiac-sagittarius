@@ -7,15 +7,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
-import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
-import { seedTrip } from "@/src/trip/seed";
 import {
   appRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  apiSeedTrip,
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -29,20 +29,12 @@ describe("Sagittarius cockpit settings", () => {
   it("patches trip countries when organizer changes the API trip destination", async () => {
     const user = userEvent.setup();
     installLocalStorageStub();
-    const apiTrip = {
-      ...seedTrip,
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-    };
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: apiTrip.id,
-        memberId: apiTrip.members[0].id,
-        sessionToken: "settings-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    const apiTrip = apiSeedTrip();
+    persistTripParticipantSession(window.localStorage, {
+      tripId: apiTrip.id,
+      memberId: apiTrip.members[0].id,
+      sessionToken: "settings-session-token",
+    });
     const patchTrip = vi.fn().mockResolvedValue({
       ...apiTrip,
       destinationLabel: "Chiang Mai, Thailand",

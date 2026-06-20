@@ -2,9 +2,9 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  apiSeedTrip,
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
@@ -22,9 +22,8 @@ describe("Sagittarius cockpit overview tasks", () => {
   it("creates overview tasks through the API client after backend login", async () => {
     const user = userEvent.setup();
     const ownerTrip = {
-      ...seedTrip,
+      ...apiSeedTrip(),
       joinPasswordHash: "",
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
     const apiClient = createApiClientForTrip(ownerTrip, {
       createTask: vi.fn().mockResolvedValue({

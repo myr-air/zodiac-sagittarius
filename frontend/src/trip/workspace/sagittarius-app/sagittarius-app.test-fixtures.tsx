@@ -1,5 +1,6 @@
 export { dailyBriefingFixture } from "./sagittarius-app.test-briefing-fixtures";
 export {
+  apiSeedTrip,
   apiTripWithPlans,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
