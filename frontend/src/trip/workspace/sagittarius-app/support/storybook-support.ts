@@ -7,6 +7,7 @@ import {
   buildEmptyTripFixture,
   tripFixture,
 } from "@/src/trip/trip-fixtures";
+import type { SagittariusAppProps } from "@/src/trip/workspace/sagittarius-app/types";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 
 type SagittariusAppStory = StoryObj<typeof SagittariusApp>;
@@ -27,6 +28,27 @@ export function appViewStory(
   return {
     args: { initialView },
     ...(play ? { play } : {}),
+  };
+}
+
+export function appRouteStory(
+  args: Pick<
+    SagittariusAppProps,
+    | "accessMode"
+    | "dataSource"
+    | "initialJoinCode"
+    | "initialView"
+    | "portalSection"
+    | "requireJoin"
+    | "routeTripId"
+  >,
+  navigation: { pathname: string },
+): SagittariusAppStory {
+  return {
+    args,
+    parameters: {
+      nextjs: { navigation },
+    },
   };
 }
 
