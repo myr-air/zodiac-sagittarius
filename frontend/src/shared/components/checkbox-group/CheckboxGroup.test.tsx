@@ -31,4 +31,18 @@ describe("CheckboxGroup", () => {
 
     expect(onToggle).toHaveBeenCalledWith("member-2");
   });
+
+  it("allows feature pages to choose a taller scroll region", () => {
+    render(
+      <CheckboxGroup
+        label="Related itinerary"
+        maxHeightClassName="max-h-48"
+        options={[{ id: "stop-1", label: "1 · Victoria Peak" }]}
+        selectedIds={[]}
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("1 · Victoria Peak").closest("div")).toHaveClass("max-h-48");
+  });
 });
