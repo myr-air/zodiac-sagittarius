@@ -7,16 +7,11 @@ import {
 import type { AccountApiClient } from "@/src/account/api-client";
 import {
   clearParticipantSession,
-  loadPersistedParticipantSession,
   persistParticipantSession,
 } from "@/src/trip/participant-session-storage";
-import { loadPersistedTripDraft } from "@/src/trip/repository";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import {
-  resolveWorkspaceSessionRestore,
-  resolveWorkspaceSessionTrip,
-} from "./workspace-session-restore";
 import { useWorkspaceAccountSession } from "./use-workspace-account-session";
+import { useWorkspaceParticipantSessionRestore } from "./use-workspace-participant-session-restore";
 
 type TripWorkspaceState = {
   trip: Trip;
@@ -57,45 +52,17 @@ export function useWorkspaceSession({
   const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] =
     useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    window.queueMicrotask(() => {
-      if (!cancelled) setSessionRestored(false);
-    });
-    const timeout = window.setTimeout(() => {
-      if (cancelled) return;
-      const persistedTrip = loadPersistedTripDraft();
-      const nextTrip = resolveWorkspaceSessionTrip(initialTrip, persistedTrip);
-      const persistedSession = loadPersistedParticipantSession(
-        requireJoin,
-        nextTrip,
-        isApiMode,
-        routeTripId,
-      );
-      const restored = resolveWorkspaceSessionRestore({
-        initialTrip,
-        persistedSession,
-        persistedTrip,
-      });
-
-      if (restored.shouldReplaceTripState) {
-        setTripState({ trip: restored.nextTrip, past: [], future: [] });
-        setSelectedTripPlanId(restored.selectedTripPlanId!);
-      }
-      if (restored.participantSession) {
-        setParticipantSession(restored.participantSession);
-        setCurrentMemberId(restored.currentMemberId!);
-      } else {
-        setParticipantSession(null);
-      }
-      setSessionRestored(true);
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-    };
-  }, [initialTrip, isApiMode, requireJoin, routeTripId, setCurrentMemberId, setSelectedTripPlanId, setTripState]);
+  useWorkspaceParticipantSessionRestore({
+    initialTrip,
+    isApiMode,
+    requireJoin,
+    routeTripId,
+    setCurrentMemberId,
+    setParticipantSession,
+    setSelectedTripPlanId,
+    setSessionRestored,
+    setTripState,
+  });
 
   useEffect(() => {
     if (

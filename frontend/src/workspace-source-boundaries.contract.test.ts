@@ -36,6 +36,7 @@ describe("Sagittarius workspace source boundaries", () => {
       uiStateHook,
       accessState,
       participantSessionActions,
+      participantSessionRestoreHook,
       participantPostAuthNavigation,
       workspaceSessionHook,
       workspaceSessionRestore,
@@ -260,7 +261,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceSessionHook).not.toContain("persistAccountSession");
     expect(accountSessionHook).toContain("loadPersistedAccountSession");
     expect(accountSessionHook).toContain("persistAccountSession");
-    expect(workspaceSessionHook).toContain("resolveWorkspaceSessionRestore");
+    expect(workspaceSessionHook).toContain("useWorkspaceParticipantSessionRestore");
+    expect(workspaceSessionHook).not.toContain("loadPersistedParticipantSession");
+    expect(workspaceSessionHook).not.toContain("resolveWorkspaceSessionRestore");
+    expect(participantSessionRestoreHook).toContain("loadPersistedParticipantSession");
+    expect(participantSessionRestoreHook).toContain("resolveWorkspaceSessionRestore");
     expect(workspaceSessionHook).not.toContain("normalizeTripPlanAliases");
     expect(workspaceSessionRestore).toContain("normalizeTripPlanAliases");
     expect(workspaceSessionRestore).toContain("resolveSelectedTripPlanId");

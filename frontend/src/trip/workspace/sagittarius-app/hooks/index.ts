@@ -18,6 +18,7 @@ export { useWorkspaceItineraryViewModel } from "./use-workspace-itinerary-view-m
 export { useWorkspaceMemberContext } from "./use-workspace-member-context";
 export { useWorkspaceNavigationContext } from "./use-workspace-navigation-context";
 export { useWorkspaceParticipantSessionActions } from "./use-workspace-participant-session-actions";
+export { useWorkspaceParticipantSessionRestore } from "./use-workspace-participant-session-restore";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspacePlanningContext } from "./use-workspace-planning-context";
 export { useWorkspacePlanningRecordsContext } from "./use-workspace-planning-records-context";
