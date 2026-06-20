@@ -7,16 +7,14 @@ import { appRoutes, encodeReturnTo, tripRoutes } from "@/src/trip/workspace/sagi
 import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   persistTripParticipantSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit session restore routes", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("redirects /join to the trip route when a persisted API session already exists", async () => {

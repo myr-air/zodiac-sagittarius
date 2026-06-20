@@ -17,15 +17,13 @@ import {
 import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit access", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("can require trip participant authentication before opening the cockpit", async () => {

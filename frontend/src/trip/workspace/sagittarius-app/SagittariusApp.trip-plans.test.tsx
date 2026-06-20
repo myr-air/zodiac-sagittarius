@@ -13,22 +13,17 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
   installLocalStorageStub,
-  installSessionStorageStub,
   openItineraryHeaderControls,
   render,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit Trip Plans", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("creates a named local Trip Plan and selects it without copying itinerary rows", async () => {
@@ -203,6 +198,5 @@ describe("Sagittarius cockpit Trip Plans", () => {
     expect(await screen.findByText("Backup gallery task")).toBeInTheDocument();
     expect(screen.queryByText("Main plan brunch task")).not.toBeInTheDocument();
   });
-
 
 });

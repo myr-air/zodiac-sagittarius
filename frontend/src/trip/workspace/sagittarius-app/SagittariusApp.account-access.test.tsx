@@ -12,22 +12,19 @@ import { seedTrip } from "@/src/trip/seed";
 import {
   optionalTrailingSlashPattern,
   portalRoutes,
-  appRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   mockAccountPortalApiFetch,
   persistTrustedAccountSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit account access", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("does not restore temporary or expired account sessions from local storage", async () => {

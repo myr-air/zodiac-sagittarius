@@ -5,23 +5,20 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { accountApiRoutes } from "@/src/account/api-routes";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   apiSeedTrip,
   createApiClientForTrip,
   dailyBriefingFixture,
   installLocalStorageStub,
-  installSessionStorageStub,
   persistTripParticipantSession,
   persistTrustedAccountSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit overview API sessions", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("hydrates a persisted API session from the backend", async () => {

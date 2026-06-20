@@ -2,20 +2,17 @@ import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   persistTrustedAccountSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit account session restore", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("renders the same access choice before restoring a persisted account session", () => {

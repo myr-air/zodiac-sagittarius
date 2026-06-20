@@ -2,18 +2,15 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit guest participant sessions", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("lets a guest participant leave their local session and choose another identity", async () => {

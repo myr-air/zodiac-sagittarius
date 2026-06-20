@@ -10,19 +10,15 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { TripApiError } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
-  installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit bookings and photos API mode", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("creates photo albums through the API client in API mode", async () => {

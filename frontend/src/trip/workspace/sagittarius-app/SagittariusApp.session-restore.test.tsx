@@ -7,21 +7,18 @@ import {
 } from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   createDeferred,
   installLocalStorageStub,
-  installSessionStorageStub,
   persistTripParticipantSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit session restore", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("hydrates a persisted API session before the backend trip is in local state", async () => {

@@ -11,15 +11,13 @@ import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit member actions", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("copies the trip invite link from the members command center", async () => {

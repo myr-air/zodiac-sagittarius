@@ -8,22 +8,17 @@ import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
   apiSeedTrip,
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   persistTripParticipantSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit settings", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("patches trip countries when organizer changes the API trip destination", async () => {

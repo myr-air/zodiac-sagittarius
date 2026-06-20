@@ -8,16 +8,13 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit members", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("renders trip members as their own workspace page", () => {

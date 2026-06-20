@@ -12,22 +12,16 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
   apiTripWithPlans,
   createApiClientForTrip,
-  installLocalStorageStub,
-  installSessionStorageStub,
   openItineraryHeaderControls,
   renderApiSagittariusApp,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit API Trip Plans", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("creates a Trip Plan through the API, then selects it without publishing", async () => {

@@ -8,19 +8,13 @@ import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
-  installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit view surfaces", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("renders the itinerary workspace as a graph plus compact activity cells", async () => {

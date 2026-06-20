@@ -14,18 +14,16 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   installLocalStorageStub,
-  installSessionStorageStub,
   mockAccountTripMemberSessionFetch,
   mockRejectedAccountTripMemberSessionFetch,
   persistTrustedAccountSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit account trip access", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("opens an account-linked trip route without asking for trip credentials", async () => {

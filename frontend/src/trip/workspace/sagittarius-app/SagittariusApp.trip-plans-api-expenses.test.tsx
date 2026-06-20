@@ -6,23 +6,17 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
-  appRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
-import {
   apiTripWithPlans,
   createApiClientForTrip,
-  installLocalStorageStub,
-  installSessionStorageStub,
   openItineraryHeaderControls,
   renderApiSagittariusApp,
   tripWithPlans,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("refreshes API expense summary for the selected Trip Plan without publishing", async () => {

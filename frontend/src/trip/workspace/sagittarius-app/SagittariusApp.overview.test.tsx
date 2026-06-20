@@ -1,18 +1,14 @@
 import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  installLocalStorageStub,
-  installSessionStorageStub,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit overview", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("shows fallback daily weather briefings in the local overview", async () => {

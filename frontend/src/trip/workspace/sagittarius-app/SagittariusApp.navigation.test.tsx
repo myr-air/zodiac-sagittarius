@@ -11,17 +11,14 @@ import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
-  installLocalStorageStub,
-  installSessionStorageStub,
   persistTripParticipantSession,
   render,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit navigation", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("switches trip workspace navigation without reloading the backend cockpit", async () => {

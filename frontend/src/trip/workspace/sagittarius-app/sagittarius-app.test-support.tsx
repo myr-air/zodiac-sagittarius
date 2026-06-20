@@ -7,6 +7,11 @@ import type { ReactElement } from "react";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { appRoutes } from "./support";
+import {
+  installLocalStorageStub,
+  installSessionStorageStub,
+} from "./sagittarius-app.test-storage";
 import type { SagittariusAppProps } from "./types";
 
 export {
@@ -46,6 +51,12 @@ export function render(ui: ReactElement) {
         <I18nProvider initialLocale="th">{nextUi}</I18nProvider>,
       ),
   };
+}
+
+export function resetSagittariusAppTestEnvironment() {
+  installLocalStorageStub();
+  installSessionStorageStub();
+  window.history.pushState(null, "", appRoutes.home());
 }
 
 export async function openItineraryHeaderControls(

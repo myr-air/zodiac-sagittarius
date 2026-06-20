@@ -2,21 +2,17 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   apiSeedTrip,
   createApiClientForTrip,
-  installLocalStorageStub,
-  installSessionStorageStub,
   render,
   renderApiSagittariusApp,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit overview tasks", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("creates overview tasks through the API client after backend login", async () => {

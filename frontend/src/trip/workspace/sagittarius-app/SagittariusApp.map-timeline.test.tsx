@@ -5,21 +5,18 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import {
-  appRoutes,
   tripRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   installLocalStorageStub,
-  installSessionStorageStub,
   render,
   tripWithPlans,
+  resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit map and timeline surfaces", () => {
   beforeEach(() => {
-    installLocalStorageStub();
-    installSessionStorageStub();
-    window.history.pushState(null, "", appRoutes.home());
+    resetSagittariusAppTestEnvironment();
   });
 
   it("keeps timeline selections separate from opening details while map day filters stay local", async () => {
