@@ -163,13 +163,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps overview task state split from page composition", () => {
     const overviewPage = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.tsx");
+    const overviewPageTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.types.ts");
     const overviewTaskState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-task-state.ts");
 
     expect(overviewPage).toContain("./use-overview-task-state");
+    expect(overviewPage).toContain("./OverviewPage.types");
     expect(overviewPage).not.toContain("useState");
     expect(overviewPage).not.toContain("useMemo");
+    expect(overviewPage).not.toContain("interface OverviewPageProps");
     expect(overviewPage).not.toContain("function submitTask");
     expect(overviewPage).not.toContain("isMyTask");
+    expect(overviewPageTypes).toContain("export interface OverviewPageProps");
     expect(overviewTaskState).toContain("export function useOverviewTaskState");
     expect(overviewTaskState).toContain("function submitTask");
     expect(overviewTaskState).toContain("isMyTask");

@@ -1,6 +1,4 @@
-import type { DailyBriefingOverrides, ExpenseSummary, ItineraryItem, Suggestion, Trip, TripDailyBriefing, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { type ItineraryView } from "@/src/trip/itinerary";
 import { PageUserCard } from "@/src/shared/components/page-header";
 import { type OverviewTaskListLabels } from "./OverviewTaskList";
 import {
@@ -17,22 +15,8 @@ import { ViewerOverviewPanels } from "./ViewerOverviewPanels";
 import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
 import { buildOverviewPageModel } from "./overview-page-model";
+import type { OverviewPageProps } from "./OverviewPage.types";
 import { useOverviewTaskState } from "./use-overview-task-state";
-
-interface OverviewPageProps {
-  trip: Trip;
-  currentMemberId: string;
-  expenseSummary: ExpenseSummary;
-  items: ItineraryItem[];
-  itineraryView?: ItineraryView;
-  suggestions: Suggestion[];
-  tasks: TripTask[];
-  dailyBriefings?: TripDailyBriefing[];
-  onCreateTask: (input: { title: string; visibility: TripTask["visibility"]; assigneeId?: string | null }) => void;
-  onOpenExpenses?: () => void;
-  onSaveDailyBriefingOverrides?: (date: string, version: number, overrides: DailyBriefingOverrides) => void;
-  onToggleTaskStatus: (taskId: string) => void;
-}
 
 export function OverviewPage({
   trip,

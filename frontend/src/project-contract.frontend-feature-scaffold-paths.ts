@@ -159,6 +159,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/domain/overview-roles.ts",
   "src/features/itinerary/domain/overview-visuals.ts",
   "src/features/itinerary/components/overview/OverviewPage.tsx",
+  "src/features/itinerary/components/overview/OverviewPage.types.ts",
   "src/features/itinerary/components/overview/overview-page-model.ts",
   "src/features/itinerary/components/TimelineView.styles.ts",
   "src/features/itinerary/components/overview/OverviewSummaryBand.tsx",

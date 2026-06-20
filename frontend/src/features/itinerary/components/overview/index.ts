@@ -1,4 +1,5 @@
 export { OverviewPage } from "./OverviewPage";
+export type { OverviewPageProps } from "./OverviewPage.types";
 export { CockpitCard } from "./OverviewCockpitCard";
 export { HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TripCompletedPostcard, ViewerNextStopPanel } from "./OverviewSections";
 export { OverviewCockpit } from "./OverviewCockpit";

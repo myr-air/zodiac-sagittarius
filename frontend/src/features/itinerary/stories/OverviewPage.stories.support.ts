@@ -1,5 +1,5 @@
 import { expect } from "storybook/test";
-import type { OverviewPage } from "@/src/features/itinerary/components";
+import type { OverviewPageProps } from "@/src/features/itinerary/components";
 import { weatherBriefings } from "@/src/shared/components/weather";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { noop } from "@/src/testing/storybook-actions";
@@ -9,7 +9,7 @@ import {
   emptyTripFixture,
 } from "./itinerary-story-fixtures";
 
-type OverviewStoryArgs = Parameters<typeof OverviewPage>[0];
+type OverviewStoryArgs = OverviewPageProps;
 
 export const overviewOwnerStoryArgs = {
   trip: tripFixture.trip,
