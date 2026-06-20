@@ -2,6 +2,7 @@ import {
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
 } from "@/src/trip/trip-record-types";
+import { safeExternalHost } from "@/src/trip/safe-links";
 import type { TripPhotoAlbumAccess, TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoCopy } from "./TripPhotosPage.copy";
 
@@ -29,10 +30,5 @@ export function photoAccessLabel(access: TripPhotoAlbumAccess, copy: PhotoCopy):
 }
 
 export function photoAlbumLinkHost(href: string | null): string | null {
-  if (!href) return null;
-  try {
-    return new URL(href).host;
-  } catch {
-    return null;
-  }
+  return safeExternalHost(href);
 }

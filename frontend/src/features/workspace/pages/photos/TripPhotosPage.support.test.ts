@@ -69,6 +69,7 @@ describe("TripPhotosPage support", () => {
 
   it("returns a host only for safe absolute album links", () => {
     expect(photoAlbumLinkHost("https://photos.example.com/trip/album")).toBe("photos.example.com");
+    expect(photoAlbumLinkHost("ftp://photos.example.com/trip/album")).toBeNull();
     expect(photoAlbumLinkHost(null)).toBeNull();
     expect(photoAlbumLinkHost("not a url")).toBeNull();
   });
