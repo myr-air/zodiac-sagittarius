@@ -1,5 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDocType, ItineraryItem } from "@/src/trip/types";
+import { bookingTitleForItineraryItem } from "@/src/trip/booking-doc-display";
 import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 
 export type TicketModalCopy = {
@@ -24,15 +25,7 @@ export type TicketModalCopy = {
 };
 
 export function bookingTitleForItem(item: ItineraryItem, type: BookingDocType): string {
-  const suffixByType: Partial<Record<BookingDocType, string>> = {
-    activity_ticket: "ticket",
-    flight: "flight ticket",
-    hotel: "hotel booking",
-    public_transport: "transport ticket",
-    train: "train ticket",
-    other: "booking",
-  };
-  return `${item.activity} ${suffixByType[type] ?? "booking"}`;
+  return bookingTitleForItineraryItem(item, type);
 }
 
 export function ticketNotesForItem(item: ItineraryItem, locale: Locale): string {

@@ -7,6 +7,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInputLike,
 } from "./booking-doc-inputs";
+export { bookingDraftTitleForItineraryItem } from "./booking-doc-display";
 
 export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
   const mode =
@@ -84,20 +85,6 @@ export function bookingTypeForBookingTemplate(
 ): BookingDocType {
   if (template === "activity_ticket") return "activity_ticket";
   return template;
-}
-
-export function bookingDraftTitleForItineraryItem(
-  item: ItineraryItem,
-  bookingType: BookingDocType,
-): string {
-  const suffixByType: Partial<Record<BookingDocType, string>> = {
-    activity_ticket: "ticket draft",
-    flight: "flight ticket draft",
-    hotel: "hotel booking draft",
-    public_transport: "transport booking draft",
-    train: "train ticket draft",
-  };
-  return `${item.activity} ${suffixByType[bookingType] ?? "booking draft"}`;
 }
 
 export function bookingDraftDetailsForItineraryItem(item: ItineraryItem): {
