@@ -30,6 +30,10 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"],
   ],
   [
+    "features/workspace/components/summary-stat/WorkspaceSummaryStat.stories.tsx",
+    ["Default", "Positive", "Negative"],
+  ],
+  [
     "features/public-site/pages/home/HomeLanding.stories.tsx",
     ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"],
   ],

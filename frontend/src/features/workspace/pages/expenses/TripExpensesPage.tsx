@@ -1,5 +1,4 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import {
   formatMoney,
 } from "@/src/trip/expenses";
@@ -7,6 +6,7 @@ import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
+import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import { ExpenseDialog } from "./ExpenseDialog";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
@@ -95,10 +95,10 @@ export function TripExpensesPage({
       />
 
       <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
-        <SummaryStat icon="wallet" label={t.expenses.stats.tripSpend} value={formatMoney(expenseSummary.groupSpend, settlementCurrency)} />
-        <SummaryStat icon="check" label={t.expenses.stats.yourBalance} value={expenseSummary.currentUserNetLabel} tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"} />
-        <SummaryStat icon="users" label={t.expenses.stats.owedToYou} value={formatMoney(owedToYou, settlementCurrency)} tone="positive" />
-        <SummaryStat icon="warning" label={t.expenses.stats.youOwe} value={formatMoney(youOwe, settlementCurrency)} tone="negative" />
+        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="wallet" label={t.expenses.stats.tripSpend} value={formatMoney(expenseSummary.groupSpend, settlementCurrency)} />
+        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="check" label={t.expenses.stats.yourBalance} value={expenseSummary.currentUserNetLabel} tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"} valueToneClassNames={summaryValueToneClassNames} />
+        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="users" label={t.expenses.stats.owedToYou} value={formatMoney(owedToYou, settlementCurrency)} tone="positive" valueToneClassNames={summaryValueToneClassNames} />
+        <WorkspaceSummaryStat className={expenseStyles.statClassName} icon="warning" label={t.expenses.stats.youOwe} value={formatMoney(youOwe, settlementCurrency)} tone="negative" valueToneClassNames={summaryValueToneClassNames} />
       </div>
 
       <div className={expenseStyles.contentGridClassName}>
@@ -156,12 +156,7 @@ export function TripExpensesPage({
   );
 }
 
-function SummaryStat({ icon, label, value, tone = "neutral" }: { icon: "wallet" | "check" | "users" | "warning"; label: string; value: string; tone?: "positive" | "negative" | "neutral" }) {
-  return (
-    <div className={expenseStyles.statClassName}>
-      <Icon name={icon} />
-      <span>{label}</span>
-      <strong className={cn(tone === "positive" && expenseStyles.positiveClassName, tone === "negative" && expenseStyles.negativeClassName)}>{value}</strong>
-    </div>
-  );
-}
+const summaryValueToneClassNames = {
+  positive: expenseStyles.positiveClassName,
+  negative: expenseStyles.negativeClassName,
+};

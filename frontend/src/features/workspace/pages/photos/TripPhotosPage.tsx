@@ -4,6 +4,7 @@ import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { Button, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
 import { PhotoAlbumCard } from "./components/PhotoAlbumCard";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
@@ -76,10 +77,10 @@ export function TripPhotosPage({
       />
 
       <div className={photoStyles.summaryClassName} aria-label={copy.summaryLabel}>
-        <SummaryStat icon="cloud" label={copy.savedDestinations} value={copy.albums(summary.total)} />
-        <SummaryStat icon="users" label={copy.sharedUploads} value={copy.collaborative(summary.collaborative)} />
-        <SummaryStat icon="import" label={copy.uploadRequests} value={copy.requests(summary.uploadRequests)} />
-        <SummaryStat icon="warning" label={copy.needsAccessNote} value={copy.missing(summary.missingAccessNotes)} />
+        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="cloud" label={copy.savedDestinations} value={copy.albums(summary.total)} />
+        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="users" label={copy.sharedUploads} value={copy.collaborative(summary.collaborative)} />
+        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="import" label={copy.uploadRequests} value={copy.requests(summary.uploadRequests)} />
+        <WorkspaceSummaryStat className={photoStyles.statClassName} icon="warning" label={copy.needsAccessNote} value={copy.missing(summary.missingAccessNotes)} />
       </div>
 
       <div className={photoStyles.contentClassName}>
@@ -165,15 +166,5 @@ export function TripPhotosPage({
         </div>
       ) : null}
     </WorkspacePage>
-  );
-}
-
-function SummaryStat({ icon, label, value }: { icon: Parameters<typeof Icon>[0]["name"]; label: string; value: string }) {
-  return (
-    <div className={photoStyles.statClassName}>
-      <Icon name={icon} />
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   );
 }

@@ -10,6 +10,7 @@ export const requiredStoryCategories = [
   "Design System/Travel Motifs",
   "Design System/Weather Briefing Drawer",
   "Design System/Weather Forecast Strip",
+  "Design System/Workspace Summary Stat",
   "Pages/Account Access",
   "Pages/Account Portal Primitives",
   "Sagittarius/App",
