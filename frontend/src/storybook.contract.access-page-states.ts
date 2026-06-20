@@ -1,0 +1,27 @@
+export const requiredAccessPageStates: Array<[string, string[]]> = [
+  [
+    "features/account/components/trip-join-gate/TripJoinGate.stories.tsx",
+    [
+      "RoomCredentials",
+      "TripAccess",
+      "SelectIdentity",
+      "Thai",
+      "Tablet",
+      "Mobile",
+      "Desktop1024",
+      "Desktop1440",
+    ],
+  ],
+  [
+    "features/public-site/pages/about/AboutAppPage.stories.tsx",
+    [
+      "Ready",
+      "ApiUnavailable",
+      "Thai",
+      "Mobile",
+      "Tablet",
+      "Desktop1024",
+      "Desktop1440",
+    ],
+  ],
+];
