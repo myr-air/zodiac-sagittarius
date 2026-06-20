@@ -6,6 +6,7 @@ export const workspaceBoundarySourcePaths = {
   sagittariusAccessGate: "src/trip/workspace/sagittarius-app/access-gate.tsx",
   workspaceAppFrame: "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx",
   workspaceMainShell: "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx",
+  workspaceAccessProps: "src/trip/workspace/sagittarius-app/workspace-access-props.ts",
   workspaceViewProps: "src/trip/workspace/sagittarius-app/workspace-view-props.ts",
   workspaceFacade: "src/trip/workspace/SagittariusApp.tsx",
   workspaceRecordsHook: "src/trip/workspace/use-trip-workspace-records.ts",

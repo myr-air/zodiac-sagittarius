@@ -14,6 +14,8 @@ describe("Sagittarius workspace source boundaries", () => {
       sagittariusAccessGate,
       workspaceAppFrame,
       workspaceMainShell,
+      workspaceAccessProps,
+      workspaceViewProps,
       workspaceFacade,
       appFacade,
       workspaceRecordsHook,
@@ -54,6 +56,20 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).toContain("./WorkspaceAppFrame");
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
+    expect(sagittariusApp).toContain("./workspace-access-props");
+    expect(sagittariusApp).toContain("./workspace-view-props");
+    expect(sagittariusApp).toContain("buildWorkspaceAccessProps");
+    expect(sagittariusApp).toContain("buildWorkspaceViewsProps");
+    expect(sagittariusApp).not.toContain("accessProps={{");
+    expect(sagittariusApp).not.toContain("settingsProps:");
+    expect(sagittariusApp).not.toContain("timelineProps:");
+    expect(workspaceAccessProps).toContain("export function buildWorkspaceAccessProps");
+    expect(workspaceAccessProps).toContain("sessionRestored");
+    expect(workspaceAccessProps).toContain("./WorkspaceAppFrame");
+    expect(workspaceViewProps).toContain("export function buildWorkspaceViewsProps");
+    expect(workspaceViewProps).toContain("settingsProps:");
+    expect(workspaceViewProps).toContain("timelineProps:");
+    expect(workspaceViewProps).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(workspaceAppFrame).toContain("WorkspaceAccessBoundary");
     expect(workspaceAppFrame).toContain("WorkspaceMainShell");
     expect(workspaceAppFrame).not.toContain("useWorkspaceApiClients");

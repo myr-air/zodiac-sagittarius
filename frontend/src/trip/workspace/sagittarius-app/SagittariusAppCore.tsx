@@ -49,6 +49,7 @@ import {
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
+import { buildWorkspaceAccessProps } from "./workspace-access-props";
 import { buildWorkspaceViewsProps } from "./workspace-view-props";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { Trip } from "@/src/trip/types";
@@ -667,34 +668,35 @@ export function SagittariusApp({
     tripPlanError,
     isTripPlanBusy,
   });
+  const accessProps = buildWorkspaceAccessProps({
+    accessMode,
+    accountClient,
+    accountSession,
+    accountSessionLoaded,
+    accountSuccessRedirectHref,
+    apiClient: resolvedApiClient,
+    canAccessPanel,
+    initialError: accessError,
+    initialJoinCode,
+    initialJoinToken,
+    isAccountTripAccessPending,
+    isTripLoading,
+    portalSection,
+    requireJoin,
+    routeTripId,
+    sessionMember: Boolean(sessionMember),
+    sessionRestored,
+    shouldRedirectUnauthenticatedTripRoute,
+    trip,
+    onAccountSessionChange: changeAccountSession,
+    onAuthenticated: authenticateParticipant,
+    onCockpitLoaded: replaceCockpitFromApi,
+    onTripChange: replaceTripFromJoin,
+  });
 
   return (
     <WorkspaceAppFrame
-      accessProps={{
-        accessMode,
-        accountClient,
-        accountSession,
-        accountSessionLoaded,
-        accountSuccessRedirectHref,
-        apiClient: resolvedApiClient,
-        canAccessPanel,
-        initialError: accessError,
-        initialJoinCode,
-        initialJoinToken,
-        isAccountTripAccessPending,
-        isTripLoading,
-        portalSection,
-        requireJoin,
-        routeTripId,
-        sessionMember: Boolean(sessionMember),
-        sessionRestored,
-        shouldRedirectUnauthenticatedTripRoute,
-        trip,
-        onAccountSessionChange: changeAccountSession,
-        onAuthenticated: authenticateParticipant,
-        onCockpitLoaded: replaceCockpitFromApi,
-        onTripChange: replaceTripFromJoin,
-      }}
+      accessProps={accessProps}
       shellProps={{
         appShellProps: {
           activeView: currentView,

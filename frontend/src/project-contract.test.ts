@@ -10,6 +10,15 @@ import {
 } from "./project-contract.scaffold-paths";
 
 describe("Sagittarius project scaffold", () => {
+  it("keeps scaffold path catalogs unique", () => {
+    [
+      frontendScaffoldPathsPresent,
+      frontendScaffoldPathsAbsent,
+      repoScaffoldPathsPresent,
+      repoScaffoldPathsAbsent,
+    ].forEach((paths) => expect(new Set(paths).size).toBe(paths.length));
+  });
+
   it("separates frontend and backend services behind a root Makefile", () => {
     frontendScaffoldPathsPresent.forEach((path) => expect(existsSync(join(frontendRoot, path))).toBe(true));
     frontendScaffoldPathsAbsent.forEach((path) => expect(existsSync(join(frontendRoot, path))).toBe(false));
