@@ -45,6 +45,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/BookingComponents.tsx",
   "src/features/itinerary/components/smart-itinerary-table.styles.ts",
   "src/features/itinerary/components/smart-itinerary-table-utils.ts",
+  "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.test.ts",
   "src/features/itinerary/components/ActivityPathGraphDay.tsx",
   "src/features/itinerary/components/StopDialog.tsx",
   "src/features/itinerary/components/RouteMapView.tsx",
