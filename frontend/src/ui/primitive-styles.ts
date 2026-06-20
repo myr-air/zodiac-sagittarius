@@ -1,7 +1,3 @@
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-export type BadgeTone = "neutral" | "primary" | "route" | "warning" | "success" | "danger";
-export type ActionBarAlign = "start" | "end" | "between";
-
 export const iconButtonBaseClassName = [
   "icon-button",
   "inline-flex",
@@ -65,7 +61,8 @@ export const buttonVariantClassNames = {
     "bg-(--color-danger-soft)",
     "text-[#b91c1c]",
   ],
-} satisfies Record<ButtonVariant, string[]>;
+} satisfies Record<string, string[]>;
+export type ButtonVariant = keyof typeof buttonVariantClassNames;
 
 export const badgeBaseClassName = [
   "badge",
@@ -93,7 +90,8 @@ export const badgeToneClassNames = {
   warning: ["badge--warning", "border-(--color-warning-border)", "bg-(--color-warning-soft)", "text-(--color-warning-strong)"],
   success: ["badge--success", "border-(--color-success-border)", "bg-(--color-success-soft)", "text-[#15803d]"],
   danger: ["badge--danger", "border-(--color-danger-border)", "bg-(--color-danger-soft)", "text-[#b91c1c]"],
-} satisfies Record<BadgeTone, string[]>;
+} satisfies Record<string, string[]>;
+export type BadgeTone = keyof typeof badgeToneClassNames;
 
 export const actionBarBaseClassName = [
   "action-bar",
@@ -108,7 +106,8 @@ export const actionBarAlignClassNames = {
   start: ["justify-start"],
   end: ["justify-end"],
   between: ["justify-between"],
-} satisfies Record<ActionBarAlign, string[]>;
+} satisfies Record<string, string[]>;
+export type ActionBarAlign = keyof typeof actionBarAlignClassNames;
 
 export const segmentedControlClassName = [
   "segmented-control",

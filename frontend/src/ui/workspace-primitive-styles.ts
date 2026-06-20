@@ -1,6 +1,3 @@
-export type WorkspaceSurfaceDensity = "normal" | "compact";
-export type WorkspacePageKind = "standard" | "workspace";
-
 export const workspacePageBaseClassName = [
   "min-h-full",
   "min-w-0",
@@ -21,7 +18,8 @@ export const workspacePageKindClassNames = {
     "gap-3",
     "max-[1199px]:gap-0",
   ],
-} satisfies Record<WorkspacePageKind, string[]>;
+} satisfies Record<string, string[]>;
+export type WorkspacePageKind = keyof typeof workspacePageKindClassNames;
 
 export const workspaceSurfaceClassName = [
   "rounded-(--radius-lg)",
@@ -38,7 +36,8 @@ export const workspaceSurfaceClassName = [
 export const workspaceSurfaceDensityClassNames = {
   normal: ["p-4"],
   compact: ["p-3.5"],
-} satisfies Record<WorkspaceSurfaceDensity, string[]>;
+} satisfies Record<string, string[]>;
+export type WorkspaceSurfaceDensity = keyof typeof workspaceSurfaceDensityClassNames;
 
 export const fieldControlClassName = [
   "min-h-10",

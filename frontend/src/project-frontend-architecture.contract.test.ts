@@ -19,6 +19,12 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(primitives).not.toContain("const buttonBaseClassName");
     expect(primitiveStyles).toContain("export const buttonBaseClassName");
     expect(primitiveStyles).toContain("export const badgeBaseClassName");
+    expect(primitiveStyles).toContain("export type ButtonVariant = keyof typeof buttonVariantClassNames");
+    expect(primitiveStyles).toContain("export type BadgeTone = keyof typeof badgeToneClassNames");
+    expect(primitiveStyles).toContain("export type ActionBarAlign = keyof typeof actionBarAlignClassNames");
+    expect(primitiveStyles).not.toContain('export type ButtonVariant = "');
+    expect(primitiveStyles).not.toContain('export type BadgeTone = "');
+    expect(primitiveStyles).not.toContain('export type ActionBarAlign = "');
     expect(primitives).not.toContain("export function WorkspaceSurface");
     expect(primitives).not.toContain("fieldControlClassName");
     expect(workspacePrimitives).toContain("export function WorkspaceSurface");
@@ -30,6 +36,14 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(workspacePrimitiveStyles).toContain("export const workspacePageBaseClassName");
     expect(workspacePrimitiveStyles).toContain("export const workspaceSurfaceDensityClassNames");
     expect(workspacePrimitiveStyles).toContain("export const fieldControlClassName");
+    expect(workspacePrimitiveStyles).toContain(
+      "export type WorkspacePageKind = keyof typeof workspacePageKindClassNames",
+    );
+    expect(workspacePrimitiveStyles).toContain(
+      "export type WorkspaceSurfaceDensity = keyof typeof workspaceSurfaceDensityClassNames",
+    );
+    expect(workspacePrimitiveStyles).not.toContain('export type WorkspacePageKind = "');
+    expect(workspacePrimitiveStyles).not.toContain('export type WorkspaceSurfaceDensity = "');
   });
 
   it("keeps AppShell split into component, styles, and support logic", () => {
