@@ -51,6 +51,8 @@ describe("Sagittarius workspace source boundaries", () => {
       expenseDrafts,
       itineraryViewModelHook,
       apiClientsHook,
+      setupContextHook,
+      dataContextHook,
       backendExpenseSummaryHook,
       cockpitReplacementHook,
       memberContextHook,
@@ -116,18 +118,21 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).toContain("WorkspaceAppFrame");
     expect(sagaCore).not.toContain("WorkspaceMainShell");
     expect(workspaceAppFrame).toContain("WorkspaceMainShell");
-    expect(sagaCore).toContain("useWorkspaceUiState");
+    expect(sagaCore).toContain("useWorkspaceSetupContext");
+    expect(setupContextHook).toContain("useWorkspaceUiState");
     expect(sagaCore).not.toContain("useState");
     expect(uiStateHook).toContain("export function useWorkspaceUiState");
     expect(uiStateHook).toContain("useState");
-    expect(sagaCore).toContain("useWorkspaceApiClients");
+    expect(sagaCore).not.toContain("useWorkspaceApiClients");
+    expect(setupContextHook).toContain("useWorkspaceApiClients");
     expect(sagaCore).not.toContain("createConfiguredTripApiClient");
     expect(sagaCore).not.toContain("createConfiguredAccountApiClient");
     expect(sagaCore).not.toContain("publicSagittariusApiBaseUrl");
     expect(apiClientsHook).toContain("createConfiguredTripApiClient");
     expect(apiClientsHook).toContain("createConfiguredAccountApiClient");
     expect(apiClientsHook).toContain("publicSagittariusApiBaseUrl");
-    expect(sagaCore).toContain("useWorkspaceAccessContext");
+    expect(sagaCore).not.toContain("useWorkspaceAccessContext");
+    expect(setupContextHook).toContain("useWorkspaceAccessContext");
     expect(sagaCore).not.toContain("useWorkspaceMemberContext");
     expect(accessContextHook).toContain("useWorkspaceMemberContext");
     expect(accessContextHook).toContain("deriveWorkspacePermissions");
@@ -136,14 +141,19 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("isLocalParticipantSession");
     expect(memberContextHook).toContain("findSessionMember");
     expect(memberContextHook).toContain("isLocalParticipantSession");
-    expect(sagaCore).toContain("useWorkspaceNavigationContext");
+    expect(sagaCore).not.toContain("useWorkspaceNavigationContext");
+    expect(setupContextHook).toContain("useWorkspaceNavigationContext");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(sagaCore).not.toContain("workspaceViewSupportsContextRail");
     expect(sagaCore).not.toContain("appRoutes.tripExpenses");
     expect(navigationContextHook).toContain("useWorkspaceNavigation");
     expect(navigationContextHook).toContain("workspaceViewSupportsContextRail");
     expect(navigationContextHook).toContain("appRoutes.tripExpenses");
-    expect(sagaCore).toContain("useWorkspaceBackendExpenseSummary");
+    expect(sagaCore).not.toContain("useWorkspaceBackendExpenseSummary");
+    expect(setupContextHook).toContain("useWorkspaceDataContext");
+    expect(dataContextHook).toContain("useWorkspaceBackendExpenseSummary");
+    expect(dataContextHook).toContain("useWorkspacePhotoAlbums");
+    expect(dataContextHook).toContain("useDailyBriefings");
     expect(sagaCore).not.toContain("useBackendExpenseSummary");
     expect(sagaCore).not.toContain("workspaceViewShouldSyncBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
@@ -165,7 +175,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("resolveSelectedWorkspaceItem");
     expect(itineraryViewModelHook).toContain("buildItineraryView");
     expect(itineraryViewModelHook).toContain("resolveSelectedWorkspaceItem");
-    expect(sagaCore).toContain("useWorkspaceSelectedTripPlanState");
+    expect(sagaCore).not.toContain("useWorkspaceSelectedTripPlanState");
+    expect(setupContextHook).toContain("useWorkspaceSelectedTripPlanState");
     expect(sagaCore).not.toContain("useWorkspaceSelectedTripPlanSync");
     expect(planningContextHook).toContain("useWorkspaceSelectedTripPlanSync");
     expect(sagaCore).not.toContain("queueMicrotask");
@@ -195,11 +206,13 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(planningContextHook).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(backendExpenseSummaryHook).toContain("@/src/trip/workspace/use-backend-expense-summary");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-daily-briefings");
+    expect(dataContextHook).toContain("@/src/trip/workspace/use-daily-briefings");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-itinerary-path-workspace");
+    expect(setupContextHook).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(planningContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(sagaCore).toContain("useWorkspacePhotoAlbums");
+    expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).not.toContain("useWorkspaceRecords");
     expect(sagaCore).toContain("useWorkspaceCommands");
     expect(sagaCore).not.toContain("useWorkspaceAdministration");
@@ -257,8 +270,10 @@ describe("Sagittarius workspace source boundaries", () => {
     );
     expect(expenseDrafts).toContain("resolveExpenseCreateDraftTripPlanId");
     expect(sagaCore).toContain("./hooks");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-state");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-chrome");
+    expect(setupContextHook).toContain("@/src/trip/workspace/use-trip-workspace-state");
+    expect(setupContextHook).toContain("@/src/trip/workspace/use-workspace-chrome");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(navigationContextHook).toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(sagaCore).not.toContain('from "@/src/components/ContextRail"');

@@ -8,6 +8,7 @@ export { useWorkspaceApiClients } from "./use-workspace-api-clients";
 export { useWorkspaceBackendExpenseSummary } from "./use-workspace-backend-expense-summary";
 export { useWorkspaceCockpitReplacement } from "./use-workspace-cockpit-replacement";
 export { useWorkspaceCommands } from "./use-workspace-commands";
+export { useWorkspaceDataContext } from "./use-workspace-data-context";
 export { useEffectivePlaceResolver } from "./use-effective-place-resolver";
 export { useWorkspaceItineraryCommands } from "./use-workspace-itinerary-commands";
 export { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-actions";
@@ -23,6 +24,7 @@ export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";
 export { useWorkspaceUiState } from "./use-workspace-ui-state";
 export { useWorkspaceSession } from "./use-workspace-session";
+export { useWorkspaceSetupContext } from "./use-workspace-setup-context";
 export {
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,

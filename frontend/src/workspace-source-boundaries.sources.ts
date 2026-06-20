@@ -42,6 +42,8 @@ export const workspaceBoundarySourcePaths = {
   expenseDrafts: "src/trip/expense-drafts.ts",
   itineraryViewModelHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts",
   apiClientsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts",
+  setupContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-setup-context.ts",
+  dataContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-data-context.ts",
   backendExpenseSummaryHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts",
   cockpitReplacementHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-cockpit-replacement.ts",
   memberContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts",

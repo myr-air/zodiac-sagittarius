@@ -2,26 +2,9 @@
 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import {
-  type TripApiClient,
-} from "@/src/trip/api-client";
-import { type PlaceResolver } from "@/src/trip/place-resolution";
-import { type PlanningView } from "@/src/trip/workspace/planning-view";
-import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
-import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
-import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
-import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
-import {
-  useWorkspacePhotoAlbums,
-  useWorkspaceAccessContext,
-  useWorkspaceApiClients,
-  useWorkspaceBackendExpenseSummary,
   useWorkspaceCommands,
   useWorkspacePlanningContext,
-  useWorkspaceSession,
-  useEffectivePlaceResolver,
-  useWorkspaceNavigationContext,
-  useWorkspaceSelectedTripPlanState,
-  useWorkspaceUiState,
+  useWorkspaceSetupContext,
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
@@ -29,24 +12,7 @@ import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
 import {
   buildWorkspaceFrameProps,
 } from "./props";
-import type { Trip } from "@/src/trip/types";
-import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
-
-interface SagittariusAppProps {
-  initialView?: PlanningView;
-  requireJoin?: boolean;
-  dataSource?: "api" | "local";
-  apiClient?: TripApiClient;
-  placeResolver?: PlaceResolver;
-  routeTripId?: string;
-  initialJoinCode?: string;
-  initialJoinToken?: string | null;
-  accessMode?: SagittariusAccessMode;
-  accountSuccessRedirectHref?: string;
-  portalSection?: SagittariusPortalSection;
-  initialMemberId?: string;
-  initialTrip?: Trip;
-}
+import type { SagittariusAppProps } from "./types";
 
 export function SagittariusApp({
   initialView = "overview",
@@ -66,113 +32,13 @@ export function SagittariusApp({
   const { t } = useI18n();
   const {
     accountClient,
-    apiBaseUrl,
-    resolvedApiClient,
-  } = useWorkspaceApiClients({ apiClient, dataSource });
-  const {
     accountClaimState,
-    currentMemberId,
-    dialogDeleteItem,
-    dialogState,
-    isCockpitLoaded,
-    isTripPlanBusy,
-    joinInviteToken,
-    selectedItemId,
-    setAccountClaimState,
-    setCurrentMemberId,
-    setDialogDeleteItem,
-    setDialogState,
-    setIsCockpitLoaded,
-    setIsTripPlanBusy,
-    setJoinInviteToken,
-    setSelectedItemId,
-    setStopPlaceResolution,
-    setTripPlanError,
-    stopPlaceResolution,
-    tripPlanError,
-  } = useWorkspaceUiState({
-    initialJoinToken,
-    initialMemberId,
-    initialTrip,
-  });
-  const {
-    contextRailMounted,
-    contextRailOpen,
-    contextRailPreferredTab,
-    dismissWorkspaceToast,
-    setContextRailPreferredTab,
-    setContextRailVisibility,
-    sidebarCollapsed,
-    toggleContextRail,
-    toggleSidebarCollapsed,
-    toastDismissed,
-    toastDismissing,
-  } = useWorkspaceChrome({ autoDismissToast: requireJoin });
-  const [selectedTripPlanId, setSelectedTripPlanId] =
-    useWorkspaceSelectedTripPlanState(initialTrip);
-  const {
-    commitTrip,
-    latestTripRef,
-    replaceApiTrip,
-    resetTrip,
-    setTripState,
-    trip,
-    updateApiTrip,
-  } = useTripWorkspaceState(initialTrip, setSelectedItemId);
-  const isDataSourceApiMode = dataSource === "api";
-  const {
     accessError,
     accountSession,
     accountSessionLoaded,
-    accountTripAccessDeniedRouteId,
-    changeAccountSession,
-    participantSession,
-    sessionRestored,
-    setAccessError,
-    setParticipantSession,
-  } = useWorkspaceSession({
-    accountClient,
-    initialTrip,
-    isApiMode: isDataSourceApiMode,
-    requireJoin,
-    routeTripId,
-    setCurrentMemberId,
-    setSelectedTripPlanId,
-    setTripState,
-  });
-  const {
+    apiBaseUrl,
     activePlanItems,
-    changeDayPath,
-    clearDayPath,
-    dayPathOverrides,
-    mainPlanItems,
-    pathOptions,
-    pathSelection,
-    planItems,
-    selectedTripPathId,
-    showAllPaths,
-    toggleShowAllPaths,
-  } = useItineraryPathWorkspace(trip, selectedTripPlanId);
-
-  const {
-    currentView,
-    navigateWorkspaceView,
-    openExpensesWorkspace,
-    replaceWorkspacePath,
-    supportsContextRail,
-  } = useWorkspaceNavigationContext({
-    initialView,
-    routeTripId,
-    setContextRailVisibility,
-    tripId: trip.id,
-  });
-  const effectivePlaceResolver = useEffectivePlaceResolver({
-    apiClient: resolvedApiClient,
-    participantSession,
-    placeResolver,
-    tripId: trip.id,
-  });
-  const {
+    backendExpenseSummary,
     canAccessPanel,
     canCreateStopNote,
     canCreateSuggestion,
@@ -183,71 +49,93 @@ export function SagittariusApp({
     canManagePeople,
     canManageTripPlans,
     canReviewSuggestions,
-    canViewExpenses,
+    changeAccountSession,
+    changeDayPath,
+    clearDayPath,
+    commitTrip,
+    contextRailMounted,
+    contextRailOpen,
+    contextRailPreferredTab,
+    createPhotoAlbum,
     currentMember,
+    currentMemberId,
+    currentView,
+    dayPathOverrides,
+    deletePhotoAlbum,
+    dialogDeleteItem,
+    dialogState,
+    dismissWorkspaceToast,
+    effectivePlaceResolver,
     isAccountTripAccessPending,
     isApiMode,
     isTripLoading,
-    sessionMember,
-    shouldRedirectUnauthenticatedTripRoute,
-  } = useWorkspaceAccessContext({
-    accessError,
-    accessMode,
-    accountSession,
-    accountSessionLoaded,
-    accountTripAccessDeniedRouteId,
-    currentMemberId,
-    dataSource,
-    isCockpitLoaded,
+    isTripPlanBusy,
+    joinInviteToken,
+    latestTripRef,
+    mainPlanItems,
+    navigateWorkspaceView,
+    openExpensesWorkspace,
     participantSession,
+    pathOptions,
+    pathSelection,
+    planItems,
+    refreshBackendExpenseSummary,
+    replaceApiTrip,
+    replaceDailyBriefings,
+    replaceWorkspacePath,
+    resetBackendExpenseSummary,
+    resetDailyBriefings,
+    resetTrip,
+    resolvedApiClient,
+    saveDailyBriefingOverrides,
+    selectedItemId,
+    selectedTripPathId,
+    selectedTripPlanId,
+    sessionMember,
+    sessionRestored,
+    setAccessError,
+    setAccountClaimState,
+    setBackendExpenseSummary,
+    setContextRailPreferredTab,
+    setContextRailVisibility,
+    setCurrentMemberId,
+    setDialogDeleteItem,
+    setDialogState,
+    setIsCockpitLoaded,
+    setIsTripPlanBusy,
+    setJoinInviteToken,
+    setParticipantSession,
+    setSelectedItemId,
+    setSelectedTripPlanId,
+    setStopPlaceResolution,
+    setTripPlanError,
+    setTripState,
+    shouldRedirectUnauthenticatedTripRoute,
+    sidebarCollapsed,
+    showAllPaths,
+    stopPlaceResolution,
+    supportsContextRail,
+    toggleContextRail,
+    toggleSidebarCollapsed,
+    toggleShowAllPaths,
+    toastDismissed,
+    toastDismissing: isToastDismissing,
+    trip,
+    tripPlanError,
+    updateApiTrip,
+    updatePhotoAlbum,
+    visibleDailyBriefings,
+  } = useWorkspaceSetupContext({
+    accessMode,
+    apiClient,
+    dataSource,
+    initialJoinToken,
+    initialMemberId,
+    initialTrip,
+    initialView,
+    placeResolver,
     requireJoin,
     routeTripId,
-    sessionRestored,
-    trip,
-  });
-  const {
-    replaceDailyBriefings,
-    resetDailyBriefings,
-    saveDailyBriefingOverrides,
-    visibleDailyBriefings,
-  } = useDailyBriefings({
-    apiClient: resolvedApiClient,
-    isApiMode,
-    participantSession,
-    trip,
-  });
-  const {
-    backendExpenseSummary,
-    refreshBackendExpenseSummary,
-    resetBackendExpenseSummary,
-    setBackendExpenseSummary,
-  } = useWorkspaceBackendExpenseSummary({
-    apiClient: resolvedApiClient,
-    canViewExpenses,
-    currentView,
-    isApiMode,
-    isCockpitLoaded,
-    participantSession,
-    selectedTripPlanId,
-    setAccessError,
-    setParticipantSession,
-    trip,
-  });
-  const {
-    createPhotoAlbum,
-    deletePhotoAlbum,
-    updatePhotoAlbum,
-  } = useWorkspacePhotoAlbums({
-    apiClient: resolvedApiClient,
-    canEditPhotoAlbums,
-    commitTrip,
-    currentMemberId: currentMember.id,
-    isApiMode,
-    latestTripRef,
-    participantSession,
-    replaceApiTrip,
-    setTripState,
-    trip,
   });
 
   const {
@@ -465,7 +353,7 @@ export function SagittariusApp({
     itineraryView,
     isAccountTripAccessPending,
     isApiMode,
-    isToastDismissing: toastDismissing,
+    isToastDismissing,
     isTripLoading,
     isTripPlanBusy,
     joinInviteToken,
