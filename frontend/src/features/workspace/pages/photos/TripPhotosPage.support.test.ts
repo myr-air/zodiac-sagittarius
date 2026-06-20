@@ -8,6 +8,7 @@ import {
   photoAlbumLinkHost,
   photoProviderLabel,
   photoProviderOptions,
+  photoProviders,
 } from "./TripPhotosPage.support";
 
 const albumBase: Omit<TripPhotoAlbumLink, "id" | "provider"> = {
@@ -35,6 +36,7 @@ describe("TripPhotosPage support", () => {
       "onedrive",
       "custom",
     ]);
+    expect(photoProviders).toEqual(["all", ...photoProviderOptions]);
     expect(photoAccessOptions).toEqual([
       "view_only",
       "collaborative",

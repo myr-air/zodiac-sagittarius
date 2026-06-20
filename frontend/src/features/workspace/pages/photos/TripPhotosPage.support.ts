@@ -2,7 +2,7 @@ import {
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
 } from "@/src/trip/trip-record-types";
-import type { TripPhotoAlbumAccess, TripPhotoAlbumLink, TripPhotoAlbumProvider } from "@/src/trip/types";
+import type { TripPhotoAlbumAccess, TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoCopy } from "./TripPhotosPage.copy";
 
 export const photoProviders = ["all", ...tripPhotoAlbumProviderValues] as const;
@@ -20,7 +20,7 @@ export function countPhotoProviders(albums: TripPhotoAlbumLink[]): Record<PhotoP
   return counts;
 }
 
-export function photoProviderLabel(provider: TripPhotoAlbumProvider | "all", copy: PhotoCopy): string {
+export function photoProviderLabel(provider: PhotoProviderFilter, copy: PhotoCopy): string {
   return copy.providers[provider];
 }
 
