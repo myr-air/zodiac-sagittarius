@@ -3,12 +3,19 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-time";
 import type { Member, Trip } from "@/src/trip/types";
 import { Button, FieldLabel, WorkspacePage, WorkspaceSurface, fieldControlClassName } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import { PageHeader } from "@/src/shared/components/page-header";
+import {
+  canSubmitTripSettings,
+  countStopsOutsideSettingsRange,
+  hasInvalidTripSettingsDateRange,
+  normalizeTripSettingsForm,
+  tripSettingsStateKey,
+  tripToSettingsForm,
+} from "./TripSettingsPage.support";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
 interface TripSettingsPageProps {
@@ -45,29 +52,16 @@ export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripS
 
 function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
   const { t } = useI18n();
-  const [form, setForm] = useState<TripSettingsFormValues>(() => tripToForm(trip));
+  const [form, setForm] = useState<TripSettingsFormValues>(() => tripToSettingsForm(trip));
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const invalidDateRange = Boolean(form.startDate && form.endDate && form.endDate < form.startDate);
-  const outsideStopCount = useMemo(() => {
-    if (!form.startDate || !form.endDate || invalidDateRange) return 0;
-    const dayShift = daysBetweenIsoDates(trip.startDate, form.startDate);
-    return trip.itineraryItems.filter((item) => {
-      const shiftedDay = shiftIsoDate(item.day, dayShift);
-      return shiftedDay < form.startDate || shiftedDay > form.endDate;
-    }).length;
-  }, [form.endDate, form.startDate, invalidDateRange, trip.itineraryItems, trip.startDate]);
-  const canSubmit = Boolean(
-    canEdit &&
-      !invalidDateRange &&
-      form.name.trim() &&
-      form.destinationLabel.trim() &&
-      form.defaultTimezone.trim() &&
-      Number.isFinite(form.partySize) &&
-      form.partySize >= 1 &&
-      status !== "saving",
+  const invalidDateRange = hasInvalidTripSettingsDateRange(form);
+  const outsideStopCount = useMemo(
+    () => countStopsOutsideSettingsRange(trip, form),
+    [form, trip],
   );
+  const canSubmit = canSubmitTripSettings({ canEdit, form, invalidDateRange, status });
 
   async function submitSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,14 +69,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
     setStatus("saving");
     setError(null);
     try {
-      await onSave({
-        name: form.name.trim(),
-        destinationLabel: form.destinationLabel.trim(),
-        startDate: form.startDate,
-        endDate: form.endDate,
-        partySize: Math.max(1, Math.floor(form.partySize || 1)),
-        defaultTimezone: form.defaultTimezone.trim(),
-      });
+      await onSave(normalizeTripSettingsForm(form));
       setStatus("saved");
     } catch {
       setStatus("idle");
@@ -190,27 +177,4 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
       </div>
     </WorkspacePage>
   );
-}
-
-function tripSettingsStateKey(trip: Trip): string {
-  return [
-    trip.id,
-    trip.name,
-    trip.destinationLabel,
-    trip.startDate,
-    trip.endDate,
-    trip.partySize,
-    trip.defaultTimezone,
-  ].join(":");
-}
-
-function tripToForm(trip: Trip): TripSettingsFormValues {
-  return {
-    name: trip.name,
-    destinationLabel: trip.destinationLabel,
-    startDate: trip.startDate,
-    endDate: trip.endDate,
-    partySize: trip.partySize ?? 1,
-    defaultTimezone: trip.defaultTimezone ?? "Asia/Bangkok",
-  };
 }

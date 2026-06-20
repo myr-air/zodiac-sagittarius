@@ -1,4 +1,3 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
@@ -8,16 +7,9 @@ import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { WorkspacePage } from "@/src/ui";
 import { MemberManagementControls } from "./components/MemberManagementControls";
 import { MemberSummaryStats } from "./components/MemberSummaryStats";
-import { MemberTaskDialog, type MemberTaskDialogState } from "./components/MemberTaskDialog";
-import {
-  buildInviteLink,
-  filterTripMembers,
-  memberSummaryCounts,
-  type MemberRoleFilter,
-  type MemberStatusFilter,
-  visibleTripMembers,
-} from "./TripMembersPage.support";
+import { MemberTaskDialog } from "./components/MemberTaskDialog";
 import * as memberStyles from "./TripMembersPage.styles";
+import { useTripMembersPageState } from "./use-trip-members-page-state";
 
 interface TripMembersPageProps {
   trip: Trip;
@@ -47,135 +39,52 @@ export function TripMembersPage({
   onTransferOwnership,
 }: TripMembersPageProps) {
   const { locale, t } = useI18n();
-  const [query, setQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<MemberRoleFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<MemberStatusFilter>("all");
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
-  const [isRotatingInviteToken, setIsRotatingInviteToken] = useState(false);
-  const [createPanelOpen, setCreatePanelOpen] = useState(false);
-  const [newMemberName, setNewMemberName] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState<Exclude<TripRole, "owner">>("traveler");
-  const [memberDialog, setMemberDialog] = useState<MemberTaskDialogState | null>(null);
-  const [passwordValue, setPasswordValue] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const visibleMembers = useMemo(() => visibleTripMembers(trip.members), [trip.members]);
-  const summaryStats = useMemo(() => memberSummaryCounts(visibleMembers, currentMember.id), [currentMember.id, visibleMembers]);
-  const inviteLink = buildInviteLink(trip.joinId, joinInviteToken);
-  const filteredMembers = useMemo(
-    () =>
-      filterTripMembers({ currentMemberId: currentMember.id, members: visibleMembers, query, roleFilter, statusFilter }),
-    [currentMember.id, query, roleFilter, statusFilter, visibleMembers],
-  );
-
-  useEffect(() => {
-    if (copyState === "idle") return undefined;
-    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
-    return () => window.clearTimeout(timeout);
-  }, [copyState]);
-
-  async function copyInviteLink() {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
-  }
-
-  async function rotateInviteToken() {
-    if (!canManagePeople || !onRotateJoinInviteToken) return;
-    setIsRotatingInviteToken(true);
-    try {
-      await onRotateJoinInviteToken();
-      setCopyState("idle");
-    } catch {
-      setCopyState("error");
-    } finally {
-      setIsRotatingInviteToken(false);
-    }
-  }
-
-  function resetFilters() {
-    setQuery("");
-    setRoleFilter("all");
-    setStatusFilter("all");
-  }
-
-  function confirmResetClaim(memberId: string) {
-    const member = visibleMembers.find((candidate) => candidate.id === memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setMemberDialog({ kind: "reset", member });
-  }
-
-  function confirmChangeAccessStatus(memberId: string, accessStatus: TripMemberAccessStatus) {
-    const member = visibleMembers.find((candidate) => candidate.id === memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    const actionLabel = accessStatus === "disabled" ? t.members.confirm.disable : t.members.confirm.enable;
-    setMemberDialog({ kind: "access", member, accessStatus, actionLabel });
-  }
-
-  function confirmTransferOwnership(memberId: string) {
-    const member = visibleMembers.find((candidate) => candidate.id === memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setMemberDialog({ kind: "transfer", member });
-  }
-
-  function promptChangePassword(memberId: string) {
-    const member = visibleMembers.find((candidate) => candidate.id === memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setPasswordValue("");
-    setPasswordError(null);
-    setMemberDialog({ kind: "password", member });
-  }
-
-  function closeMemberDialog() {
-    setMemberDialog(null);
-    setPasswordValue("");
-    setPasswordError(null);
-  }
-
-  function submitMemberDialog(event?: FormEvent<HTMLFormElement>) {
-    event?.preventDefault();
-    if (!memberDialog) return;
-    if (memberDialog.kind === "reset") {
-      onResetMemberClaim(memberDialog.member.id);
-      closeMemberDialog();
-      return;
-    }
-    if (memberDialog.kind === "access") {
-      onChangeMemberAccessStatus(memberDialog.member.id, memberDialog.accessStatus);
-      closeMemberDialog();
-      return;
-    }
-    if (memberDialog.kind === "transfer") {
-      onTransferOwnership?.(memberDialog.member.id);
-      closeMemberDialog();
-      return;
-    }
-    const password = passwordValue.trim();
-    if (password.length < 4) {
-      setPasswordError(t.members.confirm.passwordTooShort);
-      return;
-    }
-    onChangeMemberPassword(memberDialog.member.id, password);
-    closeMemberDialog();
-  }
-
-  function submitNewMember(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const displayName = newMemberName.trim();
-    if (!canManagePeople || !displayName) return;
-    onCreateMember({ displayName, role: newMemberRole });
-    setNewMemberName("");
-    setNewMemberRole("traveler");
-    setCreatePanelOpen(false);
-  }
+  const {
+    confirmChangeAccessStatus,
+    confirmResetClaim,
+    confirmTransferOwnership,
+    copyInviteLink,
+    copyState,
+    createPanelOpen,
+    filteredMembers,
+    inviteLink,
+    isRotatingInviteToken,
+    memberDialog,
+    newMemberName,
+    newMemberRole,
+    passwordError,
+    passwordValue,
+    promptChangePassword,
+    query,
+    resetFilters,
+    roleFilter,
+    rotateInviteToken,
+    setCreatePanelOpen,
+    setNewMemberName,
+    setNewMemberRole,
+    setPasswordValue,
+    setQuery,
+    setRoleFilter,
+    setStatusFilter,
+    statusFilter,
+    submitMemberDialog,
+    submitNewMember,
+    summaryStats,
+    visibleMembers,
+    closeMemberDialog,
+  } = useTripMembersPageState({
+    canManagePeople,
+    currentMember,
+    joinInviteToken,
+    labels: t.members.confirm,
+    onChangeMemberAccessStatus,
+    onChangeMemberPassword,
+    onCreateMember,
+    onResetMemberClaim,
+    onRotateJoinInviteToken,
+    onTransferOwnership,
+    trip,
+  });
 
   return (
     <WorkspacePage className={memberStyles.membersPageClassName} kind="workspace" aria-label={t.members.pageLabel}>
