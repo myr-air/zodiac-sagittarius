@@ -1,4 +1,3 @@
-import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type {
@@ -14,6 +13,7 @@ import type {
   TripTask,
 } from "@/src/trip/types";
 import { ContextRailBookingSection } from "./ContextRailBookingSection";
+import { ContextRailConflictSection } from "./ContextRailConflictSection";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailNotesSection } from "./ContextRailNotesSection";
 import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
@@ -21,10 +21,6 @@ import { ContextRailStopDetailSection } from "./ContextRailStopDetailSection";
 import { ContextRailTabs } from "./ContextRailTabs";
 import { ContextRailTab } from "./context-rail.utils";
 import {
-  conflictRowClassName,
-  conflictSummaryClassName,
-  detailHeadingClassName,
-  detailSectionClassName,
   inspectorCloseButtonClassName,
   inspectorTitleClassName,
   inspectorTitleHeadingClassName,
@@ -188,28 +184,9 @@ export function ContextRailSelectedStopPanel({
         />
       ) : null}
 
-      <section
-        className={`${detailSectionClassName} conflict-section`}
-        aria-label={t.contextRail.conflicts.label}
-      >
-        <h3 className={detailHeadingClassName}>
-          {t.contextRail.conflicts.title}
-        </h3>
-        <div className={conflictRowClassName}>
-          <span className={conflictSummaryClassName}>
-            <Icon name="alertCircle" />{" "}
-            {t.contextRail.conflicts.peakWarning}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            className="min-h-8 px-2.5 py-1 text-[11px]"
-            disabled={!canReviewSuggestions}
-          >
-            {t.contextRail.conflicts.autoFix}
-          </Button>
-        </div>
-      </section>
+      <ContextRailConflictSection
+        canReviewSuggestions={canReviewSuggestions}
+      />
 
       <ContextRailExpensesSection
         selectedItemId={selectedItem.id}
