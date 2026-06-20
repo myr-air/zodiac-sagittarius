@@ -12,7 +12,7 @@ import type { PortalSection } from "@/src/shared/portal";
 import {
   mainLabel,
   type AccountAccessMode,
-} from "./account-access-panel-support";
+} from "./account-access-modes";
 import { AccountAccessChrome } from "./account-access-panel-chrome";
 import {
   StatusMessage,

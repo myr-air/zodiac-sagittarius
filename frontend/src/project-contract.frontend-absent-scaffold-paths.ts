@@ -8,6 +8,8 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/workspace/pages/expenses/TripExpensesPage.test.tsx",
   "src/features/workspace/components/app-shell/AppShell.test.tsx",
   "src/account/api-client-auth.test.ts",
+  "src/features/account/components/account-access-panel/account-access-panel-support.ts",
+  "src/features/account/components/account-access-panel/account-access-panel-support.test.ts",
   "src/trip/expenses-reminders.test.ts",
   "src/features/workspace/pages/bookings-docs/BookingsDocsPage.test.tsx",
   "src/features/workspace/pages/expenses/expense-dialog-support.ts",

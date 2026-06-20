@@ -6,10 +6,12 @@ import type {
 import type { Messages } from "@/src/i18n/messages";
 import {
   clearAccountPortalDataCache,
+} from "./account-portal-data-cache";
+import {
   isAccountEntryMode,
   type AccountAccessMode,
   type AccountPanelMode,
-} from "./account-access-panel-support";
+} from "./account-access-modes";
 import {
   localizeAccessError,
   type AuthFlow,

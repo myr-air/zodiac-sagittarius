@@ -7,8 +7,8 @@ import type { PortalSection } from "@/src/shared/portal";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import type { AccountAccessMode, AccountPanelMode } from "./account-access-panel-support";
-import { heroDetail, heroTitle } from "./account-access-panel-support";
+import type { AccountAccessMode, AccountPanelMode } from "./account-access-modes";
+import { heroDetail, heroTitle } from "./account-access-modes";
 import {
   accountEntryBackHomeClassName,
   accountEntryBrandTaglineClassName,

@@ -7,6 +7,9 @@ describe("Sagittarius account source boundaries", () => {
     const {
       accountAccessPanel,
       accountAccessChrome,
+      accountAccessModes,
+      accountPortalNavItems,
+      accountPortalDataCache,
       accountTripWizardSupport,
       portalTripWizard,
       portalTripWizardMainPanel,
@@ -53,6 +56,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessChrome).toContain("accountHeroClassName");
     expect(accountAccessChrome).toContain("accountModeTabsClassName");
     expect(accountAccessChrome).toContain("appRoutes.home()");
+    expect(accountAccessModes).toContain("export const accountAccessModeValues");
+    expect(accountAccessModes).toContain("export function mainLabel");
+    expect(accountPortalNavItems).toContain("export function getPortalNavItems");
+    expect(accountPortalNavItems).toContain("appRoutes.portal()");
+    expect(accountPortalDataCache).toContain("export function cacheAccountPortalData");
+    expect(accountPortalDataCache).toContain("export function getLatestAccountPortalDataCache");
     expect(accountAccessStory).toContain("./account-access-panel.stories.support");
     expect(accountAccessStory).not.toContain("AccountApiClient");
     expect(accountAccessStory).not.toContain("const accountSettings");
