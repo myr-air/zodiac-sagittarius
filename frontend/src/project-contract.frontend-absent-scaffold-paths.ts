@@ -7,6 +7,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/workspace/sagittarius-app/SagittariusApp.expenses.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.test.tsx",
   "src/features/workspace/components/app-shell/AppShell.test.tsx",
+  "src/account/api-client-auth.test.ts",
   "src/trip/expenses-reminders.test.ts",
   "src/trip/auth.test.ts",
   "src/trip/expenses-splits.test.ts",
