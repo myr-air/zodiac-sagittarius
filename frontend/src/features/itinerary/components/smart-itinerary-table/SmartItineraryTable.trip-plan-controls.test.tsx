@@ -1,82 +1,15 @@
-import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
-  defaultPathOptionsForPanel,
-  pathIdStoryPlanA,
   openHeaderControls,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
 
 const renderTable = renderSmartItineraryTable;
 
-describe("SmartItineraryTable", () => {
-  it("uses English itinerary shell labels by default and Thai after switching", () => {
-    renderWithI18n(
-      <>
-        <LanguageSwitch />
-        <SmartItineraryTable
-          canRestructure
-          endDate={tripFixture.trip.endDate}
-          items={tripFixture.planItems}
-          tripPlans={tripFixture.trip.planVariants}
-          selectedTripPlanId={tripFixture.trip.activePlanVariantId}
-          mainTripPlanId={tripFixture.trip.mainTripPlanId ?? tripFixture.trip.activePlanVariantId}
-          tripPlanError={null}
-          isTripPlanBusy={false}
-          role="owner"
-          startDate={tripFixture.trip.startDate}
-          selectedItemId={tripFixture.planItems[0].id}
-          tripName={tripFixture.trip.name}
-          onAddStop={vi.fn()}
-          onOpenItemDetails={vi.fn()}
-          onSelectItem={vi.fn()}
-          onChangeTripPlan={vi.fn()}
-          onChangeTripPlanStatus={vi.fn()}
-          onSetMainTripPlan={vi.fn()}
-          onCreateTripPlan={vi.fn()}
-          onRenameTripPlan={vi.fn()}
-        />
-      </>,
-    );
-
-    const actions = screen.getByRole("group", {
-      name: /Itinerary actions|คำสั่งแผนการเดินทาง/i,
-    });
-    expect(
-      within(actions).getByRole("button", { name: "Trip Plan controls" }),
-    ).toBeInTheDocument();
-    expect(within(actions).queryByRole("button", { name: /Import|นำเข้า/i })).toBeNull();
-    expect(within(actions).queryByRole("button", { name: /Export|ส่งออก/i })).toBeNull();
-    expect(
-      within(actions).queryByRole("button", { name: /Add stop or activity/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(actions).queryByRole("button", { name: /Open details/i }),
-    ).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Language and currency" }));
-    fireEvent.click(screen.getByRole("menuitemradio", { name: "ภาษาไทย" }));
-
-    expect(
-      within(actions).getByRole("button", { name: "Trip Plan controls" }),
-    ).toBeInTheDocument();
-    expect(within(actions).queryByRole("button", { name: /Import|นำเข้า/i })).toBeNull();
-    expect(within(actions).queryByRole("button", { name: /Export|ส่งออก/i })).toBeNull();
-    expect(
-      within(actions).queryByRole("button", {
-        name: /เพิ่มสถานที่ \/ กิจกรรม/i,
-      }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(actions).queryByRole("button", { name: /เปิดรายละเอียด/i }),
-    ).not.toBeInTheDocument();
-  }, 30_000);
-
+describe("SmartItineraryTable trip plan controls", () => {
   it("keeps Trip Plan selection and management separate from itinerary paths", async () => {
     const user = userEvent.setup();
     const onChangeTripPlan = vi.fn();
@@ -185,44 +118,4 @@ describe("SmartItineraryTable", () => {
     expect(screen.getByPlaceholderText("ตั้งชื่อแผน")).toHaveValue("Food crawl");
     expect(screen.getByText("Could not update Trip Plan.")).toBeInTheDocument();
   });
-
-  it("keeps the activity path filter UI and day path picker separate from Trip Plans", async () => {
-    const user = userEvent.setup();
-    const onChangeDayPath = vi.fn();
-    const onToggleShowAllPaths = vi.fn();
-    renderTable({
-      onChangeDayPath,
-      onToggleShowAllPaths,
-      pathOptions: [...defaultPathOptionsForPanel],
-    });
-
-    expect(screen.getByRole("button", { name: "Trip Plan controls" })).toBeInTheDocument();
-    expect(
-      screen.queryByRole("region", { name: /ตัวกรองแผน/i }),
-    ).not.toBeInTheDocument();
-
-    await openHeaderControls(user);
-    const filterRegion = screen.getByRole("region", { name: /ตัวกรองแผน/i });
-    expect(within(filterRegion).getByLabelText("Plan 1")).toBeInTheDocument();
-    expect(within(filterRegion).getByLabelText("Plan A")).toBeInTheDocument();
-    expect(within(filterRegion).queryByText("แผนฝนตก")).not.toBeInTheDocument();
-
-    const showAllToggle = screen.getByRole("checkbox", { name: /แสดงทุก path/i });
-    await user.click(showAllToggle);
-    expect(onToggleShowAllPaths).toHaveBeenCalledWith(true);
-
-    await user.click(screen.getByRole("button", { name: /Path for Day 2/i }));
-    const dayPathMenu = screen.getByRole("listbox", {
-      name: /Path for Day 2/i,
-    });
-    expect(dayPathMenu.closest(".table-scroll")).toBeNull();
-    await user.click(
-      within(dayPathMenu).getByRole("option", { name: "Plan A" }),
-    );
-    expect(onChangeDayPath).toHaveBeenCalledWith(
-      "2026-06-19",
-      pathIdStoryPlanA,
-    );
-  });
-
 });

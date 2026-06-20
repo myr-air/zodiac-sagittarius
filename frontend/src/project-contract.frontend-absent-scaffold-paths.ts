@@ -41,6 +41,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/itinerary/components/overview/OverviewRolePanels.tsx",
   "src/features/itinerary/components/ContextRail.tsx",
   "src/features/itinerary/components/SmartItineraryTable.tsx",
+  "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/BookingComponents.tsx",
   "src/features/itinerary/components/smart-itinerary-table.styles.ts",
   "src/features/itinerary/components/smart-itinerary-table-utils.ts",
