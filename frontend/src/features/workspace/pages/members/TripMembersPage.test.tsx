@@ -1,27 +1,9 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { seedTrip } from "@/src/trip/seed";
-import { TripMembersPage } from "./TripMembersPage";
-
-function renderMembers(overrides: Partial<Parameters<typeof TripMembersPage>[0]> = {}) {
-  const props: Parameters<typeof TripMembersPage>[0] = {
-    trip: seedTrip,
-    currentMember: seedTrip.members[0],
-    canManagePeople: true,
-    onChangeMemberAccessStatus: vi.fn(),
-    onChangeMemberPassword: vi.fn(),
-    onChangeMemberRole: vi.fn(),
-    onCreateMember: vi.fn(),
-    onResetMemberClaim: vi.fn(),
-    onTransferOwnership: vi.fn(),
-    ...overrides,
-  };
-  renderWithI18n(<TripMembersPage {...props} />, { locale: "th" });
-  return props;
-}
+import { renderMembersPage } from "./TripMembersPage.test-support";
 
 describe("TripMembersPage", () => {
   afterEach(() => {
@@ -42,7 +24,7 @@ describe("TripMembersPage", () => {
       ...seedTrip,
       members: seedTrip.members.map((member) => member.id === "member-beam" ? { ...member, claimPasswordHash: "hash" } : member),
     };
-    const props = renderMembers({ trip: claimedTrip });
+    const props = renderMembersPage({ trip: claimedTrip });
 
     expect(screen.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page", "grid", "gap-3");
     expect(screen.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass("member-stat-grid", "grid", "gap-3");
@@ -105,7 +87,7 @@ describe("TripMembersPage", () => {
         return member;
       }),
     };
-    const props = renderMembers({ trip: accountLinkedTrip });
+    const props = renderMembersPage({ trip: accountLinkedTrip });
 
     await user.click(screen.getByRole("button", { name: /โอน owner ให้ Explorer Friend/i }));
     await user.click(within(screen.getByRole("dialog", { name: /โอน owner ให้ Explorer Friend/i })).getByRole("button", { name: /โอน owner/i }));
@@ -123,7 +105,7 @@ describe("TripMembersPage", () => {
     const confirm = vi.spyOn(window, "confirm");
     const prompt = vi.spyOn(window, "prompt");
     const alert = vi.spyOn(window, "alert");
-    const props = renderMembers();
+    const props = renderMembersPage();
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
@@ -161,7 +143,7 @@ describe("TripMembersPage", () => {
 
   it("resets filters and ignores empty member submissions", async () => {
     const user = userEvent.setup();
-    const props = renderMembers();
+    const props = renderMembersPage();
 
     await user.type(screen.getByLabelText(/ค้นหาสมาชิก/i), "Family");
     await user.selectOptions(screen.getByLabelText(/^สถานะ$/i), "disabled");
@@ -188,7 +170,7 @@ describe("TripMembersPage", () => {
   });
 
   it("renders read-only member controls without management actions", () => {
-    const props = renderMembers({ canManagePeople: false });
+    const props = renderMembersPage({ canManagePeople: false });
 
     expect(screen.queryByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
@@ -203,7 +185,7 @@ describe("TripMembersPage", () => {
       configurable: true,
       value: { writeText: vi.fn().mockResolvedValue(undefined) },
     });
-    renderMembers();
+    renderMembersPage();
 
     fireEvent.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
     await act(async () => {
