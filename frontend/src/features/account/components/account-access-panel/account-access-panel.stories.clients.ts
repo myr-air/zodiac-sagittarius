@@ -4,6 +4,12 @@ import type {
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
 import type { TripApiClient } from "@/src/trip/api-client";
+import {
+  accountSettings,
+  accountStats,
+  accountTravelerTrip,
+  accountTrip,
+} from "./account-access-panel-fixtures";
 
 export const trustedStorySession = {
   userId: "user-aom",
@@ -12,53 +18,6 @@ export const trustedStorySession = {
   trustedDeviceId: "device-current",
   createdAt: "2026-05-30T08:00:00.000Z",
   expiresAt: "2026-06-29T08:00:00.000Z",
-};
-
-const accountSettings = {
-  profile: {
-    id: "user-aom",
-    displayName: "Aom",
-    avatarColor: "#c2410c",
-    locale: "th-TH",
-    timezone: "Asia/Bangkok",
-    primaryEmail: "aom@example.test",
-  },
-  passkeys: [],
-  trustedDevices: [
-    {
-      id: "device-current",
-      label: "Current MacBook",
-      userAgent: "Safari",
-      createdAt: "2026-05-30T08:10:00.000Z",
-      lastSeenAt: "2026-05-30T08:40:00.000Z",
-    },
-  ],
-};
-
-const ownedTrip = {
-  id: "trip-id",
-  name: "Seoul Spring",
-  destinationLabel: "Seoul",
-  startDate: "2026-06-01",
-  endDate: "2026-06-05",
-  role: "owner" as const,
-  memberId: "member-owner",
-  ownerMemberId: "member-owner",
-  joinedAt: "2026-05-30T08:00:00.000Z",
-  isOwner: true,
-};
-
-const travelerTrip = {
-  id: "trip-traveler",
-  name: "Taipei Shared",
-  destinationLabel: "Taipei",
-  startDate: "2026-07-01",
-  endDate: "2026-07-04",
-  role: "traveler" as const,
-  memberId: "member-traveler",
-  ownerMemberId: "member-owner",
-  joinedAt: "2026-05-30T08:00:00.000Z",
-  isOwner: false,
 };
 
 export const accountStoryClient: AccountApiClient = {
@@ -76,18 +35,13 @@ export const accountStoryClient: AccountApiClient = {
     ...accountSettings,
     profile: { ...accountSettings.profile, ...request },
   }),
-  listTrips: async () => [ownedTrip, travelerTrip],
-  loadStats: async () => ({
-    tripsTotal: 2,
-    tripsOwned: 1,
-    activeTrips: 1,
-    tempClaimsCompleted: 0,
-  }),
+  listTrips: async () => [accountTrip, accountTravelerTrip],
+  loadStats: async () => accountStats,
   loadExplorer: async () => ({
     upcomingTrips: 1,
     ownedTrips: 1,
     destinationCount: 2,
-    nextTrip: ownedTrip,
+    nextTrip: accountTrip,
   }),
   listToDos: async () => [
     {

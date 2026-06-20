@@ -11,14 +11,14 @@ import {
   accountStats,
   accountTravelerTrip,
   accountTrip,
-} from "./account-access-panel-test-fixtures";
+} from "../account-access-panel-fixtures";
 
 export {
   accountSettings,
   accountStats,
   accountTravelerTrip,
   accountTrip,
-} from "./account-access-panel-test-fixtures";
+} from "../account-access-panel-fixtures";
 
 export function createTrustedAccountSession(overrides: Partial<AccountSession> = {}): AccountSession {
   return {
