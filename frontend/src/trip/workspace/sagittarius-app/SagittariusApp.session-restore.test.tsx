@@ -13,6 +13,7 @@ import {
   createDeferred,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -41,16 +42,11 @@ describe("Sagittarius cockpit session restore", () => {
         },
       ],
     };
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: apiTrip.id,
-        memberId: apiTrip.members[0].id,
-        sessionToken: "account-created-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      tripId: apiTrip.id,
+      memberId: apiTrip.members[0].id,
+      sessionToken: "account-created-session-token",
+    });
     const apiClient = createApiClientForTrip(apiTrip);
 
     render(
@@ -76,16 +72,9 @@ describe("Sagittarius cockpit session restore", () => {
   it("ignores late API hydration when the app unmounts during a persisted session load", async () => {
     installLocalStorageStub();
     const deferred = createDeferred<TripCockpit>();
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "slow-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      sessionToken: "slow-session-token",
+    });
     const apiClient = createApiClientForTrip(seedTrip);
     vi.mocked(apiClient.loadTrip).mockReturnValue(deferred.promise);
 
@@ -121,16 +110,9 @@ describe("Sagittarius cockpit session restore", () => {
 
   it("recovers to access instead of hanging when persisted API hydration is unauthenticated", async () => {
     installLocalStorageStub();
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "expired-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      sessionToken: "expired-session-token",
+    });
     const apiClient = createApiClientForTrip(seedTrip);
     vi.mocked(apiClient.loadTrip).mockRejectedValue(
       new TripApiError({
@@ -166,16 +148,9 @@ describe("Sagittarius cockpit session restore", () => {
 
   it("keeps a persisted API session when hydration fails transiently", async () => {
     const storage = installLocalStorageStub();
-    storage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "network-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(storage, {
+      sessionToken: "network-session-token",
+    });
     const apiClient = createApiClientForTrip(seedTrip);
     vi.mocked(apiClient.loadTrip).mockRejectedValue(new Error("network down"));
 

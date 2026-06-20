@@ -12,6 +12,7 @@ import {
   dailyBriefingFixture,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   persistTrustedAccountSession,
   render,
 } from "./sagittarius-app.test-support";
@@ -30,16 +31,11 @@ describe("Sagittarius cockpit overview API sessions", () => {
       name: "Persisted API Trip",
       joinPasswordHash: "",
     };
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: apiTrip.id,
-        memberId: apiTrip.members[0].id,
-        sessionToken: "persisted-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.localStorage, {
+      tripId: apiTrip.id,
+      memberId: apiTrip.members[0].id,
+      sessionToken: "persisted-session-token",
+    });
     const apiClient = createApiClientForTrip(apiTrip);
 
     render(
@@ -65,16 +61,10 @@ describe("Sagittarius cockpit overview API sessions", () => {
   it("keeps a persisted trip member session when the account is not linked to the trip", async () => {
     const storage = installLocalStorageStub();
     persistTrustedAccountSession(storage, "unlinked-account-session");
-    storage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[1].id,
-        sessionToken: "beam-member-session",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(storage, {
+      memberId: seedTrip.members[1].id,
+      sessionToken: "beam-member-session",
+    });
     const apiTrip = {
       ...seedTrip,
       name: "Beam Temp Workspace",
@@ -151,16 +141,11 @@ describe("Sagittarius cockpit overview API sessions", () => {
       joinPasswordHash: "",
     };
     const briefing = dailyBriefingFixture(apiTrip.id, "2026-07-12");
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: apiTrip.id,
-        memberId: apiTrip.members[0].id,
-        sessionToken: "weather-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.localStorage, {
+      tripId: apiTrip.id,
+      memberId: apiTrip.members[0].id,
+      sessionToken: "weather-session-token",
+    });
     const apiClient = createApiClientForTrip(apiTrip, {
       listDailyBriefings: vi.fn().mockResolvedValue([briefing]),
       patchDailyBriefing: vi.fn().mockResolvedValue({

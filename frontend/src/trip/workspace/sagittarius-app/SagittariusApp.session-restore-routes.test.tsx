@@ -8,6 +8,7 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -31,16 +32,9 @@ describe("Sagittarius cockpit session restore routes", () => {
     const locationSpy = vi
       .spyOn(window, "location", "get")
       .mockReturnValue(locationMock);
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "persisted-join-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.localStorage, {
+      sessionToken: "persisted-join-session-token",
+    });
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -80,16 +74,9 @@ describe("Sagittarius cockpit session restore routes", () => {
     const locationSpy = vi
       .spyOn(window, "location", "get")
       .mockReturnValue(locationMock);
-    window.localStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: seedTrip.id,
-        memberId: seedTrip.members[0].id,
-        sessionToken: "persisted-join-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.localStorage, {
+      sessionToken: "persisted-join-session-token",
+    });
     const apiClient = createApiClientForTrip(seedTrip);
 
     render(
@@ -132,16 +119,11 @@ describe("Sagittarius cockpit session restore routes", () => {
         },
       ],
     };
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: apiTrip.id,
-        memberId: apiTrip.members[0].id,
-        sessionToken: "canonical-route-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      tripId: apiTrip.id,
+      memberId: apiTrip.members[0].id,
+      sessionToken: "canonical-route-session-token",
+    });
     const apiClient = createApiClientForTrip(apiTrip);
 
     render(
@@ -180,16 +162,11 @@ describe("Sagittarius cockpit session restore routes", () => {
       .mockReturnValue(locationMock);
 
     const apiClient = createApiClientForTrip(seedTrip);
-    window.sessionStorage.setItem(
-      tripParticipantSessionStorageKey,
-      JSON.stringify({
-        tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
-        memberId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
-        sessionToken: "other-trip-session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-    );
+    persistTripParticipantSession(window.sessionStorage, {
+      tripId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f11",
+      memberId: "018fc9c4-9cf0-7384-93ee-9bdc9c8d8f22",
+      sessionToken: "other-trip-session-token",
+    });
 
     render(
       <SagittariusApp
