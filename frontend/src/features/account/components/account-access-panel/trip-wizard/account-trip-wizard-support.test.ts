@@ -14,9 +14,20 @@ import {
   routeCalendarDays,
   tripDestinationCards,
   tripNightCount,
+  tripWizardSteps,
 } from "./account-trip-wizard-support";
 
 describe("account trip wizard support", () => {
+  it("keeps trip wizard steps in canonical flow order", () => {
+    expect(tripWizardSteps.map((step) => step.id)).toEqual([
+      "trip",
+      "place",
+      "dates",
+      "invite",
+      "preview",
+    ]);
+  });
+
   it("generates route-aware join codes from destination cities", () => {
     expect(destinationRouteCode(["Thailand", "Tokyo"])).toBe("TYO");
     expect(destinationRouteCode(["Japan"])).toBe("JP");
