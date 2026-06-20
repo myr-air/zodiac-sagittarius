@@ -6,32 +6,21 @@ import {
 } from "@/src/trip/api-client";
 import { type PlaceResolver } from "@/src/trip/place-resolution";
 import { type PlanningView } from "@/src/trip/workspace/planning-view";
-import {
-  initialSelectedTripPlanId,
-  rememberSelectedTripPlanId,
-  resolveSelectedTripPlanId,
-} from "@/src/trip/workspace/selected-trip-plan";
 import { useDailyBriefings } from "@/src/trip/workspace/use-daily-briefings";
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
-import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
 import {
   useWorkspacePhotoAlbums,
   useWorkspaceAccessContext,
-  useWorkspaceApiCockpitEffects,
   useWorkspaceApiClients,
   useWorkspaceBackendExpenseSummary,
-  useWorkspaceCockpitReplacement,
   useWorkspaceCommands,
-  useWorkspaceRecords,
-  useWorkspaceTripPlanCommands,
-  useWorkspaceItineraryViewModel,
+  useWorkspacePlanningContext,
   useWorkspaceSession,
   useEffectivePlaceResolver,
   useWorkspaceNavigationContext,
   useWorkspaceSelectedTripPlanState,
-  useWorkspaceSelectedTripPlanSync,
   useWorkspaceUiState,
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
@@ -261,121 +250,68 @@ export function SagittariusApp({
     trip,
   });
 
-  useWorkspaceSelectedTripPlanSync({
-    isApiMode,
-    sessionRestored,
-    setSelectedTripPlanId,
-    trip,
-  });
-  const {
-    itineraryView,
-    mainItineraryView,
-    selectedDay,
-    selectedItem,
-    selectedItemIdForView,
-  } = useWorkspaceItineraryViewModel({
-    activePlanItems,
-    latestTripRef,
-    mainPlanItems,
-    planItems,
-    selectedItemId,
-    trip,
-  });
   const {
     createItineraryNote,
     createStopNote,
     createTask,
+    createTripPlan,
     deleteStopNote,
+    expenseSummary,
+    itineraryView,
+    mainItineraryView,
+    renameTripPlan,
+    replaceCockpitFromApi,
     reviewSuggestion,
-    replaceWorkspaceRecords,
+    scopedSuggestions,
+    scopedTripForRecords,
+    scopedTripPlanRecords,
+    selectTripPlan,
+    selectedDay,
+    selectedItem,
+    selectedItemIdForView,
     setStopNotes,
+    setMainTripPlan,
     setTasks,
     stopNotes,
-    suggestions,
     suggestSelectedStop,
     tasks,
     toggleTaskStatus,
     updateStopNote,
-  } = useWorkspaceRecords({
-    canCreateSuggestion,
-    canReviewSuggestions,
-    canCreateStopNote,
-    canEdit,
-    commitTrip,
-    currentMemberId: currentMember.id,
-    initialTrip,
-    isApiMode,
-    participantSession,
-    resolveApiClient: resolvedApiClient,
-    selectedItem: selectedItem ?? null,
-    selectedTripPlanId,
-    setContextRailPreferredTab,
-    setSelectedItemId,
-    trip,
-  });
-
-  const replaceCockpitFromApi = useWorkspaceCockpitReplacement({
-    replaceWorkspaceRecords,
-    resetBackendExpenseSummary,
-    setIsCockpitLoaded,
-    setTripState,
-  });
-
-  const {
-    createTripPlan,
-    selectTripPlan,
-    setMainTripPlan,
     updateTripPlanStatus,
-    renameTripPlan,
-  } = useWorkspaceTripPlanCommands({
-    canManageTripPlans,
-    isApiMode,
-    latestTripRef,
-    participantSession,
-    rememberSelectedTripPlanId,
-    replaceCockpitFromApi,
-    resolveSelectedTripPlanId,
-    selectedTripPlanId,
-    setIsTripPlanBusy,
-    setSelectedTripPlanId,
-    setTripPlanError,
-    trip,
-    tripPlanErrorMessage: t.itinerary.tripPlans.error,
-    commitTrip,
-    updateApiTrip,
-    initialSelectedTripPlanId,
-    resolvedApiClient,
-  });
-
-  const {
-    expenseSummary,
-    scopedSuggestions,
-    scopedTripForRecords,
-    scopedTripPlanRecords,
-  } = useTripWorkspaceRecords({
+  } = useWorkspacePlanningContext({
     activePlanItems,
     backendExpenseSummary,
-    currentMemberId: currentMember.id,
-    selectedTripPlanId,
-    stopNotes,
-    suggestions,
-    tasks,
-    trip,
-  });
-
-  useWorkspaceApiCockpitEffects({
+    canCreateStopNote,
+    canCreateSuggestion,
+    canReviewSuggestions,
+    canEdit,
+    canManageTripPlans,
+    commitTrip,
+    currentMember,
+    initialTrip,
     isApiMode,
+    latestTripRef,
+    mainPlanItems,
     participantSession,
-    rememberSelectedTripPlanId,
-    replaceCockpitFromApi,
+    planItems,
     replaceDailyBriefings,
+    resetBackendExpenseSummary,
     resetDailyBriefings,
     resolvedApiClient,
-    resolveSelectedTripPlanId,
+    selectedItemId,
+    selectedTripPlanId,
+    sessionRestored,
     setAccessError,
+    setContextRailPreferredTab,
     setIsCockpitLoaded,
+    setIsTripPlanBusy,
     setParticipantSession,
+    setSelectedItemId,
     setSelectedTripPlanId,
+    setTripPlanError,
+    setTripState,
+    trip,
+    tripPlanErrorMessage: t.itinerary.tripPlans.error,
     updateApiTrip,
   });
 

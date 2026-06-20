@@ -55,6 +55,7 @@ describe("Sagittarius workspace source boundaries", () => {
       cockpitReplacementHook,
       memberContextHook,
       navigationContextHook,
+      planningContextHook,
       planningCommandsHook,
       selectedTripPlanHook,
       workspaceDialogs,
@@ -148,18 +149,25 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("workspaceViewShouldSyncBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("clearParticipantSession");
-    expect(sagaCore).toContain("useWorkspaceCockpitReplacement");
+    expect(sagaCore).toContain("useWorkspacePlanningContext");
+    expect(sagaCore).not.toContain("useWorkspaceCockpitReplacement");
     expect(sagaCore).not.toContain("normalizeTripPlanAliases");
     expect(cockpitReplacementHook).toContain("export function useWorkspaceCockpitReplacement");
     expect(cockpitReplacementHook).toContain("normalizeTripPlanAliases");
     expect(cockpitReplacementHook).toContain("resetBackendExpenseSummary");
-    expect(sagaCore).toContain("useWorkspaceItineraryViewModel");
+    expect(planningContextHook).toContain("useWorkspaceCockpitReplacement");
+    expect(planningContextHook).toContain("useWorkspaceItineraryViewModel");
+    expect(planningContextHook).toContain("useWorkspaceRecords");
+    expect(planningContextHook).toContain("useWorkspaceTripPlanCommands");
+    expect(planningContextHook).toContain("useWorkspaceApiCockpitEffects");
+    expect(sagaCore).not.toContain("useWorkspaceItineraryViewModel");
     expect(sagaCore).not.toContain("buildItineraryView");
     expect(sagaCore).not.toContain("resolveSelectedWorkspaceItem");
     expect(itineraryViewModelHook).toContain("buildItineraryView");
     expect(itineraryViewModelHook).toContain("resolveSelectedWorkspaceItem");
     expect(sagaCore).toContain("useWorkspaceSelectedTripPlanState");
-    expect(sagaCore).toContain("useWorkspaceSelectedTripPlanSync");
+    expect(sagaCore).not.toContain("useWorkspaceSelectedTripPlanSync");
+    expect(planningContextHook).toContain("useWorkspaceSelectedTripPlanSync");
     expect(sagaCore).not.toContain("queueMicrotask");
     expect(selectedTripPlanHook).toContain("queueMicrotask");
     expect(selectedTripPlanHook).toContain("rememberSelectedTripPlanId");
@@ -183,14 +191,16 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceMainShell).toContain("./WorkspaceDialogs");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceDeleteDialog");
     expect(workspaceDialogs).toContain("@/src/trip/workspace/TripWorkspaceImportDialog");
-    expect(sagaCore).toContain("@/src/trip/workspace/selected-trip-plan");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/selected-trip-plan");
+    expect(planningContextHook).toContain("@/src/trip/workspace/selected-trip-plan");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(backendExpenseSummaryHook).toContain("@/src/trip/workspace/use-backend-expense-summary");
     expect(sagaCore).toContain("@/src/trip/workspace/use-daily-briefings");
     expect(sagaCore).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(planningContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagaCore).toContain("useWorkspacePhotoAlbums");
-    expect(sagaCore).toContain("useWorkspaceRecords");
+    expect(sagaCore).not.toContain("useWorkspaceRecords");
     expect(sagaCore).toContain("useWorkspaceCommands");
     expect(sagaCore).not.toContain("useWorkspaceAdministration");
     expect(sagaCore).not.toContain("useWorkspaceBookingCommands");
