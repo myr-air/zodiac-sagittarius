@@ -5,6 +5,7 @@ import {
 import type userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { vi } from "vitest";
+import { accountApiRoutes } from "@/src/account/api-routes";
 import type {
   AccountExplorerSummary,
   AccountTripStats,
@@ -14,6 +15,7 @@ import { accountSessionStorageKey } from "@/src/account/session-storage";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { createMemoryStorage } from "@/src/testing/browser-storage";
+import type { TripParticipantSession } from "@/src/trip/types";
 
 export {
   createApiClientForTrip,
@@ -142,6 +144,43 @@ export function mockAccountPortalApiFetch({
       request.includes("/api/v1/account/vault")
     ) {
       return jsonResponse([]);
+    }
+
+    return jsonResponse({}, 404);
+  });
+}
+
+export function mockAccountTripMemberSessionFetch({
+  tripId,
+  memberSession,
+  fallbackBody = [],
+  fallbackStatus = 200,
+}: {
+  tripId: string;
+  memberSession: TripParticipantSession;
+  fallbackBody?: unknown;
+  fallbackStatus?: number;
+}) {
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const request = input instanceof Request ? input.url : String(input);
+
+    if (request.includes(accountApiRoutes.accountTripMemberSessions(tripId))) {
+      return jsonResponse(memberSession);
+    }
+
+    return jsonResponse(fallbackBody, fallbackStatus);
+  });
+}
+
+export function mockRejectedAccountTripMemberSessionFetch(
+  tripId: string,
+  error: Error,
+) {
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const request = input instanceof Request ? input.url : String(input);
+
+    if (request.includes(accountApiRoutes.accountTripMemberSessions(tripId))) {
+      throw error;
     }
 
     return jsonResponse({}, 404);
