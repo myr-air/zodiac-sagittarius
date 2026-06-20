@@ -8,8 +8,8 @@ import type {
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { formatDateTime } from "../auth";
 import { SettingLine } from "./account-portal-primitives";
+import { AccountTrustedDevicesList } from "./account-trusted-devices-list";
 import { useAccountSettingsEditorState } from "./use-account-settings-editor-state";
 
 export interface AccountSettingsEditorClassNames {
@@ -119,27 +119,18 @@ export function AccountSettingsEditor({
         <SettingLine label={t.access.settings.trustedDevices} value={`${settings.trustedDevices.length}`} />
       </div>
 
-      <div className={classNames.deviceList} aria-label={t.access.settings.trustedDevicesLabel}>
-        {settings.trustedDevices.length ? (
-          settings.trustedDevices.map((device) => (
-            <div className={classNames.deviceRow} key={device.id}>
-              <div>
-                <strong>{device.label}</strong>
-                <span>
-                  {device.userAgent || t.access.settings.unknownBrowser} ·{" "}
-                  {device.lastSeenAt ? formatDateTime(device.lastSeenAt, locale) : formatDateTime(device.createdAt, locale)}
-                </span>
-              </div>
-              <Button type="button" variant="secondary" onClick={() => void revokeDevice(device.id)} disabled={revokingDeviceId === device.id}>
-                <Icon name="x" />
-                {t.access.settings.revoke}
-              </Button>
-            </div>
-          ))
-        ) : (
-          <p className={classNames.empty}>{t.access.settings.noTrustedDevices}</p>
-        )}
-      </div>
+      <AccountTrustedDevicesList
+        classNames={{
+          deviceList: classNames.deviceList,
+          deviceRow: classNames.deviceRow,
+          empty: classNames.empty,
+        }}
+        labels={t.access.settings}
+        locale={locale}
+        onRevokeDevice={(deviceId) => void revokeDevice(deviceId)}
+        revokingDeviceId={revokingDeviceId}
+        trustedDevices={settings.trustedDevices}
+      />
     </>
   );
 }
