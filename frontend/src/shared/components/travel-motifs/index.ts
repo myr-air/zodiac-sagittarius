@@ -1,2 +1,7 @@
-export { TimelineMotif, TravelMotif } from "./TravelMotifs";
-
+export {
+  TimelineMotif,
+  TravelMotif,
+  travelMotifToneClassNames,
+  travelMotifToneValues,
+  type TravelMotifTone,
+} from "./TravelMotifs";

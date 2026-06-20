@@ -1,10 +1,17 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/src/lib/cn";
 
-type MotifTone = "route" | "sunshine" | "postcard";
+export const travelMotifToneValues = ["route", "sunshine", "postcard"] as const;
+export type TravelMotifTone = (typeof travelMotifToneValues)[number];
+
+export const travelMotifToneClassNames: Record<TravelMotifTone, string> = {
+  route: "travel-motif--route",
+  sunshine: "travel-motif--sunshine text-(--color-warning)",
+  postcard: "travel-motif--postcard text-(--color-primary)",
+};
 
 interface TravelMotifProps extends HTMLAttributes<HTMLDivElement> {
-  tone?: MotifTone;
+  tone?: TravelMotifTone;
 }
 
 export function TravelMotif({ tone = "route", className = "", ...props }: TravelMotifProps) {
@@ -12,9 +19,7 @@ export function TravelMotif({ tone = "route", className = "", ...props }: Travel
     <div
       className={cn(
         "travel-motif relative min-h-[88px] min-w-[180px] text-(--color-route)",
-        tone === "sunshine" ? "travel-motif--sunshine text-(--color-warning)" : "",
-        tone === "postcard" ? "travel-motif--postcard text-(--color-primary)" : "",
-        tone === "route" ? "travel-motif--route" : "",
+        travelMotifToneClassNames[tone],
         className,
       )}
       aria-hidden="true"
