@@ -17,6 +17,10 @@ import {
   contextRailBookingDocs,
   readOnlyTravelerContextRailArgs,
 } from "./ContextRail.stories.support";
+import {
+  argsStory,
+  viewportStory,
+} from "./itinerary-story-builders";
 
 const meta = {
   title: "Design System/Context Rail",
@@ -34,57 +38,47 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const baseStory = argsStory<Story>;
+const viewportStoryForBase = viewportStory<Story>;
 
 export const NotesOpen: Story = {
   args: contextRailBaseArgs,
   play: notesOpenPlay,
 };
 
-export const BookingTab: Story = {
-  args: {
-    ...contextRailBaseArgs,
-    bookingDocs: contextRailBookingDocs,
-  },
-  play: bookingTabPlay,
-};
+export const BookingTab: Story = baseStory(contextRailBaseArgs, {
+  bookingDocs: contextRailBookingDocs,
+}, bookingTabPlay);
 
 export const SuggestionsTab: Story = {
   args: contextRailBaseArgs,
   play: suggestionsTabPlay,
 };
 
-export const TripExpensesOnly: Story = {
-  args: {
-    ...contextRailBaseArgs,
-    selectedItem: undefined,
-  },
-  play: tripExpensesOnlyPlay,
-};
+export const TripExpensesOnly: Story = baseStory(contextRailBaseArgs, {
+  selectedItem: undefined,
+}, tripExpensesOnlyPlay);
 
 export const ReadOnlyTraveler: Story = {
   args: readOnlyTravelerContextRailArgs,
   play: readOnlyTravelerPlay,
 };
 
-export const Closed: Story = {
-  args: {
-    ...contextRailBaseArgs,
-    open: false,
-  },
-  play: closedPlay,
-};
+export const Closed: Story = baseStory(contextRailBaseArgs, {
+  open: false,
+}, closedPlay);
 
-export const Mobile: Story = {
-  args: contextRailBaseArgs,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForBase(
+  contextRailBaseArgs,
+  "mobile320",
+  mobilePlay,
+);
 
-export const Tablet: Story = {
-  args: contextRailBaseArgs,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: tabletPlay,
-};
+export const Tablet: Story = viewportStoryForBase(
+  contextRailBaseArgs,
+  "tablet768",
+  tabletPlay,
+);
 
 export const Thai: Story = {
   args: contextRailBaseArgs,
@@ -92,14 +86,14 @@ export const Thai: Story = {
   play: thaiPlay,
 };
 
-export const Desktop1024: Story = {
-  args: contextRailBaseArgs,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: mobilePlay,
-};
+export const Desktop1024: Story = viewportStoryForBase(
+  contextRailBaseArgs,
+  "desktop1024",
+  mobilePlay,
+);
 
-export const Desktop1440: Story = {
-  args: contextRailBaseArgs,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: desktop1440Play,
-};
+export const Desktop1440: Story = viewportStoryForBase(
+  contextRailBaseArgs,
+  "desktop1440",
+  desktop1440Play,
+);

@@ -7,6 +7,7 @@ import {
   overviewTemplateTravelerStoryArgs,
   overviewTemplateViewerStoryArgs,
 } from "../OverviewPage.stories.support";
+import { ownerArgsStory } from "../itinerary-story-builders";
 import { ownerThaiPlay } from "./OverviewTemplate.stories.plays";
 
 const meta = {
@@ -20,6 +21,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+const ownerStory = ownerArgsStory<Story>;
+
 export const Owner: Story = {
   args: overviewTemplateOwnerStoryArgs,
 };
@@ -28,11 +31,9 @@ export const Traveler: Story = {
   args: overviewTemplateTravelerStoryArgs,
 };
 
-export const OwnerThai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: ownerThaiPlay,
-};
+export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
+  locale: "th",
+});
 
 export const Viewer: Story = {
   args: overviewTemplateViewerStoryArgs,

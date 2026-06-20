@@ -37,6 +37,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeLiveMapMarkers,
       routeMapViewport,
       routeMapUtils,
+      contextRailStory,
       stopDialog,
       routeMapCanvas,
       stopDialogStory,
@@ -59,6 +60,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
       overviewPageStory,
+      overviewTemplateStory,
       timelinePageStory,
       timelineTemplateStory,
       mapPageStory,
@@ -198,6 +200,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryPageStory).not.toContain("function ownerArgsStory");
     expect(itineraryTemplateStory).toContain("./itinerary-story-builders");
     expect(itineraryTemplateStory).not.toContain("...Owner.args");
+    expect(itineraryStoryBuilders).toContain("export function argsStory");
     expect(itineraryStoryBuilders).toContain("export function ownerArgsStory");
     expect(itineraryStoryBuilders).toContain("export function viewportStory");
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
@@ -207,6 +210,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
     [
       overviewPageStory,
+      overviewTemplateStory,
       timelinePageStory,
       timelineTemplateStory,
       mapPageStory,
@@ -214,6 +218,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     ].forEach((storySource) => {
       expect(storySource).toContain("itinerary-story-builders");
       expect(storySource).not.toContain("...Owner.args");
+    });
+    [contextRailStory, stopDialogStory].forEach((storySource) => {
+      expect(storySource).toContain("itinerary-story-builders");
+      expect(storySource).not.toContain("defaultViewport:");
     });
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
