@@ -15,6 +15,7 @@ export { useWorkspaceParticipantSessionActions } from "./use-workspace-participa
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";
+export { useWorkspaceUiState } from "./use-workspace-ui-state";
 export { useWorkspaceSession } from "./use-workspace-session";
 export {
   useWorkspaceSelectedTripPlanState,

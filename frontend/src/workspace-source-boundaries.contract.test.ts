@@ -41,6 +41,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts"),
       "utf8",
     );
+    const uiStateHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-ui-state.ts"),
+      "utf8",
+    );
     const accessState = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts"),
       "utf8",
@@ -481,6 +485,10 @@ describe("Sagittarius workspace source boundaries", () => {
       'from "@/src/components/TimelineView"',
     ]);
     expect(sagaCore).toContain("WorkspaceMainShell");
+    expect(sagaCore).toContain("useWorkspaceUiState");
+    expect(sagaCore).not.toContain("useState");
+    expect(uiStateHook).toContain("export function useWorkspaceUiState");
+    expect(uiStateHook).toContain("useState");
     expect(sagaCore).toContain("useWorkspaceApiClients");
     expect(sagaCore).not.toContain("createConfiguredTripApiClient");
     expect(sagaCore).not.toContain("createConfiguredAccountApiClient");

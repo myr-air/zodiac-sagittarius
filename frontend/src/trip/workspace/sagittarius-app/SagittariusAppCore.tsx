@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useState,
-} from "react";
+import { useCallback } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
@@ -13,10 +10,7 @@ import {
 import {
   normalizeTripPlanAliases,
 } from "@/src/trip/trip-plans";
-import {
-  type PlaceResolver,
-  type StopPlaceResolutionState,
-} from "@/src/trip/place-resolution";
+import { type PlaceResolver } from "@/src/trip/place-resolution";
 import {
   type PlanningView,
   workspaceViewSupportsContextRail,
@@ -53,17 +47,14 @@ import {
   useWorkspaceMemberContext,
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,
+  useWorkspaceUiState,
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { WorkspaceAccessBoundary } from "./access-gate";
 import { WorkspaceMainShell } from "./WorkspaceMainShell";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
-import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
-import type {
-  ItineraryItem,
-  Trip,
-} from "@/src/trip/types";
+import type { Trip } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 
 interface SagittariusAppProps {
@@ -103,14 +94,32 @@ export function SagittariusApp({
     apiBaseUrl,
     resolvedApiClient,
   } = useWorkspaceApiClients({ apiClient, dataSource });
-  const [isCockpitLoaded, setIsCockpitLoaded] = useState(false);
-  const [accountClaimState, setAccountClaimState] = useState<{
-    status: "idle" | "saving";
-    message: string | null;
-  }>({ status: "idle", message: null });
-  const [joinInviteToken, setJoinInviteToken] = useState<string | null>(
-    initialJoinToken ?? null,
-  );
+  const {
+    accountClaimState,
+    currentMemberId,
+    dialogDeleteItem,
+    dialogState,
+    isCockpitLoaded,
+    isTripPlanBusy,
+    joinInviteToken,
+    selectedItemId,
+    setAccountClaimState,
+    setCurrentMemberId,
+    setDialogDeleteItem,
+    setDialogState,
+    setIsCockpitLoaded,
+    setIsTripPlanBusy,
+    setJoinInviteToken,
+    setSelectedItemId,
+    setStopPlaceResolution,
+    setTripPlanError,
+    stopPlaceResolution,
+    tripPlanError,
+  } = useWorkspaceUiState({
+    initialJoinToken,
+    initialMemberId,
+    initialTrip,
+  });
   const {
     contextRailMounted,
     contextRailOpen,
@@ -126,10 +135,6 @@ export function SagittariusApp({
   } = useWorkspaceChrome({ autoDismissToast: requireJoin });
   const [selectedTripPlanId, setSelectedTripPlanId] =
     useWorkspaceSelectedTripPlanState(initialTrip);
-  const [currentMemberId, setCurrentMemberId] = useState(
-    initialMemberId ?? initialTrip.members[0].id,
-  );
-  const [selectedItemId, setSelectedItemId] = useState("item-dimdim");
   const {
     commitTrip,
     latestTripRef,
@@ -160,13 +165,6 @@ export function SagittariusApp({
     setSelectedTripPlanId,
     setTripState,
   });
-  const [dialogState, setDialogState] = useState<ItineraryDialogState>(null);
-  const [stopPlaceResolution, setStopPlaceResolution] =
-    useState<StopPlaceResolutionState>({ state: "idle", candidates: [] });
-  const [dialogDeleteItem, setDialogDeleteItem] =
-    useState<ItineraryItem | null>(null);
-  const [tripPlanError, setTripPlanError] = useState<string | null>(null);
-  const [isTripPlanBusy, setIsTripPlanBusy] = useState(false);
   const {
     activePlanItems,
     changeDayPath,
@@ -349,6 +347,7 @@ export function SagittariusApp({
   }, [
     replaceWorkspaceRecords,
     resetBackendExpenseSummary,
+    setIsCockpitLoaded,
     setTripState,
   ]);
 

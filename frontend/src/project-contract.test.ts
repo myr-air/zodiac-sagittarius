@@ -70,6 +70,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-administration.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-ui-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-record-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-record-actions.ts"))).toBe(true);
@@ -237,6 +238,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/members/use-trip-members-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/photos/use-trip-photos-page-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
@@ -360,6 +362,7 @@ describe("Sagittarius project scaffold", () => {
     expect(hooksIndex).toContain("useWorkspaceAdministration");
     expect(hooksIndex).toContain("useWorkspaceSession");
     expect(hooksIndex).toContain("useWorkspaceAccessGate");
+    expect(hooksIndex).toContain("useWorkspaceUiState");
     expect(hooksIndex).not.toContain("useWorkspaceRecordActions");
     expect(hooksIndex).not.toContain("useWorkspaceRecordState");
     expect(sagittariusIndex).toContain("SagittariusApp");
@@ -665,6 +668,8 @@ describe("Sagittarius project scaffold", () => {
   it("keeps expenses page state split from page composition", () => {
     const expensesPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.tsx"), "utf8");
     const expensesState = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"), "utf8");
+    const expenseDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/ExpenseDialog.tsx"), "utf8");
+    const expenseDialogState = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts"), "utf8");
 
     expect(expensesPage).toContain("./use-trip-expenses-page-state");
     expect(expensesPage).not.toContain("useState");
@@ -676,6 +681,13 @@ describe("Sagittarius project scaffold", () => {
     expect(expensesState).toContain("buildExpenseCsv");
     expect(expensesState).toContain("refundSplits");
     expect(expensesState).toContain("function recordRefund");
+    expect(expenseDialog).toContain("./hooks/useExpenseDialogState");
+    expect(expenseDialog).not.toContain("useState");
+    expect(expenseDialog).not.toContain("calculateExpenseDialogState");
+    expect(expenseDialog).not.toContain("function submitExpense");
+    expect(expenseDialogState).toContain("export function useExpenseDialogState");
+    expect(expenseDialogState).toContain("useExpenseSplitEditor");
+    expect(expenseDialogState).toContain("function submitExpense");
   });
 
   it("uses Next App Router with trip-scoped production routes", () => {
