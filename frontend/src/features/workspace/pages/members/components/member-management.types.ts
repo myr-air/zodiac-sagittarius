@@ -1,13 +1,13 @@
 import type { FormEvent } from "react";
 import type { useI18n } from "@/src/i18n/I18nProvider";
 import type { CopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
-import type { TripRole } from "@/src/trip/types";
+import type { TripInvitableRole } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
 
 export type MemberLabels = ReturnType<typeof useI18n>["t"];
 export type MemberConfirmLabels = MemberLabels["members"]["confirm"];
 export type MemberCopyState = CopyFeedbackState;
-export type NewMemberRole = Exclude<TripRole, "owner">;
+export type NewMemberRole = TripInvitableRole;
 
 export interface MemberFilterControlProps {
   labels: MemberLabels;

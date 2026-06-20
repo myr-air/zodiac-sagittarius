@@ -1,5 +1,10 @@
 import { FieldLabel, Select, TextInput } from "@/src/ui";
-import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
+import {
+  memberRoleFilterValues,
+  memberStatusFilterValues,
+  type MemberRoleFilter,
+  type MemberStatusFilter,
+} from "../TripMembersPage.support";
 import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberFilterControlProps } from "./member-management.types";
 
@@ -12,6 +17,21 @@ export function MemberFilterControls({
   roleFilter,
   statusFilter,
 }: MemberFilterControlProps) {
+  const roleFilterLabels: Record<MemberRoleFilter, string> = {
+    all: labels.members.filters.allRoles,
+    organizer: labels.appShell.roles.organizer,
+    owner: labels.appShell.roles.owner,
+    traveler: labels.appShell.roles.traveler,
+    viewer: labels.appShell.roles.viewer,
+  };
+  const statusFilterLabels: Record<MemberStatusFilter, string> = {
+    active: labels.common.status.active,
+    all: labels.members.filters.allStatuses,
+    claimed: labels.join.memberStatus.claimed,
+    disabled: labels.common.status.disabled,
+    pending: labels.common.status.pending,
+  };
+
   return (
     <div className={memberStyles.memberCommandFieldsClassName}>
       <FieldLabel>
@@ -28,11 +48,9 @@ export function MemberFilterControls({
           value={roleFilter}
           onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}
         >
-          <option value="all">{labels.members.filters.allRoles}</option>
-          <option value="owner">{labels.appShell.roles.owner}</option>
-          <option value="organizer">{labels.appShell.roles.organizer}</option>
-          <option value="traveler">{labels.appShell.roles.traveler}</option>
-          <option value="viewer">{labels.appShell.roles.viewer}</option>
+          {memberRoleFilterValues.map((role) => (
+            <option key={role} value={role}>{roleFilterLabels[role]}</option>
+          ))}
         </Select>
       </FieldLabel>
       <FieldLabel>
@@ -41,11 +59,9 @@ export function MemberFilterControls({
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}
         >
-          <option value="all">{labels.members.filters.allStatuses}</option>
-          <option value="active">{labels.common.status.active}</option>
-          <option value="disabled">{labels.common.status.disabled}</option>
-          <option value="claimed">{labels.join.memberStatus.claimed}</option>
-          <option value="pending">{labels.common.status.pending}</option>
+          {memberStatusFilterValues.map((status) => (
+            <option key={status} value={status}>{statusFilterLabels[status]}</option>
+          ))}
         </Select>
       </FieldLabel>
     </div>

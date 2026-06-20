@@ -43,6 +43,7 @@ export type {
   TripJoinCredential,
   TripMemberAccessStatus,
   TripParticipantSession,
+  TripInvitableRole,
   TripRole,
 } from "./trip-member-types";
 export type {

@@ -4,6 +4,8 @@ import {
   buildInviteLink,
   filterTripMembers,
   isMemberJoined,
+  memberRoleFilterValues,
+  memberStatusFilterValues,
   memberSummaryCounts,
   visibleTripMembers,
 } from "./TripMembersPage.support";
@@ -12,6 +14,23 @@ const currentMember = seedTrip.members[0];
 const members = visibleTripMembers(seedTrip.members);
 
 describe("TripMembersPage support helpers", () => {
+  it("keeps member role and status filters in shared display order", () => {
+    expect(memberRoleFilterValues).toEqual([
+      "all",
+      "owner",
+      "organizer",
+      "traveler",
+      "viewer",
+    ]);
+    expect(memberStatusFilterValues).toEqual([
+      "all",
+      "active",
+      "disabled",
+      "claimed",
+      "pending",
+    ]);
+  });
+
   it("hides the synthetic viewer from workspace member lists", () => {
     expect(members.some((member) => member.id === "member-viewer")).toBe(false);
     expect(members.length).toBe(seedTrip.members.length - 1);

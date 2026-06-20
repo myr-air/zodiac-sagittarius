@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/cn";
+import { tripInvitableRoleValues } from "@/src/trip/trip-member-types";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
@@ -13,6 +14,12 @@ export function MemberCreatePanel({
   onNewMemberRoleChange,
   onSubmitNewMember,
 }: MemberCreatePanelProps) {
+  const newMemberRoleLabels: Record<NewMemberRole, string> = {
+    organizer: labels.appShell.roles.organizer,
+    traveler: labels.appShell.roles.traveler,
+    viewer: labels.appShell.roles.viewer,
+  };
+
   return (
     <WorkspaceSurface
       className={memberStyles.memberCreatePanelClassName}
@@ -35,9 +42,9 @@ export function MemberCreatePanel({
             value={newMemberRole}
             onChange={(event) => onNewMemberRoleChange(event.target.value as NewMemberRole)}
           >
-            <option value="organizer">{labels.appShell.roles.organizer}</option>
-            <option value="traveler">{labels.appShell.roles.traveler}</option>
-            <option value="viewer">{labels.appShell.roles.viewer}</option>
+            {tripInvitableRoleValues.map((role) => (
+              <option key={role} value={role}>{newMemberRoleLabels[role]}</option>
+            ))}
           </Select>
         </FieldLabel>
         <Button

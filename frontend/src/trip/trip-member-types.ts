@@ -1,5 +1,15 @@
-export type TripRole = "owner" | "organizer" | "traveler" | "viewer";
-export type TripMemberAccessStatus = "active" | "disabled";
+export const tripRoleValues = ["owner", "organizer", "traveler", "viewer"] as const;
+export type TripRole = (typeof tripRoleValues)[number];
+
+export const tripInvitableRoleValues = [
+  "organizer",
+  "traveler",
+  "viewer",
+] as const satisfies readonly Exclude<TripRole, "owner">[];
+export type TripInvitableRole = (typeof tripInvitableRoleValues)[number];
+
+export const tripMemberAccessStatusValues = ["active", "disabled"] as const;
+export type TripMemberAccessStatus = (typeof tripMemberAccessStatusValues)[number];
 
 export type TripCapability =
   | "viewPlan"
