@@ -12,7 +12,7 @@ import {
   synchronizeLiveRouteMarkers,
 } from "./route-map.live-markers";
 import type { DayFilter, RouteDayGroup, RoutePoint } from "./route-map.types";
-import { getRouteCenter } from "./route-map.utils";
+import { getRouteCenter } from "./route-map.viewport";
 
 export type RouteLiveMapState = "idle" | "loading" | "ready" | "error";
 

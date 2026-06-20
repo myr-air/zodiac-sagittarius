@@ -25,6 +25,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeMapUnresolvedPanel,
       routeLiveMapHook,
       routeLiveMapMarkers,
+      routeMapViewport,
       routeMapUtils,
       stopDialog,
       stopDialogStory,
@@ -132,6 +133,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("export function RouteMapUnresolvedPanel");
     expect(routeMapUtils).not.toContain("export type { DayColorStyle");
+    expect(routeMapUtils).not.toContain("fallbackRouteViewport");
+    expect(routeMapUtils).not.toContain("getRouteCenter");
+    expect(routeMapViewport).toContain("export function fallbackRouteViewport");
+    expect(routeMapViewport).toContain("export function getRouteCenter");
 
     expect(stopDialogModel).toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("parseRouteActivity");

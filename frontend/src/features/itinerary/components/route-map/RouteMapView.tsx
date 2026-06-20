@@ -18,8 +18,8 @@ import {
 } from "./route-map.config";
 import {
   activeDayLabel,
-  fallbackRouteViewport,
 } from "./route-map.utils";
+import { fallbackRouteViewport } from "./route-map.viewport";
 import type { MapCoordinateResolutionResult } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
@@ -176,9 +176,11 @@ export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error",
 export {
   activeDayLabel,
   dayColorFor,
+} from "./route-map.utils";
+export {
   fallbackRouteViewport,
   getRouteCenter,
-} from "./route-map.utils";
+} from "./route-map.viewport";
 export {
   applyRouteMapTheme,
   fitLiveRoute,
