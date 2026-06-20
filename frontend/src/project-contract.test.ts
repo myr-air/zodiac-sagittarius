@@ -51,6 +51,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.overview.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.expenses.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.workspace.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.access.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.home.ts"))).toBe(true);
@@ -58,6 +59,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.overview.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.expenses.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.workspace.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/workspace-source-boundaries.sources.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
