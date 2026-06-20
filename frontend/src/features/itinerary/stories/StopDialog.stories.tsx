@@ -2,10 +2,15 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import { StopDialog } from "@/src/features/itinerary/components";
 import {
+  activityStoryItem,
   ambiguousPlaceResolution,
-  stopDialogCategoryItem,
+  foodStoryItem,
+  noteTaskStoryItem,
+  shoppingStoryItem,
+  stayStoryItem,
   stopDialogCreateArgs,
   stopDialogEditArgs,
+  transportationStoryItem,
 } from "./StopDialog.stories.support";
 
 const meta = {
@@ -49,21 +54,7 @@ export const AmbiguousPlace: Story = {
 export const TransportationForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "DMK -> HKG",
-      activityType: "travel",
-      durationMinutes: 175,
-      place: "",
-      transportation: "Plane",
-      details: {
-        kind: "transportation",
-        origin: "Don Mueang International Airport",
-        destination: "Hong Kong International Airport",
-        mode: "Plane",
-        ticketRef: "FD ticket",
-        costNote: "Prepaid group fare",
-      },
-    }),
+    initialItem: transportationStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("dialog", { name: /Edit details/i })).toBeVisible();
@@ -78,18 +69,7 @@ export const TransportationForm: Story = {
 export const ActivityForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "Dim sum lunch",
-      activityType: "experience",
-      itemKind: "activity",
-      place: "Central Market",
-      details: {
-        kind: "experience",
-        provider: "Central Market",
-        meetingPoint: "South entrance",
-        bookingRef: "Lunch shortlist",
-      },
-    }),
+    initialItem: activityStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
@@ -103,19 +83,7 @@ export const ActivityForm: Story = {
 export const FoodForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "Dim sum lunch",
-      activityType: "food",
-      itemKind: "meal",
-      place: "Central Market",
-      details: {
-        kind: "food",
-        provider: "Central Market",
-        cuisine: "Cantonese dim sum",
-        bookingRef: "Lunch shortlist",
-        costNote: "HKD 160 per person estimate",
-      },
-    }),
+    initialItem: foodStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
@@ -127,18 +95,7 @@ export const FoodForm: Story = {
 export const StayForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "Hotel check-in",
-      activityType: "stay",
-      itemKind: "lodging",
-      place: "The Chow Kit",
-      details: {
-        kind: "stay",
-        entryWindow: "15:00 check-in / 11:00 check-out",
-        bookingRef: "WK-2409",
-        detail: "Leave bags before the food walk",
-      },
-    }),
+    initialItem: stayStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("stay");
@@ -151,18 +108,7 @@ export const StayForm: Story = {
 export const ShoppingForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "Sneaker stop",
-      activityType: "shopping",
-      itemKind: "activity",
-      place: "Mong Kok",
-      details: {
-        kind: "shopping",
-        store: "Sneaker Street",
-        shoppingList: "Limited colorways, socks, gifts",
-        budgetNote: "Cap group browsing at 45 minutes",
-      },
-    }),
+    initialItem: shoppingStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("experience");
@@ -174,18 +120,7 @@ export const ShoppingForm: Story = {
 export const NoteTaskForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: stopDialogCategoryItem({
-      activity: "Confirm voucher names",
-      activityType: "experience",
-      itemKind: "note",
-      timeMode: "flexible",
-      place: "Central Market",
-      details: {
-        kind: "task",
-        detail: "Check passenger names before ticket issue",
-        meetingPoint: "Shared booking sheet",
-      },
-    }),
+    initialItem: noteTaskStoryItem,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Type")).toHaveValue("task");
