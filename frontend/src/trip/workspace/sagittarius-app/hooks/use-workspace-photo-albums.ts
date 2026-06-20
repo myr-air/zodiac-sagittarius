@@ -2,20 +2,12 @@ import { useCallback } from "react";
 import type { MutableRefObject } from "react";
 import type { TripPhotoAlbumInput } from "@/src/features/workspace/pages/photos";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
-import { nextClientMutationId, nextLocalPhotoAlbumId } from "@/src/trip/local-ids";
 import {
-  appendPhotoAlbumToTrip,
-  buildCreatePhotoAlbumRequest,
-  buildPatchPhotoAlbumRequest,
-  createLocalPhotoAlbum,
   normalizePhotoAlbumCreateInput,
-  removePhotoAlbumFromTrip,
-  replacePhotoAlbumInTrip,
-  updateLocalPhotoAlbumInTrip,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../support/local-mutations";
+import { useWorkspaceApiPhotoAlbumCommands } from "./photo-albums/use-workspace-api-photo-album-commands";
+import { useWorkspaceLocalPhotoAlbumCommands } from "./photo-albums/use-workspace-local-photo-album-commands";
 
 interface UseWorkspacePhotoAlbumsOptions {
   apiClient?: TripApiClient;
@@ -42,42 +34,43 @@ export function useWorkspacePhotoAlbums({
   setTripState,
   trip,
 }: UseWorkspacePhotoAlbumsOptions) {
+  const useApiPhotoAlbums = Boolean(isApiMode && apiClient && participantSession);
+  const {
+    createApiPhotoAlbum,
+    deleteApiPhotoAlbum,
+    updateApiPhotoAlbum,
+  } = useWorkspaceApiPhotoAlbumCommands({
+    apiClient,
+    latestTripRef,
+    participantSession,
+    replaceApiTrip,
+    setTripState,
+    tripId: trip.id,
+  });
+  const {
+    createLocalWorkspacePhotoAlbum,
+    deleteLocalWorkspacePhotoAlbum,
+    updateLocalWorkspacePhotoAlbum,
+  } = useWorkspaceLocalPhotoAlbumCommands({
+    commitTrip,
+    currentMemberId,
+    trip,
+  });
+
   const createPhotoAlbum = useCallback(async (input: TripPhotoAlbumInput) => {
     if (!canEditPhotoAlbums) return;
     const photoAlbumInput = normalizePhotoAlbumCreateInput(input);
     if (!photoAlbumInput) return;
-    if (isApiMode && apiClient && participantSession) {
-      const photoAlbum = await apiClient.createPhotoAlbum(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreatePhotoAlbumRequest(photoAlbumInput, {
-          clientMutationId: nextClientMutationId("photo-album-create"),
-        }),
-      );
-      replaceApiTrip(
-        appendPhotoAlbumToTrip(latestTripRef.current, photoAlbum),
-      );
+    if (useApiPhotoAlbums) {
+      await createApiPhotoAlbum(photoAlbumInput);
       return;
     }
-
-    const photoAlbum = createLocalPhotoAlbum(trip, photoAlbumInput, {
-      title: photoAlbumInput.title,
-      url: photoAlbumInput.url,
-      createdBy: currentMemberId,
-      updatedAt: workspaceLocalMutationTimestamp,
-      nextPhotoAlbumId: nextLocalPhotoAlbumId,
-    });
-    commitTrip((current) => appendPhotoAlbumToTrip(current, photoAlbum));
+    await createLocalWorkspacePhotoAlbum(photoAlbumInput);
   }, [
-    apiClient,
     canEditPhotoAlbums,
-    commitTrip,
-    currentMemberId,
-    isApiMode,
-    latestTripRef,
-    participantSession,
-    replaceApiTrip,
-    trip,
+    createApiPhotoAlbum,
+    createLocalWorkspacePhotoAlbum,
+    useApiPhotoAlbums,
   ]);
 
   const updatePhotoAlbum = useCallback(async (
@@ -85,80 +78,30 @@ export function useWorkspacePhotoAlbums({
     input: TripPhotoAlbumInput,
   ) => {
     if (!canEditPhotoAlbums) return;
-    if (isApiMode && apiClient && participantSession) {
-      const currentTrip = latestTripRef.current;
-      const photoAlbum = currentTrip.photoAlbumLinks?.find(
-        (candidate) => candidate.id === albumId,
-      );
-      if (!photoAlbum) return;
-      try {
-        const patchedPhotoAlbum = await apiClient.patchPhotoAlbum(
-          trip.id,
-          albumId,
-          participantSession.sessionToken,
-          buildPatchPhotoAlbumRequest(input, {
-            clientMutationId: nextClientMutationId("photo-album-patch"),
-            expectedVersion: photoAlbum.version,
-          }),
-        );
-        replaceApiTrip(
-          replacePhotoAlbumInTrip(latestTripRef.current, patchedPhotoAlbum),
-        );
-      } catch (error) {
-        if (isVersionConflict(error)) {
-          const latest = await apiClient.loadTrip(
-            trip.id,
-            participantSession.sessionToken,
-          );
-          latestTripRef.current = latest.trip;
-          setTripState({ trip: latest.trip, past: [], future: [] });
-          return;
-        }
-        throw error;
-      }
+    if (useApiPhotoAlbums) {
+      await updateApiPhotoAlbum(albumId, input);
       return;
     }
-
-    commitTrip((current) =>
-      updateLocalPhotoAlbumInTrip(current, albumId, input, {
-        title: input.title.trim(),
-        url: input.url.trim(),
-        updatedAt: workspaceLocalMutationTimestamp,
-      }),
-    );
+    await updateLocalWorkspacePhotoAlbum(albumId, input);
   }, [
-    apiClient,
     canEditPhotoAlbums,
-    commitTrip,
-    isApiMode,
-    latestTripRef,
-    participantSession,
-    replaceApiTrip,
-    setTripState,
-    trip.id,
+    updateApiPhotoAlbum,
+    updateLocalWorkspacePhotoAlbum,
+    useApiPhotoAlbums,
   ]);
 
   const deletePhotoAlbum = useCallback(async (albumId: string) => {
     if (!canEditPhotoAlbums) return;
-    if (isApiMode && apiClient && participantSession) {
-      await apiClient.deletePhotoAlbum(
-        trip.id,
-        albumId,
-        participantSession.sessionToken,
-      );
-      replaceApiTrip(removePhotoAlbumFromTrip(latestTripRef.current, albumId));
+    if (useApiPhotoAlbums) {
+      await deleteApiPhotoAlbum(albumId);
       return;
     }
-    commitTrip((current) => removePhotoAlbumFromTrip(current, albumId));
+    await deleteLocalWorkspacePhotoAlbum(albumId);
   }, [
-    apiClient,
     canEditPhotoAlbums,
-    commitTrip,
-    isApiMode,
-    latestTripRef,
-    participantSession,
-    replaceApiTrip,
-    trip.id,
+    deleteApiPhotoAlbum,
+    deleteLocalWorkspacePhotoAlbum,
+    useApiPhotoAlbums,
   ]);
 
   return {

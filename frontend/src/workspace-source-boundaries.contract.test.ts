@@ -49,6 +49,8 @@ describe("Sagittarius workspace source boundaries", () => {
       stopNoteActionsHook,
       recordCommandInputs,
       photoAlbumsHook,
+      photoAlbumApiCommands,
+      photoAlbumLocalCommands,
       photoAlbumsDomain,
       photoAlbumApi,
       photoAlbumLocal,
@@ -287,8 +289,15 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(stopNoteActionsHook).not.toContain("tripPlanIdForRecord");
     expect(recordCommandInputs).toContain("tripPlanIdForRecord");
     expect(photoAlbumsHook).toContain("normalizePhotoAlbumCreateInput");
+    expect(photoAlbumsHook).toContain("useWorkspaceApiPhotoAlbumCommands");
+    expect(photoAlbumsHook).toContain("useWorkspaceLocalPhotoAlbumCommands");
     expect(photoAlbumsHook).not.toContain("const title = input.title.trim()");
     expect(photoAlbumsHook).not.toContain("const url = input.url.trim()");
+    expect(photoAlbumApiCommands).toContain("isVersionConflict");
+    expect(photoAlbumApiCommands).toContain("buildCreatePhotoAlbumRequest");
+    expect(photoAlbumApiCommands).toContain("buildPatchPhotoAlbumRequest");
+    expect(photoAlbumLocalCommands).toContain("createLocalPhotoAlbum");
+    expect(photoAlbumLocalCommands).toContain("updateLocalPhotoAlbumInTrip");
     expect(photoAlbumsDomain).toContain("./photo-album-api");
     expect(photoAlbumsDomain).toContain("./photo-album-local");
     expect(photoAlbumsDomain).toContain("./photo-album-query");

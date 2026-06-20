@@ -40,6 +40,8 @@ export const workspaceBoundarySourcePaths = {
   stopNoteActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-stop-note-actions.ts",
   recordCommandInputs: "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.ts",
   photoAlbumsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts",
+  photoAlbumApiCommands: "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-api-photo-album-commands.ts",
+  photoAlbumLocalCommands: "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-local-photo-album-commands.ts",
   photoAlbumsDomain: "src/trip/photo-albums.ts",
   photoAlbumApi: "src/trip/photo-album-api.ts",
   photoAlbumLocal: "src/trip/photo-album-local.ts",
