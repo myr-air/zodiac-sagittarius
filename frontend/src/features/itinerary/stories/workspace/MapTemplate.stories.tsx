@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { RouteMapView } from "@/src/features/itinerary/components";
+import {
+  denseMapItems,
+  emptyMapItems,
+  mapOwnerStoryArgs,
+} from "./MapPage.stories.support";
 
 const meta = {
   title: "Templates/Map",
@@ -15,13 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
-  args: {
-    endDate: tripFixture.trip.endDate,
-    items: tripFixture.planItems,
-    liveMapEnabled: false,
-    startDate: tripFixture.trip.startDate,
-    tripName: tripFixture.trip.name,
-  },
+  args: mapOwnerStoryArgs,
 };
 
 export const OwnerThai: Story = {
@@ -39,6 +37,6 @@ export const Traveler: Story = { args: Owner.args };
 
 export const Viewer: Story = { args: Owner.args };
 
-export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const Dense: Story = { args: { ...Owner.args, items: denseMapItems } };
 
-export const Empty: Story = { args: { ...Owner.args, items: buildEmptyTripFixture().itineraryItems } };
+export const Empty: Story = { args: { ...Owner.args, items: emptyMapItems } };
