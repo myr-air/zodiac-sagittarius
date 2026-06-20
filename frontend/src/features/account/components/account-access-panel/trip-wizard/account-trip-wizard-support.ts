@@ -33,16 +33,16 @@ export type {
 export { formatPreviewTravelDate, routeCalendarDays, tripNightCount } from "./account-trip-dates";
 export type { RouteCalendarDay } from "./account-trip-dates";
 
-export type TripWizardStepId = "trip" | "place" | "dates" | "invite" | "preview";
 export type TripWizardDateSelectionStep = "depart" | "return";
 
-export const tripWizardSteps: Array<{ id: TripWizardStepId; label: string; regionLabel: string; nextCopy: string }> = [
+export const tripWizardSteps = [
   { id: "trip", label: "Trip", regionLabel: "Trip details step", nextCopy: "Next: add destination detail" },
   { id: "place", label: "Place", regionLabel: "Destination step", nextCopy: "Next: choose route dates" },
   { id: "dates", label: "Dates", regionLabel: "Dates step", nextCopy: "Next: check invite access" },
   { id: "invite", label: "Invite", regionLabel: "Invite step", nextCopy: "Next: preview trip" },
   { id: "preview", label: "Preview", regionLabel: "Preview step", nextCopy: "Review before create" },
-];
+] as const satisfies ReadonlyArray<{ id: string; label: string; regionLabel: string; nextCopy: string }>;
+export type TripWizardStepId = (typeof tripWizardSteps)[number]["id"];
 
 export const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings["profile"] | null): AccountTripCreateRequest => {
   const origin = originCityFromProfile(profile);

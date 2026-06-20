@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-export type CopyFeedbackState = "idle" | "copied" | "error";
+export const copyFeedbackStateValues = ["idle", "copied", "error"] as const;
+export type CopyFeedbackState = (typeof copyFeedbackStateValues)[number];
 
 interface UseCopyFeedbackStateOptions {
   resetDelayMs?: number;

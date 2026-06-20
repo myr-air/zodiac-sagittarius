@@ -1,12 +1,19 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useCopyFeedbackState } from "./use-copy-feedback-state";
+import {
+  copyFeedbackStateValues,
+  useCopyFeedbackState,
+} from "./use-copy-feedback-state";
 
 describe("useCopyFeedbackState", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  it("keeps feedback states in lifecycle order", () => {
+    expect(copyFeedbackStateValues).toEqual(["idle", "copied", "error"]);
   });
 
   it("copies text, reports success, and resets after the delay", async () => {
