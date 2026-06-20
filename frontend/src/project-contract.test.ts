@@ -204,6 +204,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-setup-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-panel-derived-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-portal-dashboard.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-portal-primitives.tsx"))).toBe(false);
@@ -571,16 +572,21 @@ describe("Sagittarius project scaffold", () => {
     expect(ticketModel).toContain("buildTicketSubmitInput");
   });
 
-  it("keeps activity time controls split behind a compatibility barrel", () => {
-    const barrel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeComponents.tsx"), "utf8");
+  it("keeps activity time controls split into direct modules", () => {
+    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
+    const subActivityList = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx"), "utf8");
+    const exports = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/components.tsx"), "utf8");
     const button = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx"), "utf8");
     const modal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx"), "utf8");
     const types = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts"), "utf8");
 
-    expect(barrel).toContain("./ActivityTimeButton");
-    expect(barrel).toContain("./TimeEditModal");
-    expect(barrel).toContain("./time-components.types");
-    expect(barrel).not.toContain("createPortal");
+    expect(activityCell).toContain("./activity-cell/ActivityTimeButton");
+    expect(activityCell).not.toContain("TimeComponents");
+    expect(subActivityList).toContain("./ActivityTimeButton");
+    expect(subActivityList).not.toContain("TimeComponents");
+    expect(exports).toContain("./activity-cell/ActivityTimeButton");
+    expect(exports).toContain("./activity-cell/TimeEditModal");
+    expect(exports).not.toContain("TimeComponents");
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
@@ -600,16 +606,19 @@ describe("Sagittarius project scaffold", () => {
     expect(activityCellStyles).toContain("export const ticketModalClassName");
   });
 
-  it("keeps sub-activity components split behind a compatibility barrel", () => {
-    const barrel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityComponents.tsx"), "utf8");
+  it("keeps sub-activity components split into direct modules", () => {
+    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
+    const exports = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/components.tsx"), "utf8");
     const list = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx"), "utf8");
     const modal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx"), "utf8");
     const types = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts"), "utf8");
 
-    expect(barrel).toContain("./SubActivityList");
-    expect(barrel).toContain("./SubActivityModal");
-    expect(barrel).toContain("./sub-activity.types");
-    expect(barrel).not.toContain("createPortal");
+    expect(activityCell).toContain("./activity-cell/SubActivityList");
+    expect(activityCell).toContain("./activity-cell/SubActivityModal");
+    expect(activityCell).not.toContain("SubActivityComponents");
+    expect(exports).toContain("./activity-cell/SubActivityList");
+    expect(exports).toContain("./activity-cell/SubActivityModal");
+    expect(exports).not.toContain("SubActivityComponents");
     expect(list).toContain("export function SubActivityList");
     expect(modal).toContain("export function SubActivityModal");
     expect(types).toContain("export interface SubActivitySharedProps");

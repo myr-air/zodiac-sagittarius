@@ -4,7 +4,7 @@ import { ActivityLocationLine } from "./ActivityLocationLine";
 import { ActivityTypePicker } from "./ActivityTypePicker";
 import { InlineActivityField } from "./InlineActivityField";
 import { ItineraryBookingButton } from "./BookingComponents";
-import { ActivityTimeButton } from "./TimeComponents";
+import { ActivityTimeButton } from "./ActivityTimeButton";
 import { ActivityActionButtons } from "./ActivityActionButtons";
 import {
   addSubActivityButtonClassName,

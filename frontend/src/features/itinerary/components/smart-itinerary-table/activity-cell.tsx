@@ -1,8 +1,9 @@
 import { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
 import { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
 import { InlineActivityField } from "./activity-cell/InlineActivityField";
-import { ActivityTimeButton } from "./activity-cell/TimeComponents";
-import { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
+import { ActivityTimeButton } from "./activity-cell/ActivityTimeButton";
+import { SubActivityList } from "./activity-cell/SubActivityList";
+import { SubActivityModal } from "./activity-cell/SubActivityModal";
 import { ActivityActionButtons } from "./activity-cell/ActivityActionButtons";
 import {
   activityBodyClassName,

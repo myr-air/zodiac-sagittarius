@@ -7,9 +7,11 @@ export {
 
 export { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
 
-export { SubActivityList, SubActivityModal } from "./activity-cell/SubActivityComponents";
+export { SubActivityList } from "./activity-cell/SubActivityList";
+export { SubActivityModal } from "./activity-cell/SubActivityModal";
 
-export { ActivityTimeButton, TimeEditModal } from "./activity-cell/TimeComponents";
+export { ActivityTimeButton } from "./activity-cell/ActivityTimeButton";
+export { TimeEditModal } from "./activity-cell/TimeEditModal";
 export { ItineraryBookingButton, ItineraryTicketModal } from "./activity-cell/BookingComponents";
 export { DayTitleEditor } from "./day-title-editor";
 export { DayPathControls } from "./day-path-controls";
