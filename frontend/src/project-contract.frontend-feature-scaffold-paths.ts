@@ -199,4 +199,5 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/route-map/route-map-live-map-test-support.ts",
   "src/features/itinerary/components/route-map/use-route-map-view-state.ts",
   "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  "src/trip/workspace/TripWorkspaceImportDialogFields.tsx",
 ] as const;
