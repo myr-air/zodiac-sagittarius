@@ -22,6 +22,8 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/SagittariusApp.expense-trip-plans.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.members.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.navigation.test.tsx",
+  "src/trip/workspace/sagittarius-app/SagittariusApp.overview-api-sessions.test.tsx",
+  "src/trip/workspace/sagittarius-app/SagittariusApp.overview-api-weather.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.overview.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.overview-tasks.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.photos-api.test.tsx",
