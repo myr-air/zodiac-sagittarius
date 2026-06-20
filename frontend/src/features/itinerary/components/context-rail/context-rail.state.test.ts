@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
+import { selectedContextRailItem } from "./ContextRail.test-fixtures";
 import { buildContextRailSelection } from "./context-rail.state";
-
-const selectedItem =
-  tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
-  tripFixture.planItems[0];
 
 describe("buildContextRailSelection", () => {
   it("selects rail records linked to the active itinerary item", () => {
+    const selectedItem = selectedContextRailItem;
     const linkedBookingDoc = buildBookingDoc({
       id: "booking-dimdim",
       tripId: tripFixture.trip.id,

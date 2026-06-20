@@ -2,10 +2,8 @@ import { vi } from "vitest";
 import { ContextRail } from "@/src/features/itinerary/components";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-
-export const selectedContextRailItem =
-  tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
-  tripFixture.planItems[0];
+export { selectedContextRailItem } from "./ContextRail.test-fixtures";
+import { selectedContextRailItem } from "./ContextRail.test-fixtures";
 
 export function renderContextRail(
   overrides: Partial<Parameters<typeof ContextRail>[0]> = {},
