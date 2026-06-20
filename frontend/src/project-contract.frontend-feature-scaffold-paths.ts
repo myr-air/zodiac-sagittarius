@@ -113,6 +113,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/photos/use-trip-photos-page-state.ts",
   "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   "src/features/workspace/pages/photos/TripPhotosPage.stories.support.ts",
+  "src/features/workspace/pages/photos/TripPhotosPage.stories.plays.ts",
   "src/features/workspace/pages/photos/TripPhotosPage.test-support.tsx",
   "src/features/itinerary/domain/overview-countdown.ts",
   "src/features/itinerary/domain/overview-highlights.ts",
