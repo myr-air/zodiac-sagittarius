@@ -734,15 +734,23 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts"),
       "utf8",
     );
+    const emailLoginResendCooldown = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"),
+      "utf8",
+    );
     expect(emailLoginState).toContain("./email-login-auth-actions");
+    expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
     expect(emailLoginState).not.toContain("buildPasskeyLoginFinishInput");
     expect(emailLoginState).not.toContain("finishPasswordLogin({");
     expect(emailLoginState).not.toContain("finishEmailLogin({");
+    expect(emailLoginState).not.toContain("window.setInterval");
     expect(emailLoginAuthActions).toContain("export async function finishEmailCodeLogin");
     expect(emailLoginAuthActions).toContain("export async function finishEmailPasswordLogin");
     expect(emailLoginAuthActions).toContain("export async function signInWithEmailPasskey");
     expect(emailLoginAuthActions).toContain("buildPasskeyLoginFinishInput");
     expect(emailLoginAuthActions).not.toContain("arrayBufferToBase64Url");
+    expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
+    expect(emailLoginResendCooldown).toContain("window.setInterval");
     expect(emailLoginStepContent).toContain("./account-email-login-credentials-step");
     expect(emailLoginStepContent).toContain("./account-email-login-methods-step");
     expect(emailLoginStepContent).toContain("./account-email-login-otp-step");

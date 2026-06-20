@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
@@ -21,6 +21,7 @@ import {
   signInWithEmailPasskey,
 } from "./email-login-auth-actions";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
+import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 
 interface UseEmailLoginPanelStateProps {
   accountClient: AccountApiClient;
@@ -48,8 +49,12 @@ export function useEmailLoginPanelState({
   const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
   const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    resendCooldown,
+    resetResendCooldown,
+    startResendCooldown,
+  } = useEmailLoginResendCooldown(challenge);
   const {
     codeHintId,
     codeInputId,
@@ -71,14 +76,6 @@ export function useEmailLoginPanelState({
     email,
     password,
   });
-
-  useEffect(() => {
-    if (!challenge || resendCooldown <= 0) return undefined;
-    const timer = window.setInterval(() => {
-      setResendCooldown((current) => Math.max(0, current - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [challenge, resendCooldown]);
 
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,7 +104,7 @@ export function useEmailLoginPanelState({
       const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
       setTransitionDirection("forward");
       setChallenge(nextChallenge);
-      setResendCooldown(30);
+      startResendCooldown();
       onError(null);
     } catch (caught) {
       onError(errorMessage(caught, t.access.emailLogin.errors.startFailed, t.access.messages));
@@ -213,7 +210,7 @@ export function useEmailLoginPanelState({
     setChallenge(null);
     setCode("");
     setPassword("");
-    setResendCooldown(0);
+    resetResendCooldown();
     goToStep("email", "back");
     onError(null);
   }
@@ -228,7 +225,7 @@ export function useEmailLoginPanelState({
     setPassword("");
     setDisplayName("");
     setHomeBase("");
-    setResendCooldown(0);
+    resetResendCooldown();
     setVerifiedRegistrationSession(null);
     goToStep("email", direction);
     onError(null);
