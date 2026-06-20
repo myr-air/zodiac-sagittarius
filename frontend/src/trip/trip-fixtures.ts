@@ -5,9 +5,9 @@ import {
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
 import { expenseCategoryValues } from "./trip-record-types";
-import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripTask } from "./types";
+import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "./types";
 
-export type TripFixtureRole = "owner" | "organizer" | "traveler" | "viewer";
+export type TripFixtureRole = TripRole;
 
 function requireTripFixtureMember(
   predicate: (member: Member) => boolean,

@@ -6,12 +6,11 @@ import {
   getTripFixtureMemberById,
   tripFixture,
 } from "./trip-fixtures";
+import { tripRoleValues } from "./trip-member-types";
 
 describe("trip fixtures", () => {
   it("exposes deterministic owner, traveler, and viewer members", () => {
-    expect(getTripFixtureMember("owner").role).toBe("owner");
-    expect(getTripFixtureMember("traveler").role).toBe("traveler");
-    expect(getTripFixtureMember("viewer").role).toBe("viewer");
+    expect(tripRoleValues.map((role) => getTripFixtureMember(role).role)).toEqual(tripRoleValues);
     expect(getTripFixtureMemberById("member-beam").role).toBe("organizer");
     expect(tripFixture.currentMembers.owner.id).toBe(getTripFixtureMember("owner").id);
   });
