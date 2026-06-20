@@ -177,6 +177,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/context-rail/context-rail.state.ts",
   "src/features/itinerary/components/context-rail/index.ts",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx",
+  "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types.ts",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.sub-activities.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx",
   "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx",

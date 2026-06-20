@@ -75,6 +75,7 @@ export const workspaceBoundarySourcePaths = {
   overviewWeatherBriefing: "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx",
   routeMapTypes: "src/features/itinerary/components/route-map/route-map.types.ts",
   smartItineraryTable: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx",
+  smartItineraryTableTypes: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types.ts",
   smartItineraryTablePageHeader: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx",
   routeMapView: "src/features/itinerary/components/route-map/RouteMapView.tsx",
   routeMapUnresolvedPanel: "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx",

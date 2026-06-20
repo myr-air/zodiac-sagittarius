@@ -20,6 +20,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       overviewWeatherBriefing,
       routeMapTypes,
       smartItineraryTable,
+      smartItineraryTableTypes,
       smartItineraryTablePageHeader,
       routeMapView,
       routeMapUnresolvedPanel,
@@ -131,6 +132,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
 
     expect(smartItineraryTable).toContain("SmartItineraryTablePageHeader");
+    expect(smartItineraryTable).toContain("./SmartItineraryTable.types");
+    expect(smartItineraryTable).not.toContain("interface SmartItineraryTableProps");
+    expect(smartItineraryTableTypes).toContain("export interface SmartItineraryTableProps");
     expect(smartItineraryTable).not.toContain("@/src/shared/components/page-header");
     expect(smartItineraryTable).not.toContain("SmartItineraryTableHeaderControls");
     expect(smartItineraryTablePageHeader).toContain("PageHeader");
