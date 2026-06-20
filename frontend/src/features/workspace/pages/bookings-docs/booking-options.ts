@@ -1,10 +1,14 @@
-import type { BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/src/trip/types";
+import {
+  bookingDocStatusValues,
+  bookingDocTypeValues,
+  bookingDocVisibilityValues,
+} from "@/src/trip/trip-record-types";
 
 import type { BookingCopy } from "./BookingsDocsPage.copy";
 
-export const bookingTypes = ["flight", "train", "public_transport", "hotel", "insurance", "passport", "visa", "activity_ticket", "other"] satisfies BookingDocType[];
-export const bookingStatuses = ["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"] satisfies BookingDocStatus[];
-export const bookingVisibilities = ["shared", "sensitive", "private"] satisfies BookingDocVisibility[];
+export const bookingTypes = bookingDocTypeValues;
+export const bookingStatuses = bookingDocStatusValues;
+export const bookingVisibilities = bookingDocVisibilityValues;
 
 export type BookingCopyEnumKey = keyof BookingCopy["enumLabels"];
 

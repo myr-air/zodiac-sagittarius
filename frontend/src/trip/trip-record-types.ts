@@ -56,27 +56,36 @@ export interface ExpenseSummary {
   settlementSuggestions: SettlementSuggestion[];
 }
 
-export type BookingDocType =
-  | "flight"
-  | "train"
-  | "public_transport"
-  | "hotel"
-  | "insurance"
-  | "passport"
-  | "visa"
-  | "activity_ticket"
-  | "other";
+export const bookingDocTypeValues = [
+  "flight",
+  "train",
+  "public_transport",
+  "hotel",
+  "insurance",
+  "passport",
+  "visa",
+  "activity_ticket",
+  "other",
+] as const;
+export type BookingDocType = (typeof bookingDocTypeValues)[number];
 
-export type BookingDocStatus =
-  | "draft"
-  | "needs_action"
-  | "booked"
-  | "confirmed"
-  | "paid"
-  | "cancelled"
-  | "expired";
+export const bookingDocStatusValues = [
+  "draft",
+  "needs_action",
+  "booked",
+  "confirmed",
+  "paid",
+  "cancelled",
+  "expired",
+] as const;
+export type BookingDocStatus = (typeof bookingDocStatusValues)[number];
 
-export type BookingDocVisibility = "shared" | "sensitive" | "private";
+export const bookingDocVisibilityValues = [
+  "shared",
+  "sensitive",
+  "private",
+] as const;
+export type BookingDocVisibility = (typeof bookingDocVisibilityValues)[number];
 
 export interface BookingDocExternalLink {
   id: string;

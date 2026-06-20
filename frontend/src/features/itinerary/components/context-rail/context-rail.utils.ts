@@ -1,19 +1,10 @@
+import { bookingDocTypeValues } from "@/src/trip/trip-record-types";
 import type { BookingDocType, Member, Suggestion } from "@/src/trip/types";
 import { taskKindLabel } from "@/src/features/itinerary/domain/overview";
 
 export type ContextRailTab = "notes" | "booking" | "suggestions";
 
-export const bookingDocTypeOptions: BookingDocType[] = [
-  "flight",
-  "train",
-  "public_transport",
-  "hotel",
-  "insurance",
-  "passport",
-  "visa",
-  "activity_ticket",
-  "other",
-];
+export const bookingDocTypeOptions = bookingDocTypeValues;
 
 export function suggestionLabel(suggestion: Suggestion, fallback: string): string {
   /* v8 ignore next */

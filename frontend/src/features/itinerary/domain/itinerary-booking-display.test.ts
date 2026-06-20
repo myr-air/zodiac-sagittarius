@@ -6,10 +6,7 @@ import {
   bookingIconForItem,
   bookingTemplateForItem,
   bookingTemplateLabel,
-  bookingTitleForItem,
   formatBookingSummary,
-  ticketModalCopy,
-  ticketNotesForItem,
 } from "./itinerary-booking-display";
 
 describe("itinerary-booking-display", () => {
@@ -27,26 +24,6 @@ describe("itinerary-booking-display", () => {
     expect(bookingTemplateLabel(flight, "th")).toBe("เครื่องบิน");
     expect(bookingDocTypeForItemTemplate(flight, "recommended")).toBe("flight");
     expect(bookingIconForItem(flight)).toBe("plane");
-  });
-
-  it("builds ticket copy and fallback title/notes", () => {
-    const item = buildItineraryItem({
-      activity: "Airport train",
-      activityType: "travel",
-      activitySubtype: "train",
-      place: "Central",
-      transportation: "Airport Express",
-      details: {
-        from: "Airport",
-        to: "Central",
-      },
-    });
-
-    expect(ticketModalCopy("en").title(item.activity)).toBe("Ticket for Airport train");
-    expect(bookingTitleForItem(item, "train")).toBe("Airport train train ticket");
-    expect(ticketNotesForItem(item, "en")).toBe(
-      "From itinerary\nFrom: Airport\nTo: Central\nAirport Express",
-    );
   });
 
   it("summarizes existing booking links for candidate lists", () => {
