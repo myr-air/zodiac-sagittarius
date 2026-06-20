@@ -1,5 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
@@ -7,6 +7,7 @@ import { appRoutes, encodeReturnTo, tripRoutes } from "@/src/trip/workspace/sagi
 import {
   createApiClientForTrip,
   installLocalStorageStub,
+  mockWindowLocation,
   persistTripParticipantSession,
   render,
   resetSagittariusAppTestEnvironment,
@@ -19,17 +20,10 @@ describe("Sagittarius cockpit session restore routes", () => {
 
   it("redirects /join to the trip route when a persisted API session already exists", async () => {
     installLocalStorageStub();
-    const replaceMock = vi.fn();
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
+    const { locationSpy, replaceMock } = mockWindowLocation({
       pathname: appRoutes.join(),
       search: "",
-      replace: replaceMock,
-    };
-    const locationSpy = vi
-      .spyOn(window, "location", "get")
-      .mockReturnValue(locationMock);
+    });
     persistTripParticipantSession(window.localStorage, {
       sessionToken: "persisted-join-session-token",
     });
@@ -61,17 +55,10 @@ describe("Sagittarius cockpit session restore routes", () => {
 
   it("falls back to trip route when /join returnTo points to /trips", async () => {
     installLocalStorageStub();
-    const replaceMock = vi.fn();
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
+    const { locationSpy, replaceMock } = mockWindowLocation({
       pathname: appRoutes.join(),
       search: `?rt=${encodeURIComponent(encodeReturnTo(appRoutes.trips()))}`,
-      replace: replaceMock,
-    };
-    const locationSpy = vi
-      .spyOn(window, "location", "get")
-      .mockReturnValue(locationMock);
+    });
     persistTripParticipantSession(window.localStorage, {
       sessionToken: "persisted-join-session-token",
     });
@@ -147,17 +134,10 @@ describe("Sagittarius cockpit session restore routes", () => {
 
   it("rejects a persisted API session when a canonical UUID route belongs to another trip", async () => {
     installLocalStorageStub();
-    const replaceMock = vi.fn();
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
+    const { locationSpy, replaceMock } = mockWindowLocation({
       pathname: tripRoutes.base("018fc9c4-9cf0-7384-93ee-9bdc9c8d8f99"),
       search: "",
-      replace: replaceMock,
-    };
-    const locationSpy = vi
-      .spyOn(window, "location", "get")
-      .mockReturnValue(locationMock);
+    });
 
     const apiClient = createApiClientForTrip(seedTrip);
     persistTripParticipantSession(window.sessionStorage, {

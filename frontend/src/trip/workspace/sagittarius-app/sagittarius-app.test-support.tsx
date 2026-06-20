@@ -4,6 +4,7 @@ import {
 } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
+import { vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
@@ -59,6 +60,27 @@ export function resetSagittariusAppTestEnvironment() {
   window.history.pushState(null, "", appRoutes.home());
 }
 
+export function mockWindowLocation({
+  pathname,
+  search = "",
+}: {
+  pathname: string;
+  search?: string;
+}) {
+  const replaceMock = vi.fn();
+  const locationMock = {
+    ...window.location,
+    pathname,
+    search,
+    replace: replaceMock,
+  };
+  const locationSpy = vi
+    .spyOn(window, "location", "get")
+    .mockReturnValue(locationMock);
+
+  return { locationMock, locationSpy, replaceMock };
+}
+
 export async function openItineraryHeaderControls(
   user: ReturnType<typeof userEvent.setup>,
 ) {
@@ -99,4 +121,17 @@ export async function renderApiSagittariusApp(
   );
   await loginApiTrip(user);
   return result;
+}
+
+export function renderApiTripAccessSagittariusApp(
+  props: Omit<SagittariusAppProps, "accessMode" | "dataSource" | "requireJoin">,
+) {
+  return render(
+    <SagittariusApp
+      accessMode="trip-access"
+      requireJoin
+      dataSource="api"
+      {...props}
+    />,
+  );
 }

@@ -2,7 +2,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
@@ -14,6 +14,7 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   createApiClientForTrip,
   installLocalStorageStub,
+  mockWindowLocation,
   mockAccountTripMemberSessionFetch,
   mockRejectedAccountTripMemberSessionFetch,
   persistTrustedAccountSession,
@@ -103,16 +104,10 @@ describe("Sagittarius cockpit account trip access", () => {
       seedTrip.id,
       new Error("network down"),
     );
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
+    const { locationSpy, replaceMock } = mockWindowLocation({
       pathname: appRoutes.tripOverview(seedTrip.id),
       search: "",
-      replace: vi.fn(),
-    };
-    const locationSpy = vi
-      .spyOn(window, "location", "get")
-      .mockReturnValue(locationMock);
+    });
 
     try {
       render(
@@ -136,7 +131,7 @@ describe("Sagittarius cockpit account trip access", () => {
         window.sessionStorage.getItem(accountSessionStorageKey),
       ).toContain("transient-account-session");
       expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
-      expect(locationMock.replace).not.toHaveBeenCalledWith(
+      expect(replaceMock).not.toHaveBeenCalledWith(
         expect.stringContaining(appRoutes.join()),
       );
     } finally {

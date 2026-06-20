@@ -6,13 +6,12 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { TripApiError } from "@/src/trip/api-client";
-import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
-  render,
+  persistTripParticipantSession,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -38,16 +37,11 @@ describe("Sagittarius cockpit bookings and photos API mode", () => {
       createPhotoAlbum: vi.fn().mockResolvedValue(apiAlbum),
     });
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        initialView="photos"
-        requireJoin
-        dataSource="api"
-        routeTripId={seedTrip.id}
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      initialView: "photos",
+      routeTripId: seedTrip.id,
+      apiClient,
+    });
 
     expect(
       await screen.findByRole("region", { name: /Photos & Albums|รูปภาพและอัลบั้ม/i }),
@@ -112,16 +106,11 @@ describe("Sagittarius cockpit bookings and photos API mode", () => {
       createBookingDoc: vi.fn().mockResolvedValue(apiBooking),
     });
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        initialView="bookings"
-        requireJoin
-        dataSource="api"
-        routeTripId={seedTrip.id}
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      initialView: "bookings",
+      routeTripId: seedTrip.id,
+      apiClient,
+    });
 
     expect(
       await screen.findByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
@@ -197,16 +186,11 @@ describe("Sagittarius cockpit bookings and photos API mode", () => {
       }),
     });
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        initialView="bookings"
-        requireJoin
-        dataSource="api"
-        routeTripId={seedTrip.id}
-        apiClient={apiClient}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      initialView: "bookings",
+      routeTripId: seedTrip.id,
+      apiClient,
+    });
 
     expect(
       await screen.findByRole("region", { name: /Bookings & Docs|การจองและเอกสาร/i }),
@@ -237,14 +221,5 @@ describe("Sagittarius cockpit bookings and photos API mode", () => {
 });
 
 function installApiSession(sessionToken: string) {
-  window.sessionStorage.setItem(
-    tripParticipantSessionStorageKey,
-    JSON.stringify({
-      tripId: seedTrip.id,
-      memberId: seedTrip.members[0].id,
-      sessionToken,
-      createdAt: "2026-05-29T00:00:00.000Z",
-      expiresAt: "2026-06-28T00:00:00.000Z",
-    }),
-  );
+  persistTripParticipantSession(window.sessionStorage, { sessionToken });
 }

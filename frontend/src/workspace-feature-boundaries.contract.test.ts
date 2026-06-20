@@ -128,7 +128,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
     expect(sagittariusAppTestSupport).toContain("export function resetSagittariusAppTestEnvironment");
     expect(sagittariusAppTestSupport).toContain("window.history.pushState(null, \"\", appRoutes.home())");
+    expect(sagittariusAppTestSupport).toContain("export function mockWindowLocation");
+    expect(sagittariusAppTestSupport).toContain(".spyOn(window, \"location\", \"get\")");
     expect(sagittariusAppTestSupport).toContain("export async function renderApiSagittariusApp");
+    expect(sagittariusAppTestSupport).toContain("export function renderApiTripAccessSagittariusApp");
     expect(sagittariusAppTestSupport).toContain("dataSource=\"api\"");
     expect(sagittariusAppTestSupport).toContain("await loginApiTrip(user)");
     expect(sagittariusAppTestSupport).not.toContain("function dailyBriefingFixture");

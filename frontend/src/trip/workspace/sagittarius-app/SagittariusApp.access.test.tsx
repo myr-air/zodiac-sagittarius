@@ -17,6 +17,7 @@ import {
 import {
   createApiClientForTrip,
   installLocalStorageStub,
+  mockWindowLocation,
   render,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -98,17 +99,11 @@ describe("Sagittarius cockpit access", () => {
     const replaceStateMock = vi
       .spyOn(window.history, "replaceState")
       .mockImplementation(() => undefined);
-    const originalLocation = window.location;
     const safeReturnTo = appRoutes.tripItinerary(seedTrip.id);
-    const locationMock = {
-      ...originalLocation,
+    const { locationSpy } = mockWindowLocation({
       pathname: appRoutes.join(),
       search: `?rt=${encodeURIComponent(encodeReturnTo(safeReturnTo))}`,
-      replace: vi.fn(),
-    };
-    const locationSpy = vi
-      .spyOn(window, "location", "get")
-      .mockReturnValue(locationMock);
+    });
     const apiClient = createApiClientForTrip(seedTrip);
     render(
       <SagittariusApp
@@ -159,16 +154,10 @@ describe("Sagittarius cockpit access", () => {
   ] as const)(
     "redirects unauthenticated trip %s routes to /join with encoded returnTo",
     async (_view, tripPath) => {
-      const originalLocation = window.location;
-      const locationMock = {
-        ...originalLocation,
+      const { locationSpy, replaceMock } = mockWindowLocation({
         pathname: tripPath,
         search: "",
-        replace: vi.fn(),
-      };
-      const locationSpy = vi
-        .spyOn(window, "location", "get")
-        .mockReturnValue(locationMock);
+      });
 
       render(
         <SagittariusApp
@@ -180,7 +169,7 @@ describe("Sagittarius cockpit access", () => {
       );
 
       await waitFor(() =>
-        expect(locationMock.replace).toHaveBeenCalledWith(
+        expect(replaceMock).toHaveBeenCalledWith(
           appRoutes.join(undefined, tripPath),
         ),
       );
