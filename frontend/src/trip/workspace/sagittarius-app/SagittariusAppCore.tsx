@@ -50,6 +50,7 @@ import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
 import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
 import { buildWorkspaceAccessProps } from "./workspace-access-props";
+import { buildWorkspaceShellProps } from "./workspace-shell-props";
 import { buildWorkspaceViewsProps } from "./workspace-view-props";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { Trip } from "@/src/trip/types";
@@ -693,111 +694,82 @@ export function SagittariusApp({
     onCockpitLoaded: replaceCockpitFromApi,
     onTripChange: replaceTripFromJoin,
   });
+  const shellProps = buildWorkspaceShellProps({
+    accountClaimState,
+    accountSession,
+    applyPendingItineraryImport,
+    canClaimMember: Boolean(
+      accountSession && participantSession && !currentMember.userId,
+    ),
+    canCreateStopNote,
+    canCreateSuggestion,
+    canEdit,
+    canEditExpenses,
+    canReviewSuggestions,
+    changeBookingDocQuickFields,
+    changeBookingDocType,
+    clearPendingItineraryImport,
+    contextRailMounted,
+    contextRailOpen,
+    contextRailPreferredTab,
+    createExpense,
+    createStop,
+    createStopNote,
+    currentMember,
+    currentView,
+    deleteExpense,
+    deleteSelectedStop,
+    deleteStop,
+    deleteStopNote,
+    dialogDeleteItem,
+    dialogState,
+    dismissWorkspaceToast,
+    editSelectedItem: () => {
+      if (selectedItem) editItem(selectedItem.id);
+    },
+    expenseSummary,
+    importItineraryError,
+    isToastDismissing: toastDismissing,
+    navigateWorkspaceView,
+    onClaimMember: () => void claimCurrentMemberToAccount(),
+    onLeaveParticipantSession: requireJoin ? leaveParticipantSession : undefined,
+    pathOptions,
+    pendingItineraryImport,
+    promoteFoodRecommendation,
+    requireJoin,
+    reviewSuggestion,
+    scopedSuggestions,
+    scopedTripPlanRecords,
+    scopedTripForRecords,
+    selectedDay,
+    selectedItem,
+    selectedTripPathId,
+    selectedTripPlanId,
+    sessionMember,
+    setContextRailVisibility,
+    setCurrentMemberId,
+    setDialogDeleteItem,
+    setDialogState,
+    setStopPlaceResolution,
+    sidebarCollapsed,
+    stopPlaceResolution,
+    suggestSelectedStop,
+    supportsContextRail,
+    t,
+    toastDismissed,
+    toggleContextRailCollapsed: toggleSidebarCollapsed,
+    toggleTaskStatus,
+    trip,
+    updateExpense,
+    updateSelectedStop,
+    updateStopNote,
+    viewsProps,
+  });
 
   return (
     <WorkspaceAppFrame
       accessProps={accessProps}
-      shellProps={{
-        appShellProps: {
-          activeView: currentView,
-          collapsed: sidebarCollapsed,
-          currentMember,
-          onLeaveParticipantSession:
-            requireJoin ? leaveParticipantSession : undefined,
-          onNavigateView: navigateWorkspaceView,
-          trip,
-          onToggleCollapsed: toggleSidebarCollapsed,
-        },
-        dialogsProps: {
-          applyPendingItineraryImport,
-          clearPendingItineraryImport,
-          createStop,
-          currentMemberId: currentMember.id,
-          deleteSelectedStop,
-          deleteStop,
-          dialogDeleteItem,
-          dialogState,
-          importPathOptions: pathOptions,
-          pendingItineraryImport,
-          promoteFoodRecommendation,
-          selectedDay,
-          selectedTripPathId,
-          selectedTripPlanId,
-          setDialogDeleteItem,
-          setDialogState,
-          setStopPlaceResolution,
-          stopPlaceResolution,
-          trip,
-          tripPlanOptions: trip.tripPlans ?? trip.planVariants,
-          updateSelectedStop,
-          deleteCancelLabel: t.itinerary.row.confirmDeleteNo,
-          deleteConfirmLabel: t.itinerary.row.confirmDeleteYes,
-          deleteTitleForActivity: (activity) =>
-            t.itinerary.row.confirmDeleteTitle({ activity }),
-          deleteBodyForActivity: (activity) =>
-            t.itinerary.row.confirmDeleteBody({ activity }),
-        },
-        frameProps: {
-          contextRailOpen,
-          importError: importItineraryError,
-          supportsContextRail,
-        },
-        railProps: {
-          enabled: supportsContextRail,
-          mounted: contextRailMounted,
-          railProps: {
-            trip: scopedTripForRecords,
-            selectedItem,
-            suggestions: scopedSuggestions,
-            stopNotes: scopedTripPlanRecords.stopNotes,
-            tasks: scopedTripPlanRecords.tasks,
-            bookingDocs: scopedTripPlanRecords.bookingDocs,
-            currentMember,
-            expenseSummary,
-            canEdit,
-            canCreateNote: canCreateStopNote,
-            canCreateSuggestion,
-            canReviewSuggestions,
-            canEditExpenses,
-            open: contextRailOpen,
-            preferredTab: contextRailPreferredTab,
-            onChangeBookingDocType: changeBookingDocType,
-            onChangeBookingDocQuickFields: changeBookingDocQuickFields,
-            onCreateNote: createStopNote,
-            onCreateExpense: createExpense,
-            onUpdateExpense: updateExpense,
-            onDeleteExpense: deleteExpense,
-            onDeleteNote: deleteStopNote,
-            onEditSelected: () => {
-              if (selectedItem) editItem(selectedItem.id);
-            },
-            onReviewSuggestion: reviewSuggestion,
-            onSuggestSelected: suggestSelectedStop,
-            onToggleTaskStatus: toggleTaskStatus,
-            onUpdateNote: updateStopNote,
-            onClose: () => setContextRailVisibility(false),
-          },
-        },
-        rolePreviewProps: {
-          currentMemberId: currentMember.id,
-          members: trip.members,
-          onChangeMember: setCurrentMemberId,
-        },
-        showRolePreview: !sessionMember,
-        showToast: requireJoin && !toastDismissed,
-        toastProps: {
-          accountSession,
-          memberUserId: currentMember.userId,
-          claimState: accountClaimState,
-          canClaim: Boolean(
-            accountSession && participantSession && !currentMember.userId,
-          ),
-          dismissing: toastDismissing,
-          onClaim: () => void claimCurrentMemberToAccount(),
-          onDismiss: dismissWorkspaceToast,
-        },
-        viewsProps,
-      }}
+      shellProps={shellProps}
     />
   );
 }

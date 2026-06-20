@@ -15,6 +15,7 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceAppFrame,
       workspaceMainShell,
       workspaceAccessProps,
+      workspaceShellProps,
       workspaceViewProps,
       workspaceFacade,
       appFacade,
@@ -57,15 +58,24 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
     expect(sagittariusApp).toContain("./workspace-access-props");
+    expect(sagittariusApp).toContain("./workspace-shell-props");
     expect(sagittariusApp).toContain("./workspace-view-props");
     expect(sagittariusApp).toContain("buildWorkspaceAccessProps");
+    expect(sagittariusApp).toContain("buildWorkspaceShellProps");
     expect(sagittariusApp).toContain("buildWorkspaceViewsProps");
     expect(sagittariusApp).not.toContain("accessProps={{");
+    expect(sagittariusApp).not.toContain("shellProps={{");
+    expect(sagittariusApp).not.toContain("dialogsProps:");
+    expect(sagittariusApp).not.toContain("toastProps:");
     expect(sagittariusApp).not.toContain("settingsProps:");
     expect(sagittariusApp).not.toContain("timelineProps:");
     expect(workspaceAccessProps).toContain("export function buildWorkspaceAccessProps");
     expect(workspaceAccessProps).toContain("sessionRestored");
     expect(workspaceAccessProps).toContain("./WorkspaceAppFrame");
+    expect(workspaceShellProps).toContain("export function buildWorkspaceShellProps");
+    expect(workspaceShellProps).toContain("dialogsProps:");
+    expect(workspaceShellProps).toContain("toastProps:");
+    expect(workspaceShellProps).toContain("./WorkspaceAppFrame");
     expect(workspaceViewProps).toContain("export function buildWorkspaceViewsProps");
     expect(workspaceViewProps).toContain("settingsProps:");
     expect(workspaceViewProps).toContain("timelineProps:");
