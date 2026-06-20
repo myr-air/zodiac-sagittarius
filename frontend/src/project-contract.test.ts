@@ -78,6 +78,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.paths.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-albums.mutations.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-albums.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.access.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.account-access.test.tsx"))).toBe(true);
@@ -173,6 +175,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/stop-notes.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/tasks.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-albums.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-albums.mutations.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/photo-albums.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-album-api.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-album-inputs.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-album-local.ts"))).toBe(true);
@@ -313,6 +317,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/SmartItineraryTable.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.sub-activities.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts"))).toBe(true);
