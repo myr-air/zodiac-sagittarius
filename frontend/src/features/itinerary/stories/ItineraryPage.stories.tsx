@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent, within } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
-import { pathIdMain, pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
+import { pathIdMain } from "@/src/features/itinerary/testing";
 import {
-  itineraryStoryDay,
   branchGraphPathOptions,
   planAPathOptions,
   planABPathOptions,
@@ -13,9 +11,6 @@ import {
   denseTripFixture,
   emptyTripFixture,
   pathNameMain,
-  pathNamePlanA,
-  pathNamePlanB,
-  pathNamePlanC,
 } from "./itinerary-story-fixtures";
 import {
   buildPageOverflowItems,
@@ -31,7 +26,24 @@ import {
   pageStressPathItems,
   pageWindowOnlyDurationItems,
 } from "./ItineraryPage.stories.support";
-import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
+import {
+  branchGraphPlay,
+  inlineQuickEditPlay,
+  mobileInspectorQuickEditPlay,
+  mobilePlay,
+  overlapConflictWarningPlay,
+  ownerPlay,
+  ownerThaiPlay,
+  pathAndDurationInteractionsPlay,
+  planABAlternativesPlay,
+  planAExamplePlay,
+  requestedPlanExamplePlay,
+  responsivePlay,
+  stressPathsPlay,
+  tableOverflowPlay,
+  travelerPlay,
+  viewerPlay,
+} from "./ItineraryPage.stories.plays";
 
 const meta = {
   title: "Pages/Itinerary",
@@ -50,14 +62,7 @@ export const Owner: Story = {
     onToggleShowAllPaths: onStoryToggleShowAllPaths,
     onUpdateItemInline: onStoryUpdateItemInline,
   }),
-  play: async ({ canvas, canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
-    await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
-  },
+  play: ownerPlay,
 };
 
 export const InlineQuickEdit: Story = {
@@ -65,24 +70,13 @@ export const InlineQuickEdit: Story = {
     ...Owner.args,
     onUpdateItemInline: onStoryInlineQuickEdit,
   },
-  play: async ({ canvas, canvasElement }) => {
-    onStoryInlineQuickEdit.mockClear();
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvas.getByRole("textbox", { name: /Edit activity Dim Dim Sum/i })).toHaveValue(
-      "Dim Dim Sum ที่ Tim Ho Wan",
-    );
-    await expect(onStoryInlineQuickEdit).not.toHaveBeenCalled();
-  },
+  play: inlineQuickEditPlay,
 };
 
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
-    await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
-  },
+  play: ownerThaiPlay,
 };
 
 export const TimeWindowDuration: Story = {
@@ -98,13 +92,7 @@ export const Viewer: Story = {
     ...Owner.args,
     role: "viewer",
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText(/Editing requires organizer access/i)).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Add stop or activity/i })).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Edit Dim Dim Sum/i })).toBeNull();
-  },
+  play: viewerPlay,
 };
 
 export const Traveler: Story = {
@@ -112,12 +100,7 @@ export const Traveler: Story = {
     ...Owner.args,
     role: "traveler",
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
-    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
-    await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
-  },
+  play: travelerPlay,
 };
 
 export const Dense: Story = {
@@ -165,10 +148,7 @@ export const OverlapConflictWarning: Story = {
       },
     ],
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-    await expect(canvas.queryByRole("button", { name: /Auto fix overlaps/i })).toBeNull();
-  },
+  play: overlapConflictWarningPlay,
 };
 
 export const PlanAExample: Story = {
@@ -180,13 +160,7 @@ export const PlanAExample: Story = {
     showAllPaths: true,
     pathOptions: planAPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Itinerary table/i })).toHaveClass("table-panel", "grid");
-    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`) })).toBeInTheDocument();
-  },
+  play: planAExamplePlay,
 };
 
 export const PlanABAlternatives: Story = {
@@ -198,13 +172,7 @@ export const PlanABAlternatives: Story = {
     showAllPaths: true,
     pathOptions: planABPathOptions,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`) })).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
-  },
+  play: planABAlternativesPlay,
 };
 
 export const PathAndDurationInteractions: Story = {
@@ -220,28 +188,7 @@ export const PathAndDurationInteractions: Story = {
     onToggleShowAllPaths: onStoryToggleShowAllPaths,
     onUpdateItemInline: onStoryUpdateItemInline,
   },
-  play: async ({ canvas, canvasElement }) => {
-    const documentCanvas = within(canvasElement.ownerDocument.body);
-    const dayToggle = canvas.getByRole("button", { name: /Collapse Day 2/i });
-    await userEvent.click(dayToggle);
-    await expect(dayToggle).toHaveAttribute("aria-expanded", "false");
-    await userEvent.click(dayToggle);
-    await expect(dayToggle).toHaveAttribute("aria-expanded", "true");
-
-    await userEvent.click(canvas.getByRole("button", { name: /Path for Day 2/i }));
-    const dayPathMenu = documentCanvas.getByRole("listbox", { name: /Path for Day 2/i });
-    await userEvent.click(within(dayPathMenu).getByRole("option", { name: pathNamePlanB }));
-    await expect(onStoryChangeDayPath).toHaveBeenCalledWith(itineraryStoryDay, pathIdStoryPlanB);
-
-    await userEvent.click(canvas.getByRole("button", { name: "Trip Plan controls" }));
-    await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
-    await expect(onStoryToggleShowAllPaths).toHaveBeenCalledWith(true);
-
-    await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Move Harbour breakfast to path/i }), pathIdStoryPlanA);
-    await expect(onStoryMoveItemToPath).toHaveBeenCalledWith("page-plan-ab-main-breakfast", pathIdStoryPlanA);
-
-    await expect(canvas.queryByRole("button", { name: /Edit duration Harbour breakfast/i })).not.toBeInTheDocument();
-  },
+  play: pathAndDurationInteractionsPlay,
 };
 
 export const BranchGraph: Story = {
@@ -253,12 +200,7 @@ export const BranchGraph: Story = {
     showAllPaths: true,
     pathOptions: branchGraphPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Dim Sum morning on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: /Rain museum on Rain plan/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`Late coffee on ${pathNamePlanA}`) })).toBeInTheDocument();
-  },
+  play: branchGraphPlay,
 };
 
 export const RequestedPlanExample: Story = {
@@ -270,12 +212,7 @@ export const RequestedPlanExample: Story = {
     showAllPaths: true,
     pathOptions: planAPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`) })).toBeInTheDocument();
-  },
+  play: requestedPlanExamplePlay,
 };
 
 export const StressPaths: Story = {
@@ -287,10 +224,7 @@ export const StressPaths: Story = {
     showAllPaths: true,
     pathOptions: stressPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Taxi direct route on ${pathNamePlanC}`) })).toBeInTheDocument();
-  },
+  play: stressPathsPlay,
 };
 
 export const TableOverflow: Story = {
@@ -303,43 +237,31 @@ export const TableOverflow: Story = {
     pathOptions: stressPathOptions,
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvasElement.querySelector(".activity-path-graph")).toBeInTheDocument();
-  },
+  play: tableOverflowPlay,
 };
 
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
-  },
+  play: mobilePlay,
 };
 
 export const MobileInspectorQuickEdit: Story = {
@@ -348,12 +270,7 @@ export const MobileInspectorQuickEdit: Story = {
     onUpdateItemInline: onStoryInlineQuickEdit,
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    onStoryInlineQuickEdit.mockClear();
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
-    await expect(onStoryInlineQuickEdit).not.toHaveBeenCalled();
-  },
+  play: mobileInspectorQuickEditPlay,
 };
 
 export const MobileViewer: Story = {
@@ -362,8 +279,5 @@ export const MobileViewer: Story = {
     role: "viewer",
   },
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-    await expect(canvasElement.querySelector(".mobile-itinerary-inspector")).toBeNull();
-  },
+  play: mobilePlay,
 };

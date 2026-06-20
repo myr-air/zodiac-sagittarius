@@ -55,6 +55,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/TripExpensesPage.splits.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.test-support.tsx",
   "src/features/itinerary/stories/ItineraryPage.stories.support.ts",
+  "src/features/itinerary/stories/ItineraryPage.stories.plays.ts",
   "src/features/itinerary/stories/ItineraryTemplate.stories.support.ts",
   "src/features/itinerary/stories/itinerary-story-assertions.ts",
   "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
