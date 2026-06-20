@@ -104,7 +104,7 @@ export function useWorkspaceItineraryCommands({
     setTripPlanError,
   });
 
-  const { addStop, addSubActivity } = useWorkspaceItineraryAddCommands({
+  const addCommands = useWorkspaceItineraryAddCommands({
     canEdit,
     setContextRailVisibility,
     setDialogState,
@@ -115,12 +115,7 @@ export function useWorkspaceItineraryCommands({
     updateItineraryItemInline,
   });
 
-  const {
-    moveItem,
-    moveItemIntoPlanBlock,
-    moveItemToDay,
-    moveItemToPath,
-  } = useWorkspaceItineraryMoveCommands({
+  const moveCommands = useWorkspaceItineraryMoveCommands({
     canEdit,
     commitTrip,
     isApiMode,
@@ -134,30 +129,29 @@ export function useWorkspaceItineraryCommands({
     updateApiTrip,
   });
 
-  const { createStop, updateSelectedStop } =
-    useWorkspaceItineraryStopSaveCommands({
-      commitTrip,
-      currentMemberId,
-      dialogState,
-      effectivePlaceResolver,
-      isApiMode,
-      nextClientMutationId,
-      participantSession,
-      pathOptions,
-      pathSelection,
-      planItems,
-      resolvedApiClient,
-      selectedDay,
-      selectedTripPlanId,
-      setContextRailVisibility,
-      setDialogState,
-      setSelectedItemId,
-      setStopPlaceResolution,
-      trip,
-      updateApiTrip,
-    });
+  const stopSaveCommands = useWorkspaceItineraryStopSaveCommands({
+    commitTrip,
+    currentMemberId,
+    dialogState,
+    effectivePlaceResolver,
+    isApiMode,
+    nextClientMutationId,
+    participantSession,
+    pathOptions,
+    pathSelection,
+    planItems,
+    resolvedApiClient,
+    selectedDay,
+    selectedTripPlanId,
+    setContextRailVisibility,
+    setDialogState,
+    setSelectedItemId,
+    setStopPlaceResolution,
+    trip,
+    updateApiTrip,
+  });
 
-  const { resolveMissingMapCoordinates } = useWorkspaceItineraryMapCommands({
+  const mapCommands = useWorkspaceItineraryMapCommands({
     canEdit,
     effectivePlaceResolver,
     nextClientMutationId,
@@ -165,7 +159,7 @@ export function useWorkspaceItineraryCommands({
     updateItineraryItemInline,
   });
 
-  const { deleteStop } = useWorkspaceItineraryDeleteCommand({
+  const deleteStop = useWorkspaceItineraryDeleteCommand({
     canEdit,
     commitTrip,
     isApiMode,
@@ -180,16 +174,11 @@ export function useWorkspaceItineraryCommands({
   });
 
   return {
-    addStop,
-    addSubActivity,
-    createStop,
-    moveItem,
-    moveItemIntoPlanBlock,
-    moveItemToDay,
-    moveItemToPath,
-    resolveMissingMapCoordinates,
+    ...addCommands,
+    ...moveCommands,
+    ...stopSaveCommands,
+    ...mapCommands,
     updateItineraryItemInline,
-    updateSelectedStop,
-    deleteStop,
+    ...deleteStop,
   };
 }
