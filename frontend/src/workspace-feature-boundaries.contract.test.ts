@@ -29,6 +29,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeMapViewport,
       routeMapUtils,
       stopDialog,
+      routeMapCanvas,
       stopDialogStory,
       stopDialogStorySupport,
       stopDialogModel,
@@ -40,6 +41,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       dateTimePickers,
       itineraryStoryFixtures,
       itineraryStoryPathScenarios,
+      itineraryStoryPathItems,
+      itineraryStoryPathOptions,
       itineraryPageStory,
       itineraryPageStoryPlays,
       itineraryTemplateStory,
@@ -52,6 +55,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       workspaceFrameActionProps,
       photoAlbumDialog,
       photoAlbumDialogState,
+      expenseSummary,
+      expenseSettlements,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -89,6 +94,13 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
     expect(photoAlbumDialogState).toContain("async function submit");
+    expect(expenseSummary).toContain("./expense-settlements");
+    expect(expenseSummary).not.toContain("function buildSettlementSuggestions");
+    expect(expenseSummary).not.toContain("function expenseReminderKey");
+    expect(expenseSettlements).toContain("export function buildSettlementSuggestions");
+    expect(expenseSettlements).toContain("export function attachReminderHistory");
+    expect(expenseSettlements).toContain("export function upsertExpenseReminder");
+    expect(expenseSettlements).toContain("function expenseReminderKey");
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
     expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
@@ -100,8 +112,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
     expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
     expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
-    expect(itineraryStoryPathScenarios).toContain("buildItineraryStoryPathItems");
-    expect(itineraryStoryPathScenarios).toContain("export const stressPathItemsBase");
+    expect(itineraryStoryPathScenarios).toContain("./itinerary-story-path-items");
+    expect(itineraryStoryPathScenarios).toContain("./itinerary-story-path-options");
+    expect(itineraryStoryPathItems).toContain("buildItineraryStoryPathItems");
+    expect(itineraryStoryPathItems).toContain("export const stressPathItemsBase");
+    expect(itineraryStoryPathOptions).toContain("export const stressPathOptions");
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
@@ -152,7 +167,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(routeLiveMapHook).not.toContain("document.createElement(\"span\")");
     expect(routeLiveMapMarkers).toContain("export function synchronizeLiveRouteMarkers");
     expect(routeLiveMapMarkers).toContain("document.createElement(\"span\")");
-    expect(routeMapView).toContain("RouteMapUnresolvedPanel");
+    expect(routeMapView).toContain("RouteMapCanvas");
+    expect(routeMapView).not.toContain("RouteMapUnresolvedPanel");
+    expect(routeMapCanvas).toContain("RouteMapUnresolvedPanel");
     expect(routeMapView).not.toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("export function RouteMapUnresolvedPanel");
