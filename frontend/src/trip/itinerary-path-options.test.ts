@@ -3,7 +3,7 @@ import { seedTrip } from "./seed";
 import {
   deriveItineraryPathOptions,
   itineraryPathOptionsForDay,
-} from "./itinerary";
+} from "./itinerary-path-options";
 import {
   pathIdPlanA,
   pathIdRain,

@@ -1,6 +1,6 @@
 import type { ItineraryItem } from "./types";
-import { itineraryItemPathId } from "./itinerary-path-identifiers";
 import {
+  itineraryItemPathId,
   mainItineraryPathId,
 } from "./itinerary-path-identifiers";
 import { sortItineraryItemsByDayAndHierarchy } from "./itinerary-item-ordering";
