@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  bookingDocQuickFieldsInputFromRecord,
-  bookingDocInputFromRecord,
   createLocalBookingDoc,
   normalizeBookingDocTitle,
   removeBookingDocFromTrip,
@@ -9,6 +7,7 @@ import {
   resolveBookingDocCreateTripPlanId,
   updateLocalBookingDocInTrip,
 } from "./booking-doc-local";
+import { bookingDocInputFromRecord } from "./booking-doc-record-inputs";
 import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 describe("booking doc local trip mutations", () => {
@@ -121,21 +120,4 @@ describe("booking doc local trip mutations", () => {
     ).toBe("plan-explicit");
   });
 
-  it("projects quick-field edits only when provider or confirmation changes", () => {
-    const doc = bookingDoc({
-      confirmationCode: "ABC123",
-      providerName: "Ferry Co",
-    });
-
-    expect(bookingDocQuickFieldsInputFromRecord(doc, {})).toBeNull();
-    expect(
-      bookingDocQuickFieldsInputFromRecord(doc, {
-        confirmationCode: null,
-      }),
-    ).toEqual(expect.objectContaining({
-      confirmationCode: null,
-      providerName: "Ferry Co",
-      title: "Booking",
-    }));
-  });
 });
