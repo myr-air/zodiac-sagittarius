@@ -64,6 +64,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-client.expenses.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.imports.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.itinerary.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client.sessions.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs-estimates.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs.test-support.ts"))).toBe(true);
@@ -86,6 +87,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.overview.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.settings.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans-api.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/sagittarius-app.test-api-client.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/sagittarius-app.test-fixtures.tsx"))).toBe(true);
