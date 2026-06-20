@@ -2,8 +2,6 @@ import { ActivityLocationLine } from "./ActivityLocationLine";
 import { ActivityTypePicker } from "./ActivityTypePicker";
 import { InlineActivityField } from "./InlineActivityField";
 import { ActivityTimeButton } from "./ActivityTimeButton";
-import { SubActivityList } from "./SubActivityList";
-import { SubActivityModal } from "./SubActivityModal";
 import { ActivityActionButtons } from "./ActivityActionButtons";
 import {
   activityBodyClassName,
@@ -17,9 +15,9 @@ import {
   activityMobileTypePickerClassName,
   activityTabletActionLayerClassName,
 } from "../smart-itinerary-table.styles";
-import { ItineraryNoteModal } from "./ItineraryNoteModal";
 import { ActivitySubActivityToggle } from "./ActivityCellControls";
 import { ActivityCellMeta } from "./ActivityCellMeta";
+import { ActivityCellOverlays } from "./ActivityCellOverlays";
 import type { ActivityCellProps } from "./activity-cell.types";
 import { useActivityCellModel } from "./use-activity-cell-model";
 
@@ -179,59 +177,31 @@ export function ActivityCell({
             {renderActivityActions(true)}
           </div>
         ) : null}
-        {subActivityModalOpen ? (
-          <SubActivityModal
-            canEdit={canEdit}
-            item={item}
-            itineraryLabels={itineraryLabels}
-            locale={locale}
-            subItems={subItems}
-            onAddSubActivity={onAddSubActivity}
-            onAddNoteForItem={onAddNoteForItem}
-            onOpenNoteForItem={openNoteModal}
-            onClose={() => setSubActivityModalOpen(false)}
-            onDeleteItem={onDeleteItem}
-            onEditItem={onEditItem}
-            onAddBookingForItem={onAddBookingForItem}
-            onSaveBookingForItem={onSaveBookingForItem}
-            onUnlinkBookingForItem={onUnlinkBookingForItem}
-            bookingDocs={bookingDocs}
-            bookingLinkItems={bookingLinkItems}
-            onUpdateItemInline={onUpdateItemInline}
-          />
-        ) : null}
       </div>
-      <SubActivityList
+      <ActivityCellOverlays
+        bookingDocs={bookingDocs}
+        bookingLinkItems={bookingLinkItems}
         canEdit={canEdit}
         item={item}
         itineraryLabels={itineraryLabels}
         locale={locale}
-        selected={selected}
-        subItems={subItems}
-        onAddSubActivity={onAddSubActivity}
-        onAddNoteForItem={onAddNoteForItem}
-        onOpenNoteForItem={openNoteModal}
+        noteTarget={noteTarget}
         onAddBookingForItem={onAddBookingForItem}
-        onSaveBookingForItem={onSaveBookingForItem}
-        onUnlinkBookingForItem={onUnlinkBookingForItem}
-        bookingDocs={bookingDocs}
-        bookingLinkItems={bookingLinkItems}
+        onAddNoteForItem={onAddNoteForItem}
+        onAddSubActivity={onAddSubActivity}
+        onCloseNote={() => setNoteTarget(null)}
+        onCloseSubActivityModal={() => setSubActivityModalOpen(false)}
         onDeleteItem={onDeleteItem}
         onEditItem={onEditItem}
+        onOpenNoteForItem={openNoteModal}
+        onSaveBookingForItem={onSaveBookingForItem}
+        onUnlinkBookingForItem={onUnlinkBookingForItem}
         onUpdateItemInline={onUpdateItemInline}
-        visible={subActivitiesExpanded || (selected && subItems.length === 0)}
+        selected={selected}
+        subActivitiesExpanded={subActivitiesExpanded}
+        subActivityModalOpen={subActivityModalOpen}
+        subItems={subItems}
       />
-      {noteTarget && onAddNoteForItem ? (
-        <ItineraryNoteModal
-          item={noteTarget}
-          locale={locale}
-          onClose={() => setNoteTarget(null)}
-          onSave={async (body) => {
-            await onAddNoteForItem(noteTarget.id, body);
-            setNoteTarget(null);
-          }}
-        />
-      ) : null}
     </div>
   );
 }
