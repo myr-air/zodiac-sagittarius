@@ -140,6 +140,8 @@ export const workspaceBoundarySourcePaths = {
   portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
   portalTripWizardMainPanel: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx",
   portalTripWizardModel: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts",
+  portalTripWizardDestinationState:
+    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-destination-state.ts",
   portalTripWizardMobileState: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-mobile-state.ts",
   portalTripWizardDerivedState: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts",
   portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx",

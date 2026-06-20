@@ -11,6 +11,7 @@ describe("Sagittarius account source boundaries", () => {
       portalTripWizard,
       portalTripWizardMainPanel,
       portalTripWizardModel,
+      portalTripWizardDestinationState,
       portalTripWizardMobileState,
       portalTripWizardDerivedState,
       portalTripWizardActions,
@@ -79,13 +80,16 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountTripWizardSupport).not.toContain("function randomToken");
     expect(accountTripWizardSupport).toContain("export function applyTripDestinationCities");
     expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
-    expect(portalTripWizardModel).toContain("applyTripDestinationCities");
     expect(portalTripWizardModel).toContain("applyTripCalendarDate");
     expect(portalTripWizardModel).toContain("buildPortalTripWizardDerivedState");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardDestinationState");
     expect(portalTripWizardModel).toContain("usePortalTripWizardMobileState");
     expect(portalTripWizardModel).not.toContain("scrollIntoView");
     expect(portalTripWizardModel).not.toContain("tripStepSectionClassName");
     expect(portalTripWizardModel).not.toContain("function tripStepComplete");
+    expect(portalTripWizardDestinationState).toContain("applyTripDestinationCities");
+    expect(portalTripWizardDestinationState).toContain("customTripCity");
+    expect(portalTripWizardDestinationState).toContain("tripCityFromOption");
     expect(portalTripWizardMobileState).toContain("export function usePortalTripWizardMobileState");
     expect(portalTripWizardMobileState).toContain("scrollIntoView");
     expect(portalTripWizardMobileState).toContain("tripStepSectionClassName");

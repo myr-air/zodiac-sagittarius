@@ -1,22 +1,18 @@
-import { type Dispatch, type FormEvent, type SetStateAction, useEffect, useRef, useState } from "react";
+import { type Dispatch, type FormEvent, type SetStateAction, useEffect, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { TripCity } from "@/src/trip/types";
 import {
   applyTripCalendarDate,
-  applyTripDestinationCities,
   applyTripEndDate,
   applyTripStartDate,
-  customTripCity,
   generateJoinPassword,
   randomToken,
-  tripCityFromOption,
-  type TripCityOption,
   type TripWizardDateSelectionStep,
 } from "./account-trip-wizard-support";
 import { buildPortalTripWizardCredentials } from "./portal-trip-wizard-credentials";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
+import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
 
 interface PortalTripWizardModelOptions {
@@ -36,8 +32,6 @@ export function usePortalTripWizardModel({
 }: PortalTripWizardModelOptions) {
   const { locale, t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
-  const [countryQuery, setCountryQuery] = useState("");
-  const [cityQuery, setCityQuery] = useState("");
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
   const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
   const [selectingDateStep, setSelectingDateStep] = useState<TripWizardDateSelectionStep>("depart");
@@ -48,7 +42,6 @@ export function usePortalTripWizardModel({
     mobileStepClassName,
     setActiveMobileStep,
   } = usePortalTripWizardMobileState();
-  const destinationSearchRef = useRef<HTMLInputElement | null>(null);
   const derivedState = buildPortalTripWizardDerivedState({
     accessSalt,
     activeMobileStep,
@@ -66,6 +59,11 @@ export function usePortalTripWizardModel({
     selectedDestinationNames: derivedState.selectedDestinationNames,
     tripName: tripForm.name,
     wizard,
+  });
+  const destinationState = usePortalTripWizardDestinationState({
+    onChange,
+    selectedDestinationCities: derivedState.selectedDestinationCities,
+    selectedDestinationNames: derivedState.selectedDestinationNames,
   });
 
   useEffect(() => {
@@ -100,21 +98,6 @@ export function usePortalTripWizardModel({
     }));
   }
 
-  function updateDestinationCities(nextCities: TripCity[]) {
-    onChange((current) => applyTripDestinationCities(current, nextCities));
-    setCountryQuery("");
-    setCityQuery("");
-  }
-
-  function selectDestinationCity(city: TripCityOption) {
-    if (derivedState.selectedDestinationCities.some((selected) => selected.city.toLocaleLowerCase() === city.city.toLocaleLowerCase() && selected.countryCode === city.countryCode)) return;
-    updateDestinationCities([...derivedState.selectedDestinationCities, tripCityFromOption(city)]);
-  }
-
-  function focusDestinationSearch() {
-    destinationSearchRef.current?.focus();
-  }
-
   function swapTravelDates() {
     onChange((current) => ({ ...current, startDate: current.endDate, endDate: current.startDate }));
   }
@@ -125,16 +108,6 @@ export function usePortalTripWizardModel({
 
   function updateEndDate(date: string) {
     onChange((current) => applyTripEndDate(current, date));
-  }
-
-  function addCityStop() {
-    const nextCity = (countryQuery || cityQuery).trim();
-    if (!nextCity || derivedState.selectedDestinationNames.some((name) => name.toLocaleLowerCase() === nextCity.toLocaleLowerCase())) return;
-    updateDestinationCities([...derivedState.selectedDestinationCities, customTripCity(nextCity, derivedState.selectedDestinationCities[0])]);
-  }
-
-  function removeCityStop(cityName: string) {
-    updateDestinationCities(derivedState.selectedDestinationCities.filter((city) => city.city !== cityName));
   }
 
   function selectCalendarDate(date: string) {
@@ -175,25 +148,17 @@ export function usePortalTripWizardModel({
     ...derivedState,
     ...summary,
     activeMobileStep,
-    addCityStop,
+    ...destinationState,
     changeOwnerDisplayName,
-    cityQuery,
     clearTravelDates,
     copyJoinCode,
-    countryQuery,
-    destinationSearchRef,
-    focusDestinationSearch,
     hasCopiedJoinCode,
     mobileStepButtonRefs,
     mobileStepClassName,
     regenerateCredentials,
-    removeCityStop,
     selectCalendarDate,
-    selectDestinationCity,
     selectingDateStep,
     setActiveMobileStep,
-    setCityQuery,
-    setCountryQuery,
     submitWizard,
     swapTravelDates,
     t,
