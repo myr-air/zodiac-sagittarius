@@ -121,6 +121,8 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/trip-record-types.ts",
   "src/trip/trip-suggestion-types.ts",
   "src/trip/trip-task-types.ts",
+  "src/trip/trip-defaults.ts",
+  "src/trip/trip-defaults.test.ts",
   "src/trip/participant-session-storage.ts",
   "src/trip/seed-itinerary-data.test.ts",
   "src/trip/seed-itinerary-data.ts",

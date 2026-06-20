@@ -12,6 +12,7 @@ import type {
   TripSummaryResponse,
   TripTaskResponse,
 } from "./api-response-types";
+import { DEFAULT_TRIP_TIMEZONE } from "./trip-defaults";
 
 export function mapTripSummary(trip: TripSummaryResponse): Trip {
   return {
@@ -27,7 +28,7 @@ export function mapTripSummary(trip: TripSummaryResponse): Trip {
     destinationCities: trip.destinationCities ?? [],
     countries: trip.countries ?? [],
     partySize: trip.partySize ?? 1,
-    defaultTimezone: trip.defaultTimezone ?? trip.destinationCities?.[0]?.timezone ?? "Asia/Bangkok",
+    defaultTimezone: trip.defaultTimezone ?? trip.destinationCities?.[0]?.timezone ?? DEFAULT_TRIP_TIMEZONE,
     startDate: trip.startDate,
     endDate: trip.endDate,
     activePlanVariantId: trip.activePlanVariantId ?? "",

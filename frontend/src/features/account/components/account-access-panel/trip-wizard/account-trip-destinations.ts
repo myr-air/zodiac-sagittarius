@@ -1,3 +1,4 @@
+import { DEFAULT_TRIP_ORIGIN_CITY } from "@/src/trip/trip-defaults";
 import type { TripCity } from "@/src/trip/types";
 
 export type TripContinent = "all" | "asia" | "europe" | "north-america" | "south-america" | "oceania" | "africa";
@@ -74,12 +75,7 @@ export const tripCityOptions: TripCityOption[] = [
 ];
 
 export const defaultTripOriginCity: TripCityOption = tripCityOptions.find((city) => city.city === "Bangkok" && city.countryCode === "TH") ?? {
-  city: "Bangkok",
-  country: "Thailand",
-  countryCode: "TH",
-  timezone: "Asia/Bangkok",
-  latitude: 13.7563,
-  longitude: 100.5018,
+  ...DEFAULT_TRIP_ORIGIN_CITY,
   airportCode: "BKK",
   capital: true,
 };
