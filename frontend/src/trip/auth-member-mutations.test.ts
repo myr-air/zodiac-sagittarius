@@ -1,66 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
 import {
-  canTripRole,
   appendTripParticipant,
-  buildCreateMemberRequest,
-  buildPatchMemberAccessStatusRequest,
-  buildPatchMemberPasswordRequest,
-  buildPatchMemberRoleRequest,
-  buildUpdatePresenceRequest,
   claimTripParticipant,
   createTripParticipant,
-  createTripParticipantSession,
-  findSessionMember,
   hashLocalSecret,
   linkTripParticipantToUser,
   replaceTripParticipant,
   resetTripParticipantClaim,
-  setTripParticipantPassword,
   setTripParticipantAccessStatus,
+  setTripParticipantPassword,
   updateTripParticipantRole,
-  verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "./auth";
 
-describe("trip participant auth", () => {
-  it("accepts the seed trip credentials before participant selection", () => {
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "seed-trip-pass" })).toBe(true);
-    expect(verifyTripCredentials(seedTrip, { joinId: " HK-SZ-2025 ", password: " seed-trip-pass " })).toBe(true);
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "wrong-pass" })).toBe(false);
-    expect(verifyTripCredentials(seedTrip, { joinId: "HK-SZ-2025", password: "wrong" })).toBe(false);
-  });
-
-  it("claims an unclaimed participant with a password and creates a local session", () => {
-    const trip = {
-      ...seedTrip,
-      members: seedTrip.members.map((member) =>
-        member.id === "member-nam" ? { ...member, claimPasswordHash: undefined, claimedAt: undefined } : member,
-      ),
-    };
-
-    const claimed = claimTripParticipant(trip, "member-nam", "my-trip-pin");
-    const member = claimed.members.find((candidate) => candidate.id === "member-nam");
-    const session = createTripParticipantSession(claimed, "member-nam");
-
-    expect(member?.claimedAt).toBeTruthy();
-    expect(member?.claimPasswordHash).toBeTruthy();
-    expect(verifyTripParticipantPassword(member!, "my-trip-pin")).toBe(true);
-    expect(session).toMatchObject({ tripId: seedTrip.id, memberId: "member-nam" });
-    expect(session.sessionToken).toMatch(/^local-/);
-    expect(session.sessionToken).not.toContain(seedTrip.id);
-    expect(session.sessionToken).not.toContain("member-nam");
-    expect(session.expiresAt).toBeTruthy();
-  });
-
-  it("rejects an existing participant password when someone tries to impersonate them", () => {
-    const claimed = claimTripParticipant(seedTrip, "member-beam", "organizer-pin");
-    const member = claimed.members.find((candidate) => candidate.id === "member-beam");
-
-    expect(verifyTripParticipantPassword(member!, "bad-pin")).toBe(false);
-    expect(verifyTripParticipantPassword(member!, "organizer-pin")).toBe(true);
-  });
-
+describe("trip participant member mutations", () => {
   it("ignores weak, duplicate, owner, and disabled participant mutations", () => {
     const disabled = setTripParticipantAccessStatus(seedTrip, "member-nam", "disabled");
     const reactivated = setTripParticipantAccessStatus(disabled, "member-nam", "active");
@@ -88,35 +42,6 @@ describe("trip participant auth", () => {
     expect(blank).toBe(fallback);
   });
 
-  it("builds member API create and patch requests", () => {
-    expect(
-      buildCreateMemberRequest(
-        { displayName: "New friend", role: "traveler" },
-        { memberCount: 2 },
-      ),
-    ).toEqual({
-      displayName: "New friend",
-      role: "traveler",
-      color: "#f97316",
-    });
-
-    expect(buildPatchMemberRoleRequest("organizer")).toEqual({
-      role: "organizer",
-    });
-    expect(buildPatchMemberAccessStatusRequest("disabled")).toEqual({
-      accessStatus: "disabled",
-    });
-    expect(buildPatchMemberPasswordRequest("new-pin")).toEqual({
-      participantPassword: "new-pin",
-    });
-    expect(buildUpdatePresenceRequest("online", {
-      clientMutationId: "mutation-presence-online",
-    })).toEqual({
-      clientMutationId: "mutation-presence-online",
-      presence: "online",
-    });
-  });
-
   it("replaces and appends participants from API responses", () => {
     const replacement = {
       ...seedTrip.members.find((member) => member.id === "member-beam")!,
@@ -135,18 +60,6 @@ describe("trip participant auth", () => {
     expect(replaced.members.find((member) => member.id === "member-aom")).toBe(seedTrip.members.find((member) => member.id === "member-aom"));
     expect(appended.members).toHaveLength(seedTrip.members.length + 1);
     expect(appended.members.at(-1)?.id).toBe("member-new");
-  });
-
-  it("maps roles to trip capabilities", () => {
-    expect(canTripRole("organizer", "managePeople")).toBe(true);
-    expect(canTripRole("owner", "manageTripPlans")).toBe(true);
-    expect(canTripRole("organizer", "manageTripPlans")).toBe(true);
-    expect(canTripRole("traveler", "createSuggestion")).toBe(true);
-    expect(canTripRole("traveler", "editItinerary")).toBe(true);
-    expect(canTripRole("traveler", "manageTripPlans")).toBe(false);
-    expect(canTripRole("viewer", "viewPlan")).toBe(true);
-    expect(canTripRole("viewer", "createSuggestion")).toBe(false);
-    expect(canTripRole("viewer", "manageTripPlans")).toBe(false);
   });
 
   it("lets organizers reset a participant claim when someone picked the wrong identity", () => {
@@ -187,20 +100,6 @@ describe("trip participant auth", () => {
     expect(member?.claimPasswordHash).toBeNull();
     expect(member?.claimedAt).toBeNull();
     expect(member?.presence).toBe("offline");
-  });
-
-  it("rejects expired participant sessions", () => {
-    const expiredSession = createTripParticipantSession(seedTrip, "member-nam", {
-      now: new Date("2026-05-28T00:00:00.000Z"),
-      rememberDays: -1,
-    });
-
-    expect(expiredSession.expiresAt).toBe("2026-05-27T00:00:00.000Z");
-    expect(findSessionMember(seedTrip, expiredSession, new Date("2026-05-28T00:00:00.000Z"))).toBeNull();
-    expect(findSessionMember(seedTrip, null)).toBeNull();
-    expect(findSessionMember(seedTrip, { ...expiredSession, tripId: "other-trip" }, new Date("2026-05-26T00:00:00.000Z"))).toBeNull();
-    expect(findSessionMember(seedTrip, { ...expiredSession, memberId: "missing-member" }, new Date("2026-05-26T00:00:00.000Z"))).toBeNull();
-    expect(findSessionMember(setTripParticipantAccessStatus(seedTrip, "member-nam", "disabled"), { ...expiredSession, memberId: "member-nam" }, new Date("2026-05-26T00:00:00.000Z"))).toBeNull();
   });
 
   it("links a guest participant to a permanent account", () => {
