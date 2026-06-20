@@ -1,8 +1,8 @@
-import { FormEvent, useState } from "react";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { memberDisplayName } from "./context-rail.utils";
+import { useContextRailNoteForm } from "./use-context-rail-note-form";
 import type {
   ItineraryItem,
   Member,
@@ -53,31 +53,21 @@ export function ContextRailNotesSection({
   onUpdateNote,
 }: ContextRailNotesSectionProps) {
   const { t } = useI18n();
-  const [noteBody, setNoteBody] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editingNoteBody, setEditingNoteBody] = useState("");
-
-  function submitNote(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const body = noteBody.trim();
-    if (!body || !itemId) return;
-    onCreateNote({ itemId, body });
-    setNoteBody("");
-  }
-
-  function startEditingNote(note: StopNote) {
-    setEditingNoteId(note.id);
-    setEditingNoteBody(note.body);
-  }
-
-  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const body = editingNoteBody.trim();
-    if (!editingNoteId || !body) return;
-    onUpdateNote({ noteId: editingNoteId, body });
-    setEditingNoteId(null);
-    setEditingNoteBody("");
-  }
+  const {
+    cancelEditingNote,
+    editingNoteBody,
+    editingNoteId,
+    noteBody,
+    setEditingNoteBody,
+    setNoteBody,
+    startEditingNote,
+    submitNote,
+    submitNoteEdit,
+  } = useContextRailNoteForm({
+    itemId,
+    onCreateNote,
+    onUpdateNote,
+  });
 
   return (
     <section
@@ -142,7 +132,7 @@ export function ContextRailNotesSection({
                       type="button"
                       variant="ghost"
                       className={detailButtonClassName}
-                      onClick={() => setEditingNoteId(null)}
+                      onClick={cancelEditingNote}
                     >
                       {t.common.actions.cancel}
                     </Button>
