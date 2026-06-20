@@ -7,6 +7,7 @@ import type { TripCity } from "@/src/trip/types";
 import { Button, SwapButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import {
+  defaultTripOriginCity,
   routeCalendarDays,
   tripWizardSteps,
 } from "./account-trip-wizard-support";
@@ -113,7 +114,7 @@ export function TripWizardDatesStep({
           <label>
             <span>{wizard.fields.defaultTimezone}</span>
             <input
-              value={tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || "Asia/Bangkok"}
+              value={tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || defaultTripOriginCity.timezone}
               onChange={(event) => onChange((current) => ({ ...current, defaultTimezone: event.target.value }))}
             />
           </label>

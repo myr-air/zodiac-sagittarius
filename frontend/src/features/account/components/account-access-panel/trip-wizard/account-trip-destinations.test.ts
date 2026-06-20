@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   citySuggestions,
   customTripCity,
+  defaultTripOriginCity,
   destinationMetaParts,
   destinationRouteCode,
   tripDestinationCards,
@@ -29,7 +30,13 @@ describe("account trip destination helpers", () => {
     expect(destinationRouteCode(["Thailand", "Tokyo"])).toBe("TYO");
     expect(destinationRouteCode(["Japan"])).toBe("JP");
     expect(destinationRouteCode(["Narnia"])).toBe("NAR");
-    expect(customTripCity("Narnia", { city: "Bangkok", country: "Thailand", countryCode: "TH", timezone: "Asia/Bangkok", latitude: 13.7563, longitude: 100.5018 })).toMatchObject({
+    expect(defaultTripOriginCity).toMatchObject({
+      city: "Bangkok",
+      country: "Thailand",
+      countryCode: "TH",
+      timezone: "Asia/Bangkok",
+    });
+    expect(customTripCity("Narnia", defaultTripOriginCity)).toMatchObject({
       city: "Narnia",
       country: "Thailand",
       countryCode: "TH",

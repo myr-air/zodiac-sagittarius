@@ -16,6 +16,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/stop-notes.test.ts",
   "src/trip/tasks.test.ts",
   "src/trip/booking-docs.test.ts",
+  "src/trip/api-client.workspace-routes.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.graph.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.map-timeline.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.navigation.test.tsx",

@@ -73,6 +73,17 @@ export const tripCityOptions: TripCityOption[] = [
   { city: "San Francisco", country: "United States", countryCode: "US", timezone: "America/Los_Angeles", latitude: 37.7749, longitude: -122.4194, airportCode: "SFO" },
 ];
 
+export const defaultTripOriginCity: TripCityOption = tripCityOptions.find((city) => city.city === "Bangkok" && city.countryCode === "TH") ?? {
+  city: "Bangkok",
+  country: "Thailand",
+  countryCode: "TH",
+  timezone: "Asia/Bangkok",
+  latitude: 13.7563,
+  longitude: 100.5018,
+  airportCode: "BKK",
+  capital: true,
+};
+
 export function destinationMetaParts(meta: string): string[] {
   return meta.split(" · ").map((part) => part.trim()).filter(Boolean);
 }
@@ -144,11 +155,11 @@ export function customTripCity(city: string, fallback?: TripCity): TripCity {
   if (match) return tripCityFromOption(match);
   return {
     city,
-    country: fallback?.country ?? "Thailand",
-    countryCode: fallback?.countryCode ?? "TH",
-    timezone: fallback?.timezone ?? "Asia/Bangkok",
-    latitude: fallback?.latitude ?? 13.7563,
-    longitude: fallback?.longitude ?? 100.5018,
+    country: fallback?.country ?? defaultTripOriginCity.country,
+    countryCode: fallback?.countryCode ?? defaultTripOriginCity.countryCode,
+    timezone: fallback?.timezone ?? defaultTripOriginCity.timezone,
+    latitude: fallback?.latitude ?? defaultTripOriginCity.latitude,
+    longitude: fallback?.longitude ?? defaultTripOriginCity.longitude,
   };
 }
 
@@ -160,12 +171,12 @@ export function tripCityFromFormOrigin(form: {
   const match = tripCityOptions.find((option) => option.city === form.originCity && option.countryCode === form.originCountryCode);
   if (match) return tripCityFromOption(match);
   return {
-    city: form.originCity || "Bangkok",
-    country: form.originCountry || "Thailand",
-    countryCode: form.originCountryCode || "TH",
-    timezone: "Asia/Bangkok",
-    latitude: 13.7563,
-    longitude: 100.5018,
+    city: form.originCity || defaultTripOriginCity.city,
+    country: form.originCountry || defaultTripOriginCity.country,
+    countryCode: form.originCountryCode || defaultTripOriginCity.countryCode,
+    timezone: defaultTripOriginCity.timezone,
+    latitude: defaultTripOriginCity.latitude,
+    longitude: defaultTripOriginCity.longitude,
   };
 }
 

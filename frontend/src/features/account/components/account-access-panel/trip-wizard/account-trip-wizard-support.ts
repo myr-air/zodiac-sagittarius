@@ -4,6 +4,7 @@ import type {
 } from "@/src/account/api-client";
 import type { TripCity } from "@/src/trip/types";
 import {
+  defaultTripOriginCity,
   tripCityOptions,
   type TripCityOption,
 } from "./account-trip-destinations";
@@ -21,6 +22,7 @@ export {
   tripCityOptions,
   tripCountryOptions,
   tripDestinationCards,
+  defaultTripOriginCity,
 } from "./account-trip-destinations";
 export type {
   TripCityOption,
@@ -76,13 +78,13 @@ export function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerD
   return {
     ...form,
     name,
-    originLabel: form.originLabel.trim() || "Bangkok, Thailand",
-    originCity: form.originCity.trim() || "Bangkok",
-    originCountry: form.originCountry.trim() || "Thailand",
-    originCountryCode: form.originCountryCode.trim().toUpperCase() || "TH",
+    originLabel: form.originLabel.trim() || `${defaultTripOriginCity.city}, ${defaultTripOriginCity.country}`,
+    originCity: form.originCity.trim() || defaultTripOriginCity.city,
+    originCountry: form.originCountry.trim() || defaultTripOriginCity.country,
+    originCountryCode: form.originCountryCode.trim().toUpperCase() || defaultTripOriginCity.countryCode,
     countries: countryNames,
     partySize: Math.max(1, Math.trunc(form.partySize ?? 1)),
-    defaultTimezone: (form.defaultTimezone?.trim() || destinationCities[0]?.timezone || "Asia/Bangkok").slice(0, 64),
+    defaultTimezone: (form.defaultTimezone?.trim() || destinationCities[0]?.timezone || defaultTripOriginCity.timezone).slice(0, 64),
     destinationCities,
     destinationLabel: destinationCities.length ? destinationCities.map((city) => city.city).join(", ") : form.destinationLabel.trim() || name,
     ownerDisplayName: form.ownerDisplayName.trim() || defaultOwnerDisplayName,
@@ -102,16 +104,7 @@ function originCityFromProfile(profile?: AccountSettings["profile"] | null): Tri
     const capital = tripCityOptions.find((city) => city.capital && city.country.toLocaleLowerCase() === profileCountry.toLocaleLowerCase());
     if (capital) return capital;
   }
-  return tripCityOptions.find((city) => city.city === "Bangkok" && city.countryCode === "TH") ?? {
-    city: "Bangkok",
-    country: "Thailand",
-    countryCode: "TH",
-    timezone: "Asia/Bangkok",
-    latitude: 13.7563,
-    longitude: 100.5018,
-    airportCode: "BKK",
-    capital: true,
-  };
+  return defaultTripOriginCity;
 }
 
 export function tripStepComplete(step: TripWizardStepId, state: { tripNameComplete: boolean; destinationComplete: boolean; datesComplete: boolean; accessComplete: boolean }): boolean {
