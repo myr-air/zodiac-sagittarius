@@ -273,36 +273,6 @@ describe("Sagittarius cockpit session restore", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the same access choice before restoring a persisted account session", () => {
-    installLocalStorageStub();
-    window.sessionStorage.setItem(
-      "sagittarius-account-session",
-      JSON.stringify({
-        userId: "11111111-1111-1111-1111-111111111111",
-        sessionToken: "persisted-account-session",
-        kind: "trusted",
-        trustedDeviceId: "device-1",
-        createdAt: "2026-05-30T10:00:00.000Z",
-        expiresAt: "2030-01-01T10:00:00.000Z",
-      }),
-    );
-
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        apiClient={createApiClientForTrip(seedTrip)}
-      />,
-    );
-
-    expect(screen.getByRole("tab", { name: /^Temp access$/i })).toHaveClass(
-      "account-tab--active",
-    );
-    expect(
-      screen.getByRole("heading", { name: /เข้าห้อง trip/i }),
-    ).toBeInTheDocument();
-  });
-
   it("ignores late API hydration when the app unmounts during a persisted session load", async () => {
     installLocalStorageStub();
     const deferred = createDeferred<TripCockpit>();
