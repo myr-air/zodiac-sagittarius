@@ -1,41 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { ContextRail } from "@/src/features/itinerary/components";
-import { buildBookingDoc } from "@/src/features/itinerary/testing";
-
-const selectedItem =
-  tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
-  tripFixture.planItems[0];
-
-const baseArgs = {
-  trip: tripFixture.trip,
-  selectedItem,
-  suggestions: tripFixture.suggestions,
-  stopNotes: tripFixture.stopNotes,
-  tasks: tripFixture.tasks,
-  bookingDocs: tripFixture.trip.bookingDocs ?? [],
-  currentMember: tripFixture.currentMembers.owner,
-  expenseSummary: tripFixture.expenseSummaries.owner,
-  canEdit: true,
-  canCreateNote: true,
-  canCreateSuggestion: true,
-  canReviewSuggestions: true,
-  canEditExpenses: true,
-  open: true,
-  onCreateNote: noop,
-  onCreateExpense: noop,
-  onUpdateExpense: noop,
-  onDeleteExpense: noop,
-  onDeleteNote: noop,
-  onEditSelected: noop,
-  onReviewSuggestion: noop,
-  onSuggestSelected: noop,
-  onToggleTaskStatus: noop,
-  onUpdateNote: noop,
-  onClose: noop,
-};
+import {
+  contextRailBaseArgs,
+  contextRailBookingDocs,
+  readOnlyTravelerContextRailArgs,
+} from "./ContextRail.stories.support";
 
 const meta = {
   title: "Design System/Context Rail",
@@ -55,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NotesOpen: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
     await expect(canvas.getByRole("tab", { name: /Notes/i })).toHaveAttribute("aria-selected", "true");
@@ -66,25 +36,8 @@ export const NotesOpen: Story = {
 
 export const BookingTab: Story = {
   args: {
-    ...baseArgs,
-    bookingDocs: [
-      buildBookingDoc({
-        id: "story-booking-dimdim",
-        tripId: tripFixture.trip.id,
-        tripPlanId: selectedItem.planVariantId,
-        type: "activity_ticket",
-        title: "Dim Dim Sum reservation",
-        status: "booked",
-        ownerMemberId: tripFixture.currentMembers.owner.id,
-        providerName: "Dim Dim Sum",
-        confirmationCode: "DDS-42",
-        timezone: "Asia/Hong_Kong",
-        travelerIds: [tripFixture.currentMembers.owner.id],
-        relatedItineraryItemIds: [selectedItem.id],
-        notes: "Window table",
-        createdBy: tripFixture.currentMembers.owner.id,
-      }),
-    ],
+    ...contextRailBaseArgs,
+    bookingDocs: contextRailBookingDocs,
   },
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("tab", { name: /Booking/i }));
@@ -95,7 +48,7 @@ export const BookingTab: Story = {
 };
 
 export const SuggestionsTab: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("tab", { name: /Suggestions/i }));
     await expect(canvas.getByRole("region", { name: /Suggestion review/i })).toHaveClass("suggestion-module");
@@ -105,7 +58,7 @@ export const SuggestionsTab: Story = {
 
 export const TripExpensesOnly: Story = {
   args: {
-    ...baseArgs,
+    ...contextRailBaseArgs,
     selectedItem: undefined,
   },
   play: async ({ canvas }) => {
@@ -117,16 +70,7 @@ export const TripExpensesOnly: Story = {
 };
 
 export const ReadOnlyTraveler: Story = {
-  args: {
-    ...baseArgs,
-    currentMember: tripFixture.currentMembers.traveler,
-    canEdit: false,
-    canCreateNote: false,
-    canReviewSuggestions: false,
-    tasks: [],
-    stopNotes: [],
-    selectedItem: { ...selectedItem, advisories: [] },
-  },
+  args: readOnlyTravelerContextRailArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: /Suggest edit/i })).toBeEnabled();
     await expect(canvas.getByRole("button", { name: /Save note/i })).toBeDisabled();
@@ -138,7 +82,7 @@ export const ReadOnlyTraveler: Story = {
 
 export const Closed: Story = {
   args: {
-    ...baseArgs,
+    ...contextRailBaseArgs,
     open: false,
   },
   play: async ({ canvasElement }) => {
@@ -149,7 +93,7 @@ export const Closed: Story = {
 };
 
 export const Mobile: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "mobile320" } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
@@ -158,7 +102,7 @@ export const Mobile: Story = {
 };
 
 export const Tablet: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "tablet768" } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
@@ -168,7 +112,7 @@ export const Tablet: Story = {
 };
 
 export const Thai: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   parameters: { locale: "th" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toHaveClass("context-rail--open");
@@ -179,7 +123,7 @@ export const Thai: Story = {
 };
 
 export const Desktop1024: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
@@ -188,7 +132,7 @@ export const Desktop1024: Story = {
 };
 
 export const Desktop1440: Story = {
-  args: baseArgs,
+  args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");

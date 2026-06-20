@@ -1,21 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
-import { buildDenseTripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
   buildOwnerStoryArgs,
   branchGraphPathOptions,
-  planABPathOptions,
-  pathNameMain,
-  pathNamePlanA,
-  pathNamePlanB,
-  pathNamePlanC,
   planAPathOptions,
+  planABPathOptions,
   stressPathOptions,
 } from "./itinerary-story-fixtures";
 import {
   branchGraphItems,
   buildTemplateOverflowItems,
+  denseTemplateItems,
   hierarchyBlockItems,
   hierarchyWarningItems,
   planABAlternativeItems,
@@ -23,7 +18,19 @@ import {
   requestedPlanExampleItems,
   stressPathItems,
 } from "./ItineraryTemplate.stories.support";
-import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
+import {
+  branchGraphPlay,
+  hierarchyBlocksPlay,
+  hierarchyWarningsPlay,
+  ownerPlay,
+  ownerThaiPlay,
+  planABAlternativesPlay,
+  planAExamplePlay,
+  requestedPlanExamplePlay,
+  stressPathsPlay,
+  tableOverflowPlay,
+  travelerPlay,
+} from "./ItineraryTemplate.stories.plays";
 
 const meta = {
   title: "Templates/Itinerary",
@@ -38,32 +45,21 @@ type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
   args: buildOwnerStoryArgs(),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
-  },
+  play: ownerPlay,
 };
 
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
-    await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-    await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
-  },
+  play: ownerThaiPlay,
 };
 
 export const Viewer: Story = { args: { ...Owner.args, role: "viewer" } };
 export const Traveler: Story = {
   args: { ...Owner.args, role: "traveler" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-    await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
-  },
+  play: travelerPlay,
 };
-export const Dense: Story = { args: { ...Owner.args, items: buildDenseTripFixture().itineraryItems } };
+export const Dense: Story = { args: { ...Owner.args, items: denseTemplateItems } };
 export const HierarchyBlocks: Story = {
   args: {
     ...Owner.args,
@@ -72,10 +68,7 @@ export const HierarchyBlocks: Story = {
     selectedItemId: "story-flight-block",
     dayPathOverrides: {},
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`Flight to Hong Kong on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.queryByLabelText("Structure for Flight to Hong Kong")).toBeNull();
-  },
+  play: hierarchyBlocksPlay,
 };
 
 export const HierarchyWarnings: Story = {
@@ -85,11 +78,7 @@ export const HierarchyWarnings: Story = {
     selectedItemId: "story-child-under-plain-parent",
     dayPathOverrides: {},
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-    await expect(canvas.queryByText("Parent block")).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /Fix structure/i })).toBeNull();
-  },
+  play: hierarchyWarningsPlay,
 };
 export const TableOverflow: Story = {
   args: {
@@ -102,9 +91,7 @@ export const TableOverflow: Story = {
   parameters: {
     viewport: { defaultViewport: "mobile320" },
   },
-  play: async ({ canvasElement }) => {
-    await expectItineraryResponsiveContract(canvasElement);
-  },
+  play: tableOverflowPlay,
 };
 export const BranchGraph: Story = {
   args: {
@@ -115,10 +102,7 @@ export const BranchGraph: Story = {
     showAllPaths: true,
     pathOptions: branchGraphPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Dim Sum morning on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-  },
+  play: branchGraphPlay,
 };
 export const PlanAExample: Story = {
   args: {
@@ -129,11 +113,7 @@ export const PlanAExample: Story = {
     showAllPaths: true,
     pathOptions: planAPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`) })).toBeInTheDocument();
-  },
+  play: planAExamplePlay,
 };
 export const PlanABAlternatives: Story = {
   args: {
@@ -144,12 +124,7 @@ export const PlanABAlternatives: Story = {
     showAllPaths: true,
     pathOptions: planABPathOptions,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`) })).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
-  },
+  play: planABAlternativesPlay,
 };
 export const RequestedPlanExample: Story = {
   args: {
@@ -160,12 +135,7 @@ export const RequestedPlanExample: Story = {
     showAllPaths: true,
     pathOptions: planAPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`) })).toBeInTheDocument();
-  },
+  play: requestedPlanExamplePlay,
 };
 export const StressPaths: Story = {
   args: {
@@ -176,8 +146,5 @@ export const StressPaths: Story = {
     showAllPaths: true,
     pathOptions: stressPathOptions,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-    await expect(canvas.getByRole("button", { name: new RegExp(`Quiet park break on ${pathNamePlanC}`) })).toBeInTheDocument();
-  },
+  play: stressPathsPlay,
 };

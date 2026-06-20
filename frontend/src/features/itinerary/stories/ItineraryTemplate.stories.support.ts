@@ -2,6 +2,7 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
   branchGraphItemsBase,
+  denseTripFixture,
   itineraryStoryDay,
   planAExampleItemsBase,
   planABAlternativeItemsBase,
@@ -30,6 +31,7 @@ export const stressPathItems: ItineraryItem[] = withStoryPrefix(
   stressPathItemsBase,
   "story",
 );
+export const denseTemplateItems = denseTripFixture.itineraryItems;
 
 export const hierarchyBlockItems: ItineraryItem[] = [
   {
