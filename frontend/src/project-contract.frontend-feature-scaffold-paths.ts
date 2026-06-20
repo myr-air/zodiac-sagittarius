@@ -88,6 +88,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",
   "src/features/workspace/pages/members/use-trip-members-page-state.ts",
+  "src/features/workspace/pages/members/MembersPage.stories.support.ts",
   "src/features/workspace/pages/members/TripMembersPage.test-support.tsx",
   "src/features/workspace/pages/photos/use-trip-photos-page-state.ts",
   "src/features/workspace/pages/photos/TripPhotosPage.test-support.tsx",

@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, within } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { expect } from "storybook/test";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
-
-const denseTrip = buildDenseTripFixture();
-const singleMemberTrip = {
-  ...tripFixture.trip,
-  members: [tripFixture.currentMembers.owner],
-};
+import {
+  denseMembersTrip,
+  expectMembersResponsiveContract,
+  membersOwnerStoryArgs,
+  singleMemberTrip,
+} from "./MembersPage.stories.support";
 
 const meta = {
   title: "Pages/Members",
@@ -20,23 +19,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-async function expectMembersResponsiveContract(canvasElement: HTMLElement) {
-  const canvas = within(canvasElement);
-  await expect(canvas.getByRole("region", { name: /Trip members|สมาชิกทริป/i })).toHaveClass("members-page");
-  await expect(canvas.getByRole("region", { name: /Member summary|สรุปสมาชิก/i })).toHaveClass("member-stat-grid");
-}
-
 export const Owner: Story = {
-  args: {
-    trip: tripFixture.trip,
-    currentMember: tripFixture.currentMembers.owner,
-    canManagePeople: true,
-    onChangeMemberAccessStatus: noop,
-    onChangeMemberPassword: noop,
-    onChangeMemberRole: noop,
-    onCreateMember: noop,
-    onResetMemberClaim: noop,
-  },
+  args: membersOwnerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Trip members/i })).toHaveClass("members-page");
     await expect(canvas.getByRole("button", { name: /Copy invite/i })).toBeEnabled();
@@ -79,8 +63,8 @@ export const Viewer: Story = {
 export const Dense: Story = {
   args: {
     ...Owner.args,
-    trip: denseTrip,
-    currentMember: denseTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+    trip: denseMembersTrip,
+    currentMember: denseMembersTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
   },
 };
 
