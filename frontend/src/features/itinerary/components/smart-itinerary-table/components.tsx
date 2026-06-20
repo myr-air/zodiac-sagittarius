@@ -12,6 +12,7 @@ export { SubActivityModal } from "./activity-cell/SubActivityModal";
 
 export { ActivityTimeButton } from "./activity-cell/ActivityTimeButton";
 export { TimeEditModal } from "./activity-cell/TimeEditModal";
-export { ItineraryBookingButton, ItineraryTicketModal } from "./activity-cell/BookingComponents";
+export { ItineraryBookingButton } from "./activity-cell/ItineraryBookingButton";
+export { ItineraryTicketModal } from "./activity-cell/ItineraryTicketModal";
 export { DayTitleEditor } from "./day-title-editor";
 export { DayPathControls } from "./day-path-controls";

@@ -107,5 +107,3 @@ export function ItineraryBookingButton({
     </>
   );
 }
-
-export { ItineraryTicketModal } from "./ItineraryTicketModal";

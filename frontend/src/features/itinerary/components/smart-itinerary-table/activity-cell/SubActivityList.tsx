@@ -3,7 +3,7 @@ import { Icon } from "@/src/ui/icons";
 import { ActivityLocationLine } from "./ActivityLocationLine";
 import { ActivityTypePicker } from "./ActivityTypePicker";
 import { InlineActivityField } from "./InlineActivityField";
-import { ItineraryBookingButton } from "./BookingComponents";
+import { ItineraryBookingButton } from "./ItineraryBookingButton";
 import { ActivityTimeButton } from "./ActivityTimeButton";
 import { ActivityActionButtons } from "./ActivityActionButtons";
 import {

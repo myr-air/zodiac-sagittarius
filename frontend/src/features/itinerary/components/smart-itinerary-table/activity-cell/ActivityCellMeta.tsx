@@ -4,7 +4,7 @@ import type { Locale } from "@/src/i18n/types";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { formatDuration } from "../../../lib";
-import { ItineraryBookingButton } from "./BookingComponents";
+import { ItineraryBookingButton } from "./ItineraryBookingButton";
 import { ActivityMoreActionsButton } from "./ActivityCellControls";
 import {
   activityActionClusterClassName,
