@@ -15,6 +15,7 @@ import {
   openItineraryHeaderControls,
   persistTripParticipantSession,
   render,
+  renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
@@ -42,16 +43,11 @@ describe("Sagittarius cockpit UI", () => {
       sessionToken: "empty-trip-session",
     });
 
-    render(
-      <SagittariusApp
-        accessMode="trip-access"
-        initialView="timeline"
-        requireJoin
-        dataSource="api"
-        routeTripId={emptyTrip.id}
-        apiClient={createApiClientForTrip(emptyTrip)}
-      />,
-    );
+    renderApiTripAccessSagittariusApp({
+      initialView: "timeline",
+      routeTripId: emptyTrip.id,
+      apiClient: createApiClientForTrip(emptyTrip),
+    });
 
     expect(
       await screen.findByRole("region", { name: /ไทม์ไลน์ทริป/i }),
