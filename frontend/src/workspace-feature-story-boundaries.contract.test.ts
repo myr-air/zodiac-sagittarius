@@ -15,6 +15,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
       itineraryPageStoryPlays,
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
+      appShellStory,
       overviewPageStory,
       overviewTemplateStory,
       expensesPageStory,
@@ -43,8 +44,10 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(itineraryPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("function ownerArgsStory");
+    expect(itineraryPageStory).not.toContain("args: Owner.args");
     expect(itineraryTemplateStory).toContain("@/src/shared/storybook/story-builders");
     expect(itineraryTemplateStory).not.toContain("...Owner.args");
+    expect(itineraryTemplateStory).not.toContain("args: Owner.args");
     expect(storyBuilders).toContain("export function argsStory");
     expect(storyBuilders).toContain("export function ownerArgsStory");
     expect(storyBuilders).toContain("export function viewportStory");
@@ -54,6 +57,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
     [
+      appShellStory,
       overviewPageStory,
       overviewTemplateStory,
       timelinePageStory,
@@ -63,7 +67,9 @@ describe("Sagittarius workspace feature story boundaries", () => {
     ].forEach((storySource) => {
       expect(storySource).toContain("@/src/shared/storybook/story-builders");
       expect(storySource).not.toContain("...Owner.args");
+      expect(storySource).not.toContain("args: Owner.args");
     });
+    expect(appShellStory).not.toContain("defaultViewport:");
     [contextRailStory, stopDialogStory].forEach((storySource) => {
       expect(storySource).toContain("@/src/shared/storybook/story-builders");
       expect(storySource).not.toContain("defaultViewport:");

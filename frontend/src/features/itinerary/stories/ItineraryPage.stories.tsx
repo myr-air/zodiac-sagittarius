@@ -75,11 +75,9 @@ export const InlineQuickEdit: Story = ownerStory(
   inlineQuickEditPlay,
 );
 
-export const OwnerThai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: ownerThaiPlay,
-};
+export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
+  locale: "th",
+});
 
 export const TimeWindowDuration: Story = ownerStory(Owner.args, {
   items: pageWindowOnlyDurationItems,

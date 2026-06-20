@@ -25,11 +25,9 @@ export const Owner: Story = {
   play: ownerPlay,
 };
 
-export const OwnerThai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: ownerThaiPlay,
-};
+export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
+  locale: "th",
+});
 
 export const Traveler: Story = ownerStory(Owner.args, {}, Owner.play);
 
