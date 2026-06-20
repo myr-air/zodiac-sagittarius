@@ -16,6 +16,10 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceMainShell,
       workspaceAccessProps,
       workspaceShellProps,
+      workspaceDialogsProps,
+      workspaceRailProps,
+      workspaceToastProps,
+      workspaceCoreFrameProps,
       workspaceFrameActionProps,
       workspaceFrameProps,
       workspacePageViewProps,
@@ -70,7 +74,9 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
     expect(sagittariusApp).toContain("./props");
-    expect(sagittariusApp).toContain("buildWorkspaceFrameProps");
+    expect(sagittariusApp).toContain("buildWorkspaceCoreFrameProps");
+    expect(sagittariusApp).not.toContain("buildWorkspaceFrameProps");
+    expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceAccessProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceShellProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceViewsProps");
@@ -87,13 +93,21 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
     expect(workspaceShellProps).toContain("../WorkspaceAppFrame");
+    expect(workspaceShellProps).toContain("buildWorkspaceDialogsProps");
+    expect(workspaceShellProps).toContain("buildWorkspaceRailProps");
+    expect(workspaceShellProps).toContain("buildWorkspaceToastProps");
+    expect(workspaceDialogsProps).toContain("export function buildWorkspaceDialogsProps");
+    expect(workspaceRailProps).toContain("export function buildWorkspaceRailProps");
+    expect(workspaceToastProps).toContain("export function buildWorkspaceToastProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceFrameProps).toContain("buildWorkspaceAccessProps");
     expect(workspaceFrameProps).toContain("buildWorkspaceShellProps");
     expect(workspaceFrameProps).toContain("buildWorkspaceViewsProps");
     expect(workspaceFrameProps).toContain("buildWorkspaceFrameActionProps");
     expect(workspaceFrameProps).toContain("export function buildWorkspaceFrameProps");
+    expect(workspaceCoreFrameProps).toContain("export function buildWorkspaceCoreFrameProps");
     expect(sagittariusApp).not.toContain("onAddNoteForItem: (itemId, body)");
+    expect(sagittariusApp).not.toContain("onAddStop:");
     expect(sagittariusApp).not.toContain("onSaveDayTitle: (date, version, title)");
     expect(sagittariusApp).not.toContain("canClaimMember: Boolean(");
     expect(workspaceFrameActionProps).toContain(
