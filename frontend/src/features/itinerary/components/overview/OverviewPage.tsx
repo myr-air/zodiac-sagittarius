@@ -7,7 +7,6 @@ import { type OverviewTaskListLabels } from "./OverviewTaskList";
 import {
   overviewGridClassName,
   overviewPageClassName,
-  overviewUndoToastClassName,
 } from "./overview-page.styles";
 import {
   managerNextStopDetail,
@@ -16,7 +15,7 @@ import {
 } from "@/src/features/itinerary/domain";
 import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } from "./OverviewRolePanels";
 import { OverviewCockpit } from "./OverviewCockpit";
-import { OverviewTaskDialog } from "./OverviewTaskDialog";
+import { OverviewTaskLayer } from "./OverviewTaskLayer";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
 import { buildOverviewPageModel } from "./overview-page-model";
 import { useOverviewTaskState } from "./use-overview-task-state";
@@ -247,38 +246,20 @@ export function OverviewPage({
           />
         ) : null}
       </div>
-      {isTaskDialogOpen ? (
-        <OverviewTaskDialog
-          assignableMembers={assignableMembers}
-          assigneeId={newTaskAssigneeId}
-          labels={{
-            assigneeLabel: t.overview.task.assigneeLabel,
-            cancel: t.overview.task.cancel,
-            closeForm: t.overview.task.closeForm,
-            noAssignee: t.overview.task.noAssignee,
-            private: t.overview.task.private,
-            shared: t.overview.task.shared,
-            submit: t.overview.task.submit,
-            title: t.overview.headings.addChecklist,
-            titleLabel: t.overview.task.titleLabel,
-            titlePlaceholder: t.overview.task.titlePlaceholder,
-            visibilityLabel: t.overview.task.visibilityLabel,
-          }}
-          onAssigneeChange={setNewTaskAssigneeId}
-          onClose={closeTaskDialog}
-          onSubmit={submitTask}
-          onTitleChange={setNewTaskTitle}
-          onVisibilityChange={setNewTaskVisibility}
-          title={newTaskTitle}
-          visibility={newTaskVisibility}
-        />
-      ) : null}
-      {undoTask ? (
-        <div className={overviewUndoToastClassName} role="status">
-          <span>{t.overview.task.changed({ title: undoTask.title })}</span>
-          <button type="button" onClick={undoTaskToggle}>{t.overview.task.undo}</button>
-        </div>
-      ) : null}
+      <OverviewTaskLayer
+        assignableMembers={assignableMembers}
+        assigneeId={newTaskAssigneeId}
+        isOpen={isTaskDialogOpen}
+        onAssigneeChange={setNewTaskAssigneeId}
+        onClose={closeTaskDialog}
+        onSubmit={submitTask}
+        onTitleChange={setNewTaskTitle}
+        onUndoTaskToggle={undoTaskToggle}
+        onVisibilityChange={setNewTaskVisibility}
+        title={newTaskTitle}
+        undoTask={undoTask}
+        visibility={newTaskVisibility}
+      />
     </section>
   );
 }
