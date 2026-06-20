@@ -5,13 +5,11 @@ import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
 import { cn } from "@/src/lib/cn";
 import {
-  tripWizardSteps,
-} from "./account-trip-wizard-support";
-import {
   TripWizardDatesStep,
   TripWizardDestinationStep,
   TripWizardInviteStep,
   TripWizardReviewSummary,
+  TripWizardTripStep,
 } from "./portal-trip-wizard-form-sections";
 import { PortalTripWizardActions } from "./portal-trip-wizard-actions";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
@@ -105,23 +103,14 @@ export function PortalTripWizard({
         <div className={cn(wizardStyles.tripWizardMainClassName, isMobilePreviewStep ? "max-[767px]:hidden" : "")}>
           <div className={wizardStyles.tripWizardPaneClassName}>
             <div className={wizardStyles.tripScopePanelClassName}>
-              <section className={mobileStepClassName("trip")} role="region" aria-label={tripWizardSteps[0].regionLabel} data-mobile-active={activeMobileStep === "trip" ? "true" : "false"}>
-                <div className={wizardStyles.tripStepHeadingClassName}>
-                  <strong>{wizard.steps.trip.title}</strong>
-                  <span>{wizard.steps.trip.detail}</span>
-                </div>
-                <label className={wizardStyles.tripNameFieldClassName}>
-                  <span className="sr-only">{t.access.dashboard.createTrip.labels.name}</span>
-                  <input
-                    value={tripForm.name}
-                    onChange={(event) => onChange((current) => ({ ...current, name: event.target.value }))}
-                    placeholder={wizard.placeholders.tripName}
-                    maxLength={100}
-                    required
-                  />
-                  <small>{tripForm.name.length} / 100</small>
-                </label>
-              </section>
+              <TripWizardTripStep
+                activeMobileStep={activeMobileStep}
+                mobileStepClassName={mobileStepClassName}
+                nameLabel={t.access.dashboard.createTrip.labels.name}
+                tripForm={tripForm}
+                wizard={wizard}
+                onTripNameChange={(name) => onChange((current) => ({ ...current, name }))}
+              />
 
               <TripWizardDestinationStep
                 activeMobileStep={activeMobileStep}
