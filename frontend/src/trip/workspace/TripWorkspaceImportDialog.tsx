@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Button, Select } from "@/src/ui";
-import { slugifyFilePart } from "@/src/lib/file-names";
 import {
-  mainItineraryPathId,
   mainItineraryPathName,
   type ItineraryPathOption,
 } from "@/src/trip/itinerary";
@@ -12,6 +10,7 @@ import type {
   ItineraryExportRecords,
 } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
+import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
 
 const importModalBackdropClassName =
   "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
@@ -197,50 +196,4 @@ export function TripWorkspaceImportDialog({
       </form>
     </div>
   );
-}
-
-function buildItineraryImportApplyTarget({
-  day,
-  memberId,
-  mode,
-  pathName,
-  pathOptions,
-  recordMode,
-  scope,
-  tripPlanId,
-}: {
-  day?: string;
-  memberId: string;
-  mode: ItineraryImportApplyTarget["mode"];
-  pathName: string;
-  pathOptions: ItineraryPathOption[];
-  recordMode: ItineraryImportApplyTarget["recordMode"];
-  scope: ItineraryImportApplyTarget["scope"];
-  tripPlanId: string;
-}): ItineraryImportApplyTarget {
-  const existingPath = pathOptions.find(
-    (option) =>
-      option.name.toLowerCase() === pathName.toLowerCase() ||
-      option.id === pathName,
-  );
-  const normalizedPathName = pathName.trim();
-  const pathId =
-    normalizedPathName.toLowerCase() === mainItineraryPathName.toLowerCase()
-      ? mainItineraryPathId
-      : (existingPath?.id ??
-        `path-${slugifyFilePart(normalizedPathName) || Date.now().toString(36)}`);
-  const resolvedPathName =
-    pathId === mainItineraryPathId
-      ? mainItineraryPathName
-      : (existingPath?.name ?? pathName);
-  return {
-    memberId,
-    tripPlanId,
-    pathId,
-    pathName: resolvedPathName,
-    scope,
-    day,
-    mode,
-    recordMode,
-  };
 }
