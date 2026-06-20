@@ -6,7 +6,7 @@ import {
   mapOwnerStoryArgs,
 } from "./MapPage.stories.support";
 import { ownerThaiPlay } from "./MapTemplate.stories.plays";
-import { ownerArgsStory } from "../itinerary-story-builders";
+import { ownerArgsStory } from "@/src/shared/storybook/story-builders";
 
 const meta = {
   title: "Templates/Map",

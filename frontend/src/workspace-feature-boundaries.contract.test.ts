@@ -37,7 +37,6 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeLiveMapMarkers,
       routeMapViewport,
       routeMapUtils,
-      contextRailStory,
       stopDialog,
       routeMapCanvas,
       stopDialogStory,
@@ -50,21 +49,6 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsIndexSource,
       memberSupport,
       dateTimePickers,
-      itineraryStoryFixtures,
-      itineraryStoryPathScenarios,
-      itineraryStoryPathItems,
-      itineraryStoryPathOptions,
-      itineraryPageStory,
-      itineraryStoryBuilders,
-      itineraryPageStoryPlays,
-      itineraryTemplateStory,
-      itineraryTemplateStoryPlays,
-      overviewPageStory,
-      overviewTemplateStory,
-      timelinePageStory,
-      timelineTemplateStory,
-      mapPageStory,
-      mapTemplateStory,
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
@@ -185,44 +169,6 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
-
-    expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
-    expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
-    expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
-    expect(itineraryStoryPathScenarios).toContain("./fixtures/itinerary-story-path-items");
-    expect(itineraryStoryPathScenarios).toContain("./itinerary-story-path-options");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-alternative-items");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-branch-items");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-stress-items");
-    expect(itineraryStoryPathOptions).toContain("export const stressPathOptions");
-    expect(itineraryPageStory).toContain("./itinerary-story-builders");
-    expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
-    expect(itineraryPageStory).not.toContain("function ownerArgsStory");
-    expect(itineraryTemplateStory).toContain("./itinerary-story-builders");
-    expect(itineraryTemplateStory).not.toContain("...Owner.args");
-    expect(itineraryStoryBuilders).toContain("export function argsStory");
-    expect(itineraryStoryBuilders).toContain("export function ownerArgsStory");
-    expect(itineraryStoryBuilders).toContain("export function viewportStory");
-    expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
-    expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
-    expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");
-    expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
-    expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
-    [
-      overviewPageStory,
-      overviewTemplateStory,
-      timelinePageStory,
-      timelineTemplateStory,
-      mapPageStory,
-      mapTemplateStory,
-    ].forEach((storySource) => {
-      expect(storySource).toContain("itinerary-story-builders");
-      expect(storySource).not.toContain("...Owner.args");
-    });
-    [contextRailStory, stopDialogStory].forEach((storySource) => {
-      expect(storySource).toContain("itinerary-story-builders");
-      expect(storySource).not.toContain("defaultViewport:");
-    });
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
 

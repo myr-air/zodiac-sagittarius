@@ -20,7 +20,7 @@ import {
 import {
   argsStory,
   viewportStory,
-} from "./itinerary-story-builders";
+} from "@/src/shared/storybook/story-builders";
 
 const meta = {
   title: "Design System/Context Rail",

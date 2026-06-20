@@ -7,7 +7,7 @@ import {
   overviewTemplateTravelerStoryArgs,
   overviewTemplateViewerStoryArgs,
 } from "../OverviewPage.stories.support";
-import { ownerArgsStory } from "../itinerary-story-builders";
+import { ownerArgsStory } from "@/src/shared/storybook/story-builders";
 import { ownerThaiPlay } from "./OverviewTemplate.stories.plays";
 
 const meta = {
