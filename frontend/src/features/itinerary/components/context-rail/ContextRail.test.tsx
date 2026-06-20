@@ -2,52 +2,15 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { renderWithI18n } from "@/src/i18n/test-utils";
-import { ContextRail } from "@/src/features/itinerary/components";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
-
-const selectedItem =
-  tripFixture.planItems.find((item) => item.id === "item-dimdim") ??
-  tripFixture.planItems[0];
-
-function renderRail(
-  overrides: Partial<Parameters<typeof ContextRail>[0]> = {},
-) {
-  const props: Parameters<typeof ContextRail>[0] = {
-    trip: tripFixture.trip,
-    selectedItem,
-    suggestions: tripFixture.suggestions,
-    stopNotes: tripFixture.stopNotes,
-    tasks: tripFixture.tasks,
-    bookingDocs: tripFixture.trip.bookingDocs ?? [],
-    currentMember: tripFixture.currentMembers.owner,
-    expenseSummary: tripFixture.expenseSummaries.owner,
-    canEdit: true,
-    canCreateNote: true,
-    canCreateSuggestion: true,
-    canReviewSuggestions: true,
-    canEditExpenses: true,
-    open: true,
-    onCreateNote: vi.fn(),
-    onCreateExpense: vi.fn(),
-    onUpdateExpense: vi.fn(),
-    onDeleteExpense: vi.fn(),
-    onDeleteNote: vi.fn(),
-    onEditSelected: vi.fn(),
-    onUpdateNote: vi.fn(),
-    onReviewSuggestion: vi.fn(),
-    onSuggestSelected: vi.fn(),
-    onToggleTaskStatus: vi.fn(),
-    onClose: vi.fn(),
-    ...overrides,
-  };
-  renderWithI18n(<ContextRail {...props} />, { locale: "th" });
-  return props;
-}
+import {
+  renderContextRail,
+  selectedContextRailItem,
+} from "./ContextRail.test-support";
 
 describe("ContextRail", () => {
   it("creates notes, switches booking tasks, and reviews suggestions", async () => {
-    const props = renderRail();
+    const props = renderContextRail();
 
     fireEvent.click(screen.getByRole("button", { name: "ปิดรายละเอียด" }));
     expect(props.onClose).toHaveBeenCalled();
@@ -60,7 +23,7 @@ describe("ContextRail", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "บันทึกโน้ต" }));
     expect(props.onCreateNote).toHaveBeenCalledWith({
-      itemId: selectedItem.id,
+      itemId: selectedContextRailItem.id,
       body: "call restaurant",
     });
 
@@ -96,13 +59,13 @@ describe("ContextRail", () => {
   }, 30_000);
 
   it("uses suggestion mode and read-only fallbacks when editing is unavailable", async () => {
-    const props = renderRail({
+    const props = renderContextRail({
       canEdit: false,
       canCreateNote: false,
       canReviewSuggestions: false,
       stopNotes: [],
       tasks: [],
-      selectedItem: { ...selectedItem, advisories: [] },
+      selectedItem: { ...selectedContextRailItem, advisories: [] },
     });
 
     expect(screen.getByText("ยังไม่มีโน้ตสำหรับจุดนี้")).toBeInTheDocument();
@@ -127,14 +90,14 @@ describe("ContextRail", () => {
   it("shows booking docs linked to the selected itinerary item", async () => {
     const onChangeBookingDocType = vi.fn();
     const onChangeBookingDocQuickFields = vi.fn();
-    renderRail({
+    renderContextRail({
       onChangeBookingDocType,
       onChangeBookingDocQuickFields,
       bookingDocs: [
         buildBookingDoc({
           id: "booking-dimdim-1",
           tripId: tripFixture.trip.id,
-          tripPlanId: selectedItem.planVariantId,
+          tripPlanId: selectedContextRailItem.planVariantId,
           type: "activity_ticket",
           title: "Dim Dim Sum reservation",
           status: "booked",
@@ -143,14 +106,14 @@ describe("ContextRail", () => {
           confirmationCode: "DDS-42",
           timezone: "Asia/Hong_Kong",
           travelerIds: [tripFixture.currentMembers.owner.id],
-          relatedItineraryItemIds: [selectedItem.id],
+          relatedItineraryItemIds: [selectedContextRailItem.id],
           notes: "Window table",
           createdBy: tripFixture.currentMembers.owner.id,
         }),
         buildBookingDoc({
           id: "booking-other-1",
           tripId: tripFixture.trip.id,
-          tripPlanId: selectedItem.planVariantId,
+          tripPlanId: selectedContextRailItem.planVariantId,
           type: "other",
           title: "Other stop ticket",
           status: "booked",
@@ -215,7 +178,7 @@ describe("ContextRail", () => {
   });
 
   it("ignores empty note form submissions even when the browser submits the form", () => {
-    const props = renderRail();
+    const props = renderContextRail();
 
     fireEvent.submit(
       screen.getByLabelText("เพิ่มโน้ตสำหรับจุดนี้").closest("form")!,
@@ -225,9 +188,9 @@ describe("ContextRail", () => {
   });
 
   it("neutralizes unsafe selected item map links", () => {
-    renderRail({
+    renderContextRail({
       selectedItem: {
-        ...selectedItem,
+        ...selectedContextRailItem,
         mapLink: "javascript:alert(document.domain)",
       },
     });
@@ -238,7 +201,7 @@ describe("ContextRail", () => {
   });
 
   it("lets the current note owner edit and delete their stop notes", () => {
-    const props = renderRail({
+    const props = renderContextRail({
       currentMember: tripFixture.trip.members.find(
         (member) => member.id === "member-beam",
       )!,
@@ -262,7 +225,7 @@ describe("ContextRail", () => {
   });
 
   it("creates, updates, and deletes stop expenses", () => {
-    const props = renderRail({
+    const props = renderContextRail({
       trip: {
         ...tripFixture.trip,
         expenses: [
@@ -273,7 +236,7 @@ describe("ContextRail", () => {
             paidBy: "member-aom",
             splits: {},
             category: "food",
-            itineraryItemId: selectedItem.id,
+            itineraryItemId: selectedContextRailItem.id,
             version: 1,
           },
         ],
@@ -297,7 +260,7 @@ describe("ContextRail", () => {
     );
 
     expect(props.onCreateExpense).toHaveBeenCalledWith({
-      itemId: selectedItem.id,
+      itemId: selectedContextRailItem.id,
       title: "Taxi",
       amount: 120,
       paidBy: tripFixture.currentMembers.owner.id,
