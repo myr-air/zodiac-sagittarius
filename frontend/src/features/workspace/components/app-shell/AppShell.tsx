@@ -16,22 +16,6 @@ import {
   brandMarkClassName,
   brandNameClassName,
   brandRowClassName,
-  identityDialogActionsClassName,
-  identityDialogBackdropClassName,
-  identityDialogBodyClassName,
-  identityDialogButtonClassName,
-  identityDialogClassName,
-  identityDialogPrimaryButtonClassName,
-  identityDialogTitleClassName,
-  memberAvatarClassName,
-  memberCardBaseClassName,
-  memberCardColClassName,
-  memberCardCopyClassName,
-  memberCardGridClassName,
-  memberCardNameClassName,
-  memberCardRoleClassName,
-  memberFallbackIconClassName,
-  memberSwitchButtonClassName,
   mobileMenuButtonClassName,
   mobilePageTitleClassName,
   mobileTripNameClassName,
@@ -42,7 +26,7 @@ import {
   sideRailClassName,
   sideRailLanguageClassName,
 } from "./AppShell.styles";
-import { roleLabel } from "./app-shell.support";
+import { AppShellMemberCard } from "./AppShellMemberCard";
 
 export { resolveViewFromPath } from "./app-shell.support";
 
@@ -59,7 +43,6 @@ interface AppShellProps {
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
-  const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
@@ -74,16 +57,6 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
       activeLink.scrollIntoView({ block: "nearest", inline: "center" });
     }
   }, [activeView]);
-
-  function openLeaveParticipantSessionDialog() {
-    if (!onLeaveParticipantSession) return;
-    setIdentityDialogOpen(true);
-  }
-
-  function confirmLeaveParticipantSession() {
-    setIdentityDialogOpen(false);
-    onLeaveParticipantSession?.();
-  }
 
   return (
     <div className={appLayoutClassName} data-sidebar-collapsed={collapsed ? "true" : "false"}>
@@ -172,60 +145,14 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
 
         <LanguageSwitch className={sideRailLanguageClassName} data-collapsed={collapsed ? "true" : "false"} />
 
-        <div className={cn(memberCardBaseClassName, onLeaveParticipantSession && !collapsed ? memberCardColClassName : memberCardGridClassName)} data-collapsed={collapsed ? "true" : "false"}>
-          {onLeaveParticipantSession && !collapsed ? (
-            <>
-              <div className="flex items-center gap-2.5 min-w-0 w-full">
-                <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-                  {currentMember.displayName.slice(0, 1)}
-                </span>
-                <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
-                  <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
-                  <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
-                </div>
-              </div>
-              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
-                {t.appShell.switchIdentity}
-              </button>
-            </>
-          ) : (
-            <>
-              <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-                {currentMember.displayName.slice(0, 1)}
-              </span>
-              <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
-                <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
-                <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
-              </div>
-              {onLeaveParticipantSession ? (
-                <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
-                  {t.appShell.switchIdentity}
-                </button>
-              ) : (
-                <Icon name="chevronRight" className={memberFallbackIconClassName} data-collapsed={collapsed ? "true" : "false"} />
-              )}
-            </>
-          )}
-        </div>
+        <AppShellMemberCard
+          collapsed={collapsed}
+          currentMember={currentMember}
+          onLeaveParticipantSession={onLeaveParticipantSession}
+        />
       </nav>
 
       {children}
-      {identityDialogOpen ? (
-        <div className={identityDialogBackdropClassName} role="presentation">
-          <section className={identityDialogClassName} role="dialog" aria-modal="true" aria-labelledby="identity-switch-title">
-            <h2 className={identityDialogTitleClassName} id="identity-switch-title">{t.appShell.switchIdentity}</h2>
-            <p className={identityDialogBodyClassName}>{t.appShell.confirmSwitchIdentity({ name: currentMember.displayName })}</p>
-            <div className={identityDialogActionsClassName}>
-              <button className={identityDialogButtonClassName} type="button" onClick={() => setIdentityDialogOpen(false)}>
-                {t.common.actions.cancel}
-              </button>
-              <button className={identityDialogPrimaryButtonClassName} type="button" onClick={confirmLeaveParticipantSession}>
-                {t.appShell.switchIdentity}
-              </button>
-            </div>
-          </section>
-        </div>
-      ) : null}
     </div>
   );
 }

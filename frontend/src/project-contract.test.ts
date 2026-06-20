@@ -435,13 +435,18 @@ describe("Sagittarius project scaffold", () => {
 
   it("keeps AppShell split into component, styles, and support logic", () => {
     const appShell = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8");
+    const appShellMemberCard = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellMemberCard.tsx"), "utf8");
     const appShellStyles = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"), "utf8");
     const appShellSupport = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"), "utf8");
 
     expect(appShell).toContain("./AppShell.styles");
+    expect(appShell).toContain("./AppShellMemberCard");
     expect(appShell).toContain("./app-shell.support");
     expect(appShell).not.toContain("const appLayoutClassName");
+    expect(appShell).not.toContain("identityDialogOpen");
     expect(appShell).not.toContain("function roleLabel");
+    expect(appShellMemberCard).toContain("export function AppShellMemberCard");
+    expect(appShellMemberCard).toContain("identityDialogOpen");
     expect(appShellStyles).toContain("export const appLayoutClassName");
     expect(appShellStyles).toContain("export const sideRailClassName");
     expect(appShellSupport).toContain("export function resolveViewFromPath");
