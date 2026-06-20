@@ -19,6 +19,10 @@ import {
   overviewPageTravelerStoryArgs,
   overviewPageViewerStoryArgs,
 } from "./OverviewPage.stories.support";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "./itinerary-story-builders";
 
 const meta = {
   title: "Pages/Overview",
@@ -29,6 +33,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: overviewPageOwnerStoryArgs,
@@ -61,31 +67,24 @@ export const Empty: Story = {
   play: emptyPlay,
 };
 
-export const AddTaskDialogOpen: Story = {
-  args: Owner.args,
-  play: addTaskDialogOpenPlay,
-};
+export const AddTaskDialogOpen: Story = ownerStory(
+  Owner.args,
+  {},
+  addTaskDialogOpenPlay,
+);
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: tabletPlay,
-};
+export const Tablet: Story = viewportStoryForOwner(Owner.args, "tablet768", tabletPlay);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: tabletPlay,
-};
+export const Desktop1024: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1024",
+  tabletPlay,
+);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: desktop1440Play,
-};
+export const Desktop1440: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1440",
+  desktop1440Play,
+);
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForOwner(Owner.args, "mobile320", mobilePlay);

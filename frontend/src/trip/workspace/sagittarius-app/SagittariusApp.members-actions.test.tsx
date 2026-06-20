@@ -6,11 +6,11 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   installLocalStorageStub,
+  persistTripDraft,
   render,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -119,21 +119,18 @@ describe("Sagittarius cockpit member actions", () => {
     const user = userEvent.setup();
     const confirm = vi.spyOn(window, "confirm");
     const storage = installLocalStorageStub();
-    storage.setItem(
-      tripStorageKey,
-      JSON.stringify({
-        ...seedTrip,
-        members: seedTrip.members.map((member) =>
-          member.id === "member-beam"
-            ? {
-                ...member,
-                claimPasswordHash: "local_hash_old",
-                claimedAt: "2026-05-28T00:00:00.000Z",
-              }
-            : member,
-        ),
-      }),
-    );
+    persistTripDraft(storage, {
+      ...seedTrip,
+      members: seedTrip.members.map((member) =>
+        member.id === "member-beam"
+          ? {
+              ...member,
+              claimPasswordHash: "local_hash_old",
+              claimedAt: "2026-05-28T00:00:00.000Z",
+            }
+          : member,
+      ),
+    });
 
     render(<SagittariusApp initialView="members" />);
 

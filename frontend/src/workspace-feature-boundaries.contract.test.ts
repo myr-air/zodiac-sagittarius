@@ -58,6 +58,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryPageStoryPlays,
       itineraryTemplateStory,
       itineraryTemplateStoryPlays,
+      overviewPageStory,
       timelinePageStory,
       timelineTemplateStory,
       mapPageStory,
@@ -205,6 +206,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
     [
+      overviewPageStory,
       timelinePageStory,
       timelineTemplateStory,
       mapPageStory,

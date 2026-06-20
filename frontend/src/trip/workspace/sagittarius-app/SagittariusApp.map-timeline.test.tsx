@@ -2,13 +2,13 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import {
   tripRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   installLocalStorageStub,
+  persistTripDraft,
   render,
   tripWithPlans,
   resetSagittariusAppTestEnvironment,
@@ -101,13 +101,10 @@ describe("Sagittarius cockpit map and timeline surfaces", () => {
       pathName: "Plan A",
       pathRole: "alternative" as const,
     };
-    storage.setItem(
-      tripStorageKey,
-      JSON.stringify({
-        ...seedTrip,
-        itineraryItems: [mainItem, alternativeItem],
-      }),
-    );
+    persistTripDraft(storage, {
+      ...seedTrip,
+      itineraryItems: [mainItem, alternativeItem],
+    });
     const { container } = render(<SagittariusApp initialView="itinerary" />);
 
     const graphButton = await screen.findByRole("button", {
