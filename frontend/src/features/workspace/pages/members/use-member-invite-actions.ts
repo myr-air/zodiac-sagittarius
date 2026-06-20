@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { CopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import { buildInviteLink } from "./TripMembersPage.support";
 
-export type MemberInviteCopyState = "idle" | "copied" | "error";
+export type MemberInviteCopyState = CopyFeedbackState;
 
 interface UseMemberInviteActionsInput {
   canManagePeople: boolean;
@@ -16,25 +18,19 @@ export function useMemberInviteActions({
   joinInviteToken,
   onRotateJoinInviteToken,
 }: UseMemberInviteActionsInput) {
-  const [copyState, setCopyState] = useState<MemberInviteCopyState>("idle");
+  const {
+    copyState,
+    copyText,
+    markCopyError,
+    resetCopyState,
+  } = useCopyFeedbackState();
   const [isRotatingInviteToken, setIsRotatingInviteToken] = useState(false);
   const inviteLink = buildInviteLink(joinId, joinInviteToken);
-
-  useEffect(() => {
-    if (copyState === "idle") return undefined;
-    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
-    return () => window.clearTimeout(timeout);
-  }, [copyState]);
 
   async function copyInviteLink() {
     /* v8 ignore next */
     if (!canManagePeople) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
+    await copyText(inviteLink);
   }
 
   async function rotateInviteToken() {
@@ -42,9 +38,9 @@ export function useMemberInviteActions({
     setIsRotatingInviteToken(true);
     try {
       await onRotateJoinInviteToken();
-      setCopyState("idle");
+      resetCopyState();
     } catch {
-      setCopyState("error");
+      markCopyError();
     } finally {
       setIsRotatingInviteToken(false);
     }

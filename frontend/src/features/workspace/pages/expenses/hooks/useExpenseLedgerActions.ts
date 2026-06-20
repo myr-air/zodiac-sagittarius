@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { slugifyFilePart } from "@/src/lib/file-names";
+import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import { buildExpenseCsv, buildPaybackReminder } from "@/src/trip/expenses";
 import type {
   ExpenseSummary,
   SettlementSuggestion,
   Trip,
 } from "@/src/trip/types";
-import type { ExpenseCopyState } from "../expense-page-types";
 
 interface UseExpenseLedgerActionsInput {
   expenseSummary: ExpenseSummary;
@@ -23,37 +23,20 @@ export function useExpenseLedgerActions({
   statement,
   trip,
 }: UseExpenseLedgerActionsInput) {
-  const [copyState, setCopyState] = useState<ExpenseCopyState>("idle");
+  const { copyState, copyText } = useCopyFeedbackState();
   const csv = useMemo(
     () => buildExpenseCsv({ trip, expenseSummary }),
     [expenseSummary, trip],
   );
 
-  useEffect(() => {
-    if (copyState === "idle") return undefined;
-    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
-    return () => window.clearTimeout(timeout);
-  }, [copyState]);
-
   async function copyStatement() {
-    try {
-      await navigator.clipboard.writeText(statement);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
+    await copyText(statement);
   }
 
   async function copyPaybackReminder(suggestion: SettlementSuggestion) {
-    try {
-      await navigator.clipboard.writeText(
-        buildPaybackReminder({ trip, suggestion }),
-      );
-      await onRecordPaybackReminder?.(suggestion);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
+    await copyText(buildPaybackReminder({ trip, suggestion }), () =>
+      onRecordPaybackReminder?.(suggestion),
+    );
   }
 
   function downloadCsv() {

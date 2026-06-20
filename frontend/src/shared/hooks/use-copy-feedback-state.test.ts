@@ -1,0 +1,55 @@
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { useCopyFeedbackState } from "./use-copy-feedback-state";
+
+describe("useCopyFeedbackState", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("copies text, reports success, and resets after the delay", async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    const { result } = renderHook(() =>
+      useCopyFeedbackState({ resetDelayMs: 1000 }),
+    );
+
+    await act(async () => {
+      await result.current.copyText("Trip invite");
+    });
+
+    expect(writeText).toHaveBeenCalledWith("Trip invite");
+    expect(result.current.copyState).toBe("copied");
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.copyState).toBe("idle");
+  });
+
+  it("reports copy errors without running the success callback", async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    const afterCopy = vi.fn();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    const { result } = renderHook(() => useCopyFeedbackState());
+
+    let copied = true;
+    await act(async () => {
+      copied = await result.current.copyText("Trip invite", afterCopy);
+    });
+
+    expect(copied).toBe(false);
+    expect(afterCopy).not.toHaveBeenCalled();
+    expect(result.current.copyState).toBe("error");
+  });
+});
