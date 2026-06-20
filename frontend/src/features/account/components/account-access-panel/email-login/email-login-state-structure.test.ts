@@ -12,9 +12,13 @@ function readEmailLoginSource(fileName: string) {
 describe("email login state structure", () => {
   it("keeps resend cooldown timer state out of the main login panel hook", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
+    const challengeState = readEmailLoginSource("state/use-email-login-challenge-state.ts");
     const resendCooldown = readEmailLoginSource("state/use-email-login-resend-cooldown.ts");
 
-    expect(panelState).toContain("useEmailLoginResendCooldown");
+    expect(panelState).toContain("useEmailLoginChallengeState");
+    expect(panelState).not.toContain("useEmailLoginResendCooldown");
+    expect(challengeState).toContain("useEmailLoginResendCooldown");
+    expect(challengeState).toContain("setSubmittedChallenge");
     expect(panelState).not.toContain("window.setInterval");
     expect(panelState).not.toContain("useState(0)");
     expect(panelState).not.toMatch(/const \[resendCooldown,\s*setResendCooldown\]/);
@@ -43,6 +47,7 @@ describe("email login state structure", () => {
     const submitErrors = readEmailLoginSource("submit/email-login-submit-errors.ts");
     const submitRoute = readEmailLoginSource("submit/email-login-submit-route.ts");
     const submitRunner = readEmailLoginSource("submit/email-login-submit-runner.ts");
+    const signInActions = readEmailLoginSource("submit/use-email-login-sign-in-actions.ts");
 
     expect(panelState).toContain("useEmailLoginSubmitActions");
     expect(panelState).not.toContain("finishEmailCodeLogin");
@@ -52,13 +57,19 @@ describe("email login state structure", () => {
     expect(panelState).not.toContain("passwordLoginErrorMessage");
     expect(submitActions).toContain("export function useEmailLoginSubmitActions");
     expect(submitActions).toContain("finishEmailCodeLogin");
-    expect(submitActions).toContain("finishEmailPasswordLogin");
     expect(submitActions).toContain("finishEmailRegistrationSetup");
-    expect(submitActions).toContain("signInWithEmailPasskey");
     expect(submitActions).toContain("runEmailLoginSubmission");
     expect(submitActions).toContain("selectEmailLoginSubmitHandler");
     expect(submitActions).toContain("./email-login-submit-errors");
+    expect(submitActions).toContain("useEmailLoginSignInActions");
+    expect(submitActions).not.toContain("finishEmailPasswordLogin");
+    expect(submitActions).not.toContain("signInWithEmailPasskey");
     expect(submitActions).not.toContain("passwordLoginErrorMessage");
+    expect(signInActions).toContain("export function useEmailLoginSignInActions");
+    expect(signInActions).toContain("finishEmailPasswordLogin");
+    expect(signInActions).toContain("signInWithEmailPasskey");
+    expect(signInActions).toContain("runEmailLoginSubmission");
+    expect(signInActions).toContain("./email-login-submit-errors");
     expect(submitErrors).toContain("export function emailLoginPasswordSubmitError");
     expect(submitErrors).toContain("passwordLoginErrorMessage");
     expect(submitRoute).toContain("export function selectEmailLoginSubmitRoute");

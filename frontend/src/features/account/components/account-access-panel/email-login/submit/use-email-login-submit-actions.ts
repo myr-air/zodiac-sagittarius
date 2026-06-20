@@ -3,20 +3,17 @@
 import { type FormEvent, useState } from "react";
 import {
   finishEmailCodeLogin,
-  finishEmailPasswordLogin,
   finishEmailRegistrationSetup,
-  signInWithEmailPasskey,
 } from "./email-login-auth-actions";
 import { selectEmailLoginSubmitHandler } from "./email-login-submit-route";
 import {
   emailLoginInvalidCodeError,
-  emailLoginPasskeyError,
   emailLoginPasswordSetupError,
-  emailLoginPasswordSubmitError,
   emailLoginStartError,
 } from "./email-login-submit-errors";
 import type { UseEmailLoginSubmitActionsProps } from "./use-email-login-submit-actions-params";
 import { runEmailLoginSubmission } from "./email-login-submit-runner";
+import { useEmailLoginSignInActions } from "./use-email-login-sign-in-actions";
 
 export function useEmailLoginSubmitActions({
   accountClient,
@@ -46,6 +43,23 @@ export function useEmailLoginSubmitActions({
 }: UseEmailLoginSubmitActionsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const errorContext = { emailLoginMessages, messages };
+  const {
+    signInWithPasskey,
+    signInWithPassword,
+  } = useEmailLoginSignInActions({
+    accountClient,
+    activeFlow,
+    emailLoginMessages,
+    isEmailValid,
+    messages,
+    normalizedEmail,
+    onError,
+    onLoggedIn,
+    password,
+    passwordReady,
+    setIsSubmitting,
+    trustDevice,
+  });
 
   async function requestEmailCode() {
     if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
@@ -128,47 +142,6 @@ export function useEmailLoginSubmitActions({
           locale,
           normalizedEmail,
           password,
-        });
-        onLoggedIn(session);
-        onError(null);
-      },
-    });
-  }
-
-  async function signInWithPassword() {
-    if (!isEmailValid || !passwordReady) return;
-    await runEmailLoginSubmission({
-      onError: (caught) => {
-        onError(emailLoginPasswordSubmitError({ activeFlow, caught, context: errorContext }));
-      },
-      setIsSubmitting,
-      run: async () => {
-        const session = await finishEmailPasswordLogin({
-          accountClient,
-          activeFlow,
-          normalizedEmail,
-          password,
-          trustDevice,
-        });
-        onLoggedIn(session);
-        onError(null);
-      },
-    });
-  }
-
-  async function signInWithPasskey() {
-    if (!isEmailValid) return;
-    await runEmailLoginSubmission({
-      onError: (caught) => {
-        onError(emailLoginPasskeyError(caught, errorContext));
-      },
-      setIsSubmitting,
-      run: async () => {
-        const session = await signInWithEmailPasskey({
-          accountClient,
-          activeFlow,
-          normalizedEmail,
-          trustDevice,
         });
         onLoggedIn(session);
         onError(null);
