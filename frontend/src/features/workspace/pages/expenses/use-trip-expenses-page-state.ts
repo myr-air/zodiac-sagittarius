@@ -4,10 +4,14 @@ import {
   buildExpenseCsv,
   buildExpenseStatement,
   buildPaybackReminder,
-  expenseAmountInSettlementCurrency,
 } from "@/src/trip/expenses";
 import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
+import {
+  expenseCategorySpend,
+  filterExpenses,
+  inferredScopeExpenses as filterInferredScopeExpenses,
+} from "./expense-page-filters";
 import {
   memberById,
   refundSplits,
@@ -58,46 +62,22 @@ export function useTripExpensesPageState({
     [expenseSummary, trip],
   );
   const inferredScopeExpenses = useMemo(
-    () =>
-      trip.expenses.filter(
-        (expense) =>
-          expense.category !== "settlement" &&
-          Boolean(expense.tripPlanId) &&
-          !expense.itineraryItemId,
-      ),
+    () => filterInferredScopeExpenses(trip.expenses),
     [trip.expenses],
   );
-  const categorySpend = useMemo(() => {
-    const totals = new Map<Expense["category"], number>();
-    for (const expense of trip.expenses) {
-      if (expense.category === "settlement") continue;
-      totals.set(
-        expense.category,
-        (totals.get(expense.category) ?? 0) +
-          expenseAmountInSettlementCurrency(expense, settlementCurrency),
-      );
-    }
-    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1]);
-  }, [settlementCurrency, trip.expenses]);
+  const categorySpend = useMemo(
+    () => expenseCategorySpend(trip.expenses, settlementCurrency),
+    [settlementCurrency, trip.expenses],
+  );
   const filteredExpenses = useMemo(
-    () =>
-      trip.expenses.filter((expense) => {
-        const normalizedQuery = query.trim().toLocaleLowerCase();
-        const payer = memberById(trip.members, expense.paidBy);
-        const linkedItem = expense.itineraryItemId
-          ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId)
-          : null;
-        const matchesQuery =
-          !normalizedQuery ||
-          expense.title.toLocaleLowerCase().includes(normalizedQuery) ||
-          payer?.displayName.toLocaleLowerCase().includes(normalizedQuery) ||
-          linkedItem?.activity.toLocaleLowerCase().includes(normalizedQuery);
-        const matchesCategory =
-          categoryFilter === "all" || expense.category === categoryFilter;
-        const matchesPayer =
-          payerFilter === "all" || expense.paidBy === payerFilter;
-        return matchesQuery && matchesCategory && matchesPayer;
-      }),
+    () => filterExpenses({
+      categoryFilter,
+      expenses: trip.expenses,
+      itineraryItems: trip.itineraryItems,
+      members: trip.members,
+      payerFilter,
+      query,
+    }),
     [categoryFilter, payerFilter, query, trip.expenses, trip.itineraryItems, trip.members],
   );
 
