@@ -24,6 +24,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
       mapTemplateStory,
       stopDialogStory,
       bookingsDocsPageStory,
+      tripJoinGateStory,
       membersPageStory,
       membersTemplateStory,
       photosPageStory,
@@ -79,5 +80,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(membersTemplateStory).not.toContain("...Owner.args");
     expect(photosPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(photosPageStory).not.toContain("defaultViewport:");
+    expect(tripJoinGateStory).toContain("@/src/shared/storybook/story-builders");
+    expect(tripJoinGateStory).not.toContain("defaultViewport:");
   });
 });

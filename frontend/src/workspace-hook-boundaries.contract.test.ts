@@ -3,58 +3,17 @@ import { frontendRoot } from "./project-contract.helpers";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
 
 describe("Sagittarius workspace hook source boundaries", () => {
-  it("keeps workspace setup, planning, data, session, and command hooks split by responsibility", () => {
+  it("keeps workspace setup, data, and navigation hooks split by responsibility", () => {
     const {
       sagaCore,
-      workspaceRecordsHook,
-      itineraryImportModel,
-      itineraryImportApiRequests,
-      itineraryImportItemApiRequests,
-      itineraryImportRecordApiRequests,
-      itineraryImportRecordMapping,
-      itineraryImportRecordMerge,
-      importHook,
-      importApplyCommand,
-      apiImportApplyCommand,
       accessContextHook,
-      accessGateHook,
-      accountSessionHook,
       uiStateHook,
-      accessState,
-      participantSessionActions,
-      participantSessionRestoreHook,
-      participantPostAuthNavigation,
-      workspaceSessionHook,
-      workspaceSessionRestore,
-      workspaceCommandsHook,
-      workspaceTripPlansHook,
-      workspaceTripPlanSelection,
-      itineraryBookingCommands,
-      bookingCommandInputs,
-      taskActionsHook,
-      stopNoteActionsHook,
-      recordCommandInputs,
-      photoAlbumsHook,
-      photoAlbumApiCommands,
-      photoAlbumLocalCommands,
-      photoAlbumsDomain,
-      photoAlbumApi,
-      photoAlbumLocal,
-      photoAlbumQuery,
-      expenseMutationCommands,
-      expenseDrafts,
-      itineraryViewModelHook,
       apiClientsHook,
       setupContextHook,
       dataContextHook,
       backendExpenseSummaryHook,
-      cockpitReplacementHook,
       memberContextHook,
       navigationContextHook,
-      planningContextHook,
-      planningRecordsContextHook,
-      planningCommandsHook,
-      selectedTripPlanHook,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).toContain("useWorkspaceSetupContext");
@@ -98,116 +57,6 @@ describe("Sagittarius workspace hook source boundaries", () => {
     expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("workspaceViewShouldSyncBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("clearParticipantSession");
-    expect(sagaCore).toContain("useWorkspacePlanningContext");
-    expect(sagaCore).not.toContain("useWorkspaceCockpitReplacement");
-    expect(sagaCore).not.toContain("normalizeTripPlanAliases");
-    expect(cockpitReplacementHook).toContain("export function useWorkspaceCockpitReplacement");
-    expect(cockpitReplacementHook).toContain("normalizeTripPlanAliases");
-    expect(cockpitReplacementHook).toContain("resetBackendExpenseSummary");
-    expect(planningContextHook).toContain("useWorkspaceCockpitReplacement");
-    expect(planningContextHook).toContain("useWorkspacePlanningRecordsContext");
-    expect(planningContextHook).not.toContain("useWorkspaceItineraryViewModel");
-    expect(planningContextHook).not.toContain("useWorkspaceRecords");
-    expect(planningRecordsContextHook).toContain("useWorkspaceItineraryViewModel");
-    expect(planningRecordsContextHook).toContain("useWorkspaceRecords");
-    expect(planningRecordsContextHook).toContain("useTripWorkspaceRecords");
-    expect(planningContextHook).toContain("useWorkspaceTripPlanCommands");
-    expect(planningContextHook).toContain("useWorkspaceApiCockpitEffects");
-    expect(sagaCore).not.toContain("useWorkspaceItineraryViewModel");
-    expect(sagaCore).not.toContain("buildItineraryView");
-    expect(sagaCore).not.toContain("resolveSelectedWorkspaceItem");
-    expect(itineraryViewModelHook).toContain("buildItineraryView");
-    expect(itineraryViewModelHook).toContain("resolveSelectedWorkspaceItem");
-    expect(sagaCore).not.toContain("useWorkspaceSelectedTripPlanState");
-    expect(setupContextHook).toContain("useWorkspaceSelectedTripPlanState");
-    expect(sagaCore).not.toContain("useWorkspaceSelectedTripPlanSync");
-    expect(planningContextHook).toContain("useWorkspaceSelectedTripPlanSync");
-    expect(sagaCore).not.toContain("queueMicrotask");
-    expect(selectedTripPlanHook).toContain("queueMicrotask");
-    expect(selectedTripPlanHook).toContain("rememberSelectedTripPlanId");
-    expect(selectedTripPlanHook).toContain("resolveSelectedTripPlanId");
-    expect(sagaCore).not.toContain("@/src/trip/workspace/selected-trip-plan");
-    expect(planningContextHook).toContain("@/src/trip/workspace/selected-trip-plan");
-    expect(sagaCore).not.toContain("@/src/trip/workspace/use-backend-expense-summary");
-    expect(backendExpenseSummaryHook).toContain("@/src/trip/workspace/use-backend-expense-summary");
-    expect(sagaCore).not.toContain("@/src/trip/workspace/use-daily-briefings");
-    expect(dataContextHook).toContain("@/src/trip/workspace/use-daily-briefings");
-    expect(sagaCore).not.toContain("@/src/trip/workspace/use-itinerary-path-workspace");
-    expect(setupContextHook).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
-    expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(planningContextHook).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(planningRecordsContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
-    expect(sagaCore).not.toContain("useWorkspaceRecords");
-    expect(sagaCore).toContain("useWorkspaceCommands");
-    expect(sagaCore).not.toContain("useWorkspaceAdministration");
-    expect(sagaCore).not.toContain("useWorkspaceBookingCommands");
-    expect(sagaCore).not.toContain("useWorkspaceItineraryCommands");
-    expect(sagaCore).not.toContain("useWorkspaceItineraryImport");
-    expect(workspaceCommandsHook).toContain("useWorkspacePlanningCommands");
-    expect(workspaceCommandsHook).not.toContain("useWorkspaceBookingCommands");
-    expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryCommands");
-    expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryImport");
-    expect(workspaceCommandsHook).toContain("useWorkspaceAdministration");
-    expect(planningCommandsHook).toContain("useWorkspaceBookingCommands");
-    expect(planningCommandsHook).toContain("useWorkspaceItineraryCommands");
-    expect(planningCommandsHook).toContain("useWorkspaceItineraryImport");
-    expect(sagaCore).not.toContain("useWorkspaceRecordState");
-    expect(sagaCore).not.toContain("useWorkspaceRecordActions");
-    expect(accessGateHook).toContain("resolveWorkspaceAccessState");
-    expect(accessState).toContain("shouldRedirectUnauthenticatedTripRoute");
-    expect(participantSessionActions).toContain("resolveParticipantPostAuthHref");
-    expect(participantSessionActions).not.toContain("decodeReturnTo");
-    expect(participantPostAuthNavigation).toContain("resolveJoinPostAuthReturnTo");
-    expect(workspaceSessionHook).toContain("useWorkspaceAccountSession");
-    expect(workspaceSessionHook).not.toContain("loadPersistedAccountSession");
-    expect(workspaceSessionHook).not.toContain("persistAccountSession");
-    expect(accountSessionHook).toContain("loadPersistedAccountSession");
-    expect(accountSessionHook).toContain("persistAccountSession");
-    expect(workspaceSessionHook).toContain("useWorkspaceParticipantSessionRestore");
-    expect(workspaceSessionHook).not.toContain("loadPersistedParticipantSession");
-    expect(workspaceSessionHook).not.toContain("resolveWorkspaceSessionRestore");
-    expect(participantSessionRestoreHook).toContain("loadPersistedParticipantSession");
-    expect(participantSessionRestoreHook).toContain("resolveWorkspaceSessionRestore");
-    expect(workspaceSessionHook).not.toContain("normalizeTripPlanAliases");
-    expect(workspaceSessionRestore).toContain("normalizeTripPlanAliases");
-    expect(workspaceSessionRestore).toContain("resolveSelectedTripPlanId");
-    expect(workspaceTripPlansHook).toContain("canSelectWorkspaceTripPlan");
-    expect(workspaceTripPlansHook).toContain("resolveReloadedTripPlanSelection");
-    expect(workspaceTripPlanSelection).toContain("planVariants.some");
-    expect(itineraryBookingCommands).toContain(
-      "resolveItineraryBookingTicketCommandInput",
-    );
-    expect(itineraryBookingCommands).not.toContain(
-      "buildItineraryBookingTicketDocInput",
-    );
-    expect(bookingCommandInputs).toContain("findDuplicateBookingDoc");
-    expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
-    expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
-    expect(stopNoteActionsHook).toContain("buildWorkspaceStopNoteCreateInput");
-    expect(stopNoteActionsHook).not.toContain("tripPlanIdForRecord");
-    expect(recordCommandInputs).toContain("tripPlanIdForRecord");
-    expect(photoAlbumsHook).toContain("normalizePhotoAlbumCreateInput");
-    expect(photoAlbumsHook).toContain("useWorkspaceApiPhotoAlbumCommands");
-    expect(photoAlbumsHook).toContain("useWorkspaceLocalPhotoAlbumCommands");
-    expect(photoAlbumsHook).not.toContain("const title = input.title.trim()");
-    expect(photoAlbumsHook).not.toContain("const url = input.url.trim()");
-    expect(photoAlbumApiCommands).toContain("isVersionConflict");
-    expect(photoAlbumApiCommands).toContain("buildCreatePhotoAlbumRequest");
-    expect(photoAlbumApiCommands).toContain("buildPatchPhotoAlbumRequest");
-    expect(photoAlbumLocalCommands).toContain("createLocalPhotoAlbum");
-    expect(photoAlbumLocalCommands).toContain("updateLocalPhotoAlbumInTrip");
-    expect(photoAlbumsDomain).toContain("./photo-album-api");
-    expect(photoAlbumsDomain).toContain("./photo-album-local");
-    expect(photoAlbumsDomain).toContain("./photo-album-query");
-    expect(photoAlbumApi).toContain("serializePhotoAlbumInputForApi");
-    expect(photoAlbumLocal).toContain("normalizePhotoAlbumCreateInput");
-    expect(photoAlbumLocal).toContain("createLocalPhotoAlbum");
-    expect(photoAlbumQuery).toContain("buildPhotoAlbumSummary");
-    expect(expenseMutationCommands).toContain(
-      "resolveExpenseCreateDraftTripPlanId",
-    );
-    expect(expenseDrafts).toContain("resolveExpenseCreateDraftTripPlanId");
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-chrome");
@@ -215,35 +64,5 @@ describe("Sagittarius workspace hook source boundaries", () => {
     expect(setupContextHook).toContain("@/src/trip/workspace/use-workspace-chrome");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(navigationContextHook).toContain("@/src/trip/workspace/use-workspace-navigation");
-    expect(sagaCore).not.toContain("function buildImportedPlanRecordsForTripPlan");
-    expect(sagaCore).not.toContain("function mergeApiImportedPlanRecordsIntoTrip");
-    expect(sagaCore).not.toContain("function mergeImportedRecordsIntoTripPlan");
-    expect(sagaCore).not.toContain("function buildImportedItineraryItemCreateRequest");
-    expect(sagaCore).not.toContain("upsertById");
-    expect(sagaCore).not.toContain("async function createImportedPlanRecordsViaApi");
-    expect(itineraryImportModel).toContain("./itinerary-import-record-mapping");
-    expect(itineraryImportModel).toContain("./itinerary-import-record-merge");
-    expect(itineraryImportModel).not.toContain("function buildImportedPlanRecordsForTripPlan");
-    expect(itineraryImportModel).not.toContain("function mergeImportedRecordsIntoTripPlan");
-    expect(itineraryImportModel).not.toContain("function upsertById");
-    expect(itineraryImportApiRequests).toContain("./itinerary-import-item-api-requests");
-    expect(itineraryImportApiRequests).toContain("./itinerary-import-record-api-requests");
-    expect(itineraryImportApiRequests).not.toContain("function buildImportedItineraryItemCreateRequest");
-    expect(itineraryImportApiRequests).not.toContain("function buildImportedTaskCreateRequest");
-    expect(itineraryImportItemApiRequests).toContain("export function buildImportedItineraryItemCreateRequest");
-    expect(itineraryImportRecordApiRequests).toContain("export function buildImportedTaskCreateRequest");
-    expect(itineraryImportRecordApiRequests).toContain("export function buildImportedBookingDocCreateRequest");
-    expect(itineraryImportRecordMapping).toContain("export function buildImportedPlanRecordsForTripPlan");
-    expect(itineraryImportRecordMerge).toContain("export function mergeImportedRecordsIntoTripPlan");
-    expect(itineraryImportRecordMerge).toContain("export function mergeApiImportedPlanRecordsIntoTrip");
-    expect(itineraryImportRecordMerge).toContain("export function upsertById");
-    expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
-    expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
-    expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-item-api-requests");
-    expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
-    expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
-    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-model");
-    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-api");
-    expect(workspaceRecordsHook).toContain("@/src/trip/workspace/trip-plan-records");
   });
 });

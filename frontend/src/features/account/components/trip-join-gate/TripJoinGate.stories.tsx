@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import {
+  argsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
 import { TripJoinGate } from "./TripJoinGate";
 import {
   desktop1440Play,
@@ -25,6 +29,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const joinGateStory = argsStory<Story>;
+const viewportStoryForGate = viewportStory<Story>;
 
 export const RoomCredentials: Story = {
   args: roomCredentialsStoryArgs,
@@ -41,32 +47,34 @@ export const SelectIdentity: Story = {
   play: selectIdentityPlay,
 };
 
-export const Thai: Story = {
-  args: RoomCredentials.args,
-  parameters: { locale: "th" },
-  play: thaiPlay,
-};
+const roomCredentialsArgs = RoomCredentials.args ?? {};
+const tripAccessArgs = TripAccess.args ?? {};
+const selectIdentityArgs = SelectIdentity.args ?? {};
 
-export const Mobile: Story = {
-  args: SelectIdentity.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Thai: Story = joinGateStory(roomCredentialsArgs, {}, thaiPlay, {
+  locale: "th",
+});
 
-export const Tablet: Story = {
-  args: SelectIdentity.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: responsiveIdentityPlay,
-};
+export const Mobile: Story = viewportStoryForGate(
+  selectIdentityArgs,
+  "mobile320",
+  mobilePlay,
+);
 
-export const Desktop1024: Story = {
-  args: SelectIdentity.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsiveIdentityPlay,
-};
+export const Tablet: Story = viewportStoryForGate(
+  selectIdentityArgs,
+  "tablet768",
+  responsiveIdentityPlay,
+);
 
-export const Desktop1440: Story = {
-  args: TripAccess.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: desktop1440Play,
-};
+export const Desktop1024: Story = viewportStoryForGate(
+  selectIdentityArgs,
+  "desktop1024",
+  responsiveIdentityPlay,
+);
+
+export const Desktop1440: Story = viewportStoryForGate(
+  tripAccessArgs,
+  "desktop1440",
+  desktop1440Play,
+);
