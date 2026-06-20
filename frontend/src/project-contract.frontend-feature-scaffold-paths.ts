@@ -97,6 +97,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/people-panel/PeoplePanel.stories.plays.ts",
   "src/shared/components/people-panel/PeoplePanel.stories.support.ts",
   "src/shared/components/suggestion-panel/SuggestionPanel.stories.support.ts",
+  "src/shared/components/weather/WeatherBriefingDrawer.stories.plays.ts",
+  "src/shared/components/weather/WeatherForecastStrip.stories.plays.ts",
   "src/shared/components/weather/weather-briefing-drawer-model.ts",
   "src/features/itinerary/components/inline-option-picker-menu.tsx",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts",

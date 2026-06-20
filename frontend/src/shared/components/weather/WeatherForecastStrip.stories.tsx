@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherForecastStrip } from "./WeatherForecastStrip";
+import { emptyPlay } from "./WeatherForecastStrip.stories.plays";
 
 const meta = {
   title: "Design System/Weather Forecast Strip",
@@ -49,9 +49,5 @@ export const Empty: Story = {
     selectedDate: null,
     onSelect: () => {},
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Daily weather forecast/i })).toHaveClass("weather-forecast-strip");
-    await expect(canvas.getByText(/No weather data yet/i)).toHaveClass("weather-forecast-empty-state");
-    await expect(canvas.queryByRole("button")).toBeNull();
-  },
+  play: emptyPlay,
 };

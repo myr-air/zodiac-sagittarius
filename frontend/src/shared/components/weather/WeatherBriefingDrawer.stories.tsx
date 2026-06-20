@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { weatherBriefings } from "./WeatherBriefing.fixtures";
 import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
+import { partialDataPlay } from "./WeatherBriefingDrawer.stories.plays";
 
 const meta = {
   title: "Design System/Weather Briefing Drawer",
@@ -72,10 +72,5 @@ export const PartialData: Story = {
     onClose: () => {},
     onSaveOverrides: () => {},
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Weather briefing/i })).toHaveClass("weather-briefing-drawer");
-    await expect(canvas.getByRole("heading", { name: /^Forecast pending$/i })).toBeVisible();
-    await expect(canvas.getAllByText(/No data yet/i).length).toBeGreaterThan(1);
-    await expect(canvas.getByLabelText(/Outfit advice override/i)).toBeVisible();
-  },
+  play: partialDataPlay,
 };
