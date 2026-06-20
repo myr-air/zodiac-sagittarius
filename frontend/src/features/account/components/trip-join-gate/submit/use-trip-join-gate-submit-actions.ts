@@ -5,7 +5,8 @@ import {
   verifyTripCredentials,
   verifyTripParticipantPassword,
 } from "@/src/trip/auth";
-import { errorMessage, tripFromJoinResponse } from "../trip-join-gate.support";
+import { errorMessage } from "../trip-join-error-message";
+import { tripFromJoinResponse } from "../trip-join-response-mapper";
 import type { UseTripJoinGateSubmitActionsArgs } from "./use-trip-join-gate-submit-actions-params";
 
 export function useTripJoinGateSubmitActions({

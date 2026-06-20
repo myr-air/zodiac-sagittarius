@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { JoinTripResponse, TripApiClient } from "@/src/trip/api-client";
-import { errorMessage } from "../trip-join-gate.support";
+import { errorMessage } from "../trip-join-error-message";
 
 interface UseTripJoinInviteTokenResolutionInput {
   apiClient?: Pick<TripApiClient, "resolveJoinInviteToken">;

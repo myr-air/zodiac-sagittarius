@@ -11,7 +11,7 @@ import { TripJoinParticipantStep } from "./TripJoinParticipantStep";
 import { TripJoinRoomForm } from "./TripJoinRoomForm";
 import { useTripJoinGateState } from "./state/use-trip-join-gate-state";
 
-export { tripFromJoinResponse } from "./trip-join-gate.support";
+export { tripFromJoinResponse } from "./trip-join-response-mapper";
 
 interface TripJoinGateProps {
   trip?: Trip;
