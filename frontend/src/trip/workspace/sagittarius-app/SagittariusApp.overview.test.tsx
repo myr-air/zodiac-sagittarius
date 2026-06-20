@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
+import { accountApiRoutes } from "@/src/account/api-routes";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
@@ -14,6 +15,7 @@ import {
   dailyBriefingFixture,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTrustedAccountSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -66,17 +68,7 @@ describe("Sagittarius cockpit overview", () => {
 
   it("keeps a persisted trip member session when the account is not linked to the trip", async () => {
     const storage = installLocalStorageStub();
-    storage.setItem(
-      "sagittarius-account-session",
-      JSON.stringify({
-        userId: "11111111-1111-1111-1111-111111111111",
-        sessionToken: "unlinked-account-session",
-        kind: "trusted",
-        trustedDeviceId: "device-1",
-        createdAt: "2026-05-30T10:00:00.000Z",
-        expiresAt: "2030-01-01T10:00:00.000Z",
-      }),
-    );
+    persistTrustedAccountSession(storage, "unlinked-account-session");
     storage.setItem(
       tripParticipantSessionStorageKey,
       JSON.stringify({
@@ -97,15 +89,13 @@ describe("Sagittarius cockpit overview", () => {
       ),
     };
     const apiClient = createApiClientForTrip(apiTrip);
+    const accountTripMemberSessionsRoute =
+      accountApiRoutes.accountTripMemberSessions(seedTrip.id);
     const fetchSpy = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(async (input) => {
         const request = input instanceof Request ? input.url : String(input);
-        if (
-          request.includes(
-            `/api/v1/account/trips/${seedTrip.id}/member-sessions`,
-          )
-        ) {
+        if (request.includes(accountTripMemberSessionsRoute)) {
           return new Response(
             JSON.stringify({
               code: "forbidden",
@@ -147,9 +137,7 @@ describe("Sagittarius cockpit overview", () => {
         window.sessionStorage.getItem(tripParticipantSessionStorageKey),
       ).toContain("beam-member-session");
       expect(fetchSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining(
-          `/api/v1/account/trips/${seedTrip.id}/member-sessions`,
-        ),
+        expect.stringContaining(accountTripMemberSessionsRoute),
         expect.anything(),
       );
     } finally {

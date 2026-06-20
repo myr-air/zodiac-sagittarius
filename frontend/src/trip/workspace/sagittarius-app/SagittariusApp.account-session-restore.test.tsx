@@ -7,6 +7,7 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTrustedAccountSession,
   render,
 } from "./sagittarius-app.test-support";
 
@@ -19,16 +20,9 @@ describe("Sagittarius cockpit account session restore", () => {
 
   it("renders the same access choice before restoring a persisted account session", () => {
     installLocalStorageStub();
-    window.sessionStorage.setItem(
-      "sagittarius-account-session",
-      JSON.stringify({
-        userId: "11111111-1111-1111-1111-111111111111",
-        sessionToken: "persisted-account-session",
-        kind: "trusted",
-        trustedDeviceId: "device-1",
-        createdAt: "2026-05-30T10:00:00.000Z",
-        expiresAt: "2030-01-01T10:00:00.000Z",
-      }),
+    persistTrustedAccountSession(
+      window.sessionStorage,
+      "persisted-account-session",
     );
 
     render(
