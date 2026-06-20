@@ -1,10 +1,10 @@
-import type { BookingDoc, BookingDocStatus, Trip } from "@/src/trip/types";
+import type { BookingDoc, Trip } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../BookingsDocsPage.copy";
-import { bookingStatuses, formatEnumLabel } from "../booking-options";
+import { bookingStatusFilterValues, formatEnumLabel, type BookingStatusFilter } from "../booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { BookingFileRow } from "./BookingFileRow";
 
@@ -17,14 +17,14 @@ interface BookingFilePanelProps {
   lockedDocs: BookingDoc[];
   query: string;
   selectedBookingId?: string;
-  statusFilter: BookingDocStatus | "all";
+  statusFilter: BookingStatusFilter;
   statusMenuOpen: boolean;
   trip: Trip;
   onDeleteBooking: (booking: BookingDoc) => void;
   onEditBooking: (booking: BookingDoc) => void;
   onQueryChange: (query: string) => void;
   onSelectBooking: (bookingDocId: string) => void;
-  onStatusFilterChange: (status: BookingDocStatus | "all") => void;
+  onStatusFilterChange: (status: BookingStatusFilter) => void;
   onToggleStatusMenu: () => void;
 }
 
@@ -76,7 +76,7 @@ export function BookingFilePanel({
             </button>
             {statusMenuOpen ? (
               <div className={bookingStyles.statusFilterMenuClassName} id="booking-status-filter-menu" role="listbox" aria-label={copy.statusFilter}>
-                {(["all", ...bookingStatuses] as Array<BookingDocStatus | "all">).map((status) => {
+                {bookingStatusFilterValues.map((status) => {
                   const selected = statusFilter === status;
                   return (
                     <button

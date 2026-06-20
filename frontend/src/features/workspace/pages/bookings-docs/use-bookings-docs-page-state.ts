@@ -3,8 +3,9 @@ import {
   canViewBookingDoc,
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
-import type { BookingDoc, BookingDocStatus, Member, Trip, TripTask } from "@/src/trip/types";
+import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
+import type { BookingStatusFilter } from "./booking-options";
 import {
   bookingDocMatchesFolder,
   bookingFolders,
@@ -38,7 +39,7 @@ export function useBookingsDocsPageState({
   const [activeFolderId, setActiveFolderId] = useState<BookingFolderId>("all");
   const [selectedBookingId, setSelectedBookingId] = useState(bookingDocs[0]?.id ?? "");
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<BookingDocStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>("all");
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dialogBooking, setDialogBooking] = useState<BookingDoc | "new" | null>(null);
@@ -87,7 +88,7 @@ export function useBookingsDocsPageState({
     setStatusMenuOpen(false);
   }
 
-  function changeStatusFilter(nextStatus: BookingDocStatus | "all") {
+  function changeStatusFilter(nextStatus: BookingStatusFilter) {
     setStatusFilter(nextStatus);
     setStatusMenuOpen(false);
     setMobilePreviewOpen(false);

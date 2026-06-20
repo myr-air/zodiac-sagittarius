@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { bookingCopy } from "./BookingsDocsPage.copy";
 import {
+  bookingStatusFilterValues,
   bookingStatuses,
   bookingTypes,
   bookingVisibilities,
@@ -22,6 +23,10 @@ describe("booking options", () => {
     ]);
     expect(bookingStatuses).toEqual(["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"]);
     expect(bookingVisibilities).toEqual(["shared", "sensitive", "private"]);
+  });
+
+  it("derives status filter options from the shared status order", () => {
+    expect(bookingStatusFilterValues).toEqual(["all", ...bookingStatuses]);
   });
 
   it("formats enum labels from the selected locale copy", () => {
