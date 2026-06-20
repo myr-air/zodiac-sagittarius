@@ -100,6 +100,10 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/local-ids.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/join-return.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/auth-capabilities.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/auth-constants.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/auth-local-secrets.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/auth-member-palette.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-errors.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-itinerary.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client-members.ts"))).toBe(true);

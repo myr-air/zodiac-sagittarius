@@ -3,22 +3,14 @@ import type {
   PatchMemberApiRequest,
   UpdatePresenceApiRequest,
 } from "./api-client";
-import type { Member, Trip, TripCapability, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
+import { nextTripMemberColor, nextTripMemberId } from "./auth-member-palette";
+import { createLocalSessionToken, hashLocalSecret } from "./auth-local-secrets";
+import type { Member, Trip, TripJoinCredential, TripMemberAccessStatus, TripParticipantSession, TripRole } from "./types";
 
-export const seedTripJoinId = "HK-SZ-2025";
-export const seedTripJoinPassword = "seed-trip-pass";
-export const tripParticipantSessionStorageKey = "sagittarius:trip-participant-session";
-
-const roleCapabilities: Record<TripRole, TripCapability[]> = {
-  owner: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "manageTripPlans", "managePhotoAlbums"],
-  organizer: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "manageTripPlans", "managePhotoAlbums"],
-  traveler: ["viewPlan", "editItinerary", "createSuggestion", "viewExpenses", "managePhotoAlbums"],
-  viewer: ["viewPlan"],
-};
-
-export function canTripRole(role: TripRole, capability: TripCapability): boolean {
-  return roleCapabilities[role].includes(capability);
-}
+export { canTripRole } from "./auth-capabilities";
+export { seedTripJoinId, seedTripJoinPassword, tripParticipantSessionStorageKey } from "./auth-constants";
+export { hashLocalSecret } from "./auth-local-secrets";
+export { nextTripMemberColor } from "./auth-member-palette";
 
 export function verifyTripCredentials(trip: Trip, credentials: TripJoinCredential): boolean {
   return normalizeJoinId(credentials.joinId) === normalizeJoinId(trip.joinId) && hashLocalSecret(credentials.password) === trip.joinPasswordHash;
@@ -235,45 +227,6 @@ export function linkTripParticipantToUser(trip: Trip, memberId: string, userId: 
   };
 }
 
-export function hashLocalSecret(secret: string): string {
-  const normalized = secret.trim();
-  let hash = 5381;
-  for (let index = 0; index < normalized.length; index += 1) {
-    hash = (hash * 33) ^ normalized.charCodeAt(index);
-  }
-  return `local_hash_${(hash >>> 0).toString(36)}`;
-}
-
 function normalizeJoinId(joinId: string): string {
   return joinId.trim().toUpperCase();
-}
-
-function createLocalSessionToken(): string {
-  const webCrypto = (globalThis as { crypto?: Crypto }).crypto;
-  if (webCrypto && "randomUUID" in webCrypto) return `local-${webCrypto.randomUUID()}`;
-  const randomValue = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-  return `local-${randomValue}`;
-}
-
-function nextTripMemberId(members: Member[], displayName: string): string {
-  const slug = displayName
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "") || "member";
-  const existingIds = new Set(members.map((member) => member.id));
-  let candidate = `member-${slug}`;
-  let index = 2;
-
-  while (existingIds.has(candidate)) {
-    candidate = `member-${slug}-${index}`;
-    index += 1;
-  }
-
-  return candidate;
-}
-
-export function nextTripMemberColor(index: number): string {
-  const palette = ["#0f766e", "#2563eb", "#f97316", "#64748b", "#7c3aed", "#db2777", "#0891b2", "#ca8a04"];
-  return palette[index % palette.length];
 }
