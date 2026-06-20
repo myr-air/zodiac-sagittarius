@@ -13,6 +13,13 @@ import {
 } from "./account-email-login-styles";
 import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./account-email-login-step-meta";
 import {
+  emailLoginCredentialsLabels,
+  emailLoginMethodsLabels,
+  emailLoginOtpLabels,
+  emailLoginPasswordLabels,
+  emailLoginSetupLabels,
+} from "./account-email-login-step-labels";
+import {
   EmailLoginCredentialsStep,
   EmailLoginMethodsStep,
   EmailLoginOtpStep,
@@ -122,16 +129,7 @@ export function EmailLoginStepStage({
           codeInputId={codeInputId}
           disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
           isSubmitting={isSubmitting}
-          labels={{
-            changeEmail: emailLoginMessages.changeEmail,
-            resendCode: emailLoginMessages.resendCode,
-            resendCooldown: (seconds) => emailLoginMessages.resendCooldown({ seconds }),
-            sentCodeTo: emailLoginMessages.sentCodeTo,
-            signInAccount: emailLoginMessages.signInAccount,
-            verificationCode: emailLoginMessages.verificationCode,
-            verificationCodeHint: emailLoginMessages.verificationCodeHint,
-            verifyEmail: emailLoginMessages.verifyEmail,
-          }}
+          labels={emailLoginOtpLabels(emailLoginMessages)}
           normalizedEmail={normalizedEmail}
           onChangeCode={updateCode}
           onRequestEmailCode={() => void requestEmailCode()}
@@ -151,16 +149,7 @@ export function EmailLoginStepStage({
           emailInputId={emailInputId}
           isEmailInvalid={isEmailInvalid}
           isPasswordInvalid={isPasswordInvalid}
-          labels={{
-            alternateSignInOptions: emailLoginMessages.alternateSignInOptions,
-            createWithPassword: emailLoginMessages.createWithPassword,
-            email: emailLoginMessages.email,
-            password: emailLoginMessages.password,
-            passwordHint: emailLoginMessages.passwordHint,
-            signInAccount: emailLoginMessages.signInAccount,
-            usePasskeyInstead: emailLoginMessages.usePasskeyInstead,
-            useSignInCodeInstead: emailLoginMessages.useSignInCodeInstead,
-          }}
+          labels={emailLoginCredentialsLabels(emailLoginMessages)}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onRequestEmailCode={() => void requestEmailCode()}
@@ -175,16 +164,7 @@ export function EmailLoginStepStage({
         <EmailLoginMethodsStep
           activeFlow={activeFlow}
           isSubmitting={isSubmitting}
-          labels={{
-            changeEmail: emailLoginMessages.changeEmail,
-            createFor: emailLoginMessages.createFor,
-            createWithPassword: emailLoginMessages.createWithPassword,
-            sendRegisterCode: emailLoginMessages.sendRegisterCode,
-            sendSignInCode: emailLoginMessages.sendSignInCode,
-            signInAs: emailLoginMessages.signInAs,
-            signInWithPasskey: emailLoginMessages.signInWithPasskey,
-            signInWithPassword: emailLoginMessages.signInWithPassword,
-          }}
+          labels={emailLoginMethodsLabels(emailLoginMessages)}
           normalizedEmail={normalizedEmail}
           onChangeEmail={changeEmail}
           onRequestEmailCode={() => void requestEmailCode()}
@@ -196,12 +176,7 @@ export function EmailLoginStepStage({
           displayName={displayName}
           homeBase={homeBase}
           isSubmitting={isSubmitting}
-          labels={{
-            createFor: emailLoginMessages.createFor,
-            displayName: emailLoginMessages.displayName,
-            finishSetup: emailLoginMessages.finishSetup,
-            homeBase: emailLoginMessages.homeBase,
-          }}
+          labels={emailLoginSetupLabels(emailLoginMessages)}
           normalizedEmail={normalizedEmail}
           onDisplayNameChange={setDisplayName}
           onHomeBaseChange={setHomeBase}
@@ -211,16 +186,7 @@ export function EmailLoginStepStage({
           activeFlow={activeFlow}
           isPasswordInvalid={isPasswordInvalid}
           isSubmitting={isSubmitting}
-          labels={{
-            changeEmail: emailLoginMessages.changeEmail,
-            chooseAnotherMethod: emailLoginMessages.chooseAnotherMethod,
-            continueToOtp: emailLoginMessages.continueToOtp,
-            createFor: emailLoginMessages.createFor,
-            password: emailLoginMessages.password,
-            passwordHint: emailLoginMessages.passwordHint,
-            signInAs: emailLoginMessages.signInAs,
-            signInWithPassword: emailLoginMessages.signInWithPassword,
-          }}
+          labels={emailLoginPasswordLabels(emailLoginMessages)}
           normalizedEmail={normalizedEmail}
           onChangeEmail={changeEmail}
           onChooseMethods={chooseMethods}

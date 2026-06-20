@@ -22,6 +22,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/email-login/account-email-login-otp-step.tsx",
   "src/features/account/components/account-access-panel/email-login/account-email-login-password-step.tsx",
   "src/features/account/components/account-access-panel/email-login/account-email-login-setup-step.tsx",
+  "src/features/account/components/account-access-panel/email-login/account-email-login-step-labels.ts",
   "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts",
   "src/features/account/components/account-access-panel/email-login/email-login-panel-derived-state.ts",
   "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts",
