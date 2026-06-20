@@ -90,6 +90,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/date-time-pickers/date-time-picker.styles.ts",
   "src/shared/components/date-time-pickers/date-time-picker.types.ts",
   "src/shared/components/people-panel/people-panel.styles.ts",
+  "src/shared/components/people-panel/PeoplePanel.stories.plays.ts",
   "src/shared/components/people-panel/PeoplePanel.stories.support.ts",
   "src/shared/components/suggestion-panel/SuggestionPanel.stories.support.ts",
   "src/shared/components/weather/weather-briefing-drawer-model.ts",
