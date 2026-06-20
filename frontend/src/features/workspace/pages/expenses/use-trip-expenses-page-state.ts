@@ -13,10 +13,11 @@ import {
   refundSplits,
   sumShares,
 } from "./expense-page-support";
-
-type ExpenseCategoryFilter = "all" | Expense["category"];
-type ExpenseCopyState = "idle" | "copied" | "error";
-type ExpenseDialogTarget = Expense | "new" | null;
+import type {
+  ExpenseCategoryFilter,
+  ExpenseCopyState,
+  ExpenseDialogTarget,
+} from "./expense-page-types";
 
 interface UseTripExpensesPageStateArgs {
   currentMember: Member;

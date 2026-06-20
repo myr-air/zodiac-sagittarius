@@ -1,5 +1,9 @@
 import type { Expense, ExpenseComment, ExpenseLineItem } from "@/src/trip/types";
 
+export type ExpenseCategoryFilter = "all" | Expense["category"];
+export type ExpenseCopyState = "idle" | "copied" | "error";
+export type ExpenseDialogTarget = Expense | "new" | null;
+
 export interface ExpenseInput {
   itemId: string | null;
   tripPlanId?: string | null;

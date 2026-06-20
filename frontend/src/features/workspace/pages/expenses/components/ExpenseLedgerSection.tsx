@@ -1,18 +1,23 @@
 import { formatMoney } from "@/src/trip/expenses";
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { Button, IconButton, Select } from "@/src/ui";
+import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone, expenseCategories, memberById, memberInitial, refundAmount, sumShares } from "../expense-page-support";
+import { categoryTone, memberById, memberInitial, refundAmount, sumShares } from "../expense-page-support";
+import type {
+  ExpenseCategoryFilter,
+  ExpenseCopyState,
+} from "../expense-page-types";
+import { ExpenseLedgerControls } from "./ExpenseLedgerControls";
 
 interface ExpenseLedgerSectionProps {
   canEditExpenses: boolean;
-  categoryFilter: "all" | Expense["category"];
-  copyState: "idle" | "copied" | "error";
+  categoryFilter: ExpenseCategoryFilter;
+  copyState: ExpenseCopyState;
   filteredExpenses: Expense[];
   members: Member[];
   onAddExpense: () => void;
-  onCategoryFilterChange: (category: "all" | Expense["category"]) => void;
+  onCategoryFilterChange: (category: ExpenseCategoryFilter) => void;
   onClearFilters: () => void;
   onCopyStatement: () => void;
   onDeleteExpense: (expenseId: string) => void;
@@ -54,43 +59,22 @@ export function ExpenseLedgerSection({
 }: ExpenseLedgerSectionProps) {
   return (
     <section className="grid min-h-0 content-start gap-3" aria-label={t.expenses.ledgerLabel}>
-      <div className={expenseStyles.commandBarClassName}>
-        <div className={expenseStyles.filterGridClassName}>
-          <label className={expenseStyles.fieldClassName}>
-            <span>{t.expenses.filters.search}</span>
-            <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
-          </label>
-          <label className={expenseStyles.fieldClassName}>
-            <span>{t.expenses.filters.category}</span>
-            <Select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as "all" | Expense["category"])}>
-              <option value="all">{t.expenses.filters.allCategories}</option>
-              {expenseCategories.map((category) => <option key={category} value={category}>{category}</option>)}
-            </Select>
-          </label>
-          <label className={expenseStyles.fieldClassName}>
-            <span>{t.expenses.filters.payer}</span>
-            <Select value={payerFilter} onChange={(event) => onPayerFilterChange(event.target.value)}>
-              <option value="all">{t.expenses.filters.allPayers}</option>
-              {members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
-            </Select>
-          </label>
-          <Button type="button" variant="ghost" onClick={onClearFilters}>{t.expenses.actions.clearFilters}</Button>
-        </div>
-        <div className={expenseStyles.commandActionsClassName}>
-          <Button type="button" variant="ghost" onClick={onCopyStatement}>
-            <Icon name="copy" /> {t.expenses.actions.copyStatement}
-          </Button>
-          <Button type="button" variant="ghost" onClick={onDownloadCsv}>
-            <Icon name="export" /> {t.expenses.actions.downloadCsv}
-          </Button>
-          <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
-            <Icon name="plus" /> {t.expenses.actions.addExpense}
-          </Button>
-          <span className={expenseStyles.copyFeedbackClassName} data-state={copyState} role="status" aria-label={t.expenses.copy.statusLabel}>
-            {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : t.expenses.copy.ready}
-          </span>
-        </div>
-      </div>
+      <ExpenseLedgerControls
+        canEditExpenses={canEditExpenses}
+        categoryFilter={categoryFilter}
+        copyState={copyState}
+        members={members}
+        payerFilter={payerFilter}
+        query={query}
+        t={t}
+        onAddExpense={onAddExpense}
+        onCategoryFilterChange={onCategoryFilterChange}
+        onClearFilters={onClearFilters}
+        onCopyStatement={onCopyStatement}
+        onDownloadCsv={onDownloadCsv}
+        onPayerFilterChange={onPayerFilterChange}
+        onQueryChange={onQueryChange}
+      />
 
       <div className={expenseStyles.tableWrapClassName}>
         <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
