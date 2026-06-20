@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
+  argsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
+import {
   datePickerPlay,
   dateTimeDialogPlay,
   dateTimePickerPlay,
@@ -25,6 +29,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const pickerStory = argsStory<Story>;
+const viewportStoryForPicker = viewportStory<Story>;
 
 export const TimePicker: Story = {
   args: {
@@ -53,6 +59,9 @@ export const DateTimePicker: Story = {
   play: dateTimePickerPlay,
 };
 
+const dateTimePickerArgs = DateTimePicker.args ?? {};
+const datePickerArgs = DatePicker.args ?? {};
+
 export const Disabled: Story = {
   args: {
     disabled: true,
@@ -63,36 +72,37 @@ export const Disabled: Story = {
   play: disabledPlay,
 };
 
-export const Mobile: Story = {
-  args: DateTimePicker.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: dateTimeDialogPlay,
-};
+export const Mobile: Story = viewportStoryForPicker(
+  dateTimePickerArgs,
+  "mobile320",
+  dateTimeDialogPlay,
+);
 
-export const Tablet: Story = {
-  args: DateTimePicker.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: dateTimeDialogPlay,
-};
+export const Tablet: Story = viewportStoryForPicker(
+  dateTimePickerArgs,
+  "tablet768",
+  dateTimeDialogPlay,
+);
 
-export const Thai: Story = {
-  args: {
+export const Thai: Story = pickerStory(
+  {},
+  {
     kind: "datetime",
     label: "เวลาเริ่มการจอง",
     value: "2026-06-18T09:00",
   },
-  parameters: { locale: "th" },
-  play: thaiPlay,
-};
+  thaiPlay,
+  { locale: "th" },
+);
 
-export const Desktop1024: Story = {
-  args: DateTimePicker.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: dateTimeDialogPlay,
-};
+export const Desktop1024: Story = viewportStoryForPicker(
+  dateTimePickerArgs,
+  "desktop1024",
+  dateTimeDialogPlay,
+);
 
-export const Desktop1440: Story = {
-  args: DatePicker.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: desktop1440Play,
-};
+export const Desktop1440: Story = viewportStoryForPicker(
+  datePickerArgs,
+  "desktop1440",
+  desktop1440Play,
+);
