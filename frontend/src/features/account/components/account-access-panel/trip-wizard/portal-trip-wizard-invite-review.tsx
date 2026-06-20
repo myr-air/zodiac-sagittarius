@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
+import { TripWizardGeneratedAccess } from "./portal-trip-wizard-generated-access";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardInviteStepProps {
@@ -72,21 +71,14 @@ export function TripWizardInviteStep({
           />
           <small>{wizard.helper.ownerDefault}</small>
         </label>
-        <div className={wizardStyles.tripGeneratedAccessClassName}>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.joinId}</span>
-            <input value={generatedJoinId} readOnly />
-            <small>{wizard.helper.joinIdHint}</small>
-          </label>
-          <label>
-            <span>{t.access.dashboard.createTrip.labels.joinPassword}</span>
-            <input value={generatedJoinPassword} readOnly />
-          </label>
-          <Button type="button" variant="secondary" onClick={onRegenerateCredentials}>
-            <Icon name="route" />
-            {wizard.actions.regenerate}
-          </Button>
-        </div>
+        <TripWizardGeneratedAccess
+          generatedJoinId={generatedJoinId}
+          generatedJoinPassword={generatedJoinPassword}
+          joinIdHint={wizard.helper.joinIdHint}
+          labels={t.access.dashboard.createTrip.labels}
+          regenerateLabel={wizard.actions.regenerate}
+          onRegenerateCredentials={onRegenerateCredentials}
+        />
       </details>
     </section>
   );
