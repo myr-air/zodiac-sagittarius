@@ -272,6 +272,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.api.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.api-errors.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"))).toBe(true);
