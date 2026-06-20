@@ -130,6 +130,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.stories.tsx",
   "src/features/workspace/components/summary-stat/index.ts",
   "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts",
+  "src/features/workspace/pages/bookings-docs/BookingsDocsPage.copy.en.ts",
+  "src/features/workspace/pages/bookings-docs/BookingsDocsPage.copy.th.ts",
   "src/features/workspace/pages/bookings-docs/booking-options.ts",
   "src/features/workspace/pages/bookings-docs/booking-options.test.ts",
   "src/features/workspace/pages/bookings-docs/BookingsDocsPage.test-support.tsx",
