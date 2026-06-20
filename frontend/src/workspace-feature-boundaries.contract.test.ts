@@ -117,8 +117,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
     expect(itineraryStoryPathScenarios).toContain("./fixtures/itinerary-story-path-items");
     expect(itineraryStoryPathScenarios).toContain("./itinerary-story-path-options");
-    expect(itineraryStoryPathItems).toContain("buildItineraryStoryPathItems");
-    expect(itineraryStoryPathItems).toContain("export const stressPathItemsBase");
+    expect(itineraryStoryPathItems).toContain("./itinerary-story-alternative-items");
+    expect(itineraryStoryPathItems).toContain("./itinerary-story-branch-items");
+    expect(itineraryStoryPathItems).toContain("./itinerary-story-stress-items");
     expect(itineraryStoryPathOptions).toContain("export const stressPathOptions");
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
