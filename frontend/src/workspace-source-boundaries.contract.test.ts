@@ -253,6 +253,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"),
       "utf8",
     );
+    const portalTripWizardDerivedState = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts"),
+      "utf8",
+    );
     const portalTripWizardActions = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx"),
       "utf8",
@@ -667,6 +671,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(accountTripWizardSupport).toContain("export function applyTripCalendarDate");
     expect(portalTripWizardModel).toContain("applyTripDestinationCities");
     expect(portalTripWizardModel).toContain("applyTripCalendarDate");
+    expect(portalTripWizardModel).toContain("buildPortalTripWizardDerivedState");
+    expect(portalTripWizardModel).not.toContain("function tripStepComplete");
+    expect(portalTripWizardDerivedState).toContain("export function buildPortalTripWizardDerivedState");
+    expect(portalTripWizardDerivedState).toContain("tripStepComplete");
+    expect(portalTripWizardDerivedState).toContain("routeCalendarDays");
     expect(portalTripWizard).toContain("PortalTripWizardActions");
     expect(portalTripWizard).not.toContain("Date.parse(`${date}T00:00:00`)");
     expect(portalTripWizard).not.toContain("appRoutes.portalMyTrips()");

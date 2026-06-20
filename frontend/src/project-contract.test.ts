@@ -218,6 +218,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-dates-step.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-invite-review.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/trip-join-gate.support.ts"))).toBe(true);
