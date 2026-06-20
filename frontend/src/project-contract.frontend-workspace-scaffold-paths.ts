@@ -29,6 +29,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore-routes.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.settings.test.tsx",
+  "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plan-api-conflicts.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plan-api-create.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plan-api-publish.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans-api-expenses.test.tsx",
