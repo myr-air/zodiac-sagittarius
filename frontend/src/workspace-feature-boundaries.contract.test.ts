@@ -11,6 +11,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       bookingDialog,
       bookingDialogState,
       sagaCore,
+      sagittariusAppTestAccountApi,
+      sagittariusAppTestStorage,
+      sagittariusAppTestSupport,
       itineraryTimeLib,
       overviewPage,
       overviewSummaryBand,
@@ -112,6 +115,14 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
+    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
+    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
+    expect(sagittariusAppTestSupport).not.toContain("createMemoryStorage");
+    expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
+    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
+    expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
+    expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
 
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
     expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
