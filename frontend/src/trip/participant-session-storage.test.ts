@@ -11,7 +11,7 @@ import type { TripParticipantSession } from "./types";
 
 const session: TripParticipantSession = {
   createdAt: "2026-06-16T00:00:00.000Z",
-  expiresAt: "2026-06-17T00:00:00.000Z",
+  expiresAt: "2026-06-21T00:00:00.000Z",
   memberId: "member-aom",
   sessionToken: "session-token",
   tripId: tripFixture.trip.id,
@@ -36,8 +36,15 @@ function createMemoryStorage(): Storage {
 }
 
 describe("participant session storage", () => {
+  let originalWindow: typeof globalThis.window | undefined;
+
   beforeEach(() => {
     vi.useFakeTimers({ now: new Date("2026-06-16T12:00:00.000Z") });
+    originalWindow = globalThis.window;
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: globalThis.window ?? {},
+    });
     Object.defineProperty(window, "localStorage", {
       configurable: true,
       value: createMemoryStorage(),
@@ -52,6 +59,14 @@ describe("participant session storage", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    if (originalWindow) {
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: originalWindow,
+      });
+      return;
+    }
+    Reflect.deleteProperty(globalThis, "window");
   });
 
   it("persists participant sessions in sessionStorage and clears legacy localStorage", () => {
