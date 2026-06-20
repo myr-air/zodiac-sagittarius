@@ -17,6 +17,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       selectedTripPlanHookTest,
       selectedTripPlanTest,
       selectedTripPlanTestFixtures,
+      workspaceCoreCommandProps,
       workspaceCoreFrameProps,
       workspaceCoreRecordProps,
       workspaceFrameProps,
@@ -26,7 +27,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
     expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
+    expect(workspaceCoreFrameProps).toContain("buildWorkspaceCoreCommandProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceCoreRecordProps");
+    expect(workspaceCoreCommandProps).toContain("onAddStop:");
+    expect(workspaceCoreCommandProps).toContain("onSaveTripSettings");
+    expect(workspaceCoreFrameProps).not.toContain("onAddStop:");
     expect(workspaceCoreRecordProps).toContain("bookingDocs:");
     expect(workspaceCoreRecordProps).toContain("tasks:");
     expect(workspaceFrameProps).toContain("buildWorkspaceFrameActionProps");
