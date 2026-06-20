@@ -60,6 +60,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/stories/ItineraryTemplate.stories.support.ts",
   "src/features/itinerary/stories/itinerary-story-assertions.ts",
   "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
+  "src/features/public-site/pages/about/AboutAppPage.styles.ts",
   "src/shared/components/date-time-pickers/DatePickerField.tsx",
   "src/shared/components/date-time-pickers/DateTimePickerField.tsx",
   "src/shared/components/date-time-pickers/TimePickerField.tsx",

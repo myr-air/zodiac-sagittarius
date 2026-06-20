@@ -45,4 +45,16 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(appShellSupport).toContain("export function roleLabel");
   });
 
+  it("keeps public about page styles colocated outside the page component", () => {
+    const aboutPage = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.tsx"), "utf8");
+    const aboutPageStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.styles.ts"), "utf8");
+
+    expect(aboutPage).toContain("./AboutAppPage.styles");
+    expect(aboutPage).not.toContain("const pageClassName");
+    expect(aboutPage).not.toContain("const heroClassName");
+    expect(aboutPageStyles).toContain("export const pageClassName");
+    expect(aboutPageStyles).toContain("export const heroClassName");
+    expect(aboutPageStyles).toContain("export const statusPillReadyClassName");
+  });
+
 });
