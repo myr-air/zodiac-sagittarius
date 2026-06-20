@@ -17,6 +17,7 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceAccessProps,
       workspaceShellProps,
       workspaceFrameActionProps,
+      workspaceFrameProps,
       workspacePageViewProps,
       workspacePlanningViewProps,
       workspaceViewProps,
@@ -54,6 +55,7 @@ describe("Sagittarius workspace source boundaries", () => {
       cockpitReplacementHook,
       memberContextHook,
       navigationContextHook,
+      planningCommandsHook,
       selectedTripPlanHook,
       workspaceDialogs,
     } = readWorkspaceBoundarySources(frontendRoot);
@@ -65,9 +67,10 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
     expect(sagittariusApp).toContain("./props");
-    expect(sagittariusApp).toContain("buildWorkspaceAccessProps");
-    expect(sagittariusApp).toContain("buildWorkspaceShellProps");
-    expect(sagittariusApp).toContain("buildWorkspaceViewsProps");
+    expect(sagittariusApp).toContain("buildWorkspaceFrameProps");
+    expect(sagittariusApp).not.toContain("buildWorkspaceAccessProps");
+    expect(sagittariusApp).not.toContain("buildWorkspaceShellProps");
+    expect(sagittariusApp).not.toContain("buildWorkspaceViewsProps");
     expect(sagittariusApp).not.toContain("accessProps={{");
     expect(sagittariusApp).not.toContain("shellProps={{");
     expect(sagittariusApp).not.toContain("dialogsProps:");
@@ -81,7 +84,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
     expect(workspaceShellProps).toContain("../WorkspaceAppFrame");
-    expect(sagittariusApp).toContain("buildWorkspaceFrameActionProps");
+    expect(sagittariusApp).not.toContain("buildWorkspaceFrameActionProps");
+    expect(workspaceFrameProps).toContain("buildWorkspaceAccessProps");
+    expect(workspaceFrameProps).toContain("buildWorkspaceShellProps");
+    expect(workspaceFrameProps).toContain("buildWorkspaceViewsProps");
+    expect(workspaceFrameProps).toContain("buildWorkspaceFrameActionProps");
+    expect(workspaceFrameProps).toContain("export function buildWorkspaceFrameProps");
     expect(sagittariusApp).not.toContain("onAddNoteForItem: (itemId, body)");
     expect(sagittariusApp).not.toContain("onSaveDayTitle: (date, version, title)");
     expect(sagittariusApp).not.toContain("canClaimMember: Boolean(");
@@ -188,10 +196,14 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("useWorkspaceBookingCommands");
     expect(sagaCore).not.toContain("useWorkspaceItineraryCommands");
     expect(sagaCore).not.toContain("useWorkspaceItineraryImport");
+    expect(workspaceCommandsHook).toContain("useWorkspacePlanningCommands");
+    expect(workspaceCommandsHook).not.toContain("useWorkspaceBookingCommands");
+    expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryCommands");
+    expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryImport");
     expect(workspaceCommandsHook).toContain("useWorkspaceAdministration");
-    expect(workspaceCommandsHook).toContain("useWorkspaceBookingCommands");
-    expect(workspaceCommandsHook).toContain("useWorkspaceItineraryCommands");
-    expect(workspaceCommandsHook).toContain("useWorkspaceItineraryImport");
+    expect(planningCommandsHook).toContain("useWorkspaceBookingCommands");
+    expect(planningCommandsHook).toContain("useWorkspaceItineraryCommands");
+    expect(planningCommandsHook).toContain("useWorkspaceItineraryImport");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
     expect(accessGateHook).toContain("resolveWorkspaceAccessState");
