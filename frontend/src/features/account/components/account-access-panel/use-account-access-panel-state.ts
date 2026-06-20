@@ -8,14 +8,13 @@ import {
   clearAccountPortalDataCache,
   isAccountEntryMode,
   type AccountAccessMode,
+  type AccountPanelMode,
 } from "./account-access-panel-support";
 import {
   localizeAccessError,
   type AuthFlow,
 } from "./auth";
 import { useAccountPortalData } from "./portal";
-
-type AccessMode = "account" | "temp";
 
 interface UseAccountAccessPanelStateArgs {
   accessMessages: Messages["access"]["messages"];
@@ -49,7 +48,7 @@ export function useAccountAccessPanelState({
   const isAccountEntry = effectiveAccessMode === "account-login" || effectiveAccessMode === "account-register";
   const isPortalEntry = effectiveAccessMode === "account-portal";
   const isTripAccessEntry = effectiveAccessMode === "trip-access";
-  const [selectedMode, setSelectedMode] = useState<AccessMode>(() => (accountSession ? "account" : "temp"));
+  const [selectedMode, setSelectedMode] = useState<AccountPanelMode>(() => (accountSession ? "account" : "temp"));
   const mode = forcedMode ?? (accountSession ? "account" : selectedMode);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

@@ -10,6 +10,8 @@ import type { Messages } from "@/src/i18n/messages";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 
 export type AccountAccessMode = "combined" | "account-login" | "account-register" | "account-portal" | "trip-access";
+export const accountPanelModeValues = ["account", "temp"] as const;
+export type AccountPanelMode = (typeof accountPanelModeValues)[number];
 
 export interface AccountPortalDataCache {
   explorer: AccountExplorerSummary | null;

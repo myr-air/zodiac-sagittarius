@@ -7,7 +7,7 @@ import type { PortalSection } from "@/src/shared/portal";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import type { AccountAccessMode } from "./account-access-panel-support";
+import type { AccountAccessMode, AccountPanelMode } from "./account-access-panel-support";
 import { heroDetail, heroTitle } from "./account-access-panel-support";
 import {
   accountEntryBackHomeClassName,
@@ -29,8 +29,6 @@ import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
 import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
 import type { AuthFlow } from "./auth";
 
-type AccessMode = "account" | "temp";
-
 interface AccountAccessChromeProps {
   accessMode: AccountAccessMode;
   backToHomeLabel: string;
@@ -41,8 +39,8 @@ interface AccountAccessChromeProps {
   isAccountEntry: boolean;
   isPortalEntry: boolean;
   isTripAccessEntry: boolean;
-  mode: AccessMode;
-  onModeChange: (mode: AccessMode) => void;
+  mode: AccountPanelMode;
+  onModeChange: (mode: AccountPanelMode) => void;
   portalSection: PortalSection;
   tabLabels: Messages["access"]["tabs"];
   titleLabels: Messages["access"]["titles"];
