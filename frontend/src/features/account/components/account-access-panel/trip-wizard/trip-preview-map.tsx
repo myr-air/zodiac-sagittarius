@@ -6,6 +6,11 @@ import type { TripCity } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { customTripCity } from "./account-trip-destinations";
+import {
+  fitPreviewMap,
+  previewMapCenter,
+  type PreviewMapCoordinate,
+} from "./trip-preview-map-geometry";
 
 const tripPreviewMapClassName =
   "trip-preview-map relative min-h-[168px] overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-route-border)_82%,white)] bg-[linear-gradient(90deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.07)_1px,transparent_1px),radial-gradient(circle_at_24%_32%,rgb(194_79_22_/_0.18),transparent_25%),radial-gradient(circle_at_76%_62%,rgb(37_99_235_/_0.18),transparent_28%),linear-gradient(160deg,rgb(255_247_237_/_0.96),rgb(239_246_255_/_0.94))] [background-size:34px_34px,34px_34px,auto,auto,auto] max-[767px]:min-h-[138px]";
@@ -28,7 +33,7 @@ const tripPreviewPinDestinationClassName = "trip-preview-pin--destination right-
 
 export function TripPreviewLiveMap({ originCity, destinationCities }: { originCity: TripCity; destinationCities: TripCity[] }) {
   const routeCities = useMemo(() => [originCity, ...destinationCities], [destinationCities, originCity]);
-  const coordinates = useMemo(() => routeCities.map((city) => [city.longitude, city.latitude] as [number, number]), [routeCities]);
+  const coordinates = useMemo(() => routeCities.map((city) => [city.longitude, city.latitude] as PreviewMapCoordinate), [routeCities]);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const markersRef = useRef<Array<import("maplibre-gl").Marker>>([]);
@@ -130,26 +135,4 @@ function FlightRouteFallback({ originCity, destinationCity }: { originCity: Trip
       </div>
     </div>
   );
-}
-
-function previewMapCenter(coordinates: Array<[number, number]>): [number, number] {
-  const totals = coordinates.reduce(
-    (current, coordinate) => [current[0] + coordinate[0], current[1] + coordinate[1]] as [number, number],
-    [0, 0] as [number, number],
-  );
-  return [totals[0] / coordinates.length, totals[1] / coordinates.length];
-}
-
-function fitPreviewMap(map: import("maplibre-gl").Map, coordinates: Array<[number, number]>) {
-  if (coordinates.length <= 1) {
-    map.flyTo({ center: coordinates[0], zoom: 3.2, duration: 0 });
-    return;
-  }
-  const lngs = coordinates.map((coordinate) => coordinate[0]);
-  const lats = coordinates.map((coordinate) => coordinate[1]);
-  const bounds: [[number, number], [number, number]] = [
-    [Math.min(...lngs), Math.min(...lats)],
-    [Math.max(...lngs), Math.max(...lats)],
-  ];
-  map.fitBounds(bounds, { padding: 48, duration: 0, maxZoom: 4.2 });
 }
