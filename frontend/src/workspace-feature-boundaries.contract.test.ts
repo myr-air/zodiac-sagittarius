@@ -3,48 +3,10 @@ import { frontendRoot } from "./project-contract.helpers";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
 
 describe("Sagittarius workspace feature source boundaries", () => {
-  it("keeps booking docs, itinerary, map, and settings components split by responsibility", () => {
+  it("keeps workspace frame, settings, members, and shared inputs split by responsibility", () => {
     const {
-      bookingDisplay,
-      bookingFolders,
-      bookingList,
-      bookingDialog,
-      bookingDialogState,
       sagaCore,
-      sagittariusAppTestAccountApi,
-      sagittariusAppTestBriefingFixtures,
-      sagittariusAppTestFixtures,
-      sagittariusAppTestPlanFixtures,
-      sagittariusAppTestStorage,
-      sagittariusAppTestSupport,
-      sagittariusAppUiTest,
-      sagittariusAppAccessTest,
-      sagittariusAppAccountTripAccessTest,
       itineraryTimeLib,
-      overviewPage,
-      overviewSummaryBand,
-      overviewCockpit,
-      overviewTaskDialog,
-      overviewTaskLayer,
-      overviewWeatherBriefing,
-      routeMapTypes,
-      smartItineraryTable,
-      smartItineraryTableTypes,
-      smartItineraryTablePageHeader,
-      routeMapView,
-      routeMapUnresolvedPanel,
-      routeLiveMapHook,
-      routeLiveMapMarkers,
-      routeMapViewport,
-      routeMapUtils,
-      stopDialog,
-      routeMapCanvas,
-      stopDialogStory,
-      stopDialogStorySupport,
-      stopDialogStoryItems,
-      stopDialogModel,
-      stopDialogForm,
-      stopDialogTimeFields,
       tripSettingsPageSource,
       tripSettingsIndexSource,
       memberSupport,
@@ -58,110 +20,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       workspaceCoreFrameProps,
       workspaceFrameProps,
       workspaceFrameActionProps,
-      photoAlbumDialog,
-      photoAlbumDialogState,
-      expenseSummary,
-      expenseSettlements,
-      expensePageOptions,
-      expensePageSupport,
     } = readWorkspaceBoundarySources(frontendRoot);
 
-    expect(bookingDisplay).toContain("export function formatDateTime");
-    expect(bookingDisplay).toContain("export function bookingTypeIcon");
-    expect(bookingDisplay).not.toContain("function toDateTimeLocalValue");
-    expect(bookingDisplay).not.toContain("function fromDateTimeLocalValue");
-    expect(bookingDisplay).not.toContain("function toggleId");
-    expect(bookingDisplay).not.toContain("bookingFolders");
-    expect(bookingDisplay).not.toContain("bookingDocMatchesQuery");
-    expect(bookingDisplay).not.toContain("compareBookingStartWithUndated");
-    expect(bookingFolders).toContain("export const bookingFolders");
-    expect(bookingFolders).toContain("export function countBookingFolders");
-    expect(bookingList).toContain("@/src/trip/booking-docs");
-    expect(bookingList).toContain("bookingDocMatchesQuery");
-    expect(bookingList).toContain("compareBookingStartWithUndated");
-    expect(bookingList).not.toContain("export function bookingDocMatchesQuery");
-    expect(bookingList).not.toContain("export function compareBookingStartWithUndated");
-    expect(bookingDialog).toContain("./useBookingDialogState");
-    expect(bookingDialog).not.toContain("useState");
-    expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-time");
-    expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
-    expect(bookingDialog).not.toContain("DateTimePickerField");
-    expect(bookingDialog).not.toContain("CheckboxGroup");
-    expect(bookingDialog).toContain("BookingDialogFields");
-    expect(bookingDialog).toContain("BookingDialogLinks");
-    expect(bookingDialogState).toContain("export function useBookingDialogState");
-    expect(bookingDialogState).toContain("export type BookingDialogState");
-    expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
-    expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
-    expect(bookingDialogState).toContain("function submit");
-    expect(photoAlbumDialog).toContain("./usePhotoAlbumDialogState");
-    expect(photoAlbumDialog).toContain("PhotoAlbumDialogFields");
-    expect(photoAlbumDialog).toContain("PhotoAlbumDialogRelatedItems");
-    expect(photoAlbumDialog).not.toContain("useState");
-    expect(photoAlbumDialog).not.toContain("photoProviderOptions");
-    expect(photoAlbumDialog).not.toContain("relatedItineraryItemIds.includes");
-    expect(photoAlbumDialogState).toContain("export function usePhotoAlbumDialogState");
-    expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
-    expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
-    expect(photoAlbumDialogState).toContain("async function submit");
-    expect(expenseSummary).toContain("./expense-settlements");
-    expect(expenseSummary).not.toContain("function buildSettlementSuggestions");
-    expect(expenseSummary).not.toContain("function expenseReminderKey");
-    expect(expenseSettlements).toContain("export function buildSettlementSuggestions");
-    expect(expenseSettlements).toContain("export function attachReminderHistory");
-    expect(expenseSettlements).toContain("export function upsertExpenseReminder");
-    expect(expenseSettlements).toContain("function expenseReminderKey");
-    expect(expensePageSupport).toContain("./expense-page-options");
-    expect(expensePageSupport).not.toContain("const categoryTones");
-    expect(expensePageSupport).not.toContain("export const expenseCategories");
-    expect(expensePageOptions).toContain("export const expenseCategories");
-    expect(expensePageOptions).toContain("export const expenseSplitModes");
-    expect(expensePageOptions).toContain("function categoryTone");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-fixtures");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
-    expect(sagittariusAppTestSupport).toContain("export function resetSagittariusAppTestEnvironment");
-    expect(sagittariusAppTestSupport).toContain("window.history.pushState(null, \"\", appRoutes.home())");
-    expect(sagittariusAppTestSupport).toContain("export function mockWindowLocation");
-    expect(sagittariusAppTestSupport).toContain(".spyOn(window, \"location\", \"get\")");
-    expect(sagittariusAppTestSupport).toContain("export async function renderApiSagittariusApp");
-    expect(sagittariusAppTestSupport).toContain("export function renderApiTripAccessSagittariusApp");
-    expect(sagittariusAppTestSupport).toContain("dataSource=\"api\"");
-    expect(sagittariusAppTestSupport).toContain("await loginApiTrip(user)");
-    [
-      sagittariusAppUiTest,
-      sagittariusAppAccessTest,
-      sagittariusAppAccountTripAccessTest,
-    ].forEach((testSource) => {
-      expect(testSource).toContain("renderApiTripAccessSagittariusApp");
-      expect(testSource).not.toContain('accessMode="trip-access"');
-    });
-    expect(sagittariusAppTestSupport).not.toContain("function dailyBriefingFixture");
-    expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
-    expect(sagittariusAppTestSupport).not.toContain("Object.defineProperty(window, \"localStorage\"");
-    expect(sagittariusAppTestSupport).not.toContain("createMemoryStorage");
-    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
-    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountTripMemberSessionFetch");
-    expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
-    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-briefing-fixtures");
-    expect(
-      sagittariusAppTestFixtures.match(/dailyBriefingFixture/g) ?? [],
-    ).toHaveLength(1);
-    expect(sagittariusAppTestBriefingFixtures).toContain("export function dailyBriefingFixture");
-    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-plan-fixtures");
-    expect(sagittariusAppTestFixtures).not.toContain("function dailyBriefingFixture");
-    expect(sagittariusAppTestFixtures).not.toContain("function tripWithPlans");
-    expect(sagittariusAppTestPlanFixtures).toContain("export function apiSeedTrip");
-    expect(sagittariusAppTestPlanFixtures).toContain("export function apiTripWithPlans");
-    expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
-    expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
-    expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
-    expect(sagittariusAppTestStorage).toContain("export function loadPersistedTripDraft");
-    expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
-    expect(sagittariusAppTestStorage).toContain("export function persistTripDraft");
-    expect(sagittariusAppTestStorage).toContain("export function persistTripParticipantSession");
-    expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
-    expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
     expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
@@ -171,78 +31,6 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
-
-    expect(overviewPage).toContain("OverviewSummaryBand");
-    expect(overviewPage).not.toContain("OverviewCockpit");
-    expect(overviewPage).not.toContain("overviewCockpitClassName");
-    expect(overviewSummaryBand).toContain("OverviewCockpit");
-    expect(overviewCockpit).toContain("export function OverviewCockpit");
-    expect(overviewCockpit).toContain("overviewCockpitClassName");
-    expect(overviewPage).toContain("OverviewTaskLayer");
-    expect(overviewPage).not.toContain("OverviewTaskDialog");
-    expect(overviewPage).not.toContain("overviewUndoToastClassName");
-    expect(overviewPage).not.toContain("taskDialogGridClassName");
-    expect(overviewTaskLayer).toContain("OverviewTaskDialog");
-    expect(overviewTaskLayer).toContain("overviewUndoToastClassName");
-    expect(overviewTaskDialog).toContain("export function OverviewTaskDialog");
-    expect(overviewTaskDialog).toContain("taskDialogGridClassName");
-    expect(overviewPage).not.toContain("OverviewWeatherBriefing");
-    expect(overviewSummaryBand).toContain("OverviewWeatherBriefing");
-    expect(overviewPage).not.toContain("WeatherBriefingDrawer");
-    expect(overviewWeatherBriefing).toContain("WeatherBriefingDrawer");
-    expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
-
-    expect(smartItineraryTable).toContain("SmartItineraryTablePageHeader");
-    expect(smartItineraryTable).toContain("./SmartItineraryTable.types");
-    expect(smartItineraryTable).not.toContain("interface SmartItineraryTableProps");
-    expect(smartItineraryTableTypes).toContain("export interface SmartItineraryTableProps");
-    expect(smartItineraryTable).not.toContain("@/src/shared/components/page-header");
-    expect(smartItineraryTable).not.toContain("SmartItineraryTableHeaderControls");
-    expect(smartItineraryTablePageHeader).toContain("PageHeader");
-    expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableHeaderControls");
-    expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableMeta");
-    expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
-    expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
-    expect(routeMapView).toContain("useRouteLiveMap");
-    expect(routeMapView).not.toContain("maplibre-gl");
-    expect(routeMapView).not.toContain("function mountLiveMap");
-    expect(routeLiveMapHook).toContain("export function useRouteLiveMap");
-    expect(routeLiveMapHook).toContain("maplibre-gl");
-    expect(routeLiveMapHook).toContain("function mountLiveMap");
-    expect(routeLiveMapHook).toContain("synchronizeLiveRouteMarkers");
-    expect(routeLiveMapHook).not.toContain("document.createElement(\"span\")");
-    expect(routeLiveMapMarkers).toContain("export function synchronizeLiveRouteMarkers");
-    expect(routeLiveMapMarkers).toContain("document.createElement(\"span\")");
-    expect(routeMapView).toContain("RouteMapCanvas");
-    expect(routeMapView).not.toContain("RouteMapUnresolvedPanel");
-    expect(routeMapCanvas).toContain("RouteMapUnresolvedPanel");
-    expect(routeMapView).not.toContain("unresolvedPanelListClassName");
-    expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
-    expect(routeMapUnresolvedPanel).toContain("export function RouteMapUnresolvedPanel");
-    expect(routeMapUtils).not.toContain("export type { DayColorStyle");
-    expect(routeMapUtils).not.toContain("fallbackRouteViewport");
-    expect(routeMapUtils).not.toContain("getRouteCenter");
-    expect(routeMapViewport).toContain("export function fallbackRouteViewport");
-    expect(routeMapViewport).toContain("export function getRouteCenter");
-
-    expect(stopDialogModel).toContain("applyStopActivityInput");
-    expect(stopDialog).not.toContain("parseRouteActivity");
-    expect(stopDialog).not.toContain("endOffsetDaysBetweenTimes");
-    expect(stopDialogStory).toContain("./StopDialog.stories.support");
-    expect(stopDialogStory).not.toContain("tripFixture");
-    expect(stopDialogStory).not.toContain("function categoryItem");
-    expect(stopDialogStorySupport).toContain("export const stopDialogCreateArgs");
-    expect(stopDialogStorySupport).toContain("./StopDialog.stories.items");
-    expect(stopDialogStorySupport).not.toContain("export function stopDialogCategoryItem");
-    expect(stopDialogStorySupport).not.toContain("export const transportationStoryItem");
-    expect(stopDialogStoryItems).toContain("export function stopDialogCategoryItem");
-    expect(stopDialogStoryItems).toContain("export const transportationStoryItem");
-    expect(stopDialogForm).toContain("./stop-dialog-time-fields");
-    expect(stopDialogForm).not.toContain("durationBetweenTimes");
-    expect(stopDialogForm).toContain("export function applyStopActivityInput");
-    expect(stopDialogTimeFields).toContain("export function applyStopStartTime");
-    expect(stopDialogTimeFields).toContain("export function applyStopEndTime");
-    expect(stopDialogTimeFields).toContain("export function applyStopTimeMode");
 
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
     expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");

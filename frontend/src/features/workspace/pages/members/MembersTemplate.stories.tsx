@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ownerArgsStory } from "@/src/shared/storybook/story-builders";
 import { TripMembersPage } from "./TripMembersPage";
 import { templateOwnerPlay, templateOwnerThaiPlay } from "./MembersPage.stories.plays";
 import {
@@ -19,17 +20,16 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
 
 export const Owner: Story = {
   args: membersOwnerStoryArgs,
   play: templateOwnerPlay,
 };
 
-export const OwnerThai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: templateOwnerThaiPlay,
-};
+export const OwnerThai: Story = ownerStory(Owner.args, {}, templateOwnerThaiPlay, {
+  locale: "th",
+});
 
 export const Traveler: Story = {
   args: membersTravelerStoryArgs,

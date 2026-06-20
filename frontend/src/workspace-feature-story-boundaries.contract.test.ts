@@ -25,6 +25,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
       stopDialogStory,
       bookingsDocsPageStory,
       membersPageStory,
+      membersTemplateStory,
       photosPageStory,
       tripSettingsPageStory,
     } = readWorkspaceBoundarySources(frontendRoot);
@@ -74,6 +75,8 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(expensesPageStory).not.toContain("defaultViewport:");
     expect(membersPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(membersPageStory).not.toContain("defaultViewport:");
+    expect(membersTemplateStory).toContain("@/src/shared/storybook/story-builders");
+    expect(membersTemplateStory).not.toContain("...Owner.args");
     expect(photosPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(photosPageStory).not.toContain("defaultViewport:");
   });
