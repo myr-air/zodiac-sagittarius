@@ -251,6 +251,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts",
   "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx",
   "src/features/itinerary/components/activity-path-graph/activity-path-graph.edge-path.ts",
+  "src/features/itinerary/components/activity-path-graph/activity-path-graph.edge-routing.test.ts",
+  "src/features/itinerary/components/activity-path-graph/activity-path-graph.edge-routing.ts",
   "src/features/itinerary/components/activity-path-graph/activity-path-graph.edges.ts",
   "src/features/itinerary/components/activity-path-graph/index.ts",
   "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
