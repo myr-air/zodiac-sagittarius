@@ -1,27 +1,19 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { AppShell, resolveViewFromPath } from "./AppShell";
+import { resolveViewFromPath } from "./AppShell";
+import {
+  installLocalStorageStub,
+  renderAppShell,
+} from "./AppShell.test-support";
 
 installLocalStorageStub();
 
 describe("AppShell", () => {
   it("owns the workspace grid and side rail responsive classes", async () => {
-    const { container } = renderWithI18n(
-      <AppShell
-        activeView="overview"
-        collapsed={false}
-        currentMember={seedTrip.members[0]}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    const { container } = renderAppShell();
 
     await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i });
     expect(container.querySelector(".app-layout")).toHaveClass(
@@ -80,18 +72,7 @@ describe("AppShell", () => {
 
   it("opens mobile navigation from the merged top header", async () => {
     const user = userEvent.setup();
-    renderWithI18n(
-      <AppShell
-        activeView="bookings"
-        collapsed={false}
-        currentMember={seedTrip.members[0]}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "en" },
-    );
+    renderAppShell({ activeView: "bookings", locale: "en" });
 
     expect(document.querySelector(".mobile-page-title")).toHaveTextContent("Bookings & Docs");
     const menu = document.querySelector(".rail-links");
@@ -109,35 +90,13 @@ describe("AppShell", () => {
       value: scrollIntoView,
     });
 
-    const firstRender = renderWithI18n(
-      <AppShell
-        activeView="overview"
-        collapsed={false}
-        currentMember={seedTrip.members[0]}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    const firstRender = renderAppShell();
 
     await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest", inline: "center" }));
     scrollIntoView.mockClear();
     firstRender.unmount();
 
-    renderWithI18n(
-      <AppShell
-        activeView="photos"
-        collapsed={false}
-        currentMember={seedTrip.members[0]}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    renderAppShell({ activeView: "photos" });
 
     await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest", inline: "center" }));
     expect(screen.getByRole("link", { name: /รูปภาพ/i })).toHaveAttribute("data-active", "true");
@@ -146,19 +105,10 @@ describe("AppShell", () => {
   it("labels traveler and viewer roles and exposes leave-session action", async () => {
     const user = userEvent.setup();
     const onLeaveParticipantSession = vi.fn();
-    const { unmount } = renderWithI18n(
-      <AppShell
-        activeView="overview"
-        collapsed={false}
-        currentMember={seedTrip.members.find((member) => member.role === "traveler")!}
-        onLeaveParticipantSession={onLeaveParticipantSession}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    const { unmount } = renderAppShell({
+      currentMember: seedTrip.members.find((member) => member.role === "traveler")!,
+      onLeaveParticipantSession,
+    });
 
     await screen.findByText("ผู้ร่วมเดินทาง");
     const memberCard = screen.getByText("Explorer Friend").closest(".member-card") as HTMLElement;
@@ -177,18 +127,11 @@ describe("AppShell", () => {
     expect(onLeaveParticipantSession).toHaveBeenCalled();
 
     unmount();
-    renderWithI18n(
-      <AppShell
-        activeView="members"
-        collapsed
-        currentMember={seedTrip.members.find((member) => member.role === "viewer")!}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    renderAppShell({
+      activeView: "members",
+      collapsed: true,
+      currentMember: seedTrip.members.find((member) => member.role === "viewer")!,
+    });
 
     await screen.findByText("ผู้ชม");
     expect(screen.getByText("Family Member").closest(".member-card")).toHaveTextContent("ผู้ชม");
@@ -196,18 +139,9 @@ describe("AppShell", () => {
   });
 
   it("labels organizer members", async () => {
-    renderWithI18n(
-      <AppShell
-        activeView="overview"
-        collapsed={false}
-        currentMember={seedTrip.members.find((member) => member.role === "organizer")!}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    renderAppShell({
+      currentMember: seedTrip.members.find((member) => member.role === "organizer")!,
+    });
 
     await screen.findByText("ผู้จัดทริป");
     expect(screen.getByText("Travel Mate").closest(".member-card")).toHaveTextContent("ผู้จัดทริป");
@@ -215,18 +149,7 @@ describe("AppShell", () => {
 
   it("links workspace navigation to the active trip route scope", async () => {
     const overviewPath = appRoutes.tripOverview(seedTrip.id);
-    renderWithI18n(
-      <AppShell
-        activeView="itinerary"
-        collapsed={false}
-        currentMember={seedTrip.members[0]}
-        onToggleCollapsed={vi.fn()}
-        trip={seedTrip}
-      >
-        <main>content</main>
-      </AppShell>,
-      { locale: "th" },
-    );
+    renderAppShell({ activeView: "itinerary" });
 
     await screen.findByRole("link", { name: /ภาพรวม/ });
     expect(screen.getByRole("link", { name: /ภาพรวม/ })).toHaveAttribute("href", overviewPath);
@@ -244,17 +167,11 @@ describe("AppShell", () => {
 
   it("renders English shell labels by default and can switch to Thai", async () => {
     const user = userEvent.setup();
-    renderWithI18n(
-      <AppShell
-        activeView="overview"
-        collapsed={false}
-        currentMember={seedTrip.members.find((member) => member.role === "traveler")!}
-        trip={seedTrip}
-        onToggleCollapsed={() => {}}
-      >
-        <main>content</main>
-      </AppShell>,
-    );
+    renderAppShell({
+      currentMember: seedTrip.members.find((member) => member.role === "traveler")!,
+      locale: "en",
+      onToggleCollapsed: () => {},
+    });
 
     expect(screen.getByRole("navigation", { name: /Joii planning navigation/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Overview/i })).toHaveAttribute("href", appRoutes.tripOverview(seedTrip.id));
@@ -276,20 +193,3 @@ describe("AppShell", () => {
     expect(resolveViewFromPath(appRoutes.tripOverview(seedTrip.id), seedTrip.id, "overview")).toBe("overview");
   });
 });
-
-function installLocalStorageStub() {
-  const values = new Map<string, string>();
-  const storage = {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
-    removeItem: (key: string) => values.delete(key),
-    clear: () => values.clear(),
-  };
-
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-
-  return storage;
-}
