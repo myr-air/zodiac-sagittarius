@@ -5,7 +5,7 @@ import {
   MINIMUM_A11Y_CONTRAST,
   routeDayColors,
 } from "./route-map.config";
-import type { DayColorStyle, DayFilter, MarkerStyle, RouteDayGroup, RoutePoint } from "./route-map.types";
+import { allDaysFilter, type DayColorStyle, type DayFilter, type MarkerStyle, type RouteDayGroup, type RoutePoint } from "./route-map.types";
 
 function hexToLinear(component: string): number {
   const value = Number.parseInt(component, 16) / 255;
@@ -51,7 +51,7 @@ export function activeDayLabel(
   allDays = "All days",
   chooseDay = "Choose day",
 ): string {
-  if (activeDay === "all") return allDays;
+  if (activeDay === allDaysFilter) return allDays;
   return groups.find((group) => group.day === activeDay)?.label ?? chooseDay;
 }
 

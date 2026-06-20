@@ -1,6 +1,6 @@
 import { routeMapThemeRules, thailandRouteViewport } from "./route-map.config";
 import { hasCoordinates } from "./route-map.utils";
-import type { DayFilter, RouteDayGroup, RoutePoint } from "./route-map.types";
+import { allDaysFilter, type DayFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
 
 export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[], fallbackViewport = thailandRouteViewport) {
   const pointsWithCoordinates = points.filter((point) => point.item.coordinates && hasCoordinates(point.item.coordinates));
@@ -111,7 +111,7 @@ export function cleanupRouteLayers(map: import("maplibre-gl").Map, sourceIds: st
 }
 
 function routeOpacity(activeDay: DayFilter, day: string, visibleOpacity: number, hiddenOpacity: number): number {
-  return activeDay === "all" || activeDay === day ? visibleOpacity : hiddenOpacity;
+  return activeDay === allDaysFilter || activeDay === day ? visibleOpacity : hiddenOpacity;
 }
 
 function getRouteBounds(points: RoutePoint[]): [[number, number], [number, number]] {

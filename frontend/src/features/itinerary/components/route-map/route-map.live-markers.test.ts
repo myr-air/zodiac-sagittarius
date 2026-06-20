@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { routeMapCoordinateItems } from "./route-map-test-support";
-import type { RouteDayGroup, RoutePoint } from "./route-map.types";
+import { allDaysFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
 import {
   type LiveRouteMarkerRegistry,
   synchronizeLiveRouteMarkers,
@@ -58,7 +58,7 @@ describe("route map live marker utilities", () => {
     expect(markers.get(itemB.id)?.marker.getElement().style.getPropertyValue("--day-color")).toBe("#1a1");
 
     synchronizeLiveRouteMarkers({
-      activeDay: "all",
+      activeDay: allDaysFilter,
       liveRoutePoints: [
         {
           ...pointB,

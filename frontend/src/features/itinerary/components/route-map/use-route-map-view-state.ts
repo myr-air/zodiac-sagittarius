@@ -10,7 +10,7 @@ import {
   buildRoutePoints,
   hasCoordinates,
 } from "./route-map.utils";
-import type { DayFilter, MapCoordinateResolutionResult } from "./route-map.types";
+import { allDaysFilter, type DayFilter, type MapCoordinateResolutionResult } from "./route-map.types";
 
 interface UseRouteMapViewStateInput {
   items: ItineraryItem[];
@@ -32,22 +32,22 @@ export function useRouteMapViewState({
   const coordinateRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
   const unresolvedItems = useMemo(() => items.filter((item) => !hasCoordinates(item.coordinates)), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, coordinateRoutePoints, startDate, locale), [coordinateRoutePoints, groups, locale, startDate]);
-  const [activeDay, setActiveDay] = useState<DayFilter>("all");
+  const [activeDay, setActiveDay] = useState<DayFilter>(allDaysFilter);
   const visibleRouteDayGroups = useMemo(
-    () => routeDayGroups.filter((group) => activeDay === "all" || group.day === activeDay),
+    () => routeDayGroups.filter((group) => activeDay === allDaysFilter || group.day === activeDay),
     [activeDay, routeDayGroups],
   );
   const visibleRoutePoints = useMemo(
-    () => (activeDay === "all" ? coordinateRoutePoints : coordinateRoutePoints.filter((point) => point.item.day === activeDay)),
+    () => (activeDay === allDaysFilter ? coordinateRoutePoints : coordinateRoutePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, coordinateRoutePoints],
   );
   const visibleUnresolvedItems = useMemo(
-    () => (activeDay === "all" ? unresolvedItems : unresolvedItems.filter((item) => item.day === activeDay)),
+    () => (activeDay === allDaysFilter ? unresolvedItems : unresolvedItems.filter((item) => item.day === activeDay)),
     [activeDay, unresolvedItems],
   );
   const coordinateResolutionBatch = useMemo(
     () => (
-      activeDay === "all"
+      activeDay === allDaysFilter
         ? visibleUnresolvedItems.slice(0, maxAllDaysCoordinateResolutionBatch)
         : visibleUnresolvedItems
     ),
@@ -55,7 +55,7 @@ export function useRouteMapViewState({
   );
   const liveRoutePoints = coordinateRoutePoints;
   const visibleLiveRoutePoints = useMemo(
-    () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
+    () => (activeDay === allDaysFilter ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
     [activeDay, liveRoutePoints],
   );
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);

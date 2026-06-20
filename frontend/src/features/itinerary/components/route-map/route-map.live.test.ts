@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { routeMapCoordinateItems } from "./route-map-test-support";
+import { allDaysFilter } from "./route-map.types";
 import { cleanupRouteLayers, applyRouteMapTheme, fitLiveRoute, synchronizeRouteLayers } from "./route-map.live";
 
 describe("route map live utilities", () => {
@@ -39,7 +40,7 @@ describe("route map live utilities", () => {
         label: "Day 1",
         points: coordinateItems.map((item, index) => ({ item, x: index, y: index })),
       },
-    ], "all");
+    ], allDaysFilter);
 
     expect(sourceIds).toEqual(["trip-route-day-0"]);
     expect(map.addSource).toHaveBeenCalledWith("trip-route-day-0", expect.objectContaining({ type: "geojson" }));

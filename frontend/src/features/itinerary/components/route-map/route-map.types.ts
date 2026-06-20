@@ -2,7 +2,9 @@ import type { CSSProperties } from "react";
 import type { MapLoadState } from "@/src/shared/map-load-state";
 import type { ItineraryItem } from "@/src/trip/types";
 
-export type DayFilter = "all" | string;
+export const allDaysFilter = "all" as const;
+export type AllDaysFilter = typeof allDaysFilter;
+export type DayFilter = AllDaysFilter | string;
 export type RouteLiveMapState = MapLoadState;
 
 export interface RoutePoint {

@@ -1,4 +1,4 @@
-import type { DayFilter, RouteDayGroup, RoutePoint } from "./route-map.types";
+import { allDaysFilter, type DayFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
 import { dayColorFor } from "./route-map.utils";
 
 export type LiveRouteMarkerRegistry = Map<
@@ -41,7 +41,7 @@ export function synchronizeLiveRouteMarkers({
     if (!coordinates) return;
     const markerLabel = String(visibleCoordinates.get(point.item.id) ?? 1);
     const markerColor = dayColorFor(point.item.day, routeDayGroups);
-    const markerDisplay = activeDay === "all" || point.item.day === activeDay ? "" : "none";
+    const markerDisplay = activeDay === allDaysFilter || point.item.day === activeDay ? "" : "none";
     const existing = markers.get(point.item.id);
     if (existing) {
       existing.day = point.item.day;
@@ -69,6 +69,6 @@ export function synchronizeLiveRouteMarkers({
 
   markers.forEach((entry) => {
     entry.marker.getElement().style.display =
-      activeDay === "all" || entry.day === activeDay ? "" : "none";
+      activeDay === allDaysFilter || entry.day === activeDay ? "" : "none";
   });
 }

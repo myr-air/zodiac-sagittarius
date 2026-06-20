@@ -8,7 +8,7 @@ import {
 import {
   dayFilterStyle,
 } from "./route-map.utils";
-import type { DayFilter, RouteDayGroup } from "./route-map.types";
+import { allDaysFilter, type DayFilter, type RouteDayGroup } from "./route-map.types";
 
 export function RouteMapDayFilter({
   activeDay,
@@ -29,10 +29,10 @@ export function RouteMapDayFilter({
         type="button"
         className={cn(
           mapDayFilterButtonClassName,
-          activeDay === "all" && activeMapDayFilterButtonClassName,
+          activeDay === allDaysFilter && activeMapDayFilterButtonClassName,
         )}
-        aria-pressed={activeDay === "all"}
-        onClick={() => onChange("all")}
+        aria-pressed={activeDay === allDaysFilter}
+        onClick={() => onChange(allDaysFilter)}
       >
         {allDaysLabel}
       </button>

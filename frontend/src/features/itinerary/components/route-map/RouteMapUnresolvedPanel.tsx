@@ -10,7 +10,7 @@ import {
   unresolvedPanelListClassName,
   unresolvedPanelStatusClassName,
 } from "./route-map.config";
-import type { DayFilter, MapCoordinateResolutionResult } from "./route-map.types";
+import { allDaysFilter, type DayFilter, type MapCoordinateResolutionResult } from "./route-map.types";
 
 interface RouteMapUnresolvedPanelCopy {
   label: string;
@@ -73,7 +73,7 @@ export function RouteMapUnresolvedPanel({
         <p className={unresolvedPanelStatusClassName}>
           {copy.resolveResult(resolutionResult)}
         </p>
-      ) : activeDay === "all" && visibleUnresolvedItems.length > coordinateResolutionBatch.length ? (
+      ) : activeDay === allDaysFilter && visibleUnresolvedItems.length > coordinateResolutionBatch.length ? (
         <p className={unresolvedPanelStatusClassName}>
           {copy.resolveBatchHint({
             count: coordinateResolutionBatch.length,
