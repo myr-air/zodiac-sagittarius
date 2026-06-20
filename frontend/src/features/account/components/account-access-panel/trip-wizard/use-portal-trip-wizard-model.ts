@@ -13,13 +13,12 @@ import {
   generateJoinPassword,
   randomToken,
   tripCityFromOption,
-  tripCountryOptions,
-  uniqueList,
   type TripCityOption,
   type TripWizardDateSelectionStep,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
+import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface PortalTripWizardModelOptions {
@@ -48,29 +47,7 @@ export function usePortalTripWizardModel({
   const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
   const destinationSearchRef = useRef<HTMLInputElement | null>(null);
   const mobileStepButtonRefs = useRef<Map<TripWizardStepId, HTMLButtonElement>>(new Map());
-  const {
-    accessComplete,
-    calendarDays,
-    canSubmit,
-    currentStepComplete,
-    datesComplete,
-    destinationCards,
-    destinationComplete,
-    effectiveOwnerDisplayName,
-    generatedJoinId,
-    generatedJoinPassword,
-    isMobilePreviewStep,
-    joinCode,
-    previewEndDate,
-    previewNightCount,
-    previewStartDate,
-    routeDestinationCode,
-    selectedCityNames,
-    selectedCountryNames,
-    selectedDestinationCities,
-    selectedDestinationKey,
-    selectedDestinationNames,
-  } = buildPortalTripWizardDerivedState({
+  const derivedState = buildPortalTripWizardDerivedState({
     accessSalt,
     activeMobileStep,
     defaultOwnerDisplayName,
@@ -78,26 +55,25 @@ export function usePortalTripWizardModel({
     locale,
     tripForm,
   });
-  const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : wizard.empty.destinationSummary;
-  const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || wizard.empty.currencyByCity : wizard.empty.currency;
-  const inviteStatus = accessComplete ? wizard.preview.inviteReady : wizard.preview.inviteDraft;
-  const previewTripName = tripForm.name.trim() || wizard.empty.untitledTrip;
-  const missingFields = [
-    tripForm.name.trim() ? null : wizard.status.fields.trip,
-    destinationComplete ? null : wizard.status.fields.destination,
-    datesComplete ? null : wizard.status.fields.dates,
-    accessComplete ? null : wizard.status.fields.invite,
-  ].filter(Boolean).join(", ");
-  const createStatusText = canSubmit ? wizard.status.ready : wizard.status.required({ fields: missingFields });
+  const summary = buildPortalTripWizardSummary({
+    accessComplete: derivedState.accessComplete,
+    canSubmit: derivedState.canSubmit,
+    datesComplete: derivedState.datesComplete,
+    destinationComplete: derivedState.destinationComplete,
+    selectedCountryNames: derivedState.selectedCountryNames,
+    selectedDestinationNames: derivedState.selectedDestinationNames,
+    tripName: tripForm.name,
+    wizard,
+  });
 
   useEffect(() => {
     onChange((current) => {
-      const nextJoinId = generateJoinIdForTrip(current.startDate, selectedDestinationKey.split("|").filter(Boolean), accessSalt);
+      const nextJoinId = generateJoinIdForTrip(current.startDate, derivedState.selectedDestinationKey.split("|").filter(Boolean), accessSalt);
       const nextJoinPassword = current.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? current.joinPassword : generateJoinPassword();
       if (current.joinId === nextJoinId && current.joinPassword === nextJoinPassword) return current;
       return { ...current, joinId: nextJoinId, joinPassword: nextJoinPassword };
     });
-  }, [accessSalt, onChange, selectedDestinationKey]);
+  }, [accessSalt, derivedState.selectedDestinationKey, onChange]);
 
   useEffect(() => {
     mobileStepButtonRefs.current.get(activeMobileStep)?.scrollIntoView?.({ block: "nearest", inline: "center" });
@@ -112,7 +88,7 @@ export function usePortalTripWizardModel({
     setAccessSalt(nextSalt);
     onChange((current) => ({
       ...current,
-      joinId: generateJoinIdForTrip(current.startDate, selectedDestinationNames, nextSalt),
+      joinId: generateJoinIdForTrip(current.startDate, derivedState.selectedDestinationNames, nextSalt),
       joinPassword: generateJoinPassword(),
     }));
   }
@@ -124,8 +100,8 @@ export function usePortalTripWizardModel({
   }
 
   function selectDestinationCity(city: TripCityOption) {
-    if (selectedDestinationCities.some((selected) => selected.city.toLocaleLowerCase() === city.city.toLocaleLowerCase() && selected.countryCode === city.countryCode)) return;
-    updateDestinationCities([...selectedDestinationCities, tripCityFromOption(city)]);
+    if (derivedState.selectedDestinationCities.some((selected) => selected.city.toLocaleLowerCase() === city.city.toLocaleLowerCase() && selected.countryCode === city.countryCode)) return;
+    updateDestinationCities([...derivedState.selectedDestinationCities, tripCityFromOption(city)]);
   }
 
   function focusDestinationSearch() {
@@ -146,12 +122,12 @@ export function usePortalTripWizardModel({
 
   function addCityStop() {
     const nextCity = (countryQuery || cityQuery).trim();
-    if (!nextCity || selectedDestinationNames.some((name) => name.toLocaleLowerCase() === nextCity.toLocaleLowerCase())) return;
-    updateDestinationCities([...selectedDestinationCities, customTripCity(nextCity, selectedDestinationCities[0])]);
+    if (!nextCity || derivedState.selectedDestinationNames.some((name) => name.toLocaleLowerCase() === nextCity.toLocaleLowerCase())) return;
+    updateDestinationCities([...derivedState.selectedDestinationCities, customTripCity(nextCity, derivedState.selectedDestinationCities[0])]);
   }
 
   function removeCityStop(cityName: string) {
-    updateDestinationCities(selectedDestinationCities.filter((city) => city.city !== cityName));
+    updateDestinationCities(derivedState.selectedDestinationCities.filter((city) => city.city !== cityName));
   }
 
   function selectCalendarDate(date: string) {
@@ -165,7 +141,7 @@ export function usePortalTripWizardModel({
   }
 
   async function copyJoinCode() {
-    const text = joinCode.trim();
+    const text = derivedState.joinCode.trim();
     if (!text) return;
     try {
       await navigator.clipboard?.writeText(text);
@@ -182,9 +158,9 @@ export function usePortalTripWizardModel({
   function submitWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     seedOwnerDisplayName();
-    const nextForm = { ...tripForm, joinId: generatedJoinId, joinPassword: generatedJoinPassword };
+    const nextForm = { ...tripForm, joinId: derivedState.generatedJoinId, joinPassword: derivedState.generatedJoinPassword };
     onChange(nextForm);
-    if (canSubmit && !isSubmitting) onSubmit(nextForm);
+    if (derivedState.canSubmit && !isSubmitting) onSubmit(nextForm);
   }
 
   function changeOwnerDisplayName(value: string) {
@@ -193,42 +169,24 @@ export function usePortalTripWizardModel({
   }
 
   return {
+    ...derivedState,
+    ...summary,
     activeMobileStep,
     addCityStop,
-    calendarDays,
-    canSubmit,
     changeOwnerDisplayName,
     cityQuery,
     clearTravelDates,
     copyJoinCode,
     countryQuery,
-    createStatusText,
-    currencySummary,
-    currentStepComplete,
-    destinationCards,
     destinationSearchRef,
-    destinationSummary,
-    effectiveOwnerDisplayName,
     focusDestinationSearch,
-    generatedJoinId,
-    generatedJoinPassword,
     hasCopiedJoinCode,
-    inviteStatus,
-    isMobilePreviewStep,
-    joinCode,
     mobileStepButtonRefs,
     mobileStepClassName,
-    previewEndDate,
-    previewNightCount,
-    previewStartDate,
-    previewTripName,
     regenerateCredentials,
     removeCityStop,
-    routeDestinationCode,
     selectCalendarDate,
     selectDestinationCity,
-    selectedCityNames,
-    selectedDestinationCities,
     selectingDateStep,
     setActiveMobileStep,
     setCityQuery,
