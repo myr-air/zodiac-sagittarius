@@ -1,17 +1,15 @@
-import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react";
+import { type Dispatch, type FormEvent, type SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
-import {
-  buildPortalTripWizardSubmitForm,
-  seedTripOwnerDisplayName,
-} from "./portal-trip-wizard-model-actions";
+import { buildPortalTripWizardSubmitForm } from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import { usePortalTripWizardAccessActions } from "./use-portal-trip-wizard-access-actions";
 import { usePortalTripWizardCredentialSync } from "./use-portal-trip-wizard-credential-sync";
 import { usePortalTripWizardDateActions } from "./use-portal-trip-wizard-date-actions";
 import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
+import { usePortalTripWizardOwnerActions } from "./use-portal-trip-wizard-owner-actions";
 
 interface PortalTripWizardModelOptions {
   defaultOwnerDisplayName: string;
@@ -30,7 +28,10 @@ export function usePortalTripWizardModel({
 }: PortalTripWizardModelOptions) {
   const { locale, t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
-  const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
+  const ownerActions = usePortalTripWizardOwnerActions({
+    defaultOwnerDisplayName,
+    onChange,
+  });
   const dateActions = usePortalTripWizardDateActions({ onChange });
   const accessActions = usePortalTripWizardAccessActions({ onChange });
   const {
@@ -43,7 +44,7 @@ export function usePortalTripWizardModel({
     accessSalt: accessActions.accessSalt,
     activeMobileStep,
     defaultOwnerDisplayName,
-    hasEditedOwnerDisplayName,
+    hasEditedOwnerDisplayName: ownerActions.hasEditedOwnerDisplayName,
     locale,
     tripForm,
   });
@@ -70,10 +71,6 @@ export function usePortalTripWizardModel({
     startDate: tripForm.startDate,
   });
 
-  function seedOwnerDisplayName() {
-    onChange((current) => seedTripOwnerDisplayName(current, defaultOwnerDisplayName));
-  }
-
   function regenerateCredentials() {
     accessActions.regenerateCredentials({
       selectedDestinationNames: derivedState.selectedDestinationNames,
@@ -86,7 +83,7 @@ export function usePortalTripWizardModel({
 
   function submitWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    seedOwnerDisplayName();
+    ownerActions.seedOwnerDisplayName();
     const nextForm = buildPortalTripWizardSubmitForm(tripForm, {
       joinId: derivedState.generatedJoinId,
       joinPassword: derivedState.generatedJoinPassword,
@@ -95,17 +92,12 @@ export function usePortalTripWizardModel({
     if (derivedState.canSubmit && !isSubmitting) onSubmit(nextForm);
   }
 
-  function changeOwnerDisplayName(value: string) {
-    setHasEditedOwnerDisplayName(true);
-    onChange((current) => ({ ...current, ownerDisplayName: value }));
-  }
-
   return {
     ...derivedState,
     ...summary,
     activeMobileStep,
     ...destinationState,
-    changeOwnerDisplayName,
+    changeOwnerDisplayName: ownerActions.changeOwnerDisplayName,
     accessSalt: accessActions.accessSalt,
     copyJoinCode,
     ...dateActions,
