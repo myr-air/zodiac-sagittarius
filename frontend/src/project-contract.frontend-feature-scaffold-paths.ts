@@ -56,6 +56,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx",
   "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts",
   "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts",
+  "src/features/public-site/pages/home/HomeLanding.stories.plays.ts",
   "src/features/public-site/pages/home/HomeLandingSections.tsx",
   "src/features/public-site/pages/home/HomeLandingPreview.sections.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.settlements.test.tsx",
