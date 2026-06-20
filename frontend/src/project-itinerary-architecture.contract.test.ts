@@ -262,6 +262,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps expenses page state split from page composition", () => {
     const expensesPage = readItineraryArchitectureSource("src/features/workspace/pages/expenses/TripExpensesPage.tsx");
     const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
+    const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-filters.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
@@ -273,13 +274,19 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expensesPage).not.toContain("refundSplits");
     expect(expensesPage).not.toContain("function recordRefund");
     expect(expensesState).toContain("./expense-page-filters");
+    expect(expensesState).toContain("./expense-page-actions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
     expect(expensesState).toContain("buildExpenseCsv");
     expect(expensesState).not.toContain("function filterExpenses");
+    expect(expensesState).not.toContain("refundSplits");
+    expect(expensesState).not.toContain("sumShares");
     expect(expenseFilters).toContain("export function filterExpenses");
     expect(expenseFilters).toContain("export function expenseCategorySpend");
     expect(expenseFilters).toContain("export function inferredScopeExpenses");
-    expect(expensesState).toContain("refundSplits");
+    expect(expenseActions).toContain("export function buildSettlementExpenseInput");
+    expect(expenseActions).toContain("export function buildRefundExpenseInput");
+    expect(expenseActions).toContain("refundSplits");
+    expect(expenseActions).toContain("sumShares");
     expect(expensesState).toContain("function recordRefund");
     expect(expenseDialog).toContain("./hooks/useExpenseDialogState");
     expect(expenseDialog).not.toContain("useState");

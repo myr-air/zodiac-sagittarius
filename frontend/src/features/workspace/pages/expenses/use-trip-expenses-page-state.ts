@@ -6,17 +6,16 @@ import {
   buildPaybackReminder,
 } from "@/src/trip/expenses";
 import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
+import {
+  buildRefundExpenseInput,
+  buildSettlementExpenseInput,
+} from "./expense-page-actions";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
 import {
   expenseCategorySpend,
   filterExpenses,
   inferredScopeExpenses as filterInferredScopeExpenses,
 } from "./expense-page-filters";
-import {
-  memberById,
-  refundSplits,
-  sumShares,
-} from "./expense-page-support";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
@@ -125,37 +124,20 @@ export function useTripExpensesPageState({
   }
 
   function recordSettlement(suggestion: SettlementSuggestion) {
-    const from = memberById(trip.members, suggestion.from);
-    const to = memberById(trip.members, suggestion.to);
-    onCreateExpense({
-      itemId: null,
-      title: `${from?.displayName ?? "Traveler"} paid ${to?.displayName ?? "Traveler"} back`,
-      amount: suggestion.amount,
-      currency: suggestion.currency ?? settlementCurrency,
-      exchangeRateToSettlementCurrency: 1,
-      paidBy: suggestion.from,
-      category: "settlement",
-      splits: { [suggestion.to]: suggestion.amount },
-    });
+    onCreateExpense(buildSettlementExpenseInput({
+      members: trip.members,
+      settlementCurrency,
+      suggestion,
+    }));
   }
 
   function recordRefund(expense: Expense) {
-    const splits = refundSplits(expense);
-    const amount = sumShares(splits);
-    if (amount <= 0) return;
-    onCreateExpense({
-      itemId: expense.itineraryItemId ?? null,
-      tripPlanId: expense.tripPlanId ?? selectedTripPlanId ?? null,
-      title: `Refund: ${expense.title}`,
-      amount,
-      currency: expense.currency ?? settlementCurrency,
-      exchangeRateToSettlementCurrency:
-        expense.exchangeRateToSettlementCurrency ?? 1,
-      notes: `Refund settlement for actual expense: ${expense.title}`,
-      paidBy: expense.paidBy,
-      category: "settlement",
-      splits,
+    const input = buildRefundExpenseInput({
+      expense,
+      selectedTripPlanId,
+      settlementCurrency,
     });
+    if (input) onCreateExpense(input);
   }
 
   async function createDialogExpense(input: ExpenseInput) {
