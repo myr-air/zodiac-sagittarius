@@ -12,6 +12,7 @@ import {
   appRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  apiTripWithPlans,
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
@@ -30,10 +31,7 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
 
   it("refreshes API expense summary for the selected Trip Plan without publishing", async () => {
     const user = userEvent.setup();
-    const apiTrip = {
-      ...tripWithPlans(),
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-    };
+    const apiTrip = apiTripWithPlans();
     const getExpenseSummary = vi.fn().mockImplementation(
       (
         _tripId: string,
@@ -94,10 +92,9 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
       ["plan-variant-backup", backendBackupPlanId],
     ]);
     const apiTrip = {
-      ...draftTrip,
+      ...apiTripWithPlans(),
       activePlanVariantId: backendMainPlanId,
       mainTripPlanId: backendMainPlanId,
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
       planVariants: draftTrip.planVariants.map((plan) => ({
         ...plan,
         id: planIdMap.get(plan.id) ?? plan.id,
@@ -161,10 +158,7 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
   ] as const) {
     it(`does not refresh API expense summary from the ${workspace.view} workspace`, async () => {
       const user = userEvent.setup();
-      const apiTrip = {
-        ...tripWithPlans(),
-        members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-      };
+      const apiTrip = apiTripWithPlans();
       const getExpenseSummary = vi.fn().mockResolvedValue({
         groupSpend: 0,
         netByMember: {},

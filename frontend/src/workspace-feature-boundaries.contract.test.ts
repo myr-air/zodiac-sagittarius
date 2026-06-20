@@ -141,6 +141,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-plan-fixtures");
     expect(sagittariusAppTestFixtures).not.toContain("function dailyBriefingFixture");
     expect(sagittariusAppTestFixtures).not.toContain("function tripWithPlans");
+    expect(sagittariusAppTestPlanFixtures).toContain("export function apiTripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
     expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");

@@ -10,7 +10,6 @@ import {
 import {
   TripApiError,
 } from "@/src/trip/api-client";
-import { seedTrip } from "@/src/trip/seed";
 import type {
   PlanVariant,
   Trip,
@@ -19,13 +18,13 @@ import {
   appRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
+  apiTripWithPlans,
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
   loginApiTrip,
   openItineraryHeaderControls,
   render,
-  tripWithPlans,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit API Trip Plans", () => {
@@ -37,10 +36,7 @@ describe("Sagittarius cockpit API Trip Plans", () => {
 
   it("creates a Trip Plan through the API, then selects it without publishing", async () => {
     const user = userEvent.setup();
-    const apiTrip = {
-      ...tripWithPlans(),
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-    };
+    const apiTrip = apiTripWithPlans();
     const createdPlan: PlanVariant = {
       id: "plan-variant-api-created",
       tripId: apiTrip.id,
@@ -90,10 +86,7 @@ describe("Sagittarius cockpit API Trip Plans", () => {
 
   it("sets the selected API Trip Plan as Main only from the explicit action", async () => {
     const user = userEvent.setup();
-    const apiTrip = {
-      ...tripWithPlans(),
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-    };
+    const apiTrip = apiTripWithPlans();
     const publishedTrip: Trip = {
       ...apiTrip,
       activePlanVariantId: "plan-variant-backup",
@@ -158,10 +151,7 @@ describe("Sagittarius cockpit API Trip Plans", () => {
 
   it("reloads cockpit state when API Trip Plan publish hits a version conflict", async () => {
     const user = userEvent.setup();
-    const apiTrip = {
-      ...tripWithPlans(),
-      members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
-    };
+    const apiTrip = apiTripWithPlans();
     const reloadedPlan: PlanVariant = {
       id: "plan-variant-reloaded",
       tripId: apiTrip.id,

@@ -19,6 +19,7 @@ export {
 } from "./sagittarius-app.test-account-api";
 
 export {
+  apiTripWithPlans,
   dailyBriefingFixture,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,

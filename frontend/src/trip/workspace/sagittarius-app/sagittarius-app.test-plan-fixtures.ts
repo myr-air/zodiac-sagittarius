@@ -45,6 +45,13 @@ export function tripWithPlans(): Trip {
   };
 }
 
+export function apiTripWithPlans(): Trip {
+  return {
+    ...tripWithPlans(),
+    members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
+  };
+}
+
 export function tripWithPlansAndPlanScopedRecords(
   selectedPlanId = "plan-variant-backup",
 ): Trip {
