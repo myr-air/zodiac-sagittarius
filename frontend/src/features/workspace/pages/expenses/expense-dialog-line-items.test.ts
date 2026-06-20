@@ -3,7 +3,7 @@ import { seedTrip } from "@/src/trip/seed";
 import {
   parseExpenseLineItems,
   validExpenseLineItems,
-} from "./expense-dialog-support";
+} from "./expense-dialog-line-items";
 
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 

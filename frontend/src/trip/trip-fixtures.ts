@@ -79,6 +79,14 @@ export function getTripFixtureMember(role: TripFixtureRole) {
   return tripFixture.currentMembers[role];
 }
 
+export function getTripFixtureItineraryItem(id: string): ItineraryItem {
+  const item = seedTrip.itineraryItems.find((candidate) => candidate.id === id);
+  if (!item) {
+    throw new Error(`Missing itinerary item test fixture: ${id}`);
+  }
+  return item;
+}
+
 export function buildEmptyTripFixture(): Trip {
   return {
     ...seedTrip,

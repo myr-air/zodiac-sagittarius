@@ -10,11 +10,12 @@ import {
   validateItineraryItem,
 } from "./itinerary";
 import { seedTrip } from "./seed";
+import { getTripFixtureItineraryItem } from "./trip-fixtures";
 
 describe("itinerary warnings, dates, and on-trip context", () => {
   it("keeps invalid field warning totals stable in shared derive", () => {
     const invalidDayItem = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       id: "item-invalid-fields-only",
       day: hongKongDay,
       sortOrder: 999,
@@ -43,11 +44,11 @@ describe("itinerary warnings, dates, and on-trip context", () => {
 
   it("finds validation issues without relying on color alone", () => {
     const dayItems = sortItemsForDay(seedTrip.itineraryItems, hongKongDay);
-    const missing = seedTrip.itineraryItems.find((item) => item.id === "item-arrive-hkg");
+    const missing = getTripFixtureItineraryItem("item-arrive-hkg");
     const dimsum = dayItems.find((item) => item.id === "item-dimdim")!;
     const overlapFixture = { ...dimsum, id: "item-overlap-fixture", startTime: "09:00", durationMinutes: 90 };
 
-    expect(validateItineraryItem(missing!, [missing!]).map((warning) => warning.code)).toContain("missing-duration");
+    expect(validateItineraryItem(missing, [missing]).map((warning) => warning.code)).toContain("missing-duration");
     expect(validateItineraryItem(dimsum, [...dayItems, overlapFixture]).map((warning) => warning.code)).toContain("overlap");
     expect(validateItineraryItem(dimsum, [...dayItems, overlapFixture])[0]?.message).toMatch(/overlaps|เวลา/i);
   });
@@ -74,7 +75,7 @@ describe("itinerary warnings, dates, and on-trip context", () => {
 
   it("uses explicit end time windows when duration is not set", () => {
     const overnight = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       id: "item-explicit-window",
       day: hongKongDay,
       startTime: "23:00",

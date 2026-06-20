@@ -7,11 +7,12 @@ import {
   rejectSuggestionById,
   replaceSuggestionById,
 } from "./suggestions";
+import { getTripFixtureItineraryItem } from "./trip-fixtures";
 import type { Suggestion } from "./types";
 
 describe("itinerary suggestions", () => {
   it("detects stale suggestion conflicts and approves fresh suggestions", () => {
-    const target = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const target = getTripFixtureItineraryItem("item-dimdim");
     const conflicted = detectSuggestionConflict(seedTrip.itineraryItems, {
       id: "suggestion-stale",
       tripId: seedTrip.id,
@@ -38,7 +39,7 @@ describe("itinerary suggestions", () => {
   });
 
   it("builds local edit suggestions and rejects them by id", () => {
-    const target = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
+    const target = getTripFixtureItineraryItem("item-dimdim");
     const suggestion = createLocalEditSuggestion([], {
       tripId: seedTrip.id,
       proposerId: "member-beam",

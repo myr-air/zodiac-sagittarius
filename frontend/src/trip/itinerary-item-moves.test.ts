@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
+import { getTripFixtureItineraryItem } from "./trip-fixtures";
 import { shenzhenDay } from "./itinerary.test-support";
 import {
   hasDescendantItem,
@@ -12,8 +13,8 @@ describe("itinerary item moves", () => {
   it("moves an itinerary item before a target and reorders the target day", () => {
     const updatedAt = "2026-06-16T00:00:00.000Z";
     const planVariantId = seedTrip.activePlanVariantId;
-    const firstItem = seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!;
-    const secondItem = seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!;
+    const firstItem = getTripFixtureItineraryItem("item-dimdim");
+    const secondItem = getTripFixtureItineraryItem("item-victoria-peak");
 
     const nextTrip = moveTripItem(seedTrip, secondItem.id, firstItem.id, planVariantId, updatedAt);
     const dayItems = nextTrip?.itineraryItems
@@ -35,7 +36,7 @@ describe("itinerary item moves", () => {
     const updatedAt = "2026-06-16T00:00:00.000Z";
     const planVariantId = seedTrip.activePlanVariantId;
     const draggedItem = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       parentItemId: "item-parent",
     };
     const trip = {
@@ -61,19 +62,19 @@ describe("itinerary item moves", () => {
     const updatedAt = "2026-06-16T00:00:00.000Z";
     const planVariantId = seedTrip.activePlanVariantId;
     const planBlock = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       id: "item-plan-block",
       isPlanBlock: true,
       sortOrder: 100,
     };
     const child = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+      ...getTripFixtureItineraryItem("item-victoria-peak"),
       id: "item-existing-child",
       parentItemId: planBlock.id,
       sortOrder: 200,
     };
     const draggedItem = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
+      ...getTripFixtureItineraryItem("item-pacific-place"),
       id: "item-dragged-activity",
       sortOrder: 300,
     };
@@ -109,19 +110,19 @@ describe("itinerary item moves", () => {
     const updatedAt = "2026-06-16T00:00:00.000Z";
     const planVariantId = seedTrip.activePlanVariantId;
     const planBlock = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       id: "item-plan-block",
       isPlanBlock: true,
       sortOrder: 100,
     };
     const child = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+      ...getTripFixtureItineraryItem("item-victoria-peak"),
       id: "item-child",
       parentItemId: planBlock.id,
       sortOrder: 200,
     };
     const grandchild = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
+      ...getTripFixtureItineraryItem("item-pacific-place"),
       id: "item-grandchild",
       parentItemId: child.id,
       sortOrder: 300,

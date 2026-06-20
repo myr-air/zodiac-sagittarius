@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
+import { getTripFixtureItineraryItem } from "./trip-fixtures";
 import {
   getTripDates,
   groupItemsByDay,
@@ -13,7 +14,7 @@ import {
 describe("itinerary path domain", () => {
   it("resolves trip path items with time-slot fallback to main", () => {
     const mainBreakfast = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+      ...getTripFixtureItineraryItem("item-dimdim"),
       id: "main-breakfast",
       pathGroupId: "group-breakfast",
       pathRole: "main" as const,
@@ -23,7 +24,7 @@ describe("itinerary path domain", () => {
       activity: "Dim sum breakfast",
     };
     const mainMuseum = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+      ...getTripFixtureItineraryItem("item-victoria-peak"),
       id: "main-museum",
       pathGroupId: "group-museum",
       pathRole: "main" as const,
@@ -86,7 +87,7 @@ describe("itinerary path domain", () => {
 
   it("lets day path overrides win over the whole-trip path without deleting rows", () => {
     const mainDinner = {
-      ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
+      ...getTripFixtureItineraryItem("item-temple-street"),
       id: "main-dinner",
       pathGroupId: "group-dinner",
       pathRole: "main" as const,

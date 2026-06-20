@@ -4,8 +4,8 @@ import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
   canSubmitExpenseDialog,
-  initialExpenseTripPlanId,
 } from "../expense-dialog-support";
+import { initialExpenseTripPlanId } from "../expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../expense-dialog-submit-input";
 import type { ExpenseInput, ExpenseUpdateInput } from "../expense-page-types";
 import { useExpenseComments } from "./useExpenseComments";

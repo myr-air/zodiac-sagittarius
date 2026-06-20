@@ -5,8 +5,7 @@ import {
   getNowNext,
   sortItemsForDay,
 } from "./itinerary-view";
-import { tripFixture } from "./trip-fixtures";
-import { seedTrip } from "./seed";
+import { getTripFixtureItineraryItem, tripFixture } from "./trip-fixtures";
 import { hongKongDay, shenzhenDay } from "./itinerary.test-support";
 
 describe("itinerary view helpers", () => {
@@ -66,7 +65,7 @@ describe("itinerary view helpers", () => {
   it("builds a shared itinerary view with sorted items and warning totals", () => {
     const selectedItems = [
       {
-        ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+        ...getTripFixtureItineraryItem("item-victoria-peak"),
         id: "item-overlap-a",
         day: hongKongDay,
         sortOrder: 300,
@@ -74,7 +73,7 @@ describe("itinerary view helpers", () => {
         durationMinutes: 45,
       },
       {
-        ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+        ...getTripFixtureItineraryItem("item-dimdim"),
         id: "item-overlap-b",
         day: hongKongDay,
         sortOrder: 100,
@@ -82,7 +81,7 @@ describe("itinerary view helpers", () => {
         durationMinutes: 60,
       },
       {
-        ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
+        ...getTripFixtureItineraryItem("item-pacific-place"),
         id: "item-safe-stop",
         day: hongKongDay,
         sortOrder: 200,
@@ -90,7 +89,7 @@ describe("itinerary view helpers", () => {
         durationMinutes: 30,
       },
       {
-        ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
+        ...getTripFixtureItineraryItem("item-temple-street"),
         id: "item-invalid-fields",
         day: hongKongDay,
         sortOrder: 400,
@@ -100,7 +99,7 @@ describe("itinerary view helpers", () => {
         transportation: " ",
       },
       {
-        ...seedTrip.itineraryItems.find((item) => item.id === "item-checkout")!,
+        ...getTripFixtureItineraryItem("item-checkout"),
         id: "item-other-day",
       },
     ];

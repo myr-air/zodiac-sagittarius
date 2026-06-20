@@ -2,12 +2,14 @@ import { useState } from "react";
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, Member } from "@/src/trip/types";
 import {
-  emptyExpenseLineItem,
   expenseSplitValuesForMode,
-  initialExpenseLineItems,
   initialExpenseSplitValues,
+} from "../expense-dialog-initial-state";
+import {
+  emptyExpenseLineItem,
+  initialExpenseLineItems,
   type EditableExpenseLineItem,
-} from "../expense-dialog-support";
+} from "../expense-dialog-line-items";
 
 interface UseExpenseSplitEditorInput {
   expense: Expense | null;
