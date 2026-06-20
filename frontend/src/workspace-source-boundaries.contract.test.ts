@@ -16,6 +16,7 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceMainShell,
       workspaceAccessProps,
       workspaceShellProps,
+      workspaceFrameActionProps,
       workspacePageViewProps,
       workspacePlanningViewProps,
       workspaceViewProps,
@@ -79,6 +80,15 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
     expect(workspaceShellProps).toContain("../WorkspaceAppFrame");
+    expect(sagittariusApp).toContain("buildWorkspaceFrameActionProps");
+    expect(sagittariusApp).not.toContain("onAddNoteForItem: (itemId, body)");
+    expect(sagittariusApp).not.toContain("onSaveDayTitle: (date, version, title)");
+    expect(sagittariusApp).not.toContain("canClaimMember: Boolean(");
+    expect(workspaceFrameActionProps).toContain(
+      "export function buildWorkspaceFrameActionProps",
+    );
+    expect(workspaceFrameActionProps).toContain("onSaveDayTitle:");
+    expect(workspaceFrameActionProps).toContain("canClaimMember:");
     expect(workspaceViewProps).toContain("export function buildWorkspaceViewsProps");
     expect(workspaceViewProps).toContain("buildWorkspacePageViewProps");
     expect(workspaceViewProps).toContain("buildWorkspacePlanningViewProps");

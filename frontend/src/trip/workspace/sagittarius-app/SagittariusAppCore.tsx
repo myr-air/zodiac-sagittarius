@@ -45,6 +45,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
 import {
   buildWorkspaceAccessProps,
+  buildWorkspaceFrameActionProps,
   buildWorkspaceShellProps,
   buildWorkspaceViewsProps,
 } from "./props";
@@ -557,6 +558,27 @@ export function SagittariusApp({
     setParticipantSession,
   });
 
+  const frameActionProps = buildWorkspaceFrameActionProps({
+    accountSession,
+    canEdit,
+    claimCurrentMemberToAccount,
+    createBookingDoc,
+    createItineraryNote,
+    currentMember,
+    effectivePlaceResolver,
+    editItem,
+    isApiMode,
+    leaveParticipantSession,
+    participantSession,
+    requireJoin,
+    resolvedApiClient,
+    resolveMissingMapCoordinates,
+    rotateJoinInviteToken,
+    saveDailyBriefingOverrides,
+    selectedItem,
+    transferOwnerToAccountMember,
+  });
+
   const viewsProps = buildWorkspaceViewsProps({
     activePlanItems,
     apiBaseUrl,
@@ -577,7 +599,7 @@ export function SagittariusApp({
     mainItineraryView,
     mainPlanItems,
     onAddBookingForItem: createItineraryBookingDraft,
-    onAddNoteForItem: (itemId, body) => void createItineraryNote(itemId, body),
+    onAddNoteForItem: frameActionProps.onAddNoteForItem,
     onAddStop: addStop,
     onAddSubActivity: addSubActivity,
     onChangeDayPath: changeDayPath,
@@ -587,9 +609,7 @@ export function SagittariusApp({
     onChangeTripPlan: selectTripPlan,
     onChangeTripPlanStatus: updateTripPlanStatus,
     onClearDayPath: clearDayPath,
-    onCreateBookingDoc: async (input) => {
-      await createBookingDoc(input);
-    },
+    onCreateBookingDoc: frameActionProps.onCreateBookingDoc,
     onCreateExpense: createExpense,
     onCreateMember: createMember,
     onCreatePhotoAlbum: createPhotoAlbum,
@@ -607,12 +627,10 @@ export function SagittariusApp({
     onRecordPaybackReminder: recordPaybackReminder,
     onRenameTripPlan: renameTripPlan,
     onResetMemberClaim: resetMemberClaim,
-    onResolveMissingCoordinates:
-      canEdit && effectivePlaceResolver ? resolveMissingMapCoordinates : undefined,
-    onRotateJoinInviteToken: isApiMode ? rotateJoinInviteToken : undefined,
+    onResolveMissingCoordinates: frameActionProps.onResolveMissingCoordinates,
+    onRotateJoinInviteToken: frameActionProps.onRotateJoinInviteToken,
     onSaveDailyBriefingOverrides: saveDailyBriefingOverrides,
-    onSaveDayTitle: (date, version, title) =>
-      saveDailyBriefingOverrides(date, version, { dayTitle: title }),
+    onSaveDayTitle: frameActionProps.onSaveDayTitle,
     onSaveItineraryBookingTicket: saveItineraryBookingTicket,
     onSaveTripSettings: saveTripSettings,
     onSelectItem: selectItem,
@@ -620,13 +638,7 @@ export function SagittariusApp({
     onToggleContextRail: toggleContextRail,
     onToggleShowAllPaths: toggleShowAllPaths,
     onToggleTaskStatus: toggleTaskStatus,
-    onTransferOwnership:
-      currentMember.role === "owner" &&
-      accountSession &&
-      participantSession &&
-      resolvedApiClient
-        ? transferOwnerToAccountMember
-        : undefined,
+    onTransferOwnership: frameActionProps.onTransferOwnership,
     onUnlinkBookingForItem: unlinkBookingFromItineraryItem,
     onUpdateBookingDoc: updateBookingDoc,
     onUpdateExpense: updateExpense,
@@ -674,9 +686,7 @@ export function SagittariusApp({
     accountClaimState,
     accountSession,
     applyPendingItineraryImport,
-    canClaimMember: Boolean(
-      accountSession && participantSession && !currentMember.userId,
-    ),
+    canClaimMember: frameActionProps.canClaimMember,
     canCreateStopNote,
     canCreateSuggestion,
     canEdit,
@@ -700,15 +710,13 @@ export function SagittariusApp({
     dialogDeleteItem,
     dialogState,
     dismissWorkspaceToast,
-    editSelectedItem: () => {
-      if (selectedItem) editItem(selectedItem.id);
-    },
+    editSelectedItem: frameActionProps.editSelectedItem,
     expenseSummary,
     importItineraryError,
     isToastDismissing: toastDismissing,
     navigateWorkspaceView,
-    onClaimMember: () => void claimCurrentMemberToAccount(),
-    onLeaveParticipantSession: requireJoin ? leaveParticipantSession : undefined,
+    onClaimMember: frameActionProps.onClaimMember,
+    onLeaveParticipantSession: frameActionProps.onLeaveParticipantSession,
     pathOptions,
     pendingItineraryImport,
     promoteFoodRecommendation,

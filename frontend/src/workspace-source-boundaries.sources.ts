@@ -10,6 +10,7 @@ export const workspaceBoundarySourcePaths = {
   workspaceShellProps: "src/trip/workspace/sagittarius-app/props/workspace-shell-props.ts",
   workspacePageViewProps: "src/trip/workspace/sagittarius-app/props/workspace-page-view-props.ts",
   workspacePlanningViewProps: "src/trip/workspace/sagittarius-app/props/workspace-planning-view-props.ts",
+  workspaceFrameActionProps: "src/trip/workspace/sagittarius-app/props/workspace-frame-action-props.ts",
   workspaceViewProps: "src/trip/workspace/sagittarius-app/props/workspace-view-props.ts",
   workspaceViewPropsTypes: "src/trip/workspace/sagittarius-app/props/workspace-view-props.types.ts",
   workspaceFacade: "src/trip/workspace/SagittariusApp.tsx",

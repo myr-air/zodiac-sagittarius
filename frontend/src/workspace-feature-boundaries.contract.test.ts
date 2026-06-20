@@ -10,6 +10,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       bookingList,
       bookingDialog,
       bookingDialogState,
+      sagaCore,
       itineraryTimeLib,
       overviewPage,
       overviewSummaryBand,
@@ -42,6 +43,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
+      workspaceFrameActionProps,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -64,6 +66,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
+    expect(sagaCore).toContain("buildWorkspaceFrameActionProps");
+    expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
+    expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
+    expect(workspaceFrameActionProps).toContain("onTransferOwnership");
 
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
     expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
