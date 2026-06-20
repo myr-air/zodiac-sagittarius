@@ -1,8 +1,10 @@
+import type { useI18n } from "@/src/i18n/I18nProvider";
 import type { Expense, ExpenseComment, ExpenseLineItem } from "@/src/trip/types";
 
 export type ExpenseCategoryFilter = "all" | Expense["category"];
 export type ExpenseCopyState = "idle" | "copied" | "error";
 export type ExpenseDialogTarget = Expense | "new" | null;
+export type ExpensePageLabels = ReturnType<typeof useI18n>["t"];
 
 export interface ExpenseInput {
   itemId: string | null;

@@ -1,12 +1,12 @@
 import type { Expense, Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { useI18n } from "@/src/i18n/I18nProvider";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { expenseCategories } from "../expense-page-support";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
+  ExpensePageLabels,
 } from "../expense-page-types";
 
 interface ExpenseLedgerControlsProps {
@@ -16,7 +16,7 @@ interface ExpenseLedgerControlsProps {
   members: Member[];
   payerFilter: string;
   query: string;
-  t: ReturnType<typeof useI18n>["t"];
+  t: ExpensePageLabels;
   onAddExpense: () => void;
   onCategoryFilterChange: (category: ExpenseCategoryFilter) => void;
   onClearFilters: () => void;

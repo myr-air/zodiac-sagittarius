@@ -1,15 +1,15 @@
 import { formatMoney } from "@/src/trip/expenses";
 import type { ExpenseSummary } from "@/src/trip/types";
-import type { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import type { ExpensePageLabels } from "../expense-page-types";
 
 interface ExpenseSummaryStatsProps {
   currentNet: number;
   expenseSummary: ExpenseSummary;
   owedToYou: number;
   settlementCurrency: string;
-  t: ReturnType<typeof useI18n>["t"];
+  t: ExpensePageLabels;
   youOwe: number;
 }
 

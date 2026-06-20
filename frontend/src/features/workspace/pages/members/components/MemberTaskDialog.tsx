@@ -1,9 +1,9 @@
 import { type FormEvent } from "react";
 import type { Member, TripMemberAccessStatus } from "@/src/trip/types";
-import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { ActionBar, Button, FieldLabel, TextInput } from "@/src/ui";
 import * as memberStyles from "../TripMembersPage.styles";
+import type { MemberConfirmLabels } from "./member-management.types";
 
 export type MemberTaskDialogState =
   | { kind: "reset"; member: Member }
@@ -13,7 +13,7 @@ export type MemberTaskDialogState =
 
 interface MemberTaskDialogProps {
   dialog: MemberTaskDialogState;
-  labels: ReturnType<typeof useI18n>["t"]["members"]["confirm"];
+  labels: MemberConfirmLabels;
   passwordError: string | null;
   passwordValue: string;
   onCancel: () => void;
@@ -64,7 +64,10 @@ function memberDialogTitle(dialog: MemberTaskDialogState): string {
   return `เปลี่ยนรหัสผ่าน ${dialog.member.displayName}`;
 }
 
-function memberDialogBody(dialog: Exclude<MemberTaskDialogState, { kind: "password" }>, labels: ReturnType<typeof useI18n>["t"]["members"]["confirm"]): string {
+function memberDialogBody(
+  dialog: Exclude<MemberTaskDialogState, { kind: "password" }>,
+  labels: MemberConfirmLabels,
+): string {
   if (dialog.kind === "reset") return labels.resetClaim({ name: dialog.member.displayName });
   if (dialog.kind === "access") return labels.access({ action: dialog.actionLabel, name: dialog.member.displayName });
   return labels.transferOwner({ name: dialog.member.displayName });

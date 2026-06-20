@@ -4,6 +4,7 @@ import type { TripRole } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
 
 export type MemberLabels = ReturnType<typeof useI18n>["t"];
+export type MemberConfirmLabels = MemberLabels["members"]["confirm"];
 export type MemberCopyState = "idle" | "copied" | "error";
 export type NewMemberRole = Exclude<TripRole, "owner">;
 
