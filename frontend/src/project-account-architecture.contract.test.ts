@@ -6,16 +6,25 @@ import { frontendRoot } from "./project-contract.helpers";
 describe("Sagittarius account architecture contracts", () => {
   it("keeps portal trip wizard model logic out of the render component", () => {
     const portalTripWizard = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"), "utf8");
+    const portalTripWizardMainPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx"), "utf8");
     const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"), "utf8");
+    const portalTripWizardMobileState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-mobile-state.ts"), "utf8");
     const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-summary.ts"), "utf8");
 
     expect(portalTripWizard).toContain("./use-portal-trip-wizard-model");
+    expect(portalTripWizard).toContain("./portal-trip-wizard-main-panel");
+    expect(portalTripWizard).not.toContain("TripWizardDestinationStep");
     expect(portalTripWizard).not.toContain("const [countryQuery");
     expect(portalTripWizard).not.toContain("function regenerateCredentials");
+    expect(portalTripWizardMainPanel).toContain("TripWizardDestinationStep");
+    expect(portalTripWizardMainPanel).toContain("TripWizardReviewSummary");
     expect(portalTripWizardModel).toContain("export function usePortalTripWizardModel");
     expect(portalTripWizardModel).toContain("buildPortalTripWizardSummary");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardMobileState");
+    expect(portalTripWizardModel).not.toContain("scrollIntoView");
     expect(portalTripWizardModel).not.toContain("wizard.status.required");
     expect(portalTripWizardModel).toContain("function regenerateCredentials");
+    expect(portalTripWizardMobileState).toContain("scrollIntoView");
     expect(portalTripWizardSummary).toContain("export function buildPortalTripWizardSummary");
     expect(portalTripWizardSummary).toContain("wizard.status.required");
   });

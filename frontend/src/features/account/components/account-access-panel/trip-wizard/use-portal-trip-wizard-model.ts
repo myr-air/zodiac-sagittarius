@@ -1,7 +1,6 @@
 import { type Dispatch, type FormEvent, type SetStateAction, useEffect, useRef, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import type { TripCity } from "@/src/trip/types";
 import {
   applyTripCalendarDate,
@@ -15,11 +14,10 @@ import {
   tripCityFromOption,
   type TripCityOption,
   type TripWizardDateSelectionStep,
-  type TripWizardStepId,
 } from "./account-trip-wizard-support";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
 
 interface PortalTripWizardModelOptions {
   defaultOwnerDisplayName: string;
@@ -44,9 +42,13 @@ export function usePortalTripWizardModel({
   const [hasCopiedJoinCode, setHasCopiedJoinCode] = useState(false);
   const [selectingDateStep, setSelectingDateStep] = useState<TripWizardDateSelectionStep>("depart");
   const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
-  const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
+  const {
+    activeMobileStep,
+    mobileStepButtonRefs,
+    mobileStepClassName,
+    setActiveMobileStep,
+  } = usePortalTripWizardMobileState();
   const destinationSearchRef = useRef<HTMLInputElement | null>(null);
-  const mobileStepButtonRefs = useRef<Map<TripWizardStepId, HTMLButtonElement>>(new Map());
   const derivedState = buildPortalTripWizardDerivedState({
     accessSalt,
     activeMobileStep,
@@ -74,10 +76,6 @@ export function usePortalTripWizardModel({
       return { ...current, joinId: nextJoinId, joinPassword: nextJoinPassword };
     });
   }, [accessSalt, derivedState.selectedDestinationKey, onChange]);
-
-  useEffect(() => {
-    mobileStepButtonRefs.current.get(activeMobileStep)?.scrollIntoView?.({ block: "nearest", inline: "center" });
-  }, [activeMobileStep]);
 
   function seedOwnerDisplayName() {
     onChange((current) => current.ownerDisplayName.trim() ? current : { ...current, ownerDisplayName: defaultOwnerDisplayName });
@@ -151,10 +149,6 @@ export function usePortalTripWizardModel({
     }
   }
 
-  function mobileStepClassName(stepId: TripWizardStepId, baseClassName = wizardStyles.tripStepSectionClassName) {
-    return cn(baseClassName, activeMobileStep === stepId ? "" : "max-[767px]:hidden");
-  }
-
   function submitWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     seedOwnerDisplayName();
@@ -199,3 +193,5 @@ export function usePortalTripWizardModel({
     wizard,
   };
 }
+
+export type PortalTripWizardModel = ReturnType<typeof usePortalTripWizardModel>;

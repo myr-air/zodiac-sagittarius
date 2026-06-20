@@ -9,7 +9,9 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessChrome,
       accountTripWizardSupport,
       portalTripWizard,
+      portalTripWizardMainPanel,
       portalTripWizardModel,
+      portalTripWizardMobileState,
       portalTripWizardDerivedState,
       portalTripWizardActions,
       accountAuthSupport,
@@ -72,11 +74,21 @@ describe("Sagittarius account source boundaries", () => {
     expect(portalTripWizardModel).toContain("applyTripDestinationCities");
     expect(portalTripWizardModel).toContain("applyTripCalendarDate");
     expect(portalTripWizardModel).toContain("buildPortalTripWizardDerivedState");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardMobileState");
+    expect(portalTripWizardModel).not.toContain("scrollIntoView");
+    expect(portalTripWizardModel).not.toContain("tripStepSectionClassName");
     expect(portalTripWizardModel).not.toContain("function tripStepComplete");
+    expect(portalTripWizardMobileState).toContain("export function usePortalTripWizardMobileState");
+    expect(portalTripWizardMobileState).toContain("scrollIntoView");
+    expect(portalTripWizardMobileState).toContain("tripStepSectionClassName");
     expect(portalTripWizardDerivedState).toContain("export function buildPortalTripWizardDerivedState");
     expect(portalTripWizardDerivedState).toContain("tripStepComplete");
     expect(portalTripWizardDerivedState).toContain("routeCalendarDays");
     expect(portalTripWizard).toContain("PortalTripWizardActions");
+    expect(portalTripWizard).toContain("PortalTripWizardMainPanel");
+    expect(portalTripWizard).not.toContain("TripWizardDestinationStep");
+    expect(portalTripWizardMainPanel).toContain("TripWizardDestinationStep");
+    expect(portalTripWizardMainPanel).toContain("TripWizardReviewSummary");
     expect(portalTripWizard).not.toContain("Date.parse(`${date}T00:00:00`)");
     expect(portalTripWizard).not.toContain("appRoutes.portalMyTrips()");
     expect(portalTripWizard).not.toContain("tripWizardActionsClassName");
@@ -134,7 +146,9 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginPanel).toContain("EmailLoginStepStage");
     expect(emailLoginPanel).not.toContain("EmailLoginCredentialsStep");
     expect(emailLoginStepStage).toContain("export function EmailLoginStepStage");
-    expect(emailLoginStepStage).toContain("EmailLoginCredentialsStep");
+    expect(emailLoginStepStage).toContain("EmailLoginStepContent");
+    expect(emailLoginStepStage).not.toContain("EmailLoginCredentialsStep");
+    expect(emailLoginStepContent).toContain("EmailLoginCredentialsStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginOtpStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
 

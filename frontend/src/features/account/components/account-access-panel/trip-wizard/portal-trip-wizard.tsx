@@ -4,14 +4,8 @@ import { type Dispatch, type SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
 import { cn } from "@/src/lib/cn";
-import {
-  TripWizardDatesStep,
-  TripWizardDestinationStep,
-  TripWizardInviteStep,
-  TripWizardReviewSummary,
-  TripWizardTripStep,
-} from "./portal-trip-wizard-form-sections";
 import { PortalTripWizardActions } from "./portal-trip-wizard-actions";
+import { PortalTripWizardMainPanel } from "./portal-trip-wizard-main-panel";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
 import * as wizardStyles from "./portal-trip-wizard-styles";
@@ -39,50 +33,28 @@ export function PortalTripWizard({
   });
   const {
     activeMobileStep,
-    addCityStop,
-    calendarDays,
     canSubmit,
-    changeOwnerDisplayName,
-    cityQuery,
-    clearTravelDates,
     copyJoinCode,
-    countryQuery,
     createStatusText,
     currencySummary,
     currentStepComplete,
     destinationCards,
-    destinationSearchRef,
     destinationSummary,
-    effectiveOwnerDisplayName,
     focusDestinationSearch,
-    generatedJoinId,
-    generatedJoinPassword,
     hasCopiedJoinCode,
     inviteStatus,
     isMobilePreviewStep,
     joinCode,
     mobileStepButtonRefs,
-    mobileStepClassName,
     previewEndDate,
     previewNightCount,
     previewStartDate,
     previewTripName,
-    regenerateCredentials,
-    removeCityStop,
     routeDestinationCode,
-    selectCalendarDate,
-    selectDestinationCity,
     selectedCityNames,
     selectedDestinationCities,
-    selectingDateStep,
     setActiveMobileStep,
-    setCityQuery,
-    setCountryQuery,
     submitWizard,
-    swapTravelDates,
-    t,
-    updateEndDate,
-    updateStartDate,
     wizard,
   } = wizardModel;
 
@@ -100,76 +72,13 @@ export function PortalTripWizard({
         onActiveMobileStepChange={setActiveMobileStep}
       />
       <div className={wizardStyles.tripWizardLayoutClassName}>
-        <div className={cn(wizardStyles.tripWizardMainClassName, isMobilePreviewStep ? "max-[767px]:hidden" : "")}>
-          <div className={wizardStyles.tripWizardPaneClassName}>
-            <div className={wizardStyles.tripScopePanelClassName}>
-              <TripWizardTripStep
-                activeMobileStep={activeMobileStep}
-                mobileStepClassName={mobileStepClassName}
-                nameLabel={t.access.dashboard.createTrip.labels.name}
-                tripForm={tripForm}
-                wizard={wizard}
-                onTripNameChange={(name) => onChange((current) => ({ ...current, name }))}
-              />
-
-              <TripWizardDestinationStep
-                activeMobileStep={activeMobileStep}
-                cityQuery={cityQuery}
-                countryQuery={countryQuery}
-                destinationCards={destinationCards}
-                destinationSearchRef={destinationSearchRef}
-                mobileStepClassName={mobileStepClassName}
-                onAddCityStop={addCityStop}
-                onCityQueryChange={setCityQuery}
-                onCountryQueryChange={setCountryQuery}
-                onRemoveCityStop={removeCityStop}
-                onSelectDestinationCity={selectDestinationCity}
-                selectedCityNames={selectedCityNames}
-                selectedDestinationCities={selectedDestinationCities}
-                tripForm={tripForm}
-                wizard={wizard}
-              />
-
-              <TripWizardDatesStep
-                activeMobileStep={activeMobileStep}
-                calendarDays={calendarDays}
-                mobileStepClassName={mobileStepClassName}
-                onChange={onChange}
-                onClearTravelDates={clearTravelDates}
-                onSelectCalendarDate={selectCalendarDate}
-                onSwapTravelDates={swapTravelDates}
-                onUpdateEndDate={updateEndDate}
-                onUpdateStartDate={updateStartDate}
-                previewEndDate={previewEndDate}
-                previewStartDate={previewStartDate}
-                selectedDestinationCities={selectedDestinationCities}
-                selectingDateStep={selectingDateStep}
-                t={t}
-                tripForm={tripForm}
-                wizard={wizard}
-              />
-
-              <TripWizardInviteStep
-                activeMobileStep={activeMobileStep}
-                defaultOwnerDisplayName={defaultOwnerDisplayName}
-                effectiveOwnerDisplayName={effectiveOwnerDisplayName}
-                generatedJoinId={generatedJoinId}
-                generatedJoinPassword={generatedJoinPassword}
-                mobileStepClassName={mobileStepClassName}
-                onOwnerDisplayNameChange={changeOwnerDisplayName}
-                onRegenerateCredentials={regenerateCredentials}
-                t={t}
-                wizard={wizard}
-              />
-
-              <TripWizardReviewSummary
-                destinationSummary={destinationSummary}
-                tripForm={tripForm}
-                wizard={wizard}
-              />
-            </div>
-          </div>
-        </div>
+        <PortalTripWizardMainPanel
+          defaultOwnerDisplayName={defaultOwnerDisplayName}
+          isMobilePreviewStep={isMobilePreviewStep}
+          onChange={onChange}
+          tripForm={tripForm}
+          wizardModel={wizardModel}
+        />
         <PortalTripWizardPreview
           activeMobileStep={activeMobileStep}
           canSubmit={canSubmit}
