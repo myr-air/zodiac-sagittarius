@@ -5,14 +5,13 @@ import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { AuthFlow } from "../auth";
-import type { AuthTransitionDirection } from "./account-email-login-styles";
 import {
   buildEmailLoginStepMeta,
-  type EmailLoginAuthStep,
 } from "./account-email-login-step-meta";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
+import { useEmailLoginStepNavigation, type AuthTransitionDirection } from "./use-email-login-step-navigation";
 import { useEmailLoginSubmitActions } from "./use-email-login-submit-actions";
 
 interface UseEmailLoginPanelStateProps {
@@ -47,8 +46,12 @@ export function useEmailLoginPanelState({
     setTrustDevice,
     updateCode,
   } = useEmailLoginFormState();
-  const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");
-  const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
+  const {
+    authStep,
+    goToStep,
+    setTransitionDirection,
+    transitionDirection,
+  } = useEmailLoginStepNavigation();
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
   const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
   const {
@@ -108,11 +111,6 @@ export function useEmailLoginPanelState({
   function chooseMethods() {
     goToStep("methods", "back");
     onError(null);
-  }
-
-  function goToStep(nextStep: EmailLoginAuthStep, direction: AuthTransitionDirection = "forward") {
-    setTransitionDirection(direction);
-    setAuthStep(nextStep);
   }
 
   const {

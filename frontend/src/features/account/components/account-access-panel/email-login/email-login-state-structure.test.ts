@@ -53,4 +53,22 @@ describe("email login state structure", () => {
     expect(submitActions).toContain("finishEmailRegistrationSetup");
     expect(submitActions).toContain("signInWithEmailPasskey");
   });
+
+  it("keeps step transition state out of styles and the main login panel hook", () => {
+    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
+    const stepNavigation = readEmailLoginSource("use-email-login-step-navigation.ts");
+    const styles = readEmailLoginSource("account-email-login-styles.ts");
+
+    expect(panelState).toContain("useEmailLoginStepNavigation");
+    expect(panelState).not.toMatch(/const \[authStep,\s*setAuthStep\]/);
+    expect(panelState).not.toMatch(/const \[transitionDirection,\s*setTransitionDirection\]/);
+    expect(stepNavigation).toContain("export type AuthTransitionDirection");
+    expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
+    expect(stepNavigation).toContain("function goToStep");
+    expect(styles).toContain("./use-email-login-step-navigation");
+    expect(styles).not.toContain("export type AuthTransitionDirection");
+    expect(readEmailLoginSource("account-email-login-step-stage.tsx")).toContain(
+      "./use-email-login-step-navigation",
+    );
+  });
 });

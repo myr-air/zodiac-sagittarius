@@ -9,9 +9,9 @@ import { PanelHeading } from "../portal/account-portal-primitives";
 import {
   accountStepStageClassName,
   accountStepStageDirectionClassNames,
-  type AuthTransitionDirection,
 } from "./account-email-login-styles";
 import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./account-email-login-step-meta";
+import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
 import {
   emailLoginCredentialsLabels,
   emailLoginMethodsLabels,

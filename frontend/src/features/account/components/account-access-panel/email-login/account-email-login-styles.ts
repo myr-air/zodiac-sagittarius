@@ -1,6 +1,5 @@
 import { cn } from "@/src/lib/cn";
-
-export type AuthTransitionDirection = "forward" | "back" | "mode";
+import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
 
 export const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const accountCheckClassName =
