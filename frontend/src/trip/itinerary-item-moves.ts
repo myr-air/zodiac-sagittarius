@@ -1,6 +1,8 @@
 import {
-  compareItineraryItemsWithinDay,
-} from "./itinerary-item-ordering";
+  mergeItineraryDayItems,
+  renumberItineraryDayItems,
+  sortedTargetDayItemsExcluding,
+} from "./itinerary-item-move-ordering";
 import type {
   ItineraryItem,
   Trip,
@@ -35,21 +37,19 @@ export function moveTripItem(
   )
     return null;
 
-  const targetDayItems = current.itineraryItems
-    .filter(
-      (item) =>
-        item.planVariantId === targetItem.planVariantId &&
-        item.day === targetItem.day &&
-        item.id !== draggedItemId,
-    )
-    .sort(compareItineraryItemsWithinDay);
+  const targetDayItems = sortedTargetDayItemsExcluding(
+    current.itineraryItems,
+    targetItem.planVariantId,
+    targetItem.day,
+    draggedItemId,
+  );
   const targetIndex = targetDayItems.findIndex(
     (item) => item.id === targetItemId,
   );
 
   if (targetIndex < 0) return null;
 
-  const nextDayItems = [
+  const nextDayItems = renumberItineraryDayItems([
     ...targetDayItems.slice(0, targetIndex),
     {
       ...draggedItem,
@@ -59,14 +59,11 @@ export function moveTripItem(
       version: draggedItem.version + 1,
     },
     ...targetDayItems.slice(targetIndex),
-  ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
-  const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+  ]);
 
   return {
     ...current,
-    itineraryItems: current.itineraryItems.map(
-      (item) => nextItemsById.get(item.id) ?? item,
-    ),
+    itineraryItems: mergeItineraryDayItems(current.itineraryItems, nextDayItems),
   };
 }
 
@@ -82,15 +79,13 @@ export function moveTripItemToDay(
   );
   if (!draggedItem || draggedItem.planVariantId !== planVariantId) return null;
 
-  const targetDayItems = current.itineraryItems
-    .filter(
-      (item) =>
-        item.planVariantId === draggedItem.planVariantId &&
-        item.day === targetDay &&
-        item.id !== draggedItemId,
-    )
-    .sort(compareItineraryItemsWithinDay);
-  const nextDayItems = [
+  const targetDayItems = sortedTargetDayItemsExcluding(
+    current.itineraryItems,
+    draggedItem.planVariantId,
+    targetDay,
+    draggedItemId,
+  );
+  const nextDayItems = renumberItineraryDayItems([
     ...targetDayItems,
     {
       ...draggedItem,
@@ -99,14 +94,11 @@ export function moveTripItemToDay(
       updatedAt,
       version: draggedItem.version + 1,
     },
-  ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
-  const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+  ]);
 
   return {
     ...current,
-    itineraryItems: current.itineraryItems.map(
-      (item) => nextItemsById.get(item.id) ?? item,
-    ),
+    itineraryItems: mergeItineraryDayItems(current.itineraryItems, nextDayItems),
   };
 }
 
@@ -135,14 +127,12 @@ export function moveTripItemIntoPlanBlock(
   )
     return null;
 
-  const targetDayItems = current.itineraryItems
-    .filter(
-      (item) =>
-        item.planVariantId === planBlock.planVariantId &&
-        item.day === planBlock.day &&
-        item.id !== draggedItemId,
-    )
-    .sort(compareItineraryItemsWithinDay);
+  const targetDayItems = sortedTargetDayItemsExcluding(
+    current.itineraryItems,
+    planBlock.planVariantId,
+    planBlock.day,
+    draggedItemId,
+  );
   const blockIndex = targetDayItems.findIndex(
     (item) => item.id === planBlockItemId,
   );
@@ -151,7 +141,7 @@ export function moveTripItemIntoPlanBlock(
     (item) => item.parentItemId === planBlockItemId,
   ).length;
   const insertIndex = blockIndex + childCount + 1;
-  const nextDayItems = [
+  const nextDayItems = renumberItineraryDayItems([
     ...targetDayItems.slice(0, insertIndex),
     {
       ...draggedItem,
@@ -161,14 +151,11 @@ export function moveTripItemIntoPlanBlock(
       version: draggedItem.version + 1,
     },
     ...targetDayItems.slice(insertIndex),
-  ].map((item, index) => ({ ...item, sortOrder: (index + 1) * 100 }));
-  const nextItemsById = new Map(nextDayItems.map((item) => [item.id, item]));
+  ]);
 
   return {
     ...current,
-    itineraryItems: current.itineraryItems.map(
-      (item) => nextItemsById.get(item.id) ?? item,
-    ),
+    itineraryItems: mergeItineraryDayItems(current.itineraryItems, nextDayItems),
   };
 }
 
