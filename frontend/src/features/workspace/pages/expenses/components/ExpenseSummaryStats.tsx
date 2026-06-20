@@ -1,0 +1,63 @@
+import { formatMoney } from "@/src/trip/expenses";
+import type { ExpenseSummary } from "@/src/trip/types";
+import type { useI18n } from "@/src/i18n/I18nProvider";
+import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
+import * as expenseStyles from "../TripExpensesPage.styles";
+
+interface ExpenseSummaryStatsProps {
+  currentNet: number;
+  expenseSummary: ExpenseSummary;
+  owedToYou: number;
+  settlementCurrency: string;
+  t: ReturnType<typeof useI18n>["t"];
+  youOwe: number;
+}
+
+const summaryValueToneClassNames = {
+  positive: expenseStyles.positiveClassName,
+  negative: expenseStyles.negativeClassName,
+};
+
+export function ExpenseSummaryStats({
+  currentNet,
+  expenseSummary,
+  owedToYou,
+  settlementCurrency,
+  t,
+  youOwe,
+}: ExpenseSummaryStatsProps) {
+  return (
+    <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
+      <WorkspaceSummaryStat
+        className={expenseStyles.statClassName}
+        icon="wallet"
+        label={t.expenses.stats.tripSpend}
+        value={formatMoney(expenseSummary.groupSpend, settlementCurrency)}
+      />
+      <WorkspaceSummaryStat
+        className={expenseStyles.statClassName}
+        icon="check"
+        label={t.expenses.stats.yourBalance}
+        tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"}
+        value={expenseSummary.currentUserNetLabel}
+        valueToneClassNames={summaryValueToneClassNames}
+      />
+      <WorkspaceSummaryStat
+        className={expenseStyles.statClassName}
+        icon="users"
+        label={t.expenses.stats.owedToYou}
+        tone="positive"
+        value={formatMoney(owedToYou, settlementCurrency)}
+        valueToneClassNames={summaryValueToneClassNames}
+      />
+      <WorkspaceSummaryStat
+        className={expenseStyles.statClassName}
+        icon="warning"
+        label={t.expenses.stats.youOwe}
+        tone="negative"
+        value={formatMoney(youOwe, settlementCurrency)}
+        valueToneClassNames={summaryValueToneClassNames}
+      />
+    </div>
+  );
+}

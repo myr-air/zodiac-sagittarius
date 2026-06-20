@@ -1,15 +1,12 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import {
-  formatMoney,
-} from "@/src/trip/expenses";
 import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import { ExpenseDialog } from "./ExpenseDialog";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
+import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
 import { useTripExpensesPageState } from "./use-trip-expenses-page-state";
@@ -94,38 +91,14 @@ export function TripExpensesPage({
         motif={<TravelMotif tone="route" />}
       />
 
-      <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
-        <WorkspaceSummaryStat
-          className={expenseStyles.statClassName}
-          icon="wallet"
-          label={t.expenses.stats.tripSpend}
-          value={formatMoney(expenseSummary.groupSpend, settlementCurrency)}
-        />
-        <WorkspaceSummaryStat
-          className={expenseStyles.statClassName}
-          icon="check"
-          label={t.expenses.stats.yourBalance}
-          tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"}
-          value={expenseSummary.currentUserNetLabel}
-          valueToneClassNames={summaryValueToneClassNames}
-        />
-        <WorkspaceSummaryStat
-          className={expenseStyles.statClassName}
-          icon="users"
-          label={t.expenses.stats.owedToYou}
-          tone="positive"
-          value={formatMoney(owedToYou, settlementCurrency)}
-          valueToneClassNames={summaryValueToneClassNames}
-        />
-        <WorkspaceSummaryStat
-          className={expenseStyles.statClassName}
-          icon="warning"
-          label={t.expenses.stats.youOwe}
-          tone="negative"
-          value={formatMoney(youOwe, settlementCurrency)}
-          valueToneClassNames={summaryValueToneClassNames}
-        />
-      </div>
+      <ExpenseSummaryStats
+        currentNet={currentNet}
+        expenseSummary={expenseSummary}
+        owedToYou={owedToYou}
+        settlementCurrency={settlementCurrency}
+        t={t}
+        youOwe={youOwe}
+      />
 
       <div className={expenseStyles.contentGridClassName}>
         <ExpenseOverviewPanels
@@ -181,8 +154,3 @@ export function TripExpensesPage({
     </section>
   );
 }
-
-const summaryValueToneClassNames = {
-  positive: expenseStyles.positiveClassName,
-  negative: expenseStyles.negativeClassName,
-};
