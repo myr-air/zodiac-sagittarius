@@ -4,15 +4,15 @@ import { useState } from "react";
 import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import type { AuthFlow } from "../auth";
+import type { AuthFlow } from "../../auth";
 import {
   buildEmailLoginStepMeta,
-} from "./account-email-login-step-meta";
+} from "../account-email-login-step-meta";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 import { useEmailLoginStepNavigation, type AuthTransitionDirection } from "./use-email-login-step-navigation";
-import { useEmailLoginSubmitActions } from "./submit/use-email-login-submit-actions";
+import { useEmailLoginSubmitActions } from "../submit/use-email-login-submit-actions";
 
 interface UseEmailLoginPanelStateProps {
   accountClient: AccountApiClient;

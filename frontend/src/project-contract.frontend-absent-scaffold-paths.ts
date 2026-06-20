@@ -1,5 +1,6 @@
 export const frontendScaffoldPathsAbsent = [
   "src/trip/workspace/sagittarius-app/public-exports.ts",
+  "src/storybook.contract.test.ts",
   "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts",
   "src/features/account/components/account-access-panel/account-trip-destinations.ts",
   "src/features/account/components/account-access-panel/account-trip-dates.ts",
@@ -20,6 +21,10 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/email-login/email-login-submit-route.ts",
   "src/features/account/components/account-access-panel/email-login/email-login-submit-runner.ts",
   "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts",
+  "src/features/account/components/account-access-panel/email-login/email-login-panel-derived-state.ts",
+  "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts",
+  "src/features/account/components/account-access-panel/email-login/use-email-login-step-navigation.ts",
+  "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts",
   "src/features/account/components/account-access-panel/account-portal-dashboard.tsx",
   "src/features/account/components/account-access-panel/account-portal-primitives.tsx",
   "src/features/account/components/account-access-panel/use-account-portal-data.ts",

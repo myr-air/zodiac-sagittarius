@@ -11,7 +11,7 @@ import {
   accountStepStageDirectionClassNames,
 } from "./account-email-login-styles";
 import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./account-email-login-step-meta";
-import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
+import type { AuthTransitionDirection } from "./state/use-email-login-step-navigation";
 import { EmailLoginStepContent } from "./account-email-login-step-dispatch";
 
 interface EmailLoginStepStageProps {

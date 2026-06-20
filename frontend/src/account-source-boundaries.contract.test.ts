@@ -121,7 +121,7 @@ describe("Sagittarius account source boundaries", () => {
 
     expect(emailLoginState).toContain("./use-email-login-form-state");
     expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
-    expect(emailLoginState).toContain("./submit/use-email-login-submit-actions");
+    expect(emailLoginState).toContain("../submit/use-email-login-submit-actions");
     expect(emailLoginState).not.toContain("./submit/email-login-auth-actions");
     expect(emailLoginState).not.toContain("buildPasskeyLoginFinishInput");
     expect(emailLoginState).not.toContain("finishPasswordLogin({");

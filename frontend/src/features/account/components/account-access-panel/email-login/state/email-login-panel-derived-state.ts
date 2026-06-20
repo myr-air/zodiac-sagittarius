@@ -1,5 +1,5 @@
-import type { AuthFlow } from "../auth";
-import { accountEmailPattern } from "./account-email-login-styles";
+import type { AuthFlow } from "../../auth";
+import { accountEmailPattern } from "../account-email-login-styles";
 
 export interface EmailLoginPanelDerivedState {
   codeHintId: string;

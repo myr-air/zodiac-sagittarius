@@ -11,7 +11,7 @@ import {
 import { AccountTrustDeviceField } from "./account-email-login-fields";
 import { EmailLoginStepStage } from "./account-email-login-step-stage";
 import { StatusMessage } from "../auth";
-import { useEmailLoginPanelState } from "./use-email-login-panel-state";
+import { useEmailLoginPanelState } from "./state/use-email-login-panel-state";
 
 interface EmailLoginPanelProps {
   accountClient: AccountApiClient;

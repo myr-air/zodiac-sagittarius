@@ -11,8 +11,8 @@ function readEmailLoginSource(fileName: string) {
 
 describe("email login state structure", () => {
   it("keeps resend cooldown timer state out of the main login panel hook", () => {
-    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
-    const resendCooldown = readEmailLoginSource("use-email-login-resend-cooldown.ts");
+    const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
+    const resendCooldown = readEmailLoginSource("state/use-email-login-resend-cooldown.ts");
 
     expect(panelState).toContain("useEmailLoginResendCooldown");
     expect(panelState).not.toContain("window.setInterval");
@@ -24,8 +24,8 @@ describe("email login state structure", () => {
   });
 
   it("keeps form field state and code normalization out of the main login panel hook", () => {
-    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
-    const formState = readEmailLoginSource("use-email-login-form-state.ts");
+    const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
+    const formState = readEmailLoginSource("state/use-email-login-form-state.ts");
 
     expect(panelState).toContain("useEmailLoginFormState");
     expect(panelState).not.toMatch(/const \[email,\s*setEmail\]/);
@@ -38,7 +38,7 @@ describe("email login state structure", () => {
   });
 
   it("keeps auth submit actions out of the main login panel hook", () => {
-    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
+    const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
     const submitActions = readEmailLoginSource("submit/use-email-login-submit-actions.ts");
     const submitErrors = readEmailLoginSource("submit/email-login-submit-errors.ts");
     const submitRoute = readEmailLoginSource("submit/email-login-submit-route.ts");
@@ -71,8 +71,8 @@ describe("email login state structure", () => {
   });
 
   it("keeps step transition state out of styles and the main login panel hook", () => {
-    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
-    const stepNavigation = readEmailLoginSource("use-email-login-step-navigation.ts");
+    const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
+    const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
     const styles = readEmailLoginSource("account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginStepNavigation");
@@ -81,10 +81,10 @@ describe("email login state structure", () => {
     expect(stepNavigation).toContain("export type AuthTransitionDirection");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("function goToStep");
-    expect(styles).toContain("./use-email-login-step-navigation");
+    expect(styles).toContain("./state/use-email-login-step-navigation");
     expect(styles).not.toContain("export type AuthTransitionDirection");
     expect(readEmailLoginSource("account-email-login-step-stage.tsx")).toContain(
-      "./use-email-login-step-navigation",
+      "./state/use-email-login-step-navigation",
     );
   });
 });

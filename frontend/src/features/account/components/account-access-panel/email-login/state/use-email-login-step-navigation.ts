@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EmailLoginAuthStep } from "./account-email-login-step-meta";
+import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
 
 export type AuthTransitionDirection = "forward" | "back" | "mode";
 
