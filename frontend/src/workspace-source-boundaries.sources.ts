@@ -122,6 +122,7 @@ export const workspaceBoundarySourcePaths = {
   tripSettingsPageStory: "src/features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx",
   tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
   memberSupport: "src/features/workspace/pages/members/TripMembersPage.support.ts",
+  photosPageStory: "src/features/workspace/pages/photos/TripPhotosPage.stories.tsx",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",
   photoAlbumDialogState: "src/features/workspace/pages/photos/components/usePhotoAlbumDialogState.ts",
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
