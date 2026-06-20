@@ -1,5 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Suggestion, Trip } from "@/src/trip/types";
+import type { Suggestion, SuggestionReviewDecision, Trip } from "@/src/trip/types";
 import {
   detailHeadingClassName,
   detailSectionClassName,
@@ -19,7 +19,7 @@ interface ContextRailSuggestionsSectionProps {
   canReviewSuggestions: boolean;
   onReviewSuggestion: (
     suggestionId: string,
-    decision: "approved" | "rejected",
+    decision: SuggestionReviewDecision,
   ) => void;
 }
 

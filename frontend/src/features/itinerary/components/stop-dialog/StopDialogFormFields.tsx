@@ -10,12 +10,9 @@ import { dialogErrorClassName, dialogGridClassName } from "./stop-dialog.styles"
 import type { StopDialogProps, StopManualPathOption } from "./stop-dialog.types";
 import type { StopDialogModel } from "./use-stop-dialog-model";
 import {
-  type StopDetailType,
   stopDetailLabels,
   stopDialogDetailTypeOptions,
 } from "./stop-dialog.utils";
-
-const detailTypeOptions: StopDetailType[] = stopDialogDetailTypeOptions;
 
 interface StopDialogFormFieldsProps {
   dayOptions: string[];
@@ -71,7 +68,7 @@ export function StopDialogFormFields({
         dayOptions={dayOptions}
         detailLabels={detailLabels}
         detailType={detailType}
-        detailTypeOptions={detailTypeOptions}
+        detailTypeOptions={stopDialogDetailTypeOptions}
         isSubActivity={isSubActivity}
         locale={locale}
         manualPathOptions={manualPathOptions}

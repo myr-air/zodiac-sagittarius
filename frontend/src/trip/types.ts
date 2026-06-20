@@ -92,6 +92,7 @@ export type {
   PlanSuggestionSeverity,
   PlanSuggestionStatus,
   Suggestion,
+  SuggestionReviewDecision,
   SuggestionStatus,
   SuggestionType,
 } from "./trip-suggestion-types";

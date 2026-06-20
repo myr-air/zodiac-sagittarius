@@ -5,6 +5,7 @@ import type {
   Member,
   StopNote,
   Suggestion,
+  SuggestionReviewDecision,
   Trip,
   TripTask,
 } from "@/src/trip/types";
@@ -53,7 +54,7 @@ interface ContextRailProps {
   onEditSelected: () => void;
   onReviewSuggestion: (
     suggestionId: string,
-    decision: "approved" | "rejected",
+    decision: SuggestionReviewDecision,
   ) => void;
   onSuggestSelected: () => void;
   onToggleTaskStatus: (taskId: string) => void;

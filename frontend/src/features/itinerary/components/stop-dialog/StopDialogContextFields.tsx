@@ -33,7 +33,7 @@ export function StopDialogContextFields({
   dayOptions: string[];
   detailLabels: ReturnType<typeof stopDetailLabels>;
   detailType: StopDetailType;
-  detailTypeOptions: StopDetailType[];
+  detailTypeOptions: readonly StopDetailType[];
   isSubActivity: boolean;
   locale: Locale;
   manualPathOptions: StopManualPathOption[];

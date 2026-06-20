@@ -11,6 +11,7 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   ItineraryItem,
   Suggestion,
+  SuggestionReviewDecision,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
@@ -78,7 +79,7 @@ export function useWorkspaceSuggestionActions({
 
   const reviewSuggestion = useCallback(async (
     suggestionId: string,
-    decision: "approved" | "rejected",
+    decision: SuggestionReviewDecision,
   ) => {
     if (!canReviewSuggestions) return;
     if (isApiMode && resolveApiClient && participantSession) {

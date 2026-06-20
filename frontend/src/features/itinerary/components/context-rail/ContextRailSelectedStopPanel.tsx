@@ -8,6 +8,7 @@ import type {
   Member,
   StopNote,
   Suggestion,
+  SuggestionReviewDecision,
   Trip,
   TripTask,
 } from "@/src/trip/types";
@@ -67,7 +68,7 @@ interface ContextRailSelectedStopPanelProps {
   onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
   onReviewSuggestion: (
     suggestionId: string,
-    decision: "approved" | "rejected",
+    decision: SuggestionReviewDecision,
   ) => void;
 }
 

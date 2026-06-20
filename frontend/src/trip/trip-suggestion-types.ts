@@ -1,17 +1,44 @@
 import type { ItineraryItem } from "./trip-itinerary-types";
 
-export type SuggestionType = "add" | "edit" | "delete" | "reorder";
-export type SuggestionStatus = "pending" | "approved" | "rejected" | "conflicted";
+export const suggestionTypeValues = ["add", "edit", "delete", "reorder"] as const;
+export type SuggestionType = (typeof suggestionTypeValues)[number];
+
+export const suggestionStatusValues = [
+  "pending",
+  "approved",
+  "rejected",
+  "conflicted",
+] as const;
+export type SuggestionStatus = (typeof suggestionStatusValues)[number];
+export type SuggestionReviewDecision = Extract<SuggestionStatus, "approved" | "rejected">;
 
 export interface LocalizedText {
   en: string;
   th: string;
 }
 
-export type PlanSuggestionSeverity = "info" | "warning" | "critical";
-export type PlanSuggestionScope = "item" | "betweenItems" | "day" | "trip";
-export type PlanSuggestionStatus = "pending" | "accepted" | "dismissed" | "snoozed";
-export type PlanSuggestionActionKind = "accept" | "dismiss" | "snooze" | "convertToItem" | "editItem";
+export const planSuggestionSeverityValues = ["info", "warning", "critical"] as const;
+export type PlanSuggestionSeverity = (typeof planSuggestionSeverityValues)[number];
+
+export const planSuggestionScopeValues = ["item", "betweenItems", "day", "trip"] as const;
+export type PlanSuggestionScope = (typeof planSuggestionScopeValues)[number];
+
+export const planSuggestionStatusValues = [
+  "pending",
+  "accepted",
+  "dismissed",
+  "snoozed",
+] as const;
+export type PlanSuggestionStatus = (typeof planSuggestionStatusValues)[number];
+
+export const planSuggestionActionKindValues = [
+  "accept",
+  "dismiss",
+  "snooze",
+  "convertToItem",
+  "editItem",
+] as const;
+export type PlanSuggestionActionKind = (typeof planSuggestionActionKindValues)[number];
 
 export interface PlanSuggestion {
   id: string;
