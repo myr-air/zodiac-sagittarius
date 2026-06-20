@@ -1,0 +1,280 @@
+import {
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  SagittariusApp,
+} from "@/src/app/SagittariusApp";
+import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
+import { seedTrip } from "@/src/trip/seed";
+import {
+  appRoutes,
+  encodeReturnTo,
+} from "@/src/trip/workspace/sagittarius-app/support";
+import {
+  createApiClientForTrip,
+  installLocalStorageStub,
+  installSessionStorageStub,
+  render,
+} from "./sagittarius-app.test-support";
+
+describe("Sagittarius cockpit access", () => {
+  beforeEach(() => {
+    installLocalStorageStub();
+    installSessionStorageStub();
+    window.history.pushState(null, "", appRoutes.home());
+  });
+
+  it("can require trip participant authentication before opening the cockpit", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp requireJoin />);
+
+    expect(
+      screen.getByRole("main", { name: /Account access/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), {
+      target: { value: "HK-SZ-2025" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), {
+      target: { value: "seed-trip-pass" },
+    });
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), {
+      target: { value: "traveler-pin" },
+    });
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    expect(
+      await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("region", { name: /Trip overview/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryAllByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
+    ).toHaveLength(0);
+  }, 45_000);
+
+  it("keeps account routes isolated from restored local participant sessions", async () => {
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripParticipantSessionStorageKey,
+      JSON.stringify({
+        tripId: seedTrip.id,
+        memberId: seedTrip.members[1].id,
+        sessionToken: "local-restored-session",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        expiresAt: "2026-06-28T00:00:00.000Z",
+      }),
+    );
+
+    render(<SagittariusApp accessMode="account-login" requireJoin />);
+
+    expect(
+      await screen.findByRole("main", { name: /Account sign in/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /Travel ideas. Perfectly planned./i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("uses the API join route for canonical API trip access and replaces join history", async () => {
+    const user = userEvent.setup();
+    const replaceStateMock = vi
+      .spyOn(window.history, "replaceState")
+      .mockImplementation(() => undefined);
+    const originalLocation = window.location;
+    const safeReturnTo = appRoutes.tripItinerary(seedTrip.id);
+    const locationMock = {
+      ...originalLocation,
+      pathname: appRoutes.join(),
+      search: `?rt=${encodeURIComponent(encodeReturnTo(safeReturnTo))}`,
+      replace: vi.fn(),
+    };
+    const locationSpy = vi
+      .spyOn(window, "location", "get")
+      .mockReturnValue(locationMock);
+    const apiClient = createApiClientForTrip(seedTrip);
+    render(
+      <SagittariusApp
+        accessMode="trip-access"
+        requireJoin
+        dataSource="api"
+        apiClient={apiClient}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), {
+      target: { value: "HK-SZ-2025" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), {
+      target: { value: "seed-trip-pass" },
+    });
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), {
+      target: { value: "traveler-pin" },
+    });
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    expect(apiClient.joinTrip).toHaveBeenCalledWith({
+      joinId: "HK-SZ-2025",
+      password: "seed-trip-pass",
+    });
+    expect(apiClient.loadTrip).toHaveBeenCalledWith(
+      seedTrip.id,
+      "session-token",
+    );
+    expect(replaceStateMock).toHaveBeenCalledWith(null, "", safeReturnTo);
+    expect(
+      screen.getByRole("navigation", { name: /เมนูวางแผน Joii/i }),
+    ).toBeInTheDocument();
+
+    locationSpy.mockRestore();
+    replaceStateMock.mockRestore();
+  }, 45_000);
+
+  it.each([
+    ["overview", appRoutes.tripOverview(seedTrip.id)],
+    ["itinerary", appRoutes.tripItinerary(seedTrip.id)],
+    ["map", appRoutes.tripMap(seedTrip.id)],
+    ["timeline", appRoutes.tripTimeline(seedTrip.id)],
+    ["members", appRoutes.tripMembers(seedTrip.id)],
+    ["settings", appRoutes.tripSettings(seedTrip.id)],
+  ] as const)(
+    "redirects unauthenticated trip %s routes to /join with encoded returnTo",
+    async (_view, tripPath) => {
+      const originalLocation = window.location;
+      const locationMock = {
+        ...originalLocation,
+        pathname: tripPath,
+        search: "",
+        replace: vi.fn(),
+      };
+      const locationSpy = vi
+        .spyOn(window, "location", "get")
+        .mockReturnValue(locationMock);
+
+      render(
+        <SagittariusApp
+          accessMode="trip-access"
+          requireJoin
+          dataSource="api"
+          routeTripId={seedTrip.id}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(locationMock.replace).toHaveBeenCalledWith(
+          appRoutes.join(undefined, tripPath),
+        ),
+      );
+      expect(
+        screen.queryByRole("heading", { name: /เข้าห้อง trip/i }),
+      ).not.toBeInTheDocument();
+
+      locationSpy.mockRestore();
+    },
+  );
+
+  it("lets a guest participant leave their local session and choose another identity", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm");
+    render(<SagittariusApp requireJoin />);
+
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), {
+      target: { value: "HK-SZ-2025" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), {
+      target: { value: "seed-trip-pass" },
+    });
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), {
+      target: { value: "traveler-pin" },
+    });
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+    await user.click(
+      within(screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i })).getByRole(
+        "button",
+        { name: /เปลี่ยนตัวตน/i },
+      ),
+    );
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("main", { name: /Account access/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /เข้าห้อง trip/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: /เมนูวางแผน Joii/i }),
+    ).not.toBeInTheDocument();
+  }, 45_000);
+
+  it("persists guest participant claims across a fresh app mount", async () => {
+    const user = userEvent.setup();
+    installLocalStorageStub();
+    const { unmount } = render(<SagittariusApp requireJoin />);
+
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), {
+      target: { value: "HK-SZ-2025" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), {
+      target: { value: "seed-trip-pass" },
+    });
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+    fireEvent.change(screen.getByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i), {
+      target: { value: "traveler-pin" },
+    });
+    await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+    await user.click(screen.getByRole("button", { name: /เปลี่ยนตัวตน/i }));
+    await user.click(
+      within(screen.getByRole("dialog", { name: /เปลี่ยนตัวตน/i })).getByRole(
+        "button",
+        { name: /เปลี่ยนตัวตน/i },
+      ),
+    );
+
+    unmount();
+    render(<SagittariusApp requireJoin />);
+
+    fireEvent.change(screen.getByLabelText(/Trip ID/i), {
+      target: { value: "HK-SZ-2025" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Trip password$/i), {
+      target: { value: "seed-trip-pass" },
+    });
+    await user.click(screen.getByRole("button", { name: /เข้าห้อง trip/i }));
+    await user.click(screen.getByRole("button", { name: /Explorer Friend/i }));
+
+    expect(
+      screen.getByLabelText(/รหัสของ Explorer Friend/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(/ตั้งรหัสสำหรับ Explorer Friend/i),
+    ).not.toBeInTheDocument();
+  });
+});
