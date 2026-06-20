@@ -4,9 +4,6 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  SagittariusApp,
-} from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
 import {
   appRoutes,
@@ -16,9 +13,8 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
-  loginApiTrip,
   openItineraryHeaderControls,
-  render,
+  renderApiSagittariusApp,
   tripWithPlans,
 } from "./sagittarius-app.test-support";
 
@@ -50,15 +46,10 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
       setMainTripPlan: vi.fn(),
     });
 
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        initialView="itinerary"
-        apiClient={apiClient}
-      />,
-    );
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, {
+      initialView: "itinerary",
+      apiClient,
+    });
 
     await waitFor(() =>
       expect(getExpenseSummary).toHaveBeenCalledWith(
@@ -118,15 +109,10 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
       getExpenseSummary,
     });
 
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        initialView="itinerary"
-        apiClient={apiClient}
-      />,
-    );
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, {
+      initialView: "itinerary",
+      apiClient,
+    });
 
     await waitFor(() =>
       expect(getExpenseSummary).toHaveBeenCalledWith(
@@ -169,15 +155,10 @@ describe("Sagittarius cockpit API Trip Plan expense summaries", () => {
         getExpenseSummary,
       });
 
-      render(
-        <SagittariusApp
-          requireJoin
-          dataSource="api"
-          initialView={workspace.view}
-          apiClient={apiClient}
-        />,
-      );
-      await loginApiTrip(user);
+      await renderApiSagittariusApp(user, {
+        initialView: workspace.view,
+        apiClient,
+      });
 
       expect(
         await screen.findByRole("region", { name: workspace.regionName }),

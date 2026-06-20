@@ -8,8 +8,8 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
-  loginApiTrip,
   render,
+  renderApiSagittariusApp,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit overview tasks", () => {
@@ -50,8 +50,7 @@ describe("Sagittarius cockpit overview tasks", () => {
       }),
     });
 
-    render(<SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />);
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, { apiClient });
 
     const tasks = await screen.findByRole("region", {
       name: /เช็กลิสต์ของทริป/i,

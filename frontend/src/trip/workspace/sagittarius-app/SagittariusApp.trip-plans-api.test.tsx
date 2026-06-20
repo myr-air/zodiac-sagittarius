@@ -5,9 +5,6 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  SagittariusApp,
-} from "@/src/app/SagittariusApp";
-import {
   TripApiError,
 } from "@/src/trip/api-client";
 import type {
@@ -22,9 +19,8 @@ import {
   createApiClientForTrip,
   installLocalStorageStub,
   installSessionStorageStub,
-  loginApiTrip,
   openItineraryHeaderControls,
-  render,
+  renderApiSagittariusApp,
 } from "./sagittarius-app.test-support";
 
 describe("Sagittarius cockpit API Trip Plans", () => {
@@ -51,15 +47,10 @@ describe("Sagittarius cockpit API Trip Plans", () => {
       setMainTripPlan: vi.fn(),
     });
 
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        initialView="itinerary"
-        apiClient={apiClient}
-      />,
-    );
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, {
+      initialView: "itinerary",
+      apiClient,
+    });
 
     await openItineraryHeaderControls(user);
     await user.click(await screen.findByRole("button", { name: "เพิ่มแผน" }));
@@ -99,15 +90,10 @@ describe("Sagittarius cockpit API Trip Plans", () => {
       setMainTripPlan: vi.fn().mockResolvedValue(publishedTrip),
     });
 
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        initialView="itinerary"
-        apiClient={apiClient}
-      />,
-    );
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, {
+      initialView: "itinerary",
+      apiClient,
+    });
 
     await openItineraryHeaderControls(user);
     await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
@@ -211,15 +197,10 @@ describe("Sagittarius cockpit API Trip Plans", () => {
       ),
     });
 
-    render(
-      <SagittariusApp
-        requireJoin
-        dataSource="api"
-        initialView="itinerary"
-        apiClient={apiClient}
-      />,
-    );
-    await loginApiTrip(user);
+    await renderApiSagittariusApp(user, {
+      initialView: "itinerary",
+      apiClient,
+    });
 
     await openItineraryHeaderControls(user);
     await user.selectOptions(await screen.findByLabelText("Trip Plan"), [
