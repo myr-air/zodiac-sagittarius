@@ -9,7 +9,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       itineraryTimeLib,
       tripSettingsPageSource,
       tripSettingsIndexSource,
-      memberSupport,
+      memberInviteActions,
+      memberPageOptions,
+      memberPageSelectors,
       dateTimePickers,
       tripSettingsPage,
       tripSettingsSupport,
@@ -43,8 +45,12 @@ describe("Sagittarius workspace feature source boundaries", () => {
 
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
     expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");
-    expect(memberSupport).toContain("@/src/routes/invite-links");
-    expect(memberSupport).not.toContain("function buildInviteLink");
+    expect(memberInviteActions).toContain("@/src/routes/invite-links");
+    expect(memberInviteActions).not.toContain("./TripMembersPage.support");
+    expect(memberPageOptions).toContain("export const memberRoleFilterValues");
+    expect(memberPageOptions).toContain("export const memberStatusFilterValues");
+    expect(memberPageSelectors).toContain("export function filterTripMembers");
+    expect(memberPageSelectors).toContain("export function visibleTripMembers");
     expect(dateTimePickers).toContain("./DatePickerField");
     expect(dateTimePickers).toContain("./DateTimePickerField");
     expect(dateTimePickers).toContain("./TimePickerField");

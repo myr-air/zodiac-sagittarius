@@ -1,36 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
-  buildInviteLink,
   filterTripMembers,
   isMemberJoined,
-  memberRoleFilterValues,
-  memberStatusFilterValues,
   memberSummaryCounts,
   visibleTripMembers,
-} from "./TripMembersPage.support";
+} from "./member-page-selectors";
 
 const currentMember = seedTrip.members[0];
 const members = visibleTripMembers(seedTrip.members);
 
-describe("TripMembersPage support helpers", () => {
-  it("keeps member role and status filters in shared display order", () => {
-    expect(memberRoleFilterValues).toEqual([
-      "all",
-      "owner",
-      "organizer",
-      "traveler",
-      "viewer",
-    ]);
-    expect(memberStatusFilterValues).toEqual([
-      "all",
-      "active",
-      "disabled",
-      "claimed",
-      "pending",
-    ]);
-  });
-
+describe("member page selectors", () => {
   it("hides the synthetic viewer from workspace member lists", () => {
     expect(members.some((member) => member.id === "member-viewer")).toBe(false);
     expect(members.length).toBe(seedTrip.members.length - 1);
@@ -79,10 +59,5 @@ describe("TripMembersPage support helpers", () => {
       roleFilter: "all",
       statusFilter: "claimed",
     }).map((member) => member.id)).toEqual([currentMember.id]);
-  });
-
-  it("builds invite links for join ids and invite tokens", () => {
-    expect(buildInviteLink("HK-SZ-2025")).toBe("http://localhost/join/HK-SZ-2025");
-    expect(buildInviteLink("HK-SZ-2025", "token value")).toBe("http://localhost/join?token=token%20value");
   });
 });

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { buildInviteLink } from "@/src/routes/invite-links";
 import type { CopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
-import { buildInviteLink } from "./TripMembersPage.support";
 
 export type MemberInviteCopyState = CopyFeedbackState;
 

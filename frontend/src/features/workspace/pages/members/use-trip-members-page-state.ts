@@ -8,10 +8,12 @@ import type {
 import {
   filterTripMembers,
   memberSummaryCounts,
-  type MemberRoleFilter,
-  type MemberStatusFilter,
   visibleTripMembers,
-} from "./TripMembersPage.support";
+} from "./member-page-selectors";
+import type {
+  MemberRoleFilter,
+  MemberStatusFilter,
+} from "./member-page-options";
 import { useMemberInviteActions } from "./use-member-invite-actions";
 import { useMemberTaskDialogState } from "./use-member-task-dialog-state";
 

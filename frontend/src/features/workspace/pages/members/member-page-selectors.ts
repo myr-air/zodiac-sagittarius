@@ -1,21 +1,5 @@
 import type { Member } from "@/src/trip/types";
-import {
-  tripMemberAccessStatusValues,
-  tripRoleValues,
-} from "@/src/trip/trip-member-types";
-
-export { buildInviteLink } from "@/src/routes/invite-links";
-
-export const memberRoleFilterValues = ["all", ...tripRoleValues] as const;
-export type MemberRoleFilter = (typeof memberRoleFilterValues)[number];
-
-export const memberStatusFilterValues = [
-  "all",
-  ...tripMemberAccessStatusValues,
-  "claimed",
-  "pending",
-] as const;
-export type MemberStatusFilter = (typeof memberStatusFilterValues)[number];
+import type { MemberRoleFilter, MemberStatusFilter } from "./member-page-options";
 
 export interface MemberSummaryCounts {
   active: number;
