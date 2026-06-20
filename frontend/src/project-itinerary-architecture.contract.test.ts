@@ -1,14 +1,12 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { frontendRoot } from "./project-contract.helpers";
+import { readItineraryArchitectureSource } from "./project-itinerary-architecture.test-support";
 
 describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps ActivityCell split into render, model, meta, and typed props", () => {
-    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
-    const activityCellMeta = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"), "utf8");
-    const activityCellModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts"), "utf8");
-    const activityCellTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"), "utf8");
+    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
+    const activityCellMeta = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx");
+    const activityCellModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts");
+    const activityCellTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts");
 
     expect(activityCell).toContain("./activity-cell/use-activity-cell-model");
     expect(activityCell).toContain("./activity-cell/ActivityCellMeta");
@@ -21,9 +19,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps itinerary day group header split from row body rendering", () => {
-    const dayGroup = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.tsx"), "utf8");
-    const dayGroupHeader = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx"), "utf8");
-    const dayGroupTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts"), "utf8");
+    const dayGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.tsx");
+    const dayGroupHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx");
+    const dayGroupTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.types.ts");
 
     expect(dayGroup).toContain("./DayGroupHeader");
     expect(dayGroup).toContain("./day-group.types");
@@ -36,8 +34,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps trip plan controls state split from control rendering", () => {
-    const controls = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx"), "utf8");
-    const controlsState = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts"), "utf8");
+    const controls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx");
+    const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
 
     expect(controls).toContain("./use-trip-plan-controls-state");
     expect(controls).not.toContain("useState");
@@ -49,8 +47,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps inline option picker menu rendering split from trigger state", () => {
-    const picker = readFileSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker.tsx"), "utf8");
-    const pickerMenu = readFileSync(join(frontendRoot, "src/features/itinerary/components/inline-option-picker-menu.tsx"), "utf8");
+    const picker = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker.tsx");
+    const pickerMenu = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker-menu.tsx");
 
     expect(picker).toContain("./inline-option-picker-menu");
     expect(picker).not.toContain("createPortal");
@@ -62,12 +60,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
-    const ticketModal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx"), "utf8");
-    const bookingButton = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx"), "utf8");
-    const exports = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/components.tsx"), "utf8");
-    const ticketFooter = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx"), "utf8");
-    const ticketSections = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalSections.tsx"), "utf8");
-    const ticketModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts"), "utf8");
+    const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
+    const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");
+    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
+    const ticketFooter = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx");
+    const ticketSections = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalSections.tsx");
+    const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
 
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(bookingButton).toContain("export function ItineraryBookingButton");
@@ -90,12 +88,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps activity time controls split into direct modules", () => {
-    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
-    const subActivityList = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx"), "utf8");
-    const exports = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/components.tsx"), "utf8");
-    const button = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx"), "utf8");
-    const modal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx"), "utf8");
-    const types = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts"), "utf8");
+    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
+    const subActivityList = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx");
+    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
+    const button = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx");
+    const modal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx");
+    const types = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts");
 
     expect(activityCell).toContain("./activity-cell/ActivityTimeButton");
     expect(activityCell).not.toContain("TimeComponents");
@@ -111,8 +109,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps activity-cell styles split from table-level styles", () => {
-    const tableStyles = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts"), "utf8");
-    const activityCellStyles = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts"), "utf8");
+    const tableStyles = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts");
+    const activityCellStyles = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.styles.ts");
 
     expect(tableStyles).toContain("./activity-cell/activity-cell.styles");
     expect(tableStyles).not.toContain("const activityCellClassName");
@@ -124,11 +122,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps sub-activity components split into direct modules", () => {
-    const activityCell = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx"), "utf8");
-    const exports = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/components.tsx"), "utf8");
-    const list = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx"), "utf8");
-    const modal = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx"), "utf8");
-    const types = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts"), "utf8");
+    const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell.tsx");
+    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
+    const list = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx");
+    const modal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx");
+    const types = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts");
 
     expect(activityCell).toContain("./activity-cell/SubActivityList");
     expect(activityCell).toContain("./activity-cell/SubActivityModal");
@@ -142,9 +140,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
-    const tableUtils = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"), "utf8");
-    const weatherSummary = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts"), "utf8");
-    const weatherChip = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx"), "utf8");
+    const tableUtils = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts");
+    const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/weather-summary.ts");
+    const weatherChip = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx");
 
     expect(tableUtils).not.toContain("TripDailyBriefing");
     expect(tableUtils).not.toContain("weather-briefings");
@@ -156,8 +154,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps weather briefing drawer formatting split from render", () => {
-    const drawer = readFileSync(join(frontendRoot, "src/shared/components/weather/WeatherBriefingDrawer.tsx"), "utf8");
-    const drawerModel = readFileSync(join(frontendRoot, "src/shared/components/weather/weather-briefing-drawer-model.ts"), "utf8");
+    const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
+    const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/weather-briefing-drawer-model.ts");
 
     expect(drawer).toContain("./weather-briefing-drawer-model");
     expect(drawer).not.toContain("function formatWeatherSummary");
@@ -169,8 +167,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps StopDialog render split from form model state", () => {
-    const stopDialog = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"), "utf8");
-    const stopDialogModel = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"), "utf8");
+    const stopDialog = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialog.tsx");
+    const stopDialogModel = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts");
 
     expect(stopDialog).toContain("./use-stop-dialog-model");
     expect(stopDialog).not.toContain("useState");
@@ -182,8 +180,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps stop dialog detail serialization split from utility ids", () => {
-    const stopDialogUtils = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts"), "utf8");
-    const stopDialogDetails = readFileSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts"), "utf8");
+    const stopDialogUtils = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts");
+    const stopDialogDetails = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-details.ts");
 
     expect(stopDialogUtils).toContain("./stop-dialog-details");
     expect(stopDialogUtils).toContain("export const stopDialogFieldIds");
@@ -194,12 +192,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps overview role panels split by reusable panel responsibility", () => {
-    const managerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerOverviewPanels.tsx"), "utf8");
-    const travelerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/TravelerOverviewPanels.tsx"), "utf8");
-    const viewerRolePanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ViewerOverviewPanels.tsx"), "utf8");
-    const managerChecklist = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"), "utf8");
-    const snapshotPanels = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx"), "utf8");
-    const rolePanelTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-role-panels.types.ts"), "utf8");
+    const managerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerOverviewPanels.tsx");
+    const travelerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/TravelerOverviewPanels.tsx");
+    const viewerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/ViewerOverviewPanels.tsx");
+    const managerChecklist = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerChecklistPanel.tsx");
+    const snapshotPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx");
+    const rolePanelTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-role-panels.types.ts");
 
     expect(managerRolePanels).toContain("./ManagerChecklistPanel");
     expect(managerRolePanels).toContain("./overview-role-panels.types");
@@ -215,10 +213,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps overview cockpit cards split from shared overview sections", () => {
-    const overviewSections = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSections.tsx"), "utf8");
-    const cockpit = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"), "utf8");
-    const cockpitCard = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpitCard.tsx"), "utf8");
-    const overviewBarrel = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/index.ts"), "utf8");
+    const overviewSections = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSections.tsx");
+    const cockpit = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpit.tsx");
+    const cockpitCard = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpitCard.tsx");
+    const overviewBarrel = readItineraryArchitectureSource("src/features/itinerary/components/overview/index.ts");
 
     expect(cockpit).toContain("./OverviewCockpitCard");
     expect(overviewBarrel).toContain('export { CockpitCard } from "./OverviewCockpitCard"');
@@ -229,8 +227,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps overview task state split from page composition", () => {
-    const overviewPage = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"), "utf8");
-    const overviewTaskState = readFileSync(join(frontendRoot, "src/features/itinerary/components/overview/use-overview-task-state.ts"), "utf8");
+    const overviewPage = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.tsx");
+    const overviewTaskState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-task-state.ts");
 
     expect(overviewPage).toContain("./use-overview-task-state");
     expect(overviewPage).not.toContain("useState");
@@ -245,10 +243,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps expenses page state split from page composition", () => {
-    const expensesPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.tsx"), "utf8");
-    const expensesState = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts"), "utf8");
-    const expenseDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/ExpenseDialog.tsx"), "utf8");
-    const expenseDialogState = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts"), "utf8");
+    const expensesPage = readItineraryArchitectureSource("src/features/workspace/pages/expenses/TripExpensesPage.tsx");
+    const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
+    const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
+    const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
 
     expect(expensesPage).toContain("./use-trip-expenses-page-state");
     expect(expensesPage).not.toContain("useState");
