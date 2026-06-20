@@ -86,6 +86,8 @@ describe("email login state structure", () => {
     expect(entryActions).toContain("export function useEmailLoginEntryActions");
     expect(entryActions).toContain("window.history.replaceState");
     expect(entryActions).toContain("appRoutes.register()");
+    expect(stepNavigation).toContain("export const authTransitionDirectionValues");
+    expect(stepNavigation).toContain('["forward", "back", "mode"] as const');
     expect(stepNavigation).toContain("export type AuthTransitionDirection");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("function goToStep");

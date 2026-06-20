@@ -3,7 +3,8 @@
 import { useState } from "react";
 import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
 
-export type AuthTransitionDirection = "forward" | "back" | "mode";
+export const authTransitionDirectionValues = ["forward", "back", "mode"] as const;
+export type AuthTransitionDirection = (typeof authTransitionDirectionValues)[number];
 
 export function useEmailLoginStepNavigation() {
   const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");
