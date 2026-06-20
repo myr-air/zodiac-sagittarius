@@ -1,5 +1,8 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { ContextRailTab } from "./context-rail.utils";
+import {
+  contextRailTabValues,
+  type ContextRailTab,
+} from "./context-rail.utils";
 import {
   inspectorTabClassName,
   inspectorTabsClassName,
@@ -20,33 +23,18 @@ export function ContextRailTabs({
       role="tablist"
       aria-label={t.contextRail.tabsLabel}
     >
-      <button
-        className={inspectorTabClassName}
-        type="button"
-        role="tab"
-        aria-selected={activeTab === "notes"}
-        onClick={() => onActiveTabChange("notes")}
-      >
-        {t.contextRail.tabs.notes}
-      </button>
-      <button
-        className={inspectorTabClassName}
-        type="button"
-        role="tab"
-        aria-selected={activeTab === "booking"}
-        onClick={() => onActiveTabChange("booking")}
-      >
-        {t.contextRail.tabs.booking}
-      </button>
-      <button
-        className={inspectorTabClassName}
-        type="button"
-        role="tab"
-        aria-selected={activeTab === "suggestions"}
-        onClick={() => onActiveTabChange("suggestions")}
-      >
-        {t.contextRail.tabs.suggestions}
-      </button>
+      {contextRailTabValues.map((tab) => (
+        <button
+          className={inspectorTabClassName}
+          key={tab}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === tab}
+          onClick={() => onActiveTabChange(tab)}
+        >
+          {t.contextRail.tabs[tab]}
+        </button>
+      ))}
     </div>
   );
 }

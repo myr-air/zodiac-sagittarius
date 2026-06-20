@@ -2,7 +2,8 @@ import { bookingDocTypeValues } from "@/src/trip/trip-record-types";
 import type { BookingDocType, Member, Suggestion } from "@/src/trip/types";
 import { taskKindLabel } from "@/src/features/itinerary/domain/overview";
 
-export type ContextRailTab = "notes" | "booking" | "suggestions";
+export const contextRailTabValues = ["notes", "booking", "suggestions"] as const;
+export type ContextRailTab = (typeof contextRailTabValues)[number];
 
 export const bookingDocTypeOptions = bookingDocTypeValues;
 

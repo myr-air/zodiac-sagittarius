@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { BookingDocType, Member, Suggestion, TripTask } from "@/src/trip/types";
 import {
   bookingDocTypeOptions,
+  contextRailTabValues,
   formatBookingDocTypeLabel,
   memberDisplayName,
   suggestionLabel,
@@ -10,6 +11,10 @@ import {
 } from "./context-rail.utils";
 
 describe("context rail utils", () => {
+  it("keeps context rail tabs in display order", () => {
+    expect(contextRailTabValues).toEqual(["notes", "booking", "suggestions"]);
+  });
+
   it("formats booking document type labels", () => {
     expect(formatBookingDocTypeLabel("public_transport")).toBe("Public Transport");
     expect(formatBookingDocTypeLabel("activity_ticket")).toBe("Activity Ticket");
