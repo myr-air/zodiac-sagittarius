@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
 import { taskKindLabel, stopLabel } from "@/src/features/itinerary/domain";
-import { TaskAssigneeBadge } from "./OverviewSections";
+import { TaskAssigneeBadge, type TaskAssigneeLabels } from "./OverviewTaskAssigneeBadge";
 import {
   overviewTaskMetaClassName,
   overviewTaskKindChipClassName,
@@ -13,13 +13,6 @@ import {
   overviewTaskListClassName,
 } from "./overview.styles";
 
-interface TaskAssigneeBadgeLabels {
-  private: string;
-  shared: string;
-  tripMember: string;
-  unassigned: string;
-}
-
 interface TaskKindLabels {
   booking: string;
   prep: string;
@@ -27,7 +20,7 @@ interface TaskKindLabels {
 }
 
 export interface OverviewTaskListLabels {
-  assignee: TaskAssigneeBadgeLabels;
+  assignee: TaskAssigneeLabels;
   kind: TaskKindLabels;
 }
 

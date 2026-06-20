@@ -1,0 +1,62 @@
+import type { Trip, TripTask } from "@/src/trip/types";
+import { cn } from "@/src/lib/cn";
+import { overviewTaskMetaClassName } from "./overview.styles";
+
+export interface TaskAssigneeLabels {
+  private: string;
+  shared: string;
+  tripMember: string;
+  unassigned: string;
+}
+
+export function TaskAssigneeBadge({
+  task,
+  trip,
+  labels,
+}: {
+  task: TripTask;
+  trip: Trip;
+  labels: TaskAssigneeLabels;
+}) {
+  const isPrivate = task.visibility === "private";
+  const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
+  const name = member?.displayName ?? labels.tripMember;
+  const color = member?.color ?? "var(--color-text-subtle)";
+  const initial = name.slice(0, 1).toUpperCase();
+
+  return (
+    <div className={overviewTaskMetaClassName}>
+      <small
+        className={cn(
+          "inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-bold",
+          isPrivate
+            ? "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)"
+            : "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)",
+        )}
+      >
+        {isPrivate ? labels.private : labels.shared}
+      </small>
+
+      {task.visibility !== "private" && (
+        task.assigneeId ? (
+          <div className="inline-flex items-center gap-1">
+            <span
+              className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white"
+              style={{ backgroundColor: color }}
+              title={name}
+            >
+              {initial}
+            </span>
+            <span className="text-[11px] font-bold text-(--color-text-muted) max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {name}
+            </span>
+          </div>
+        ) : (
+          <small className="inline-flex items-center rounded-sm border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 text-[10px] font-bold text-(--color-text-muted)">
+            {labels.unassigned}
+          </small>
+        )
+      )}
+    </div>
+  );
+}

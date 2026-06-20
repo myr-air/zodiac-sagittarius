@@ -1,9 +1,10 @@
 export { OverviewPage } from "./OverviewPage";
 export { CockpitCard } from "./OverviewCockpitCard";
-export { HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TaskAssigneeBadge, TripCompletedPostcard, ViewerNextStopPanel } from "./OverviewSections";
+export { HighlightBoard, OverviewFocusList, OverviewHero, OverviewStopList, TripCompletedPostcard, ViewerNextStopPanel } from "./OverviewSections";
 export { OverviewCockpit } from "./OverviewCockpit";
 export { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 export { OverviewFocusSection } from "./OverviewFocusSection";
+export { TaskAssigneeBadge } from "./OverviewTaskAssigneeBadge";
 export { OverviewTaskDialog } from "./OverviewTaskDialog";
 export { OverviewTaskLayer } from "./OverviewTaskLayer";
 export { OverviewTaskList } from "./OverviewTaskList";
