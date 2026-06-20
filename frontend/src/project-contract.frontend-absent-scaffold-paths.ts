@@ -8,6 +8,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/expenses-reminders.test.ts",
   "src/trip/auth.test.ts",
   "src/trip/stop-notes.test.ts",
+  "src/trip/tasks.test.ts",
   "src/trip/workspace/sagittarius-app/SagittariusApp.map-timeline.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.navigation.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.overview-api.test.tsx",
