@@ -5,11 +5,13 @@ import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { OverviewPage } from "./OverviewPage";
-import { renderOverviewElement as render } from "./OverviewPage.test-support";
+import {
+  installOverviewPageClock,
+  renderOverviewElement as render,
+} from "./OverviewPage.test-support";
 
 beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2026-06-18T12:00:00Z"));
+  installOverviewPageClock();
 });
 
 afterEach(() => {

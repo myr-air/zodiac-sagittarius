@@ -8,6 +8,11 @@ import { OverviewPage } from "./OverviewPage";
 export const renderOverviewElement = (ui: Parameters<typeof renderWithI18n>[0]) =>
   renderWithI18n(ui, { locale: "th" });
 
+export function installOverviewPageClock() {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-06-18T12:00:00Z"));
+}
+
 export function renderOverview(currentMemberId: string) {
   const onOpenExpenses = vi.fn();
   renderOverviewElement(

@@ -36,6 +36,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/domain/overview-visuals.test.ts",
   "src/features/itinerary/domain/overview.test-support.ts",
   "src/features/itinerary/components/overview/OverviewPage.tsx",
+  "src/features/itinerary/components/overview/OverviewPage.budget.test.tsx",
+  "src/features/itinerary/components/overview/OverviewPage.visuals.test.tsx",
   "src/features/itinerary/components/overview/OverviewPage.types.ts",
   "src/features/itinerary/components/overview/OverviewLensPanels.tsx",
   "src/features/itinerary/components/overview/overview-page-derived.tsx",
