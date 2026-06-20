@@ -629,6 +629,20 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(portalTripWizardActions).toContain("export function PortalTripWizardActions");
     expect(portalTripWizardActions).toContain("appRoutes.portalMyTrips()");
     expect(portalTripWizardActions).toContain("tripWizardActionsClassName");
+    const accountSettingsEditor = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx"),
+      "utf8",
+    );
+    const accountSettingsEditorState = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts"),
+      "utf8",
+    );
+    expect(accountSettingsEditor).toContain("useAccountSettingsEditorState");
+    expect(accountSettingsEditor).not.toContain("profileToForm");
+    expect(accountSettingsEditor).not.toContain("function submitSettings");
+    expect(accountSettingsEditorState).toContain("export function useAccountSettingsEditorState");
+    expect(accountSettingsEditorState).toContain("profileToForm");
+    expect(accountSettingsEditorState).toContain("function submitSettings");
     expect(accountAuthSupport).toContain("./account-access-error-codes");
     expect(accountAuthSupport).toContain("./account-passkey-support");
     expect(accountAuthSupport).toContain("buildPasskeyLoginFinishInput");
@@ -650,6 +664,18 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(emailLoginStepContent).toContain("./account-email-login-setup-step");
     expect(emailLoginStepContent).not.toContain("interface EmailLoginCredentialsStepProps");
     expect(emailLoginStepContent).not.toContain("function EmailLoginCredentialsStep");
+    const emailLoginPanel = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx"),
+      "utf8",
+    );
+    const emailLoginStepStage = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx"),
+      "utf8",
+    );
+    expect(emailLoginPanel).toContain("EmailLoginStepStage");
+    expect(emailLoginPanel).not.toContain("EmailLoginCredentialsStep");
+    expect(emailLoginStepStage).toContain("export function EmailLoginStepStage");
+    expect(emailLoginStepStage).toContain("EmailLoginCredentialsStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginOtpStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
     expect(dateTimePickers).toContain("./DatePickerField");

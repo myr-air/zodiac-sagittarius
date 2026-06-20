@@ -1,21 +1,16 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
 import type {
   AccountApiClient,
   AccountSession,
   AccountSettings,
-  AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import {
-  errorMessage,
-  formatDateTime,
-  profileToForm,
-} from "../auth";
+import { formatDateTime } from "../auth";
 import { SettingLine } from "./account-portal-primitives";
+import { useAccountSettingsEditorState } from "./use-account-settings-editor-state";
 
 export interface AccountSettingsEditorClassNames {
   avatar: string;
@@ -48,46 +43,23 @@ export function AccountSettingsEditor({
   settings: AccountSettings;
 }) {
   const { locale, t } = useI18n();
-  const [form, setForm] = useState<AccountSettingsUpdateRequest>(() => profileToForm(settings));
-  const [isSaving, setIsSaving] = useState(false);
-  const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
-
-  async function submitSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSaving(true);
-    try {
-      const nextSettings = await accountClient.updateSettings(accountSession.sessionToken, form);
-      onSettingsChanged(nextSettings);
-      setForm(profileToForm(nextSettings));
-      onMessage(t.access.settings.messages.saved);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.saveFailed, t.access.messages));
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function revokeDevice(deviceId: string) {
-    setRevokingDeviceId(deviceId);
-    try {
-      await accountClient.revokeTrustedDevice(accountSession.sessionToken, deviceId);
-      if (accountSession.trustedDeviceId === deviceId) {
-        onSessionCleared();
-        onMessage(t.access.settings.messages.currentDeviceRevoked);
-        onError(null);
-        return;
-      }
-      const nextSettings = await accountClient.loadSettings(accountSession.sessionToken);
-      onSettingsChanged(nextSettings);
-      onMessage(t.access.settings.messages.deviceRevoked);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.revokeFailed, t.access.messages));
-    } finally {
-      setRevokingDeviceId(null);
-    }
-  }
+  const {
+    form,
+    isSaving,
+    revokeDevice,
+    revokingDeviceId,
+    setForm,
+    submitSettings,
+  } = useAccountSettingsEditorState({
+    accountClient,
+    accountSession,
+    labels: t.access,
+    onError,
+    onMessage,
+    onSessionCleared,
+    onSettingsChanged,
+    settings,
+  });
 
   return (
     <>
