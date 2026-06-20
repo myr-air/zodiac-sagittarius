@@ -59,6 +59,24 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"),
       "utf8",
     );
+    const storyExpectations = readFileSync(
+      join(
+        frontendRoot,
+        "src/trip/workspace/sagittarius-app/support/storybook-expectations.ts",
+      ),
+      "utf8",
+    );
+    const storyFixtures = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-fixtures.ts"),
+      "utf8",
+    );
+    const storyBuilders = readFileSync(
+      join(
+        frontendRoot,
+        "src/trip/workspace/sagittarius-app/support/storybook-story-builders.ts",
+      ),
+      "utf8",
+    );
     const hooksIndex = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"),
       "utf8",
@@ -84,10 +102,13 @@ describe("Sagittarius project scaffold", () => {
     expect(supportIndex).toContain('export { portalRoutes, tripRoutes } from "./route-patterns"');
     expect(supportIndex).toContain("route-matchers");
     expect(supportIndex).toContain("portalRoutes");
-    expect(storySupport).toContain("export const storyTripId");
-    expect(storySupport).toContain("export function appViewportStory");
-    expect(storySupport).toContain("export async function expectWorkspaceView");
-    expect(storySupport).toContain("seedTripJoinId");
+    expect(storySupport).toContain('export * from "./storybook-expectations"');
+    expect(storySupport).toContain('export * from "./storybook-fixtures"');
+    expect(storySupport).toContain('export * from "./storybook-story-builders"');
+    expect(storyFixtures).toContain("export const storyTripId");
+    expect(storyFixtures).toContain("seedTripJoinId");
+    expect(storyBuilders).toContain("export function appViewportStory");
+    expect(storyExpectations).toContain("export async function expectWorkspaceView");
     expect(hooksIndex).toContain("useWorkspaceItineraryImport");
     expect(hooksIndex).toContain("useWorkspaceAdministration");
     expect(hooksIndex).toContain("useWorkspaceCommands");
