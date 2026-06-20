@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { findDuplicateBookingDoc } from "./booking-doc-matching";
-import type { BookingDoc } from "./types";
+import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 describe("booking doc matching", () => {
   it("matches duplicate docs by normalized title, type, time, and linked item", () => {
@@ -59,34 +59,3 @@ describe("booking doc matching", () => {
     ).toBeNull();
   });
 });
-
-function bookingDoc(overrides: Partial<BookingDoc> = {}): BookingDoc {
-  return {
-    confirmationCode: null,
-    createdBy: "member-owner",
-    currency: null,
-    endsAt: null,
-    externalLinks: [],
-    id: "booking",
-    noteIds: [],
-    notes: null,
-    ownerMemberId: null,
-    priceAmount: null,
-    providerName: null,
-    relatedExpenseIds: [],
-    relatedItineraryItemIds: [],
-    relatedTaskIds: [],
-    startsAt: null,
-    status: "draft",
-    timezone: "Asia/Hong_Kong",
-    title: "Booking",
-    travelerIds: ["member-owner"],
-    tripId: "trip-hk",
-    tripPlanId: "plan-main",
-    type: "hotel",
-    updatedAt: "2026-06-19T12:00:00.000Z",
-    version: 1,
-    visibility: "shared",
-    ...overrides,
-  };
-}

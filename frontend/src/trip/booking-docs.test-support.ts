@@ -49,10 +49,12 @@ export const bookingDocTestDocs: BookingDoc[] = [
 ];
 
 export function createBookingDocFixture(
-  input: Partial<BookingDoc> & Pick<BookingDoc, "id" | "title">,
+  input: Partial<BookingDoc> = {},
 ): BookingDoc {
   return {
+    id: "booking",
     tripId: "trip-1",
+    title: "Booking",
     type: "other",
     status: "draft",
     visibility: "shared",
