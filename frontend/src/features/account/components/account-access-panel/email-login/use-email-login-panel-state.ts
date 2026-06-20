@@ -5,9 +5,7 @@ import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  buildPasskeyLoginFinishInput,
   errorMessage,
-  getPasskeyCredential,
   passwordLoginErrorMessage,
 } from "../auth";
 import type { AuthFlow } from "../auth";
@@ -16,6 +14,12 @@ import {
   buildEmailLoginStepMeta,
   type EmailLoginAuthStep,
 } from "./account-email-login-step-meta";
+import {
+  finishEmailCodeLogin,
+  finishEmailPasswordLogin,
+  finishEmailRegistrationSetup,
+  signInWithEmailPasskey,
+} from "./email-login-auth-actions";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 
 interface UseEmailLoginPanelStateProps {
@@ -117,11 +121,12 @@ export function useEmailLoginPanelState({
     if (!challenge || !otpReady) return;
     setIsSubmitting(true);
     try {
-      const session = await accountClient.finishEmailLogin({
-        challengeId: challenge.challengeId,
+      const session = await finishEmailCodeLogin({
+        accountClient,
+        activeFlow,
+        challenge,
         code,
-        trustDevice: activeFlow === "login" ? trustDevice : true,
-        deviceLabel: "",
+        trustDevice,
       });
       if (activeFlow === "register") {
         setVerifiedRegistrationSession(session);
@@ -144,18 +149,13 @@ export function useEmailLoginPanelState({
     if (!verifiedRegistrationSession || !passwordReady) return;
     setIsSubmitting(true);
     try {
-      const session = await accountClient.finishPasswordLogin({
-        flow: "register",
-        email: normalizedEmail,
-        password,
-        trustDevice: true,
-        deviceLabel: "",
-      });
-      await accountClient.updateSettings(session.sessionToken, {
-        displayName: displayName.trim() || normalizedEmail.split("@")[0] || t.access.dashboard.fallbackName,
-        avatarColor: "#c2410c",
+      const session = await finishEmailRegistrationSetup({
+        accountClient,
+        displayName,
+        fallbackName: t.access.dashboard.fallbackName,
         locale,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        normalizedEmail,
+        password,
       });
       onLoggedIn(session);
       onError(null);
@@ -170,12 +170,12 @@ export function useEmailLoginPanelState({
     if (!isEmailValid || !passwordReady) return;
     setIsSubmitting(true);
     try {
-      const session = await accountClient.finishPasswordLogin({
-        flow: activeFlow,
-        email: normalizedEmail,
+      const session = await finishEmailPasswordLogin({
+        accountClient,
+        activeFlow,
+        normalizedEmail,
         password,
-        trustDevice: activeFlow === "login" ? trustDevice : true,
-        deviceLabel: "",
+        trustDevice,
       });
       onLoggedIn(session);
       onError(null);
@@ -194,15 +194,12 @@ export function useEmailLoginPanelState({
     if (!isEmailValid) return;
     setIsSubmitting(true);
     try {
-      const loginStart = await accountClient.startPasskeyLogin(normalizedEmail);
-      const credential = await getPasskeyCredential(loginStart.challenge, loginStart.allowCredentials.map((credential) => credential.credentialId));
-      const session = await accountClient.finishPasskeyLogin(
-        buildPasskeyLoginFinishInput({
-          credential,
-          loginStart,
-          trustDevice: activeFlow === "login" ? trustDevice : false,
-        }),
-      );
+      const session = await signInWithEmailPasskey({
+        accountClient,
+        activeFlow,
+        normalizedEmail,
+        trustDevice,
+      });
       onLoggedIn(session);
       onError(null);
     } catch (caught) {
