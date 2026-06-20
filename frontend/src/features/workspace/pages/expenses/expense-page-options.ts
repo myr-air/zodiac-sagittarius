@@ -10,6 +10,7 @@ export type CategoryTone = {
 };
 
 export const expenseCategories = expenseCategoryValues;
+export const expenseCategoryFilterValues = ["all", ...expenseCategoryValues] as const;
 
 export const expenseSplitModes = expenseSplitModeValues;
 

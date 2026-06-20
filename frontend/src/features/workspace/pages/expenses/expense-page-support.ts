@@ -3,6 +3,7 @@ import type { Member, Trip } from "@/src/trip/types";
 export {
   categoryTone,
   expenseCategories,
+  expenseCategoryFilterValues,
   expenseSplitModes,
   type CategoryTone,
 } from "./expense-page-options";

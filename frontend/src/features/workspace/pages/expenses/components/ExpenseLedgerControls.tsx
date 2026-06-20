@@ -1,8 +1,8 @@
-import type { Expense, Member } from "@/src/trip/types";
+import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseCategories } from "../expense-page-support";
+import { expenseCategoryFilterValues } from "../expense-page-support";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
@@ -52,8 +52,11 @@ export function ExpenseLedgerControls({
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.category}</span>
           <Select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as ExpenseCategoryFilter)}>
-            <option value="all">{t.expenses.filters.allCategories}</option>
-            {expenseCategories.map((category: Expense["category"]) => <option key={category} value={category}>{category}</option>)}
+            {expenseCategoryFilterValues.map((category) => (
+              <option key={category} value={category}>
+                {category === "all" ? t.expenses.filters.allCategories : category}
+              </option>
+            ))}
           </Select>
         </label>
         <label className={expenseStyles.fieldClassName}>

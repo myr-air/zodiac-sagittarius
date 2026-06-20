@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   categoryTone,
+  expenseCategoryFilterValues,
   formatExchangeRateInput,
   formatReminderDate,
   memberInitial,
@@ -9,6 +10,18 @@ import {
 } from "./expense-page-support";
 
 describe("expense page support helpers", () => {
+  it("keeps category filters aligned with expense categories", () => {
+    expect(expenseCategoryFilterValues).toEqual([
+      "all",
+      "food",
+      "transport",
+      "tickets",
+      "stay",
+      "shopping",
+      "settlement",
+    ]);
+  });
+
   it("formats member initials for compact avatars", () => {
     expect(memberInitial("  aom")).toBe("A");
     expect(memberInitial("")).toBe("?");
