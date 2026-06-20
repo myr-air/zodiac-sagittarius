@@ -75,10 +75,12 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.records.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-import-export.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-suggestions.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-context.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary.paths.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-repository.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-validation.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-albums.mutations.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/photo-albums.test-support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
@@ -276,6 +278,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.settlements.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.exchange-rates.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/workspace/pages/expenses/TripExpensesPage.test-support.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-assertions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"))).toBe(true);
