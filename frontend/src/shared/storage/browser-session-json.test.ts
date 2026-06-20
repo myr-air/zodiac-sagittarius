@@ -1,56 +1,20 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { installBrowserStorage } from "@/src/testing/browser-storage";
 import {
   clearBrowserSessionStorageValue,
   loadBrowserSessionJson,
   persistBrowserSessionJson,
 } from "./browser-session-json";
 
-function createMemoryStorage(): Storage {
-  const values = new Map<string, string>();
-  return {
-    get length() {
-      return values.size;
-    },
-    clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    key: vi.fn((index: number) => Array.from(values.keys())[index] ?? null),
-    removeItem: vi.fn((key: string) => {
-      values.delete(key);
-    }),
-    setItem: vi.fn((key: string, value: string) => {
-      values.set(key, value);
-    }),
-  };
-}
-
 describe("browser-session-json", () => {
-  let originalWindow: typeof globalThis.window | undefined;
+  let restoreStorage: () => void;
 
   beforeEach(() => {
-    originalWindow = globalThis.window;
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: globalThis.window ?? {},
-    });
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
-    Object.defineProperty(window, "sessionStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
+    restoreStorage = installBrowserStorage();
   });
 
   afterEach(() => {
-    if (originalWindow) {
-      Object.defineProperty(globalThis, "window", {
-        configurable: true,
-        value: originalWindow,
-      });
-      return;
-    }
-    Reflect.deleteProperty(globalThis, "window");
+    restoreStorage();
   });
 
   it("loads sessionStorage JSON before legacy localStorage", () => {

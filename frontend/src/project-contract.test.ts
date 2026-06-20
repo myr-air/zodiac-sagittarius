@@ -41,6 +41,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/account/AccountApp.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/lib/file-names.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/storage/browser-session-json.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/testing/browser-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);

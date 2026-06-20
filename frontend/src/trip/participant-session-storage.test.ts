@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installBrowserStorage } from "@/src/testing/browser-storage";
 import { tripParticipantSessionStorageKey } from "./auth";
 import {
   clearParticipantSession,
@@ -17,56 +18,19 @@ const session: TripParticipantSession = {
   tripId: tripFixture.trip.id,
 };
 
-function createMemoryStorage(): Storage {
-  const values = new Map<string, string>();
-  return {
-    get length() {
-      return values.size;
-    },
-    clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    key: vi.fn((index: number) => Array.from(values.keys())[index] ?? null),
-    removeItem: vi.fn((key: string) => {
-      values.delete(key);
-    }),
-    setItem: vi.fn((key: string, value: string) => {
-      values.set(key, value);
-    }),
-  };
-}
-
 describe("participant session storage", () => {
-  let originalWindow: typeof globalThis.window | undefined;
+  let restoreStorage: () => void;
 
   beforeEach(() => {
     vi.useFakeTimers({ now: new Date("2026-06-16T12:00:00.000Z") });
-    originalWindow = globalThis.window;
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: globalThis.window ?? {},
-    });
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
-    Object.defineProperty(window, "sessionStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
+    restoreStorage = installBrowserStorage();
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    if (originalWindow) {
-      Object.defineProperty(globalThis, "window", {
-        configurable: true,
-        value: originalWindow,
-      });
-      return;
-    }
-    Reflect.deleteProperty(globalThis, "window");
+    restoreStorage();
   });
 
   it("persists participant sessions in sessionStorage and clears legacy localStorage", () => {

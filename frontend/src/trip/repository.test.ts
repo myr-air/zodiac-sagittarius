@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installBrowserStorage } from "@/src/testing/browser-storage";
 import {
   loadPersistedTripDraft,
   persistTripDraft,
@@ -7,30 +8,15 @@ import {
 import { seedTrip } from "./seed";
 import type { Trip } from "./types";
 
-function createMemoryStorage(): Storage {
-  const values = new Map<string, string>();
-  return {
-    get length() {
-      return values.size;
-    },
-    clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    key: vi.fn((index: number) => Array.from(values.keys())[index] ?? null),
-    removeItem: vi.fn((key: string) => {
-      values.delete(key);
-    }),
-    setItem: vi.fn((key: string, value: string) => {
-      values.set(key, value);
-    }),
-  };
-}
-
 describe("trip draft repository helpers", () => {
+  let restoreStorage: () => void;
+
   beforeEach(() => {
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
+    restoreStorage = installBrowserStorage();
+  });
+
+  afterEach(() => {
+    restoreStorage();
   });
 
   it("persists and loads normalized trip drafts through browser storage", () => {
