@@ -1,19 +1,16 @@
 import { FormEvent, ChangeEvent, useState } from "react";
 import { Button, Select } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Expense, Trip } from "@/src/trip/types";
 import {
   expenseFormClassName,
   expenseGridClassName,
-  expenseItemClassName,
   detailButtonClassName,
   detailHeadingClassName,
   detailSectionClassName,
   moduleListClassName,
-  noteActionButtonClassName,
-  noteActionsClassName,
 } from "./context-rail.styles";
+import { ContextRailExpenseItem } from "./ContextRailExpenseItem";
 
 interface ContextRailExpensesSectionProps {
   selectedItemId?: string;
@@ -123,33 +120,13 @@ export function ContextRailExpensesSection({
       </div>
       <div className={moduleListClassName}>
         {expenses.map((expense) => (
-          <article className={expenseItemClassName} key={expense.id}>
-            <span>
-              <strong>{expense.title}</strong>
-              <br />
-              HK${expense.amount.toLocaleString("en-HK")}
-            </span>
-            <span className={noteActionsClassName}>
-              <button
-                className={noteActionButtonClassName}
-                type="button"
-                aria-label={`Edit expense ${expense.title}`}
-                disabled={!canEditExpenses}
-                onClick={() => startEditingExpense(expense)}
-              >
-                <Icon name="edit" />
-              </button>
-              <button
-                className={noteActionButtonClassName}
-                type="button"
-                aria-label={`Delete expense ${expense.title}`}
-                disabled={!canEditExpenses}
-                onClick={() => onDeleteExpense(expense.id)}
-              >
-                <Icon name="trash" />
-              </button>
-            </span>
-          </article>
+          <ContextRailExpenseItem
+            canEditExpenses={canEditExpenses}
+            expense={expense}
+            key={expense.id}
+            onDeleteExpense={onDeleteExpense}
+            onEditExpense={startEditingExpense}
+          />
         ))}
       </div>
       <form className={expenseFormClassName} onSubmit={submitExpense}>
