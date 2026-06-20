@@ -6,7 +6,6 @@ import {
   resolveSelectedTripPlanId,
 } from "@/src/trip/workspace/selected-trip-plan";
 import type { TripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
-import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import type {
   ItineraryItem,
   Member,
@@ -15,14 +14,16 @@ import type {
 } from "@/src/trip/types";
 import { useWorkspaceApiCockpitEffects } from "./use-workspace-api-cockpit-effects";
 import { useWorkspaceCockpitReplacement } from "./use-workspace-cockpit-replacement";
-import { useWorkspaceItineraryViewModel } from "./use-workspace-itinerary-view-model";
-import { useWorkspaceRecords } from "./use-workspace-records";
+import {
+  useWorkspacePlanningRecordsContext,
+  type WorkspacePlanningBackendExpenseSummary,
+} from "./use-workspace-planning-records-context";
 import { useWorkspaceSelectedTripPlanSync } from "./use-workspace-selected-trip-plan";
 import { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";
 
 interface UseWorkspacePlanningContextParams {
   activePlanItems: ItineraryItem[];
-  backendExpenseSummary: Parameters<typeof useTripWorkspaceRecords>[0]["backendExpenseSummary"];
+  backendExpenseSummary: WorkspacePlanningBackendExpenseSummary;
   canCreateStopNote: boolean;
   canCreateSuggestion: boolean;
   canEdit: boolean;
@@ -99,18 +100,26 @@ export function useWorkspacePlanningContext({
     setSelectedTripPlanId,
     trip,
   });
-  const {
-    itineraryView,
-    mainItineraryView,
-    selectedDay,
-    selectedItem,
-    selectedItemIdForView,
-  } = useWorkspaceItineraryViewModel({
+  const records = useWorkspacePlanningRecordsContext({
     activePlanItems,
+    backendExpenseSummary,
+    canCreateStopNote,
+    canCreateSuggestion,
+    canEdit,
+    canReviewSuggestions,
+    commitTrip,
+    currentMember,
+    initialTrip,
+    isApiMode,
     latestTripRef,
     mainPlanItems,
+    participantSession,
     planItems,
+    resolvedApiClient,
     selectedItemId,
+    selectedTripPlanId,
+    setContextRailPreferredTab,
+    setSelectedItemId,
     trip,
   });
   const {
@@ -118,33 +127,16 @@ export function useWorkspacePlanningContext({
     createStopNote,
     createTask,
     deleteStopNote,
-    reviewSuggestion,
     replaceWorkspaceRecords,
+    reviewSuggestion,
     setStopNotes,
     setTasks,
     stopNotes,
-    suggestions,
     suggestSelectedStop,
     tasks,
     toggleTaskStatus,
     updateStopNote,
-  } = useWorkspaceRecords({
-    canCreateSuggestion,
-    canReviewSuggestions,
-    canCreateStopNote,
-    canEdit,
-    commitTrip,
-    currentMemberId: currentMember.id,
-    initialTrip,
-    isApiMode,
-    participantSession,
-    resolveApiClient: resolvedApiClient,
-    selectedItem: selectedItem ?? null,
-    selectedTripPlanId,
-    setContextRailPreferredTab,
-    setSelectedItemId,
-    trip,
-  });
+  } = records;
 
   const replaceCockpitFromApi = useWorkspaceCockpitReplacement({
     replaceWorkspaceRecords,
@@ -179,22 +171,6 @@ export function useWorkspacePlanningContext({
     resolvedApiClient,
   });
 
-  const {
-    expenseSummary,
-    scopedSuggestions,
-    scopedTripForRecords,
-    scopedTripPlanRecords,
-  } = useTripWorkspaceRecords({
-    activePlanItems,
-    backendExpenseSummary,
-    currentMemberId: currentMember.id,
-    selectedTripPlanId,
-    stopNotes,
-    suggestions,
-    tasks,
-    trip,
-  });
-
   useWorkspaceApiCockpitEffects({
     isApiMode,
     participantSession,
@@ -217,19 +193,19 @@ export function useWorkspacePlanningContext({
     createTask,
     createTripPlan,
     deleteStopNote,
-    expenseSummary,
-    itineraryView,
-    mainItineraryView,
+    expenseSummary: records.expenseSummary,
+    itineraryView: records.itineraryView,
+    mainItineraryView: records.mainItineraryView,
     renameTripPlan,
     replaceCockpitFromApi,
     reviewSuggestion,
-    scopedSuggestions,
-    scopedTripForRecords,
-    scopedTripPlanRecords,
+    scopedSuggestions: records.scopedSuggestions,
+    scopedTripForRecords: records.scopedTripForRecords,
+    scopedTripPlanRecords: records.scopedTripPlanRecords,
     selectTripPlan,
-    selectedDay,
-    selectedItem,
-    selectedItemIdForView,
+    selectedDay: records.selectedDay,
+    selectedItem: records.selectedItem,
+    selectedItemIdForView: records.selectedItemIdForView,
     setMainTripPlan,
     setStopNotes,
     setTasks,

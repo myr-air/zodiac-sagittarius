@@ -19,6 +19,7 @@ export { useWorkspaceNavigationContext } from "./use-workspace-navigation-contex
 export { useWorkspaceParticipantSessionActions } from "./use-workspace-participant-session-actions";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspacePlanningContext } from "./use-workspace-planning-context";
+export { useWorkspacePlanningRecordsContext } from "./use-workspace-planning-records-context";
 export { useWorkspacePlanningCommands } from "./use-workspace-planning-commands";
 export { useWorkspaceRecords } from "./use-workspace-records";
 export { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";

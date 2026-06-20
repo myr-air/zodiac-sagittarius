@@ -62,6 +62,7 @@ describe("Sagittarius workspace source boundaries", () => {
       memberContextHook,
       navigationContextHook,
       planningContextHook,
+      planningRecordsContextHook,
       planningCommandsHook,
       selectedTripPlanHook,
       workspaceDialogs,
@@ -180,8 +181,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(cockpitReplacementHook).toContain("normalizeTripPlanAliases");
     expect(cockpitReplacementHook).toContain("resetBackendExpenseSummary");
     expect(planningContextHook).toContain("useWorkspaceCockpitReplacement");
-    expect(planningContextHook).toContain("useWorkspaceItineraryViewModel");
-    expect(planningContextHook).toContain("useWorkspaceRecords");
+    expect(planningContextHook).toContain("useWorkspacePlanningRecordsContext");
+    expect(planningContextHook).not.toContain("useWorkspaceItineraryViewModel");
+    expect(planningContextHook).not.toContain("useWorkspaceRecords");
+    expect(planningRecordsContextHook).toContain("useWorkspaceItineraryViewModel");
+    expect(planningRecordsContextHook).toContain("useWorkspaceRecords");
+    expect(planningRecordsContextHook).toContain("useTripWorkspaceRecords");
     expect(planningContextHook).toContain("useWorkspaceTripPlanCommands");
     expect(planningContextHook).toContain("useWorkspaceApiCockpitEffects");
     expect(sagaCore).not.toContain("useWorkspaceItineraryViewModel");
@@ -225,7 +230,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(setupContextHook).toContain("@/src/trip/workspace/use-itinerary-path-workspace");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
-    expect(planningContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(planningContextHook).not.toContain("@/src/trip/workspace/use-trip-workspace-records");
+    expect(planningRecordsContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).not.toContain("useWorkspaceRecords");
     expect(sagaCore).toContain("useWorkspaceCommands");

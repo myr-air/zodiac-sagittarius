@@ -53,6 +53,7 @@ export const workspaceBoundarySourcePaths = {
   memberContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts",
   navigationContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-navigation-context.ts",
   planningContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-planning-context.ts",
+  planningRecordsContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-planning-records-context.ts",
   planningCommandsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-planning-commands.ts",
   selectedTripPlanHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts",
   workspaceDialogs: "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx",
