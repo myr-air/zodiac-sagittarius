@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { sagittariusAppBlockedBoundaryTerms } from "./workspace-source-boundaries.blocked-terms";
@@ -96,6 +95,24 @@ describe("Sagittarius workspace source boundaries", () => {
       tripJoinParticipantStep,
       tripJoinGateStyles,
       tripWizardFormSections,
+      itineraryStoryFixtures,
+      itineraryStoryPathScenarios,
+      itineraryPageStory,
+      itineraryTemplateStory,
+      accountAccessStory,
+      accountAccessStorySupport,
+      accountSettingsEditor,
+      accountSettingsEditorState,
+      emailLoginState,
+      emailLoginAuthActions,
+      emailLoginFormState,
+      emailLoginSubmitActions,
+      emailLoginResendCooldown,
+      emailLoginPanel,
+      emailLoginStepStage,
+      tripSettingsPage,
+      tripSettingsSupport,
+      tripSettingsFormState,
     } = readWorkspaceBoundarySources(frontendRoot);
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
@@ -188,22 +205,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
-    const itineraryStoryFixtures = readFileSync(
-      join(frontendRoot, "src/features/itinerary/stories/itinerary-story-fixtures.ts"),
-      "utf8",
-    );
-    const itineraryStoryPathScenarios = readFileSync(
-      join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"),
-      "utf8",
-    );
-    const itineraryPageStory = readFileSync(
-      join(frontendRoot, "src/features/itinerary/stories/ItineraryPage.stories.tsx"),
-      "utf8",
-    );
-    const itineraryTemplateStory = readFileSync(
-      join(frontendRoot, "src/features/itinerary/stories/ItineraryTemplate.stories.tsx"),
-      "utf8",
-    );
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
     expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
     expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
@@ -277,14 +278,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(accountAccessChrome).toContain("accountHeroClassName");
     expect(accountAccessChrome).toContain("accountModeTabsClassName");
     expect(accountAccessChrome).toContain("appRoutes.home()");
-    const accountAccessStory = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx"),
-      "utf8",
-    );
-    const accountAccessStorySupport = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts"),
-      "utf8",
-    );
     expect(accountAccessStory).toContain("./account-access-panel.stories.support");
     expect(accountAccessStory).not.toContain("AccountApiClient");
     expect(accountAccessStory).not.toContain("const accountSettings");
@@ -322,14 +315,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(portalTripWizardActions).toContain("export function PortalTripWizardActions");
     expect(portalTripWizardActions).toContain("appRoutes.portalMyTrips()");
     expect(portalTripWizardActions).toContain("tripWizardActionsClassName");
-    const accountSettingsEditor = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx"),
-      "utf8",
-    );
-    const accountSettingsEditorState = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts"),
-      "utf8",
-    );
     expect(accountSettingsEditor).toContain("useAccountSettingsEditorState");
     expect(accountSettingsEditor).not.toContain("profileToForm");
     expect(accountSettingsEditor).not.toContain("function submitSettings");
@@ -344,26 +329,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
     expect(accountAuthSupport).not.toContain("function base64UrlToArrayBuffer");
     expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
-    const emailLoginState = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-panel-state.ts"),
-      "utf8",
-    );
-    const emailLoginAuthActions = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts"),
-      "utf8",
-    );
-    const emailLoginFormState = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts"),
-      "utf8",
-    );
-    const emailLoginSubmitActions = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts"),
-      "utf8",
-    );
-    const emailLoginResendCooldown = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"),
-      "utf8",
-    );
     expect(emailLoginState).toContain("./use-email-login-form-state");
     expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
     expect(emailLoginState).toContain("./use-email-login-submit-actions");
@@ -396,14 +361,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(emailLoginStepContent).toContain("./account-email-login-setup-step");
     expect(emailLoginStepContent).not.toContain("interface EmailLoginCredentialsStepProps");
     expect(emailLoginStepContent).not.toContain("function EmailLoginCredentialsStep");
-    const emailLoginPanel = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx"),
-      "utf8",
-    );
-    const emailLoginStepStage = readFileSync(
-      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx"),
-      "utf8",
-    );
     expect(emailLoginPanel).toContain("EmailLoginStepStage");
     expect(emailLoginPanel).not.toContain("EmailLoginCredentialsStep");
     expect(emailLoginStepStage).toContain("export function EmailLoginStepStage");
@@ -523,9 +480,6 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceRecordsHook).toContain("@/src/trip/workspace/trip-plan-records");
     expect(workspaceMainShell).toContain("WorkspaceRolePreview");
 
-    const tripSettingsPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"), "utf8");
-    const tripSettingsSupport = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts"), "utf8");
-    const tripSettingsFormState = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts"), "utf8");
     expect(tripSettingsPage).toContain("./TripSettingsPage.support");
     expect(tripSettingsPage).toContain("./use-trip-settings-form-state");
     expect(tripSettingsSupport).toContain("@/src/trip/itinerary-time");

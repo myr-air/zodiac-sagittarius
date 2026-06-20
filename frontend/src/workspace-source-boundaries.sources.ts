@@ -324,6 +324,70 @@ export function readWorkspaceBoundarySources(frontendRoot: string) {
     "utf8",
   );
 
+  const itineraryStoryFixtures = readFileSync(
+    join(frontendRoot, "src/features/itinerary/stories/itinerary-story-fixtures.ts"),
+    "utf8",
+  );
+  const itineraryStoryPathScenarios = readFileSync(
+    join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"),
+    "utf8",
+  );
+  const itineraryPageStory = readFileSync(
+    join(frontendRoot, "src/features/itinerary/stories/ItineraryPage.stories.tsx"),
+    "utf8",
+  );
+  const itineraryTemplateStory = readFileSync(
+    join(frontendRoot, "src/features/itinerary/stories/ItineraryTemplate.stories.tsx"),
+    "utf8",
+  );
+  const accountAccessStory = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx"),
+    "utf8",
+  );
+  const accountAccessStorySupport = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts"),
+    "utf8",
+  );
+  const accountSettingsEditor = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx"),
+    "utf8",
+  );
+  const accountSettingsEditorState = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts"),
+    "utf8",
+  );
+  const emailLoginState = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-panel-state.ts"),
+    "utf8",
+  );
+  const emailLoginAuthActions = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts"),
+    "utf8",
+  );
+  const emailLoginFormState = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts"),
+    "utf8",
+  );
+  const emailLoginSubmitActions = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts"),
+    "utf8",
+  );
+  const emailLoginResendCooldown = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"),
+    "utf8",
+  );
+  const emailLoginPanel = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx"),
+    "utf8",
+  );
+  const emailLoginStepStage = readFileSync(
+    join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx"),
+    "utf8",
+  );
+  const tripSettingsPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"), "utf8");
+  const tripSettingsSupport = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts"), "utf8");
+  const tripSettingsFormState = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts"), "utf8");
+
 
   return {
     sagaCore,
@@ -407,5 +471,23 @@ export function readWorkspaceBoundarySources(frontendRoot: string) {
     tripJoinParticipantStep,
     tripJoinGateStyles,
     tripWizardFormSections,
+    itineraryStoryFixtures,
+    itineraryStoryPathScenarios,
+    itineraryPageStory,
+    itineraryTemplateStory,
+    accountAccessStory,
+    accountAccessStorySupport,
+    accountSettingsEditor,
+    accountSettingsEditorState,
+    emailLoginState,
+    emailLoginAuthActions,
+    emailLoginFormState,
+    emailLoginSubmitActions,
+    emailLoginResendCooldown,
+    emailLoginPanel,
+    emailLoginStepStage,
+    tripSettingsPage,
+    tripSettingsSupport,
+    tripSettingsFormState,
   };
 }
