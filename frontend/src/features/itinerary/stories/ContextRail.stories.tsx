@@ -1,6 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent } from "storybook/test";
 import { ContextRail } from "@/src/features/itinerary/components";
+import {
+  bookingTabPlay,
+  closedPlay,
+  desktop1440Play,
+  mobilePlay,
+  notesOpenPlay,
+  readOnlyTravelerPlay,
+  suggestionsTabPlay,
+  tabletPlay,
+  thaiPlay,
+  tripExpensesOnlyPlay,
+} from "./ContextRail.stories.plays";
 import {
   contextRailBaseArgs,
   contextRailBookingDocs,
@@ -26,12 +37,7 @@ type Story = StoryObj<typeof meta>;
 
 export const NotesOpen: Story = {
   args: contextRailBaseArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("tab", { name: /Notes/i })).toHaveAttribute("aria-selected", "true");
-    await expect(canvas.getByRole("region", { name: /Stop notes/i })).toHaveClass("stop-notes-module");
-    await expect(canvas.getByLabelText(/Add a note for this stop/i)).toBeEnabled();
-  },
+  play: notesOpenPlay,
 };
 
 export const BookingTab: Story = {
@@ -39,21 +45,12 @@ export const BookingTab: Story = {
     ...contextRailBaseArgs,
     bookingDocs: contextRailBookingDocs,
   },
-  play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("tab", { name: /Booking/i }));
-    await expect(canvas.getByRole("region", { name: /Booking and prep for this stop/i })).toHaveClass("stop-booking-module");
-    await expect(canvas.getByText("Dim Dim Sum reservation")).toBeInTheDocument();
-    await expect(canvas.getByRole("checkbox", { name: /Dim Dim Sum/i })).toBeInTheDocument();
-  },
+  play: bookingTabPlay,
 };
 
 export const SuggestionsTab: Story = {
   args: contextRailBaseArgs,
-  play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("tab", { name: /Suggestions/i }));
-    await expect(canvas.getByRole("region", { name: /Suggestion review/i })).toHaveClass("suggestion-module");
-    await expect(canvas.getAllByRole("button", { name: /Approve/i }).length).toBeGreaterThan(0);
-  },
+  play: suggestionsTabPlay,
 };
 
 export const TripExpensesOnly: Story = {
@@ -61,23 +58,12 @@ export const TripExpensesOnly: Story = {
     ...contextRailBaseArgs,
     selectedItem: undefined,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail");
-    await expect(canvas.queryByRole("tablist", { name: /Stop detail tabs/i })).toBeNull();
-    await expect(canvas.getByRole("region", { name: /Expense summary/i })).toHaveClass("expense-module");
-    await expect(canvas.getByText(/Cost per person/i)).toBeInTheDocument();
-  },
+  play: tripExpensesOnlyPlay,
 };
 
 export const ReadOnlyTraveler: Story = {
   args: readOnlyTravelerContextRailArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Suggest edit/i })).toBeEnabled();
-    await expect(canvas.getByRole("button", { name: /Save note/i })).toBeDisabled();
-    await userEvent.click(canvas.getByRole("tab", { name: /Booking/i }));
-    await expect(canvas.getByText(/No booking warnings for this stop/i)).toBeInTheDocument();
-    await expect(canvas.getByText(/No checklist items linked to this stop/i)).toBeInTheDocument();
-  },
+  play: readOnlyTravelerPlay,
 };
 
 export const Closed: Story = {
@@ -85,57 +71,35 @@ export const Closed: Story = {
     ...contextRailBaseArgs,
     open: false,
   },
-  play: async ({ canvasElement }) => {
-    const rail = canvasElement.querySelector(".context-rail");
-    await expect(rail).toHaveAttribute("aria-hidden", "true");
-    await expect(rail).toHaveClass("context-rail--closed");
-  },
+  play: closedPlay,
 };
 
 export const Mobile: Story = {
   args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
-  },
+  play: mobilePlay,
 };
 
 export const Tablet: Story = {
   args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
-    await expect(canvas.getByRole("region", { name: /Selected stop detail/i })).toBeInTheDocument();
-  },
+  play: tabletPlay,
 };
 
 export const Thai: Story = {
   args: contextRailBaseArgs,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /ข้อมูลประกอบการวางแผน/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("tab", { name: "โน้ต" })).toHaveAttribute("aria-selected", "true");
-    await expect(canvas.getByRole("tab", { name: "การจอง" })).toBeInTheDocument();
-    await expect(canvas.getByRole("tab", { name: "ข้อเสนอ" })).toBeInTheDocument();
-  },
+  play: thaiPlay,
 };
 
 export const Desktop1024: Story = {
   args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("tablist", { name: /Stop detail tabs/i })).toHaveClass("inspector-tabs");
-  },
+  play: mobilePlay,
 };
 
 export const Desktop1440: Story = {
   args: contextRailBaseArgs,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");
-    await expect(canvas.getByRole("region", { name: /Selected stop detail/i })).toBeInTheDocument();
-  },
+  play: desktop1440Play,
 };
