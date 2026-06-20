@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { TimelineView } from "@/src/features/itinerary/components";
 import {
   denseTimelineItems,
   emptyTimelineItems,
   timelineOwnerStoryArgs,
 } from "./TimelinePage.stories.support";
+import { ownerPlay, ownerThaiPlay } from "./TimelineTemplate.stories.plays";
 
 const meta = {
   title: "Templates/Timeline",
@@ -20,20 +20,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
   args: timelineOwnerStoryArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
-  },
+  play: ownerPlay,
 };
 
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
-    await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toHaveClass("timeline-panel", "grid");
-    await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveClass("timeline-stop-button", "grid");
-  },
+  play: ownerThaiPlay,
 };
 
 export const Traveler: Story = {

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { OverviewPage } from "@/src/features/itinerary/components";
 import {
   overviewTemplateDenseStoryArgs,
@@ -8,6 +7,7 @@ import {
   overviewTemplateTravelerStoryArgs,
   overviewTemplateViewerStoryArgs,
 } from "../OverviewPage.stories.support";
+import { ownerThaiPlay } from "./OverviewTemplate.stories.plays";
 
 const meta = {
   title: "Templates/Overview",
@@ -31,15 +31,7 @@ export const Traveler: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: /ไฮไลต์ทริป/i })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: /Trip overview/i })).toHaveClass("grid");
-    await expect(canvas.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("overview-hero", "grid");
-    await expect(canvas.getByRole("region", { name: /travel cockpit/i })).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3");
-  },
+  play: ownerThaiPlay,
 };
 
 export const Viewer: Story = {

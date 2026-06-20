@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { fn, expect, userEvent } from "storybook/test";
+import { fn } from "storybook/test";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { ContextRailSuggestionsSection } from "@/src/features/itinerary/components/context-rail/ContextRailSuggestionsSection";
+import { editablePlay, emptyPlay, readOnlyPlay } from "./ContextRailSuggestionsSection.stories.plays";
 
 const baseArgs = {
   suggestions: tripFixture.suggestions,
@@ -21,14 +22,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Editable: Story = {
   args: baseArgs,
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole("region", { name: /Suggestion review/i }),
-    ).toBeInTheDocument();
-    const approveButtons = canvas.getAllByRole("button", { name: /Approve/ });
-    await expect(approveButtons[0]).toBeInTheDocument();
-    await userEvent.click(approveButtons[0]);
-  },
+  play: editablePlay,
 };
 
 export const ReadOnly: Story = {
@@ -36,12 +30,7 @@ export const ReadOnly: Story = {
     ...baseArgs,
     canReviewSuggestions: false,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Read only")).toBeInTheDocument();
-    await expect(
-      canvas.queryByRole("button", { name: /Approve/ }),
-    ).not.toBeInTheDocument();
-  },
+  play: readOnlyPlay,
 };
 
 export const Empty: Story = {
@@ -49,7 +38,5 @@ export const Empty: Story = {
     ...baseArgs,
     suggestions: [],
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("No suggestions waiting for this stop."),).toBeInTheDocument();
-  },
+  play: emptyPlay,
 };
