@@ -97,6 +97,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore-routes.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.session-restore.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.settings.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans-api-expenses.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans-api.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.trip-plans.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/sagittarius-app.test-api-client.ts"))).toBe(true);
@@ -240,6 +241,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.auth-routes.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder-flow.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder-share.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-credentials-step.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-panel.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-email-login-step-content.tsx"))).toBe(false);
