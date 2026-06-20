@@ -59,6 +59,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/context-rail/ContextRail.tsx",
   "src/features/itinerary/components/context-rail/ContextRail.expenses.test.tsx",
   "src/features/itinerary/components/context-rail/ContextRailExpensesOnlyPanel.tsx",
+  "src/features/itinerary/components/context-rail/ContextRailNoteComposer.tsx",
+  "src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx",
   "src/features/itinerary/components/context-rail/ContextRail.notes.test.tsx",
   "src/features/itinerary/components/context-rail/ContextRail.shell.test.tsx",
   "src/features/itinerary/components/context-rail/ContextRail.tasks-suggestions.test.tsx",

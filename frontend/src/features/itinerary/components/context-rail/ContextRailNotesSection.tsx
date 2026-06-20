@@ -1,7 +1,6 @@
-import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { memberDisplayName } from "./context-rail.utils";
+import { ContextRailNoteComposer } from "./ContextRailNoteComposer";
+import { ContextRailNoteItem } from "./ContextRailNoteItem";
 import { useContextRailNoteForm } from "./use-context-rail-note-form";
 import type {
   ContextRailCreateNoteInput,
@@ -15,21 +14,8 @@ import type {
 } from "@/src/trip/types";
 import {
   detailHeadingClassName,
-  detailButtonClassName,
   detailSectionClassName,
   emptyWarningClassName,
-  noteActionButtonClassName,
-  noteActionsClassName,
-  noteAuthorClassName,
-  noteEditActionsClassName,
-  noteEditFormClassName,
-  noteEditLabelClassName,
-  noteEditTextareaClassName,
-  noteFormClassName,
-  noteFormLabelClassName,
-  noteFormTextareaClassName,
-  noteHeaderClassName,
-  noteItemClassName,
   moduleListClassName,
 } from "./context-rail.styles";
 
@@ -84,105 +70,32 @@ export function ContextRailNotesSection({
           const author = tripMembers.find((member) => member.id === note.authorId);
           const canManageNote = canEdit || note.authorId === currentMember.id;
           return (
-            <article className={noteItemClassName} key={note.id}>
-              <div className={noteHeaderClassName}>
-                <strong>
-                  {memberDisplayName(author, t.appShell.roles.traveler)}
-                </strong>
-                {canManageNote ? (
-                  <span className={noteActionsClassName}>
-                    <button
-                      className={noteActionButtonClassName}
-                      type="button"
-                      aria-label={t.contextRail.notes.editBy({
-                        name: memberDisplayName(
-                          author,
-                          t.appShell.roles.traveler,
-                        ),
-                      })}
-                      onClick={() => startEditingNote(note)}
-                    >
-                      <Icon name="edit" />
-                    </button>
-                    <button
-                      className={noteActionButtonClassName}
-                      type="button"
-                      aria-label={t.contextRail.notes.deleteBy({
-                        name: memberDisplayName(
-                          author,
-                          t.appShell.roles.traveler,
-                        ),
-                      })}
-                      onClick={() => onDeleteNote(note.id)}
-                    >
-                      <Icon name="trash" />
-                    </button>
-                  </span>
-                ) : null}
-              </div>
-              {editingNoteId === note.id ? (
-                <form className={noteEditFormClassName} onSubmit={submitNoteEdit}>
-                  <label className={noteEditLabelClassName}>
-                    <span>{t.contextRail.notes.editNote}</span>
-                    <textarea
-                      className={noteEditTextareaClassName}
-                      value={editingNoteBody}
-                      onChange={(event) => setEditingNoteBody(event.target.value)}
-                      rows={3}
-                    />
-                  </label>
-                  <div className={noteEditActionsClassName}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className={detailButtonClassName}
-                      onClick={cancelEditingNote}
-                    >
-                      {t.common.actions.cancel}
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="secondary"
-                      className={detailButtonClassName}
-                      disabled={!editingNoteBody.trim()}
-                    >
-                      {t.contextRail.notes.saveEdit}
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <p>{note.body}</p>
-              )}
-            </article>
+            <ContextRailNoteItem
+              key={note.id}
+              author={author}
+              canManageNote={canManageNote}
+              editingNoteBody={editingNoteBody}
+              isEditing={editingNoteId === note.id}
+              note={note}
+              onCancelEditingNote={cancelEditingNote}
+              onDeleteNote={onDeleteNote}
+              onEditingNoteBodyChange={setEditingNoteBody}
+              onStartEditingNote={startEditingNote}
+              onSubmitNoteEdit={submitNoteEdit}
+            />
           );
         })}
         {!notes.length ? (
           <p className={emptyWarningClassName}>{t.contextRail.notes.empty}</p>
         ) : null}
       </div>
-      <form className={noteFormClassName} onSubmit={submitNote}>
-        <label className={noteFormLabelClassName}>
-          <span>{t.contextRail.notes.add}</span>
-          <textarea
-            className={noteFormTextareaClassName}
-            value={noteBody}
-            disabled={!canCreateNote}
-            onChange={(event) => setNoteBody(event.target.value)}
-            rows={3}
-          />
-        </label>
-        <span className={noteAuthorClassName}>
-          {t.contextRail.notes.savedAs({ name: currentMember.displayName })}
-        </span>
-        <Button
-          type="submit"
-          variant="secondary"
-          className={detailButtonClassName}
-          disabled={!canCreateNote || !noteBody.trim()}
-        >
-          {t.contextRail.notes.save}
-        </Button>
-      </form>
+      <ContextRailNoteComposer
+        canCreateNote={canCreateNote}
+        currentMemberName={currentMember.displayName}
+        noteBody={noteBody}
+        onNoteBodyChange={setNoteBody}
+        onSubmitNote={submitNote}
+      />
     </section>
   );
 }
