@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import type {
   Member,
   Trip,
@@ -6,13 +6,13 @@ import type {
   TripRole,
 } from "@/src/trip/types";
 import {
-  buildInviteLink,
   filterTripMembers,
   memberSummaryCounts,
   type MemberRoleFilter,
   type MemberStatusFilter,
   visibleTripMembers,
 } from "./TripMembersPage.support";
+import { useMemberInviteActions } from "./use-member-invite-actions";
 import { useMemberTaskDialogState } from "./use-member-task-dialog-state";
 
 interface TripMembersPageStateLabels {
@@ -57,12 +57,22 @@ export function useTripMembersPageState({
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<MemberRoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<MemberStatusFilter>("all");
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
-  const [isRotatingInviteToken, setIsRotatingInviteToken] = useState(false);
   const [createPanelOpen, setCreatePanelOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] =
     useState<Exclude<TripRole, "owner">>("traveler");
+  const {
+    copyInviteLink,
+    copyState,
+    inviteLink,
+    isRotatingInviteToken,
+    rotateInviteToken,
+  } = useMemberInviteActions({
+    canManagePeople,
+    joinId: trip.joinId,
+    joinInviteToken,
+    onRotateJoinInviteToken,
+  });
   const visibleMembers = useMemo(() => visibleTripMembers(trip.members), [
     trip.members,
   ]);
@@ -89,7 +99,6 @@ export function useTripMembersPageState({
     () => memberSummaryCounts(visibleMembers, currentMember.id),
     [currentMember.id, visibleMembers],
   );
-  const inviteLink = buildInviteLink(trip.joinId, joinInviteToken);
   const filteredMembers = useMemo(
     () =>
       filterTripMembers({
@@ -101,36 +110,6 @@ export function useTripMembersPageState({
       }),
     [currentMember.id, query, roleFilter, statusFilter, visibleMembers],
   );
-
-  useEffect(() => {
-    if (copyState === "idle") return undefined;
-    const timeout = window.setTimeout(() => setCopyState("idle"), 2500);
-    return () => window.clearTimeout(timeout);
-  }, [copyState]);
-
-  async function copyInviteLink() {
-    /* v8 ignore next */
-    if (!canManagePeople) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
-    }
-  }
-
-  async function rotateInviteToken() {
-    if (!canManagePeople || !onRotateJoinInviteToken) return;
-    setIsRotatingInviteToken(true);
-    try {
-      await onRotateJoinInviteToken();
-      setCopyState("idle");
-    } catch {
-      setCopyState("error");
-    } finally {
-      setIsRotatingInviteToken(false);
-    }
-  }
 
   function resetFilters() {
     setQuery("");
