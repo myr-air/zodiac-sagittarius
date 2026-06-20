@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
-import { pathIdMain } from "@/src/features/itinerary/testing";
 import {
   branchGraphPathOptions,
   planAPathOptions,
@@ -10,7 +8,6 @@ import {
   buildOwnerStoryArgs,
   denseTripFixture,
   emptyTripFixture,
-  pathNameMain,
 } from "./itinerary-story-fixtures";
 import {
   buildPageOverflowItems,
@@ -20,6 +17,7 @@ import {
   onStoryToggleShowAllPaths,
   onStoryUpdateItemInline,
   pageBranchGraphItems,
+  pageOverlapConflictItems,
   pagePlanABAlternativeItems,
   pagePlanAExampleItems,
   pageRequestedPlanExampleItems,
@@ -123,30 +121,7 @@ export const OverlapConflictWarning: Story = {
   args: {
     ...Owner.args,
     selectedItemId: "overlap-dim-sum",
-    items: [
-      {
-        ...tripFixture.planItems[0],
-        id: "overlap-peak-tram",
-        day: tripFixture.trip.startDate,
-        startTime: "09:00",
-        durationMinutes: 120,
-        sortOrder: 10,
-        pathId: pathIdMain,
-        pathName: pathNameMain,
-        pathRole: "main",
-      },
-      {
-        ...tripFixture.planItems[1],
-        id: "overlap-dim-sum",
-        day: tripFixture.trip.startDate,
-        startTime: "09:30",
-        durationMinutes: 90,
-        sortOrder: 20,
-        pathId: pathIdMain,
-        pathName: pathNameMain,
-        pathRole: "main",
-      },
-    ],
+    items: pageOverlapConflictItems,
   },
   play: overlapConflictWarningPlay,
 };
