@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
 import { buildOverviewPageModel } from "./overview-page-model";
 
 describe("overview page model", () => {
@@ -46,7 +47,7 @@ describe("overview page model", () => {
   });
 
   it("uses itinerary view overrides when supplied", () => {
-    const item = seedTrip.itineraryItems.find((candidate) => candidate.id === "item-dimdim")!;
+    const item = getTripFixtureItineraryItem("item-dimdim");
 
     const model = buildOverviewPageModel({
       completedFocusHeading: "Memories",

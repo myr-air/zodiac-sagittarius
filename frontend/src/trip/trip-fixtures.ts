@@ -8,6 +8,17 @@ import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestio
 
 export type TripFixtureRole = "owner" | "organizer" | "traveler" | "viewer";
 
+function requireTripFixtureMember(
+  predicate: (member: Member) => boolean,
+  description: string,
+): Member {
+  const member = seedTrip.members.find(predicate);
+  if (!member) {
+    throw new Error(`Missing member test fixture: ${description}`);
+  }
+  return member;
+}
+
 export const tripFixtureSuggestions: Suggestion[] = [
   {
     id: "suggestion-rating",
@@ -62,10 +73,22 @@ export const tripFixture = {
   tasks: tripFixtureTasks,
   stopNotes: tripFixtureStopNotes,
   currentMembers: {
-    owner: seedTrip.members.find((member) => member.role === "owner")!,
-    organizer: seedTrip.members.find((member) => member.role === "organizer")!,
-    traveler: seedTrip.members.find((member) => member.role === "traveler")!,
-    viewer: seedTrip.members.find((member) => member.id === "member-family")!,
+    owner: requireTripFixtureMember(
+      (member) => member.role === "owner",
+      "owner",
+    ),
+    organizer: requireTripFixtureMember(
+      (member) => member.role === "organizer",
+      "organizer",
+    ),
+    traveler: requireTripFixtureMember(
+      (member) => member.role === "traveler",
+      "traveler",
+    ),
+    viewer: requireTripFixtureMember(
+      (member) => member.id === "member-family",
+      "member-family",
+    ),
   },
   expenseSummaries: {
     owner: buildExpenseSummary(seedTrip.expenses, "member-aom"),
@@ -77,6 +100,10 @@ export const tripFixture = {
 
 export function getTripFixtureMember(role: TripFixtureRole) {
   return tripFixture.currentMembers[role];
+}
+
+export function getTripFixtureMemberById(id: string): Member {
+  return requireTripFixtureMember((member) => member.id === id, id);
 }
 
 export function getTripFixtureItineraryItem(id: string): ItineraryItem {

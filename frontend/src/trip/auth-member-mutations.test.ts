@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
+import { getTripFixtureMemberById } from "./trip-fixtures";
 import {
   appendTripParticipant,
   claimTripParticipant,
@@ -29,7 +30,7 @@ describe("trip participant member mutations", () => {
     expect(weakPassword).toBe(seedTrip);
     expect(duplicateClaim.members.find((member) => member.id === "member-nam")?.claimPasswordHash).toBe(hashLocalSecret("first-pin"));
     expect(disabledPassword.members.find((member) => member.id === "member-nam")?.claimPasswordHash).toBeNull();
-    expect(ownerDisabled.members.find((member) => member.id === "member-aom")).toBe(seedTrip.members.find((member) => member.id === "member-aom"));
+    expect(ownerDisabled.members.find((member) => member.id === "member-aom")).toBe(getTripFixtureMemberById("member-aom"));
   });
 
   it("creates active non-owner participants with unique slugs and rotating colors", () => {
@@ -44,7 +45,7 @@ describe("trip participant member mutations", () => {
 
   it("replaces and appends participants from API responses", () => {
     const replacement = {
-      ...seedTrip.members.find((member) => member.id === "member-beam")!,
+      ...getTripFixtureMemberById("member-beam"),
       displayName: "Beam updated",
     };
     const replaced = replaceTripParticipant(seedTrip, replacement);
@@ -57,7 +58,7 @@ describe("trip participant member mutations", () => {
     });
 
     expect(replaced.members.find((member) => member.id === "member-beam")).toBe(replacement);
-    expect(replaced.members.find((member) => member.id === "member-aom")).toBe(seedTrip.members.find((member) => member.id === "member-aom"));
+    expect(replaced.members.find((member) => member.id === "member-aom")).toBe(getTripFixtureMemberById("member-aom"));
     expect(appended.members).toHaveLength(seedTrip.members.length + 1);
     expect(appended.members.at(-1)?.id).toBe("member-new");
   });

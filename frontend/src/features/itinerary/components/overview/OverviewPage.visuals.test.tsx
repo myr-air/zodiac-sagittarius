@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
 import { OverviewPage } from "./OverviewPage";
 import {
   installOverviewPageClock,
@@ -78,7 +79,7 @@ describe("OverviewPage visual summary", () => {
       <OverviewPage
         currentMemberId="member-nam"
         expenseSummary={buildExpenseSummary([], "member-nam")}
-        items={[seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!]}
+        items={[getTripFixtureItineraryItem("item-dimdim")]}
         suggestions={[]}
         tasks={[]}
         trip={seedTrip}

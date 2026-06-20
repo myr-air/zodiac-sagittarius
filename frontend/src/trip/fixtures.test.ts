@@ -3,6 +3,7 @@ import {
   buildDenseTripFixture,
   buildEmptyTripFixture,
   getTripFixtureMember,
+  getTripFixtureMemberById,
   tripFixture,
 } from "./trip-fixtures";
 
@@ -11,6 +12,7 @@ describe("trip fixtures", () => {
     expect(getTripFixtureMember("owner").role).toBe("owner");
     expect(getTripFixtureMember("traveler").role).toBe("traveler");
     expect(getTripFixtureMember("viewer").role).toBe("viewer");
+    expect(getTripFixtureMemberById("member-beam").role).toBe("organizer");
     expect(tripFixture.currentMembers.owner.id).toBe(getTripFixtureMember("owner").id);
   });
 
