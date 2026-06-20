@@ -384,6 +384,7 @@ describe("Sagittarius project scaffold", () => {
     expect(hooksIndex).toContain("useWorkspaceSession");
     expect(hooksIndex).toContain("useWorkspaceAccessGate");
     expect(hooksIndex).toContain("useWorkspaceUiState");
+    expect(hooksIndex).toContain("useWorkspaceCockpitReplacement");
     expect(hooksIndex).not.toContain("useWorkspaceRecordActions");
     expect(hooksIndex).not.toContain("useWorkspaceRecordState");
     expect(sagittariusIndex).toContain("SagittariusApp");

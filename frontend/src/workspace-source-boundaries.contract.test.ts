@@ -133,6 +133,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-backend-expense-summary.ts"),
       "utf8",
     );
+    const cockpitReplacementHook = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-cockpit-replacement.ts"),
+      "utf8",
+    );
     const memberContextHook = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-member-context.ts"),
       "utf8",
@@ -543,6 +547,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(backendExpenseSummaryHook).toContain("useBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("workspaceViewShouldSyncBackendExpenseSummary");
     expect(backendExpenseSummaryHook).toContain("clearParticipantSession");
+    expect(sagaCore).toContain("useWorkspaceCockpitReplacement");
+    expect(sagaCore).not.toContain("normalizeTripPlanAliases");
+    expect(cockpitReplacementHook).toContain("export function useWorkspaceCockpitReplacement");
+    expect(cockpitReplacementHook).toContain("normalizeTripPlanAliases");
+    expect(cockpitReplacementHook).toContain("resetBackendExpenseSummary");
     expect(sagaCore).toContain("useWorkspaceItineraryViewModel");
     expect(sagaCore).not.toContain("buildItineraryView");
     expect(sagaCore).not.toContain("resolveSelectedWorkspaceItem");

@@ -3,7 +3,7 @@ import { persistTripDraft } from "@/src/trip/repository";
 import { normalizeTripPlanAliases } from "@/src/trip/trip-plans";
 import type { Trip } from "@/src/trip/types";
 
-interface TripWorkspaceState {
+export interface TripWorkspaceState {
   trip: Trip;
   past: Trip[];
   future: Trip[];

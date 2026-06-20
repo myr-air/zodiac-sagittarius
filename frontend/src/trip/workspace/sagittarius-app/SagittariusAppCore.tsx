@@ -5,11 +5,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   type TripApiClient,
-  type TripCockpit,
 } from "@/src/trip/api-client";
-import {
-  normalizeTripPlanAliases,
-} from "@/src/trip/trip-plans";
 import { type PlaceResolver } from "@/src/trip/place-resolution";
 import {
   type PlanningView,
@@ -33,6 +29,7 @@ import {
   useWorkspaceApiCockpitEffects,
   useWorkspaceApiClients,
   useWorkspaceBackendExpenseSummary,
+  useWorkspaceCockpitReplacement,
   useWorkspaceItineraryImport,
   useWorkspaceItineraryUiActions,
   useWorkspaceParticipantSessionActions,
@@ -335,21 +332,12 @@ export function SagittariusApp({
     trip,
   });
 
-  const replaceCockpitFromApi = useCallback((cockpit: TripCockpit) => {
-    setTripState({
-      trip: normalizeTripPlanAliases(cockpit.trip),
-      past: [],
-      future: [],
-    });
-    replaceWorkspaceRecords(cockpit);
-    resetBackendExpenseSummary();
-    setIsCockpitLoaded(true);
-  }, [
+  const replaceCockpitFromApi = useWorkspaceCockpitReplacement({
     replaceWorkspaceRecords,
     resetBackendExpenseSummary,
     setIsCockpitLoaded,
     setTripState,
-  ]);
+  });
 
   const {
     createTripPlan,
