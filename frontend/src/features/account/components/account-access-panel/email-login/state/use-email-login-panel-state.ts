@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import type { AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   buildEmailLoginStepMeta,
 } from "../account-email-login-step-meta";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
+import { useEmailLoginChallengeState } from "./use-email-login-challenge-state";
 import { useEmailLoginEntryActions } from "./use-email-login-entry-actions";
 import { useEmailLoginFormState } from "./use-email-login-form-state";
-import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 import { useEmailLoginStepNavigation } from "./use-email-login-step-navigation";
 import { useEmailLoginSubmitActions } from "../submit/use-email-login-submit-actions";
 import type { UseEmailLoginPanelStateProps } from "./use-email-login-panel-state-params";
@@ -44,13 +42,16 @@ export function useEmailLoginPanelState({
     setTransitionDirection,
     transitionDirection,
   } = useEmailLoginStepNavigation();
-  const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
-  const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
   const {
+    challenge,
     resendCooldown,
     resetResendCooldown,
+    setChallenge,
+    setSubmittedChallenge,
+    setVerifiedRegistrationSession,
     startResendCooldown,
-  } = useEmailLoginResendCooldown(challenge);
+    verifiedRegistrationSession,
+  } = useEmailLoginChallengeState({ setTransitionDirection });
   const {
     codeHintId,
     codeInputId,
@@ -99,10 +100,7 @@ export function useEmailLoginPanelState({
     trustDevice,
     verifiedRegistrationSession,
     goToSetupStep: () => goToStep("setup"),
-    setChallenge: (nextChallenge) => {
-      if (nextChallenge) setTransitionDirection("forward");
-      setChallenge(nextChallenge);
-    },
+    setChallenge: setSubmittedChallenge,
     setVerifiedRegistrationSession,
     startResendCooldown,
     updateCode,
