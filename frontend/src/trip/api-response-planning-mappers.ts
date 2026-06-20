@@ -1,6 +1,5 @@
 import { TripApiError } from "./api-error";
 import type {
-  PlanStatus,
   PlanVariant,
   Trip,
   TripTask,
@@ -13,6 +12,10 @@ import type {
   TripTaskResponse,
 } from "./api-response-types";
 import { DEFAULT_TRIP_TIMEZONE } from "./trip-defaults";
+import {
+  legacyKindForPlanStatus,
+  planStatusForLegacyKind,
+} from "./trip-plan-aliases";
 
 export function mapTripSummary(trip: TripSummaryResponse): Trip {
   return {
@@ -63,7 +66,7 @@ export function mapTask(task: TripTaskResponse): TripTask {
 }
 
 function mapPlanVariant(variant: PlanVariantResponse): PlanVariant {
-  const status = variant.status ?? statusForLegacyKind(variant.kind);
+  const status = variant.status ?? planStatusForLegacyKind(variant.kind);
   return {
     id: variant.id,
     tripId: variant.tripId,
@@ -141,14 +144,6 @@ function throwInvalidTripPlanAliasDrift(): never {
   });
 }
 
-function statusForLegacyKind(kind: PlanVariant["kind"]): PlanStatus {
-  return kind === "split" ? "proposal" : kind;
-}
-
-function legacyKindForPlanStatus(status: PlanStatus): PlanVariant["kind"] {
-  return status === "proposal" ? "split" : status;
-}
-
 function normalizePlanVariantForMainPointer(
   plan: PlanVariant,
   mainTripPlanId: string,
@@ -158,7 +153,7 @@ function normalizePlanVariantForMainPointer(
       ? "main"
       : plan.status === "main"
         ? "backup"
-        : plan.status ?? statusForLegacyKind(plan.kind);
+        : plan.status ?? planStatusForLegacyKind(plan.kind);
   return {
     ...plan,
     kind: legacyKindForPlanStatus(status),
