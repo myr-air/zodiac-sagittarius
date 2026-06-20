@@ -12,6 +12,7 @@ import { appRoutes } from "./support";
 import {
   installLocalStorageStub,
   installSessionStorageStub,
+  persistTripParticipantSession as persistTripParticipantSessionForApi,
 } from "./sagittarius-app.test-storage";
 import type { SagittariusAppProps } from "./types";
 
@@ -109,6 +110,10 @@ export async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
     target: { value: "owner-pin" },
   });
   await user.click(screen.getByRole("button", { name: /เริ่มใช้งาน/i }));
+}
+
+export function installApiSession(sessionToken: string) {
+  persistTripParticipantSessionForApi(window.sessionStorage, { sessionToken });
 }
 
 export async function renderApiSagittariusApp(

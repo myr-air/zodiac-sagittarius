@@ -10,7 +10,7 @@ import { TripApiError } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
-  persistTripParticipantSession,
+  installApiSession,
   renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -158,7 +158,3 @@ describe("Sagittarius cockpit bookings API mode", () => {
     expect(apiClient.createBookingDoc).toHaveBeenCalledTimes(1);
   });
 });
-
-function installApiSession(sessionToken: string) {
-  persistTripParticipantSession(window.sessionStorage, { sessionToken });
-}

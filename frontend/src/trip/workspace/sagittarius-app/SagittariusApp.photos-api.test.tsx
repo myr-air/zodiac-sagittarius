@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   createApiClientForTrip,
-  persistTripParticipantSession,
+  installApiSession,
   renderApiTripAccessSagittariusApp,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -80,7 +80,3 @@ describe("Sagittarius cockpit photos API mode", () => {
     ).toBeInTheDocument();
   });
 });
-
-function installApiSession(sessionToken: string) {
-  persistTripParticipantSession(window.sessionStorage, { sessionToken });
-}
