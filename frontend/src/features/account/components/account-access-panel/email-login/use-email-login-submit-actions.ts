@@ -8,10 +8,6 @@ import type {
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import {
-  errorMessage,
-  passwordLoginErrorMessage,
-} from "../auth";
 import type { AuthFlow } from "../auth";
 import type { EmailLoginAuthStep } from "./account-email-login-step-meta";
 import {
@@ -21,6 +17,13 @@ import {
   signInWithEmailPasskey,
 } from "./email-login-auth-actions";
 import { selectEmailLoginSubmitHandler } from "./email-login-submit-route";
+import {
+  emailLoginInvalidCodeError,
+  emailLoginPasskeyError,
+  emailLoginPasswordSetupError,
+  emailLoginPasswordSubmitError,
+  emailLoginStartError,
+} from "./email-login-submit-errors";
 import { runEmailLoginSubmission } from "./email-login-submit-runner";
 
 interface UseEmailLoginSubmitActionsProps {
@@ -77,12 +80,13 @@ export function useEmailLoginSubmitActions({
   updateCode,
 }: UseEmailLoginSubmitActionsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const errorContext = { emailLoginMessages, messages };
 
   async function requestEmailCode() {
     if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
     await runEmailLoginSubmission({
       onError: (caught) => {
-        onError(errorMessage(caught, emailLoginMessages.errors.startFailed, messages));
+        onError(emailLoginStartError(caught, errorContext));
       },
       setIsSubmitting,
       run: async () => {
@@ -119,7 +123,7 @@ export function useEmailLoginSubmitActions({
     if (!challenge || !otpReady) return;
     await runEmailLoginSubmission({
       onError: (caught) => {
-        onError(errorMessage(caught, emailLoginMessages.errors.invalidCode, messages));
+        onError(emailLoginInvalidCodeError(caught, errorContext));
       },
       setIsSubmitting,
       run: async () => {
@@ -148,7 +152,7 @@ export function useEmailLoginSubmitActions({
     if (!verifiedRegistrationSession || !passwordReady) return;
     await runEmailLoginSubmission({
       onError: (caught) => {
-        onError(errorMessage(caught, emailLoginMessages.errors.passwordRegisterFailed, messages));
+        onError(emailLoginPasswordSetupError(caught, errorContext));
       },
       setIsSubmitting,
       run: async () => {
@@ -170,11 +174,7 @@ export function useEmailLoginSubmitActions({
     if (!isEmailValid || !passwordReady) return;
     await runEmailLoginSubmission({
       onError: (caught) => {
-        onError(
-          activeFlow === "register"
-            ? errorMessage(caught, emailLoginMessages.errors.passwordRegisterFailed, messages)
-            : passwordLoginErrorMessage(caught, emailLoginMessages.errors.passwordLoginFailed, messages),
-        );
+        onError(emailLoginPasswordSubmitError({ activeFlow, caught, context: errorContext }));
       },
       setIsSubmitting,
       run: async () => {
@@ -195,7 +195,7 @@ export function useEmailLoginSubmitActions({
     if (!isEmailValid) return;
     await runEmailLoginSubmission({
       onError: (caught) => {
-        onError(errorMessage(caught, emailLoginMessages.errors.passkeyLoginFailed, messages));
+        onError(emailLoginPasskeyError(caught, errorContext));
       },
       setIsSubmitting,
       run: async () => {

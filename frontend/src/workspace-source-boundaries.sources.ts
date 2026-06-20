@@ -142,6 +142,7 @@ export const workspaceBoundarySourcePaths = {
   emailLoginAuthActions: "src/features/account/components/account-access-panel/email-login/email-login-auth-actions.ts",
   emailLoginFormState: "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts",
   emailLoginSubmitActions: "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts",
+  emailLoginSubmitErrors: "src/features/account/components/account-access-panel/email-login/email-login-submit-errors.ts",
   emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts",
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
   emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",

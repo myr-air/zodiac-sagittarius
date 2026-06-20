@@ -141,6 +141,8 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginFormState).toContain("function updateCode");
     expect(emailLoginSubmitActions).toContain("export function useEmailLoginSubmitActions");
     expect(emailLoginSubmitActions).toContain("./email-login-auth-actions");
+    expect(emailLoginSubmitActions).toContain("./email-login-submit-errors");
+    expect(emailLoginSubmitActions).not.toContain("passwordLoginErrorMessage");
     expect(emailLoginSubmitActions).toContain("finishEmailCodeLogin");
     expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
     expect(emailLoginResendCooldown).toContain("window.setInterval");
