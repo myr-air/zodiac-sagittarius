@@ -49,6 +49,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       workspaceCoreFrameProps,
       workspaceFrameProps,
       workspaceFrameActionProps,
+      photoAlbumDialog,
+      photoAlbumDialogState,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
@@ -76,6 +78,16 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
+    expect(photoAlbumDialog).toContain("./usePhotoAlbumDialogState");
+    expect(photoAlbumDialog).toContain("PhotoAlbumDialogFields");
+    expect(photoAlbumDialog).toContain("PhotoAlbumDialogRelatedItems");
+    expect(photoAlbumDialog).not.toContain("useState");
+    expect(photoAlbumDialog).not.toContain("photoProviderOptions");
+    expect(photoAlbumDialog).not.toContain("relatedItineraryItemIds.includes");
+    expect(photoAlbumDialogState).toContain("export function usePhotoAlbumDialogState");
+    expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
+    expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
+    expect(photoAlbumDialogState).toContain("async function submit");
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
     expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");

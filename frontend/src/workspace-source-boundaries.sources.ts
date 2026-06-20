@@ -91,6 +91,8 @@ export const workspaceBoundarySourcePaths = {
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
   memberSupport: "src/features/workspace/pages/members/TripMembersPage.support.ts",
+  photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",
+  photoAlbumDialogState: "src/features/workspace/pages/photos/components/usePhotoAlbumDialogState.ts",
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
   accountAccessChrome: "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx",
   accountTripWizardSupport: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",

@@ -46,6 +46,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const modal = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx",
     );
+    const modalModel = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-edit-modal-model.ts",
+    );
     const types = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts",
     );
@@ -60,6 +63,12 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
+    expect(modal).toContain("buildTimeEditModalModel");
+    expect(modal).not.toContain("formatDuration");
+    expect(modal).not.toContain("parseTimeToMinutes");
+    expect(modalModel).toContain("export function buildTimeEditModalModel");
+    expect(modalModel).toContain("formatDuration");
+    expect(modalModel).toContain("parseTimeToMinutes");
     expect(types).toContain("export interface ActivityTimeButtonProps");
   });
 
@@ -84,6 +93,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const activityCell = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx",
     );
+    const overlays = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellOverlays.tsx",
+    );
     const exports = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/components.tsx",
     );
@@ -97,8 +109,11 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts",
     );
 
-    expect(activityCell).toContain("./SubActivityList");
-    expect(activityCell).toContain("./SubActivityModal");
+    expect(activityCell).toContain("./ActivityCellOverlays");
+    expect(activityCell).not.toContain("./SubActivityList");
+    expect(activityCell).not.toContain("./SubActivityModal");
+    expect(overlays).toContain("./SubActivityList");
+    expect(overlays).toContain("./SubActivityModal");
     expect(activityCell).not.toContain("SubActivityComponents");
     expect(exports).toContain("./activity-cell/SubActivityList");
     expect(exports).toContain("./activity-cell/SubActivityModal");

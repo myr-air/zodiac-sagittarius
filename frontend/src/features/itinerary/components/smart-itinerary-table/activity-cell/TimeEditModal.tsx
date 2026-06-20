@@ -1,11 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/src/ui/icons";
-import { formatDuration } from "@/src/features/itinerary/lib";
 import {
   endOffsetDaysBetweenTimes,
-  formatTimeRangeLabel,
-  parseTimeToMinutes,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
   subActivityModalCloseClassName,
@@ -25,6 +22,7 @@ import {
 } from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
 import type { TimeEditModalProps } from "./time-components.types";
+import { buildTimeEditModalModel } from "./time-edit-modal-model";
 
 export function TimeEditModal({
   item,
@@ -39,37 +37,12 @@ export function TimeEditModal({
     item.endTime ? item.endOffsetDays ?? 0 : 0,
   );
   const [saving, setSaving] = useState(false);
-  const startMinutes = parseTimeToMinutes(startTime);
-  const endMinutes = endTime ? parseTimeToMinutes(endTime) : null;
-  const hasValidStart = !startTime || startMinutes !== null;
-  const hasValidEnd = !endTime || endMinutes !== null;
-  const needsStartForEnd = Boolean(endTime && !startTime.trim());
-  const derivedDuration =
-    startMinutes !== null && endMinutes !== null
-      ? Math.max(1, endMinutes + endOffsetDays * 24 * 60 - startMinutes)
-      : null;
-  const timeFormatHint =
-    locale === "th"
-      ? "ใช้รูปแบบ 24 ชั่วโมง เช่น 08:30"
-      : "Use 24-hour time, for example 08:30.";
-  const optionalEndHint =
-    locale === "th"
-      ? "เวลาจบไม่บังคับ ถ้าเว้นว่างจะไม่แสดง duration"
-      : "End time is optional. Leave it blank to hide duration.";
-  const errorMessage =
-    !hasValidStart || !hasValidEnd
-      ? locale === "th"
-        ? "เวลาใช้รูปแบบ HH:MM เช่น 09:30"
-        : "Use HH:MM time, for example 09:30."
-      : needsStartForEnd
-        ? locale === "th"
-          ? "ใส่เวลาเริ่มก่อนใส่เวลาจบ"
-          : "Add a start time before adding an end time."
-        : null;
-  const previewWindow =
-    startTime && endTime && derivedDuration
-      ? formatTimeRangeLabel(startTime, endTime, endOffsetDays)
-      : startTime || "--:--";
+  const model = buildTimeEditModalModel({
+    endOffsetDays,
+    endTime,
+    locale,
+    startTime,
+  });
 
   useEscapeToClose(onClose);
 
@@ -89,14 +62,14 @@ export function TimeEditModal({
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (saving || errorMessage) return;
+    if (saving || model.errorMessage) return;
     setSaving(true);
     try {
       await onSave({
         startTime: startTime.trim(),
         endTime: endTime.trim() || null,
         endOffsetDays: endTime.trim() ? endOffsetDays : 0,
-        durationMinutes: endTime.trim() ? derivedDuration : null,
+        durationMinutes: endTime.trim() ? model.derivedDuration : null,
       });
       onClose();
     } finally {
@@ -139,32 +112,32 @@ export function TimeEditModal({
         <div className={timeEditModalBodyClassName}>
           <div className={timeEditFieldsClassName}>
             <label className={timeEditFieldClassName}>
-              <span>{locale === "th" ? "เวลาเริ่ม" : "Start time"}</span>
+              <span>{model.startLabel}</span>
               <input
                 className={timeEditInputClassName}
                 inputMode="numeric"
                 maxLength={5}
                 placeholder="08:30"
-                title={timeFormatHint}
+                title={model.timeFormatHint}
                 value={startTime}
                 onChange={(event) => updateStartTime(event.target.value)}
               />
             </label>
             <label className={timeEditFieldClassName}>
-              <span>{locale === "th" ? "เวลาจบ" : "End time"}</span>
+              <span>{model.endLabel}</span>
               <input
                 className={timeEditInputClassName}
                 inputMode="numeric"
                 maxLength={5}
                 placeholder="10:00"
-                title={`${timeFormatHint} ${optionalEndHint}`}
+                title={`${model.timeFormatHint} ${model.optionalEndHint}`}
                 value={endTime}
                 onChange={(event) => updateEndTime(event.target.value)}
               />
             </label>
           </div>
           <p className={timeEditHelperClassName}>
-            {timeFormatHint} {optionalEndHint}
+            {model.timeFormatHint} {model.optionalEndHint}
           </p>
           <button
             type="button"
@@ -180,22 +153,13 @@ export function TimeEditModal({
               {locale === "th" ? "ตัวอย่างที่จะแสดง" : "Display preview"}
             </span>
             <strong className={timeEditPreviewValueClassName}>
-              {previewWindow}
+              {model.previewWindow}
             </strong>
-            {derivedDuration ? (
-              <span>
-                {locale === "th" ? "ระยะเวลา" : "Duration"}:{" "}
-                {formatDuration(derivedDuration, locale)}
-              </span>
-            ) : (
-              <span>
-                {locale === "th" ? "ไม่แสดง duration" : "Duration hidden"}
-              </span>
-            )}
+            <span>{model.durationLabel}</span>
           </div>
-          {errorMessage ? (
+          {model.errorMessage ? (
             <p className="text-xs font-bold text-(--color-danger)" role="alert">
-              {errorMessage}
+              {model.errorMessage}
             </p>
           ) : null}
         </div>
@@ -210,7 +174,7 @@ export function TimeEditModal({
           <button
             type="submit"
             className="inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={saving || Boolean(errorMessage)}
+            disabled={saving || Boolean(model.errorMessage)}
           >
             {itineraryLabels.row.durationSave}
           </button>
