@@ -9,22 +9,17 @@ import {
   applyTripEndDate,
   applyTripStartDate,
   customTripCity,
-  destinationRouteCode,
-  formatPreviewTravelDate,
   generateJoinIdForTrip,
   generateJoinPassword,
   randomToken,
-  routeCalendarDays,
   tripCityFromOption,
   tripCountryOptions,
-  tripDestinationCards,
-  tripNightCount,
-  tripStepComplete,
   uniqueList,
   type TripCityOption,
   type TripWizardDateSelectionStep,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
+import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface PortalTripWizardModelOptions {
@@ -53,37 +48,40 @@ export function usePortalTripWizardModel({
   const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");
   const destinationSearchRef = useRef<HTMLInputElement | null>(null);
   const mobileStepButtonRefs = useRef<Map<TripWizardStepId, HTMLButtonElement>>(new Map());
-  const ownerDisplayName = tripForm.ownerDisplayName;
-  const effectiveOwnerDisplayName = hasEditedOwnerDisplayName ? ownerDisplayName : ownerDisplayName || defaultOwnerDisplayName;
-  const selectedDestinationCities = tripForm.destinationCities;
-  const selectedCountryNames = uniqueList(selectedDestinationCities.map((city) => city.country));
-  const selectedCityNames = selectedDestinationCities.map((city) => city.city);
-  const selectedDestinationNames = selectedCityNames;
-  const selectedDestinationKey = selectedDestinationNames.join("|");
-  const destinationComplete = selectedDestinationCities.length > 0;
-  const datesComplete = Boolean(tripForm.startDate && tripForm.endDate);
-  const generatedJoinId = generateJoinIdForTrip(tripForm.startDate, selectedDestinationNames, accessSalt);
-  const generatedJoinPassword = tripForm.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? tripForm.joinPassword : generateJoinPassword();
-  const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && generatedJoinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/));
-  const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
+  const {
+    accessComplete,
+    calendarDays,
+    canSubmit,
+    currentStepComplete,
+    datesComplete,
+    destinationCards,
+    destinationComplete,
+    effectiveOwnerDisplayName,
+    generatedJoinId,
+    generatedJoinPassword,
+    isMobilePreviewStep,
+    joinCode,
+    previewEndDate,
+    previewNightCount,
+    previewStartDate,
+    routeDestinationCode,
+    selectedCityNames,
+    selectedCountryNames,
+    selectedDestinationCities,
+    selectedDestinationKey,
+    selectedDestinationNames,
+  } = buildPortalTripWizardDerivedState({
+    accessSalt,
+    activeMobileStep,
+    defaultOwnerDisplayName,
+    hasEditedOwnerDisplayName,
+    locale,
+    tripForm,
+  });
   const destinationSummary = selectedDestinationNames.length ? selectedDestinationNames.join(", ") : wizard.empty.destinationSummary;
   const currencySummary = selectedCountryNames.length ? uniqueList(selectedCountryNames.map((countryName) => tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "").filter(Boolean)).join(", ") || wizard.empty.currencyByCity : wizard.empty.currency;
-  const previewTripName = tripForm.name.trim() || wizard.empty.untitledTrip;
   const inviteStatus = accessComplete ? wizard.preview.inviteReady : wizard.preview.inviteDraft;
-  const destinationCards = tripDestinationCards(selectedCountryNames, selectedCityNames, locale);
-  const previewStartDate = formatPreviewTravelDate(tripForm.startDate);
-  const previewEndDate = formatPreviewTravelDate(tripForm.endDate);
-  const previewNightCount = tripNightCount(tripForm.startDate, tripForm.endDate, locale);
-  const routeDestinationCode = destinationRouteCode(selectedDestinationNames);
-  const joinCode = generatedJoinId;
-  const calendarDays = routeCalendarDays(tripForm.startDate || "2026-06-01", tripForm.startDate, tripForm.endDate);
-  const isMobilePreviewStep = activeMobileStep === "preview";
-  const currentStepComplete = tripStepComplete(activeMobileStep, {
-    accessComplete,
-    datesComplete,
-    destinationComplete,
-    tripNameComplete: Boolean(tripForm.name.trim()),
-  });
+  const previewTripName = tripForm.name.trim() || wizard.empty.untitledTrip;
   const missingFields = [
     tripForm.name.trim() ? null : wizard.status.fields.trip,
     destinationComplete ? null : wizard.status.fields.destination,
