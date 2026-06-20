@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   categoryTone,
+  expenseCategories,
   expenseCategoryFilterValues,
   formatExchangeRateInput,
   formatReminderDate,
@@ -20,6 +21,7 @@ describe("expense page support helpers", () => {
       "shopping",
       "settlement",
     ]);
+    expect(expenseCategoryFilterValues).toEqual(["all", ...expenseCategories]);
   });
 
   it("formats member initials for compact avatars", () => {

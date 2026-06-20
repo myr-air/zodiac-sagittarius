@@ -6,6 +6,7 @@ export {
   expenseCategoryFilterValues,
   expenseSplitModes,
   type CategoryTone,
+  type ExpenseCategoryFilter,
 } from "./expense-page-options";
 
 export function memberById(members: Member[], memberId: string): Member | undefined {

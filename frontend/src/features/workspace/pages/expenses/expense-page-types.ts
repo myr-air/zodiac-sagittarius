@@ -1,9 +1,8 @@
 import type { useI18n } from "@/src/i18n/I18nProvider";
 import type { CopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import type { Expense, ExpenseComment, ExpenseLineItem } from "@/src/trip/types";
-import type { expenseCategoryFilterValues } from "./expense-page-options";
 
-export type ExpenseCategoryFilter = (typeof expenseCategoryFilterValues)[number];
+export type { ExpenseCategoryFilter } from "./expense-page-options";
 export type ExpenseCopyState = CopyFeedbackState;
 export type ExpenseDialogTarget = Expense | "new" | null;
 export type ExpensePageLabels = ReturnType<typeof useI18n>["t"];
