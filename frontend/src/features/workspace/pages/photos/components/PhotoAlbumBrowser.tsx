@@ -1,5 +1,6 @@
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
+import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../TripPhotosPage.copy";
@@ -92,21 +93,14 @@ export function PhotoAlbumBrowser({
             copy={copy}
           />
         ))}
-        {!albums.length ? <PhotoAlbumEmptyState copy={copy} /> : null}
+        {!albums.length ? (
+          <WorkspaceEmptyState
+            title={copy.emptyTitle}
+            detail={copy.emptyDetail}
+            className="col-span-full min-h-[160px] rounded-(--radius-md) border border-dashed border-(--color-border-strong) bg-(--color-surface-subtle)"
+          />
+        ) : null}
       </div>
     </WorkspaceSurface>
-  );
-}
-
-function PhotoAlbumEmptyState({ copy }: { copy: PhotoCopy }) {
-  return (
-    <div className="col-span-full grid min-h-[160px] place-items-center rounded-(--radius-md) border border-dashed border-(--color-border-strong) bg-(--color-surface-subtle) p-5 text-center">
-      <div className="grid max-w-[360px] gap-1">
-        <strong className="text-(--color-text)">{copy.emptyTitle}</strong>
-        <span className="text-sm font-medium leading-6 text-(--color-text-muted)">
-          {copy.emptyDetail}
-        </span>
-      </div>
-    </div>
   );
 }

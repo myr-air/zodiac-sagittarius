@@ -1,5 +1,6 @@
 import type { BookingDoc, BookingDocStatus, Trip } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
+import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../BookingsDocsPage.copy";
@@ -128,12 +129,11 @@ export function BookingFilePanel({
           />
         ))}
         {!folderDocs.length ? (
-          <div className="grid min-h-[180px] min-w-[720px] place-items-center p-5 text-center max-[1199px]:min-w-0 max-[1199px]:w-full max-[767px]:min-h-[220px] max-[767px]:px-4">
-            <div className="grid max-w-[360px] gap-1">
-              <strong className="text-(--color-text)">{copy.emptyTitle}</strong>
-              <span className="text-sm font-medium leading-6 text-(--color-text-muted)">{copy.emptyDetail}</span>
-            </div>
-          </div>
+          <WorkspaceEmptyState
+            title={copy.emptyTitle}
+            detail={copy.emptyDetail}
+            className="min-h-[180px] min-w-[720px] max-[1199px]:min-w-0 max-[1199px]:w-full max-[767px]:min-h-[220px] max-[767px]:px-4"
+          />
         ) : null}
         {lockedDocs.map((doc) => (
           <div className={bookingStyles.lockedRowClassName} key={doc.id}>

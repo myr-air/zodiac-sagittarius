@@ -9,8 +9,14 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       bookingFolders,
       bookingList,
       bookingDialog,
+      bookingFilePanel,
+      bookingDialogLinks,
       bookingDialogState,
+      checkboxGroup,
+      workspaceEmptyState,
+      photoAlbumBrowser,
       photoAlbumDialog,
+      photoAlbumDialogRelatedItems,
       photoAlbumDialogState,
       expenseSummary,
       expenseSettlements,
@@ -41,6 +47,11 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingDialog).not.toContain("CheckboxGroup");
     expect(bookingDialog).toContain("BookingDialogFields");
     expect(bookingDialog).toContain("BookingDialogLinks");
+    expect(bookingDialogLinks).toContain("@/src/shared/components/checkbox-group");
+    expect(checkboxGroup).toContain("export function CheckboxGroup");
+    expect(workspaceEmptyState).toContain("export function WorkspaceEmptyState");
+    expect(bookingFilePanel).toContain("@/src/shared/components/workspace-empty-state");
+    expect(bookingFilePanel).not.toContain("grid max-w-[360px] gap-1");
     expect(bookingDialogState).toContain("export function useBookingDialogState");
     expect(bookingDialogState).toContain("export type BookingDialogState");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
@@ -53,6 +64,11 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(photoAlbumDialog).not.toContain("useState");
     expect(photoAlbumDialog).not.toContain("photoProviderOptions");
     expect(photoAlbumDialog).not.toContain("relatedItineraryItemIds.includes");
+    expect(photoAlbumBrowser).toContain("@/src/shared/components/workspace-empty-state");
+    expect(photoAlbumBrowser).not.toContain("function PhotoAlbumEmptyState");
+    expect(photoAlbumBrowser).not.toContain("grid max-w-[360px] gap-1");
+    expect(photoAlbumDialogRelatedItems).toContain("@/src/shared/components/checkbox-group");
+    expect(photoAlbumDialogRelatedItems).not.toContain("<input type=\"checkbox\"");
     expect(photoAlbumDialogState).toContain("export function usePhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
