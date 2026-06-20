@@ -12,17 +12,23 @@ import {
   liveMapStatusText,
   RouteMapView,
 } from "./RouteMapView";
-import { hasValidCoordinates, renderWithThaiI18n, hongKongDay } from "./route-map-test-support";
+import {
+  hongKongDay,
+  renderWithThaiI18n,
+  routeMapCoordinateItems,
+  routeMapItems,
+  routeMapUnresolvedItems,
+} from "./route-map-test-support";
 
 describe("RouteMapView", () => {
   const render = renderWithThaiI18n;
 
   it("summarizes route visibility and filters stops by day", () => {
-    const coordinateItems = tripFixture.planItems.filter(hasValidCoordinates);
+    const coordinateItems = routeMapCoordinateItems();
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
       />,
@@ -30,7 +36,7 @@ describe("RouteMapView", () => {
 
     expect(screen.getByRole("heading", { name: "แผนที่" })).toBeInTheDocument();
     expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(
-      `${coordinateItems.length}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
+      `${coordinateItems.length}/${routeMapItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
     );
     expect(screen.getByText("กำลังโหลดแผนที่จาก OpenFreeMap")).toBeInTheDocument();
     expect(screen.getByText("Hong Kong")).toBeInTheDocument();
@@ -40,13 +46,13 @@ describe("RouteMapView", () => {
 
     const dayTwoCount = coordinateItems.filter((item) => item.day === hongKongDay).length;
     expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(
-      `${dayTwoCount}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
+      `${dayTwoCount}/${routeMapItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
     );
     expect(screen.getAllByText(/วันที่ 2/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "ทุกวัน" }));
     expect(screen.getByText(/มีพิกัด/)).toHaveTextContent(
-      `${coordinateItems.length}/${tripFixture.planItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
+      `${coordinateItems.length}/${routeMapItems.length} มีพิกัด · 0 ยังไม่ระบุ`,
     );
   });
 
@@ -68,7 +74,7 @@ describe("RouteMapView", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems.slice(0, 3).map((item) => ({ ...item, coordinates: undefined }))}
+        items={routeMapUnresolvedItems(3)}
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
       />,
@@ -89,9 +95,7 @@ describe("RouteMapView", () => {
       resolved: 1,
       skipped: 0,
     }));
-    const unresolvedItems = tripFixture.planItems
-      .slice(0, 8)
-      .map((item) => ({ ...item, coordinates: undefined }));
+    const unresolvedItems = routeMapUnresolvedItems(8);
 
     render(
       <RouteMapView
@@ -118,9 +122,7 @@ describe("RouteMapView", () => {
       resolved: 3,
       skipped: 4,
     }));
-    const unresolvedItems = tripFixture.planItems
-      .slice(0, 10)
-      .map((item) => ({ ...item, coordinates: undefined }));
+    const unresolvedItems = routeMapUnresolvedItems(10);
 
     render(
       <RouteMapView
@@ -143,7 +145,7 @@ describe("RouteMapView", () => {
 
   it("includes valid stops outside the previous longitude gate", () => {
     const londonStop = {
-      ...tripFixture.planItems[0],
+      ...routeMapItems[0],
       id: "manual-london-stop",
       day: "2026-06-18",
       sortOrder: 999,
@@ -156,7 +158,7 @@ describe("RouteMapView", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={[tripFixture.planItems[0], londonStop]}
+        items={[routeMapItems[0], londonStop]}
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
       />,

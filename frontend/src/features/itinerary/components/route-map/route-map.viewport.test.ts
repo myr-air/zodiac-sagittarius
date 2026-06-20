@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
-import type { ItineraryItem } from "@/src/trip/types";
-import { hasCoordinates } from "./route-map.utils";
+import { routeMapCoordinateItems } from "./route-map-test-support";
 import {
   fallbackRouteViewport,
   getRouteCenter,
@@ -15,16 +13,7 @@ describe("route map viewport helpers", () => {
   });
 
   it("computes route center when coordinates exist", () => {
-    const withCoordinates = tripFixture.planItems
-      .filter(
-        (item): item is ItineraryItem & { coordinates: NonNullable<ItineraryItem["coordinates"]> } =>
-          Boolean(hasCoordinates(item.coordinates)),
-      )
-      .slice(0, 2)
-      .map((item) => ({
-        ...item,
-        coordinates: item.coordinates!,
-      }));
+    const withCoordinates = routeMapCoordinateItems().slice(0, 2);
     expect(getRouteCenter(withCoordinates.map((item) => ({ item, x: 0, y: 0 })))).toHaveLength(2);
   });
 });

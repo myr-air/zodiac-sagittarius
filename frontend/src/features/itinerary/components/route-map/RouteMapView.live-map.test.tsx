@@ -7,7 +7,13 @@ import {
   resetMaplibreMock,
   triggerLiveMapEvent,
 } from "./route-map-live-map-test-support";
-import { renderWithThaiI18n, hongKongDay } from "./route-map-test-support";
+import {
+  hongKongDay,
+  renderWithThaiI18n,
+  routeMapDayCoordinateItems,
+  routeMapItems,
+  routeMapUnresolvedItems,
+} from "./route-map-test-support";
 import { RouteMapView } from "./RouteMapView";
 
 const maplibreMock = getMaplibreMock();
@@ -22,7 +28,7 @@ describe("RouteMapView live map", () => {
   });
 
   it("centers the live map on the destination country when no stop has coordinates", async () => {
-    const unresolvedItems = tripFixture.planItems.slice(0, 2).map((item) => ({ ...item, coordinates: undefined }));
+    const unresolvedItems = routeMapUnresolvedItems(2);
     render(
       <RouteMapView
         countries={["Thailand"]}
@@ -46,7 +52,7 @@ describe("RouteMapView live map", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={[tripFixture.planItems.find((item) => item.coordinates && item.coordinates.lng > 110)!]}
+        items={[routeMapItems.find((item) => item.coordinates && item.coordinates.lng > 110)!]}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -60,7 +66,7 @@ describe("RouteMapView live map", () => {
     const { unmount } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -94,7 +100,7 @@ describe("RouteMapView live map", () => {
     render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -111,7 +117,7 @@ describe("RouteMapView live map", () => {
     const { unmount } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -132,7 +138,7 @@ describe("RouteMapView live map", () => {
     const { unmount } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -154,7 +160,7 @@ describe("RouteMapView live map", () => {
     const { rerender } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems.slice(0, 2)}
+        items={routeMapItems.slice(0, 2)}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -172,7 +178,7 @@ describe("RouteMapView live map", () => {
     rerender(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems.slice(0, 3)}
+        items={routeMapItems.slice(0, 3)}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -188,7 +194,7 @@ describe("RouteMapView live map", () => {
     const { unmount } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems}
+        items={routeMapItems}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -206,7 +212,7 @@ describe("RouteMapView live map", () => {
     const { unmount } = render(
       <RouteMapView
         endDate={tripFixture.trip.endDate}
-        items={tripFixture.planItems.slice(0, 2)}
+        items={routeMapItems.slice(0, 2)}
         liveMapEnabled
         startDate={tripFixture.trip.startDate}
         tripName={tripFixture.trip.name}
@@ -222,7 +228,7 @@ describe("RouteMapView live map", () => {
   });
 
   it("builds live map lines from mixed coordinate and fallback points", async () => {
-    const coordinateItems = tripFixture.planItems.filter((item) => item.day === hongKongDay && item.coordinates).slice(0, 2);
+    const coordinateItems = routeMapDayCoordinateItems(hongKongDay, 2);
     const mixedItems = [
       coordinateItems[0],
       { ...coordinateItems[0], id: "fallback-middle-stop", activity: "Fallback middle", coordinates: undefined },

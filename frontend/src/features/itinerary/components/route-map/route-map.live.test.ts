@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
-import { hasValidCoordinates } from "./route-map-test-support";
+import { routeMapCoordinateItems } from "./route-map-test-support";
 import { cleanupRouteLayers, applyRouteMapTheme, fitLiveRoute, synchronizeRouteLayers } from "./route-map.live";
 
 describe("route map live utilities", () => {
@@ -23,7 +22,7 @@ describe("route map live utilities", () => {
   });
 
   it("synchronizes live route line layers by day", () => {
-    const coordinateItems = tripFixture.planItems.filter(hasValidCoordinates).slice(0, 3);
+    const coordinateItems = routeMapCoordinateItems().slice(0, 3);
     const map = {
       addLayer: vi.fn(),
       addSource: vi.fn(),
