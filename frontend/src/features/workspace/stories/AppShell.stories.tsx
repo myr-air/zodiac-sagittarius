@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { AppShell } from "@/src/features/workspace/components/app-shell";
+import { ownerPlay, ownerThaiPlay, travelerPlay, viewerPlay } from "./AppShell.stories.plays";
 import {
   appShellOwnerStoryArgs,
   appShellTravelerStoryArgs,
@@ -21,25 +21,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
   args: appShellOwnerStoryArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("link", { name: /Overview/i })).toHaveAttribute("aria-current", "page");
-  },
+  play: ownerPlay,
 };
 
 export const Traveler: Story = {
   args: appShellTravelerStoryArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Explorer Friend")).toBeVisible();
-    await expect(canvas.getAllByText("Traveler").length).toBeGreaterThan(0);
-  },
+  play: travelerPlay,
 };
 
 export const Viewer: Story = {
   args: appShellViewerStoryArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Family Member")).toBeVisible();
-    await expect(canvas.getByText("Viewer")).toBeVisible();
-  },
+  play: viewerPlay,
 };
 
 export const Mobile: Story = {
@@ -55,8 +47,5 @@ export const Tablet: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("navigation", { name: /เมนูวางแผน Joii/i })).toBeVisible();
-    await expect(canvas.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute("aria-current", "page");
-  },
+  play: ownerThaiPlay,
 };
