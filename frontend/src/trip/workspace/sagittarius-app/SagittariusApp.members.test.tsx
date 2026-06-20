@@ -1,0 +1,290 @@
+import {
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SagittariusApp } from "@/src/app/SagittariusApp";
+import { tripStorageKey } from "@/src/trip/repository";
+import { seedTrip } from "@/src/trip/seed";
+import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import {
+  installLocalStorageStub,
+  installSessionStorageStub,
+  render,
+} from "./sagittarius-app.test-support";
+
+describe("Sagittarius cockpit members", () => {
+  beforeEach(() => {
+    installLocalStorageStub();
+    installSessionStorageStub();
+    window.history.pushState(null, "", appRoutes.home());
+  });
+
+  it("renders trip members as their own workspace page", () => {
+    render(<SagittariusApp initialView="members" />);
+
+    const navigation = screen.getByRole("navigation", {
+      name: /เมนูวางแผน Joii/i,
+    });
+    const membersLink = within(navigation).getByRole("link", {
+      name: /สมาชิก/i,
+    });
+
+    expect(membersLink).toHaveClass("rail-link--active");
+    expect(membersLink).toHaveAttribute(
+      "href",
+      appRoutes.tripMembers(seedTrip.id),
+    );
+    expect(
+      screen.getByRole("region", { name: /สมาชิกทริป/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /People and presence/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /สมาชิกในทริป/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /แผนที่เส้นทาง/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /ไทม์ไลน์ทริป/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders members with a single page header and without itinerary-only controls", () => {
+    const { container } = render(<SagittariusApp initialView="members" />);
+    const workspaceGrid = container.querySelector(".workspace-grid");
+    const planningMain = container.querySelector(".planning-main");
+
+    expect(
+      screen.queryByRole("banner", { name: /Trip command bar/i }),
+    ).not.toBeInTheDocument();
+    expect(container.querySelector(".page-header")).toHaveTextContent(
+      "Hong Kong + Shenzhen Trip",
+    );
+    expect(container.querySelector(".page-header")).toHaveTextContent(
+      "18–23 มิ.ย. 2026",
+    );
+    expect(workspaceGrid).toBeInTheDocument();
+    expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
+    expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
+    expect(planningMain).toContainElement(
+      screen.getByRole("region", { name: /สมาชิกทริป/i }),
+    );
+    expect(
+      screen.queryByRole("button", { name: /เพิ่มสถานที่ \/ กิจกรรม/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /เปิดรายละเอียด/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /เลิกทำ/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /ทำซ้ำ/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /More actions/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the current member as confirmed on the members page", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="members" />);
+
+    const currentMemberRow = screen
+      .getByText(/Demo Traveler \(คุณ\)/i)
+      .closest(".person-row");
+    expect(currentMemberRow).not.toBeNull();
+    expect(
+      within(currentMemberRow as HTMLElement).getByText(/ยืนยันแล้ว/i),
+    ).toBeInTheDocument();
+    expect(
+      within(currentMemberRow as HTMLElement).queryByText(/รอเข้าร่วม/i),
+    ).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/^สถานะ$/i), "pending");
+
+    expect(
+      screen.queryByText(/Demo Traveler \(คุณ\)/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("filters trip members and can reset an empty member search", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="members" />);
+
+    await user.type(screen.getByLabelText(/ค้นหาสมาชิก/i), "Family");
+
+    const membersPage = screen.getByRole("region", { name: /สมาชิกทริป/i });
+    expect(
+      within(membersPage).getByRole("button", {
+        name: /ปิดสิทธิ์ Family Member/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(membersPage).queryByText(/Travel Mate/i),
+    ).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/^สิทธิ์$/i), "organizer");
+
+    expect(
+      screen.getByText(/ไม่พบสมาชิกที่ตรงกับตัวกรอง/i),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getAllByRole("button", { name: /ล้างตัวกรอง/i })[0],
+    );
+
+    expect(
+      screen.getByRole("button", { name: /ปิดสิทธิ์ Travel Mate/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("copies the trip invite link from the members command center", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(<SagittariusApp initialView="members" />);
+
+    await user.click(screen.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i }));
+
+    expect(writeText).toHaveBeenCalledWith(
+      expect.stringContaining(appRoutes.join("HK-SZ-2025")),
+    );
+    expect(screen.getByText(/คัดลอกแล้ว/i)).toBeInTheDocument();
+  });
+
+  it("creates new members from the members command center", async () => {
+    const user = userEvent.setup();
+    render(<SagittariusApp initialView="members" />);
+
+    await user.click(
+      screen.getByRole("button", { name: /เปิดฟอร์มเพิ่มสมาชิก/i }),
+    );
+    await user.type(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), "New Cousin");
+    await user.selectOptions(
+      screen.getByLabelText(/สิทธิ์สมาชิกใหม่/i),
+      "viewer",
+    );
+    await user.click(screen.getByRole("button", { name: /บันทึกสมาชิก/i }));
+
+    const newMemberRow = screen
+      .getAllByText("New Cousin")[0]
+      .closest(".person-row");
+    expect(newMemberRow).not.toBeNull();
+    expect(
+      within(newMemberRow as HTMLElement).getByText(/ดูได้/i),
+    ).toBeInTheDocument();
+    expect(
+      within(newMemberRow as HTMLElement).getByText(/รอเข้าร่วม/i),
+    ).toBeInTheDocument();
+  });
+
+  it("manages member roles, access, claim reset, and current member password from the app state", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm");
+    const prompt = vi.spyOn(window, "prompt");
+    render(<SagittariusApp initialView="members" />);
+
+    await user.selectOptions(
+      screen.getByLabelText(/Role for Explorer Friend/i),
+      "organizer",
+    );
+    expect(
+      screen.getByText("Explorer Friend").closest(".person-row"),
+    ).toHaveTextContent("ผู้จัดทริป");
+
+    await user.click(
+      screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }),
+    );
+    await user.click(screen.getByRole("button", { name: /ยืนยัน/i }));
+    expect(
+      screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /เปิดสิทธิ์ Explorer Friend/i }),
+    );
+    await user.click(screen.getByRole("button", { name: /ยืนยัน/i }));
+    expect(
+      screen.getByRole("button", { name: /ปิดสิทธิ์ Explorer Friend/i }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /เปลี่ยนรหัสผ่าน Demo Traveler/i }),
+    );
+    const passwordDialog = screen.getByRole("dialog", {
+      name: /เปลี่ยนรหัสผ่าน Demo Traveler/i,
+    });
+    await user.type(
+      within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i),
+      "owner-new-pin",
+    );
+    await user.click(
+      within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }),
+    );
+
+    expect(prompt).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
+
+    prompt.mockRestore();
+    confirm.mockRestore();
+  });
+
+  it("resets a claimed non-owner member loaded from a persisted draft", async () => {
+    const user = userEvent.setup();
+    const confirm = vi.spyOn(window, "confirm");
+    const storage = installLocalStorageStub();
+    storage.setItem(
+      tripStorageKey,
+      JSON.stringify({
+        ...seedTrip,
+        members: seedTrip.members.map((member) =>
+          member.id === "member-beam"
+            ? {
+                ...member,
+                claimPasswordHash: "local_hash_old",
+                claimedAt: "2026-05-28T00:00:00.000Z",
+              }
+            : member,
+        ),
+      }),
+    );
+
+    render(<SagittariusApp initialView="members" />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /รีเซ็ตรหัสผ่าน Travel Mate/i,
+      }),
+    );
+    await user.click(
+      within(
+        screen.getByRole("dialog", { name: /รีเซ็ตตัวตน Travel Mate/i }),
+      ).getByRole("button", { name: /รีเซ็ตตัวตน/i }),
+    );
+
+    expect(confirm).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }),
+      ).not.toBeInTheDocument(),
+    );
+
+    confirm.mockRestore();
+  });
+});
