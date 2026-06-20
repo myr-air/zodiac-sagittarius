@@ -1,14 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { RouteMapView } from "@/src/features/itinerary/components";
 import {
   denseMapItems,
   emptyMapItems,
-  expectMapResponsiveContract,
   mapOwnerStoryArgs,
   mapPlanABAlternativeItems,
   mapStopsWithoutCoordinatesItems,
 } from "./MapPage.stories.support";
+import {
+  liveMapFailurePlay,
+  liveMapLoadingPlay,
+  ownerThaiPlay,
+  planABAlternativesPlay,
+  responsivePlay,
+  stopsWithoutCoordinatesPlay,
+} from "./MapPage.stories.plays";
 
 const meta = {
   title: "Pages/Map",
@@ -27,11 +33,7 @@ export const Owner: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /แผนที่เส้นทาง/i })).toHaveClass("route-map-panel");
-    await expect(canvas.getByText("แผนที่")).toBeVisible();
-    await expect(canvas.getByLabelText(/เลือกวันบนแผนที่/i)).toBeVisible();
-  },
+  play: ownerThaiPlay,
 };
 
 export const Traveler: Story = {
@@ -62,11 +64,7 @@ export const LiveMapLoading: Story = {
     liveMapAvailability: "loading",
     liveMapEnabled: true,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText(/Map preview.*Hong Kong and Shenzhen/i)).toHaveAttribute("data-live-map-state", "loading");
-    await expect(canvas.getByText(/Loading map from OpenFreeMap/i)).toHaveClass("route-map-status");
-    await expect(canvas.getByText("Hong Kong")).toBeVisible();
-  },
+  play: liveMapLoadingPlay,
 };
 
 export const LiveMapFailure: Story = {
@@ -75,12 +73,7 @@ export const LiveMapFailure: Story = {
     liveMapAvailability: "error",
     liveMapEnabled: true,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText(/Map preview.*Hong Kong and Shenzhen/i)).toHaveAttribute("data-live-map-state", "error");
-    await expect(canvas.getByRole("status")).toHaveTextContent(/Could not load the live map/i);
-    await expect(canvas.queryByRole("button", { name: /Retry live map/i })).toBeNull();
-    await expect(canvas.getByText(/OpenFreeMap/i)).toHaveClass("map-source-note");
-  },
+  play: liveMapFailurePlay,
 };
 
 export const PlanABAlternatives: Story = {
@@ -88,11 +81,7 @@ export const PlanABAlternatives: Story = {
     ...Owner.args,
     items: mapPlanABAlternativeItems,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Route map/i })).toHaveClass("route-map-panel");
-    await expect(canvas.getByText("Plan A gallery route")).toBeVisible();
-    await expect(canvas.getByText("Plan B harbour route")).toBeVisible();
-  },
+  play: planABAlternativesPlay,
 };
 
 export const StopsWithoutCoordinates: Story = {
@@ -100,42 +89,29 @@ export const StopsWithoutCoordinates: Story = {
     ...Owner.args,
     items: mapStopsWithoutCoordinatesItems,
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Route map/i })).toHaveClass("route-map-panel");
-    await expect(canvas.getByLabelText(/Activities without coordinates/i)).toBeVisible();
-    await expect(canvas.getByText(/1 activities need coordinates/i)).toBeVisible();
-    await expect(canvas.getByText("Unresolved dinner venue")).toBeVisible();
-  },
+  play: stopsWithoutCoordinatesPlay,
 };
 
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: async ({ canvasElement }) => {
-    await expectMapResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: async ({ canvasElement }) => {
-    await expectMapResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: async ({ canvasElement }) => {
-    await expectMapResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    await expectMapResponsiveContract(canvasElement);
-  },
+  play: responsivePlay,
 };
