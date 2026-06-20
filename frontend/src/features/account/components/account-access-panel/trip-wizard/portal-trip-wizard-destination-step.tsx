@@ -3,14 +3,13 @@
 import type { RefObject } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import type { TripCity } from "@/src/trip/types";
-import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import {
   tripDestinationCards,
   type TripCityOption,
 } from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
 import { TripWizardDestinationSearch } from "./portal-trip-wizard-destination-search";
+import { TripWizardManualCityEntry } from "./portal-trip-wizard-manual-city-entry";
 import { TripWizardSelectedDestinations } from "./portal-trip-wizard-selected-destinations";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
@@ -95,21 +94,12 @@ export function TripWizardDestinationStep({
           selectedCityNames={selectedCityNames}
           onRemoveCityStop={onRemoveCityStop}
         />
-        <div className={wizardStyles.tripCityEntryClassName}>
-          <label>
-            <span>{wizard.fields.addCityManually}</span>
-            <input
-              aria-label={wizard.fields.addCityOrStop}
-              value={countryQuery}
-              onChange={(event) => onCountryQueryChange(event.target.value)}
-              placeholder={wizard.placeholders.manualCity}
-            />
-          </label>
-          <Button type="button" variant="secondary" onClick={onAddCityStop} disabled={!countryQuery.trim()}>
-            <Icon name="plus" />
-            {wizard.actions.addCity}
-          </Button>
-        </div>
+        <TripWizardManualCityEntry
+          countryQuery={countryQuery}
+          wizard={wizard}
+          onAddCityStop={onAddCityStop}
+          onCountryQueryChange={onCountryQueryChange}
+        />
       </div>
     </section>
   );
