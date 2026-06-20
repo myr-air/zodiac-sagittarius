@@ -1,12 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type {
-  BookingDoc,
-  Expense,
-  ItineraryItem,
-  StopNote,
-  TripTask,
-} from "@/src/trip/types";
+import type { BookingDoc, Expense, StopNote, TripTask } from "@/src/trip/types";
 import {
   buildImportItineraryRequest,
   buildImportedBookingDocCreateRequest,
@@ -17,70 +11,15 @@ import {
   buildImportedTaskStatusPatchRequest,
   createImportedPlanRecordsViaApi,
 } from "./itinerary-import-api";
+import {
+  importedBookingDoc,
+  importedExpense,
+  importedItineraryItem,
+  importedStopNote,
+  importedTask,
+} from "./itinerary-import-api.test-support";
 import type { ImportedPlanRecords } from "./itinerary-import-model";
 import { pathIdRain } from "../testing/itinerary-path-fixtures";
-
-const task: TripTask = {
-  assigneeId: "member-aom",
-  createdBy: "member-aom",
-  id: "task-import",
-  kind: "booking",
-  relatedItemId: "item-created",
-  status: "done",
-  title: "Confirm tickets",
-  tripPlanId: "plan-rain",
-  visibility: "shared",
-};
-
-const expense: Expense = {
-  amount: 12,
-  category: "tickets",
-  currency: "HKD",
-  id: "expense-import",
-  itineraryItemId: "item-created",
-  paidBy: "member-aom",
-  splits: { "member-aom": 12 },
-  title: "Museum ticket",
-  tripPlanId: "plan-rain",
-};
-
-const note: StopNote = {
-  authorId: "member-aom",
-  body: "Use exit C",
-  createdAt: "2026-06-16T00:00:00.000Z",
-  id: "note-import",
-  itemId: "item-created",
-  tripId: "trip-demo",
-  tripPlanId: "plan-rain",
-};
-
-const bookingDoc: BookingDoc = {
-  confirmationCode: "ABC123",
-  createdBy: "member-aom",
-  currency: "HKD",
-  endsAt: null,
-  externalLinks: [],
-  id: "booking-import",
-  noteIds: [note.id],
-  notes: "Bring passports",
-  ownerMemberId: "member-aom",
-  priceAmount: 12,
-  providerName: "Museum",
-  relatedExpenseIds: [expense.id],
-  relatedItineraryItemIds: ["item-created"],
-  relatedTaskIds: [task.id],
-  startsAt: null,
-  status: "confirmed",
-  timezone: "Asia/Hong_Kong",
-  title: "Museum booking",
-  travelerIds: ["member-aom"],
-  tripId: "trip-demo",
-  tripPlanId: "plan-rain",
-  type: "activity_ticket",
-  updatedAt: "2026-06-16T00:00:00.000Z",
-  version: 1,
-  visibility: "shared",
-};
 
 describe("itinerary import API adapter", () => {
   it("builds API import requests for itinerary content", () => {
@@ -102,7 +41,7 @@ describe("itinerary import API adapter", () => {
     expect(
       buildImportedTaskCreateRequest({
         clientMutationId: "task-create-mutation",
-        task,
+        task: importedTask,
       }),
     ).toEqual({
       clientMutationId: "task-create-mutation",
@@ -117,7 +56,7 @@ describe("itinerary import API adapter", () => {
     expect(
       buildImportedTaskStatusPatchRequest({
         clientMutationId: "task-status-mutation",
-        createdTask: { ...task, id: "task-created", version: 4 },
+        createdTask: { ...importedTask, id: "task-created", version: 4 },
         status: "done",
       }),
     ).toEqual({
@@ -129,7 +68,7 @@ describe("itinerary import API adapter", () => {
     expect(
       buildImportedStopNoteCreateRequest({
         clientMutationId: "note-create-mutation",
-        note,
+        note: importedStopNote,
       }),
     ).toEqual({
       clientMutationId: "note-create-mutation",
@@ -143,7 +82,7 @@ describe("itinerary import API adapter", () => {
     expect(
       buildImportedExpenseCreateRequest({
         clientMutationId: "expense-create-mutation",
-        expense,
+        expense: importedExpense,
       }),
     ).toEqual({
       clientMutationId: "expense-create-mutation",
@@ -164,11 +103,11 @@ describe("itinerary import API adapter", () => {
 
     expect(
       buildImportedBookingDocCreateRequest({
-        bookingDoc,
+        bookingDoc: importedBookingDoc,
         clientMutationId: "booking-create-mutation",
-        expenseIdMap: new Map([[expense.id, "expense-created"]]),
-        noteIdMap: new Map([[note.id, "note-created"]]),
-        taskIdMap: new Map([[task.id, "task-created"]]),
+        expenseIdMap: new Map([[importedExpense.id, "expense-created"]]),
+        noteIdMap: new Map([[importedStopNote.id, "note-created"]]),
+        taskIdMap: new Map([[importedTask.id, "task-created"]]),
       }),
     ).toEqual({
       clientMutationId: "booking-create-mutation",
@@ -196,40 +135,6 @@ describe("itinerary import API adapter", () => {
   });
 
   it("builds imported itinerary item create requests with remapped parent ids", () => {
-    const item: ItineraryItem = {
-      activity: "Imported museum",
-      activityType: "attraction",
-      address: "100 Museum Road",
-      coordinates: { lat: 22.3, lng: 114.17 },
-      createdBy: "member-aom",
-      day: "2026-06-19",
-      details: { source: "import" },
-      durationMinutes: 75,
-      endOffsetDays: 0,
-      endTime: "11:15",
-      id: "preview-child",
-      itemKind: "activity",
-      linkLabel: "แผนที่",
-      mapLink: "https://maps.example/museum",
-      note: "Use group entrance",
-      parentItemId: "preview-parent",
-      pathGroupId: "path-group-import",
-      pathId: pathIdRain,
-      pathName: "Rain plan",
-      pathRole: "alternative",
-      place: "Museum",
-      planVariantId: "plan-rain",
-      priority: "high",
-      sortOrder: 200,
-      startTime: "10:00",
-      status: "planned",
-      timeMode: "scheduled",
-      transportation: "MTR",
-      tripId: "trip-demo",
-      updatedAt: "2026-06-16T00:00:00.000Z",
-      version: 1,
-    };
-
     expect(
       buildImportedItineraryItemCreateRequest({
         clientMutationId: "itinerary-import-create-mutation",
@@ -237,7 +142,7 @@ describe("itinerary import API adapter", () => {
         createdItemIdsByPreviewId: new Map([
           ["preview-parent", "created-parent"],
         ]),
-        item,
+        item: importedItineraryItem,
       }),
     ).toEqual({
       clientMutationId: "itinerary-import-create-mutation",
@@ -272,7 +177,7 @@ describe("itinerary import API adapter", () => {
 
   it("creates imported records and remaps linked booking relations", async () => {
     const createdTask: TripTask = {
-      ...task,
+      ...importedTask,
       id: "task-created",
       status: "open",
       version: 1,
@@ -282,10 +187,13 @@ describe("itinerary import API adapter", () => {
       status: "done",
       version: 2,
     };
-    const createdExpense: Expense = { ...expense, id: "expense-created" };
-    const createdNote: StopNote = { ...note, id: "note-created" };
+    const createdExpense: Expense = {
+      ...importedExpense,
+      id: "expense-created",
+    };
+    const createdNote: StopNote = { ...importedStopNote, id: "note-created" };
     const createdBookingDoc: BookingDoc = {
-      ...bookingDoc,
+      ...importedBookingDoc,
       id: "booking-created",
       relatedExpenseIds: [createdExpense.id],
       relatedTaskIds: [patchedTask.id],
@@ -302,10 +210,10 @@ describe("itinerary import API adapter", () => {
       (prefix: string) => `${prefix}-mutation`,
     );
     const records: ImportedPlanRecords = {
-      bookingDocs: [bookingDoc],
-      expenses: [expense],
-      stopNotes: [note],
-      tasks: [task],
+      bookingDocs: [importedBookingDoc],
+      expenses: [importedExpense],
+      stopNotes: [importedStopNote],
+      tasks: [importedTask],
     };
 
     const createdRecords = await createImportedPlanRecordsViaApi({
@@ -321,7 +229,7 @@ describe("itinerary import API adapter", () => {
       "session-token",
       expect.objectContaining({
         clientMutationId: "itinerary-import-task-create-mutation",
-        title: task.title,
+        title: importedTask.title,
       }),
     );
     expect(apiClient.patchTask).toHaveBeenCalledWith(
