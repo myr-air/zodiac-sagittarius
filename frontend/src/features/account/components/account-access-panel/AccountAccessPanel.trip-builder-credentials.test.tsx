@@ -1,0 +1,39 @@
+import { fireEvent, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  installLocalStorageStub,
+  renderTripBuilder,
+} from "./testing/account-access-panel-test-utils";
+
+describe("AccountAccessPanel trip builder credentials", () => {
+  beforeEach(() => {
+    installLocalStorageStub();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it("generates route-aware join credentials without a draft invite token", async () => {
+    renderTripBuilder();
+
+    fireEvent.change(await screen.findByLabelText(/Trip name/i), {
+      target: { value: "Hong Kong May Route" },
+    });
+    fireEvent.change(screen.getByLabelText(/Search destination cities/i), {
+      target: { value: "Hong Kong" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Hong Kong, Hong Kong$/i }));
+
+    const joinCode = screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim() ?? "";
+    const joinPass = screen.getByLabelText(/Join password/i);
+
+    expect(joinCode).toMatch(/^\d{4}-HKG-[A-Z0-9]{3}$/);
+    expect(joinPass).toHaveValue();
+    expect(String((joinPass as HTMLInputElement).value)).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+    expect(screen.queryByText(/Invite link:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/token=/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Invite link appears after create/i)).toBeInTheDocument();
+  });
+});
