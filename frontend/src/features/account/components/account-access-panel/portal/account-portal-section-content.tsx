@@ -22,6 +22,14 @@ import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
 import { PortalVaultSection } from "./portal-vault-section";
 import type { AccountPortalDashboardClassNames } from "./account-portal-dashboard.types";
+import {
+  accountPortalDashboardSectionClassNames,
+  accountPortalExplorerSectionClassNames,
+  accountPortalNewTripSectionClassNames,
+  accountPortalSettingsSectionClassNames,
+  accountPortalTripsSectionClassNames,
+  accountPortalVaultSectionClassNames,
+} from "./account-portal-section-classnames";
 
 interface AccountPortalSectionContentProps {
   accountClient: AccountApiClient;
@@ -71,12 +79,7 @@ export function AccountPortalSectionContent({
       {portalSection === "dashboard" ? (
         <PortalDashboardSection
           accountSession={accountSession}
-          classNames={{
-            avatar: classNames.avatar,
-            profileRow: classNames.profileRow,
-            section: classNames.profileCard,
-            statGrid: classNames.statGrid,
-          }}
+          classNames={accountPortalDashboardSectionClassNames(classNames)}
           isLoading={isLoading}
           settings={settings}
           stats={stats}
@@ -85,10 +88,7 @@ export function AccountPortalSectionContent({
 
       {portalSection === "trips" ? (
         <PortalTripsSection
-          classNames={{
-            section: classNames.historyCard,
-            topline: classNames.sectionTopline,
-          }}
+          classNames={accountPortalTripsSectionClassNames(classNames)}
           isLoading={isLoading}
           trips={trips}
         />
@@ -99,11 +99,7 @@ export function AccountPortalSectionContent({
           accountClient={accountClient}
           accountSession={accountSession}
           apiClient={apiClient}
-          classNames={{
-            card: classNames.newTripCard,
-            historyCard: classNames.historyCard,
-            topbar: classNames.tripBuilderTopbar,
-          }}
+          classNames={accountPortalNewTripSectionClassNames(classNames)}
           settings={settings}
           onCreatedTrip={onCreatedTrip}
           onError={onError}
@@ -113,11 +109,7 @@ export function AccountPortalSectionContent({
 
       {portalSection === "explorer" ? (
         <PortalExplorerSection
-          classNames={{
-            section: classNames.featureCard,
-            settingsGrid: classNames.settingsGrid,
-            stepSummary: classNames.stepSummary,
-          }}
+          classNames={accountPortalExplorerSectionClassNames(classNames)}
           explorer={explorer}
           isLoading={isLoading}
           trips={trips}
@@ -132,12 +124,7 @@ export function AccountPortalSectionContent({
         <PortalVaultSection
           accountClient={accountClient}
           accountSession={accountSession}
-          classNames={{
-            empty: classNames.empty,
-            form: classNames.settingsForm,
-            section: classNames.featureCard,
-            twoCol: classNames.twoCol,
-          }}
+          classNames={accountPortalVaultSectionClassNames(classNames)}
           isLoading={isLoading}
           vaultItems={vaultItems}
           onError={onError}
@@ -150,17 +137,7 @@ export function AccountPortalSectionContent({
         <PortalSettingsSection
           accountClient={accountClient}
           accountSession={accountSession}
-          classNames={{
-            avatar: classNames.avatar,
-            deviceList: classNames.deviceList,
-            deviceRow: classNames.deviceRow,
-            empty: classNames.empty,
-            profilePreview: classNames.settingsProfilePreview,
-            section: classNames.settingsCard,
-            settingsForm: classNames.settingsForm,
-            settingsGrid: classNames.settingsGrid,
-            twoCol: classNames.twoCol,
-          }}
+          classNames={accountPortalSettingsSectionClassNames(classNames)}
           settings={settings}
           onError={onError}
           onMessage={onMessage}
