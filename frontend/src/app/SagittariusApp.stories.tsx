@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import {
   portalRoutes,
@@ -13,13 +12,17 @@ import {
   denseTrip,
   emptyTrip,
   expectBookingsView,
+  expectDesktopOverviewWorkspace,
   expectExpensesView,
   expectItineraryView,
   expectMapView,
   expectMembersView,
   expectOverviewView,
+  expectOwnerWorkspace,
   expectPhotosView,
+  expectReadOnlyItineraryWorkspace,
   expectSettingsView,
+  expectThaiOwnerWorkspace,
   expectTimelineView,
   seedTripJoinId,
   storyTripId,
@@ -64,49 +67,29 @@ export const TripTimelineAccess: Story = appRouteStory({ accessMode: "trip-acces
 export const TripMembersAccess: Story = appRouteStory({ accessMode: "trip-access", initialView: "members", requireJoin: true, dataSource: "api", routeTripId: storyTripId }, { pathname: tripRoutes.members(storyTripId) });
 export const Owner: Story = {
   args: { initialView: "overview" },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
-  },
+  play: expectOwnerWorkspace,
 };
 export const OwnerThai: Story = {
   args: { initialView: "overview" },
   parameters: { locale: "th" },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute("lang", "th");
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-  },
+  play: expectThaiOwnerWorkspace,
 };
 export const Traveler: Story = {
   args: { initialView: "itinerary", initialMemberId: travelerMemberId },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
-  },
+  play: expectReadOnlyItineraryWorkspace,
 };
 export const Viewer: Story = {
   args: { initialView: "itinerary", initialMemberId: viewerMemberId },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
-  },
+  play: expectReadOnlyItineraryWorkspace,
 };
 export const Desktop1024Overview: Story = {
   args: { initialView: "overview" },
   parameters: {
     viewport: { defaultViewport: "desktop1024" },
   },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".workspace-grid")).toHaveClass("grid-cols-[minmax(0,1fr)]");
-    await expect(canvasElement.querySelector(".side-rail")).toBeInTheDocument();
-  },
+  play: expectDesktopOverviewWorkspace,
 };
-export const Desktop1440Overview: Story = appViewportStory("overview", "desktop1440", Desktop1024Overview.play!);
+export const Desktop1440Overview: Story = appViewportStory("overview", "desktop1440", expectDesktopOverviewWorkspace);
 export const Desktop1024Itinerary: Story = appViewportStory("itinerary", "desktop1024", expectItineraryView);
 export const Desktop1440Itinerary: Story = appViewportStory("itinerary", "desktop1440", expectItineraryView);
 export const Desktop1024Timeline: Story = appViewportStory("timeline", "desktop1024", expectTimelineView);
@@ -129,17 +112,11 @@ export const Map: Story = appViewStory("map");
 export const Members: Story = appViewStory("members");
 export const Dense: Story = {
   args: { initialTrip: denseTrip, initialView: "overview" },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
-  },
+  play: expectOverviewView,
 };
 export const Empty: Story = {
   args: { initialTrip: emptyTrip, initialView: "overview" },
-  play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
-  },
+  play: expectOverviewView,
 };
 export const TabletOverview: Story = appViewportStory("overview", "tablet768", expectOverviewView);
 export const MobileOverview: Story = appViewportStory("overview", "mobile320", expectOverviewView);

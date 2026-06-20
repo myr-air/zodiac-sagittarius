@@ -66,6 +66,45 @@ export function appViewportStory(
   };
 }
 
+export async function expectOwnerWorkspace({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectThaiOwnerWorkspace({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute("lang", "th");
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+}
+
+export async function expectReadOnlyItineraryWorkspace({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
+}
+
+export async function expectDesktopOverviewWorkspace({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".workspace-grid")).toHaveClass("grid-cols-[minmax(0,1fr)]");
+  await expect(canvasElement.querySelector(".side-rail")).toBeInTheDocument();
+}
+
 export async function expectWorkspaceView(
   canvasElement: HTMLElement,
   viewClassName: string,
