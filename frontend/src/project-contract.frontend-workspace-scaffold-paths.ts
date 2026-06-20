@@ -106,6 +106,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-commands.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-commands-params.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts",
+  "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import-params.ts",
   "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-export-command.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-booking-commands.ts",

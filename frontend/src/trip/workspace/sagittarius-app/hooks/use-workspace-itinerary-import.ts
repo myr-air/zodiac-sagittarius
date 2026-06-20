@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import { parseItineraryImportDocument } from "@/src/trip/itinerary-import-export";
 import { buildImportItineraryRequest } from "@/src/trip/workspace/itinerary-import-api";
 import {
@@ -7,40 +6,9 @@ import {
   shouldUseApiItineraryImport,
   type PendingItineraryImport,
 } from "@/src/trip/workspace/itinerary-import-model";
-import type {
-  ExpenseSummary,
-  StopNote,
-  Trip,
-  TripTask,
-  TripParticipantSession,
-  ItineraryItem,
-} from "@/src/trip/types";
 import { useWorkspaceItineraryExportCommand } from "./itinerary/use-workspace-itinerary-export-command";
 import { useWorkspaceItineraryImportApplyCommand } from "./itinerary/use-workspace-itinerary-import-apply-command";
-
-interface UseWorkspaceItineraryImportOptions {
-  canEdit: boolean;
-  commitTrip: (
-    updater: (current: Trip) => Trip,
-    nextSelectedItemId?: string,
-  ) => void;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  selectedTripPlanId: string;
-  setBackendExpenseSummary: (
-    summary: { tripPlanId: string; summary: ExpenseSummary } | null,
-  ) => void;
-  setContextRailVisibility: (open: boolean) => void;
-  setSelectedItemId: (itemId: string) => void;
-  setStopNotes: (updater: (current: StopNote[]) => StopNote[]) => void;
-  setTasks: (updater: (current: TripTask[]) => TripTask[]) => void;
-  stopNotes: StopNote[];
-  tasks: TripTask[];
-  trip: Trip;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-  apiClient?: TripApiClient;
-  planItems: ItineraryItem[];
-}
+import type { UseWorkspaceItineraryImportOptions } from "./use-workspace-itinerary-import-params";
 
 export function useWorkspaceItineraryImport({
   canEdit,
