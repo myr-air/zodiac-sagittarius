@@ -71,6 +71,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/stories/ContextRail.stories.support.ts",
   "src/features/itinerary/stories/OverviewPage.stories.plays.ts",
   "src/features/itinerary/stories/OverviewPage.stories.support.ts",
+  "src/features/itinerary/stories/OverviewRolePanels.stories.plays.ts",
   "src/features/itinerary/stories/OverviewRolePanels.stories.support.ts",
   "src/features/itinerary/stories/ItineraryPage.stories.support.ts",
   "src/features/itinerary/stories/ItineraryPage.stories.plays.ts",

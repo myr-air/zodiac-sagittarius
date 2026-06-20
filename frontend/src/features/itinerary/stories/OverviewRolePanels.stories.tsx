@@ -1,10 +1,10 @@
-import { expect } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   ManagerOverviewPanels,
   TravelerOverviewPanels,
   ViewerOverviewPanels,
 } from "@/src/features/itinerary/components/overview";
+import { managerPlay, travelerPlay, viewerPlay } from "./OverviewRolePanels.stories.plays";
 import {
   managerOverviewPanelStoryProps,
   travelerOverviewPanelStoryProps,
@@ -27,11 +27,7 @@ export const Traveler: Story = {
       />
     </div>
   ),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /traveler highlights/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("region", { name: /my travel checklist/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /^add$/i })).toBeInTheDocument();
-  },
+  play: travelerPlay,
 };
 
 export const Viewer: Story = {
@@ -42,11 +38,7 @@ export const Viewer: Story = {
       />
     </div>
   ),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /read-only trip snapshot/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("region", { name: /next important stop/i })).toBeInTheDocument();
-    await expect(canvas.queryByRole("button", { name: /add checklist item/i })).toBeNull();
-  },
+  play: viewerPlay,
 };
 
 export const Manager: Story = {
@@ -57,10 +49,5 @@ export const Manager: Story = {
       />
     </div>
   ),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /trip readiness/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("region", { name: /trip checklist/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("group", { name: /checklist scope/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /add checklist item/i })).toBeInTheDocument();
-  },
+  play: managerPlay,
 };
