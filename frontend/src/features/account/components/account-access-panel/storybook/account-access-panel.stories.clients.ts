@@ -9,7 +9,7 @@ import {
   accountStats,
   accountTravelerTrip,
   accountTrip,
-} from "./account-access-panel-fixtures";
+} from "../account-access-panel-fixtures";
 
 export const trustedStorySession = {
   userId: "user-aom",

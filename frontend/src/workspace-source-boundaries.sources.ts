@@ -161,6 +161,12 @@ export const workspaceBoundarySourcePaths = {
   portalTripWizardMobileState: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-mobile-state.ts",
   portalTripWizardDerivedState: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts",
   portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx",
+  portalTripWizardDateActions:
+    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-date-actions.ts",
+  portalTripWizardAccessActions:
+    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-access-actions.ts",
+  portalTripWizardCredentialSync:
+    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-credential-sync.ts",
   accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
   emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
   dateTimePickers: "src/shared/components/date-time-pickers/DateTimePickers.tsx",
@@ -205,7 +211,8 @@ export const workspaceBoundarySourcePaths = {
   accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
   accountAccessPasskeyTestUtils:
     "src/features/account/components/account-access-panel/testing/account-access-panel-passkey-test-utils.ts",
-  accountAccessStorySupport: "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
+  accountAccessStorySupport:
+    "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.support.ts",
   accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
   accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
   emailLoginState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts",
@@ -213,7 +220,15 @@ export const workspaceBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/email-login/state/use-email-login-entry-actions.ts",
   emailLoginAuthActions: "src/features/account/components/account-access-panel/email-login/submit/email-login-auth-actions.ts",
   emailLoginFormState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-form-state.ts",
+  emailLoginChallengeState:
+    "src/features/account/components/account-access-panel/email-login/state/use-email-login-challenge-state.ts",
   emailLoginSubmitActions: "src/features/account/components/account-access-panel/email-login/submit/use-email-login-submit-actions.ts",
+  emailLoginCodeRequestActions:
+    "src/features/account/components/account-access-panel/email-login/submit/use-email-login-code-request-actions.ts",
+  emailLoginSignInActions:
+    "src/features/account/components/account-access-panel/email-login/submit/use-email-login-sign-in-actions.ts",
+  emailLoginRegistrationActions:
+    "src/features/account/components/account-access-panel/email-login/submit/use-email-login-registration-actions.ts",
   emailLoginSubmitErrors: "src/features/account/components/account-access-panel/email-login/submit/email-login-submit-errors.ts",
   emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/state/use-email-login-resend-cooldown.ts",
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",

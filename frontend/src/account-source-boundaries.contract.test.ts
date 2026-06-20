@@ -25,6 +25,9 @@ describe("Sagittarius account source boundaries", () => {
       portalTripWizardMobileState,
       portalTripWizardDerivedState,
       portalTripWizardActions,
+      portalTripWizardDateActions,
+      portalTripWizardAccessActions,
+      portalTripWizardCredentialSync,
       accountAuthSupport,
       emailLoginStepContent,
       tripJoinGate,
@@ -49,7 +52,11 @@ describe("Sagittarius account source boundaries", () => {
       emailLoginEntryActions,
       emailLoginAuthActions,
       emailLoginFormState,
+      emailLoginChallengeState,
       emailLoginSubmitActions,
+      emailLoginCodeRequestActions,
+      emailLoginSignInActions,
+      emailLoginRegistrationActions,
       emailLoginResendCooldown,
       emailLoginPanel,
       emailLoginStepStage,
@@ -64,7 +71,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
-    expect(accountAccessPanelContent).toContain("buildAccountPortalDashboardHandlers");
+    expect(accountAccessPanelContent).toContain("AccountAccessPanelPortalContent");
     expect(accountAccessPanelContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessPortalHandlers).toContain("export function buildAccountPortalDashboardHandlers");
     expect(accountAccessPortalHandlers).toContain("accountClient.logout(accountSession.sessionToken)");
@@ -78,7 +85,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountPortalNavItems).toContain("appRoutes.portal()");
     expect(accountPortalDataCache).toContain("export function cacheAccountPortalData");
     expect(accountPortalDataCache).toContain("export function getLatestAccountPortalDataCache");
-    expect(accountAccessStory).toContain("./account-access-panel.stories.support");
+    expect(accountAccessStory).toContain("./storybook/account-access-panel.stories.support");
     expect(accountAccessStory).not.toContain("AccountApiClient");
     expect(accountAccessStory).not.toContain("const accountSettings");
     expect(accountAccessStorySupport).toContain("./account-access-panel.stories.clients");
@@ -126,9 +133,11 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountTripDates).toContain("export function nextTripWizardDateSelectionStep");
     expect(accountTripWizardSteps).toContain("export const tripWizardSteps");
     expect(accountTripWizardSteps).toContain("export function tripStepComplete");
-    expect(portalTripWizardModel).toContain("applyTripCalendarDate");
-    expect(portalTripWizardModel).toContain("applyPortalTripWizardCredentials");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardDateActions");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardAccessActions");
+    expect(portalTripWizardModel).toContain("usePortalTripWizardCredentialSync");
     expect(portalTripWizardModel).not.toContain("buildPortalTripWizardCredentials");
+    expect(portalTripWizardModel).not.toContain("applyPortalTripWizardCredentials");
     expect(portalTripWizardModel).toContain("buildPortalTripWizardDerivedState");
     expect(portalTripWizardModel).toContain("usePortalTripWizardDestinationState");
     expect(portalTripWizardModel).toContain("usePortalTripWizardMobileState");
@@ -140,6 +149,10 @@ describe("Sagittarius account source boundaries", () => {
     expect(portalTripWizardDestinationState).toContain("applyTripDestinationCities");
     expect(portalTripWizardDestinationState).toContain("customTripCity");
     expect(portalTripWizardDestinationState).toContain("tripCityFromOption");
+    expect(portalTripWizardDateActions).toContain("applyTripCalendarDate");
+    expect(portalTripWizardDateActions).toContain("nextTripWizardDateSelectionStep");
+    expect(portalTripWizardAccessActions).toContain("applyRegeneratedPortalTripWizardCredentials");
+    expect(portalTripWizardCredentialSync).toContain("applyPortalTripWizardCredentials");
     expect(portalTripWizardMobileState).toContain("export function usePortalTripWizardMobileState");
     expect(portalTripWizardMobileState).toContain("scrollIntoView");
     expect(portalTripWizardMobileState).toContain("tripStepSectionClassName");
@@ -174,7 +187,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
 
     expect(emailLoginState).toContain("./use-email-login-form-state");
-    expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
+    expect(emailLoginState).toContain("./use-email-login-challenge-state");
     expect(emailLoginState).toContain("./use-email-login-entry-actions");
     expect(emailLoginState).toContain("../submit/use-email-login-submit-actions");
     expect(emailLoginState).not.toContain("./submit/email-login-auth-actions");
@@ -199,11 +212,21 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginAuthActions).not.toContain("arrayBufferToBase64Url");
     expect(emailLoginFormState).toContain("export function useEmailLoginFormState");
     expect(emailLoginFormState).toContain("function updateCode");
+    expect(emailLoginChallengeState).toContain("useEmailLoginResendCooldown");
+    expect(emailLoginChallengeState).toContain("export function useEmailLoginChallengeState");
     expect(emailLoginSubmitActions).toContain("export function useEmailLoginSubmitActions");
-    expect(emailLoginSubmitActions).toContain("./email-login-auth-actions");
-    expect(emailLoginSubmitActions).toContain("./email-login-submit-errors");
+    expect(emailLoginSubmitActions).toContain("useEmailLoginCodeRequestActions");
+    expect(emailLoginSubmitActions).toContain("useEmailLoginRegistrationActions");
+    expect(emailLoginSubmitActions).toContain("useEmailLoginSignInActions");
+    expect(emailLoginSubmitActions).not.toContain("./email-login-auth-actions");
+    expect(emailLoginSubmitActions).not.toContain("./email-login-submit-errors");
     expect(emailLoginSubmitActions).not.toContain("passwordLoginErrorMessage");
-    expect(emailLoginSubmitActions).toContain("finishEmailCodeLogin");
+    expect(emailLoginSubmitActions).not.toContain("finishEmailCodeLogin");
+    expect(emailLoginCodeRequestActions).toContain("emailLoginStartError");
+    expect(emailLoginSignInActions).toContain("finishEmailPasswordLogin");
+    expect(emailLoginSignInActions).toContain("signInWithEmailPasskey");
+    expect(emailLoginRegistrationActions).toContain("finishEmailCodeLogin");
+    expect(emailLoginRegistrationActions).toContain("finishEmailRegistrationSetup");
     expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
     expect(emailLoginResendCooldown).toContain("window.setInterval");
     expect(emailLoginStepContent).toContain("./account-email-login-credentials-step");

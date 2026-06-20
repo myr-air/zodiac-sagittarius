@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { AccountAccessPanel } from "./AccountAccessPanel";
+import type { AccountAccessPanel } from "../AccountAccessPanel";
 
 type AccountAccessPanelPlay = NonNullable<StoryObj<typeof AccountAccessPanel>["play"]>;
 

@@ -13,11 +13,11 @@ import {
   newTripMobilePlay,
   portalDashboardPlay,
   tripAccessPlay,
-} from "./AccountAccessPanel.stories.plays";
+} from "./storybook/AccountAccessPanel.stories.plays";
 import {
   accountLoginStoryArgs,
   portalDashboardStoryArgs,
-} from "./account-access-panel.stories.support";
+} from "./storybook/account-access-panel.stories.support";
 
 const meta = {
   title: "Pages/Account Access",

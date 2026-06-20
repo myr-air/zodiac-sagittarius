@@ -1,6 +1,6 @@
 import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
-import type { AccountAccessPanel } from "./AccountAccessPanel";
+import type { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   accountStoryClient,
   accountStoryTripApiClient,
