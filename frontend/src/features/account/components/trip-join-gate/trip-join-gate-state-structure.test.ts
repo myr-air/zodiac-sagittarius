@@ -33,4 +33,20 @@ describe("trip join gate state structure", () => {
     expect(formStateSource).toContain("export function useTripJoinGateFormState");
     expect(formStateSource).toContain("function resetParticipantPassword");
   });
+
+  it("keeps join submit commands out of the main join gate state hook", () => {
+    const stateSource = readTripJoinGateSource("use-trip-join-gate-state.ts");
+    const submitActionsSource = readTripJoinGateSource("use-trip-join-gate-submit-actions.ts");
+
+    expect(stateSource).toContain("useTripJoinGateSubmitActions");
+    expect(stateSource).not.toContain("verifyTripCredentials");
+    expect(stateSource).not.toContain("claimTripParticipant");
+    expect(stateSource).not.toContain("apiClient.joinTrip");
+    expect(stateSource).not.toContain("apiClient.loadTrip");
+    expect(submitActionsSource).toContain("export function useTripJoinGateSubmitActions");
+    expect(submitActionsSource).toContain("verifyTripCredentials");
+    expect(submitActionsSource).toContain("claimTripParticipant");
+    expect(submitActionsSource).toContain("apiClient.joinTrip");
+    expect(submitActionsSource).toContain("apiClient.loadTrip");
+  });
 });

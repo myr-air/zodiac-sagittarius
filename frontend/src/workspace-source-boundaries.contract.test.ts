@@ -20,6 +20,10 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"),
       "utf8",
     );
+    const workspaceAppFrame = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx"),
+      "utf8",
+    );
     const workspaceMainShell = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx"),
       "utf8",
@@ -333,6 +337,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
     expect(appFacade).not.toContain('"use client"');
     const sagittariusApp = sagaCore;
+    expect(sagittariusApp).toContain("./WorkspaceAppFrame");
+    expect(sagittariusApp).not.toContain("./access-gate");
+    expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
+    expect(workspaceAppFrame).toContain("WorkspaceAccessBoundary");
+    expect(workspaceAppFrame).toContain("WorkspaceMainShell");
+    expect(workspaceAppFrame).not.toContain("useWorkspaceApiClients");
     expectSourceNotToContain(sagittariusApp, [
       "function shouldUseApiItineraryImport",
       "interface PendingItineraryImport",
@@ -524,7 +534,9 @@ describe("Sagittarius workspace source boundaries", () => {
       'from "@/src/components/OverviewPage"',
       'from "@/src/components/TimelineView"',
     ]);
-    expect(sagaCore).toContain("WorkspaceMainShell");
+    expect(sagaCore).toContain("WorkspaceAppFrame");
+    expect(sagaCore).not.toContain("WorkspaceMainShell");
+    expect(workspaceAppFrame).toContain("WorkspaceMainShell");
     expect(sagaCore).toContain("useWorkspaceUiState");
     expect(sagaCore).not.toContain("useState");
     expect(uiStateHook).toContain("export function useWorkspaceUiState");
@@ -570,7 +582,9 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceFrame");
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceViews");
-    expect(sagaCore).toContain("WorkspaceAccessBoundary");
+    expect(sagaCore).toContain("WorkspaceAppFrame");
+    expect(sagaCore).not.toContain("WorkspaceAccessBoundary");
+    expect(workspaceAppFrame).toContain("WorkspaceAccessBoundary");
     expect(sagaCore).not.toContain("TripAccessLoadingFrame");
     expect(sagaCore).not.toContain("TripWorkspaceAccessPanel");
     expect(sagittariusAccessGate).toContain("export function WorkspaceAccessBoundary");

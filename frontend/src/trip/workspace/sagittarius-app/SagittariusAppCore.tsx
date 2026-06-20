@@ -48,8 +48,7 @@ import {
 } from "./hooks";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
-import { WorkspaceAccessBoundary } from "./access-gate";
-import { WorkspaceMainShell } from "./WorkspaceMainShell";
+import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
 import { deriveWorkspacePermissions } from "./workspace-permissions";
 import type { Trip } from "@/src/trip/types";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
@@ -580,33 +579,34 @@ export function SagittariusApp({
   }
 
   return (
-    <WorkspaceAccessBoundary
-      accessMode={accessMode}
-      accountClient={accountClient}
-      accountSession={accountSession}
-      accountSessionLoaded={accountSessionLoaded}
-      accountSuccessRedirectHref={accountSuccessRedirectHref}
-      apiClient={resolvedApiClient}
-      canAccessPanel={canAccessPanel}
-      initialError={accessError}
-      initialJoinCode={initialJoinCode}
-      initialJoinToken={initialJoinToken}
-      isAccountTripAccessPending={isAccountTripAccessPending}
-      isTripLoading={isTripLoading}
-      portalSection={portalSection}
-      requireJoin={requireJoin}
-      routeTripId={routeTripId}
-      sessionMember={Boolean(sessionMember)}
-      sessionRestored={sessionRestored}
-      shouldRedirectUnauthenticatedTripRoute={shouldRedirectUnauthenticatedTripRoute}
-      trip={trip}
-      onAccountSessionChange={changeAccountSession}
-      onAuthenticated={authenticateParticipant}
-      onCockpitLoaded={replaceCockpitFromApi}
-      onTripChange={replaceTripFromJoin}
-    >
-      <WorkspaceMainShell
-        appShellProps={{
+    <WorkspaceAppFrame
+      accessProps={{
+        accessMode,
+        accountClient,
+        accountSession,
+        accountSessionLoaded,
+        accountSuccessRedirectHref,
+        apiClient: resolvedApiClient,
+        canAccessPanel,
+        initialError: accessError,
+        initialJoinCode,
+        initialJoinToken,
+        isAccountTripAccessPending,
+        isTripLoading,
+        portalSection,
+        requireJoin,
+        routeTripId,
+        sessionMember: Boolean(sessionMember),
+        sessionRestored,
+        shouldRedirectUnauthenticatedTripRoute,
+        trip,
+        onAccountSessionChange: changeAccountSession,
+        onAuthenticated: authenticateParticipant,
+        onCockpitLoaded: replaceCockpitFromApi,
+        onTripChange: replaceTripFromJoin,
+      }}
+      shellProps={{
+        appShellProps: {
           activeView: currentView,
           collapsed: sidebarCollapsed,
           currentMember,
@@ -615,8 +615,8 @@ export function SagittariusApp({
           onNavigateView: navigateWorkspaceView,
           trip,
           onToggleCollapsed: toggleSidebarCollapsed,
-        }}
-        dialogsProps={{
+        },
+        dialogsProps: {
           applyPendingItineraryImport,
           clearPendingItineraryImport,
           createStop,
@@ -644,13 +644,13 @@ export function SagittariusApp({
             t.itinerary.row.confirmDeleteTitle({ activity }),
           deleteBodyForActivity: (activity) =>
             t.itinerary.row.confirmDeleteBody({ activity }),
-        }}
-        frameProps={{
+        },
+        frameProps: {
           contextRailOpen,
           importError: importItineraryError,
           supportsContextRail,
-        }}
-        railProps={{
+        },
+        railProps: {
           enabled: supportsContextRail,
           mounted: contextRailMounted,
           railProps: {
@@ -685,15 +685,15 @@ export function SagittariusApp({
             onUpdateNote: updateStopNote,
             onClose: () => setContextRailVisibility(false),
           },
-        }}
-        rolePreviewProps={{
+        },
+        rolePreviewProps: {
           currentMemberId: currentMember.id,
           members: trip.members,
           onChangeMember: setCurrentMemberId,
-        }}
-        showRolePreview={!sessionMember}
-        showToast={requireJoin && !toastDismissed}
-        toastProps={{
+        },
+        showRolePreview: !sessionMember,
+        showToast: requireJoin && !toastDismissed,
+        toastProps: {
           accountSession,
           memberUserId: currentMember.userId,
           claimState: accountClaimState,
@@ -703,8 +703,8 @@ export function SagittariusApp({
           dismissing: toastDismissing,
           onClaim: () => void claimCurrentMemberToAccount(),
           onDismiss: dismissWorkspaceToast,
-        }}
-        viewsProps={{
+        },
+        viewsProps: {
           currentView,
           settingsProps: {
             canEdit: canManagePeople,
@@ -849,8 +849,8 @@ export function SagittariusApp({
             onSelectItem: selectItem,
             onToggleContextRail: toggleContextRail,
           },
-        }}
-      />
-    </WorkspaceAccessBoundary>
+        },
+      }}
+    />
   );
 }

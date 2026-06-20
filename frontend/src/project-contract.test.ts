@@ -60,6 +60,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/access-gate.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/sagittarius-app.styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/WorkspaceRolePreview.tsx"))).toBe(true);
@@ -480,6 +481,7 @@ describe("Sagittarius project scaffold", () => {
     const tripJoinGate = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"), "utf8");
     const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"), "utf8");
     const tripJoinGateFormState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"), "utf8");
+    const tripJoinGateSubmitActions = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-submit-actions.ts"), "utf8");
 
     expect(tripJoinGate).toContain("./use-trip-join-gate-state");
     expect(tripJoinGate).not.toContain("useState");
@@ -488,10 +490,13 @@ describe("Sagittarius project scaffold", () => {
     expect(tripJoinGate).not.toContain("function submitParticipant");
     expect(tripJoinGateState).toContain("export function useTripJoinGateState");
     expect(tripJoinGateState).toContain("useTripJoinGateFormState");
+    expect(tripJoinGateState).toContain("useTripJoinGateSubmitActions");
     expect(tripJoinGateState).not.toContain("const [joinId");
-    expect(tripJoinGateState).toContain("verifyTripCredentials");
-    expect(tripJoinGateState).toContain("async function submitParticipant");
+    expect(tripJoinGateState).not.toContain("verifyTripCredentials");
+    expect(tripJoinGateState).not.toContain("async function submitParticipant");
     expect(tripJoinGateFormState).toContain("export function useTripJoinGateFormState");
+    expect(tripJoinGateSubmitActions).toContain("verifyTripCredentials");
+    expect(tripJoinGateSubmitActions).toContain("async function submitParticipant");
   });
 
   it("keeps account access panel state split from render composition", () => {

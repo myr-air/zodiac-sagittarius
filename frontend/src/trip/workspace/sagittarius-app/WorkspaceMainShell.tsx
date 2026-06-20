@@ -8,7 +8,7 @@ import { WorkspaceDialogs } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview } from "./WorkspaceRolePreview";
 import { workspaceShellClassName } from "./sagittarius-app.styles";
 
-interface WorkspaceMainShellProps {
+export interface WorkspaceMainShellProps {
   appShellProps: Omit<ComponentProps<typeof AppShell>, "children">;
   dialogsProps: ComponentProps<typeof WorkspaceDialogs>;
   frameProps: Omit<ComponentProps<typeof TripWorkspaceFrame>, "children" | "rail">;

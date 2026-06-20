@@ -9,7 +9,7 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
 import type { ReactNode } from "react";
 
-interface WorkspaceAccessBoundaryProps {
+export interface WorkspaceAccessBoundaryProps {
   accessMode: SagittariusAccessMode;
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;
