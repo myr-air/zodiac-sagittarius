@@ -11,10 +11,22 @@ export const ownerPlay: MembersPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("button", { name: /Open add-member form/i })).toBeEnabled();
 };
 
+export const templateOwnerPlay: MembersPagePlay = async ({ canvas, userEvent }) => {
+  await userEvent.selectOptions(canvas.getByRole("combobox", { name: /^Status$/i }), "pending");
+  await expect(canvas.getByText("Explorer Friend")).toBeVisible();
+};
+
 export const ownerThaiPlay: MembersPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page");
   await expect(canvas.getByText("สมาชิกในทริป")).toBeVisible();
   await expect(canvas.getByRole("button", { name: /คัดลอกลิงก์เชิญ/i })).toBeVisible();
+};
+
+export const templateOwnerThaiPlay: MembersPagePlay = async ({ canvas }) => {
+  await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toBeVisible();
+  await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page", "grid");
+  await expect(canvas.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass("member-stat-grid", "grid");
+  await expect(canvas.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "grid");
 };
 
 export const readOnlyPlay: MembersPagePlay = async ({ canvas }) => {
