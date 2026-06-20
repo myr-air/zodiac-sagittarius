@@ -5,9 +5,9 @@ import type { TripMembersPage } from "./TripMembersPage";
 
 type MembersPageStoryArgs = Parameters<typeof TripMembersPage>[0];
 
-export const denseMembersTrip = buildDenseTripFixture();
+const denseMembersTrip = buildDenseTripFixture();
 
-export const singleMemberTrip = {
+const singleMemberTrip = {
   ...tripFixture.trip,
   members: [tripFixture.currentMembers.owner],
 };
@@ -21,6 +21,30 @@ export const membersOwnerStoryArgs = {
   onChangeMemberRole: noop,
   onCreateMember: noop,
   onResetMemberClaim: noop,
+} satisfies MembersPageStoryArgs;
+
+export const membersTravelerStoryArgs = {
+  ...membersOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.traveler,
+  canManagePeople: false,
+} satisfies MembersPageStoryArgs;
+
+export const membersViewerStoryArgs = {
+  ...membersOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.viewer,
+  canManagePeople: false,
+} satisfies MembersPageStoryArgs;
+
+export const membersDenseStoryArgs = {
+  ...membersOwnerStoryArgs,
+  trip: denseMembersTrip,
+  currentMember: denseMembersTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+} satisfies MembersPageStoryArgs;
+
+export const membersEmptyStoryArgs = {
+  ...membersOwnerStoryArgs,
+  trip: singleMemberTrip,
+  currentMember: tripFixture.currentMembers.owner,
 } satisfies MembersPageStoryArgs;
 
 export async function expectMembersResponsiveContract(canvasElement: HTMLElement) {

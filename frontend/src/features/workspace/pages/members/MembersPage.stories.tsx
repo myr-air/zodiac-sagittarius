@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripMembersPage } from "./TripMembersPage";
 import {
-  denseMembersTrip,
+  membersDenseStoryArgs,
+  membersEmptyStoryArgs,
   expectMembersResponsiveContract,
   membersOwnerStoryArgs,
-  singleMemberTrip,
+  membersTravelerStoryArgs,
+  membersViewerStoryArgs,
 } from "./MembersPage.stories.support";
 
 const meta = {
@@ -39,11 +40,7 @@ export const OwnerThai: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.traveler,
-    canManagePeople: false,
-  },
+  args: membersTravelerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.queryByRole("button", { name: /copy invite|คัดลอกลิงก์เชิญ/i })).not.toBeInTheDocument();
     await expect(canvas.queryByRole("button", { name: /add member|เปิดฟอร์มเพิ่มสมาชิก/i })).not.toBeInTheDocument();
@@ -52,28 +49,16 @@ export const Traveler: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.viewer,
-    canManagePeople: false,
-  },
+  args: membersViewerStoryArgs,
   play: Traveler.play,
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    trip: denseMembersTrip,
-    currentMember: denseMembersTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
-  },
+  args: membersDenseStoryArgs,
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    trip: singleMemberTrip,
-    currentMember: tripFixture.currentMembers.owner,
-  },
+  args: membersEmptyStoryArgs,
 };
 
 export const Tablet: Story = {

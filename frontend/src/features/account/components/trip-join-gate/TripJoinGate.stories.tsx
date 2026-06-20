@@ -1,39 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import type { TripApiClient } from "@/src/trip/api-client";
-import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "./TripJoinGate";
-
-const inviteTokenApiClient = {
-  resolveJoinInviteToken: async () => ({
-    trip: {
-      id: seedTrip.id,
-      name: seedTrip.name,
-      destinationLabel: seedTrip.destinationLabel,
-      startDate: seedTrip.startDate,
-      endDate: seedTrip.endDate,
-      joinId: seedTrip.joinId,
-      activePlanVariantId: seedTrip.activePlanVariantId,
-      ownerMemberId: seedTrip.members[0]?.id ?? "",
-      version: seedTrip.version,
-    },
-    claimableMembers: seedTrip.members.map((member) => ({
-      id: member.id,
-      tripId: seedTrip.id,
-      displayName: member.displayName,
-      role: member.role,
-      accessStatus: member.accessStatus ?? "active",
-      presence: member.presence,
-      color: member.color,
-      userId: member.userId ?? null,
-      claimedAt: member.claimedAt ?? null,
-      lastSeenAt: member.lastSeenAt ?? null,
-    })),
-    joinSessionToken: "storybook-join-session",
-    expiresAt: "2026-06-28T00:00:00.000Z",
-  }),
-} as unknown as TripApiClient;
+import {
+  expectJoinResponsiveContract,
+  roomCredentialsStoryArgs,
+  selectIdentityStoryArgs,
+  tripAccessStoryArgs,
+} from "./TripJoinGate.stories.support";
 
 const meta = {
   title: "Pages/Trip Join Gate",
@@ -46,18 +19,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-async function expectJoinResponsiveContract(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".participant-grid")).toHaveClass("participant-grid", "max-[767px]:grid-cols-1");
-  await expect(canvasElement.querySelector(".trip-access-photo-stack")).toHaveClass("trip-access-photo-stack", "max-[767px]:min-h-[172px]");
-}
-
 export const RoomCredentials: Story = {
-  args: {
-    trip: seedTrip,
-    initialJoinCode: "HK-SZ-2025",
-    onTripChange: noop,
-    onAuthenticated: noop,
-  },
+  args: roomCredentialsStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: /Enter trip room/i })).toBeVisible();
     await expect(canvas.getByLabelText(/Trip ID/i)).toHaveValue("HK-SZ-2025");
@@ -66,10 +29,7 @@ export const RoomCredentials: Story = {
 };
 
 export const TripAccess: Story = {
-  args: {
-    ...RoomCredentials.args,
-    variant: "trip-access",
-  },
+  args: tripAccessStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("main", { name: /Join trip/i })).toBeVisible();
     await expect(canvas.getByLabelText(/Trip access preview/i)).toHaveClass(
@@ -81,12 +41,7 @@ export const TripAccess: Story = {
 };
 
 export const SelectIdentity: Story = {
-  args: {
-    ...RoomCredentials.args,
-    apiClient: inviteTokenApiClient,
-    initialJoinToken: "storybook-invite-token",
-    variant: "trip-access",
-  },
+  args: selectIdentityStoryArgs,
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("heading", { name: /Choose identity/i })).toBeVisible();
     const memberList = canvas.getByRole("group", { name: /Trip member list/i });

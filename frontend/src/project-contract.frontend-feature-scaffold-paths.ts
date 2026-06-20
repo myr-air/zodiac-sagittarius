@@ -44,6 +44,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts",
   "src/features/account/components/trip-join-gate/trip-join-gate.support.ts",
   "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts",
+  "src/features/account/components/trip-join-gate/TripJoinGate.stories.support.ts",
   "src/features/account/components/trip-join-gate/TripJoinGate.api.test.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGate.api-errors.test.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGate.test-support.ts",
