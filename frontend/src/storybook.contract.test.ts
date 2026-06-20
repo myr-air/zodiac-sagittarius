@@ -1,26 +1,12 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-
-function collectStoryFiles(dir = "src"): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) return collectStoryFiles(path);
-    return entry.isFile() && entry.name.endsWith(".stories.tsx") ? [path] : [];
-  });
-}
-
-function storyText() {
-  return collectStoryFiles().map((file) => readFileSync(file, "utf8")).join("\n");
-}
-
-function expectStoryExports(file: string, stateNames: string[]) {
-  const story = readFileSync(join("src", file), "utf8");
-
-  stateNames.forEach((stateName) => {
-    expect(story, `${file} should export ${stateName}`).toContain(`export const ${stateName}`);
-  });
-}
+import {
+  collectStoryFiles,
+  expectStoryExports,
+  readProjectFile,
+  storyText,
+} from "./storybook.contract.test-support";
 
 describe("Storybook template catalog", () => {
   it("contains design system, template, and page story categories", () => {
@@ -64,26 +50,233 @@ describe("Storybook template catalog", () => {
 
   it("documents role and density states", () => {
     const stories = storyText();
-    ["Owner", "OwnerThai", "Traveler", "Viewer", "Empty", "Dense", "Mobile", "TabletItinerary", "MobileItinerary", "Desktop1024", "Desktop1440", "TableOverflow"].forEach((stateName) => {
+    [
+      "Owner",
+      "OwnerThai",
+      "Traveler",
+      "Viewer",
+      "Empty",
+      "Dense",
+      "Mobile",
+      "TabletItinerary",
+      "MobileItinerary",
+      "Desktop1024",
+      "Desktop1440",
+      "TableOverflow",
+    ].forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
     });
   });
 
   it("documents page-level role, density, and viewport states per cockpit page", () => {
     const requiredPageStates: Array<[string, string[]]> = [
-      ["features/itinerary/stories/OverviewPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddTaskDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/itinerary/stories/ItineraryPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "OverlapConflictWarning", "PlanAExample", "PlanABAlternatives", "BranchGraph", "RequestedPlanExample", "StressPaths", "TableOverflow", "Tablet", "Desktop1024", "Desktop1440", "Mobile", "MobileViewer"]],
-      ["features/itinerary/stories/TimelinePage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/itinerary/stories/workspace/MapPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "LiveMapLoading", "LiveMapFailure", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/workspace/pages/members/MembersPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/workspace/pages/expenses/ExpensesPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddExpenseDialogOpen", "FilteredLedger", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/workspace/pages/photos/TripPhotosPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddAlbumDialogOpen", "CoverStates", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/workspace/pages/bookings-docs/BookingsDocsPage.stories.tsx", ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty", "AddBookingDialogOpen", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx", ["Owner", "Traveler", "Viewer", "Thai", "Tablet", "Desktop1024", "Desktop1440", "Mobile"]],
-      ["features/account/components/trip-join-gate/TripJoinGate.stories.tsx", ["RoomCredentials", "TripAccess", "SelectIdentity", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"]],
-      ["features/itinerary/stories/StopDialog.stories.tsx", ["Create", "Edit", "AmbiguousPlace", "TransportationForm", "FoodForm", "StayForm", "ShoppingForm", "Mobile", "Tablet", "Desktop1024", "Desktop1440", "Thai"]],
-      ["features/public-site/pages/about/AboutAppPage.stories.tsx", ["Ready", "ApiUnavailable", "Thai", "Mobile", "Tablet", "Desktop1024", "Desktop1440"]],
-      ["features/itinerary/stories/ContextRail.stories.tsx", ["NotesOpen", "BookingTab", "SuggestionsTab", "TripExpensesOnly", "ReadOnlyTraveler", "Closed", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
+      [
+        "features/itinerary/stories/OverviewPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "AddTaskDialogOpen",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/itinerary/stories/ItineraryPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "OverlapConflictWarning",
+          "PlanAExample",
+          "PlanABAlternatives",
+          "BranchGraph",
+          "RequestedPlanExample",
+          "StressPaths",
+          "TableOverflow",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+          "MobileViewer",
+        ],
+      ],
+      [
+        "features/itinerary/stories/TimelinePage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/itinerary/stories/workspace/MapPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "LiveMapLoading",
+          "LiveMapFailure",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/workspace/pages/members/MembersPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/workspace/pages/expenses/ExpensesPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "AddExpenseDialogOpen",
+          "FilteredLedger",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/workspace/pages/photos/TripPhotosPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "AddAlbumDialogOpen",
+          "CoverStates",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/workspace/pages/bookings-docs/BookingsDocsPage.stories.tsx",
+        [
+          "Owner",
+          "OwnerThai",
+          "Traveler",
+          "Viewer",
+          "Dense",
+          "Empty",
+          "AddBookingDialogOpen",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx",
+        [
+          "Owner",
+          "Traveler",
+          "Viewer",
+          "Thai",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Mobile",
+        ],
+      ],
+      [
+        "features/account/components/trip-join-gate/TripJoinGate.stories.tsx",
+        [
+          "RoomCredentials",
+          "TripAccess",
+          "SelectIdentity",
+          "Thai",
+          "Tablet",
+          "Mobile",
+          "Desktop1024",
+          "Desktop1440",
+        ],
+      ],
+      [
+        "features/itinerary/stories/StopDialog.stories.tsx",
+        [
+          "Create",
+          "Edit",
+          "AmbiguousPlace",
+          "TransportationForm",
+          "FoodForm",
+          "StayForm",
+          "ShoppingForm",
+          "Mobile",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+          "Thai",
+        ],
+      ],
+      [
+        "features/public-site/pages/about/AboutAppPage.stories.tsx",
+        [
+          "Ready",
+          "ApiUnavailable",
+          "Thai",
+          "Mobile",
+          "Tablet",
+          "Desktop1024",
+          "Desktop1440",
+        ],
+      ],
+      [
+        "features/itinerary/stories/ContextRail.stories.tsx",
+        [
+          "NotesOpen",
+          "BookingTab",
+          "SuggestionsTab",
+          "TripExpensesOnly",
+          "ReadOnlyTraveler",
+          "Closed",
+          "Mobile",
+          "Tablet",
+          "Thai",
+          "Desktop1024",
+          "Desktop1440",
+        ],
+      ],
       ["shared/components/people-panel/PeoplePanel.stories.tsx", ["Manager", "ReadOnly", "Empty"]],
       ["shared/components/suggestion-panel/SuggestionPanel.stories.tsx", ["Default", "Thai", "Empty", "ConflictedHeavy"]],
       ["shared/components/date-time-pickers/DateTimePickers.stories.tsx", ["TimePicker", "DatePicker", "DateTimePicker", "Disabled", "Mobile", "Tablet", "Thai", "Desktop1024", "Desktop1440"]],
@@ -100,7 +293,11 @@ describe("Storybook template catalog", () => {
   });
 
   it("documents top-level cockpit owner, traveler, and viewer roles", () => {
-    const appStories = readFileSync(join("src", "app", "SagittariusApp.stories.tsx"), "utf8");
+    const appStories = readProjectFile(
+      "src",
+      "app",
+      "SagittariusApp.stories.tsx",
+    );
 
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"].forEach((stateName) => {
       expect(appStories).toContain(`export const ${stateName}`);
@@ -166,8 +363,10 @@ describe("Storybook template catalog", () => {
   });
 
   it("keeps viewport and antigravity UX QA entry points available", () => {
-    const preview = readFileSync(join(".storybook", "preview.ts"), "utf8");
-    const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { scripts?: Record<string, string> };
+    const preview = readProjectFile(".storybook", "preview.ts");
+    const packageJson = JSON.parse(readProjectFile("package.json")) as {
+      scripts?: Record<string, string>;
+    };
     const stories = storyText();
 
     ["mobile320", "tablet768", "desktop1024", "desktop1440"].forEach((viewportName) => {
@@ -180,7 +379,7 @@ describe("Storybook template catalog", () => {
   });
 
   it("wraps stories in bilingual i18n controls with English as the default", () => {
-    const preview = readFileSync(join(".storybook", "preview.ts"), "utf8");
+    const preview = readProjectFile(".storybook", "preview.ts");
     const stories = storyText();
 
     expect(preview).toContain("I18nProvider");
@@ -191,14 +390,14 @@ describe("Storybook template catalog", () => {
 
   it("keeps repeated story callback placeholders centralized", () => {
     const localNoopDefinitions = collectStoryFiles().flatMap((file) => {
-      const story = readFileSync(file, "utf8");
+      const story = readProjectFile(file);
       return [
         ...story.matchAll(/const noop = (?:async )?\(\) => \{\};/g),
       ].map((match) => `${file}:${match.index ?? 0}`);
     });
 
     expect(localNoopDefinitions).toEqual([]);
-    expect(readFileSync(join("src", "testing", "storybook-actions.ts"), "utf8")).toContain(
+    expect(readProjectFile("src", "testing", "storybook-actions.ts")).toContain(
       "export function noop",
     );
   });
@@ -249,8 +448,14 @@ describe("Storybook template catalog", () => {
   });
 
   it("requires access-gated app stories to declare an explicit access mode", () => {
-    const appStories = readFileSync(join("src", "app", "SagittariusApp.stories.tsx"), "utf8");
-    const gatedStoryLines = appStories.split("\n").filter((line) => line.includes("requireJoin: true"));
+    const appStories = readProjectFile(
+      "src",
+      "app",
+      "SagittariusApp.stories.tsx",
+    );
+    const gatedStoryLines = appStories
+      .split("\n")
+      .filter((line) => line.includes("requireJoin: true"));
 
     expect(gatedStoryLines.length).toBeGreaterThan(0);
     gatedStoryLines.forEach((line) => {
@@ -259,8 +464,20 @@ describe("Storybook template catalog", () => {
   });
 
   it("keeps itinerary story item builders separate from scenario fixtures", () => {
-    const storyFixtures = readFileSync(join("src", "features", "itinerary", "stories", "itinerary-story-fixtures.ts"), "utf8");
-    const storyItemBuilders = readFileSync(join("src", "features", "itinerary", "stories", "itinerary-story-item-builders.ts"), "utf8");
+    const storyFixtures = readProjectFile(
+      "src",
+      "features",
+      "itinerary",
+      "stories",
+      "itinerary-story-fixtures.ts",
+    );
+    const storyItemBuilders = readProjectFile(
+      "src",
+      "features",
+      "itinerary",
+      "stories",
+      "itinerary-story-item-builders.ts",
+    );
 
     expect(storyFixtures).toContain("./itinerary-story-item-builders");
     expect(storyFixtures).not.toContain("function buildItineraryStoryItem");
