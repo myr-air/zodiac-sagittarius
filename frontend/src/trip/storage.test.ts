@@ -1,17 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { createBrowserStorageDriver } from "./storage";
 
 describe("browser trip storage driver", () => {
   it("uses localStorage when the browser window is available", () => {
-    const localStorage = {
-      getItem: vi.fn(() => "draft"),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-    };
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: localStorage,
-    });
+    const localStorage = installLocalStorageStub();
+    localStorage.setItem("trip", "draft");
     const driver = createBrowserStorageDriver();
 
     expect(driver.load("trip")).toBe("draft");

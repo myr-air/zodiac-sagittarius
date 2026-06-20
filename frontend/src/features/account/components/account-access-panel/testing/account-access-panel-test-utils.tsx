@@ -5,7 +5,7 @@ import { expect, vi } from "vitest";
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { createMemoryStorage } from "@/src/testing/browser-storage";
+export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
@@ -15,6 +15,7 @@ import type { AccountAccessMode } from "../account-access-panel-support";
 import { createAccountClient, createTrustedAccountSession } from "./account-access-panel-test-clients";
 
 export * from "./account-access-panel-test-clients";
+export * from "./account-access-panel-passkey-test-utils";
 
 export function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "en" });
@@ -54,15 +55,6 @@ export async function selectDestinationCity(user: ReturnType<typeof userEvent.se
   await user.clear(search);
   await user.type(search, query);
   await user.click(await screen.findByRole("button", { name: option }));
-}
-
-export function installLocalStorageStub() {
-  const storage = createMemoryStorage();
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-  return storage;
 }
 
 export function AccountHarness({

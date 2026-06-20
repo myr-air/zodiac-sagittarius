@@ -1,27 +1,12 @@
 import { accountSessionStorageKey } from "@/src/account/session-storage";
-import { createMemoryStorage } from "@/src/testing/browser-storage";
+export {
+  installLocalStorageStub,
+  installSessionStorageStub,
+} from "@/src/testing/browser-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { tripStorageKey } from "@/src/trip/repository";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip } from "@/src/trip/types";
-
-export function installLocalStorageStub() {
-  const storage = createMemoryStorage();
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-  return storage;
-}
-
-export function installSessionStorageStub() {
-  const storage = createMemoryStorage();
-  Object.defineProperty(window, "sessionStorage", {
-    configurable: true,
-    value: storage,
-  });
-  return storage;
-}
 
 export function persistTrustedAccountSession(
   storage: Pick<Storage, "setItem">,

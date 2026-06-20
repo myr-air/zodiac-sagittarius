@@ -6,6 +6,7 @@ import {
   majorCurrencyCodes,
   majorCurrencyOptions,
 } from "./currencies";
+import { createMemoryStorage } from "@/src/testing/browser-storage";
 
 describe("major currency exchange rates", () => {
   it("keeps the first release scoped to major travel currencies", () => {
@@ -18,7 +19,7 @@ describe("major currency exchange rates", () => {
       ok: true,
       json: async () => ({ date: "2026-06-05", base: "CNY", quote: "HKD", rate: 1.1, provider: "frankfurter", stale: false }),
     });
-    const storage = installStorageStub();
+    const storage = createMemoryStorage();
 
     const firstRate = await fetchMajorExchangeRate("CNY", "HKD", { fetchImpl, storage });
     const cachedRate = await fetchMajorExchangeRate("CNY", "HKD", { fetchImpl, storage });
@@ -66,19 +67,3 @@ describe("major currency exchange rates", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
-
-function installStorageStub(): Storage {
-  const values = new Map<string, string>();
-  return {
-    get length() {
-      return values.size;
-    },
-    clear: () => values.clear(),
-    getItem: (key: string) => values.get(key) ?? null,
-    key: (index: number) => Array.from(values.keys())[index] ?? null,
-    removeItem: (key: string) => values.delete(key),
-    setItem: (key: string, value: string) => {
-      values.set(key, value);
-    },
-  };
-}

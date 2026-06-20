@@ -2,15 +2,15 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { createMutableMemoryStorage } from "@/src/testing/browser-storage";
+import {
+  createMutableMemoryStorage,
+  installLocalStorageStub,
+} from "@/src/testing/browser-storage";
 import { I18nProvider, useI18n } from "./I18nProvider";
 import { LanguageSwitch } from "./LanguageSwitch";
 
 const localStorage = createMutableMemoryStorage();
-Object.defineProperty(window, "localStorage", {
-  configurable: true,
-  value: localStorage,
-});
+installLocalStorageStub(localStorage);
 
 function Probe() {
   const { locale, t } = useI18n();

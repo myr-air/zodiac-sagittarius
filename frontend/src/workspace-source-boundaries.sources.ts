@@ -183,6 +183,8 @@ export const workspaceBoundarySourcePaths = {
   accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
   accountAccessFixtures: "src/features/account/components/account-access-panel/account-access-panel-fixtures.ts",
   accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
+  accountAccessPasskeyTestUtils:
+    "src/features/account/components/account-access-panel/testing/account-access-panel-passkey-test-utils.ts",
   accountAccessStorySupport: "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
   accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
   accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",

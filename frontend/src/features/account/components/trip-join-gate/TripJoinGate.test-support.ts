@@ -1,6 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripRole } from "@/src/trip/types";
@@ -9,21 +10,6 @@ export async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
   fireEvent.change(screen.getByLabelText(/^Trip password$/i), { target: { value: "seed-trip-pass" } });
   await user.click(screen.getByRole("button", { name: /Enter trip/i }));
-}
-
-export function installLocalStorageStub() {
-  const values = new Map<string, string>();
-  const storage = {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
-    removeItem: (key: string) => values.delete(key),
-    clear: () => values.clear(),
-  };
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-  return storage;
 }
 
 export function createApiClient(overrides: Partial<TripApiClient> = {}): TripApiClient {

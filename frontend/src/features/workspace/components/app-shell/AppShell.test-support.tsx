@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { vi } from "vitest";
 import type { Locale } from "@/src/i18n/types";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { createMemoryStorage } from "@/src/testing/browser-storage";
+export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
@@ -18,15 +18,6 @@ interface RenderAppShellOptions {
   onNavigateView?: (view: PlanningView, href: string) => void;
   onToggleCollapsed?: () => void;
   trip?: Trip;
-}
-
-export function installLocalStorageStub() {
-  const storage = createMemoryStorage();
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-  return storage;
 }
 
 export function renderAppShell({

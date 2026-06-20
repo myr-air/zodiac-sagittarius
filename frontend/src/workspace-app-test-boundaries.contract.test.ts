@@ -54,12 +54,15 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestPlanFixtures).toContain("export function apiTripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
-    expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("installSessionStorageStub");
     expect(sagittariusAppTestStorage).toContain("export function loadPersistedTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistTripParticipantSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
-    expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
+    expect(sagittariusAppTestStorage).toContain("@/src/testing/browser-storage");
+    expect(sagittariusAppTestStorage).not.toContain("Object.defineProperty(window");
+    expect(sagittariusAppTestStorage).not.toContain("createMemoryStorage");
   });
 });

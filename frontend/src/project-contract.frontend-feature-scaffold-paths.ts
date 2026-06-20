@@ -18,6 +18,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/AccountAccessPanel.stories.plays.ts",
   "src/features/account/components/account-access-panel/testing/account-access-panel-test-utils.tsx",
   "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
+  "src/features/account/components/account-access-panel/testing/account-access-panel-passkey-test-utils.ts",
   "src/features/account/components/account-access-panel/AccountAccessPanel.auth-routes.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.email-login-flow.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.passkey-login.test.tsx",

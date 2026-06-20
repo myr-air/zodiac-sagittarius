@@ -47,20 +47,30 @@ export function createMutableMemoryStorage(): MutableMemoryStorage {
   };
 }
 
+export function installLocalStorageStub(storage = createMemoryStorage()): Storage {
+  return installWindowStorage("localStorage", storage);
+}
+
+export function installSessionStorageStub(storage = createMemoryStorage()): Storage {
+  return installWindowStorage("sessionStorage", storage);
+}
+
+function installWindowStorage(name: "localStorage" | "sessionStorage", storage: Storage): Storage {
+  Object.defineProperty(window, name, {
+    configurable: true,
+    value: storage,
+  });
+  return storage;
+}
+
 export function installBrowserStorage(): () => void {
   const originalWindow = globalThis.window;
   Object.defineProperty(globalThis, "window", {
     configurable: true,
     value: globalThis.window ?? {},
   });
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: createMemoryStorage(),
-  });
-  Object.defineProperty(window, "sessionStorage", {
-    configurable: true,
-    value: createMemoryStorage(),
-  });
+  installLocalStorageStub();
+  installSessionStorageStub();
 
   return () => {
     if (originalWindow) {
