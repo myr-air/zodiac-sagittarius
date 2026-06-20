@@ -94,6 +94,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/trip-join-gate/TripJoinGate.test-support.ts",
   "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx",
   "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx",
+  "src/features/account/components/trip-join-gate/TripJoinParticipantAuthForm.tsx",
+  "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx",
   "src/features/account/components/trip-join-gate/state/use-trip-join-gate-state.ts",
   "src/features/account/components/trip-join-gate/state/use-trip-join-gate-form-state.ts",

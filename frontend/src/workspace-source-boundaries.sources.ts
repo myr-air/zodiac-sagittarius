@@ -155,6 +155,8 @@ export const workspaceBoundarySourcePaths = {
   tripJoinGateChrome: "src/features/account/components/trip-join-gate/TripJoinGateChrome.tsx",
   tripJoinGateVisual: "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx",
   tripJoinRoomForm: "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx",
+  tripJoinParticipantAuthForm:
+    "src/features/account/components/trip-join-gate/TripJoinParticipantAuthForm.tsx",
   tripJoinParticipantStep: "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx",
   tripJoinGateStyles: "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts",
   tripWizardFormSections: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
