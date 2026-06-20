@@ -16,6 +16,12 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { AccountPortalDashboardClassNames } from "./account-portal-dashboard.types";
+import {
+  accountPortalNavSection,
+  accountPortalSectionIndex,
+  accountPortalSectionStorageKey,
+  accountPortalTransitionDirection,
+} from "./account-portal-dashboard-state";
 import { AccountPortalNav } from "./account-portal-nav";
 import { AccountPortalSectionContent } from "./account-portal-section-content";
 
@@ -41,9 +47,6 @@ interface AccountPortalDashboardProps {
   vaultItems: AccountVaultItemSummary[];
 }
 
-const portalSectionOrder: PortalSection[] = ["dashboard", "trips", "new-trip", "explorer", "todos", "vault", "settings", "sign-out"];
-const portalSectionStorageKey = "sagittarius:portal-section-index";
-
 export function AccountPortalDashboard({
   accountClient,
   apiClient,
@@ -67,15 +70,17 @@ export function AccountPortalDashboard({
 }: AccountPortalDashboardProps) {
   const { t } = useI18n();
   const [transitionDirection] = useState<"forward" | "back">(() => {
-    const currentIndex = portalSectionOrder.indexOf(portalSection);
-    return currentIndex < readPreviousPortalSectionIndex(currentIndex) ? "back" : "forward";
+    return accountPortalTransitionDirection(
+      portalSection,
+      readPreviousPortalSectionIndex(accountPortalSectionIndex(portalSection)),
+    );
   });
 
-  const activePortalSection = portalSection === "new-trip" ? "trips" : portalSection;
-  const currentPortalSectionIndex = portalSectionOrder.indexOf(portalSection);
+  const activePortalSection = accountPortalNavSection(portalSection);
+  const currentPortalSectionIndex = accountPortalSectionIndex(portalSection);
 
   useEffect(() => {
-    window.sessionStorage.setItem(portalSectionStorageKey, String(currentPortalSectionIndex));
+    window.sessionStorage.setItem(accountPortalSectionStorageKey, String(currentPortalSectionIndex));
   }, [currentPortalSectionIndex]);
 
   return (
@@ -111,6 +116,6 @@ export function AccountPortalDashboard({
 
 function readPreviousPortalSectionIndex(fallbackIndex: number): number {
   if (typeof window === "undefined") return fallbackIndex;
-  const storedIndex = Number(window.sessionStorage.getItem(portalSectionStorageKey));
+  const storedIndex = Number(window.sessionStorage.getItem(accountPortalSectionStorageKey));
   return Number.isFinite(storedIndex) ? storedIndex : fallbackIndex;
 }
