@@ -5,10 +5,8 @@ import {
   findPhotoAlbumRelations,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
-import {
-  countPhotoProviders,
-  type PhotoProviderFilter,
-} from "./TripPhotosPage.support";
+import type { PhotoProviderFilter } from "./photo-page-options";
+import { countPhotoProviders } from "./photo-page-selectors";
 import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
 
 interface UseTripPhotosPageStateInput {

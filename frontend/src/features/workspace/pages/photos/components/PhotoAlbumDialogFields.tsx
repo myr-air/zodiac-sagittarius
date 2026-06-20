@@ -11,7 +11,7 @@ import {
   photoAccessOptions,
   photoProviderLabel,
   photoProviderOptions,
-} from "../TripPhotosPage.support";
+} from "../photo-page-options";
 import type { PhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogFieldsProps {

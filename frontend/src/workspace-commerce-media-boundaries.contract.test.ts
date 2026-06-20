@@ -18,6 +18,8 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       photoAlbumDialog,
       photoAlbumDialogRelatedItems,
       photoAlbumDialogState,
+      photoPageOptions,
+      photoPageSelectors,
       expenseSummary,
       expenseSettlements,
       expensePageOptions,
@@ -72,6 +74,10 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
     expect(photoAlbumDialogState).toContain("async function submit");
+    expect(photoPageOptions).toContain("export const photoProviderOptions");
+    expect(photoPageOptions).toContain("export function photoProviderLabel");
+    expect(photoPageSelectors).toContain("export function countPhotoProviders");
+    expect(photoPageSelectors).toContain("export function photoAlbumLinkHost");
 
     expect(expenseSummary).toContain("./expense-settlements");
     expect(expenseSummary).not.toContain("function buildSettlementSuggestions");

@@ -9,7 +9,7 @@ import {
   type PhotoProviderFilter,
   photoProviderLabel,
   photoProviders,
-} from "../TripPhotosPage.support";
+} from "../photo-page-options";
 import { PhotoAlbumCard } from "./PhotoAlbumCard";
 
 interface PhotoAlbumBrowserProps {

@@ -133,6 +133,8 @@ export const workspaceBoundarySourcePaths = {
   memberPageOptions: "src/features/workspace/pages/members/member-page-options.ts",
   memberPageSelectors: "src/features/workspace/pages/members/member-page-selectors.ts",
   memberInviteActions: "src/features/workspace/pages/members/use-member-invite-actions.ts",
+  photoPageOptions: "src/features/workspace/pages/photos/photo-page-options.ts",
+  photoPageSelectors: "src/features/workspace/pages/photos/photo-page-selectors.ts",
   photosPageStory: "src/features/workspace/pages/photos/TripPhotosPage.stories.tsx",
   photoAlbumBrowser: "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",

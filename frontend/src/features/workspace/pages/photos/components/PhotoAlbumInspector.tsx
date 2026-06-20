@@ -4,7 +4,8 @@ import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import { photoAccessLabel, photoAlbumLinkHost, photoProviderLabel } from "../TripPhotosPage.support";
+import { photoAccessLabel, photoProviderLabel } from "../photo-page-options";
+import { photoAlbumLinkHost } from "../photo-page-selectors";
 
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
