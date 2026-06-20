@@ -129,6 +129,8 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/itinerary-spreadsheet-parsing.ts",
   "src/trip/itinerary-spreadsheet-row.ts",
   "src/trip/itinerary-spreadsheet-time.ts",
+  "src/trip/itinerary-activity-branch-placement-model.test.ts",
+  "src/trip/itinerary-activity-branch-placement.ts",
   "src/trip/itinerary-activity-branch-placement.test.ts",
   "src/trip/itinerary-activity-branches.test-support.ts",
   "src/trip/itinerary-paths.ts",
