@@ -1,9 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
-import type { Messages } from "@/src/i18n/messages";
-import type { AuthFlow } from "../auth";
-import type { EmailLoginAuthStep } from "./account-email-login-step-meta";
 import {
   emailLoginCredentialsLabels,
   emailLoginMethodsLabels,
@@ -19,45 +15,7 @@ import {
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
 import { buildEmailLoginStepDisabledState } from "./email-login-step-disabled-state";
-
-export interface EmailLoginStepContentProps {
-  activeFlow: AuthFlow;
-  authStep: EmailLoginAuthStep;
-  code: string;
-  codeHintId: string;
-  codeInputId: string;
-  displayName: string;
-  email: string;
-  emailHintId: string;
-  emailInputId: string;
-  emailLoginMessages: Messages["access"]["emailLogin"];
-  hasChallenge: boolean;
-  homeBase: string;
-  isEmailInvalid: boolean;
-  isEmailValid: boolean;
-  isPasswordInvalid: boolean;
-  isSubmitting: boolean;
-  normalizedEmail: string;
-  otpReady: boolean;
-  password: string;
-  passwordAutocomplete: string;
-  passwordHintId: string;
-  passwordInputId: string;
-  passwordReady: boolean;
-  resendCooldown: number;
-  trustDeviceFields: ReactNode;
-  changeEmail: () => void;
-  chooseMethods: () => void;
-  requestEmailCode: () => Promise<void>;
-  resetChallenge: () => void;
-  setDisplayName: (value: string) => void;
-  setEmail: (value: string) => void;
-  setHomeBase: (value: string) => void;
-  setPassword: (value: string) => void;
-  showPasswordStep: () => void;
-  signInWithPasskey: () => Promise<void>;
-  updateCode: (value: string) => void;
-}
+import type { EmailLoginStepContentProps } from "./account-email-login-step.types";
 
 export function EmailLoginStepContent({
   activeFlow,

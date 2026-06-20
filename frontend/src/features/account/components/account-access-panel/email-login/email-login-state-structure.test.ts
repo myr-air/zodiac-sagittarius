@@ -73,6 +73,7 @@ describe("email login state structure", () => {
   it("keeps step transition state out of styles and the main login panel hook", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
     const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
+    const stepTypes = readEmailLoginSource("account-email-login-step.types.ts");
     const styles = readEmailLoginSource("account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginStepNavigation");
@@ -83,7 +84,10 @@ describe("email login state structure", () => {
     expect(stepNavigation).toContain("function goToStep");
     expect(styles).toContain("./state/use-email-login-step-navigation");
     expect(styles).not.toContain("export type AuthTransitionDirection");
-    expect(readEmailLoginSource("account-email-login-step-stage.tsx")).toContain(
+    expect(stepTypes).toContain(
+      "./state/use-email-login-step-navigation",
+    );
+    expect(readEmailLoginSource("account-email-login-step-stage.tsx")).not.toContain(
       "./state/use-email-login-step-navigation",
     );
   });
