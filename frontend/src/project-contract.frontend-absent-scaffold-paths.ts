@@ -2,6 +2,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/workspace/sagittarius-app/public-exports.ts",
   "src/storybook.contract.test.ts",
   "src/trip/workspace/sagittarius-app/SagittariusApp.bookings-photos-api.test.tsx",
+  "src/trip/workspace/sagittarius-app/SagittariusApp.bookings-photos.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.expenses.test.tsx",
   "src/trip/real-api.e2e-support.ts",
   "src/trip/real-api.e2e-flows.ts",

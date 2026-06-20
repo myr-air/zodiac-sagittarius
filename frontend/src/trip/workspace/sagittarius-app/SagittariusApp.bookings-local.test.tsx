@@ -11,7 +11,7 @@ import {
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
 
-describe("Sagittarius cockpit bookings and photos", () => {
+describe("Sagittarius cockpit local bookings", () => {
   beforeEach(() => {
     resetSagittariusAppTestEnvironment();
   });
@@ -29,7 +29,9 @@ describe("Sagittarius cockpit bookings and photos", () => {
       }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: /Add booking|เพิ่มการจอง/i })[0]);
+    await user.click(
+      screen.getAllByRole("button", { name: /Add booking|เพิ่มการจอง/i })[0],
+    );
     const dialog = screen.getByRole("dialog", { name: /Add booking|เพิ่มการจอง/i });
     fireEvent.change(within(dialog).getByRole("textbox", { name: /^(Title|ชื่อ)$/i }), {
       target: { value: "Airport Express pass" },
@@ -40,9 +42,12 @@ describe("Sagittarius cockpit bookings and photos", () => {
     fireEvent.change(within(dialog).getByRole("combobox", { name: /^(Status|สถานะ)$/i }), {
       target: { value: "booked" },
     });
-    fireEvent.change(within(dialog).getByRole("textbox", { name: /^(External link|ลิงก์ภายนอก)$/i }), {
-      target: { value: "https://drive.google.com/airport-express" },
-    });
+    fireEvent.change(
+      within(dialog).getByRole("textbox", { name: /^(External link|ลิงก์ภายนอก)$/i }),
+      {
+        target: { value: "https://drive.google.com/airport-express" },
+      },
+    );
     await user.click(
       within(dialog).getByRole("button", { name: /Save booking|บันทึกการจอง/i }),
     );
@@ -50,36 +55,6 @@ describe("Sagittarius cockpit bookings and photos", () => {
     expect(
       await screen.findByRole("button", {
         name: /Select Airport Express pass|เลือก Airport Express pass/i,
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it("opens the Photos workspace and creates a local album link", async () => {
-    const user = userEvent.setup();
-    render(<SagittariusApp initialView="photos" />);
-
-    expect(
-      screen.getByRole("region", { name: /Photos & Albums|รูปภาพและอัลบั้ม/i }),
-    ).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /Add album|เพิ่มอัลบั้ม/i }));
-    const dialog = screen.getByRole("dialog", { name: /Add album|เพิ่มอัลบั้ม/i });
-    fireEvent.change(within(dialog).getByLabelText(/Title|ชื่อ/i), {
-      target: { value: "Trip group album" },
-    });
-    fireEvent.change(within(dialog).getByLabelText(/Provider|ผู้ให้บริการ/i), {
-      target: { value: "google_photos" },
-    });
-    fireEvent.change(within(dialog).getByLabelText(/Album link|ลิงก์อัลบั้ม/i), {
-      target: { value: "https://photos.app.goo.gl/trip-group" },
-    });
-    await user.click(
-      within(dialog).getByRole("button", { name: /Save album|บันทึกอัลบั้ม/i }),
-    );
-
-    expect(
-      await screen.findByRole("button", {
-        name: /Select Trip group album|เลือก Trip group album/i,
       }),
     ).toBeInTheDocument();
   });
