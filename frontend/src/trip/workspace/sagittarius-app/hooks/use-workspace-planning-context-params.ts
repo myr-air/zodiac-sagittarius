@@ -1,5 +1,6 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type { TripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import type {
   ItineraryItem,
@@ -34,7 +35,7 @@ export interface UseWorkspacePlanningContextParams {
   selectedTripPlanId: string;
   sessionRestored: boolean;
   setAccessError: (error: string | null) => void;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setIsCockpitLoaded: (loaded: boolean) => void;
   setIsTripPlanBusy: Dispatch<SetStateAction<boolean>>;
   setParticipantSession: (session: TripParticipantSession | null) => void;

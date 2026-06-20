@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-
-type ContextRailPreferredTab = "notes" | "booking" | "suggestions";
+import type { WorkspaceContextRailTab } from "./context-rail-tabs";
 
 interface UseWorkspaceChromeOptions {
   autoDismissToast: boolean;
@@ -13,7 +12,7 @@ export function useWorkspaceChrome({
   const [contextRailOpen, setContextRailOpen] = useState(false);
   const [contextRailMounted, setContextRailMounted] = useState(false);
   const [contextRailPreferredTab, setContextRailPreferredTab] =
-    useState<ContextRailPreferredTab>("notes");
+    useState<WorkspaceContextRailTab>("notes");
   const [toastDismissed, setToastDismissed] = useState(false);
   const [toastDismissing, setToastDismissing] = useState(false);
 

@@ -1,4 +1,5 @@
 import type { TripApiClient } from "@/src/trip/api-client";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type {
   ItineraryItem,
   Trip,
@@ -24,7 +25,7 @@ interface UseWorkspaceRecordsParams {
   selectedTripPlanId: string;
   initialTrip: InitialTripState;
   setSelectedItemId: (itemId: string) => void;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   commitTrip: (updater: (current: Trip) => Trip) => void;
 }
 

@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import {
   type BookingDocInputLike,
   type ItineraryBookingTemplate,
@@ -21,7 +22,7 @@ interface UseWorkspaceItineraryBookingCommandsOptions {
   createBookingDoc: (input: BookingDocInputLike) => Promise<BookingDoc | null>;
   currentMemberId: string;
   latestTripRef: MutableRefObject<Trip>;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setSelectedItemId: Dispatch<SetStateAction<string>>;
   trip: Trip;
   updateBookingDoc: (

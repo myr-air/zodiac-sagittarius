@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { nextClientMutationId, nextLocalStopNoteId } from "@/src/trip/local-ids";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import {
   appendStopNote,
   buildCreateStopNoteRequest,
@@ -26,7 +27,7 @@ interface UseWorkspaceStopNoteActionsParams {
   participantSession: TripParticipantSession | null;
   resolveApiClient?: TripApiClient;
   selectedTripPlanId: string;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setSelectedItemId: (itemId: string) => void;
   setStopNotes: (updater: (current: StopNote[]) => StopNote[]) => void;
   stopNotes: StopNote[];

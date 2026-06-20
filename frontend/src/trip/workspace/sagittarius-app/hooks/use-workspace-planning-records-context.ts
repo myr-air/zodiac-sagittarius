@@ -1,6 +1,7 @@
 import type { MutableRefObject } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type { ItineraryItem, Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import { useWorkspaceItineraryViewModel } from "./use-workspace-itinerary-view-model";
 import { useWorkspaceRecords } from "./use-workspace-records";
@@ -26,7 +27,7 @@ interface UseWorkspacePlanningRecordsContextParams {
   resolvedApiClient?: TripApiClient;
   selectedItemId: string;
   selectedTripPlanId: string;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setSelectedItemId: (value: string | ((current: string) => string)) => void;
   trip: Trip;
 }

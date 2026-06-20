@@ -1,6 +1,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type {
   Trip,
   TripParticipantSession,
@@ -19,7 +20,7 @@ interface UseWorkspaceBookingCommandsOptions {
   replaceApiTrip: (nextTrip: Trip) => void;
   replaceCockpitFromApi: (cockpit: TripCockpit) => void;
   selectedTripPlanId: string;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setSelectedItemId: Dispatch<SetStateAction<string>>;
   trip: Trip;
   updateItineraryItemInline: (

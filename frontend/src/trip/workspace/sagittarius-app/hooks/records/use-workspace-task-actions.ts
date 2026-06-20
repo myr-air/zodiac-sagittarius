@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { nextClientMutationId, nextLocalTaskId } from "@/src/trip/local-ids";
+import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import {
   appendTask,
   buildCreateTaskRequest,
@@ -23,7 +24,7 @@ interface UseWorkspaceTaskActionsParams {
   participantSession: TripParticipantSession | null;
   resolveApiClient?: TripApiClient;
   selectedTripPlanId: string;
-  setContextRailPreferredTab: (tab: "notes" | "booking") => void;
+  setContextRailPreferredTab: (tab: WorkspaceContextRailPrimaryTab) => void;
   setSelectedItemId: (itemId: string) => void;
   setTasks: (updater: (current: TripTask[]) => TripTask[]) => void;
   tasks: TripTask[];
