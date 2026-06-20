@@ -13,7 +13,7 @@ import {
 } from "./account-trip-destinations";
 import { tripWizardSteps, type TripWizardStepId } from "./account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
-import { TripPreviewLiveMap } from "./trip-preview-map";
+import { TripPreviewLiveMap } from "./map";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface PortalTripWizardPreviewProps {
