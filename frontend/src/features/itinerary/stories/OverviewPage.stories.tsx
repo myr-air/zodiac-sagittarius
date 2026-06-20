@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { OverviewPage } from "@/src/features/itinerary/components";
-import { weatherBriefings } from "@/src/shared/components/weather";
+import {
+  expectOverviewStructure,
+  overviewPageDenseStoryArgs,
+  overviewPageEmptyStoryArgs,
+  overviewPageOwnerStoryArgs,
+  overviewPageTravelerStoryArgs,
+  overviewPageViewerStoryArgs,
+} from "./OverviewPage.stories.support";
 
 const meta = {
   title: "Pages/Overview",
@@ -14,27 +20,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-async function expectOverviewStructure(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(".overview-hero")).toHaveClass("overview-hero", "grid");
-  await expect(canvasElement.querySelector(".overview-travel-cockpit")).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3");
-  await expect(canvasElement.querySelector(".overview-grid")).toHaveClass("overview-grid", "grid");
-  await expect(canvasElement.querySelector(".overview-highlight-board")).toBeInTheDocument();
-}
-
 export const Owner: Story = {
-  args: {
-    trip: tripFixture.trip,
-    currentMemberId: tripFixture.currentMembers.owner.id,
-    expenseSummary: tripFixture.expenseSummaries.owner,
-    items: tripFixture.planItems,
-    suggestions: tripFixture.suggestions,
-    tasks: tripFixture.tasks,
-    dailyBriefings: weatherBriefings,
-    onCreateTask: () => {},
-    onSaveDailyBriefingOverrides: () => {},
-    onToggleTaskStatus: () => {},
-  },
+  args: overviewPageOwnerStoryArgs,
   play: async ({ canvas, canvasElement }) => {
     await expectOverviewStructure(canvasElement);
     await expect(canvas.getByRole("region", { name: /Trip readiness/i })).toBeVisible();
@@ -55,11 +42,7 @@ export const OwnerThai: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMemberId: tripFixture.currentMembers.traveler.id,
-    expenseSummary: tripFixture.expenseSummaries.traveler,
-  },
+  args: overviewPageTravelerStoryArgs,
   play: async ({ canvas, canvasElement }) => {
     await expectOverviewStructure(canvasElement);
     await expect(canvas.getByRole("region", { name: /Today and next focus/i })).toBeVisible();
@@ -71,11 +54,7 @@ export const Traveler: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMemberId: tripFixture.currentMembers.viewer.id,
-    expenseSummary: tripFixture.expenseSummaries.viewer,
-  },
+  args: overviewPageViewerStoryArgs,
   play: async ({ canvas, canvasElement }) => {
     await expectOverviewStructure(canvasElement);
     await expect(canvas.getByRole("region", { name: /Read-only trip snapshot/i })).toBeVisible();
@@ -86,11 +65,7 @@ export const Viewer: Story = {
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    trip: buildDenseTripFixture(),
-    items: buildDenseTripFixture().itineraryItems,
-  },
+  args: overviewPageDenseStoryArgs,
   play: async ({ canvasElement }) => {
     await expectOverviewStructure(canvasElement);
     await expect(canvasElement.querySelectorAll(".overview-highlight-item").length).toBeGreaterThan(2);
@@ -99,14 +74,7 @@ export const Dense: Story = {
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    trip: buildEmptyTripFixture(),
-    items: [],
-    suggestions: [],
-    tasks: [],
-    dailyBriefings: [],
-  },
+  args: overviewPageEmptyStoryArgs,
   play: async ({ canvas, canvasElement }) => {
     await expectOverviewStructure(canvasElement);
     await expect(canvas.getByText(/No itinerary yet/i)).toBeVisible();

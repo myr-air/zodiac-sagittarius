@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import { buildExpenseSummary } from "@/src/trip/expenses";
 import { OverviewPage } from "@/src/features/itinerary/components";
+import {
+  overviewTemplateDenseStoryArgs,
+  overviewTemplateEmptyStoryArgs,
+  overviewTemplateOwnerStoryArgs,
+  overviewTemplateTravelerStoryArgs,
+  overviewTemplateViewerStoryArgs,
+} from "../OverviewPage.stories.support";
 
 const meta = {
   title: "Templates/Overview",
@@ -16,24 +21,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
-  args: {
-    trip: tripFixture.trip,
-    currentMemberId: tripFixture.currentMembers.owner.id,
-    expenseSummary: tripFixture.expenseSummaries.owner,
-    items: tripFixture.planItems,
-    suggestions: tripFixture.suggestions,
-    tasks: tripFixture.tasks,
-    onCreateTask: () => {},
-    onToggleTaskStatus: () => {},
-  },
+  args: overviewTemplateOwnerStoryArgs,
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMemberId: tripFixture.currentMembers.traveler.id,
-    expenseSummary: tripFixture.expenseSummaries.traveler,
-  },
+  args: overviewTemplateTravelerStoryArgs,
 };
 
 export const OwnerThai: Story = {
@@ -51,28 +43,13 @@ export const OwnerThai: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMemberId: tripFixture.currentMembers.viewer.id,
-    expenseSummary: tripFixture.expenseSummaries.viewer,
-  },
+  args: overviewTemplateViewerStoryArgs,
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    trip: buildEmptyTripFixture(),
-    items: [],
-    suggestions: [],
-    tasks: [],
-    expenseSummary: buildExpenseSummary([], tripFixture.currentMembers.owner.id),
-  },
+  args: overviewTemplateEmptyStoryArgs,
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    trip: buildDenseTripFixture(),
-    items: buildDenseTripFixture().itineraryItems,
-  },
+  args: overviewTemplateDenseStoryArgs,
 };
