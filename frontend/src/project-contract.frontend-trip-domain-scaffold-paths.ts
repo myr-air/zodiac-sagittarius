@@ -136,6 +136,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/itinerary-spreadsheet-columns.ts",
   "src/trip/itinerary-spreadsheet-dates.ts",
   "src/trip/itinerary-spreadsheet-parsing.ts",
+  "src/trip/itinerary-spreadsheet-row-parser.ts",
   "src/trip/itinerary-spreadsheet-row.ts",
   "src/trip/itinerary-spreadsheet-time.ts",
   "src/trip/itinerary-activity-branch-placement-model.test.ts",
