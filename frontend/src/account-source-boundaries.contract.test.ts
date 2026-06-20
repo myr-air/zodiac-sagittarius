@@ -7,6 +7,7 @@ describe("Sagittarius account source boundaries", () => {
     const {
       accountAccessPanel,
       accountAccessChrome,
+      accountAccessShellClasses,
       accountAccessModes,
       accountPortalNavItems,
       accountPortalDataCache,
@@ -53,9 +54,14 @@ describe("Sagittarius account source boundaries", () => {
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(accountAccessPanel).toContain("AccountAccessChrome");
+    expect(accountAccessPanel).toContain("accountAccessPanelPageClassName");
+    expect(accountAccessPanel).toContain("accountAccessPanelShellClassName");
     expect(accountAccessPanel).not.toContain("accountHeroClassName");
     expect(accountAccessPanel).not.toContain("accountModeTabsClassName");
+    expect(accountAccessPanel).not.toContain("accountEntryPageClassName");
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
+    expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
+    expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
     expect(accountAccessChrome).toContain("export function AccountAccessChrome");
     expect(accountAccessChrome).toContain("accountHeroClassName");
     expect(accountAccessChrome).toContain("accountModeTabsClassName");

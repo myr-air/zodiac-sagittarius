@@ -7,7 +7,6 @@ import type {
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import type { PortalSection } from "@/src/shared/portal";
 import {
   mainLabel,
@@ -19,18 +18,12 @@ import {
 } from "./auth";
 import { AccountAccessPanelContent } from "./account-access-panel-content";
 import {
-  accountEntryPageClassName,
-  accountEntryShellClassName,
-  accountPageClassName,
-  accountPortalNewTripPageClassName,
-  accountPortalNewTripShellClassName,
-  accountPortalPageClassName,
-  accountPortalShellClassName,
-  accountShellClassName,
   accountToastStackClassName,
-  accountTripAccessPageClassName,
-  accountTripAccessShellClassName,
 } from "./account-access-panel-layout";
+import {
+  accountAccessPanelPageClassName,
+  accountAccessPanelShellClassName,
+} from "./account-access-panel-shell-classes";
 import { useAccountAccessPanelState } from "./use-account-access-panel-state";
 
 interface AccountAccessPanelProps {
@@ -95,16 +88,22 @@ export function AccountAccessPanel({
 
   return (
     <main
-      className={cn(
-        accountPageClassName,
-        isAccountEntry ? accountEntryPageClassName : "",
-        isPortalEntry ? accountPortalPageClassName : "",
-        isTripAccessEntry ? accountTripAccessPageClassName : "",
-        isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripPageClassName : "",
-      )}
+      className={accountAccessPanelPageClassName({
+        isAccountEntry,
+        isPortalEntry,
+        isTripAccessEntry,
+        portalSection,
+      })}
       aria-label={mainLabel(effectiveEntryAccessMode, t.access.mainLabels)}
     >
-      <section className={cn(accountShellClassName, isAccountEntry ? accountEntryShellClassName : "", isPortalEntry ? accountPortalShellClassName : "", isPortalEntry && portalSection === "new-trip" ? accountPortalNewTripShellClassName : "", isTripAccessEntry ? accountTripAccessShellClassName : "")}>
+      <section
+        className={accountAccessPanelShellClassName({
+          isAccountEntry,
+          isPortalEntry,
+          isTripAccessEntry,
+          portalSection,
+        })}
+      >
         <AccountAccessChrome
           accessMode={effectiveAccessMode}
           backToHomeLabel={t.access.backToHome}
