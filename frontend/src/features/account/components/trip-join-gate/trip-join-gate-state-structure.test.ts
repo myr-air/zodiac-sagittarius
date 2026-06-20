@@ -19,4 +19,18 @@ describe("trip join gate state structure", () => {
     expect(inviteTokenSource).toContain("export function useTripJoinInviteTokenResolution");
     expect(inviteTokenSource).toContain("resolveJoinInviteToken(initialJoinToken)");
   });
+
+  it("keeps join form field state out of the main join gate state hook", () => {
+    const stateSource = readTripJoinGateSource("use-trip-join-gate-state.ts");
+    const formStateSource = readTripJoinGateSource("use-trip-join-gate-form-state.ts");
+
+    expect(stateSource).toContain("useTripJoinGateFormState");
+    expect(stateSource).not.toMatch(/const \[joinId,\s*setJoinId\]/);
+    expect(stateSource).not.toMatch(/const \[tripPassword,\s*setTripPassword\]/);
+    expect(stateSource).not.toMatch(/const \[participantPassword,\s*setParticipantPassword\]/);
+    expect(stateSource).not.toMatch(/const \[showTripPassword,\s*setShowTripPassword\]/);
+    expect(stateSource).not.toMatch(/const \[showParticipantPassword,\s*setShowParticipantPassword\]/);
+    expect(formStateSource).toContain("export function useTripJoinGateFormState");
+    expect(formStateSource).toContain("function resetParticipantPassword");
+  });
 });

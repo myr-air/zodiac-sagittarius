@@ -9,6 +9,7 @@ import {
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import { errorMessage, tripFromJoinResponse } from "./trip-join-gate.support";
+import { useTripJoinGateFormState } from "./use-trip-join-gate-form-state";
 import { useTripJoinInviteTokenResolution } from "./use-trip-join-invite-token-resolution";
 
 interface TripJoinGateErrorCopy {
@@ -40,16 +41,24 @@ export function useTripJoinGateState({
   trip,
 }: UseTripJoinGateStateArgs) {
   const [step, setStep] = useState<"room" | "participant">("room");
-  const [joinId, setJoinId] = useState(initialJoinCode ?? "");
-  const [tripPassword, setTripPassword] = useState("");
   const [joinedTrip, setJoinedTrip] = useState<Trip | null>(null);
   const [joinSessionToken, setJoinSessionToken] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [participantPassword, setParticipantPassword] = useState("");
-  const [showTripPassword, setShowTripPassword] = useState(false);
-  const [showParticipantPassword, setShowParticipantPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    joinId,
+    participantPassword,
+    resetParticipantPassword,
+    setJoinId,
+    setParticipantPassword,
+    setShowParticipantPassword,
+    setShowTripPassword,
+    setTripPassword,
+    showParticipantPassword,
+    showTripPassword,
+    tripPassword,
+  } = useTripJoinGateFormState(initialJoinCode);
 
   /* v8 ignore next */
   const activeTrip = joinedTrip ?? trip ?? null;
@@ -128,8 +137,7 @@ export function useTripJoinGateState({
     /* v8 ignore next */
     if (isTripParticipantDisabled(member)) return;
     setSelectedMemberId(member.id);
-    setParticipantPassword("");
-    setShowParticipantPassword(false);
+    resetParticipantPassword();
     setError(null);
   }
 

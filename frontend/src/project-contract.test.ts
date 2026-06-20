@@ -230,6 +230,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinRoomForm.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGateVisual.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-assertions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/itinerary-story-path-scenarios.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/shared/components/date-time-pickers/DatePickerField.tsx"))).toBe(true);
@@ -254,6 +255,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/OverviewPage.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewPage.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/overview-page-model.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewSummaryBand.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpit.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/OverviewCockpitCard.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx"))).toBe(true);
@@ -472,6 +474,7 @@ describe("Sagittarius project scaffold", () => {
   it("keeps trip join gate authentication state split from render composition", () => {
     const tripJoinGate = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"), "utf8");
     const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"), "utf8");
+    const tripJoinGateFormState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"), "utf8");
 
     expect(tripJoinGate).toContain("./use-trip-join-gate-state");
     expect(tripJoinGate).not.toContain("useState");
@@ -479,8 +482,11 @@ describe("Sagittarius project scaffold", () => {
     expect(tripJoinGate).not.toContain("verifyTripCredentials");
     expect(tripJoinGate).not.toContain("function submitParticipant");
     expect(tripJoinGateState).toContain("export function useTripJoinGateState");
+    expect(tripJoinGateState).toContain("useTripJoinGateFormState");
+    expect(tripJoinGateState).not.toContain("const [joinId");
     expect(tripJoinGateState).toContain("verifyTripCredentials");
     expect(tripJoinGateState).toContain("async function submitParticipant");
+    expect(tripJoinGateFormState).toContain("export function useTripJoinGateFormState");
   });
 
   it("keeps account access panel state split from render composition", () => {
