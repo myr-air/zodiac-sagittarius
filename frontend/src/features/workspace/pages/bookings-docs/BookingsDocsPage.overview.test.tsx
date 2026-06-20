@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
 
 describe("BookingsDocsPage overview", () => {
@@ -54,7 +54,7 @@ describe("BookingsDocsPage overview", () => {
   });
 
   it("locks sensitive records for viewers while leaving shared rows visible", () => {
-    const viewer = seedTrip.members.find((member) => member.role === "viewer")!;
+    const viewer = getTripFixtureMember("viewer");
     renderBookingsDocsPage({ currentMember: viewer });
 
     expect(screen.getByRole("button", { name: /Select Bangkok to Hong Kong flight/i })).toBeInTheDocument();

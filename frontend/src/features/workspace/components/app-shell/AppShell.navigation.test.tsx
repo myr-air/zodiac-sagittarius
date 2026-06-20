@@ -2,6 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { renderAppShell } from "./AppShell.test-support";
 
@@ -27,7 +28,7 @@ describe("AppShell navigation", () => {
   it("renders English shell labels by default and can switch to Thai", async () => {
     const user = userEvent.setup();
     renderAppShell({
-      currentMember: seedTrip.members.find((member) => member.role === "traveler")!,
+      currentMember: getTripFixtureMember("traveler"),
       locale: "en",
       onToggleCollapsed: () => {},
     });

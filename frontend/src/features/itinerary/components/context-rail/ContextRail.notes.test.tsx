@@ -1,6 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import {
   renderContextRail,
   selectedContextRailItem,
@@ -30,9 +30,7 @@ describe("ContextRail notes", () => {
 
   it("lets the current note owner edit and delete their stop notes", () => {
     const props = renderContextRail({
-      currentMember: tripFixture.trip.members.find(
-        (member) => member.id === "member-beam",
-      )!,
+      currentMember: getTripFixtureMember("organizer"),
     });
 
     fireEvent.click(screen.getByRole("button", { name: /แก้ไขโน้ต/i }));

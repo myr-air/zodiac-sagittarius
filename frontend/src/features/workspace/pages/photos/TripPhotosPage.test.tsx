@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumInput } from "./TripPhotosPage";
 import { renderTripPhotosPage } from "./TripPhotosPage.test-support";
 
@@ -83,7 +83,7 @@ describe("TripPhotosPage", () => {
 
   it("hides mutations from viewers and confirms deletion for editors", async () => {
     const user = userEvent.setup();
-    const viewer = seedTrip.members.find((member) => member.role === "viewer")!;
+    const viewer = getTripFixtureMember("viewer");
     const onDeletePhotoAlbum = vi.fn();
     const { unmount } = renderTripPhotosPage({ currentMember: viewer, onDeletePhotoAlbum });
 

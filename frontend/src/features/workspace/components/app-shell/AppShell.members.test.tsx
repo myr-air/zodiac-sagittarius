@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import { renderAppShell } from "./AppShell.test-support";
 
 describe("AppShell members", () => {
@@ -9,7 +9,7 @@ describe("AppShell members", () => {
     const user = userEvent.setup();
     const onLeaveParticipantSession = vi.fn();
     const { unmount } = renderAppShell({
-      currentMember: seedTrip.members.find((member) => member.role === "traveler")!,
+      currentMember: getTripFixtureMember("traveler"),
       onLeaveParticipantSession,
     });
 
@@ -33,7 +33,7 @@ describe("AppShell members", () => {
     renderAppShell({
       activeView: "members",
       collapsed: true,
-      currentMember: seedTrip.members.find((member) => member.role === "viewer")!,
+      currentMember: getTripFixtureMember("viewer"),
     });
 
     await screen.findByText("ผู้ชม");
@@ -43,7 +43,7 @@ describe("AppShell members", () => {
 
   it("labels organizer members", async () => {
     renderAppShell({
-      currentMember: seedTrip.members.find((member) => member.role === "organizer")!,
+      currentMember: getTripFixtureMember("organizer"),
     });
 
     await screen.findByText("ผู้จัดทริป");
