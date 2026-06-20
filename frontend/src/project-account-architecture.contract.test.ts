@@ -1,0 +1,66 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { frontendRoot } from "./project-contract.helpers";
+
+describe("Sagittarius account architecture contracts", () => {
+  it("keeps portal trip wizard model logic out of the render component", () => {
+    const portalTripWizard = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"), "utf8");
+    const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"), "utf8");
+    const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-summary.ts"), "utf8");
+
+    expect(portalTripWizard).toContain("./use-portal-trip-wizard-model");
+    expect(portalTripWizard).not.toContain("const [countryQuery");
+    expect(portalTripWizard).not.toContain("function regenerateCredentials");
+    expect(portalTripWizardModel).toContain("export function usePortalTripWizardModel");
+    expect(portalTripWizardModel).toContain("buildPortalTripWizardSummary");
+    expect(portalTripWizardModel).not.toContain("wizard.status.required");
+    expect(portalTripWizardModel).toContain("function regenerateCredentials");
+    expect(portalTripWizardSummary).toContain("export function buildPortalTripWizardSummary");
+    expect(portalTripWizardSummary).toContain("wizard.status.required");
+  });
+
+  it("keeps trip join gate authentication state split from render composition", () => {
+    const tripJoinGate = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/TripJoinGate.tsx"), "utf8");
+    const tripJoinGateState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-state.ts"), "utf8");
+    const tripJoinGateFormState = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts"), "utf8");
+    const tripJoinGateSubmitActions = readFileSync(join(frontendRoot, "src/features/account/components/trip-join-gate/use-trip-join-gate-submit-actions.ts"), "utf8");
+
+    expect(tripJoinGate).toContain("./use-trip-join-gate-state");
+    expect(tripJoinGate).not.toContain("useState");
+    expect(tripJoinGate).not.toContain("useEffect");
+    expect(tripJoinGate).not.toContain("verifyTripCredentials");
+    expect(tripJoinGate).not.toContain("function submitParticipant");
+    expect(tripJoinGateState).toContain("export function useTripJoinGateState");
+    expect(tripJoinGateState).toContain("useTripJoinGateFormState");
+    expect(tripJoinGateState).toContain("useTripJoinGateSubmitActions");
+    expect(tripJoinGateState).not.toContain("const [joinId");
+    expect(tripJoinGateState).not.toContain("verifyTripCredentials");
+    expect(tripJoinGateState).not.toContain("async function submitParticipant");
+    expect(tripJoinGateFormState).toContain("export function useTripJoinGateFormState");
+    expect(tripJoinGateSubmitActions).toContain("verifyTripCredentials");
+    expect(tripJoinGateSubmitActions).toContain("async function submitParticipant");
+  });
+
+  it("keeps account access panel state split from render composition", () => {
+    const accountPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"), "utf8");
+    const accountPanelContent = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/account-access-panel-content.tsx"), "utf8");
+    const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-account-access-panel-state.ts"), "utf8");
+
+    expect(accountPanel).toContain("./use-account-access-panel-state");
+    expect(accountPanel).toContain("./account-access-panel-content");
+    expect(accountPanel).not.toContain("useState");
+    expect(accountPanel).not.toContain("useEffect");
+    expect(accountPanel).not.toContain("useAccountPortalData");
+    expect(accountPanel).not.toContain("clearAccountPortalDataCache");
+    expect(accountPanel).not.toContain("./EmailLoginPanel");
+    expect(accountPanel).not.toContain("../trip-join-gate/TripJoinGate");
+    expect(accountPanelContent).toContain("./email-login");
+    expect(accountPanelContent).toContain("@/src/features/account/components/trip-join-gate");
+    expect(accountPanelContent).toContain("./portal");
+    expect(accountPanelState).toContain("export function useAccountAccessPanelState");
+    expect(accountPanelState).toContain("useAccountPortalData");
+    expect(accountPanelState).toContain("clearAccountPortalDataCache");
+  });
+
+});
