@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildCreateTripPlanRequest,
-  buildPatchTripPlanStatusRequest,
-  buildRenameTripPlanRequest,
-  buildSetMainTripPlanRequest,
-  createLocalTripPlan,
   legacyKindForPlanStatus,
   mergePublishedTripPlan,
   normalizeTripPlanAliases,
@@ -14,19 +9,10 @@ import {
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { seedTrip } from "@/src/trip/seed";
-import type { PlanVariant, Trip } from "@/src/trip/types";
+import type { Trip } from "@/src/trip/types";
+import { plan } from "./trip-plans.test-support";
 
-function plan(input: Partial<PlanVariant> & Pick<PlanVariant, "id">): PlanVariant {
-  return {
-    tripId: seedTrip.id,
-    name: input.id,
-    kind: "draft",
-    description: "",
-    ...input,
-  };
-}
-
-describe("trip plans", () => {
+describe("trip plan aliases", () => {
   it("normalizes plan aliases onto the selected main Trip Plan", () => {
     const trip: Trip = {
       ...seedTrip,
@@ -174,93 +160,6 @@ describe("trip plans", () => {
       ),
     ).toMatchObject({ kind: "backup", status: "backup" });
     expect(updated.tripPlans).toEqual(updated.planVariants);
-  });
-
-  it("builds Trip Plan API requests", () => {
-    const currentPlan = plan({
-      id: "plan-rain",
-      name: "Rain plan",
-      status: "draft",
-      version: 8,
-    });
-
-    expect(buildSetMainTripPlanRequest("mutation-set-main")).toEqual({
-      clientMutationId: "mutation-set-main",
-    });
-    expect(
-      buildPatchTripPlanStatusRequest(
-        currentPlan,
-        "backup",
-        "mutation-status",
-      ),
-    ).toEqual({
-      clientMutationId: "mutation-status",
-      expectedVersion: 8,
-      patch: { status: "backup" },
-    });
-    expect(
-      buildRenameTripPlanRequest(
-        plan({ id: "plan-unversioned" }),
-        "Updated name",
-        "mutation-rename",
-      ),
-    ).toEqual({
-      clientMutationId: "mutation-rename",
-      expectedVersion: 1,
-      patch: { name: "Updated name" },
-    });
-    expect(buildCreateTripPlanRequest("Museum day", "mutation-create")).toEqual({
-      clientMutationId: "mutation-create",
-      name: "Museum day",
-      status: "draft",
-      creationMode: "blank",
-      description: "",
-    });
-  });
-
-  it("creates a local draft Trip Plan in both compatibility aliases", () => {
-    const result = createLocalTripPlan(
-      seedTrip,
-      "Museum day",
-      (plans) => `plan-local-${plans.length + 1}`,
-    );
-
-    expect(result.tripPlanId).toBe(`plan-local-${seedTrip.planVariants.length + 1}`);
-    expect(
-      result.trip.planVariants.find((candidate) => candidate.id === result.tripPlanId),
-    ).toEqual({
-      id: result.tripPlanId,
-      tripId: seedTrip.id,
-      name: "Museum day",
-      kind: "draft",
-      status: "draft",
-      description: "",
-      version: 1,
-    });
-    expect(result.trip.tripPlans).toEqual(result.trip.planVariants);
-  });
-
-  it("preserves canonical tripPlans when creating a local draft Trip Plan", () => {
-    const existingTripPlan = plan({
-      id: "plan-canonical-only",
-      name: "Canonical only",
-    });
-    const trip: Trip = {
-      ...seedTrip,
-      tripPlans: [existingTripPlan],
-    };
-
-    const result = createLocalTripPlan(
-      trip,
-      "Food day",
-      () => "plan-food-day",
-    );
-
-    expect(result.trip.tripPlans?.map((candidate) => candidate.id)).toEqual([
-      existingTripPlan.id,
-      "plan-food-day",
-    ]);
-    expect(result.trip.planVariants.map((candidate) => candidate.id)).toContain("plan-food-day");
   });
 
   it("maps legacy plan kinds and Trip Plan statuses", () => {
