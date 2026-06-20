@@ -1,10 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
 import { TimelineView } from "@/src/features/itinerary/components";
+import {
+  advisoryWarningPlay,
+  densePlay,
+  emptyPlay,
+  mobilePlay,
+  ownerThaiPlay,
+  planABAlternativesPlay,
+  responsivePlay,
+  tabletPlay,
+  travelerPlay,
+} from "./TimelinePage.stories.plays";
 import {
   denseTimelineItems,
   emptyTimelineItems,
-  expectTimelineStructure,
   timelineAdvisoryItems,
   timelineOwnerStoryArgs,
   timelinePlanABAlternativeItems,
@@ -27,19 +36,12 @@ export const Owner: Story = {
 export const OwnerThai: Story = {
   args: Owner.args,
   parameters: { locale: "th" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toHaveClass("timeline-panel");
-    await expect(canvas.getByText("ไทม์ไลน์")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /เลือกจุดในไทม์ไลน์ Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
-  },
+  play: ownerThaiPlay,
 };
 
 export const Traveler: Story = {
   args: Owner.args,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
-    await expect(canvas.getByRole("button", { name: /Select timeline stop Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
-  },
+  play: travelerPlay,
 };
 
 export const Viewer: Story = {
@@ -53,10 +55,7 @@ export const Dense: Story = {
     items: denseTimelineItems,
     selectedItemId: "",
   },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelectorAll(".timeline-day").length).toBeGreaterThan(3);
-  },
+  play: densePlay,
 };
 
 export const Empty: Story = {
@@ -65,10 +64,7 @@ export const Empty: Story = {
     items: emptyTimelineItems,
     selectedItemId: "",
   },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelectorAll(".timeline-stop").length).toBe(0);
-  },
+  play: emptyPlay,
 };
 
 export const PlanABAlternatives: Story = {
@@ -77,12 +73,7 @@ export const PlanABAlternatives: Story = {
     items: timelinePlanABAlternativeItems,
     selectedItemId: "timeline-plan-ab-main-breakfast",
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
-    await expect(canvas.getByRole("button", { name: /Select timeline stop Harbour breakfast/i })).toHaveAttribute("aria-pressed", "true");
-    await expect(canvas.getByRole("button", { name: /Select timeline stop Plan A gallery route/i })).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: /Select timeline stop Plan B harbour route/i })).toBeInTheDocument();
-  },
+  play: planABAlternativesPlay,
 };
 
 export const AdvisoryWarning: Story = {
@@ -91,44 +82,29 @@ export const AdvisoryWarning: Story = {
     items: timelineAdvisoryItems,
     selectedItemId: "timeline-advisory-main",
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: /Trip timeline/i })).toHaveClass("timeline-panel");
-    await expect(canvas.getByRole("button", { name: /Select timeline stop Peak tram timed entry/i })).toHaveAttribute("aria-pressed", "true");
-    await expect(canvas.getByText("Book timed ticket")).toHaveClass("timeline-warning");
-  },
+  play: advisoryWarningPlay,
 };
 
 export const Tablet: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-1");
-  },
+  play: tabletPlay,
 };
 
 export const Desktop1024: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Desktop1440: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-  },
+  play: responsivePlay,
 };
 
 export const Mobile: Story = {
   args: Owner.args,
   parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: async ({ canvasElement }) => {
-    await expectTimelineStructure(canvasElement);
-    await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-1", "max-[767px]:overflow-y-auto");
-    await expect(canvasElement.querySelector(".timeline-stop-button")).toHaveClass("max-[767px]:grid-cols-[62px_32px_minmax(0,1fr)]");
-  },
+  play: mobilePlay,
 };

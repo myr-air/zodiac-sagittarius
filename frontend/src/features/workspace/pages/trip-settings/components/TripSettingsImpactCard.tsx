@@ -15,7 +15,9 @@ export function TripSettingsImpactCard({ outsideStopCount }: TripSettingsImpactC
       <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.planImpact}</h2>
       <div className={settingsStyles.impactLineClassName}>
         <Icon name={outsideStopCount ? "warning" : "check"} />
-        <span>{outsideStopCount ? t.tripSettings.outsideStops({ count: outsideStopCount }) : t.tripSettings.noImpact}</span>
+        <span>
+          {outsideStopCount ? t.tripSettings.outsideStops({ count: outsideStopCount }) : t.tripSettings.noImpact}
+        </span>
       </div>
     </WorkspaceSurface>
   );

@@ -30,7 +30,12 @@ export function TripSettingsForm({
   const { t } = useI18n();
 
   return (
-    <WorkspaceSurface as="form" className={settingsStyles.formClassName} aria-label={t.tripSettings.tripDetails} onSubmit={onSubmit}>
+    <WorkspaceSurface
+      as="form"
+      className={settingsStyles.formClassName}
+      aria-label={t.tripSettings.tripDetails}
+      onSubmit={onSubmit}
+    >
       <h2 className="text-[16px] font-[900] text-(--color-text)">{t.tripSettings.tripDetails}</h2>
       <FieldLabel>
         <span>{t.tripSettings.tripName}</span>
@@ -97,10 +102,22 @@ export function TripSettingsForm({
           />
         </FieldLabel>
       </div>
-      {!canEdit ? <p className={cn(settingsStyles.messageClassName, settingsStyles.errorClassName)}>{t.tripSettings.editLocked}</p> : null}
-      {invalidDateRange ? <p className={cn(settingsStyles.messageClassName, settingsStyles.errorClassName)}>{t.tripSettings.invalidDate}</p> : null}
+      {!canEdit ? (
+        <p className={cn(settingsStyles.messageClassName, settingsStyles.errorClassName)}>
+          {t.tripSettings.editLocked}
+        </p>
+      ) : null}
+      {invalidDateRange ? (
+        <p className={cn(settingsStyles.messageClassName, settingsStyles.errorClassName)}>
+          {t.tripSettings.invalidDate}
+        </p>
+      ) : null}
       {error ? <p className={cn(settingsStyles.messageClassName, settingsStyles.errorClassName)}>{error}</p> : null}
-      {status === "saved" ? <p className={cn(settingsStyles.messageClassName, settingsStyles.successClassName)}>{t.tripSettings.saved}</p> : null}
+      {status === "saved" ? (
+        <p className={cn(settingsStyles.messageClassName, settingsStyles.successClassName)}>
+          {t.tripSettings.saved}
+        </p>
+      ) : null}
       <div className={settingsStyles.actionRowClassName}>
         <Button type="submit" disabled={!canSubmit}>
           {status === "saving" ? t.tripSettings.saving : t.tripSettings.save}
