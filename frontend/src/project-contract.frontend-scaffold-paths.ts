@@ -109,6 +109,7 @@ export const frontendScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx",
   "src/trip/workspace/sagittarius-app/sagittarius-app.styles.ts",
   "src/trip/workspace/sagittarius-app/WorkspaceRolePreview.tsx",
+  "src/trip/workspace/sagittarius-app/workspace-view-props.ts",
   "src/trip/workspace/sagittarius-app/hooks",
   "src/trip/workspace/sagittarius-app/hooks/index.ts",
   "src/trip/workspace/sagittarius-app/support/index.ts",
