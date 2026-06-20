@@ -1,19 +1,14 @@
 import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
-import { Button, WorkspacePage, WorkspaceSurface } from "@/src/ui";
+import { Button, WorkspacePage } from "@/src/ui";
 import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
-import { PhotoAlbumCard } from "./components/PhotoAlbumCard";
+import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy } from "./TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
-import {
-  photoProviderLabel,
-  photoProviders,
-} from "./TripPhotosPage.support";
 import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
 import { useTripPhotosPageState } from "./use-trip-photos-page-state";
 
@@ -104,60 +99,20 @@ export function TripPhotosPage({
       </div>
 
       <div className={photoStyles.contentClassName}>
-        <WorkspaceSurface as="div" className={photoStyles.panelClassName} density="compact">
-          <div className={photoStyles.providerGridClassName} aria-label={copy.providersLabel}>
-            {photoProviders.map((provider) => (
-              <button
-                key={provider}
-                type="button"
-                className={cn(photoStyles.providerButtonClassName, activeProvider === provider && photoStyles.selectedProviderClassName)}
-                onClick={() => setActiveProvider(provider)}
-                aria-pressed={activeProvider === provider}
-                aria-label={copy.providerCount(photoProviderLabel(provider, copy), providerCounts[provider] ?? 0)}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="grid size-9 place-items-center rounded-(--radius-md) border border-(--color-primary-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
-                    <Icon name={provider === "all" ? "layout" : provider === "dropbox" ? "import" : "cloud"} />
-                  </span>
-                  <strong className="tabular-nums text-sm text-(--color-text)">{providerCounts[provider] ?? 0}</strong>
-                </span>
-                <strong className="text-sm font-extrabold text-(--color-text)">{photoProviderLabel(provider, copy)}</strong>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="grid gap-0.5">
-              <strong className="text-[15px] font-extrabold text-(--color-text)">{photoProviderLabel(activeProvider, copy)}</strong>
-              <span className="text-xs font-semibold text-(--color-text-muted)">{copy.providerHint(visibleAlbums.length)}</span>
-            </div>
-            {canEditPhotoAlbums ? <Button type="button" onClick={() => setDialogAlbum("new")}><Icon name="plus" /> {copy.addAlbum}</Button> : null}
-          </div>
-
-          <div className={photoStyles.cardGridClassName} aria-label={copy.albumLinksLabel}>
-            {visibleAlbums.map((album) => (
-              <PhotoAlbumCard
-                key={album.id}
-                album={album}
-                trip={trip}
-                selected={selectedAlbum?.id === album.id}
-                canEdit={canEditPhotoAlbums}
-                onSelect={() => setSelectedAlbumId(album.id)}
-                onEdit={() => setDialogAlbum(album)}
-                onDelete={() => setDeleteAlbum(album)}
-                copy={copy}
-              />
-            ))}
-            {!visibleAlbums.length ? (
-              <div className="col-span-full grid min-h-[160px] place-items-center rounded-(--radius-md) border border-dashed border-(--color-border-strong) bg-(--color-surface-subtle) p-5 text-center">
-                <div className="grid max-w-[360px] gap-1">
-                  <strong className="text-(--color-text)">{copy.emptyTitle}</strong>
-                  <span className="text-sm font-medium leading-6 text-(--color-text-muted)">{copy.emptyDetail}</span>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </WorkspaceSurface>
+        <PhotoAlbumBrowser
+          activeProvider={activeProvider}
+          albums={visibleAlbums}
+          canEdit={canEditPhotoAlbums}
+          copy={copy}
+          providerCounts={providerCounts}
+          selectedAlbum={selectedAlbum}
+          trip={trip}
+          onChangeProvider={setActiveProvider}
+          onCreateAlbum={() => setDialogAlbum("new")}
+          onDeleteAlbum={setDeleteAlbum}
+          onEditAlbum={setDialogAlbum}
+          onSelectAlbum={setSelectedAlbumId}
+        />
 
         <PhotoAlbumInspector album={selectedAlbum} relations={selectedRelations} trip={trip} copy={copy} />
       </div>
