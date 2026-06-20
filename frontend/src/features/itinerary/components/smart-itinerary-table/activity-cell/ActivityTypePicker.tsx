@@ -2,7 +2,7 @@ import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import type { InlineItineraryItemPatch } from "../../../lib";
 import type { ItineraryItem } from "@/src/trip/types";
-import { InlineOptionPicker } from "../../inline-option-picker";
+import { InlineOptionPicker } from "@/src/shared/components/inline-option-picker";
 import {
   activityTypeOptions,
   buildActivitySubtypePatch,

@@ -1,4 +1,4 @@
-import { InlineOptionPicker } from "../inline-option-picker";
+import { InlineOptionPicker } from "@/src/shared/components/inline-option-picker";
 import { mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
 import {
   dayClearPathButtonClassName,

@@ -31,11 +31,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps inline option picker menu rendering split from trigger state", () => {
-    const picker = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker.tsx");
-    const pickerMenu = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker-menu.tsx");
-    const pickerPosition = readItineraryArchitectureSource("src/features/itinerary/components/inline-option-picker-position.ts");
+    const picker = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPicker.tsx");
+    const pickerMenu = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx");
+    const pickerPosition = readItineraryArchitectureSource("src/shared/components/inline-option-picker/inline-option-picker-position.ts");
 
-    expect(picker).toContain("./inline-option-picker-menu");
+    expect(picker).toContain("./InlineOptionPickerMenu");
     expect(picker).toContain("./inline-option-picker-position");
     expect(picker).not.toContain("createPortal");
     expect(picker).not.toContain("floatingOptionMenuClassName");

@@ -2,7 +2,7 @@ import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import type { InlineOptionPickerOption } from "./inline-option-picker";
+import type { InlineOptionPickerOption } from "./InlineOptionPicker";
 import { inlineOptionPickerSideMenuPosition } from "./inline-option-picker-position";
 
 const floatingOptionMenuClassName =

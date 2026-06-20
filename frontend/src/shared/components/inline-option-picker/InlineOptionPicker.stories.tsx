@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import type { InlineOptionPickerOption } from "./inline-option-picker";
-import { InlineOptionPicker } from "./inline-option-picker";
+import type { InlineOptionPickerOption } from "./InlineOptionPicker";
+import { InlineOptionPicker } from "./InlineOptionPicker";
 import type { ComponentProps } from "react";
 
 const sampleOptions: InlineOptionPickerOption[] = [
@@ -43,7 +43,7 @@ const StoryRenderer = (args: ComponentProps<typeof InlineOptionPicker>) => {
 };
 
 const meta = {
-  title: "Features/Itinerary/InlineOptionPicker",
+  title: "Design System/Inline Option Picker",
   component: InlineOptionPicker,
   parameters: { layout: "centered" },
   render: StoryRenderer,

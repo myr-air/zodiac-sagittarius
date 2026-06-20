@@ -24,6 +24,8 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/expense-local.test.ts",
   "src/trip/expense-update-drafts.test.ts",
   "src/trip/itinerary-hierarchy.test.ts",
+  "src/trip/itinerary-hierarchy-validation.test.ts",
+  "src/trip/itinerary-hierarchy.test-support.ts",
   "src/trip/itinerary-import-export.json.test.ts",
   "src/trip/itinerary-import-export.records.test.ts",
   "src/trip/itinerary-import-export.spreadsheet.test.ts",
