@@ -172,16 +172,29 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps overview task state split from page composition", () => {
     const overviewPage = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.tsx");
+    const overviewLensPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewLensPanels.tsx");
+    const overviewPageDerived = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-derived.tsx");
     const overviewPageTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.types.ts");
     const overviewTaskState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-task-state.ts");
 
     expect(overviewPage).toContain("./use-overview-task-state");
     expect(overviewPage).toContain("./OverviewPage.types");
+    expect(overviewPage).toContain("./OverviewLensPanels");
+    expect(overviewPage).toContain("./overview-page-derived");
+    expect(overviewPage).not.toContain("./ManagerOverviewPanels");
+    expect(overviewPage).not.toContain("./TravelerOverviewPanels");
+    expect(overviewPage).not.toContain("./ViewerOverviewPanels");
     expect(overviewPage).not.toContain("useState");
     expect(overviewPage).not.toContain("useMemo");
     expect(overviewPage).not.toContain("interface OverviewPageProps");
     expect(overviewPage).not.toContain("function submitTask");
     expect(overviewPage).not.toContain("isMyTask");
+    expect(overviewLensPanels).toContain("export function OverviewLensPanels");
+    expect(overviewLensPanels).toContain("./ManagerOverviewPanels");
+    expect(overviewLensPanels).toContain("./TravelerOverviewPanels");
+    expect(overviewLensPanels).toContain("./ViewerOverviewPanels");
+    expect(overviewPageDerived).toContain("export function renderOverviewCurrentMemberCard");
+    expect(overviewPageDerived).toContain("export function buildOverviewTaskListLabels");
     expect(overviewPageTypes).toContain("export interface OverviewPageProps");
     expect(overviewTaskState).toContain("export function useOverviewTaskState");
     expect(overviewTaskState).toContain("function submitTask");

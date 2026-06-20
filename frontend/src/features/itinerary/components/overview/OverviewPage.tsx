@@ -1,19 +1,15 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { PageUserCard } from "@/src/shared/components/page-header";
-import { type OverviewTaskListLabels } from "./OverviewTaskList";
 import {
   overviewGridClassName,
   overviewPageClassName,
 } from "./overview-page.styles";
-import {
-  managerNextStopDetail,
-  travelerNextStopDetail,
-} from "@/src/features/itinerary/domain";
-import { ManagerOverviewPanels } from "./ManagerOverviewPanels";
-import { TravelerOverviewPanels } from "./TravelerOverviewPanels";
-import { ViewerOverviewPanels } from "./ViewerOverviewPanels";
+import { OverviewLensPanels } from "./OverviewLensPanels";
 import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
+import {
+  buildOverviewTaskListLabels,
+  renderOverviewCurrentMemberCard,
+} from "./overview-page-derived";
 import { buildOverviewPageModel } from "./overview-page-model";
 import type { OverviewPageProps } from "./OverviewPage.types";
 import { useOverviewTaskState } from "./use-overview-task-state";
@@ -95,20 +91,20 @@ export function OverviewPage({
     trip,
   });
   /* v8 ignore next */
-  const currentMemberCard = currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null;
+  const currentMemberCard = renderOverviewCurrentMemberCard(currentMember, trip);
 
   function openExpenses() {
     onOpenExpenses?.();
   }
 
-  const taskListLabels: OverviewTaskListLabels = {
+  const taskListLabels = buildOverviewTaskListLabels({
     assignee: t.overview.task,
     kind: {
       booking: t.overview.task.booking,
       prep: t.overview.task.prep,
       planStop: t.overview.task.planStop,
     },
-  };
+  });
 
   return (
     <section className={overviewPageClassName} aria-label={t.overview.pageLabel}>
@@ -133,69 +129,44 @@ export function OverviewPage({
       />
 
       <div className={overviewGridClassName}>
-        {isTravelerLens ? (
-          <TravelerOverviewPanels
-            trip={trip}
-            locale={locale}
-            items={items}
-            groupSpendLabel={groupSpendLabel}
-            nextStop={nextStop}
-            nextDayItems={nextDayItems}
-            focusTodayHeading={focusTodayHeading}
-            isCompleted={isCompleted}
-            openExpenses={openExpenses}
-            taskListLabels={taskListLabels}
-            onToggleTask={toggleTask}
-            foodStops={foodStops}
-            tripHighlights={tripHighlights}
-            focusSectionDetailFallback={nextStop ? travelerNextStopDetail(nextStop, t.overview.focusDetails.travelerFallback) : t.overview.focusDetails.travelerFallback}
-            taskStatusFilter={taskStatusFilter}
-            setTaskStatusFilter={setTaskStatusFilter}
-            visibleTasks={visibleTasks}
-            newTaskTitle={newTaskTitle}
-            onTaskTitleChange={setNewTaskTitle}
-            onSubmitTask={submitTask}
-            expenseNetLabel={expenseSummary.currentUserNetLabel}
-            expenseSettlementSuggestionsLabel={t.overview.money.settlementSuggestions({ count: expenseSummary.settlementSuggestions.length })}
-          />
-        ) : null}
-
-        {isViewerLens ? (
-          <ViewerOverviewPanels
-            trip={trip}
-            locale={locale}
-            nextStop={nextStop}
-            openExpenses={openExpenses}
-            viewerHighlights={viewerHighlights}
-            expenseGroupSpend={expenseSummary.groupSpend}
-          />
-        ) : null}
-
-        {isManagerLens ? (
-          <ManagerOverviewPanels
-            trip={trip}
-            locale={locale}
-            items={items}
-            groupSpendLabel={groupSpendLabel}
-            nextStop={nextStop}
-            nextDayItems={nextDayItems}
-            focusTodayHeading={focusTodayHeading}
-            isCompleted={isCompleted}
-            openExpenses={openExpenses}
-            taskListLabels={taskListLabels}
-            onToggleTask={toggleTask}
-            taskScopeFilter={taskScope}
-            setTaskScopeFilter={setTaskScope}
-            taskStatusFilter={taskStatusFilter}
-            setTaskStatusFilter={setTaskStatusFilter}
-            myOpenTasks={myOpenTasks}
-            sharedOpenTasks={sharedOpenTasks}
-            pendingSuggestions={pendingSuggestions}
-            visibleTasks={visibleTasks}
-            focusSectionDetailFallback={nextStop ? managerNextStopDetail(nextStop, t.overview.focusDetails.managerFallback) : t.overview.focusDetails.managerFallback}
-            openTaskDialog={openTaskDialog}
-          />
-        ) : null}
+        <OverviewLensPanels
+          expenseSummary={expenseSummary}
+          focusDetails={t.overview.focusDetails}
+          focusTodayHeading={focusTodayHeading}
+          foodStops={foodStops}
+          groupSpendLabel={groupSpendLabel}
+          isCompleted={isCompleted}
+          isManagerLens={isManagerLens}
+          isTravelerLens={isTravelerLens}
+          isViewerLens={isViewerLens}
+          items={items}
+          locale={locale}
+          money={{
+            settlementSuggestions: t.overview.money.settlementSuggestions({
+              count: expenseSummary.settlementSuggestions.length,
+            }),
+          }}
+          myOpenTasks={myOpenTasks}
+          newTaskTitle={newTaskTitle}
+          nextDayItems={nextDayItems}
+          nextStop={nextStop}
+          onOpenExpenses={openExpenses}
+          onSubmitTask={submitTask}
+          onTaskTitleChange={setNewTaskTitle}
+          onToggleTask={toggleTask}
+          openTaskDialog={openTaskDialog}
+          pendingSuggestions={pendingSuggestions}
+          setTaskScopeFilter={setTaskScope}
+          setTaskStatusFilter={setTaskStatusFilter}
+          sharedOpenTasks={sharedOpenTasks}
+          taskListLabels={taskListLabels}
+          taskScopeFilter={taskScope}
+          taskStatusFilter={taskStatusFilter}
+          trip={trip}
+          tripHighlights={tripHighlights}
+          viewerHighlights={viewerHighlights}
+          visibleTasks={visibleTasks}
+        />
       </div>
       <OverviewTaskLayer
         assignableMembers={assignableMembers}

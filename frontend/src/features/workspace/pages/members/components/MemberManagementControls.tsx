@@ -1,11 +1,12 @@
 import { type FormEvent } from "react";
 import type { useI18n } from "@/src/i18n/I18nProvider";
-import { cn } from "@/src/lib/cn";
 import type { TripRole } from "@/src/trip/types";
-import { ActionBar, Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
+import { WorkspaceSurface } from "@/src/ui";
 import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
 import * as memberStyles from "../TripMembersPage.styles";
+import { MemberCreatePanel } from "./MemberCreatePanel";
+import { MemberFilterControls } from "./MemberFilterControls";
+import { MemberInviteActions } from "./MemberInviteActions";
 
 type MemberLabels = ReturnType<typeof useI18n>["t"];
 
@@ -59,63 +60,26 @@ export function MemberManagementControls({
   return (
     <>
       <WorkspaceSurface className={memberStyles.memberCommandBarClassName} aria-label={labels.members.commandBar}>
-        <div className={memberStyles.memberCommandFieldsClassName}>
-          <FieldLabel>
-            <span>{labels.members.fields.search}</span>
-            <TextInput value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder={labels.members.fields.searchPlaceholder} />
-          </FieldLabel>
-          <FieldLabel>
-            <span>{labels.members.fields.role}</span>
-            <Select value={roleFilter} onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}>
-              <option value="all">{labels.members.filters.allRoles}</option>
-              <option value="owner">{labels.appShell.roles.owner}</option>
-              <option value="organizer">{labels.appShell.roles.organizer}</option>
-              <option value="traveler">{labels.appShell.roles.traveler}</option>
-              <option value="viewer">{labels.appShell.roles.viewer}</option>
-            </Select>
-          </FieldLabel>
-          <FieldLabel>
-            <span>{labels.members.fields.status}</span>
-            <Select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}>
-              <option value="all">{labels.members.filters.allStatuses}</option>
-              <option value="active">{labels.common.status.active}</option>
-              <option value="disabled">{labels.common.status.disabled}</option>
-              <option value="claimed">{labels.join.memberStatus.claimed}</option>
-              <option value="pending">{labels.common.status.pending}</option>
-            </Select>
-          </FieldLabel>
-        </div>
-        <ActionBar className={memberStyles.memberCommandActionsClassName}>
-          <Button className={cn(memberStyles.memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={onClearFilters}>{labels.members.actions.clear}</Button>
-          {canManagePeople ? (
-            <>
-              <Button className={cn(memberStyles.inviteCopyButtonClassName, "w-auto")} type="button" onClick={onCopyInviteLink}>
-                <Icon name="copy" />
-                {labels.members.actions.copyInvite}
-              </Button>
-              {onRotateInviteToken ? (
-                <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="button" disabled={isRotatingInviteToken} onClick={onRotateInviteToken}>
-                  <Icon name="key" />
-                  {isRotatingInviteToken ? labels.members.actions.rotatingInvite : labels.members.actions.rotateInvite}
-                </Button>
-              ) : null}
-              <Button
-                aria-expanded={createPanelOpen}
-                className={cn(memberStyles.memberCreateButtonClassName, "w-auto")}
-                variant="ghost"
-                type="button"
-                onClick={onToggleCreatePanel}
-              >
-                <Icon name="plus" />
-                {createPanelOpen ? labels.members.actions.closeCreate : labels.members.actions.openCreate}
-              </Button>
-            </>
-          ) : (
-            <span className={memberStyles.copyFeedbackClassName} data-state={copyState} role="status">
-              {labels.members.copy.readOnly}
-            </span>
-          )}
-        </ActionBar>
+        <MemberFilterControls
+          labels={labels}
+          onQueryChange={onQueryChange}
+          onRoleFilterChange={onRoleFilterChange}
+          onStatusFilterChange={onStatusFilterChange}
+          query={query}
+          roleFilter={roleFilter}
+          statusFilter={statusFilter}
+        />
+        <MemberInviteActions
+          canManagePeople={canManagePeople}
+          copyState={copyState}
+          createPanelOpen={createPanelOpen}
+          isRotatingInviteToken={isRotatingInviteToken}
+          labels={labels}
+          onClearFilters={onClearFilters}
+          onCopyInviteLink={onCopyInviteLink}
+          onRotateInviteToken={onRotateInviteToken}
+          onToggleCreatePanel={onToggleCreatePanel}
+        />
         {canManagePeople ? (
           <div className={memberStyles.memberCommandMetaClassName}>
             <code>{inviteLink}</code>
@@ -127,35 +91,15 @@ export function MemberManagementControls({
       </WorkspaceSurface>
 
       {createPanelOpen ? (
-        <WorkspaceSurface className={memberStyles.memberCreatePanelClassName} aria-label={labels.members.createLabel}>
-          <form className={memberStyles.memberCreateFormClassName} onSubmit={onSubmitNewMember}>
-            <FieldLabel>
-              <span>{labels.members.fields.newName}</span>
-              <TextInput
-                disabled={!canManagePeople}
-                value={newMemberName}
-                onChange={(event) => onNewMemberNameChange(event.target.value)}
-                placeholder={labels.members.fields.newNamePlaceholder}
-              />
-            </FieldLabel>
-            <FieldLabel>
-              <span>{labels.members.fields.newRole}</span>
-              <Select
-                disabled={!canManagePeople}
-                value={newMemberRole}
-                onChange={(event) => onNewMemberRoleChange(event.target.value as Exclude<TripRole, "owner">)}
-              >
-                <option value="organizer">{labels.appShell.roles.organizer}</option>
-                <option value="traveler">{labels.appShell.roles.traveler}</option>
-                <option value="viewer">{labels.appShell.roles.viewer}</option>
-              </Select>
-            </FieldLabel>
-            <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
-              <Icon name="check" />
-              {labels.members.actions.saveMember}
-            </Button>
-          </form>
-        </WorkspaceSurface>
+        <MemberCreatePanel
+          canManagePeople={canManagePeople}
+          labels={labels}
+          newMemberName={newMemberName}
+          newMemberRole={newMemberRole}
+          onNewMemberNameChange={onNewMemberNameChange}
+          onNewMemberRoleChange={onNewMemberRoleChange}
+          onSubmitNewMember={onSubmitNewMember}
+        />
       ) : null}
     </>
   );
