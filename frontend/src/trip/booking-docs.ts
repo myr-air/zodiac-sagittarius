@@ -37,13 +37,13 @@ export {
   canViewBookingDoc,
   compareBookingStartWithUndated,
   filterBookingDocs,
-  findBookingDocRelations,
 } from "./booking-doc-query";
 export type {
   BookingDocFilters,
-  BookingDocRelations,
   BookingDocsSummary,
 } from "./booking-doc-query";
+export { findBookingDocRelations } from "./booking-doc-relations";
+export type { BookingDocRelations } from "./booking-doc-relations";
 export {
   bookingDraftDetailsForItineraryItem,
   bookingDraftTimeWindowForItineraryItem,

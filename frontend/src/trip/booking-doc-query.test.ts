@@ -6,7 +6,6 @@ import {
   canViewBookingDoc,
   compareBookingStartWithUndated,
   filterBookingDocs,
-  findBookingDocRelations,
 } from "./booking-docs";
 import {
   bookingDocTestDocs as docs,
@@ -89,17 +88,4 @@ describe("booking doc query helpers", () => {
     ]);
   });
 
-  it("resolves linked itinerary items, tasks, expenses, notes, and travelers", () => {
-    const trip = tripFixture(docs);
-    const relations = findBookingDocRelations(docs[0], trip, [
-      { id: "task-flight", title: "Check in online", status: "open", visibility: "shared", kind: "booking", createdBy: "member-owner" },
-      { id: "task-passport", title: "Add passport number", status: "open", visibility: "shared", kind: "booking", createdBy: "member-organizer" },
-    ]);
-
-    expect(relations.itineraryItems.map((item) => item.id)).toEqual(["item-flight"]);
-    expect(relations.tasks.map((task) => task.id)).toEqual(["task-flight"]);
-    expect(relations.expenses.map((expense) => expense.id)).toEqual(["expense-flight"]);
-    expect(relations.notes.map((note) => note.id)).toEqual(["note-flight"]);
-    expect(relations.travelers.map((member) => member.id)).toEqual(["member-owner", "member-traveler"]);
-  });
 });
