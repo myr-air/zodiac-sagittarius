@@ -1,66 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { tripFixture } from "@/src/trip/trip-fixtures";
+import type { Expense, ItineraryItem, StopNote, TripTask } from "@/src/trip/types";
 import {
   buildImportedPlanRecordsForTripPlan,
-  emptyItineraryExportRecords,
-  mergeApiImportedPlanRecordsIntoTrip,
   mergeImportedRecordsIntoTripPlan,
   mergeImportedStopNotes,
   mergeImportedTasks,
-  pendingItineraryImportFromDocument,
-  resolveCreatedImportId,
-  shouldUseApiItineraryImport,
 } from "./itinerary-import-model";
-import { tripFixture } from "@/src/trip/trip-fixtures";
-import type { Expense, ItineraryItem, StopNote, TripTask } from "@/src/trip/types";
 
-describe("itinerary import model", () => {
-  it("keeps spreadsheet-like imports local and sends structured JSON through the API", () => {
-    expect(
-      shouldUseApiItineraryImport({
-        contentType: "application/json",
-        fileName: "trip-itinerary.json",
-      }),
-    ).toBe(true);
-    expect(
-      shouldUseApiItineraryImport({
-        contentType: "text/csv",
-        fileName: "trip-itinerary.csv",
-      }),
-    ).toBe(false);
-    expect(
-      shouldUseApiItineraryImport({
-        contentType: "text/plain",
-        fileName: "paste.tsv",
-      }),
-    ).toBe(false);
-  });
-
-  it("normalizes pending imports with empty linked records by default", () => {
-    expect(
-      pendingItineraryImportFromDocument({
-        fileName: "trip-itinerary.json",
-        document: {
-          items: [],
-        },
-      }),
-    ).toEqual({
-      fileName: "trip-itinerary.json",
-      items: [],
-      records: emptyItineraryExportRecords(),
-    });
-  });
-
-  it("resolves ids from created import id maps without changing nullish ids", () => {
-    const firstMap = new Map([["source-task", "created-task"]]);
-    const secondMap = new Map([["source-note", "created-note"]]);
-
-    expect(resolveCreatedImportId(null, [firstMap, secondMap])).toBeNull();
-    expect(resolveCreatedImportId(undefined, [firstMap, secondMap])).toBeUndefined();
-    expect(resolveCreatedImportId("source-task", [firstMap, secondMap])).toBe("created-task");
-    expect(resolveCreatedImportId("source-note", [firstMap, secondMap])).toBe("created-note");
-    expect(resolveCreatedImportId("unmapped", [firstMap, secondMap])).toBe("unmapped");
-  });
-
+describe("itinerary import linked records", () => {
   it("remaps imported linked records to the applied activity ids", () => {
     const importedItem = {
       activity: "Museum",
@@ -157,59 +105,6 @@ describe("itinerary import model", () => {
     expect(mergedTrip.expenses.find((expense) => expense.id === "expense-import")).toBeDefined();
     expect(mergedTrip.stopNotes?.find((note) => note.id === "note-import")).toBeDefined();
     expect(mergedTrip.tasks?.find((task) => task.id === "task-import")).toBeDefined();
-  });
-
-  it("merges API-created import items and linked records into the current trip", () => {
-    const deletedItem = tripFixture.trip.itineraryItems[0];
-    const createdItem: ItineraryItem = {
-      ...deletedItem,
-      id: "item-created-import",
-      activity: "Created import activity",
-      version: 2,
-    };
-    const existingExpense = tripFixture.trip.expenses[0];
-    const createdExpense: Expense = {
-      ...existingExpense,
-      id: "expense-created-import",
-      title: "Created import expense",
-    };
-    const nextTrip = mergeApiImportedPlanRecordsIntoTrip({
-      createdItems: [createdItem],
-      currentTrip: tripFixture.trip,
-      deletedItemIds: new Set([deletedItem.id]),
-      previewTrip: {
-        itineraryPaths: [
-          ...(tripFixture.trip.itineraryPaths ?? []),
-          {
-            id: "path-import",
-            tripId: tripFixture.trip.id,
-            name: "Plan Import",
-            scope: "day",
-            day: createdItem.day,
-            createdBy: "member-aom",
-            createdAt: "2026-06-16T00:00:00.000Z",
-            updatedAt: "2026-06-16T00:00:00.000Z",
-          },
-        ],
-      },
-      records: {
-        bookingDocs: [],
-        expenses: [createdExpense],
-        stopNotes: [],
-        tasks: [],
-      },
-    });
-
-    expect(nextTrip).not.toBe(tripFixture.trip);
-    expect(nextTrip.itineraryItems.some((item) => item.id === deletedItem.id)).toBe(false);
-    expect(nextTrip.itineraryItems.at(-1)).toMatchObject({
-      id: "item-created-import",
-      activity: "Created import activity",
-    });
-    expect(nextTrip.itineraryPaths?.some((path) => path.id === "path-import")).toBe(true);
-    expect(nextTrip.expenses.find((expense) => expense.id === createdExpense.id)).toMatchObject({
-      title: "Created import expense",
-    });
   });
 
   it("merges imported tasks and stop notes by replacing existing ids and appending new records", () => {
