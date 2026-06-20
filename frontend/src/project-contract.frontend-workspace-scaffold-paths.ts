@@ -64,6 +64,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-records.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-context.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-access-gate.ts",
+  "src/trip/workspace/sagittarius-app/hooks/use-workspace-account-session.ts",
   "src/trip/workspace/sagittarius-app/hooks/workspace-access-state.ts",
   "src/trip/workspace/sagittarius-app/hooks/participant-post-auth-navigation.ts",
   "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts",

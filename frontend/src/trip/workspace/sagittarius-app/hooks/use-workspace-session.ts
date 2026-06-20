@@ -1,14 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   isForbidden,
   isUnauthenticated,
 } from "@/src/trip/api-errors";
-import { loadPersistedAccountSession, persistAccountSession } from "@/src/account/session-storage";
-import type {
-  AccountApiClient,
-  AccountSession,
-} from "@/src/account/api-client";
+import type { AccountApiClient } from "@/src/account/api-client";
 import {
   clearParticipantSession,
   loadPersistedParticipantSession,
@@ -20,6 +16,7 @@ import {
   resolveWorkspaceSessionRestore,
   resolveWorkspaceSessionTrip,
 } from "./workspace-session-restore";
+import { useWorkspaceAccountSession } from "./use-workspace-account-session";
 
 type TripWorkspaceState = {
   trip: Trip;
@@ -52,10 +49,11 @@ export function useWorkspaceSession({
     useState<TripParticipantSession | null>(null);
   const [sessionRestored, setSessionRestored] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
-  const [accountSession, setAccountSession] = useState<AccountSession | null>(
-    null,
-  );
-  const [accountSessionLoaded, setAccountSessionLoaded] = useState(false);
+  const {
+    accountSession,
+    accountSessionLoaded,
+    changeAccountSession,
+  } = useWorkspaceAccountSession();
   const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] =
     useState<string | null>(null);
 
@@ -98,25 +96,6 @@ export function useWorkspaceSession({
       window.clearTimeout(timeout);
     };
   }, [initialTrip, isApiMode, requireJoin, routeTripId, setCurrentMemberId, setSelectedTripPlanId, setTripState]);
-
-  useEffect(() => {
-    if (accountSessionLoaded) return;
-    const timeout = window.setTimeout(() => {
-      setAccountSession(loadPersistedAccountSession());
-      setAccountSessionLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timeout);
-  }, [accountSessionLoaded]);
-
-  useEffect(() => {
-    if (!accountSessionLoaded) return;
-    persistAccountSession(accountSession);
-  }, [accountSession, accountSessionLoaded]);
-
-  const changeAccountSession = useCallback((session: AccountSession | null) => {
-    setAccountSession(session);
-    persistAccountSession(session);
-  }, []);
 
   useEffect(() => {
     if (
