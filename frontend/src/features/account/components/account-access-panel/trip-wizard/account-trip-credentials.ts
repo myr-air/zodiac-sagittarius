@@ -2,7 +2,7 @@ import {
   generateTripJoinId,
   randomToken,
 } from "@/src/trip/trip-join-credentials";
-import { destinationRouteCode } from "./account-trip-destinations";
+import { destinationRouteCode } from "@/src/trip/trip-destinations";
 
 export {
   generateJoinPassword,

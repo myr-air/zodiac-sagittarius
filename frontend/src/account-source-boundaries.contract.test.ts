@@ -72,7 +72,7 @@ describe("Sagittarius account source boundaries", () => {
 
     expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
     expect(accountTripWizardSupport).toContain("./account-trip-credentials");
-    expect(accountTripWizardSupport).toContain("./account-trip-destinations");
+    expect(accountTripWizardSupport).toContain("@/src/trip/trip-destinations");
     expect(accountTripWizardSupport).toContain("./account-trip-dates");
     expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
     expect(accountTripWizardSupport).not.toContain("function buildInviteEmailHref");

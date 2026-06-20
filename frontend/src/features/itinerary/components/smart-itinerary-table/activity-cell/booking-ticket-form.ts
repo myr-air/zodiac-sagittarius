@@ -16,7 +16,8 @@ import {
 } from "@/src/features/itinerary/lib";
 import type { Locale } from "@/src/i18n/types";
 
-export type TicketFormMode = "existing" | "new";
+export const ticketFormModeValues = ["existing", "new"] as const;
+export type TicketFormMode = (typeof ticketFormModeValues)[number];
 
 export interface TicketFormValues {
   title: string;

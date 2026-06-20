@@ -6,6 +6,7 @@ import {
   buildTicketSubmitInput,
   findLinkedTicket,
   findTicketCandidates,
+  ticketFormModeValues,
 } from "./booking-ticket-form";
 
 const item: ItineraryItem = {
@@ -68,6 +69,10 @@ function bookingDoc(input: Partial<BookingDoc> & Pick<BookingDoc, "id" | "title"
 }
 
 describe("booking-ticket-form", () => {
+  it("keeps ticket form modes in modal toggle order", () => {
+    expect(ticketFormModeValues).toEqual(["existing", "new"]);
+  });
+
   it("finds linked tickets and public transport candidates from nearby booking docs", () => {
     const linked = bookingDoc({
       id: "booking-linked",

@@ -7,7 +7,7 @@ import {
   defaultTripOriginCity,
   tripCityOptions,
   type TripCityOption,
-} from "./account-trip-destinations";
+} from "@/src/trip/trip-destinations";
 import { generateJoinId, generateJoinPassword } from "./account-trip-credentials";
 
 export { buildInviteEmailHref, buildInviteLink } from "@/src/routes/invite-links";
@@ -23,13 +23,13 @@ export {
   tripCountryOptions,
   tripDestinationCards,
   defaultTripOriginCity,
-} from "./account-trip-destinations";
+} from "@/src/trip/trip-destinations";
 export type {
   TripCityOption,
   TripContinent,
   TripCountryOption,
   TripDestinationCard,
-} from "./account-trip-destinations";
+} from "@/src/trip/trip-destinations";
 export { formatPreviewTravelDate, routeCalendarDays, tripNightCount } from "./account-trip-dates";
 export type { RouteCalendarDay } from "./account-trip-dates";
 
