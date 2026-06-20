@@ -2,10 +2,15 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { createMutableMemoryStorage } from "@/src/testing/browser-storage";
 import { I18nProvider, useI18n } from "./I18nProvider";
 import { LanguageSwitch } from "./LanguageSwitch";
 
-const localStorage = installLocalStorageStub();
+const localStorage = createMutableMemoryStorage();
+Object.defineProperty(window, "localStorage", {
+  configurable: true,
+  value: localStorage,
+});
 
 function Probe() {
   const { locale, t } = useI18n();
@@ -177,29 +182,3 @@ describe("I18nProvider", () => {
     }
   });
 });
-
-function installLocalStorageStub() {
-  const values = new Map<string, string>();
-  let failWrites = false;
-  const storage = {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      if (failWrites) {
-        throw new Error("Storage write failed");
-      }
-      values.set(key, value);
-    },
-    removeItem: (key: string) => values.delete(key),
-    clear: () => values.clear(),
-    setWriteFailure: (shouldFail: boolean) => {
-      failWrites = shouldFail;
-    },
-  };
-
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: storage,
-  });
-
-  return storage;
-}

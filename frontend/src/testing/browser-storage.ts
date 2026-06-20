@@ -1,5 +1,9 @@
 import { vi } from "vitest";
 
+export type MutableMemoryStorage = Storage & {
+  setWriteFailure: (shouldFail: boolean) => void;
+};
+
 export function createMemoryStorage(): Storage {
   const values = new Map<string, string>();
   return {
@@ -15,6 +19,31 @@ export function createMemoryStorage(): Storage {
     setItem: vi.fn((key: string, value: string) => {
       values.set(key, value);
     }),
+  };
+}
+
+export function createMutableMemoryStorage(): MutableMemoryStorage {
+  const values = new Map<string, string>();
+  let failWrites = false;
+  return {
+    get length() {
+      return values.size;
+    },
+    clear: vi.fn(() => values.clear()),
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    key: vi.fn((index: number) => Array.from(values.keys())[index] ?? null),
+    removeItem: vi.fn((key: string) => {
+      values.delete(key);
+    }),
+    setItem: vi.fn((key: string, value: string) => {
+      if (failWrites) {
+        throw new Error("Storage write failed");
+      }
+      values.set(key, value);
+    }),
+    setWriteFailure: (shouldFail: boolean) => {
+      failWrites = shouldFail;
+    },
   };
 }
 

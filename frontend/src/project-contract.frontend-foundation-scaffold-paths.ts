@@ -5,6 +5,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/account/AccountApp.tsx",
   "src/lib/file-names.ts",
   "src/shared/storage/browser-session-json.ts",
+  "src/testing/browser-storage.test.ts",
   "src/testing/browser-storage.ts",
   "src/testing/storybook-actions.ts",
   "src/i18n/LanguageSwitchMenu.tsx",
