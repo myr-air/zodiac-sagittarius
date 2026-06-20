@@ -1,17 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import { seedTrip } from "@/src/trip/seed";
 import { PeoplePanel } from "./PeoplePanel";
-
-const managerArgs = {
-  members: seedTrip.members.filter((member) => member.id !== "member-viewer"),
-  currentMemberId: "member-aom",
-  canManagePeople: true,
-  onChangeMemberAccessStatus: () => {},
-  onChangeCurrentMemberPassword: () => {},
-  onChangeMemberRole: () => {},
-  onResetMemberClaim: () => {},
-};
+import {
+  emptyPeoplePanelStoryArgs,
+  managerPeoplePanelStoryArgs,
+  readOnlyPeoplePanelStoryArgs,
+} from "./PeoplePanel.stories.support";
 
 const meta = {
   title: "Design System/People Panel",
@@ -25,7 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Manager: Story = {
-  args: managerArgs,
+  args: managerPeoplePanelStoryArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("region", { name: /People and presence/i })).toHaveClass("people-module", "grid");
@@ -34,11 +28,7 @@ export const Manager: Story = {
 };
 
 export const ReadOnly: Story = {
-  args: {
-    ...managerArgs,
-    currentMemberId: "member-nam",
-    canManagePeople: false,
-  },
+  args: readOnlyPeoplePanelStoryArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText(/ออฟไลน์ 1 ชม./i)).toHaveClass("presence-pill", "inline-flex");
@@ -47,12 +37,7 @@ export const ReadOnly: Story = {
 
 export const Empty: Story = {
   parameters: { locale: "th" },
-  args: {
-    members: [],
-    currentMemberId: "member-aom",
-    emptyMessage: "ไม่มีสมาชิกในตัวกรองนี้",
-    onResetFilters: () => {},
-  },
+  args: emptyPeoplePanelStoryArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("ไม่มีสมาชิกในตัวกรองนี้").closest(".members-empty-state")).toHaveClass("grid");

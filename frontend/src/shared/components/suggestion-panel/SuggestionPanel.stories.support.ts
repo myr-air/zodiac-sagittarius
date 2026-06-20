@@ -1,0 +1,26 @@
+import { tripFixture } from "@/src/trip/trip-fixtures";
+import type { SuggestionPanel } from "./SuggestionPanel";
+
+type SuggestionPanelStoryArgs = Parameters<typeof SuggestionPanel>[0];
+
+export const suggestionPanelStoryArgs = {
+  members: tripFixture.trip.members,
+  suggestions: tripFixture.suggestions,
+} satisfies SuggestionPanelStoryArgs;
+
+export const emptySuggestionPanelStoryArgs = {
+  ...suggestionPanelStoryArgs,
+  suggestions: tripFixture.suggestions.map((suggestion) => ({
+    ...suggestion,
+    status: "approved" as const,
+  })),
+} satisfies SuggestionPanelStoryArgs;
+
+export const conflictedSuggestionPanelStoryArgs = {
+  ...suggestionPanelStoryArgs,
+  suggestions: tripFixture.suggestions.map((suggestion, index) => ({
+    ...suggestion,
+    id: `${suggestion.id}-conflicted-${index}`,
+    status: "conflicted" as const,
+  })),
+} satisfies SuggestionPanelStoryArgs;
