@@ -3,6 +3,7 @@ import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
+  buildExpenseDialogSubmitInput,
   canSubmitExpenseDialog,
   initialExpenseTripPlanId,
 } from "../expense-dialog-support";
@@ -122,35 +123,25 @@ export function useExpenseDialogState({
 
   async function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmedTitle = title.trim();
     if (!canSubmitExpense) return;
-    const input: ExpenseInput = {
-      itemId: itemId || null,
-      tripPlanId: effectiveTripPlanId || null,
-      title: trimmedTitle,
-      amount: calculatedState.amountNumber,
-      currency: calculatedState.normalizedCurrency,
-      exchangeRateToSettlementCurrency: calculatedState.needsExchangeRate
-        ? calculatedState.exchangeRateNumber
-        : 1,
-      paidBy,
+    const input = buildExpenseDialogSubmitInput({
+      calculatedState,
       category,
-      splits: calculatedState.splits,
-    };
-    if (notes.trim()) input.notes = notes.trim();
-    if (receiptUrl.trim()) input.receiptUrl = receiptUrl.trim();
-    if (splitEditor.splitMode === "itemized") {
-      input.lineItems = calculatedState.validLineItems;
-    }
-    if (comments.length) input.comments = comments;
+      comments,
+      effectiveTripPlanId,
+      expense,
+      itemId,
+      notes,
+      paidBy,
+      receiptUrl,
+      splitMode: splitEditor.splitMode,
+      title,
+    });
     setIsSaving(true);
     try {
       if (expense) {
         await onUpdateExpense({ ...input, expenseId: expense.id });
         return;
-      }
-      if (calculatedState.repeatCountNumber > 1) {
-        input.repeatCount = calculatedState.repeatCountNumber;
       }
       await onCreateExpense(input);
     } finally {
