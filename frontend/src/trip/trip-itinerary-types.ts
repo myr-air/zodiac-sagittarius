@@ -1,0 +1,111 @@
+export type ActivityType = "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default";
+export type ActivitySubtype = "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle";
+export type ItineraryItemKind = "travel" | "activity" | "lodging" | "meal" | "note" | "preparation" | "foodRecommendation";
+export type ItineraryTimeMode = "scheduled" | "flexible";
+export type ItineraryItemStatus = "idea" | "planned" | "booked" | "confirmed" | "done" | "skipped";
+export type ItineraryItemPriority = "low" | "normal" | "high" | "must";
+export type ItineraryItemDetails = Record<string, unknown>;
+
+export type AdvisorySeverity = "info" | "warning" | "critical";
+
+export interface ItineraryAdvisory {
+  code: string;
+  label: string;
+  severity: AdvisorySeverity;
+}
+
+export type ItineraryPathScope = "day" | "trip";
+export type ItineraryPathRole = "main" | "alternative";
+
+export interface ItineraryPath {
+  id: string;
+  tripId: string;
+  name: string;
+  scope: ItineraryPathScope;
+  day?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ItineraryCoordinates {
+  lat: number;
+  lng: number;
+}
+
+export interface ItineraryItem {
+  id: string;
+  tripId: string;
+  planVariantId: string;
+  pathGroupId?: string;
+  pathId?: string;
+  pathName?: string;
+  pathRole?: ItineraryPathRole;
+  parentItemId?: string | null;
+  itemKind?: ItineraryItemKind;
+  timeMode?: ItineraryTimeMode;
+  isPlanBlock?: boolean;
+  status?: ItineraryItemStatus;
+  priority?: ItineraryItemPriority;
+  day: string;
+  sortOrder: number;
+  startTime: string;
+  endTime?: string | null;
+  endOffsetDays?: number;
+  activity: string;
+  activityType: ActivityType;
+  activitySubtype?: ActivitySubtype | null;
+  place: string;
+  linkLabel: string;
+  mapLink: string;
+  coordinates?: ItineraryCoordinates;
+  address?: string;
+  durationMinutes: number | null;
+  transportation: string;
+  details: ItineraryItemDetails;
+  advisories?: ItineraryAdvisory[];
+  note: string;
+  createdBy: string;
+  updatedAt: string;
+  version: number;
+}
+
+export interface StopNote {
+  id: string;
+  tripId: string;
+  tripPlanId?: string | null;
+  itemId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+  updatedAt?: string;
+  version?: number;
+}
+
+export type ValidationWarningCode =
+  | "missing-start-time"
+  | "invalid-start-time"
+  | "missing-duration"
+  | "missing-map-link"
+  | "missing-transportation"
+  | "time-order-conflict"
+  | "overlap"
+  | "missing-parent-item"
+  | "invalid-parent-plan-block"
+  | "nested-sub-activity"
+  | "parent-scope-mismatch"
+  | "child-outside-plan-block"
+  | "unresolved-location"
+  | "stale-location";
+
+export interface ValidationWarning {
+  code: ValidationWarningCode;
+  message: string;
+  itemId: string;
+}
+
+export interface NowNextState {
+  current: ItineraryItem | null;
+  next: ItineraryItem | null;
+  fallbackReason: string | null;
+}

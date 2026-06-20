@@ -93,6 +93,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/WorkspaceToast.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-model.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-api.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-api-records.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/itinerary-import-api-requests.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/planning-view.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/selected-trip-plan.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/trip-plan-records.ts"))).toBe(true);
@@ -110,8 +112,13 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-response-member-mappers.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-response-planning-mappers.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-response-record-mappers.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-briefing-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-itinerary-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-member-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-place-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-plan-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-record-types.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/trip-suggestion-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/trip-task-types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/participant-session-storage.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/seed-records.ts"))).toBe(true);
