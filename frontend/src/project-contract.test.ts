@@ -45,7 +45,11 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/testing/storybook-actions.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.access.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.access.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceApp.tsx"))).toBe(true);
@@ -65,6 +69,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/api-client.imports.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.itinerary.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.sessions.test.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/api-client.trip-plan-routes.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/api-client.trip-plans.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs-api-requests.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/booking-docs-estimates.test.ts"))).toBe(true);
