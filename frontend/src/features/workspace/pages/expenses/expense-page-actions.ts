@@ -1,6 +1,7 @@
+import { refundSplits, sumShares } from "@/src/trip/expenses";
 import type { Expense, Member, SettlementSuggestion } from "@/src/trip/types";
 import type { ExpenseInput } from "./expense-page-types";
-import { memberById, refundSplits, sumShares } from "./expense-page-support";
+import { memberById } from "./expense-page-support";
 
 export function buildSettlementExpenseInput({
   members,

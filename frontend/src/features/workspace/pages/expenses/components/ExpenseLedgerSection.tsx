@@ -1,9 +1,9 @@
-import { formatMoney } from "@/src/trip/expenses";
+import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone, memberById, memberInitial, refundAmount, sumShares } from "../expense-page-support";
+import { categoryTone, memberById, memberInitial } from "../expense-page-support";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,

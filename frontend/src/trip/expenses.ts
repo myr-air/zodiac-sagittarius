@@ -11,6 +11,11 @@ export {
   type ExpenseSplitMode,
 } from "./expense-splits";
 export {
+  refundAmount,
+  refundSplits,
+  sumShares,
+} from "./expense-refunds";
+export {
   buildExpenseCsv,
   buildExpenseStatement,
   buildPaybackReminder,

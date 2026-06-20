@@ -1,6 +1,7 @@
 import {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
+  sumShares,
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
 import {
@@ -13,7 +14,6 @@ import {
   type EditableExpenseLineItem,
   validExpenseLineItems,
 } from "./expense-dialog-line-items";
-import { sumShares } from "./expense-page-support";
 
 interface ExpenseDialogStateInput {
   amount: string;

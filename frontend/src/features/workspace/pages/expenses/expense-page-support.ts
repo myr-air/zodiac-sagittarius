@@ -1,4 +1,4 @@
-import type { Expense, Member, Trip } from "@/src/trip/types";
+import type { Member, Trip } from "@/src/trip/types";
 
 export {
   categoryTone,
@@ -18,22 +18,6 @@ export function memberInitial(name: string): string {
 export function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {
   const plans = trip.tripPlans ?? trip.planVariants;
   return plans.find((plan) => plan.id === tripPlanId)?.name ?? tripPlanId ?? "Unassigned";
-}
-
-export function sumShares(splits: Record<string, number>): number {
-  return Math.round(Object.values(splits).reduce((sum, share) => sum + share, 0) * 100) / 100;
-}
-
-export function refundSplits(expense: Expense): Record<string, number> {
-  return Object.fromEntries(
-    Object.entries(expense.splits).filter(
-      ([memberId, amount]) => memberId !== expense.paidBy && amount > 0,
-    ),
-  );
-}
-
-export function refundAmount(expense: Expense): number {
-  return sumShares(refundSplits(expense));
 }
 
 export function formatReminderDate(value: string, locale: string): string {
