@@ -2,11 +2,12 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { bookingCopy } from "../BookingsDocsPage.copy";
+import { bookingFlightTestDoc } from "../bookings-docs-test-fixtures";
 import { BookingFileRow } from "./BookingFileRow";
 
 describe("BookingFileRow", () => {
   it("renders selected booking details and row actions", () => {
-    const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
+    const booking = bookingFlightTestDoc;
     const onSelect = vi.fn();
     const onEdit = vi.fn();
     const onDelete = vi.fn();
@@ -42,7 +43,7 @@ describe("BookingFileRow", () => {
 
   it("renders fallback provider, date, link, and hides edit actions when read-only", () => {
     const booking = {
-      ...seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!,
+      ...bookingFlightTestDoc,
       confirmationCode: null,
       externalLinks: [],
       providerName: null,

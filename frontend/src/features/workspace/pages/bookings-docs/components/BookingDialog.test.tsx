@@ -4,7 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { bookingCopy } from "../BookingsDocsPage.copy";
 import { BookingDialog } from "./BookingDialog";
-import { bookingDocTestTasks } from "../bookings-docs-test-fixtures";
+import {
+  bookingDocTestTasks,
+  bookingFlightTestDoc,
+} from "../bookings-docs-test-fixtures";
 
 describe("BookingDialog", () => {
   it("submits a trimmed new booking payload", async () => {
@@ -55,7 +58,7 @@ describe("BookingDialog", () => {
 
   it("preserves existing booking links, ownership, and cancel behavior", async () => {
     const user = userEvent.setup();
-    const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
+    const booking = bookingFlightTestDoc;
     const onCancel = vi.fn();
     const onSubmit = vi.fn();
 

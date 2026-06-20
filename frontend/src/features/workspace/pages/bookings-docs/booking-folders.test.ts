@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "@/src/trip/seed";
+import {
+  bookingDocTestDocs,
+  bookingFlightTestDoc,
+  bookingPassportTestDoc,
+} from "./bookings-docs-test-fixtures";
 import {
   bookingDocMatchesFolder,
   bookingFolders,
   countBookingFolders,
 } from "./booking-folders";
-
-const bookingDocs = seedTrip.bookingDocs ?? [];
 
 describe("booking folder rules", () => {
   it("defines stable cockpit folders for the booking rail", () => {
@@ -22,7 +24,7 @@ describe("booking folder rules", () => {
   });
 
   it("counts and matches booking docs by friendly folders", () => {
-    const counts = countBookingFolders(bookingDocs);
+    const counts = countBookingFolders(bookingDocTestDocs);
 
     expect(counts.all).toBe(5);
     expect(counts.needs_action).toBe(2);
@@ -31,7 +33,9 @@ describe("booking folder rules", () => {
     expect(counts.tickets).toBe(1);
     expect(counts.travel_docs).toBe(2);
     expect(counts.external_links).toBe(4);
-    expect(bookingDocMatchesFolder(bookingDocs.find((doc) => doc.id === "booking-flight-bkk-hkg")!, "transport")).toBe(true);
-    expect(bookingDocMatchesFolder(bookingDocs.find((doc) => doc.id === "booking-passport-nam")!, "external_links")).toBe(false);
+    expect(bookingDocMatchesFolder(bookingFlightTestDoc, "transport")).toBe(true);
+    expect(bookingDocMatchesFolder(bookingPassportTestDoc, "external_links")).toBe(
+      false,
+    );
   });
 });

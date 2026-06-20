@@ -4,7 +4,10 @@ import { findBookingDocRelations } from "@/src/trip/booking-docs";
 import { seedTrip } from "@/src/trip/seed";
 import { bookingCopy } from "../BookingsDocsPage.copy";
 import { BookingInspector } from "./BookingInspector";
-import { bookingDocTestTasks } from "../bookings-docs-test-fixtures";
+import {
+  bookingDocTestTasks,
+  bookingFlightTestDoc,
+} from "../bookings-docs-test-fixtures";
 
 describe("BookingInspector", () => {
   it("renders an empty inspector when no booking is selected", () => {
@@ -26,7 +29,7 @@ describe("BookingInspector", () => {
   });
 
   it("renders selected booking facts, links, and relation counts", () => {
-    const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
+    const booking = bookingFlightTestDoc;
     const relations = findBookingDocRelations(booking, seedTrip, bookingDocTestTasks);
 
     render(
@@ -53,7 +56,7 @@ describe("BookingInspector", () => {
   });
 
   it("shows edit controls when allowed and reports inspector actions", () => {
-    const booking = seedTrip.bookingDocs!.find((doc) => doc.id === "booking-flight-bkk-hkg")!;
+    const booking = bookingFlightTestDoc;
     const relations = findBookingDocRelations(booking, seedTrip, bookingDocTestTasks);
     const onClose = vi.fn();
     const onDelete = vi.fn();
