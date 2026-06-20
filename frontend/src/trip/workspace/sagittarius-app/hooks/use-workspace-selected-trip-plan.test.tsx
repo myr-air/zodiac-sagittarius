@@ -5,43 +5,13 @@ import {
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,
 } from "./use-workspace-selected-trip-plan";
+import {
+  tripWithOnlyMainPlan,
+  tripWithPlans,
+} from "@/src/trip/workspace/selected-trip-plan.test-fixtures";
 import { selectedTripPlanStorageKey } from "@/src/trip/workspace/selected-trip-plan";
 import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import type { PlanVariant, Trip } from "@/src/trip/types";
-
-function tripWithPlans(): Trip {
-  const rainPlan: PlanVariant = {
-    description: "",
-    id: "plan-rain",
-    kind: "draft",
-    name: "Rain Plan",
-    status: "backup",
-    tripId: tripFixture.trip.id,
-  };
-  return {
-    ...tripFixture.trip,
-    mainTripPlanId: "plan-main",
-    activePlanVariantId: "plan-main",
-    planVariants: [
-      { ...tripFixture.trip.planVariants[0], id: "plan-main" },
-      rainPlan,
-    ],
-    tripPlans: [
-      { ...tripFixture.trip.planVariants[0], id: "plan-main" },
-      rainPlan,
-    ],
-  };
-}
-
-function tripWithOnlyMainPlan(): Trip {
-  const trip = tripWithPlans();
-  return {
-    ...trip,
-    planVariants: [trip.planVariants[0]],
-    tripPlans: [trip.tripPlans![0]],
-  };
-}
 
 describe("useWorkspaceSelectedTripPlan", () => {
   beforeEach(() => {

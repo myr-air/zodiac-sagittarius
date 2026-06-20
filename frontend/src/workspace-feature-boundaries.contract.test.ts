@@ -35,6 +35,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeMapCanvas,
       stopDialogStory,
       stopDialogStorySupport,
+      stopDialogStoryItems,
       stopDialogModel,
       stopDialogForm,
       stopDialogTimeFields,
@@ -54,6 +55,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
+      selectedTripPlanHookTest,
+      selectedTripPlanTest,
+      selectedTripPlanTestFixtures,
       workspaceCoreFrameProps,
       workspaceFrameProps,
       workspaceFrameActionProps,
@@ -209,7 +213,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(stopDialogStory).not.toContain("tripFixture");
     expect(stopDialogStory).not.toContain("function categoryItem");
     expect(stopDialogStorySupport).toContain("export const stopDialogCreateArgs");
-    expect(stopDialogStorySupport).toContain("export function stopDialogCategoryItem");
+    expect(stopDialogStorySupport).toContain("./StopDialog.stories.items");
+    expect(stopDialogStorySupport).not.toContain("export function stopDialogCategoryItem");
+    expect(stopDialogStorySupport).not.toContain("export const transportationStoryItem");
+    expect(stopDialogStoryItems).toContain("export function stopDialogCategoryItem");
+    expect(stopDialogStoryItems).toContain("export const transportationStoryItem");
     expect(stopDialogForm).toContain("./stop-dialog-time-fields");
     expect(stopDialogForm).not.toContain("durationBetweenTimes");
     expect(stopDialogForm).toContain("export function applyStopActivityInput");
@@ -238,5 +246,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(tripSettingsSupport).not.toContain("function shiftIsoDate");
     expect(tripSettingsFormState).toContain("useTripSettingsFormState");
     expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");
+    expect(selectedTripPlanHookTest).toContain("selected-trip-plan.test-fixtures");
+    expect(selectedTripPlanHookTest).not.toContain("function tripWithPlans");
+    expect(selectedTripPlanTest).toContain("./selected-trip-plan.test-fixtures");
+    expect(selectedTripPlanTest).not.toContain("function tripWithPlans");
+    expect(selectedTripPlanTestFixtures).toContain("export function tripWithPlans");
+    expect(selectedTripPlanTestFixtures).toContain("export function tripWithOnlyMainPlan");
   });
 });

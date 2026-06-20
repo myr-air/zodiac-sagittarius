@@ -99,6 +99,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/stories/TimelinePage.stories.support.ts",
   "src/features/itinerary/stories/TimelinePage.stories.plays.ts",
   "src/features/itinerary/stories/StopDialog.stories.plays.ts",
+  "src/features/itinerary/stories/StopDialog.stories.items.ts",
   "src/features/itinerary/stories/itinerary-story-assertions.ts",
   "src/features/itinerary/stories/fixtures/itinerary-story-alternative-items.ts",
   "src/features/itinerary/stories/fixtures/itinerary-story-branch-items.ts",
