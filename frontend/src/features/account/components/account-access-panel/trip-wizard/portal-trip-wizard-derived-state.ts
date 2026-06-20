@@ -3,8 +3,6 @@ import type { Locale } from "@/src/i18n/types";
 import {
   destinationRouteCode,
   formatPreviewTravelDate,
-  generateJoinIdForTrip,
-  generateJoinPassword,
   routeCalendarDays,
   tripDestinationCards,
   tripNightCount,
@@ -12,6 +10,10 @@ import {
   uniqueList,
   type TripWizardStepId,
 } from "./account-trip-wizard-support";
+import {
+  buildPortalTripWizardCredentials,
+  isValidPortalTripWizardJoinPassword,
+} from "./portal-trip-wizard-credentials";
 
 interface BuildPortalTripWizardDerivedStateInput {
   accessSalt: string;
@@ -39,9 +41,15 @@ export function buildPortalTripWizardDerivedState({
   const selectedDestinationKey = selectedDestinationNames.join("|");
   const destinationComplete = selectedDestinationCities.length > 0;
   const datesComplete = Boolean(tripForm.startDate && tripForm.endDate);
-  const generatedJoinId = generateJoinIdForTrip(tripForm.startDate, selectedDestinationNames, accessSalt);
-  const generatedJoinPassword = tripForm.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? tripForm.joinPassword : generateJoinPassword();
-  const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && generatedJoinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/));
+  const credentials = buildPortalTripWizardCredentials({
+    accessSalt,
+    currentJoinPassword: tripForm.joinPassword,
+    destinationNames: selectedDestinationNames,
+    startDate: tripForm.startDate,
+  });
+  const generatedJoinId = credentials.joinId;
+  const generatedJoinPassword = credentials.joinPassword;
+  const accessComplete = Boolean(effectiveOwnerDisplayName.trim() && generatedJoinId.trim() && isValidPortalTripWizardJoinPassword(generatedJoinPassword));
   const canSubmit = Boolean(tripForm.name.trim()) && destinationComplete && datesComplete && accessComplete;
 
   return {

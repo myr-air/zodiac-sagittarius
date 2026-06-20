@@ -8,13 +8,13 @@ import {
   applyTripEndDate,
   applyTripStartDate,
   customTripCity,
-  generateJoinIdForTrip,
   generateJoinPassword,
   randomToken,
   tripCityFromOption,
   type TripCityOption,
   type TripWizardDateSelectionStep,
 } from "./account-trip-wizard-support";
+import { buildPortalTripWizardCredentials } from "./portal-trip-wizard-credentials";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
@@ -70,10 +70,14 @@ export function usePortalTripWizardModel({
 
   useEffect(() => {
     onChange((current) => {
-      const nextJoinId = generateJoinIdForTrip(current.startDate, derivedState.selectedDestinationKey.split("|").filter(Boolean), accessSalt);
-      const nextJoinPassword = current.joinPassword.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/) ? current.joinPassword : generateJoinPassword();
-      if (current.joinId === nextJoinId && current.joinPassword === nextJoinPassword) return current;
-      return { ...current, joinId: nextJoinId, joinPassword: nextJoinPassword };
+      const credentials = buildPortalTripWizardCredentials({
+        accessSalt,
+        currentJoinPassword: current.joinPassword,
+        destinationNames: derivedState.selectedDestinationKey.split("|").filter(Boolean),
+        startDate: current.startDate,
+      });
+      if (current.joinId === credentials.joinId && current.joinPassword === credentials.joinPassword) return current;
+      return { ...current, joinId: credentials.joinId, joinPassword: credentials.joinPassword };
     });
   }, [accessSalt, derivedState.selectedDestinationKey, onChange]);
 
@@ -86,7 +90,12 @@ export function usePortalTripWizardModel({
     setAccessSalt(nextSalt);
     onChange((current) => ({
       ...current,
-      joinId: generateJoinIdForTrip(current.startDate, derivedState.selectedDestinationNames, nextSalt),
+      joinId: buildPortalTripWizardCredentials({
+        accessSalt: nextSalt,
+        currentJoinPassword: current.joinPassword,
+        destinationNames: derivedState.selectedDestinationNames,
+        startDate: current.startDate,
+      }).joinId,
       joinPassword: generateJoinPassword(),
     }));
   }
