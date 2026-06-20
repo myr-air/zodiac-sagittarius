@@ -11,7 +11,7 @@ import {
   type TripCityOption,
 } from "./account-trip-destinations";
 import { tripWizardSteps } from "./account-trip-wizard-steps";
-import { DestinationCardMeta } from "./destination-card-meta";
+import { TripWizardSelectedDestinations } from "./portal-trip-wizard-selected-destinations";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardDestinationStepProps {
@@ -107,26 +107,12 @@ export function TripWizardDestinationStep({
             </div>
           ) : null}
         </div>
-        {selectedCityNames.length ? (
-          <div className={wizardStyles.tripFormDestinationRowClassName} aria-label="Selected destinations">
-            {destinationCards.map((card) => (
-              <article key={card.title} className={wizardStyles.tripMiniDestinationClassName}>
-                <span className={wizardStyles.tripPlaceThumbClassName} aria-hidden="true" />
-                <div>
-                  <strong>{card.title}</strong>
-                  <DestinationCardMeta detail={card.detail} meta={card.meta} />
-                </div>
-                <button type="button" aria-label={`Remove ${card.title}`} onClick={() => onRemoveCityStop(card.title)}>
-                  <Icon name="x" />
-                </button>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className={wizardStyles.tripSelectedCountriesClassName} aria-label="Selected destinations">
-            <span>{wizard.empty.selectedDestinations}</span>
-          </div>
-        )}
+        <TripWizardSelectedDestinations
+          destinationCards={destinationCards}
+          emptyLabel={wizard.empty.selectedDestinations}
+          selectedCityNames={selectedCityNames}
+          onRemoveCityStop={onRemoveCityStop}
+        />
         <div className={wizardStyles.tripCityEntryClassName}>
           <label>
             <span>{wizard.fields.addCityManually}</span>
