@@ -752,16 +752,25 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-form-state.ts"),
       "utf8",
     );
+    const emailLoginSubmitActions = readFileSync(
+      join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-submit-actions.ts"),
+      "utf8",
+    );
     const emailLoginResendCooldown = readFileSync(
       join(frontendRoot, "src/features/account/components/account-access-panel/email-login/use-email-login-resend-cooldown.ts"),
       "utf8",
     );
-    expect(emailLoginState).toContain("./email-login-auth-actions");
     expect(emailLoginState).toContain("./use-email-login-form-state");
     expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
+    expect(emailLoginState).toContain("./use-email-login-submit-actions");
+    expect(emailLoginState).not.toContain("./email-login-auth-actions");
     expect(emailLoginState).not.toContain("buildPasskeyLoginFinishInput");
     expect(emailLoginState).not.toContain("finishPasswordLogin({");
     expect(emailLoginState).not.toContain("finishEmailLogin({");
+    expect(emailLoginState).not.toContain("finishEmailCodeLogin");
+    expect(emailLoginState).not.toContain("finishEmailPasswordLogin");
+    expect(emailLoginState).not.toContain("finishEmailRegistrationSetup");
+    expect(emailLoginState).not.toContain("signInWithEmailPasskey");
     expect(emailLoginState).not.toContain("window.setInterval");
     expect(emailLoginState).not.toContain("replace(/\\D/g");
     expect(emailLoginAuthActions).toContain("export async function finishEmailCodeLogin");
@@ -771,6 +780,9 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(emailLoginAuthActions).not.toContain("arrayBufferToBase64Url");
     expect(emailLoginFormState).toContain("export function useEmailLoginFormState");
     expect(emailLoginFormState).toContain("function updateCode");
+    expect(emailLoginSubmitActions).toContain("export function useEmailLoginSubmitActions");
+    expect(emailLoginSubmitActions).toContain("./email-login-auth-actions");
+    expect(emailLoginSubmitActions).toContain("finishEmailCodeLogin");
     expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
     expect(emailLoginResendCooldown).toContain("window.setInterval");
     expect(emailLoginStepContent).toContain("./account-email-login-credentials-step");

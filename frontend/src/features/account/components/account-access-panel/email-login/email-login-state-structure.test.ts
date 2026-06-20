@@ -36,4 +36,21 @@ describe("email login state structure", () => {
     expect(formState).toContain("function updateCode");
     expect(formState).toContain("resetEntryFields");
   });
+
+  it("keeps auth submit actions out of the main login panel hook", () => {
+    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
+    const submitActions = readEmailLoginSource("use-email-login-submit-actions.ts");
+
+    expect(panelState).toContain("useEmailLoginSubmitActions");
+    expect(panelState).not.toContain("finishEmailCodeLogin");
+    expect(panelState).not.toContain("finishEmailPasswordLogin");
+    expect(panelState).not.toContain("finishEmailRegistrationSetup");
+    expect(panelState).not.toContain("signInWithEmailPasskey");
+    expect(panelState).not.toContain("passwordLoginErrorMessage");
+    expect(submitActions).toContain("export function useEmailLoginSubmitActions");
+    expect(submitActions).toContain("finishEmailCodeLogin");
+    expect(submitActions).toContain("finishEmailPasswordLogin");
+    expect(submitActions).toContain("finishEmailRegistrationSetup");
+    expect(submitActions).toContain("signInWithEmailPasskey");
+  });
 });

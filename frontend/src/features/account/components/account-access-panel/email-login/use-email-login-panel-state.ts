@@ -1,28 +1,19 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import type { AccountApiClient, AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import {
-  errorMessage,
-  passwordLoginErrorMessage,
-} from "../auth";
 import type { AuthFlow } from "../auth";
 import type { AuthTransitionDirection } from "./account-email-login-styles";
 import {
   buildEmailLoginStepMeta,
   type EmailLoginAuthStep,
 } from "./account-email-login-step-meta";
-import {
-  finishEmailCodeLogin,
-  finishEmailPasswordLogin,
-  finishEmailRegistrationSetup,
-  signInWithEmailPasskey,
-} from "./email-login-auth-actions";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
+import { useEmailLoginSubmitActions } from "./use-email-login-submit-actions";
 
 interface UseEmailLoginPanelStateProps {
   accountClient: AccountApiClient;
@@ -60,7 +51,6 @@ export function useEmailLoginPanelState({
   const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
   const [verifiedRegistrationSession, setVerifiedRegistrationSession] = useState<AccountSession | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     resendCooldown,
     resetResendCooldown,
@@ -87,135 +77,6 @@ export function useEmailLoginPanelState({
     email,
     password,
   });
-
-  async function submitEmail(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!isEmailValid || !passwordReady) return;
-    onError(null);
-    if (activeFlow === "register") {
-      await requestEmailCode();
-      return;
-    }
-    await signInWithPassword();
-  }
-
-  async function submitPassword(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (activeFlow === "register") {
-      await requestEmailCode();
-      return;
-    }
-    await signInWithPassword();
-  }
-
-  async function requestEmailCode() {
-    if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;
-    setIsSubmitting(true);
-    try {
-      const nextChallenge = await accountClient.startEmailLogin(normalizedEmail);
-      setTransitionDirection("forward");
-      setChallenge(nextChallenge);
-      startResendCooldown();
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.startFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function submitCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!challenge || !otpReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await finishEmailCodeLogin({
-        accountClient,
-        activeFlow,
-        challenge,
-        code,
-        trustDevice,
-      });
-      if (activeFlow === "register") {
-        setVerifiedRegistrationSession(session);
-        goToStep("setup");
-        setChallenge(null);
-        updateCode("");
-        onError(null);
-        return;
-      }
-      onLoggedIn(session);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.invalidCode, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function submitSetup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!verifiedRegistrationSession || !passwordReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await finishEmailRegistrationSetup({
-        accountClient,
-        displayName,
-        fallbackName: t.access.dashboard.fallbackName,
-        locale,
-        normalizedEmail,
-        password,
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function signInWithPassword() {
-    if (!isEmailValid || !passwordReady) return;
-    setIsSubmitting(true);
-    try {
-      const session = await finishEmailPasswordLogin({
-        accountClient,
-        activeFlow,
-        normalizedEmail,
-        password,
-        trustDevice,
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(
-        activeFlow === "register"
-          ? errorMessage(caught, t.access.emailLogin.errors.passwordRegisterFailed, t.access.messages)
-          : passwordLoginErrorMessage(caught, t.access.emailLogin.errors.passwordLoginFailed, t.access.messages),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function signInWithPasskey() {
-    if (!isEmailValid) return;
-    setIsSubmitting(true);
-    try {
-      const session = await signInWithEmailPasskey({
-        accountClient,
-        activeFlow,
-        normalizedEmail,
-        trustDevice,
-      });
-      onLoggedIn(session);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.emailLogin.errors.passkeyLoginFailed, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
 
   function resetChallenge() {
     setChallenge(null);
@@ -253,6 +114,41 @@ export function useEmailLoginPanelState({
     setTransitionDirection(direction);
     setAuthStep(nextStep);
   }
+
+  const {
+    isSubmitting,
+    requestEmailCode,
+    signInWithPasskey,
+    submitForm,
+  } = useEmailLoginSubmitActions({
+    accountClient,
+    activeFlow,
+    authStep,
+    challenge,
+    code,
+    displayName,
+    emailLoginMessages: t.access.emailLogin,
+    fallbackName: t.access.dashboard.fallbackName,
+    isEmailValid,
+    locale,
+    messages: t.access.messages,
+    normalizedEmail,
+    onError,
+    onLoggedIn,
+    otpReady,
+    password,
+    passwordReady,
+    trustDevice,
+    verifiedRegistrationSession,
+    goToSetupStep: () => goToStep("setup"),
+    setChallenge: (nextChallenge) => {
+      if (nextChallenge) setTransitionDirection("forward");
+      setChallenge(nextChallenge);
+    },
+    setVerifiedRegistrationSession,
+    startResendCooldown,
+    updateCode,
+  });
 
   function switchFlow(nextFlow: AuthFlow) {
     if (nextFlow === activeFlow) return;
@@ -312,7 +208,7 @@ export function useEmailLoginPanelState({
     setTrustDevice,
     showPasswordStep,
     signInWithPasskey,
-    submitForm: authStep === "setup" ? submitSetup : challenge ? submitCode : authStep === "password" ? submitPassword : submitEmail,
+    submitForm,
     switchFlow,
     updateCode,
   };
