@@ -1,12 +1,13 @@
 import { useCallback, useState, type FormEvent } from "react";
 import { normalizeCurrencyCode } from "@/src/trip/currencies";
-import type { Expense, ExpenseComment, Member, Trip } from "@/src/trip/types";
+import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
   canSubmitExpenseDialog,
   initialExpenseTripPlanId,
 } from "../expense-dialog-support";
 import type { ExpenseInput, ExpenseUpdateInput } from "../expense-page-types";
+import { useExpenseComments } from "./useExpenseComments";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
 import { useExpenseSplitEditor } from "./useExpenseSplitEditor";
 
@@ -46,10 +47,12 @@ export function useExpenseDialogState({
   );
   const [notes, setNotes] = useState(expense?.notes ?? "");
   const [receiptUrl, setReceiptUrl] = useState(expense?.receiptUrl ?? "");
-  const [comments, setComments] = useState<ExpenseComment[]>(
-    expense?.comments ?? [],
-  );
-  const [commentDraft, setCommentDraft] = useState("");
+  const {
+    addComment,
+    commentDraft,
+    comments,
+    setCommentDraft,
+  } = useExpenseComments({ currentMember, expense });
   const [isSaving, setIsSaving] = useState(false);
   const [repeatCount, setRepeatCount] = useState("1");
   const [paidBy, setPaidBy] = useState(expense?.paidBy ?? currentMember.id);
@@ -105,21 +108,6 @@ export function useExpenseDialogState({
   function changeExchangeRate(nextExchangeRate: string) {
     setExchangeRateTouched(true);
     setExchangeRate(nextExchangeRate);
-  }
-
-  function addComment() {
-    const body = commentDraft.trim();
-    if (!body) return;
-    setComments((current) => [
-      ...current,
-      {
-        id: `comment-${Date.now().toString(36)}-${current.length + 1}`,
-        authorId: currentMember.id,
-        body,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-    setCommentDraft("");
   }
 
   function changeItemId(nextItemId: string) {

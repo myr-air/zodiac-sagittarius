@@ -12,20 +12,7 @@ import {
 } from "./account-email-login-styles";
 import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./account-email-login-step-meta";
 import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
-import {
-  emailLoginCredentialsLabels,
-  emailLoginMethodsLabels,
-  emailLoginOtpLabels,
-  emailLoginPasswordLabels,
-  emailLoginSetupLabels,
-} from "./account-email-login-step-labels";
-import {
-  EmailLoginCredentialsStep,
-  EmailLoginMethodsStep,
-  EmailLoginOtpStep,
-  EmailLoginPasswordStep,
-  EmailLoginSetupStep,
-} from "./account-email-login-step-content";
+import { EmailLoginStepContent } from "./account-email-login-step-dispatch";
 
 interface EmailLoginStepStageProps {
   activeFlow: AuthFlow;
@@ -121,83 +108,44 @@ export function EmailLoginStepStage({
         title={stepHeading.title}
         detail={stepHeading.detail}
       />
-      {hasChallenge ? (
-        <EmailLoginOtpStep
-          activeFlow={activeFlow}
-          code={code}
-          codeHintId={codeHintId}
-          codeInputId={codeInputId}
-          disabledResend={!isEmailValid || (activeFlow === "register" && !passwordReady) || isSubmitting || resendCooldown > 0}
-          isSubmitting={isSubmitting}
-          labels={emailLoginOtpLabels(emailLoginMessages)}
-          normalizedEmail={normalizedEmail}
-          onChangeCode={updateCode}
-          onRequestEmailCode={() => void requestEmailCode()}
-          onResetChallenge={resetChallenge}
-          otpReady={otpReady}
-          resendCooldown={resendCooldown}
-          trustDeviceFields={trustDeviceFields}
-        />
-      ) : authStep === "email" ? (
-        <EmailLoginCredentialsStep
-          activeFlow={activeFlow}
-          disabledAlternateActions={!isEmailValid || isSubmitting}
-          disabledPrimary={!isEmailValid || !passwordReady || isSubmitting}
-          email={email}
-          emailHint={isEmailInvalid ? emailLoginMessages.emailInvalidHint : emailLoginMessages.emailHint}
-          emailHintId={emailHintId}
-          emailInputId={emailInputId}
-          isEmailInvalid={isEmailInvalid}
-          isPasswordInvalid={isPasswordInvalid}
-          labels={emailLoginCredentialsLabels(emailLoginMessages)}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onRequestEmailCode={() => void requestEmailCode()}
-          onSignInWithPasskey={() => void signInWithPasskey()}
-          password={password}
-          passwordAutocomplete={passwordAutocomplete}
-          passwordHintId={passwordHintId}
-          passwordInputId={passwordInputId}
-          trustDeviceFields={trustDeviceFields}
-        />
-      ) : authStep === "methods" ? (
-        <EmailLoginMethodsStep
-          activeFlow={activeFlow}
-          isSubmitting={isSubmitting}
-          labels={emailLoginMethodsLabels(emailLoginMessages)}
-          normalizedEmail={normalizedEmail}
-          onChangeEmail={changeEmail}
-          onRequestEmailCode={() => void requestEmailCode()}
-          onShowPasswordStep={showPasswordStep}
-          onSignInWithPasskey={() => void signInWithPasskey()}
-        />
-      ) : authStep === "setup" ? (
-        <EmailLoginSetupStep
-          displayName={displayName}
-          homeBase={homeBase}
-          isSubmitting={isSubmitting}
-          labels={emailLoginSetupLabels(emailLoginMessages)}
-          normalizedEmail={normalizedEmail}
-          onDisplayNameChange={setDisplayName}
-          onHomeBaseChange={setHomeBase}
-        />
-      ) : (
-        <EmailLoginPasswordStep
-          activeFlow={activeFlow}
-          isPasswordInvalid={isPasswordInvalid}
-          isSubmitting={isSubmitting}
-          labels={emailLoginPasswordLabels(emailLoginMessages)}
-          normalizedEmail={normalizedEmail}
-          onChangeEmail={changeEmail}
-          onChooseMethods={chooseMethods}
-          onPasswordChange={setPassword}
-          password={password}
-          passwordAutocomplete={passwordAutocomplete}
-          passwordHintId={passwordHintId}
-          passwordInputId={passwordInputId}
-          trustDeviceFields={trustDeviceFields}
-        />
-      )}
+      <EmailLoginStepContent
+        activeFlow={activeFlow}
+        authStep={authStep}
+        code={code}
+        codeHintId={codeHintId}
+        codeInputId={codeInputId}
+        displayName={displayName}
+        email={email}
+        emailHintId={emailHintId}
+        emailInputId={emailInputId}
+        emailLoginMessages={emailLoginMessages}
+        hasChallenge={hasChallenge}
+        homeBase={homeBase}
+        isEmailInvalid={isEmailInvalid}
+        isEmailValid={isEmailValid}
+        isPasswordInvalid={isPasswordInvalid}
+        isSubmitting={isSubmitting}
+        normalizedEmail={normalizedEmail}
+        otpReady={otpReady}
+        password={password}
+        passwordAutocomplete={passwordAutocomplete}
+        passwordHintId={passwordHintId}
+        passwordInputId={passwordInputId}
+        passwordReady={passwordReady}
+        resendCooldown={resendCooldown}
+        trustDeviceFields={trustDeviceFields}
+        changeEmail={changeEmail}
+        chooseMethods={chooseMethods}
+        requestEmailCode={requestEmailCode}
+        resetChallenge={resetChallenge}
+        setDisplayName={setDisplayName}
+        setEmail={setEmail}
+        setHomeBase={setHomeBase}
+        setPassword={setPassword}
+        showPasswordStep={showPasswordStep}
+        signInWithPasskey={signInWithPasskey}
+        updateCode={updateCode}
+      />
     </div>
   );
 }
