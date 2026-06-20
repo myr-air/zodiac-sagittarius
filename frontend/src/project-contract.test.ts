@@ -83,6 +83,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.access.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.account-access.test.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.account-trip-access.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.bookings-photos.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.expenses.test.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusApp.members.test.tsx"))).toBe(true);
@@ -197,6 +198,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-spreadsheet-columns.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-spreadsheet-row.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-paths.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/trip/itinerary-path-imports.test.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-activity-branch-detection.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-activity-branch-paths.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/trip/itinerary-activity-branches.ts"))).toBe(true);
