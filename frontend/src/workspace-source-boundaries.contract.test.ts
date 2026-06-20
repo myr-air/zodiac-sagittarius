@@ -33,6 +33,7 @@ describe("Sagittarius workspace source boundaries", () => {
       participantPostAuthNavigation,
       workspaceSessionHook,
       workspaceSessionRestore,
+      workspaceCommandsHook,
       workspaceTripPlansHook,
       workspaceTripPlanSelection,
       itineraryBookingCommands,
@@ -182,10 +183,15 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(sagaCore).toContain("useWorkspacePhotoAlbums");
     expect(sagaCore).toContain("useWorkspaceRecords");
-    expect(sagaCore).toContain("useWorkspaceAdministration");
-    expect(sagaCore).toContain("useWorkspaceBookingCommands");
-    expect(sagaCore).toContain("useWorkspaceItineraryCommands");
-    expect(sagaCore).toContain("useWorkspaceItineraryImport");
+    expect(sagaCore).toContain("useWorkspaceCommands");
+    expect(sagaCore).not.toContain("useWorkspaceAdministration");
+    expect(sagaCore).not.toContain("useWorkspaceBookingCommands");
+    expect(sagaCore).not.toContain("useWorkspaceItineraryCommands");
+    expect(sagaCore).not.toContain("useWorkspaceItineraryImport");
+    expect(workspaceCommandsHook).toContain("useWorkspaceAdministration");
+    expect(workspaceCommandsHook).toContain("useWorkspaceBookingCommands");
+    expect(workspaceCommandsHook).toContain("useWorkspaceItineraryCommands");
+    expect(workspaceCommandsHook).toContain("useWorkspaceItineraryImport");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
     expect(accessGateHook).toContain("resolveWorkspaceAccessState");

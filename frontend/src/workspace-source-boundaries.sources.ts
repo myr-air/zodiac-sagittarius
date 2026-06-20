@@ -26,6 +26,7 @@ export const workspaceBoundarySourcePaths = {
   workspaceSessionRestore: "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts",
   workspaceTripPlansHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-trip-plans.ts",
   workspaceTripPlanSelection: "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-selection.ts",
+  workspaceCommandsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-commands.ts",
   itineraryBookingCommands: "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-itinerary-booking-commands.ts",
   bookingCommandInputs: "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts",
   taskActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-task-actions.ts",

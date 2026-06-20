@@ -90,6 +90,7 @@ describe("Sagittarius project scaffold", () => {
     expect(storySupport).toContain("seedTripJoinId");
     expect(hooksIndex).toContain("useWorkspaceItineraryImport");
     expect(hooksIndex).toContain("useWorkspaceAdministration");
+    expect(hooksIndex).toContain("useWorkspaceCommands");
     expect(hooksIndex).toContain("useWorkspaceSession");
     expect(hooksIndex).toContain("useWorkspaceAccessGate");
     expect(hooksIndex).toContain("useWorkspaceUiState");
