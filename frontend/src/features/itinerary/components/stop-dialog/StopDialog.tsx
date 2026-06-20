@@ -7,10 +7,10 @@ import { StopDialogAdvancedFields } from "./StopDialogAdvancedFields";
 import { StopDialogContextFields } from "./StopDialogContextFields";
 import { StopDialogDetailSection } from "./StopDialogDetailSection";
 import { StopDialogPlaceResolution } from "./StopDialogPlaceResolution";
+import { StopDialogPrimaryFields } from "./StopDialogPrimaryFields";
 import { StopDialogTimeWindow } from "./StopDialogTimeWindow";
 import {
   dialogErrorClassName,
-  dialogFieldWideClassName,
   dialogGridClassName,
   dialogTitleRowClassName,
   modalBackdropClassName,
@@ -22,7 +22,6 @@ import { useStopDialogModel } from "./use-stop-dialog-model";
 import {
   type StopDetailType,
   stopDialogDetailTypeOptions,
-  stopDialogFieldIds,
   stopDetailLabels,
 } from "./stop-dialog.utils";
 
@@ -158,14 +157,17 @@ export function StopDialog({
               onStartTimeChange={updateStartTime}
               onToggleNextDayEnd={toggleNextDayEnd}
             />
-            <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.activity}>
-              <span>{t.stopDialog.fields.activity}</span>
-              <input id={stopDialogFieldIds.activity} value={values.activity} onChange={(event) => updateActivity(event.target.value)} required />
-            </label>
-            <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.place}>
-              <span>{t.stopDialog.fields.place}</span>
-              <input id={stopDialogFieldIds.place} value={values.place} onChange={(event) => update("place", event.target.value)} required={detailType !== "transportation"} />
-            </label>
+            <StopDialogPrimaryFields
+              activityLabel={t.stopDialog.fields.activity}
+              detailType={detailType}
+              isFocusedEdit={isFocusedEdit}
+              noteLabel={t.stopDialog.fields.note}
+              placeLabel={t.stopDialog.fields.place}
+              transportationLabel={t.stopDialog.fields.transportation}
+              values={values}
+              onUpdate={update}
+              onUpdateActivity={updateActivity}
+            />
             <StopDialogDetailSection
               detailLabels={detailLabels}
               detailType={detailType}
@@ -189,18 +191,6 @@ export function StopDialog({
                 unresolvedMessage={t.stopDialog.placeResolution.unresolved}
                 onSelectCandidate={setSelectedCandidate}
               />
-            ) : null}
-            {!isFocusedEdit && detailType !== "transportation" ? (
-              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.transportation}>
-                <span>{t.stopDialog.fields.transportation}</span>
-                <input id={stopDialogFieldIds.transportation} value={values.transportation} onChange={(event) => update("transportation", event.target.value)} />
-              </label>
-            ) : null}
-            {!isFocusedEdit ? (
-              <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.note}>
-                <span>{t.stopDialog.fields.note}</span>
-                <textarea id={stopDialogFieldIds.note} value={values.note} onChange={(event) => update("note", event.target.value)} rows={3} />
-              </label>
             ) : null}
             {submitError ? (
               <p className={dialogErrorClassName} role="alert">

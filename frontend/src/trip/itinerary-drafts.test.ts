@@ -1,72 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "./seed";
 import {
-  appendItineraryItemPlacement,
-  appendItineraryItemToTrip,
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,
-  deleteItineraryItemFromTrip,
-  getNextChildSortOrder,
-  getNextSortOrder,
   mainItineraryPathId,
-  replaceItineraryItem,
-  replaceItineraryItems,
 } from "./itinerary";
 import {
   pathIdRainDay,
   pathNameRainDay,
 } from "./testing/itinerary-path-fixtures";
 
-describe("itinerary mutation domain", () => {
-  it("derives next sort order for a trip day", () => {
-    expect(getNextSortOrder([], "2026-06-19")).toBe(100);
-    expect(getNextSortOrder([
-      {
-        ...seedTrip.itineraryItems[0],
-        day: "2026-06-18",
-        sortOrder: 500,
-      },
-      {
-        ...seedTrip.itineraryItems[1],
-        day: "2026-06-19",
-        sortOrder: 100,
-      },
-      {
-        ...seedTrip.itineraryItems[2],
-        day: "2026-06-19",
-        sortOrder: 250,
-      },
-    ], "2026-06-19")).toBe(350);
-  });
-
-  it("derives next child sort order beneath a parent stop", () => {
-    const parentItem = {
-      ...seedTrip.itineraryItems[0],
-      id: "item-parent",
-      day: "2026-06-19",
-      sortOrder: 200,
-    };
-
-    expect(getNextChildSortOrder([parentItem], parentItem)).toBe(210);
-    expect(getNextChildSortOrder([
-      parentItem,
-      {
-        ...seedTrip.itineraryItems[1],
-        id: "item-child-a",
-        day: "2026-06-19",
-        parentItemId: parentItem.id,
-        sortOrder: 220,
-      },
-      {
-        ...seedTrip.itineraryItems[2],
-        id: "item-other-day-child",
-        day: "2026-06-20",
-        parentItemId: parentItem.id,
-        sortOrder: 900,
-      },
-    ], parentItem)).toBe(230);
-  });
-
+describe("itinerary draft builders", () => {
   it("builds new itinerary item drafts with target path fields", () => {
     const nextItem = buildItineraryItemDraft(
       {
@@ -180,26 +124,6 @@ describe("itinerary mutation domain", () => {
     expect(child.sortOrder).toBe(parentItem.sortOrder + 10);
   });
 
-  it("appends itinerary items to trips without branch side effects", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
-      id: "item-appended",
-      activity: "Appended item",
-    };
-
-    const nextTrip = appendItineraryItemToTrip(seedTrip, item);
-    const placement = appendItineraryItemPlacement(seedTrip, item);
-
-    expect(nextTrip).not.toBe(seedTrip);
-    expect(nextTrip.itineraryItems.at(-1)).toEqual(item);
-    expect(seedTrip.itineraryItems.some((candidate) => candidate.id === item.id)).toBe(false);
-    expect(placement).toEqual({
-      trip: nextTrip,
-      item,
-      changedExistingItems: [],
-    });
-  });
-
   it("builds updated itinerary items from local edit values", () => {
     const item = seedTrip.itineraryItems[0];
     const updated = buildUpdatedItineraryItem(
@@ -250,60 +174,5 @@ describe("itinerary mutation domain", () => {
       updatedAt: "2026-06-16T00:00:00.000Z",
       version: item.version + 1,
     });
-  });
-
-  it("replaces one itinerary item without changing other trip records", () => {
-    const item = seedTrip.itineraryItems[0]!;
-    const updatedItem = { ...item, activity: "Updated activity" };
-
-    const nextTrip = replaceItineraryItem(seedTrip, updatedItem);
-
-    expect(nextTrip.itineraryItems.find((candidate) => candidate.id === item.id)).toEqual(updatedItem);
-    expect(nextTrip.itineraryItems).toHaveLength(seedTrip.itineraryItems.length);
-  });
-
-  it("replaces multiple itinerary items without changing unrelated items", () => {
-    const firstItem = seedTrip.itineraryItems[0]!;
-    const secondItem = seedTrip.itineraryItems[1]!;
-    const updatedFirst = { ...firstItem, activity: "Updated first activity" };
-    const updatedSecond = { ...secondItem, activity: "Updated second activity" };
-
-    const nextTrip = replaceItineraryItems(seedTrip, [
-      updatedFirst,
-      updatedSecond,
-    ]);
-
-    expect(
-      nextTrip.itineraryItems.find((candidate) => candidate.id === firstItem.id),
-    ).toEqual(updatedFirst);
-    expect(
-      nextTrip.itineraryItems.find(
-        (candidate) => candidate.id === secondItem.id,
-      ),
-    ).toEqual(updatedSecond);
-    expect(nextTrip.itineraryItems).toHaveLength(seedTrip.itineraryItems.length);
-  });
-
-  it("deletes an itinerary item and removes expenses linked to it", () => {
-    const item = seedTrip.itineraryItems[0]!;
-    const linkedExpense = {
-      ...seedTrip.expenses[0]!,
-      id: "expense-linked-item",
-      itineraryItemId: item.id,
-    };
-    const unrelatedExpense = {
-      ...seedTrip.expenses[0]!,
-      id: "expense-unrelated-item",
-      itineraryItemId: "other-item",
-    };
-    const trip = {
-      ...seedTrip,
-      expenses: [linkedExpense, unrelatedExpense],
-    };
-
-    const nextTrip = deleteItineraryItemFromTrip(trip, item.id);
-
-    expect(nextTrip.itineraryItems.some((candidate) => candidate.id === item.id)).toBe(false);
-    expect(nextTrip.expenses).toEqual([unrelatedExpense]);
   });
 });

@@ -132,6 +132,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialog.category-details.test.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialog.place-resolution.test.tsx",
+  "src/features/itinerary/components/stop-dialog/StopDialogPrimaryFields.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialog.test-support.tsx",
   "src/features/itinerary/components/stop-dialog/index.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts",
