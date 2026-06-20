@@ -74,9 +74,9 @@ export function AccountPortalSectionContent({
   trips,
   vaultItems,
 }: AccountPortalSectionContentProps) {
-  return (
-    <>
-      {portalSection === "dashboard" ? (
+  switch (portalSection) {
+    case "dashboard":
+      return (
         <PortalDashboardSection
           accountSession={accountSession}
           classNames={accountPortalDashboardSectionClassNames(classNames)}
@@ -84,17 +84,17 @@ export function AccountPortalSectionContent({
           settings={settings}
           stats={stats}
         />
-      ) : null}
-
-      {portalSection === "trips" ? (
+      );
+    case "trips":
+      return (
         <PortalTripsSection
           classNames={accountPortalTripsSectionClassNames(classNames)}
           isLoading={isLoading}
           trips={trips}
         />
-      ) : null}
-
-      {portalSection === "new-trip" ? (
+      );
+    case "new-trip":
+      return (
         <PortalNewTripSection
           accountClient={accountClient}
           accountSession={accountSession}
@@ -105,22 +105,20 @@ export function AccountPortalSectionContent({
           onError={onError}
           onMessage={onMessage}
         />
-      ) : null}
-
-      {portalSection === "explorer" ? (
+      );
+    case "explorer":
+      return (
         <PortalExplorerSection
           classNames={accountPortalExplorerSectionClassNames(classNames)}
           explorer={explorer}
           isLoading={isLoading}
           trips={trips}
         />
-      ) : null}
-
-      {portalSection === "todos" ? (
-        <PortalTodosSection className={classNames.featureCard} isLoading={isLoading} todos={todos} />
-      ) : null}
-
-      {portalSection === "vault" ? (
+      );
+    case "todos":
+      return <PortalTodosSection className={classNames.featureCard} isLoading={isLoading} todos={todos} />;
+    case "vault":
+      return (
         <PortalVaultSection
           accountClient={accountClient}
           accountSession={accountSession}
@@ -131,9 +129,9 @@ export function AccountPortalSectionContent({
           onMessage={onMessage}
           onVaultItemCreated={onVaultItemCreated}
         />
-      ) : null}
-
-      {portalSection === "settings" ? (
+      );
+    case "settings":
+      return (
         <PortalSettingsSection
           accountClient={accountClient}
           accountSession={accountSession}
@@ -144,11 +142,8 @@ export function AccountPortalSectionContent({
           onSessionCleared={onSessionCleared}
           onSettingsChanged={onSettingsChanged}
         />
-      ) : null}
-
-      {portalSection === "sign-out" ? (
-        <PortalSignOutSection className={classNames.profileCard} onLogout={onLogout} />
-      ) : null}
-    </>
-  );
+      );
+    case "sign-out":
+      return <PortalSignOutSection className={classNames.profileCard} onLogout={onLogout} />;
+  }
 }
