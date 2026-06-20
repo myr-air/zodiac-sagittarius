@@ -14,6 +14,10 @@ export { exchangeRateCacheKey } from "./exchange-rate-cache";
 export { buildBackendRatesUrl } from "./exchange-rate-providers";
 export type { ExchangeRateQuote, FetchMajorExchangeRateOptions } from "./exchange-rate-types";
 
+export function formatExchangeRateInput(rate: number): string {
+  return Number.isInteger(rate) ? String(rate) : Number(rate.toFixed(6)).toString();
+}
+
 export async function fetchMajorExchangeRate(
   source: MajorCurrencyCode,
   target: MajorCurrencyCode,

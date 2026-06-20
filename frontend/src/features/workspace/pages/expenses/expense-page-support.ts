@@ -1,6 +1,7 @@
 export { memberInitial } from "@/src/trip/member-labels";
 export { findMemberById as memberById } from "@/src/trip/member-lookup";
 export { tripPlanName } from "@/src/trip/trip-plan-display";
+export { formatExchangeRateInput } from "@/src/trip/currencies";
 
 export {
   categoryTone,
@@ -21,8 +22,4 @@ export function formatReminderDate(value: string, locale: string): string {
     month: "short",
     year: "numeric",
   });
-}
-
-export function formatExchangeRateInput(rate: number): string {
-  return Number.isInteger(rate) ? String(rate) : Number(rate.toFixed(6)).toString();
 }

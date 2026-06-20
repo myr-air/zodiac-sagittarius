@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { fetchMajorExchangeRate, normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
-import { formatExchangeRateInput } from "../expense-page-support";
+import { fetchMajorExchangeRate, formatExchangeRateInput, normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
 
 interface UseExpenseExchangeRateAutofillInput {
   apiBaseUrl: string;

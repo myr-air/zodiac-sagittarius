@@ -3,6 +3,7 @@ import {
   buildBackendRatesUrl,
   exchangeRateCacheKey,
   fetchMajorExchangeRate,
+  formatExchangeRateInput,
   majorCurrencyCodes,
   majorCurrencyOptions,
 } from "./currencies";
@@ -65,5 +66,10 @@ describe("major currency exchange rates", () => {
       target: "HKD",
     });
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("formats fetched exchange rates for editable decimal inputs", () => {
+    expect(formatExchangeRateInput(1)).toBe("1");
+    expect(formatExchangeRateInput(1.23456789)).toBe("1.234568");
   });
 });

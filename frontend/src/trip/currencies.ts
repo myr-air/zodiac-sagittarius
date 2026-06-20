@@ -9,6 +9,7 @@ export {
   buildBackendRatesUrl,
   exchangeRateCacheKey,
   fetchMajorExchangeRate,
+  formatExchangeRateInput,
 } from "./exchange-rates";
 export type {
   ExchangeRateQuote,
