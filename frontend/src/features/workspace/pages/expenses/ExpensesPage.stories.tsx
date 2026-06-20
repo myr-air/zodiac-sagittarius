@@ -1,17 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent, within } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { expect, userEvent } from "storybook/test";
 import { TripExpensesPage } from "./TripExpensesPage";
 import {
-  denseExpenseSummary,
-  denseTrip,
-  emptyExpenseSummary,
-  emptyTrip,
+  filteredLedgerPlay,
+  planScopeAuditPlay,
+} from "./ExpensesPage.stories.plays";
+import {
+  denseExpensesStoryArgs,
+  emptyExpensesStoryArgs,
   expensesOwnerStoryArgs,
+  expensesTravelerStoryArgs,
+  expensesViewerStoryArgs,
   expectExpensesResponsiveContract,
-  inferredScopeExpenseSummary,
-  inferredScopeTrip,
-  onStoryUpdateExpense,
+  planScopeAuditExpensesStoryArgs,
 } from "./ExpensesPage.stories.support";
 
 const meta = {
@@ -33,11 +34,7 @@ export const Owner: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.traveler,
-    expenseSummary: tripFixture.expenseSummaries.traveler,
-  },
+  args: expensesTravelerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Trip money/i })).toHaveClass("expenses-page");
     await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeEnabled();
@@ -45,12 +42,7 @@ export const Traveler: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.viewer,
-    expenseSummary: tripFixture.expenseSummaries.viewer,
-    canEditExpenses: false,
-  },
+  args: expensesViewerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Money view only/i)).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeDisabled();
@@ -68,20 +60,11 @@ export const OwnerThai: Story = {
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    trip: denseTrip,
-    currentMember: denseTrip.members[0],
-    expenseSummary: denseExpenseSummary,
-  },
+  args: denseExpensesStoryArgs,
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    trip: emptyTrip,
-    expenseSummary: emptyExpenseSummary,
-  },
+  args: emptyExpensesStoryArgs,
 };
 
 export const AddExpenseDialogOpen: Story = {
@@ -97,44 +80,12 @@ export const AddExpenseDialogOpen: Story = {
 
 export const FilteredLedger: Story = {
   args: Owner.args,
-  play: async ({ canvas }) => {
-    const ledger = canvas.getByRole("table", { name: /Expense ledger/i });
-    await expect(ledger).toHaveClass("expense-ledger-table");
-
-    await userEvent.type(canvas.getByLabelText(/Search expenses/i), "tram");
-    await expect(canvas.getByText("Peak Tram tickets")).toBeVisible();
-    await expect(canvas.queryByText("Dim Dim Sum brunch")).toBeNull();
-
-    await userEvent.selectOptions(canvas.getByLabelText("Category"), "transport");
-    await expect(canvas.getByText(/No expenses match this filter/i)).toBeVisible();
-
-    await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
-    await expect(canvas.getByText("Dim Dim Sum brunch")).toBeVisible();
-    await expect(canvas.getByText("Octopus top-up")).toBeVisible();
-  },
+  play: filteredLedgerPlay,
 };
 
 export const PlanScopeAudit: Story = {
-  args: {
-    ...Owner.args,
-    trip: inferredScopeTrip,
-    expenseSummary: inferredScopeExpenseSummary,
-    onUpdateExpense: onStoryUpdateExpense,
-  },
-  play: async ({ canvas }) => {
-    onStoryUpdateExpense.mockClear();
-    const audit = canvas.getByRole("region", { name: /Plan scope audit/i });
-    await expect(audit).toHaveTextContent("Dim Dim Sum brunch");
-    await expect(audit).toHaveTextContent("Inferred scope: แผนฝนตก");
-
-    await userEvent.click(
-      within(audit).getByRole("button", {
-        name: /Review scope for Dim Dim Sum brunch/i,
-      }),
-    );
-    const dialog = canvas.getByRole("dialog", { name: /Edit expense/i });
-    await expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
-  },
+  args: planScopeAuditExpensesStoryArgs,
+  play: planScopeAuditPlay,
 };
 
 export const Tablet: Story = {

@@ -31,6 +31,19 @@ export const expensesOwnerStoryArgs = {
   onDeleteExpense: noop,
 } satisfies TripExpensesPageStoryArgs;
 
+export const expensesTravelerStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.traveler,
+  expenseSummary: tripFixture.expenseSummaries.traveler,
+} satisfies TripExpensesPageStoryArgs;
+
+export const expensesViewerStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.viewer,
+  expenseSummary: tripFixture.expenseSummaries.viewer,
+  canEditExpenses: false,
+} satisfies TripExpensesPageStoryArgs;
+
 export const denseExpenseSummary = buildExpenseSummary(
   denseTrip.expenses,
   denseTrip.members[0].id,
@@ -45,6 +58,26 @@ export const inferredScopeExpenseSummary = buildExpenseSummary(
   inferredScopeTrip.expenses,
   tripFixture.currentMembers.owner.id,
 );
+
+export const denseExpensesStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: denseTrip,
+  currentMember: denseTrip.members[0],
+  expenseSummary: denseExpenseSummary,
+} satisfies TripExpensesPageStoryArgs;
+
+export const emptyExpensesStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: emptyTrip,
+  expenseSummary: emptyExpenseSummary,
+} satisfies TripExpensesPageStoryArgs;
+
+export const planScopeAuditExpensesStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: inferredScopeTrip,
+  expenseSummary: inferredScopeExpenseSummary,
+  onUpdateExpense: onStoryUpdateExpense,
+} satisfies TripExpensesPageStoryArgs;
 
 export async function expectExpensesResponsiveContract(canvasElement: HTMLElement) {
   const canvas = within(canvasElement);

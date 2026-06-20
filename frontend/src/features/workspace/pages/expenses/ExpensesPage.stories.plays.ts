@@ -1,0 +1,37 @@
+import type { StoryObj } from "@storybook/nextjs-vite";
+import { expect, userEvent, within } from "storybook/test";
+import type { TripExpensesPage } from "./TripExpensesPage";
+import { onStoryUpdateExpense } from "./ExpensesPage.stories.support";
+
+type ExpensesPagePlay = NonNullable<StoryObj<typeof TripExpensesPage>["play"]>;
+
+export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
+  const ledger = canvas.getByRole("table", { name: /Expense ledger/i });
+  await expect(ledger).toHaveClass("expense-ledger-table");
+
+  await userEvent.type(canvas.getByLabelText(/Search expenses/i), "tram");
+  await expect(canvas.getByText("Peak Tram tickets")).toBeVisible();
+  await expect(canvas.queryByText("Dim Dim Sum brunch")).toBeNull();
+
+  await userEvent.selectOptions(canvas.getByLabelText("Category"), "transport");
+  await expect(canvas.getByText(/No expenses match this filter/i)).toBeVisible();
+
+  await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
+  await expect(canvas.getByText("Dim Dim Sum brunch")).toBeVisible();
+  await expect(canvas.getByText("Octopus top-up")).toBeVisible();
+};
+
+export const planScopeAuditPlay: ExpensesPagePlay = async ({ canvas }) => {
+  onStoryUpdateExpense.mockClear();
+  const audit = canvas.getByRole("region", { name: /Plan scope audit/i });
+  await expect(audit).toHaveTextContent("Dim Dim Sum brunch");
+  await expect(audit).toHaveTextContent("Inferred scope: แผนฝนตก");
+
+  await userEvent.click(
+    within(audit).getByRole("button", {
+      name: /Review scope for Dim Dim Sum brunch/i,
+    }),
+  );
+  const dialog = canvas.getByRole("dialog", { name: /Edit expense/i });
+  await expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
+};

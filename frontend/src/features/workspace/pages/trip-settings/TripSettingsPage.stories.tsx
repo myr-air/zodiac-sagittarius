@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripSettingsPage } from "./TripSettingsPage";
 import {
   expectSettingsResponsiveContract,
-  planImpactTrip,
   tripSettingsOwnerStoryArgs,
+  tripSettingsPlanImpactStoryArgs,
+  tripSettingsTravelerStoryArgs,
+  tripSettingsViewerStoryArgs,
 } from "./TripSettingsPage.stories.support";
 
 const meta = {
@@ -29,11 +30,7 @@ export const Owner: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    canEdit: false,
-    currentMember: tripFixture.currentMembers.viewer,
-  },
+  args: tripSettingsViewerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Only owners and organizers can edit trip settings/i)).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Save changes/i })).toBeDisabled();
@@ -41,11 +38,7 @@ export const Viewer: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    canEdit: false,
-    currentMember: tripFixture.currentMembers.traveler,
-  },
+  args: tripSettingsTravelerStoryArgs,
   play: Viewer.play,
 };
 
@@ -61,10 +54,7 @@ export const Thai: Story = {
 };
 
 export const PlanImpactWarning: Story = {
-  args: {
-    ...Owner.args,
-    trip: planImpactTrip,
-  },
+  args: tripSettingsPlanImpactStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Trip settings/i })).toHaveClass("trip-settings-page");
     await expect(canvas.getByRole("region", { name: /Plan impact/i })).toBeVisible();
