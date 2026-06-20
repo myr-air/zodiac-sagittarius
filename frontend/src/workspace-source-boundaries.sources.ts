@@ -207,7 +207,9 @@ export const workspaceBoundarySourcePaths = {
   emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",
   appFacade: "src/app/SagittariusApp.tsx",
   tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
-  tripSettingsSupport: "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts",
+  tripSettingsStateKey: "src/features/workspace/pages/trip-settings/trip-settings-state-key.ts",
+  tripSettingsFormModel: "src/features/workspace/pages/trip-settings/trip-settings-form-model.ts",
+  tripSettingsDateImpact: "src/features/workspace/pages/trip-settings/trip-settings-date-impact.ts",
   tripSettingsFormState: "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts",
 } as const;
 

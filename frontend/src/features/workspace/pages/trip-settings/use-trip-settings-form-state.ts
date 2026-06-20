@@ -2,11 +2,11 @@ import { useMemo, useState, type FormEvent } from "react";
 import type { Trip } from "@/src/trip/types";
 import {
   canSubmitTripSettings,
-  countStopsOutsideSettingsRange,
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
   tripToSettingsForm,
-} from "./TripSettingsPage.support";
+} from "./trip-settings-form-model";
+import { countStopsOutsideSettingsRange } from "./trip-settings-date-impact";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
 interface TripSettingsFormStateInput {

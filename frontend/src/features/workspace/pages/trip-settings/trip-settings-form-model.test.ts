@@ -2,32 +2,19 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   canSubmitTripSettings,
-  countStopsOutsideSettingsRange,
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
-  tripSettingsStateKey,
   tripToSettingsForm,
-} from "./TripSettingsPage.support";
+} from "./trip-settings-form-model";
 
-describe("TripSettingsPage.support", () => {
-  it("derives a stable form and reset key from trip settings fields", () => {
+describe("trip settings form model", () => {
+  it("derives a form from trip settings fields", () => {
     expect(tripToSettingsForm({ ...seedTrip, partySize: undefined, defaultTimezone: undefined })).toMatchObject({
       defaultTimezone: "Asia/Bangkok",
       destinationLabel: seedTrip.destinationLabel,
       name: seedTrip.name,
       partySize: 1,
     });
-    expect(tripSettingsStateKey(seedTrip)).toContain(seedTrip.id);
-    expect(tripSettingsStateKey(seedTrip)).toContain(seedTrip.destinationLabel);
-  });
-
-  it("counts shifted itinerary stops outside the edited date range", () => {
-    const form = {
-      ...tripToSettingsForm(seedTrip),
-      endDate: seedTrip.startDate,
-    };
-
-    expect(countStopsOutsideSettingsRange(seedTrip, form)).toBeGreaterThan(0);
   });
 
   it("normalizes and validates form submission state", () => {

@@ -14,7 +14,9 @@ describe("Sagittarius workspace feature source boundaries", () => {
       memberPageSelectors,
       dateTimePickers,
       tripSettingsPage,
-      tripSettingsSupport,
+      tripSettingsStateKey,
+      tripSettingsFormModel,
+      tripSettingsDateImpact,
       tripSettingsFormState,
       selectedTripPlanHookTest,
       selectedTripPlanTest,
@@ -57,15 +59,17 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(dateTimePickers).not.toContain("function CalendarContent");
     expect(dateTimePickers).not.toContain("function TimePickerContent");
     expect(dateTimePickers).not.toContain("createPortal");
-    expect(tripSettingsPage).toContain("./TripSettingsPage.support");
+    expect(tripSettingsPage).toContain("./trip-settings-state-key");
     expect(tripSettingsPage).toContain("./use-trip-settings-form-state");
-    expect(tripSettingsSupport).toContain("@/src/trip/itinerary-time");
     expect(tripSettingsPage).not.toContain("function daysBetweenIsoDates");
     expect(tripSettingsPage).not.toContain("function shiftIsoDate");
     expect(tripSettingsPage).not.toContain("useState");
     expect(tripSettingsPage).not.toContain("normalizeTripSettingsForm");
-    expect(tripSettingsSupport).not.toContain("function daysBetweenIsoDates");
-    expect(tripSettingsSupport).not.toContain("function shiftIsoDate");
+    expect(tripSettingsStateKey).toContain("export function tripSettingsStateKey");
+    expect(tripSettingsFormModel).toContain("export function normalizeTripSettingsForm");
+    expect(tripSettingsFormModel).toContain("export function canSubmitTripSettings");
+    expect(tripSettingsDateImpact).toContain("@/src/trip/itinerary-time");
+    expect(tripSettingsDateImpact).toContain("export function countStopsOutsideSettingsRange");
     expect(tripSettingsFormState).toContain("useTripSettingsFormState");
     expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");
     expect(selectedTripPlanHookTest).toContain("selected-trip-plan.test-fixtures");
