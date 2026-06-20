@@ -21,6 +21,7 @@ import {
   signInWithEmailPasskey,
 } from "./email-login-auth-actions";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
+import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 
 interface UseEmailLoginPanelStateProps {
@@ -39,12 +40,22 @@ export function useEmailLoginPanelState({
   onLoggedIn,
 }: UseEmailLoginPanelStateProps) {
   const { locale, t } = useI18n();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [homeBase, setHomeBase] = useState("");
-  const [trustDevice, setTrustDevice] = useState(true);
+  const {
+    code,
+    displayName,
+    email,
+    homeBase,
+    password,
+    trustDevice,
+    clearCodeAndPassword,
+    resetEntryFields,
+    setDisplayName,
+    setEmail,
+    setHomeBase,
+    setPassword,
+    setTrustDevice,
+    updateCode,
+  } = useEmailLoginFormState();
   const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");
   const [transitionDirection, setTransitionDirection] = useState<AuthTransitionDirection>("forward");
   const [challenge, setChallenge] = useState<EmailLoginStartResponse | null>(null);
@@ -129,7 +140,7 @@ export function useEmailLoginPanelState({
         setVerifiedRegistrationSession(session);
         goToStep("setup");
         setChallenge(null);
-        setCode("");
+        updateCode("");
         onError(null);
         return;
       }
@@ -208,8 +219,7 @@ export function useEmailLoginPanelState({
 
   function resetChallenge() {
     setChallenge(null);
-    setCode("");
-    setPassword("");
+    clearCodeAndPassword();
     resetResendCooldown();
     goToStep("email", "back");
     onError(null);
@@ -221,10 +231,7 @@ export function useEmailLoginPanelState({
 
   function resetEntryState(direction: AuthTransitionDirection = "back") {
     setChallenge(null);
-    setCode("");
-    setPassword("");
-    setDisplayName("");
-    setHomeBase("");
+    resetEntryFields();
     resetResendCooldown();
     setVerifiedRegistrationSession(null);
     goToStep("email", direction);
@@ -245,10 +252,6 @@ export function useEmailLoginPanelState({
   function goToStep(nextStep: EmailLoginAuthStep, direction: AuthTransitionDirection = "forward") {
     setTransitionDirection(direction);
     setAuthStep(nextStep);
-  }
-
-  function updateCode(value: string) {
-    setCode(value.replace(/\D/g, "").slice(0, 6));
   }
 
   function switchFlow(nextFlow: AuthFlow) {

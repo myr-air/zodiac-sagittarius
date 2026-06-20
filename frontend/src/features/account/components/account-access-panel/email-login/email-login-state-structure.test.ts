@@ -22,4 +22,18 @@ describe("email login state structure", () => {
     expect(resendCooldown).toContain("window.setInterval");
     expect(resendCooldown).toContain("resendCooldownSeconds");
   });
+
+  it("keeps form field state and code normalization out of the main login panel hook", () => {
+    const panelState = readEmailLoginSource("use-email-login-panel-state.ts");
+    const formState = readEmailLoginSource("use-email-login-form-state.ts");
+
+    expect(panelState).toContain("useEmailLoginFormState");
+    expect(panelState).not.toMatch(/const \[email,\s*setEmail\]/);
+    expect(panelState).not.toMatch(/const \[password,\s*setPassword\]/);
+    expect(panelState).not.toMatch(/const \[code,\s*setCode\]/);
+    expect(panelState).not.toContain("replace(/\\D/g");
+    expect(formState).toContain("export function useEmailLoginFormState");
+    expect(formState).toContain("function updateCode");
+    expect(formState).toContain("resetEntryFields");
+  });
 });
