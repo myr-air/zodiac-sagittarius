@@ -9,10 +9,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
-import {
-  type TripApiClient,
-  type TripCockpit,
-} from "@/src/trip/api-client";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
@@ -40,59 +36,7 @@ describe("Sagittarius cockpit overview", () => {
       joinPasswordHash: "",
       members: [{ ...seedTrip.members[0], claimPasswordHash: null }],
     };
-    const cockpit: TripCockpit = {
-      trip: ownerTrip,
-      suggestions: [],
-      tasks: [],
-      stopNotes: [],
-      expenseSummary: null,
-    };
-    const apiClient: TripApiClient = {
-      joinTrip: vi.fn().mockResolvedValue({
-        trip: {
-          id: ownerTrip.id,
-          name: ownerTrip.name,
-          destinationLabel: ownerTrip.destinationLabel,
-          startDate: ownerTrip.startDate,
-          endDate: ownerTrip.endDate,
-          joinId: ownerTrip.joinId,
-          activePlanVariantId: ownerTrip.activePlanVariantId,
-          ownerMemberId: ownerTrip.members[0].id,
-          version: 1,
-        },
-        claimableMembers: [
-          {
-            id: ownerTrip.members[0].id,
-            tripId: ownerTrip.id,
-            displayName: ownerTrip.members[0].displayName,
-            role: "owner",
-            accessStatus: "active",
-            presence: "offline",
-            color: ownerTrip.members[0].color,
-            userId: null,
-            claimedAt: null,
-            lastSeenAt: null,
-          },
-        ],
-        joinSessionToken: "join-session-token",
-        expiresAt: "2026-05-29T00:20:00.000Z",
-      }),
-      claimMember: vi.fn().mockResolvedValue({
-        tripId: ownerTrip.id,
-        memberId: ownerTrip.members[0].id,
-        sessionToken: "session-token",
-        createdAt: "2026-05-29T00:00:00.000Z",
-        expiresAt: "2026-06-28T00:00:00.000Z",
-      }),
-      loginMember: vi.fn(),
-      logout: vi.fn(),
-      loadTrip: vi.fn().mockResolvedValue(cockpit),
-      listDailyBriefings: vi.fn().mockResolvedValue([]),
-      patchDailyBriefing: vi.fn(),
-      patchTrip: vi.fn(),
-      createPlanVariant: vi.fn(),
-      patchPlanVariant: vi.fn(),
-      publishPlanVariant: vi.fn(),
+    const apiClient = createApiClientForTrip(ownerTrip, {
       createTask: vi.fn().mockResolvedValue({
         id: "task-api-created",
         title: "แลกเงิน HKD",
@@ -115,34 +59,7 @@ describe("Sagittarius cockpit overview", () => {
         relatedItemId: null,
         version: 2,
       }),
-      patchItineraryItem: vi.fn(),
-      createItineraryItem: vi.fn(),
-      deleteItineraryItem: vi.fn(),
-      reorderItineraryItems: vi.fn(),
-      importItinerary: vi.fn(),
-      createSuggestion: vi.fn(),
-      approveSuggestion: vi.fn(),
-      rejectSuggestion: vi.fn(),
-      createStopNote: vi.fn(),
-      patchStopNote: vi.fn(),
-      deleteStopNote: vi.fn(),
-      listMembers: vi.fn(),
-      updatePresence: vi.fn(),
-      createMember: vi.fn(),
-      patchMember: vi.fn(),
-      resetMemberClaim: vi.fn(),
-      getExpenseSummary: vi.fn(),
-      recordExpenseReminder: vi.fn(),
-      createExpense: vi.fn(),
-      patchExpense: vi.fn(),
-      deleteExpense: vi.fn(),
-      createBookingDoc: vi.fn(),
-      patchBookingDoc: vi.fn(),
-      deleteBookingDoc: vi.fn(),
-      createPhotoAlbum: vi.fn(),
-      patchPhotoAlbum: vi.fn(),
-      deletePhotoAlbum: vi.fn(),
-    };
+    });
 
     render(
       <SagittariusApp requireJoin dataSource="api" apiClient={apiClient} />,
