@@ -42,6 +42,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/trip-join-gate/use-trip-join-invite-token-resolution.ts",
   "src/features/account/components/trip-join-gate/use-trip-join-gate-submit-actions.ts",
   "src/features/account/components/trip-join-gate/TripJoinGate.test.tsx",
+  "src/features/account/components/trip-join-gate/TripJoinGate.api-errors.test.tsx",
   "src/features/itinerary/components/OverviewPage.tsx",
   "src/features/itinerary/domain/overview.test.ts",
   "src/features/itinerary/components/overview/OverviewRolePanels.tsx",

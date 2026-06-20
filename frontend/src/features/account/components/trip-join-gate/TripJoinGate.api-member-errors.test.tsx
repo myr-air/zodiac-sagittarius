@@ -5,44 +5,17 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { TripApiError } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "./TripJoinGate";
-import { createApiClient, enterTripRoom, installLocalStorageStub } from "./TripJoinGate.test-support";
+import {
+  createApiClient,
+  enterTripRoom,
+  installLocalStorageStub,
+} from "./TripJoinGate.test-support";
 
 const render = renderWithI18n;
 
-describe("TripJoinGate API errors", () => {
+describe("TripJoinGate API member errors", () => {
   beforeEach(() => {
     installLocalStorageStub();
-  });
-
-  it("uses fallback copy for unknown thrown API join errors", async () => {
-    const user = userEvent.setup();
-    const apiClient = createApiClient({
-      joinTrip: vi.fn().mockRejectedValue("network down"),
-    });
-
-    render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
-
-    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
-    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
-
-    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
-  });
-
-  it("does not show raw numeric API errors to join users", async () => {
-    const user = userEvent.setup();
-    const apiClient = createApiClient({
-      joinTrip: vi.fn().mockRejectedValue(new Error("404")),
-    });
-
-    render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
-
-    await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
-    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
-
-    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
-    expect(screen.getByRole("alert")).not.toHaveTextContent(/^404$/);
   });
 
   it("does not label an API cockpit load failure as a participant password error", async () => {
@@ -108,50 +81,49 @@ describe("TripJoinGate API errors", () => {
     expect(onAuthenticated).not.toHaveBeenCalled();
   });
 
-  it("uses safe API fallback copy while joining and authenticating", async () => {
+  it("uses safe API fallback copy while authenticating", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClient({
-      joinTrip: vi.fn()
-        .mockRejectedValueOnce(new TripApiError({ code: "invalid_credentials", message: "No trip room", status: 401 }))
-        .mockResolvedValueOnce({
-          trip: {
-            id: seedTrip.id,
-            name: seedTrip.name,
-            destinationLabel: seedTrip.destinationLabel,
-            startDate: seedTrip.startDate,
-            endDate: seedTrip.endDate,
-            joinId: seedTrip.joinId,
-            activePlanVariantId: seedTrip.activePlanVariantId,
-            ownerMemberId: "member-aom",
-            version: 1,
-          },
-          claimableMembers: [{
-            id: "member-aom",
-            tripId: seedTrip.id,
-            displayName: "Demo Traveler",
-            role: "owner",
-            accessStatus: "active",
-            presence: "online",
-            color: "#0f766e",
-            userId: null,
-            claimedAt: null,
-            lastSeenAt: null,
-          }],
-          joinSessionToken: "join-session-token",
-          expiresAt: "2026-05-29T00:20:00.000Z",
+      joinTrip: vi.fn().mockResolvedValue({
+        trip: {
+          id: seedTrip.id,
+          name: seedTrip.name,
+          destinationLabel: seedTrip.destinationLabel,
+          startDate: seedTrip.startDate,
+          endDate: seedTrip.endDate,
+          joinId: seedTrip.joinId,
+          activePlanVariantId: seedTrip.activePlanVariantId,
+          ownerMemberId: "member-aom",
+          version: 1,
+        },
+        claimableMembers: [{
+          id: "member-aom",
+          tripId: seedTrip.id,
+          displayName: "Demo Traveler",
+          role: "owner",
+          accessStatus: "active",
+          presence: "online",
+          color: "#0f766e",
+          userId: null,
+          claimedAt: null,
+          lastSeenAt: null,
+        }],
+        joinSessionToken: "join-session-token",
+        expiresAt: "2026-05-29T00:20:00.000Z",
+      }),
+      claimMember: vi.fn().mockRejectedValue(
+        new TripApiError({
+          code: "invalid_request",
+          message: "Already claimed",
+          status: 400,
         }),
-      claimMember: vi.fn().mockRejectedValue(new TripApiError({ code: "invalid_request", message: "Already claimed", status: 400 })),
+      ),
       loginMember: vi.fn().mockRejectedValue(new Error("Backend login unavailable")),
     });
 
     render(<TripJoinGate apiClient={apiClient} onTripChange={vi.fn()} onAuthenticated={vi.fn()} />);
 
     await user.type(screen.getByLabelText(/Trip ID/i), "HK-SZ-2025");
-    await user.type(screen.getByLabelText(/^Trip password$/i), "bad");
-    await user.click(screen.getByRole("button", { name: /Enter trip/i }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Trip ID or password is incorrect.");
-
-    await user.clear(screen.getByLabelText(/^Trip password$/i));
     await user.type(screen.getByLabelText(/^Trip password$/i), "seed-trip-pass");
     await user.click(screen.getByRole("button", { name: /Enter trip/i }));
     await user.click(await screen.findByRole("button", { name: /Demo Traveler/i }));
@@ -193,7 +165,13 @@ describe("TripJoinGate API errors", () => {
         joinSessionToken: "join-session-token",
         expiresAt: "2026-05-29T00:20:00.000Z",
       }),
-      claimMember: vi.fn().mockRejectedValue(new TripApiError({ code: "server_error", message: "Claim service down", status: 500 })),
+      claimMember: vi.fn().mockRejectedValue(
+        new TripApiError({
+          code: "server_error",
+          message: "Claim service down",
+          status: 500,
+        }),
+      ),
       loginMember: vi.fn(),
     });
 
