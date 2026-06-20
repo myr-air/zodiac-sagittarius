@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
 import type { BookingDoc } from "@/src/trip/types";
 import {
+  bookingDocQuickFieldKeys,
   buildBookingDocQuickFieldPatch,
   getBookingDocQuickFieldValue,
 } from "./booking-doc-quick-fields";
@@ -16,6 +17,13 @@ function buildQuickFieldBookingDoc(fields: Partial<BookingDoc>) {
 }
 
 describe("booking doc quick fields", () => {
+  it("keeps quick fields in inline edit order", () => {
+    expect(bookingDocQuickFieldKeys).toEqual([
+      "providerName",
+      "confirmationCode",
+    ]);
+  });
+
   it("reads nullable quick-field values as stable form strings", () => {
     const bookingDoc = buildQuickFieldBookingDoc({
       providerName: null,

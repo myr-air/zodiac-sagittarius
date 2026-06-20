@@ -1,7 +1,11 @@
 import type { BookingDoc } from "@/src/trip/types";
 import type { ContextRailBookingDocQuickFieldsPatch } from "./context-rail.types";
 
-export type BookingDocQuickFieldKey = "providerName" | "confirmationCode";
+export const bookingDocQuickFieldKeys = [
+  "providerName",
+  "confirmationCode",
+] as const;
+export type BookingDocQuickFieldKey = (typeof bookingDocQuickFieldKeys)[number];
 
 export function getBookingDocQuickFieldValue(
   bookingDoc: BookingDoc,

@@ -11,7 +11,9 @@ import {
   formatBookingDocTypeLabel,
 } from "./context-rail.utils";
 import {
+  bookingDocQuickFieldKeys,
   buildBookingDocQuickFieldPatch,
+  getBookingDocQuickFieldValue,
   type BookingDocQuickFieldKey,
 } from "./booking-doc-quick-fields";
 import type {
@@ -59,6 +61,25 @@ function handleQuickFieldCommit(
   onChangeBookingDocQuickFields?.(bookingDoc.id, patch);
 }
 
+function bookingDocQuickFieldCopy(
+  copy: ContextRailBookingDocItemProps["copy"],
+  key: BookingDocQuickFieldKey,
+) {
+  if (key === "providerName") {
+    return {
+      label: copy.provider,
+      placeholder: copy.providerPlaceholder,
+      ariaLabel: copy.providerFor,
+    };
+  }
+
+  return {
+    label: copy.reference,
+    placeholder: copy.referencePlaceholder,
+    ariaLabel: copy.referenceFor,
+  };
+}
+
 export function ContextRailBookingDocItem({
   bookingDoc,
   canEdit,
@@ -93,64 +114,40 @@ export function ContextRailBookingDocItem({
           ))}
         </Select>
       </label>
-      <label className="grid gap-1">
-        <span>{copy.provider}</span>
-        <input
-          aria-label={copy.providerFor({ title: bookingDoc.title })}
-          className={bookingDocQuickFieldClassName}
-          defaultValue={bookingDoc.providerName ?? ""}
-          disabled={!canEdit || !onChangeBookingDocQuickFields}
-          placeholder={copy.providerPlaceholder}
-          onChange={(event) => {
-            event.currentTarget.dataset.draftValue = event.target.value;
-          }}
-          onBlur={(event) =>
-            handleQuickFieldCommit(
-              event,
-              bookingDoc,
-              "providerName",
-              onChangeBookingDocQuickFields,
-            )
-          }
-          onKeyDown={(event) =>
-            handleQuickFieldCommit(
-              event,
-              bookingDoc,
-              "providerName",
-              onChangeBookingDocQuickFields,
-            )
-          }
-        />
-      </label>
-      <label className="grid gap-1">
-        <span>{copy.reference}</span>
-        <input
-          aria-label={copy.referenceFor({ title: bookingDoc.title })}
-          className={bookingDocQuickFieldClassName}
-          defaultValue={bookingDoc.confirmationCode ?? ""}
-          disabled={!canEdit || !onChangeBookingDocQuickFields}
-          placeholder={copy.referencePlaceholder}
-          onChange={(event) => {
-            event.currentTarget.dataset.draftValue = event.target.value;
-          }}
-          onBlur={(event) =>
-            handleQuickFieldCommit(
-              event,
-              bookingDoc,
-              "confirmationCode",
-              onChangeBookingDocQuickFields,
-            )
-          }
-          onKeyDown={(event) =>
-            handleQuickFieldCommit(
-              event,
-              bookingDoc,
-              "confirmationCode",
-              onChangeBookingDocQuickFields,
-            )
-          }
-        />
-      </label>
+      {bookingDocQuickFieldKeys.map((key) => {
+        const fieldCopy = bookingDocQuickFieldCopy(copy, key);
+        return (
+          <label className="grid gap-1" key={key}>
+            <span>{fieldCopy.label}</span>
+            <input
+              aria-label={fieldCopy.ariaLabel({ title: bookingDoc.title })}
+              className={bookingDocQuickFieldClassName}
+              defaultValue={getBookingDocQuickFieldValue(bookingDoc, key)}
+              disabled={!canEdit || !onChangeBookingDocQuickFields}
+              placeholder={fieldCopy.placeholder}
+              onChange={(event) => {
+                event.currentTarget.dataset.draftValue = event.target.value;
+              }}
+              onBlur={(event) =>
+                handleQuickFieldCommit(
+                  event,
+                  bookingDoc,
+                  key,
+                  onChangeBookingDocQuickFields,
+                )
+              }
+              onKeyDown={(event) =>
+                handleQuickFieldCommit(
+                  event,
+                  bookingDoc,
+                  key,
+                  onChangeBookingDocQuickFields,
+                )
+              }
+            />
+          </label>
+        );
+      })}
     </li>
   );
 }
