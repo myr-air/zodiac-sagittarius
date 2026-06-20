@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   installLocalStorageStub,
@@ -35,5 +35,18 @@ describe("AccountAccessPanel trip builder credentials", () => {
     expect(screen.queryByText(/Invite link:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/token=/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Invite link appears after create/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/End date/i), {
+      target: { value: "2026-08-14" },
+    });
+    fireEvent.change(screen.getByLabelText(/Start date/i), {
+      target: { value: "2026-07-10" },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText(/Join code:/i).textContent?.replace("Join code:", "").trim()).toMatch(
+        /^0726-HKG-[A-Z0-9]{3}$/,
+      ),
+    );
   });
 });

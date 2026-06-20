@@ -1,4 +1,4 @@
-import { type Dispatch, type FormEvent, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
@@ -15,12 +15,12 @@ import {
 } from "./account-trip-wizard-support";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import {
-  applyPortalTripWizardCredentials,
   applyRegeneratedPortalTripWizardCredentials,
   buildPortalTripWizardSubmitForm,
   seedTripOwnerDisplayName,
 } from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
+import { usePortalTripWizardCredentialSync } from "./use-portal-trip-wizard-credential-sync";
 import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
 
@@ -75,15 +75,12 @@ export function usePortalTripWizardModel({
     selectedDestinationNames: derivedState.selectedDestinationNames,
   });
 
-  useEffect(() => {
-    onChange((current) =>
-      applyPortalTripWizardCredentials(current, {
-        accessSalt,
-        destinationNames: derivedState.selectedDestinationKey.split("|").filter(Boolean),
-        startDate: current.startDate,
-      }),
-    );
-  }, [accessSalt, derivedState.selectedDestinationKey, onChange]);
+  usePortalTripWizardCredentialSync({
+    accessSalt,
+    onChange,
+    selectedDestinationKey: derivedState.selectedDestinationKey,
+    startDate: tripForm.startDate,
+  });
 
   function seedOwnerDisplayName() {
     onChange((current) => seedTripOwnerDisplayName(current, defaultOwnerDisplayName));
