@@ -53,6 +53,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/storybook.contract.supporting-page-states.ts",
   "src/storybook.contract.test-support.ts",
   "src/workspace-feature-boundaries.contract.test.ts",
+  "src/workspace-hook-boundaries.contract.test.ts",
+  "src/workspace-source-boundaries.assertions.ts",
   "src/workspace-source-boundaries.contract.test.ts",
   "src/workspace-source-boundaries.blocked-terms.ts",
   "src/workspace-source-boundaries.sources.ts",
