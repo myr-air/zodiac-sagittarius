@@ -13,8 +13,13 @@ import {
   generateJoinPassword,
   randomToken,
 } from "./account-trip-wizard-support";
-import { buildPortalTripWizardCredentials } from "./portal-trip-wizard-credentials";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
+import {
+  applyPortalTripWizardCredentials,
+  applyRegeneratedPortalTripWizardCredentials,
+  buildPortalTripWizardSubmitForm,
+  seedTripOwnerDisplayName,
+} from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
 import { usePortalTripWizardMobileState } from "./use-portal-trip-wizard-mobile-state";
@@ -71,35 +76,30 @@ export function usePortalTripWizardModel({
   });
 
   useEffect(() => {
-    onChange((current) => {
-      const credentials = buildPortalTripWizardCredentials({
+    onChange((current) =>
+      applyPortalTripWizardCredentials(current, {
         accessSalt,
-        currentJoinPassword: current.joinPassword,
         destinationNames: derivedState.selectedDestinationKey.split("|").filter(Boolean),
         startDate: current.startDate,
-      });
-      if (current.joinId === credentials.joinId && current.joinPassword === credentials.joinPassword) return current;
-      return { ...current, joinId: credentials.joinId, joinPassword: credentials.joinPassword };
-    });
+      }),
+    );
   }, [accessSalt, derivedState.selectedDestinationKey, onChange]);
 
   function seedOwnerDisplayName() {
-    onChange((current) => current.ownerDisplayName.trim() ? current : { ...current, ownerDisplayName: defaultOwnerDisplayName });
+    onChange((current) => seedTripOwnerDisplayName(current, defaultOwnerDisplayName));
   }
 
   function regenerateCredentials() {
     const nextSalt = randomToken(3);
     setAccessSalt(nextSalt);
-    onChange((current) => ({
-      ...current,
-      joinId: buildPortalTripWizardCredentials({
+    onChange((current) =>
+      applyRegeneratedPortalTripWizardCredentials(current, {
         accessSalt: nextSalt,
-        currentJoinPassword: current.joinPassword,
         destinationNames: derivedState.selectedDestinationNames,
+        joinPassword: generateJoinPassword(),
         startDate: current.startDate,
-      }).joinId,
-      joinPassword: generateJoinPassword(),
-    }));
+      }),
+    );
   }
 
   function swapTravelDates() {
@@ -133,7 +133,10 @@ export function usePortalTripWizardModel({
   function submitWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     seedOwnerDisplayName();
-    const nextForm = { ...tripForm, joinId: derivedState.generatedJoinId, joinPassword: derivedState.generatedJoinPassword };
+    const nextForm = buildPortalTripWizardSubmitForm(tripForm, {
+      joinId: derivedState.generatedJoinId,
+      joinPassword: derivedState.generatedJoinPassword,
+    });
     onChange(nextForm);
     if (derivedState.canSubmit && !isSubmitting) onSubmit(nextForm);
   }
