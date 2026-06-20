@@ -17,6 +17,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
       itineraryTemplateStoryPlays,
       overviewPageStory,
       overviewTemplateStory,
+      expensesPageStory,
       timelinePageStory,
       timelineTemplateStory,
       mapPageStory,
@@ -69,6 +70,8 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(tripSettingsPageStory).not.toContain("defaultViewport:");
     expect(bookingsDocsPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(bookingsDocsPageStory).not.toContain("defaultViewport:");
+    expect(expensesPageStory).toContain("@/src/shared/storybook/story-builders");
+    expect(expensesPageStory).not.toContain("defaultViewport:");
     expect(membersPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(membersPageStory).not.toContain("defaultViewport:");
     expect(photosPageStory).toContain("@/src/shared/storybook/story-builders");

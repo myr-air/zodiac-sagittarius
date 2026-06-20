@@ -64,6 +64,7 @@ export const workspaceBoundarySourcePaths = {
   photoAlbumApi: "src/trip/photo-album-api.ts",
   photoAlbumLocal: "src/trip/photo-album-local.ts",
   photoAlbumQuery: "src/trip/photo-album-query.ts",
+  expensesPageStory: "src/features/workspace/pages/expenses/ExpensesPage.stories.tsx",
   expenseMutationCommands: "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts",
   expenseDrafts: "src/trip/expense-drafts.ts",
   expenseSummary: "src/trip/expense-summary.ts",
