@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
@@ -15,19 +15,16 @@ import {
   routeMapPanelClassName,
   routeMapRetryButtonClassName,
   routeMapStatusClassName,
-  maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
   activeDayLabel,
-  buildRouteDayGroups,
-  buildRoutePoints,
   fallbackRouteViewport,
-  hasCoordinates,
 } from "./route-map.utils";
-import type { DayFilter, MapCoordinateResolutionResult } from "./route-map.types";
+import type { MapCoordinateResolutionResult } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
 import { StaticRouteFallback } from "./StaticRouteFallback";
+import { useRouteMapViewState } from "./use-route-map-view-state";
 import { useRouteLiveMap } from "./use-route-live-map";
 
 interface RouteMapViewProps {
@@ -56,41 +53,28 @@ export function RouteMapView({
   tripName,
 }: RouteMapViewProps) {
   const { locale, t } = useI18n();
-  const groups = useMemo(() => itineraryView?.dayGroups ?? groupItemsByDay(items), [items, itineraryView]);
-  const routePoints = useMemo(() => buildRoutePoints(items), [items]);
-  const coordinateRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
-  const unresolvedItems = useMemo(() => items.filter((item) => !hasCoordinates(item.coordinates)), [items]);
-  const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, coordinateRoutePoints, startDate, locale), [coordinateRoutePoints, groups, locale, startDate]);
-  const [activeDay, setActiveDay] = useState<DayFilter>("all");
-  const visibleRouteDayGroups = useMemo(
-    () => routeDayGroups.filter((group) => activeDay === "all" || group.day === activeDay),
-    [activeDay, routeDayGroups],
-  );
-  const visibleRoutePoints = useMemo(
-    () => (activeDay === "all" ? coordinateRoutePoints : coordinateRoutePoints.filter((point) => point.item.day === activeDay)),
-    [activeDay, coordinateRoutePoints],
-  );
-  const visibleUnresolvedItems = useMemo(
-    () => (activeDay === "all" ? unresolvedItems : unresolvedItems.filter((item) => item.day === activeDay)),
-    [activeDay, unresolvedItems],
-  );
-  const coordinateResolutionBatch = useMemo(
-    () => (
-      activeDay === "all"
-        ? visibleUnresolvedItems.slice(0, maxAllDaysCoordinateResolutionBatch)
-        : visibleUnresolvedItems
-    ),
-    [activeDay, visibleUnresolvedItems],
-  );
-  const liveRoutePoints = coordinateRoutePoints;
-  const visibleLiveRoutePoints = useMemo(
-    () => (activeDay === "all" ? liveRoutePoints : liveRoutePoints.filter((point) => point.item.day === activeDay)),
-    [activeDay, liveRoutePoints],
-  );
+  const {
+    activeDay,
+    coordinateResolutionBatch,
+    handleResolveMissingCoordinates,
+    liveRoutePoints,
+    resolutionResult,
+    resolvingMissing,
+    routeDayGroups,
+    setActiveDay,
+    visibleLiveRoutePoints,
+    visibleRouteDayGroups,
+    visibleRoutePoints,
+    visibleUnresolvedItems,
+    warningCount,
+  } = useRouteMapViewState({
+    items,
+    itineraryView,
+    locale,
+    onResolveMissingCoordinates,
+    startDate,
+  });
   const fallbackViewport = useMemo(() => fallbackRouteViewport(destinationLabel, countries), [countries, destinationLabel]);
-  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const [resolvingMissing, setResolvingMissing] = useState(false);
-  const [resolutionResult, setResolutionResult] = useState<MapCoordinateResolutionResult | null>(null);
   const {
     liveMapState,
     mapContainerRef,
@@ -104,18 +88,6 @@ export function RouteMapView({
     routeDayGroups,
     visibleLiveRoutePoints,
   });
-
-  async function handleResolveMissingCoordinates() {
-    if (!onResolveMissingCoordinates || coordinateResolutionBatch.length === 0) return;
-    setResolvingMissing(true);
-    setResolutionResult(null);
-    try {
-      const result = await onResolveMissingCoordinates(coordinateResolutionBatch);
-      setResolutionResult(result ?? null);
-    } finally {
-      setResolvingMissing(false);
-    }
-  }
 
   return (
     <section className={routeMapPanelClassName} id="map" aria-labelledby="route-map-heading" aria-label={t.map.pageLabel}>

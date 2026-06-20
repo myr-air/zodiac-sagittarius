@@ -282,6 +282,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/use-route-map-view-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/use-route-live-map.ts"))).toBe(true);
     expect(existsSync(join(repoRoot, "backend/Cargo.toml"))).toBe(true);
     expect(existsSync(join(repoRoot, "package.json"))).toBe(false);
