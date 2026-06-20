@@ -49,6 +49,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
     const ticketFooter = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx");
     const ticketSections = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalSections.tsx");
+    const existingTicketList = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ExistingTicketList.tsx");
+    const ticketFieldGrid = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TicketFieldGrid.tsx");
+    const linkedActivitiesPicker = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/LinkedActivitiesPicker.tsx");
     const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
 
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
@@ -64,9 +67,15 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModal).not.toContain("formatBookingSummary");
     expect(ticketModal).not.toContain("DateTimePickerField");
     expect(ticketFooter).toContain("export function ItineraryTicketModalFooter");
-    expect(ticketSections).toContain("export function TicketModeToggle");
-    expect(ticketSections).toContain("export function TicketFieldGrid");
-    expect(ticketSections).toContain("export function LinkedActivitiesPicker");
+    expect(ticketSections).toContain("export { TicketModeToggle }");
+    expect(ticketSections).toContain("export { TicketFieldGrid }");
+    expect(ticketSections).toContain("export { LinkedActivitiesPicker }");
+    expect(existingTicketList).toContain("export function ExistingTicketList");
+    expect(existingTicketList).toContain("formatBookingSummary");
+    expect(ticketFieldGrid).toContain("export function TicketFieldGrid");
+    expect(ticketFieldGrid).toContain("DateTimePickerField");
+    expect(linkedActivitiesPicker).toContain("export function LinkedActivitiesPicker");
+    expect(linkedActivitiesPicker).toContain("toggleId");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("buildTicketSubmitInput");
   });
