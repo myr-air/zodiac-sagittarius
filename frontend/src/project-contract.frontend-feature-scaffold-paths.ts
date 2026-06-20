@@ -153,6 +153,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/members/components/MemberCreatePanel.tsx",
   "src/features/workspace/pages/members/components/MemberFilterControls.tsx",
   "src/features/workspace/pages/members/components/MemberInviteActions.tsx",
+  "src/features/workspace/pages/members/components/member-management.types.ts",
   "src/features/workspace/pages/photos/use-trip-photos-page-state.ts",
   "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   "src/features/workspace/pages/photos/components/PhotoAlbumDialogFields.tsx",
@@ -246,5 +247,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/route-map/route-map-live-map-test-support.ts",
   "src/features/itinerary/components/route-map/use-route-map-view-state.ts",
   "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  "src/features/itinerary/components/route-map/route-map.live-status.ts",
+  "src/features/itinerary/components/route-map/route-map.live-status.test.ts",
   "src/trip/workspace/TripWorkspaceImportDialogFields.tsx",
 ] as const;

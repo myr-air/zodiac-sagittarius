@@ -1,23 +1,8 @@
-import type { FormEvent } from "react";
-import type { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import type { TripRole } from "@/src/trip/types";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-
 import * as memberStyles from "../TripMembersPage.styles";
-
-type MemberLabels = ReturnType<typeof useI18n>["t"];
-
-interface MemberCreatePanelProps {
-  canManagePeople: boolean;
-  labels: MemberLabels;
-  newMemberName: string;
-  newMemberRole: Exclude<TripRole, "owner">;
-  onNewMemberNameChange: (value: string) => void;
-  onNewMemberRoleChange: (role: Exclude<TripRole, "owner">) => void;
-  onSubmitNewMember: (event: FormEvent<HTMLFormElement>) => void;
-}
+import type { MemberCreatePanelProps, NewMemberRole } from "./member-management.types";
 
 export function MemberCreatePanel({
   canManagePeople,
@@ -29,7 +14,10 @@ export function MemberCreatePanel({
   onSubmitNewMember,
 }: MemberCreatePanelProps) {
   return (
-    <WorkspaceSurface className={memberStyles.memberCreatePanelClassName} aria-label={labels.members.createLabel}>
+    <WorkspaceSurface
+      className={memberStyles.memberCreatePanelClassName}
+      aria-label={labels.members.createLabel}
+    >
       <form className={memberStyles.memberCreateFormClassName} onSubmit={onSubmitNewMember}>
         <FieldLabel>
           <span>{labels.members.fields.newName}</span>
@@ -45,14 +33,19 @@ export function MemberCreatePanel({
           <Select
             disabled={!canManagePeople}
             value={newMemberRole}
-            onChange={(event) => onNewMemberRoleChange(event.target.value as Exclude<TripRole, "owner">)}
+            onChange={(event) => onNewMemberRoleChange(event.target.value as NewMemberRole)}
           >
             <option value="organizer">{labels.appShell.roles.organizer}</option>
             <option value="traveler">{labels.appShell.roles.traveler}</option>
             <option value="viewer">{labels.appShell.roles.viewer}</option>
           </Select>
         </FieldLabel>
-        <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit" disabled={!canManagePeople || !newMemberName.trim()}>
+        <Button
+          className={cn(memberStyles.memberCreateButtonClassName, "w-auto")}
+          variant="ghost"
+          type="submit"
+          disabled={!canManagePeople || !newMemberName.trim()}
+        >
           <Icon name="check" />
           {labels.members.actions.saveMember}
         </Button>

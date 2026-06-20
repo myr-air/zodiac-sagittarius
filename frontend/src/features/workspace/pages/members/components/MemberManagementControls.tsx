@@ -1,33 +1,29 @@
-import { type FormEvent } from "react";
-import type { useI18n } from "@/src/i18n/I18nProvider";
-import type { TripRole } from "@/src/trip/types";
 import { WorkspaceSurface } from "@/src/ui";
 import type { MemberRoleFilter, MemberStatusFilter } from "../TripMembersPage.support";
 import * as memberStyles from "../TripMembersPage.styles";
 import { MemberCreatePanel } from "./MemberCreatePanel";
 import { MemberFilterControls } from "./MemberFilterControls";
 import { MemberInviteActions } from "./MemberInviteActions";
-
-type MemberLabels = ReturnType<typeof useI18n>["t"];
+import type { MemberCopyState, MemberCreatePanelProps, MemberLabels } from "./member-management.types";
 
 interface MemberManagementControlsProps {
   canManagePeople: boolean;
-  copyState: "idle" | "copied" | "error";
+  copyState: MemberCopyState;
   createPanelOpen: boolean;
   inviteLink: string;
   isRotatingInviteToken: boolean;
   labels: MemberLabels;
   newMemberName: string;
-  newMemberRole: Exclude<TripRole, "owner">;
+  newMemberRole: MemberCreatePanelProps["newMemberRole"];
   onClearFilters: () => void;
   onCopyInviteLink: () => void;
-  onNewMemberNameChange: (value: string) => void;
-  onNewMemberRoleChange: (role: Exclude<TripRole, "owner">) => void;
+  onNewMemberNameChange: MemberCreatePanelProps["onNewMemberNameChange"];
+  onNewMemberRoleChange: MemberCreatePanelProps["onNewMemberRoleChange"];
   onQueryChange: (query: string) => void;
   onRoleFilterChange: (role: MemberRoleFilter) => void;
   onRotateInviteToken?: () => void;
   onStatusFilterChange: (status: MemberStatusFilter) => void;
-  onSubmitNewMember: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmitNewMember: MemberCreatePanelProps["onSubmitNewMember"];
   onToggleCreatePanel: () => void;
   query: string;
   roleFilter: MemberRoleFilter;
@@ -84,7 +80,11 @@ export function MemberManagementControls({
           <div className={memberStyles.memberCommandMetaClassName}>
             <code>{inviteLink}</code>
             <span className={memberStyles.copyFeedbackClassName} data-state={copyState} role="status">
-              {copyState === "copied" ? labels.common.status.copied : copyState === "error" ? labels.common.status.copyFailed : labels.members.copy.ready}
+              {copyState === "copied"
+                ? labels.common.status.copied
+                : copyState === "error"
+                  ? labels.common.status.copyFailed
+                  : labels.members.copy.ready}
             </span>
           </div>
         ) : null}

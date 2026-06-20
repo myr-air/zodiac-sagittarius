@@ -1,23 +1,8 @@
-import type { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { ActionBar, Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-
 import * as memberStyles from "../TripMembersPage.styles";
-
-type MemberLabels = ReturnType<typeof useI18n>["t"];
-
-interface MemberInviteActionsProps {
-  canManagePeople: boolean;
-  copyState: "idle" | "copied" | "error";
-  createPanelOpen: boolean;
-  isRotatingInviteToken: boolean;
-  labels: MemberLabels;
-  onClearFilters: () => void;
-  onCopyInviteLink: () => void;
-  onRotateInviteToken?: () => void;
-  onToggleCreatePanel: () => void;
-}
+import type { MemberInviteActionsProps } from "./member-management.types";
 
 export function MemberInviteActions({
   canManagePeople,
@@ -32,15 +17,32 @@ export function MemberInviteActions({
 }: MemberInviteActionsProps) {
   return (
     <ActionBar className={memberStyles.memberCommandActionsClassName}>
-      <Button className={cn(memberStyles.memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={onClearFilters}>{labels.members.actions.clear}</Button>
+      <Button
+        className={cn(memberStyles.memberResetButtonClassName, "w-auto")}
+        variant="ghost"
+        type="button"
+        onClick={onClearFilters}
+      >
+        {labels.members.actions.clear}
+      </Button>
       {canManagePeople ? (
         <>
-          <Button className={cn(memberStyles.inviteCopyButtonClassName, "w-auto")} type="button" onClick={onCopyInviteLink}>
+          <Button
+            className={cn(memberStyles.inviteCopyButtonClassName, "w-auto")}
+            type="button"
+            onClick={onCopyInviteLink}
+          >
             <Icon name="copy" />
             {labels.members.actions.copyInvite}
           </Button>
           {onRotateInviteToken ? (
-            <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="button" disabled={isRotatingInviteToken} onClick={onRotateInviteToken}>
+            <Button
+              className={cn(memberStyles.memberCreateButtonClassName, "w-auto")}
+              variant="ghost"
+              type="button"
+              disabled={isRotatingInviteToken}
+              onClick={onRotateInviteToken}
+            >
               <Icon name="key" />
               {isRotatingInviteToken ? labels.members.actions.rotatingInvite : labels.members.actions.rotateInvite}
             </Button>

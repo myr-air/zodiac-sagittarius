@@ -1,0 +1,10 @@
+export type RouteLiveMapState = "idle" | "loading" | "ready" | "error";
+
+export function liveMapStatusText(
+  state: RouteLiveMapState,
+  loadingLabel = "Loading map from OpenFreeMap",
+  errorLabel = "Could not load the live map. Showing the fallback route diagram.",
+): string {
+  if (state === "error") return errorLabel;
+  return loadingLabel;
+}

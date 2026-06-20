@@ -21,6 +21,7 @@ import {
 } from "./route-map.utils";
 import { fallbackRouteViewport } from "./route-map.viewport";
 import type { MapCoordinateResolutionResult } from "./route-map.types";
+import { liveMapStatusText } from "./route-map.live-status";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
 import { StaticRouteFallback } from "./StaticRouteFallback";
@@ -168,10 +169,7 @@ export function RouteMapView({
   );
 }
 
-export function liveMapStatusText(state: "idle" | "loading" | "ready" | "error", loadingLabel = "Loading map from OpenFreeMap", errorLabel = "Could not load the live map. Showing the fallback route diagram."): string {
-  if (state === "error") return errorLabel;
-  return loadingLabel;
-}
+export { liveMapStatusText } from "./route-map.live-status";
 
 export {
   activeDayLabel,
