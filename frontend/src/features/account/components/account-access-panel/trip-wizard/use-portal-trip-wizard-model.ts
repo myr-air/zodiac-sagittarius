@@ -1,18 +1,13 @@
 import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
-import {
-  generateJoinPassword,
-  randomToken,
-} from "./account-trip-wizard-support";
 import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
 import {
-  applyRegeneratedPortalTripWizardCredentials,
   buildPortalTripWizardSubmitForm,
   seedTripOwnerDisplayName,
 } from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
+import { usePortalTripWizardAccessActions } from "./use-portal-trip-wizard-access-actions";
 import { usePortalTripWizardCredentialSync } from "./use-portal-trip-wizard-credential-sync";
 import { usePortalTripWizardDateActions } from "./use-portal-trip-wizard-date-actions";
 import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
@@ -36,9 +31,8 @@ export function usePortalTripWizardModel({
   const { locale, t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
   const [hasEditedOwnerDisplayName, setHasEditedOwnerDisplayName] = useState(false);
-  const { copyText, hasCopied: hasCopiedJoinCode } = useCopyFeedbackState();
-  const [accessSalt, setAccessSalt] = useState(() => randomToken(3));
   const dateActions = usePortalTripWizardDateActions({ onChange });
+  const accessActions = usePortalTripWizardAccessActions({ onChange });
   const {
     activeMobileStep,
     mobileStepButtonRefs,
@@ -46,7 +40,7 @@ export function usePortalTripWizardModel({
     setActiveMobileStep,
   } = usePortalTripWizardMobileState();
   const derivedState = buildPortalTripWizardDerivedState({
-    accessSalt,
+    accessSalt: accessActions.accessSalt,
     activeMobileStep,
     defaultOwnerDisplayName,
     hasEditedOwnerDisplayName,
@@ -70,7 +64,7 @@ export function usePortalTripWizardModel({
   });
 
   usePortalTripWizardCredentialSync({
-    accessSalt,
+    accessSalt: accessActions.accessSalt,
     onChange,
     selectedDestinationKey: derivedState.selectedDestinationKey,
     startDate: tripForm.startDate,
@@ -81,22 +75,13 @@ export function usePortalTripWizardModel({
   }
 
   function regenerateCredentials() {
-    const nextSalt = randomToken(3);
-    setAccessSalt(nextSalt);
-    onChange((current) =>
-      applyRegeneratedPortalTripWizardCredentials(current, {
-        accessSalt: nextSalt,
-        destinationNames: derivedState.selectedDestinationNames,
-        joinPassword: generateJoinPassword(),
-        startDate: current.startDate,
-      }),
-    );
+    accessActions.regenerateCredentials({
+      selectedDestinationNames: derivedState.selectedDestinationNames,
+    });
   }
 
   async function copyJoinCode() {
-    const text = derivedState.joinCode.trim();
-    if (!text) return;
-    await copyText(text);
+    await accessActions.copyJoinCode(derivedState.joinCode);
   }
 
   function submitWizard(event: FormEvent<HTMLFormElement>) {
@@ -121,9 +106,10 @@ export function usePortalTripWizardModel({
     activeMobileStep,
     ...destinationState,
     changeOwnerDisplayName,
+    accessSalt: accessActions.accessSalt,
     copyJoinCode,
     ...dateActions,
-    hasCopiedJoinCode,
+    hasCopiedJoinCode: accessActions.hasCopiedJoinCode,
     mobileStepButtonRefs,
     mobileStepClassName,
     regenerateCredentials,
