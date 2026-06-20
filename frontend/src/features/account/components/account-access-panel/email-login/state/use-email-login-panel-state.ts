@@ -3,15 +3,14 @@
 import { useState } from "react";
 import type { AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import type { AuthFlow } from "../../auth";
 import {
   buildEmailLoginStepMeta,
 } from "../account-email-login-step-meta";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
+import { useEmailLoginEntryActions } from "./use-email-login-entry-actions";
 import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
-import { useEmailLoginStepNavigation, type AuthTransitionDirection } from "./use-email-login-step-navigation";
+import { useEmailLoginStepNavigation } from "./use-email-login-step-navigation";
 import { useEmailLoginSubmitActions } from "../submit/use-email-login-submit-actions";
 import type { UseEmailLoginPanelStateProps } from "./use-email-login-panel-state-params";
 
@@ -74,38 +73,6 @@ export function useEmailLoginPanelState({
     password,
   });
 
-  function resetChallenge() {
-    setChallenge(null);
-    clearCodeAndPassword();
-    resetResendCooldown();
-    goToStep("email", "back");
-    onError(null);
-  }
-
-  function changeEmail() {
-    resetEntryState("back");
-  }
-
-  function resetEntryState(direction: AuthTransitionDirection = "back") {
-    setChallenge(null);
-    resetEntryFields();
-    resetResendCooldown();
-    setVerifiedRegistrationSession(null);
-    goToStep("email", direction);
-    onError(null);
-  }
-
-  function showPasswordStep() {
-    setPassword("");
-    goToStep("password");
-    onError(null);
-  }
-
-  function chooseMethods() {
-    goToStep("methods", "back");
-    onError(null);
-  }
-
   const {
     isSubmitting,
     requestEmailCode,
@@ -141,13 +108,24 @@ export function useEmailLoginPanelState({
     updateCode,
   });
 
-  function switchFlow(nextFlow: AuthFlow) {
-    if (nextFlow === activeFlow) return;
-    onFlowChange?.(nextFlow);
-    resetEntryState("mode");
-    const nextHref = nextFlow === "register" ? appRoutes.register() : appRoutes.login();
-    window.history.replaceState(null, "", nextHref);
-  }
+  const {
+    changeEmail,
+    chooseMethods,
+    resetChallenge,
+    showPasswordStep,
+    switchFlow,
+  } = useEmailLoginEntryActions({
+    activeFlow,
+    clearCodeAndPassword,
+    goToStep,
+    onError,
+    onFlowChange,
+    resetEntryFields,
+    resetResendCooldown,
+    setChallenge,
+    setPassword,
+    setVerifiedRegistrationSession,
+  });
 
   const stepMeta = buildEmailLoginStepMeta({
     activeFlow,

@@ -31,6 +31,7 @@ describe("Sagittarius account source boundaries", () => {
       accountSettingsEditor,
       accountSettingsEditorState,
       emailLoginState,
+      emailLoginEntryActions,
       emailLoginAuthActions,
       emailLoginFormState,
       emailLoginSubmitActions,
@@ -125,6 +126,7 @@ describe("Sagittarius account source boundaries", () => {
 
     expect(emailLoginState).toContain("./use-email-login-form-state");
     expect(emailLoginState).toContain("./use-email-login-resend-cooldown");
+    expect(emailLoginState).toContain("./use-email-login-entry-actions");
     expect(emailLoginState).toContain("../submit/use-email-login-submit-actions");
     expect(emailLoginState).not.toContain("./submit/email-login-auth-actions");
     expect(emailLoginState).not.toContain("buildPasskeyLoginFinishInput");
@@ -135,7 +137,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginState).not.toContain("finishEmailRegistrationSetup");
     expect(emailLoginState).not.toContain("signInWithEmailPasskey");
     expect(emailLoginState).not.toContain("window.setInterval");
+    expect(emailLoginState).not.toContain("window.history.replaceState");
+    expect(emailLoginState).not.toContain("appRoutes.register()");
     expect(emailLoginState).not.toContain("replace(/\\D/g");
+    expect(emailLoginEntryActions).toContain("export function useEmailLoginEntryActions");
+    expect(emailLoginEntryActions).toContain("window.history.replaceState");
+    expect(emailLoginEntryActions).toContain("appRoutes.register()");
     expect(emailLoginAuthActions).toContain("export async function finishEmailCodeLogin");
     expect(emailLoginAuthActions).toContain("export async function finishEmailPasswordLogin");
     expect(emailLoginAuthActions).toContain("export async function signInWithEmailPasskey");

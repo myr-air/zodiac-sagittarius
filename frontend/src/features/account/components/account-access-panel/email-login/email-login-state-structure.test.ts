@@ -72,13 +72,20 @@ describe("email login state structure", () => {
 
   it("keeps step transition state out of styles and the main login panel hook", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
+    const entryActions = readEmailLoginSource("state/use-email-login-entry-actions.ts");
     const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
     const stepTypes = readEmailLoginSource("account-email-login-step.types.ts");
     const styles = readEmailLoginSource("account-email-login-styles.ts");
 
+    expect(panelState).toContain("useEmailLoginEntryActions");
     expect(panelState).toContain("useEmailLoginStepNavigation");
     expect(panelState).not.toMatch(/const \[authStep,\s*setAuthStep\]/);
     expect(panelState).not.toMatch(/const \[transitionDirection,\s*setTransitionDirection\]/);
+    expect(panelState).not.toContain("window.history.replaceState");
+    expect(panelState).not.toContain("appRoutes.register()");
+    expect(entryActions).toContain("export function useEmailLoginEntryActions");
+    expect(entryActions).toContain("window.history.replaceState");
+    expect(entryActions).toContain("appRoutes.register()");
     expect(stepNavigation).toContain("export type AuthTransitionDirection");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("function goToStep");

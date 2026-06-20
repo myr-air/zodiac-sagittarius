@@ -186,6 +186,8 @@ export const workspaceBoundarySourcePaths = {
   accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
   accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
   emailLoginState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts",
+  emailLoginEntryActions:
+    "src/features/account/components/account-access-panel/email-login/state/use-email-login-entry-actions.ts",
   emailLoginAuthActions: "src/features/account/components/account-access-panel/email-login/submit/email-login-auth-actions.ts",
   emailLoginFormState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-form-state.ts",
   emailLoginSubmitActions: "src/features/account/components/account-access-panel/email-login/submit/use-email-login-submit-actions.ts",
