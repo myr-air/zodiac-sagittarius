@@ -1,6 +1,7 @@
 export const frontendScaffoldPathsAbsent = [
   "src/trip/workspace/sagittarius-app/public-exports.ts",
   "src/storybook.contract.test.ts",
+  "src/trip/workspace/sagittarius-app/SagittariusApp.bookings-photos-api.test.tsx",
   "src/trip/real-api.e2e-support.ts",
   "src/trip/real-api.e2e-flows.ts",
   "src/trip/workspace/sagittarius-app/use-workspace-record-state.ts",
@@ -36,6 +37,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/trip-join-gate/use-trip-join-gate-form-state.ts",
   "src/features/account/components/trip-join-gate/use-trip-join-invite-token-resolution.ts",
   "src/features/account/components/trip-join-gate/use-trip-join-gate-submit-actions.ts",
+  "src/features/account/components/trip-join-gate/TripJoinGate.test.tsx",
   "src/features/itinerary/components/OverviewPage.tsx",
   "src/features/itinerary/domain/overview.test.ts",
   "src/features/itinerary/components/overview/OverviewRolePanels.tsx",
