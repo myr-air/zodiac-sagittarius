@@ -44,6 +44,37 @@ interface AccountAccessPanelContentProps {
   onTripChange: (trip: Trip) => void;
 }
 
+interface AccountEmailLoginPanelContentProps {
+  accountClient: AccountApiClient;
+  entryFlow: AuthFlow;
+  formError: string | null;
+  messages: Messages["access"];
+  showRouteTabs: boolean;
+  state: UseAccountAccessPanelState;
+}
+
+function AccountEmailLoginPanelContent({
+  accountClient,
+  entryFlow,
+  formError,
+  messages,
+  showRouteTabs,
+  state,
+}: AccountEmailLoginPanelContentProps) {
+  return (
+    <EmailLoginPanel
+      flow={entryFlow}
+      accountClient={accountClient}
+      authCardClassName={accountAuthCardClassName}
+      formError={formError}
+      showRouteTabs={showRouteTabs}
+      onFlowChange={state.setEntryFlowOverride}
+      onLoggedIn={(session) => state.handleLoggedIn(session, messages.messages)}
+      onError={state.setError}
+    />
+  );
+}
+
 export function AccountAccessPanelContent({
   accountClient,
   accountSession,
@@ -88,15 +119,13 @@ export function AccountAccessPanelContent({
 
   if (isAccountEntry) {
     return (
-      <EmailLoginPanel
-        flow={entryFlow}
+      <AccountEmailLoginPanelContent
         accountClient={accountClient}
-        authCardClassName={accountAuthCardClassName}
+        entryFlow={entryFlow}
         formError={displayError}
+        messages={messages}
         showRouteTabs
-        onFlowChange={state.setEntryFlowOverride}
-        onLoggedIn={(session) => state.handleLoggedIn(session, messages.messages)}
-        onError={state.setError}
+        state={state}
       />
     );
   }
@@ -131,15 +160,13 @@ export function AccountAccessPanelContent({
   }
 
   return (
-    <EmailLoginPanel
-      flow={entryFlow}
+    <AccountEmailLoginPanelContent
       accountClient={accountClient}
-      authCardClassName={accountAuthCardClassName}
-      formError={isAccountEntry ? displayError : null}
-      showRouteTabs={isAccountEntry}
-      onFlowChange={state.setEntryFlowOverride}
-      onLoggedIn={(session) => state.handleLoggedIn(session, messages.messages)}
-      onError={state.setError}
+      entryFlow={entryFlow}
+      formError={null}
+      messages={messages}
+      showRouteTabs={false}
+      state={state}
     />
   );
 }
