@@ -258,6 +258,8 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/context-rail/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/SmartItineraryTable.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts"))).toBe(true);
@@ -277,6 +279,7 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table-utils.ts"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/ActivityPathGraphDay.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/activity-path-graph/activity-path-graph.edge-path.ts"))).toBe(true);
@@ -487,6 +490,34 @@ describe("Sagittarius project scaffold", () => {
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
     expect(activityCellTypes).toContain("export interface ActivityCellProps");
+  });
+
+  it("keeps itinerary day group header split from row body rendering", () => {
+    const dayGroup = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.tsx"), "utf8");
+    const dayGroupHeader = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx"), "utf8");
+    const dayGroupTypes = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts"), "utf8");
+
+    expect(dayGroup).toContain("./DayGroupHeader");
+    expect(dayGroup).toContain("./day-group.types");
+    expect(dayGroup).not.toContain("DayTitleEditor");
+    expect(dayGroup).not.toContain("DayPathControls");
+    expect(dayGroupHeader).toContain("export function DayGroupHeader");
+    expect(dayGroupHeader).toContain("DayTitleEditor");
+    expect(dayGroupHeader).toContain("DayPathControls");
+    expect(dayGroupTypes).toContain("export interface DayGroupProps");
+  });
+
+  it("keeps trip plan controls state split from control rendering", () => {
+    const controls = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx"), "utf8");
+    const controlsState = readFileSync(join(frontendRoot, "src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts"), "utf8");
+
+    expect(controls).toContain("./use-trip-plan-controls-state");
+    expect(controls).not.toContain("useState");
+    expect(controls).not.toContain("function submitNewTripPlan");
+    expect(controls).not.toContain("tripPlanStatus(");
+    expect(controlsState).toContain("export function useTripPlanControlsState");
+    expect(controlsState).toContain("function submitNewTripPlan");
+    expect(controlsState).toContain("tripPlanStatus(");
   });
 
   it("keeps inline option picker menu rendering split from trigger state", () => {

@@ -1,4 +1,3 @@
-import { useState, type FormEvent } from "react";
 import type { PlanStatus, PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import { Button, Select } from "@/src/ui";
@@ -13,7 +12,8 @@ import {
   tripPlanSecondaryButtonClassName,
   tripPlanSelectClassName,
 } from "./smart-itinerary-table.styles";
-import { formatTripPlanOptionLabel, tripPlanStatus } from "./smart-itinerary-table-utils";
+import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
+import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
 
 type SubmitTripPlanResult = boolean | void | Promise<boolean | void>;
 
@@ -52,92 +52,28 @@ export function SmartItineraryTableTripPlanControls({
   selectedTripPlanId,
   tripPlans,
 }: SmartItineraryTableTripPlanControlsProps) {
-  const [isCreatingTripPlan, setIsCreatingTripPlan] = useState(false);
-  const [newTripPlanName, setNewTripPlanName] = useState("");
-  const [editedTripPlanNameDraft, setEditedTripPlanNameDraft] = useState<
-    | {
-        name: string;
-        planId: string;
-      }
-    | null
-  >(null);
-  const [newTripPlanError, setNewTripPlanError] = useState<string | null>(null);
-
-  const selectedTripPlan =
-    tripPlans.find((plan) => plan.id === selectedTripPlanId) ?? null;
-  const selectedTripPlanStatus = selectedTripPlan
-    ? tripPlanStatus(selectedTripPlan)
-    : "draft";
-  const editedTripPlanName =
-    editedTripPlanNameDraft &&
-    selectedTripPlan &&
-    editedTripPlanNameDraft.planId === selectedTripPlan.id
-      ? editedTripPlanNameDraft.name
-      : (selectedTripPlan?.name ?? "");
-  const selectedTripPlanIsMain =
-    Boolean(selectedTripPlanId) && selectedTripPlanId === mainTripPlanId;
-
-  const tripPlanSelectorDisabled = isTripPlanBusy || tripPlans.length === 0;
-  const tripPlanControlsDisabled = !canManageTripPlans || tripPlanSelectorDisabled;
-  const tripPlanStatusDisabled =
-    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
-  const setMainTripPlanDisabled =
-    tripPlanControlsDisabled || !selectedTripPlan || selectedTripPlanIsMain;
-  const renameTripPlanDisabled =
-    tripPlanControlsDisabled ||
-    !selectedTripPlan ||
-    !editedTripPlanName.trim() ||
-    editedTripPlanName.trim() === selectedTripPlan.name;
-
-  function closeCreateMode() {
-    setIsCreatingTripPlan(false);
-    setNewTripPlanName("");
-    setNewTripPlanError(null);
-  }
-
-  async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isTripPlanBusy || !canManageTripPlans) return;
-    const name = newTripPlanName.trim();
-    if (!name) {
-      setNewTripPlanError(itineraryLabels.tripPlans.emptyName);
-      return;
-    }
-    setNewTripPlanError(null);
-    const created = await onCreateTripPlan(name);
-    if (created === false) return;
-    closeCreateMode();
-  }
-
-  async function submitRenameTripPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isTripPlanBusy || !canManageTripPlans || !selectedTripPlan) return;
-    const name = editedTripPlanName.trim();
-    if (!name) {
-      setNewTripPlanError(itineraryLabels.tripPlans.emptyName);
-      return;
-    }
-    if (name === selectedTripPlan.name) return;
-    setNewTripPlanError(null);
-    const renamed = await onRenameTripPlan(selectedTripPlan.id, name);
-    if (renamed === false) return;
-    setEditedTripPlanNameDraft({ name, planId: selectedTripPlan.id });
-  }
+  const state = useTripPlanControlsState({
+    canManageTripPlans,
+    emptyNameMessage: itineraryLabels.tripPlans.emptyName,
+    isTripPlanBusy,
+    mainTripPlanId,
+    onChangeTripPlan,
+    onCreateTripPlan,
+    onRenameTripPlan,
+    selectedTripPlanId,
+    tripPlans,
+  });
 
   return (
     <div className={headerControlsSectionClassName}>
-      <form className="grid min-w-0 gap-2" onSubmit={submitRenameTripPlan}>
+      <form className="grid min-w-0 gap-2" onSubmit={state.submitRenameTripPlan}>
         <label className={tripPlanFieldClassName}>
           <span>{itineraryLabels.tripPlans.selectorLabel}</span>
           <Select
             className={tripPlanSelectClassName}
             value={selectedTripPlanId}
-            disabled={tripPlanSelectorDisabled}
-            onChange={(event) => {
-              setNewTripPlanError(null);
-              setEditedTripPlanNameDraft(null);
-              onChangeTripPlan(event.target.value);
-            }}
+            disabled={state.tripPlanSelectorDisabled}
+            onChange={(event) => state.changeTripPlan(event.target.value)}
           >
             {tripPlans.map((plan) => (
               <option value={plan.id} key={plan.id}>
@@ -150,8 +86,8 @@ export function SmartItineraryTableTripPlanControls({
           <span>{itineraryLabels.tripPlans.statusLabel}</span>
           <Select
             className={tripPlanSelectClassName}
-            value={selectedTripPlanStatus}
-            disabled={tripPlanStatusDisabled}
+            value={state.selectedTripPlanStatus}
+            disabled={state.tripPlanStatusDisabled}
             onChange={(event) =>
               onChangeTripPlanStatus(
                 selectedTripPlanId,
@@ -171,21 +107,14 @@ export function SmartItineraryTableTripPlanControls({
           <span>{itineraryLabels.tripPlans.nameLabel}</span>
           <input
             className={tripPlanNameInputClassName}
-            value={editedTripPlanName}
-            disabled={tripPlanControlsDisabled || !selectedTripPlan}
-            onChange={(event) => {
-              if (!selectedTripPlan) return;
-              setEditedTripPlanNameDraft({
-                name: event.target.value,
-                planId: selectedTripPlan.id,
-              });
-              setNewTripPlanError(null);
-            }}
+            value={state.editedTripPlanName}
+            disabled={state.tripPlanControlsDisabled || !state.selectedTripPlan}
+            onChange={(event) => state.changeEditedTripPlanName(event.target.value)}
           />
         </label>
         <Button
           type="submit"
-          disabled={renameTripPlanDisabled}
+          disabled={state.renameTripPlanDisabled}
           className={tripPlanButtonClassName}
         >
           {itineraryLabels.tripPlans.saveName}
@@ -195,25 +124,22 @@ export function SmartItineraryTableTripPlanControls({
         <div className={tripPlanActionsClassName}>
           <Button
             type="button"
-            disabled={setMainTripPlanDisabled}
+            disabled={state.setMainTripPlanDisabled}
             className={tripPlanButtonClassName}
             onClick={() => onSetMainTripPlan(selectedTripPlanId)}
           >
             {itineraryLabels.tripPlans.setMain}
           </Button>
-          {isCreatingTripPlan ? (
-            <form className={tripPlanCreateFormClassName} onSubmit={submitNewTripPlan}>
+          {state.isCreatingTripPlan ? (
+            <form className={tripPlanCreateFormClassName} onSubmit={state.submitNewTripPlan}>
               <label className={tripPlanNameFieldClassName}>
                 <span>{itineraryLabels.tripPlans.nameLabel}</span>
                 <input
                   className={tripPlanNameInputClassName}
-                  value={newTripPlanName}
+                  value={state.newTripPlanName}
                   disabled={isTripPlanBusy}
                   placeholder={itineraryLabels.tripPlans.namePlaceholder}
-                  onChange={(event) => {
-                    setNewTripPlanName(event.target.value);
-                    setNewTripPlanError(null);
-                  }}
+                  onChange={(event) => state.changeNewTripPlanName(event.target.value)}
                 />
               </label>
               <Button
@@ -227,7 +153,7 @@ export function SmartItineraryTableTripPlanControls({
                 type="button"
                 className={tripPlanSecondaryButtonClassName}
                 disabled={isTripPlanBusy}
-                onClick={closeCreateMode}
+                onClick={state.closeCreateMode}
               >
                 {itineraryLabels.tripPlans.createCancel}
               </button>
@@ -237,14 +163,14 @@ export function SmartItineraryTableTripPlanControls({
               type="button"
               disabled={isTripPlanBusy}
               className={tripPlanButtonClassName}
-              onClick={() => setIsCreatingTripPlan(true)}
+              onClick={() => state.setIsCreatingTripPlan(true)}
             >
               {itineraryLabels.tripPlans.create}
             </Button>
           )}
         </div>
       ) : null}
-      {newTripPlanError ? <p>{newTripPlanError}</p> : null}
+      {state.newTripPlanError ? <p>{state.newTripPlanError}</p> : null}
     </div>
   );
 }

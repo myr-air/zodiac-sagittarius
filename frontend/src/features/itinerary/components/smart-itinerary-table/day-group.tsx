@@ -1,39 +1,19 @@
-import {
-  type BookingDoc,
-  type ItineraryItem,
-  type TripDailyBriefing,
-} from "@/src/trip/types";
-import { formatDayLabel, itineraryPathOptionsForDay, mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
+import { formatDayLabel } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
-import type { Locale } from "@/src/i18n/types";
-import type { Messages } from "@/src/i18n/messages";
 import { ActivityPathGraphDay } from "../activity-path-graph";
-import { formatThaiDate, dayRouteLabel } from "@/src/features/itinerary/lib";
-import type { InlineItineraryItemPatch } from "../../lib";
-import type {
-  ItineraryBookingTemplate,
-  ItineraryBookingTicketInput,
-} from "@/src/trip/booking-docs";
 import { groupChildItemsByParent, groupTopLevelItems } from "./smart-itinerary-table-utils";
 import {
   addStopInlineButtonClassName,
   addStopRowClassName,
-  dayDateClassName,
   dayGroupClassName,
-  dayOrdinalClassName,
-  dayRouteClassName,
-  dayRowClassName,
-  dayRowContentClassName,
   daySpacerRowClassName,
-  dayToggleClassName,
   graphCellClassName,
   itemPlaceholderCellClassName,
   itemPlaceholderRowClassName,
 } from "./smart-itinerary-table.styles";
-import { DayWeatherChip } from "./day-weather-chip";
 import { ActivityCell } from "./activity-cell";
-import { DayTitleEditor } from "./day-title-editor";
-import { DayPathControls } from "./day-path-controls";
+import { DayGroupHeader } from "./DayGroupHeader";
+import type { DayGroupProps } from "./day-group.types";
 
 export function DayGroup({
   graphColumnWidth,
@@ -68,59 +48,8 @@ export function DayGroup({
   onSaveDayTitle,
   onUpdateItemInline,
   onToggleDay,
-}: {
-  graphColumnWidth: number;
-  graphItems: ItineraryItem[];
-  group: { day: string; items: ItineraryItem[]; warningCount: number };
-  dailyBriefing: TripDailyBriefing | null;
-  hasTopSpacer: boolean;
-  itineraryLabels: Messages["itinerary"];
-  locale: Locale;
-  startDate: string;
-  pathOptions: ItineraryPathOption[];
-  dayPathOverride?: string;
-  showAllPaths: boolean;
-  selectedItemId: string;
-  bookingDocs: BookingDoc[];
-  bookingLinkItems: ItineraryItem[];
-  canEdit: boolean;
-  collapsed: boolean;
-  onAddStop?: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => void | Promise<void>;
-  onChangeDayPath?: (day: string, pathId: string) => void;
-  onClearDayPath?: (day: string) => void;
-  onDeleteItem?: (itemId: string) => void;
-  onEditItem?: (itemId: string) => void;
-  onMoveItemToPath?: (itemId: string, pathId: string) => void;
-  onOpenItemDetails: (itemId: string) => void;
-  onSelectItem: (itemId: string) => void;
-  onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
-  onToggleDay: (day: string) => void;
-}) {
-  const dayLabel = formatDayLabel(group.day, startDate, locale);
+}: DayGroupProps) {
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
-  const defaultDayTitle = dayRouteLabel(group.day, locale);
-  const dayTitle = dailyBriefing?.manualOverrides.dayTitle?.trim() || defaultDayTitle;
-  const dayPathOptions = itineraryPathOptionsForDay(pathOptions, group.day);
-  const hasAlternativePathOptions = dayPathOptions.some(
-    (option) => option.id !== mainItineraryPathId,
-  );
   const visibleItems = groupTopLevelItems(group.items);
   const visibleGraphItems = groupTopLevelItems(graphItems);
   const childItemsByParentId = groupChildItemsByParent(group.items);
@@ -137,73 +66,44 @@ export function DayGroup({
           <td colSpan={2} />
         </tr>
       ) : null}
-      <tr className={dayRowClassName}>
-        {showGraph ? (
-          <td
-            className={graphCellClassName}
-            rowSpan={Math.max(2, visibleItems.length + 2)}
-          >
-            <ActivityPathGraphDay
-              canEdit={canEdit}
-              day={group.day}
-              dayLabel={dayA11yLabel}
-              graphItems={visibleGraphItems}
-              graphWidth={graphColumnWidth}
-              pathOptions={pathOptions}
-              rowItems={visibleItems}
-              selectedItemId={selectedItemId}
-              onMoveItemToPath={onMoveItemToPath}
-              onSelectItem={onSelectItem}
-            />
-          </td>
-        ) : null}
-        <th colSpan={showGraph ? 1 : 2}>
-          <div className={dayRowContentClassName}>
-            <button
-              type="button"
-              className={dayToggleClassName}
-              aria-expanded={!collapsed}
-              aria-label={
-                collapsed
-                  ? itineraryLabels.dayToggle.expand({ day: dayLabel })
-                  : itineraryLabels.dayToggle.collapse({ day: dayLabel })
-              }
-              onClick={() => onToggleDay(group.day)}
+      <DayGroupHeader
+        canEdit={canEdit}
+        collapsed={collapsed}
+        dailyBriefing={dailyBriefing}
+        dayPathOverride={dayPathOverride}
+        graphCell={
+          showGraph ? (
+            <td
+              className={graphCellClassName}
+              rowSpan={Math.max(2, visibleItems.length + 2)}
             >
-              <Icon name="chevronRight" />
-              <strong className={dayOrdinalClassName}>{dayLabel}</strong>
-            </button>
-            <span className={dayDateClassName}>
-              <span>·</span>
-              <span>{formatThaiDate(group.day, locale)}</span>
-            </span>
-            <span className={dayRouteClassName}>
-              <DayTitleEditor
-                canEdit={canEdit && Boolean(dailyBriefing && onSaveDayTitle)}
-                date={group.day}
-                defaultTitle={defaultDayTitle}
+              <ActivityPathGraphDay
+                canEdit={canEdit}
+                day={group.day}
                 dayLabel={dayA11yLabel}
-                key={`${group.day}:${dailyBriefing?.version ?? 1}:${dayTitle}`}
-                title={dayTitle}
-                version={dailyBriefing?.version ?? 1}
-                onSaveDayTitle={onSaveDayTitle}
+                graphItems={visibleGraphItems}
+                graphWidth={graphColumnWidth}
+                pathOptions={pathOptions}
+                rowItems={visibleItems}
+                selectedItemId={selectedItemId}
+                onMoveItemToPath={onMoveItemToPath}
+                onSelectItem={onSelectItem}
               />
-            </span>
-            <DayWeatherChip briefing={dailyBriefing} dayLabel={dayA11yLabel} />
-            <DayPathControls
-              day={group.day}
-              dayLabel={dayA11yLabel}
-              dayPathOptions={dayPathOptions}
-              dayPathOverride={dayPathOverride}
-              canEdit={canEdit}
-              showAllPaths={showAllPaths}
-              hasAlternativePathOptions={hasAlternativePathOptions}
-              onChangeDayPath={onChangeDayPath}
-              onClearDayPath={onClearDayPath}
-            />
-          </div>
-        </th>
-      </tr>
+            </td>
+          ) : null
+        }
+        group={group}
+        itineraryLabels={itineraryLabels}
+        locale={locale}
+        onChangeDayPath={onChangeDayPath}
+        onClearDayPath={onClearDayPath}
+        onSaveDayTitle={onSaveDayTitle}
+        onToggleDay={onToggleDay}
+        pathOptions={pathOptions}
+        showAllPaths={showAllPaths}
+        showGraph={showGraph}
+        startDate={startDate}
+      />
       {!collapsed
         ? visibleItems.map((item) => (
             <tr
