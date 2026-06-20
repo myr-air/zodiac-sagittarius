@@ -1,16 +1,11 @@
 "use client";
 
-import { useCallback } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   type TripApiClient,
 } from "@/src/trip/api-client";
 import { type PlaceResolver } from "@/src/trip/place-resolution";
-import {
-  type PlanningView,
-  workspaceViewSupportsContextRail,
-} from "@/src/trip/workspace/planning-view";
+import { type PlanningView } from "@/src/trip/workspace/planning-view";
 import {
   initialSelectedTripPlanId,
   rememberSelectedTripPlanId,
@@ -21,7 +16,6 @@ import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-pa
 import { useTripWorkspaceRecords } from "@/src/trip/workspace/use-trip-workspace-records";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
-import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navigation";
 import {
   useWorkspacePhotoAlbums,
   useWorkspaceBookingCommands,
@@ -41,6 +35,7 @@ import {
   useWorkspaceSession,
   useWorkspaceItineraryViewModel,
   useEffectivePlaceResolver,
+  useWorkspaceNavigationContext,
   useWorkspaceSelectedTripPlanState,
   useWorkspaceSelectedTripPlanSync,
   useWorkspaceUiState,
@@ -180,11 +175,14 @@ export function SagittariusApp({
 
   const {
     currentView,
-    navigateWorkspacePath,
+    navigateWorkspaceView,
+    openExpensesWorkspace,
     replaceWorkspacePath,
-  } = useWorkspaceNavigation({
+    supportsContextRail,
+  } = useWorkspaceNavigationContext({
     initialView,
     routeTripId,
+    setContextRailVisibility,
     tripId: trip.id,
   });
   const effectivePlaceResolver = useEffectivePlaceResolver({
@@ -237,7 +235,6 @@ export function SagittariusApp({
     participantSession,
     trip,
   });
-  const supportsContextRail = workspaceViewSupportsContextRail(currentView);
   const {
     backendExpenseSummary,
     refreshBackendExpenseSummary,
@@ -389,14 +386,6 @@ export function SagittariusApp({
     setSelectedTripPlanId,
     updateApiTrip,
   });
-
-  const navigateWorkspaceView = useCallback(
-    (view: PlanningView, href: string) => {
-      navigateWorkspacePath(view, href);
-      setContextRailVisibility(false);
-    },
-    [navigateWorkspacePath, setContextRailVisibility],
-  );
 
   const {
     addStop,
@@ -567,10 +556,6 @@ export function SagittariusApp({
     setIsCockpitLoaded,
     setParticipantSession,
   });
-
-  function openExpensesWorkspace() {
-    navigateWorkspaceView("expenses", appRoutes.tripExpenses(trip.id));
-  }
 
   const viewsProps = buildWorkspaceViewsProps({
     activePlanItems,

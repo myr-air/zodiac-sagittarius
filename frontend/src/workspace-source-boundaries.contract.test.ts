@@ -51,6 +51,7 @@ describe("Sagittarius workspace source boundaries", () => {
       backendExpenseSummaryHook,
       cockpitReplacementHook,
       memberContextHook,
+      navigationContextHook,
       selectedTripPlanHook,
       workspaceDialogs,
     } = readWorkspaceBoundarySources(frontendRoot);
@@ -115,6 +116,13 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("isLocalParticipantSession");
     expect(memberContextHook).toContain("findSessionMember");
     expect(memberContextHook).toContain("isLocalParticipantSession");
+    expect(sagaCore).toContain("useWorkspaceNavigationContext");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
+    expect(sagaCore).not.toContain("workspaceViewSupportsContextRail");
+    expect(sagaCore).not.toContain("appRoutes.tripExpenses");
+    expect(navigationContextHook).toContain("useWorkspaceNavigation");
+    expect(navigationContextHook).toContain("workspaceViewSupportsContextRail");
+    expect(navigationContextHook).toContain("appRoutes.tripExpenses");
     expect(sagaCore).toContain("useWorkspaceBackendExpenseSummary");
     expect(sagaCore).not.toContain("useBackendExpenseSummary");
     expect(sagaCore).not.toContain("workspaceViewShouldSyncBackendExpenseSummary");
@@ -213,7 +221,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).toContain("./hooks");
     expect(sagaCore).toContain("@/src/trip/workspace/use-trip-workspace-state");
     expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-chrome");
-    expect(sagaCore).toContain("@/src/trip/workspace/use-workspace-navigation");
+    expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
+    expect(navigationContextHook).toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(sagaCore).not.toContain('from "@/src/components/ContextRail"');
     expect(sagaCore).not.toContain("workspaceGridClassName");
     expect(sagaCore).not.toContain("planningMainClassName");

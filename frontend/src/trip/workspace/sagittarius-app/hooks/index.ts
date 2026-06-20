@@ -13,6 +13,7 @@ export { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-act
 export { useWorkspaceItineraryImport } from "./use-workspace-itinerary-import";
 export { useWorkspaceItineraryViewModel } from "./use-workspace-itinerary-view-model";
 export { useWorkspaceMemberContext } from "./use-workspace-member-context";
+export { useWorkspaceNavigationContext } from "./use-workspace-navigation-context";
 export { useWorkspaceParticipantSessionActions } from "./use-workspace-participant-session-actions";
 export { useWorkspacePhotoAlbums } from "./use-workspace-photo-albums";
 export { useWorkspaceRecords } from "./use-workspace-records";
