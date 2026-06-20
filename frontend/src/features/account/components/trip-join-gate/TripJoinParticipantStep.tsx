@@ -2,7 +2,7 @@ import { Fragment, type FormEvent } from "react";
 import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import { isTripParticipantDisabled } from "@/src/trip/auth";
-import { roleLabel } from "@/src/trip/member-labels";
+import { memberInitial, roleLabel } from "@/src/trip/member-labels";
 import type { Member } from "@/src/trip/types";
 import { Badge } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -95,7 +95,7 @@ export function TripJoinParticipantStep({
                 style={{ backgroundColor: member.color }}
                 aria-hidden="true"
               >
-                {member.displayName.slice(0, 1)}
+                {memberInitial(member.displayName)}
               </span>
               <span>
                 <strong>{member.displayName}</strong>

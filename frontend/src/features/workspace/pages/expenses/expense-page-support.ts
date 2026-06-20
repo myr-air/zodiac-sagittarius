@@ -1,4 +1,5 @@
 import type { Member, Trip } from "@/src/trip/types";
+export { memberInitial } from "@/src/trip/member-labels";
 
 export {
   categoryTone,
@@ -11,10 +12,6 @@ export {
 
 export function memberById(members: Member[], memberId: string): Member | undefined {
   return members.find((member) => member.id === memberId);
-}
-
-export function memberInitial(name: string): string {
-  return name.trim().slice(0, 1).toLocaleUpperCase() || "?";
 }
 
 export function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {

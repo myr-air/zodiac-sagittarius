@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { roleLabel } from "@/src/trip/member-labels";
+import { memberInitial, roleLabel } from "@/src/trip/member-labels";
 import type { Member } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import {
@@ -52,7 +52,7 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
           <>
             <div className="flex items-center gap-2.5 min-w-0 w-full">
               <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-                {currentMember.displayName.slice(0, 1)}
+                {memberInitial(currentMember.displayName)}
               </span>
               <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
                 <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
@@ -66,7 +66,7 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
         ) : (
           <>
             <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-              {currentMember.displayName.slice(0, 1)}
+              {memberInitial(currentMember.displayName)}
             </span>
             <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
               <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>

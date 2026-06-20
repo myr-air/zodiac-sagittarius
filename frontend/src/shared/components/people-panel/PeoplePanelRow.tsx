@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/cn";
+import { memberInitial } from "@/src/trip/member-labels";
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Select } from "@/src/ui";
 import {
@@ -53,7 +54,7 @@ export function PeoplePanelRow({
   return (
     <div className={personRowClassName} data-access-status={member.accessStatus ?? "active"}>
       <span className={personAvatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">
-        {member.displayName.slice(0, 1)}
+        {memberInitial(member.displayName)}
       </span>
       <div className={memberIdentityClassName}>
         <strong>{member.displayName}{member.id === currentMemberId ? (locale === "th" ? " (คุณ)" : " (You)") : ""}</strong>
