@@ -83,6 +83,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/components/summary-stat/index.ts",
   "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts",
   "src/features/workspace/pages/bookings-docs/BookingsDocsPage.test-support.tsx",
+  "src/features/workspace/pages/bookings-docs/BookingsDocsPage.stories.support.ts",
   "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts",
   "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",
