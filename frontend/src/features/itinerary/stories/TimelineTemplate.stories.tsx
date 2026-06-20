@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TimelineView } from "@/src/features/itinerary/components";
+import {
+  denseTimelineItems,
+  emptyTimelineItems,
+  timelineOwnerStoryArgs,
+} from "./TimelinePage.stories.support";
 
 const meta = {
   title: "Templates/Timeline",
@@ -16,16 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Owner: Story = {
-  args: {
-    contextRailOpen: false,
-    endDate: tripFixture.trip.endDate,
-    items: tripFixture.planItems,
-    selectedItemId: "item-dimdim",
-    startDate: tripFixture.trip.startDate,
-    tripName: tripFixture.trip.name,
-    onSelectItem: noop,
-    onToggleContextRail: noop,
-  },
+  args: timelineOwnerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: /Dim Dim Sum/i })).toHaveAttribute("aria-pressed", "true");
   },
@@ -55,9 +49,9 @@ export const Viewer: Story = {
 export const Dense: Story = {
   args: {
     ...Owner.args,
-    items: buildDenseTripFixture().itineraryItems,
+    items: denseTimelineItems,
     selectedItemId: "",
   },
 };
 
-export const Empty: Story = { args: { ...Owner.args, items: buildEmptyTripFixture().itineraryItems, selectedItemId: "" } };
+export const Empty: Story = { args: { ...Owner.args, items: emptyTimelineItems, selectedItemId: "" } };

@@ -1,10 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { TimelineView } from "@/src/features/itinerary/components";
-import type { ItineraryItem } from "@/src/trip/types";
-import { planABAlternativeItemsBase, withStoryPrefix } from "./itinerary-story-fixtures";
+import {
+  denseTimelineItems,
+  emptyTimelineItems,
+  expectTimelineStructure,
+  timelineAdvisoryItems,
+  timelineOwnerStoryArgs,
+  timelinePlanABAlternativeItems,
+} from "./TimelinePage.stories.support";
 
 const meta = {
   title: "Pages/Timeline",
@@ -16,38 +20,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-async function expectTimelineStructure(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".timeline-panel")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("timeline-grid", "grid", "grid-cols-3");
-}
-
-const timelinePlanABAlternativeItems = withStoryPrefix(planABAlternativeItemsBase, "timeline");
-const timelineAdvisoryItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
-    id: "timeline-advisory-main",
-    activity: "Peak tram timed entry",
-    advisories: [{ code: "ticket-window", label: "Book timed ticket", severity: "warning" }],
-  },
-  {
-    ...tripFixture.planItems[1],
-    id: "timeline-advisory-followup",
-    activity: "Harbour transfer buffer",
-    advisories: [],
-  },
-];
-
 export const Owner: Story = {
-  args: {
-    contextRailOpen: false,
-    endDate: tripFixture.trip.endDate,
-    items: tripFixture.planItems,
-    selectedItemId: "item-dimdim",
-    startDate: tripFixture.trip.startDate,
-    tripName: tripFixture.trip.name,
-    onSelectItem: noop,
-    onToggleContextRail: noop,
-  },
+  args: timelineOwnerStoryArgs,
 };
 
 export const OwnerThai: Story = {
@@ -76,7 +50,7 @@ export const Viewer: Story = {
 export const Dense: Story = {
   args: {
     ...Owner.args,
-    items: buildDenseTripFixture().itineraryItems,
+    items: denseTimelineItems,
     selectedItemId: "",
   },
   play: async ({ canvasElement }) => {
@@ -88,7 +62,7 @@ export const Dense: Story = {
 export const Empty: Story = {
   args: {
     ...Owner.args,
-    items: buildEmptyTripFixture().itineraryItems,
+    items: emptyTimelineItems,
     selectedItemId: "",
   },
   play: async ({ canvasElement }) => {
