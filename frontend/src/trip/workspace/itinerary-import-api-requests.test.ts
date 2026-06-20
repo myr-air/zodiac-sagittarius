@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   buildImportItineraryRequest,
+} from "./itinerary-import-api-requests";
+import {
+  buildImportedItineraryItemCreateRequest,
+} from "./itinerary-import-item-api-requests";
+import {
   buildImportedBookingDocCreateRequest,
   buildImportedExpenseCreateRequest,
-  buildImportedItineraryItemCreateRequest,
   buildImportedStopNoteCreateRequest,
   buildImportedTaskCreateRequest,
   buildImportedTaskStatusPatchRequest,
-} from "./itinerary-import-api-requests";
+} from "./itinerary-import-record-api-requests";
 import {
   importedBookingDoc,
   importedExpense,

@@ -12,7 +12,7 @@ import {
   buildImportedStopNoteCreateRequest,
   buildImportedTaskCreateRequest,
   buildImportedTaskStatusPatchRequest,
-} from "./itinerary-import-api-requests";
+} from "./itinerary-import-record-api-requests";
 
 interface CreateImportedPlanRecordsViaApiInput {
   apiClient: TripApiClient;

@@ -8,6 +8,9 @@ describe("Sagittarius workspace hook source boundaries", () => {
       sagaCore,
       workspaceRecordsHook,
       itineraryImportModel,
+      itineraryImportApiRequests,
+      itineraryImportItemApiRequests,
+      itineraryImportRecordApiRequests,
       itineraryImportRecordMapping,
       itineraryImportRecordMerge,
       importHook,
@@ -223,12 +226,20 @@ describe("Sagittarius workspace hook source boundaries", () => {
     expect(itineraryImportModel).not.toContain("function buildImportedPlanRecordsForTripPlan");
     expect(itineraryImportModel).not.toContain("function mergeImportedRecordsIntoTripPlan");
     expect(itineraryImportModel).not.toContain("function upsertById");
+    expect(itineraryImportApiRequests).toContain("./itinerary-import-item-api-requests");
+    expect(itineraryImportApiRequests).toContain("./itinerary-import-record-api-requests");
+    expect(itineraryImportApiRequests).not.toContain("function buildImportedItineraryItemCreateRequest");
+    expect(itineraryImportApiRequests).not.toContain("function buildImportedTaskCreateRequest");
+    expect(itineraryImportItemApiRequests).toContain("export function buildImportedItineraryItemCreateRequest");
+    expect(itineraryImportRecordApiRequests).toContain("export function buildImportedTaskCreateRequest");
+    expect(itineraryImportRecordApiRequests).toContain("export function buildImportedBookingDocCreateRequest");
     expect(itineraryImportRecordMapping).toContain("export function buildImportedPlanRecordsForTripPlan");
     expect(itineraryImportRecordMerge).toContain("export function mergeImportedRecordsIntoTripPlan");
     expect(itineraryImportRecordMerge).toContain("export function mergeApiImportedPlanRecordsIntoTrip");
     expect(itineraryImportRecordMerge).toContain("export function upsertById");
     expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
+    expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-item-api-requests");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
     expect(importHook).toContain("@/src/trip/workspace/itinerary-import-model");
