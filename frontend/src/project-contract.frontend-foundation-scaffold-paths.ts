@@ -59,6 +59,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/workspace-source-boundaries.blocked-terms.ts",
   "src/workspace-source-boundaries.sources.ts",
   "src/ui/primitive-styles.ts",
+  "src/ui/workspace-primitive-styles.ts",
   "src/ui/workspace-primitives.tsx",
   "src/account/api-client-types.ts",
   "src/account/api-client-auth.ts",

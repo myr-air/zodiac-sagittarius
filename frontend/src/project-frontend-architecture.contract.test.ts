@@ -8,6 +8,7 @@ describe("Sagittarius frontend architecture contracts", () => {
     const uiIndex = readFileSync(join(frontendRoot, "src/ui/index.ts"), "utf8");
     const primitives = readFileSync(join(frontendRoot, "src/ui/primitives.tsx"), "utf8");
     const primitiveStyles = readFileSync(join(frontendRoot, "src/ui/primitive-styles.ts"), "utf8");
+    const workspacePrimitiveStyles = readFileSync(join(frontendRoot, "src/ui/workspace-primitive-styles.ts"), "utf8");
     const workspacePrimitives = readFileSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"), "utf8");
 
     expect(uiIndex).toContain("./primitives");
@@ -22,7 +23,13 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(primitives).not.toContain("fieldControlClassName");
     expect(workspacePrimitives).toContain("export function WorkspaceSurface");
     expect(workspacePrimitives).toContain("export function WorkspacePage");
-    expect(workspacePrimitives).toContain("export const fieldControlClassName");
+    expect(workspacePrimitives).toContain("./workspace-primitive-styles");
+    expect(workspacePrimitives).toContain("fieldControlClassName");
+    expect(workspacePrimitives).not.toContain("const workspacePageBaseClassName");
+    expect(workspacePrimitives).not.toContain("const workspaceSurfaceDensityClassNames");
+    expect(workspacePrimitiveStyles).toContain("export const workspacePageBaseClassName");
+    expect(workspacePrimitiveStyles).toContain("export const workspaceSurfaceDensityClassNames");
+    expect(workspacePrimitiveStyles).toContain("export const fieldControlClassName");
   });
 
   it("keeps AppShell split into component, styles, and support logic", () => {
