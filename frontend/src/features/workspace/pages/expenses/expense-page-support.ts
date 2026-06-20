@@ -1,5 +1,6 @@
-import type { Member, Trip } from "@/src/trip/types";
+import type { Trip } from "@/src/trip/types";
 export { memberInitial } from "@/src/trip/member-labels";
+export { findMemberById as memberById } from "@/src/trip/member-lookup";
 
 export {
   categoryTone,
@@ -9,10 +10,6 @@ export {
   type CategoryTone,
   type ExpenseCategoryFilter,
 } from "./expense-page-options";
-
-export function memberById(members: Member[], memberId: string): Member | undefined {
-  return members.find((member) => member.id === memberId);
-}
 
 export function tripPlanName(trip: Trip, tripPlanId: string | null | undefined): string {
   const plans = trip.tripPlans ?? trip.planVariants;

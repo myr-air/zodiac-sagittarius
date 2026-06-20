@@ -1,4 +1,5 @@
 import { safeExternalHref } from "./safe-links";
+import { findMemberById } from "./member-lookup";
 import type {
   ItineraryItem,
   Member,
@@ -77,8 +78,8 @@ export function findPhotoAlbumRelations(
 ): PhotoAlbumRelations {
   const relatedItemIds = new Set(album.relatedItineraryItemIds);
   return {
-    createdBy: trip.members.find((member) => member.id === album.createdBy) ?? null,
-    owner: trip.members.find((member) => member.id === album.ownerMemberId) ?? null,
+    createdBy: findMemberById(trip.members, album.createdBy) ?? null,
+    owner: findMemberById(trip.members, album.ownerMemberId) ?? null,
     itineraryItems: trip.itineraryItems.filter((item) => relatedItemIds.has(item.id)),
   };
 }
