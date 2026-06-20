@@ -2,6 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { TripApiClient } from "@/src/trip/api-client";
+import { seedTrip } from "@/src/trip/seed";
+import type { TripRole } from "@/src/trip/types";
 
 export async function enterTripRoom(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.change(screen.getByLabelText(/Trip ID/i), { target: { value: "HK-SZ-2025" } });
@@ -68,4 +70,50 @@ export function createApiClient(overrides: Partial<TripApiClient> = {}): TripApi
     deletePhotoAlbum: vi.fn(),
     ...overrides,
   } as TripApiClient;
+}
+
+export function createApiJoinResponse({
+  memberId = "member-aom",
+  displayName = "Demo Traveler",
+  role = "owner",
+  presence = "online",
+  color = "#0f766e",
+  claimedAt = null,
+  expiresAt = "2026-05-29T00:20:00.000Z",
+}: {
+  memberId?: string;
+  displayName?: string;
+  role?: TripRole;
+  presence?: "online" | "offline";
+  color?: string;
+  claimedAt?: string | null;
+  expiresAt?: string;
+} = {}) {
+  return {
+    trip: {
+      id: seedTrip.id,
+      name: seedTrip.name,
+      destinationLabel: seedTrip.destinationLabel,
+      startDate: seedTrip.startDate,
+      endDate: seedTrip.endDate,
+      joinId: seedTrip.joinId,
+      activePlanVariantId: seedTrip.activePlanVariantId,
+      ownerMemberId: "member-aom",
+      version: 1,
+    },
+    claimableMembers: [{
+      id: memberId,
+      tripId: seedTrip.id,
+      displayName,
+      role,
+      accessStatus: "active" as const,
+      presence,
+      color,
+      userId: null,
+      claimedAt,
+      lastSeenAt: null,
+    }],
+    joinSessionToken: "join-session-token",
+    expiresAt,
+  };
 }

@@ -7,6 +7,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "./TripJoinGate";
 import {
   createApiClient,
+  createApiJoinResponse,
   enterTripRoom,
   installLocalStorageStub,
 } from "./TripJoinGate.test-support";
@@ -21,35 +22,15 @@ describe("TripJoinGate API member errors", () => {
   it("does not label an API cockpit load failure as a participant password error", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClient({
-      joinTrip: vi.fn().mockResolvedValue({
-        trip: {
-          id: seedTrip.id,
-          name: seedTrip.name,
-          destinationLabel: seedTrip.destinationLabel,
-          startDate: seedTrip.startDate,
-          endDate: seedTrip.endDate,
-          joinId: seedTrip.joinId,
-          activePlanVariantId: seedTrip.activePlanVariantId,
-          ownerMemberId: "member-aom",
-          version: 1,
-        },
-        claimableMembers: [
-          {
-            id: "member-beam",
-            tripId: seedTrip.id,
-            displayName: "Beam",
-            role: "organizer",
-            accessStatus: "active",
-            presence: "offline",
-            color: "#2563eb",
-            userId: null,
-            claimedAt: "2026-06-05T00:00:00.000Z",
-            lastSeenAt: null,
-          },
-        ],
-        joinSessionToken: "join-session-token",
+      joinTrip: vi.fn().mockResolvedValue(createApiJoinResponse({
+        memberId: "member-beam",
+        displayName: "Beam",
+        role: "organizer",
+        presence: "offline",
+        color: "#2563eb",
+        claimedAt: "2026-06-05T00:00:00.000Z",
         expiresAt: "2026-06-12T00:00:00.000Z",
-      }),
+      })),
       loginMember: vi.fn().mockResolvedValue({
         tripId: seedTrip.id,
         memberId: "member-beam",
@@ -84,33 +65,7 @@ describe("TripJoinGate API member errors", () => {
   it("uses safe API fallback copy while authenticating", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClient({
-      joinTrip: vi.fn().mockResolvedValue({
-        trip: {
-          id: seedTrip.id,
-          name: seedTrip.name,
-          destinationLabel: seedTrip.destinationLabel,
-          startDate: seedTrip.startDate,
-          endDate: seedTrip.endDate,
-          joinId: seedTrip.joinId,
-          activePlanVariantId: seedTrip.activePlanVariantId,
-          ownerMemberId: "member-aom",
-          version: 1,
-        },
-        claimableMembers: [{
-          id: "member-aom",
-          tripId: seedTrip.id,
-          displayName: "Demo Traveler",
-          role: "owner",
-          accessStatus: "active",
-          presence: "online",
-          color: "#0f766e",
-          userId: null,
-          claimedAt: null,
-          lastSeenAt: null,
-        }],
-        joinSessionToken: "join-session-token",
-        expiresAt: "2026-05-29T00:20:00.000Z",
-      }),
+      joinTrip: vi.fn().mockResolvedValue(createApiJoinResponse()),
       claimMember: vi.fn().mockRejectedValue(
         new TripApiError({
           code: "invalid_request",
@@ -138,33 +93,7 @@ describe("TripJoinGate API member errors", () => {
   it("does not fall back to login when backend claiming fails for a non-validation reason", async () => {
     const user = userEvent.setup();
     const apiClient = createApiClient({
-      joinTrip: vi.fn().mockResolvedValue({
-        trip: {
-          id: seedTrip.id,
-          name: seedTrip.name,
-          destinationLabel: seedTrip.destinationLabel,
-          startDate: seedTrip.startDate,
-          endDate: seedTrip.endDate,
-          joinId: seedTrip.joinId,
-          activePlanVariantId: seedTrip.activePlanVariantId,
-          ownerMemberId: "member-aom",
-          version: 1,
-        },
-        claimableMembers: [{
-          id: "member-aom",
-          tripId: seedTrip.id,
-          displayName: "Demo Traveler",
-          role: "owner",
-          accessStatus: "active",
-          presence: "online",
-          color: "#0f766e",
-          userId: null,
-          claimedAt: null,
-          lastSeenAt: null,
-        }],
-        joinSessionToken: "join-session-token",
-        expiresAt: "2026-05-29T00:20:00.000Z",
-      }),
+      joinTrip: vi.fn().mockResolvedValue(createApiJoinResponse()),
       claimMember: vi.fn().mockRejectedValue(
         new TripApiError({
           code: "server_error",
