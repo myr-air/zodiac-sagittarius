@@ -46,9 +46,13 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/i18n/language-switch.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.access.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.home.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/en.itinerary.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/en.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.access.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.home.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/i18n/messages/th.itinerary.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/i18n/messages/th.join.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/primitive-styles.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"))).toBe(true);
@@ -893,8 +897,8 @@ describe("Sagittarius project scaffold", () => {
     expect(languageSwitch).not.toContain("function readStoredCurrency");
     expect(languageSwitchSupport).toContain("export const triggerClassName");
     expect(languageSwitchSupport).toContain("export function readStoredCurrency");
-    expect(readFileSync(join(frontendRoot, "src/i18n/messages/en.ts"), "utf8")).toContain("Plan trips with friends");
-    expect(readFileSync(join(frontendRoot, "src/i18n/messages/th.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/en.home.ts"), "utf8")).toContain("Plan trips with friends");
+    expect(readFileSync(join(frontendRoot, "src/i18n/messages/th.home.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/login/page.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "app/register/page.tsx"))).toBe(true);
@@ -931,10 +935,11 @@ describe("Sagittarius project scaffold", () => {
   });
 
   it("uses Trip Plan language in product copy instead of rollout compatibility names", () => {
-    const messages = [
-      readFileSync(join(frontendRoot, "src/i18n/messages/en.ts"), "utf8"),
-      readFileSync(join(frontendRoot, "src/i18n/messages/th.ts"), "utf8"),
-    ].join("\n");
+    const messagesRoot = join(frontendRoot, "src/i18n/messages");
+    const messages = readdirSync(messagesRoot)
+      .filter((entry) => entry.endsWith(".ts"))
+      .map((entry) => readFileSync(join(messagesRoot, entry), "utf8"))
+      .join("\n");
 
     expect(messages).toContain("Trip Plan");
     expect(messages).not.toMatch(/\bTrip Sheet\b/i);
