@@ -11,6 +11,9 @@ import { createMemoryStorage } from "@/src/testing/browser-storage";
 export {
   createApiClientForTrip,
   createDeferred,
+} from "./sagittarius-app.test-api-client";
+
+export {
   dailyBriefingFixture,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
