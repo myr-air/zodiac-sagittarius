@@ -196,6 +196,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-filters.ts");
+    const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
 
@@ -207,8 +208,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expensesPage).not.toContain("function recordRefund");
     expect(expensesState).toContain("./expense-page-filters");
     expect(expensesState).toContain("./expense-page-actions");
+    expect(expensesState).toContain("./hooks/useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
-    expect(expensesState).toContain("buildExpenseCsv");
+    expect(expensesState).not.toContain("buildExpenseCsv");
     expect(expensesState).not.toContain("function filterExpenses");
     expect(expensesState).not.toContain("refundSplits");
     expect(expensesState).not.toContain("sumShares");
@@ -219,6 +221,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseActions).toContain("export function buildRefundExpenseInput");
     expect(expenseActions).toContain("refundSplits");
     expect(expenseActions).toContain("sumShares");
+    expect(expenseLedgerActions).toContain("export function useExpenseLedgerActions");
+    expect(expenseLedgerActions).toContain("buildExpenseCsv");
+    expect(expenseLedgerActions).toContain("buildPaybackReminder");
     expect(expensesState).toContain("function recordRefund");
     expect(expenseDialog).toContain("./hooks/useExpenseDialogState");
     expect(expenseDialog).not.toContain("useState");
