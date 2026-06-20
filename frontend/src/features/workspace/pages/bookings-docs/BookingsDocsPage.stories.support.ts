@@ -10,7 +10,7 @@ type BookingsDocsPageStoryArgs = Parameters<typeof BookingsDocsPage>[0];
 export const onStoryCreateBookingDoc = fn();
 export const onStoryUpdateBookingDoc = fn();
 
-export const denseBookingDocs: BookingDoc[] = Array.from({ length: 16 }, (_, index) => {
+const denseBookingDocs: BookingDoc[] = Array.from({ length: 16 }, (_, index) => {
   const base = (seedTrip.bookingDocs ?? [])[index % (seedTrip.bookingDocs?.length || 1)] ?? {
     id: "booking-doc-fallback",
     tripId: seedTrip.id,
@@ -61,6 +61,34 @@ export const bookingsDocsOwnerStoryArgs = {
   onCreateBookingDoc: noop as (input: BookingDocInput) => void,
   onUpdateBookingDoc: noop,
   onDeleteBookingDoc: noop,
+} satisfies BookingsDocsPageStoryArgs;
+
+export const bookingsDocsViewerStoryArgs = {
+  ...bookingsDocsOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.viewer,
+  canEditBookings: false,
+} satisfies BookingsDocsPageStoryArgs;
+
+export const bookingsDocsTravelerStoryArgs = {
+  ...bookingsDocsOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.traveler,
+  canEditBookings: true,
+} satisfies BookingsDocsPageStoryArgs;
+
+export const denseBookingsDocsStoryArgs = {
+  ...bookingsDocsOwnerStoryArgs,
+  bookingDocs: denseBookingDocs,
+} satisfies BookingsDocsPageStoryArgs;
+
+export const emptyBookingsDocsStoryArgs = {
+  ...bookingsDocsOwnerStoryArgs,
+  bookingDocs: [],
+} satisfies BookingsDocsPageStoryArgs;
+
+export const paidCommitmentLifecycleStoryArgs = {
+  ...bookingsDocsOwnerStoryArgs,
+  onCreateBookingDoc: onStoryCreateBookingDoc,
+  onUpdateBookingDoc: onStoryUpdateBookingDoc,
 } satisfies BookingsDocsPageStoryArgs;
 
 export async function expectBookingsResponsiveContract(canvasElement: HTMLElement) {

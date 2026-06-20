@@ -1,12 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripPhotosPage } from "./TripPhotosPage";
 import {
-  coverPhotoAlbumLinks,
-  densePhotoAlbumLinks,
+  coverStatesTripPhotosStoryArgs,
+  denseTripPhotosStoryArgs,
+  emptyTripPhotosStoryArgs,
   expectPhotosResponsiveContract,
   tripPhotosOwnerStoryArgs,
+  tripPhotosTravelerStoryArgs,
+  tripPhotosViewerStoryArgs,
 } from "./TripPhotosPage.stories.support";
 
 const meta = {
@@ -28,11 +30,7 @@ export const Owner: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.viewer,
-    canEditPhotoAlbums: false,
-  },
+  args: tripPhotosViewerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Photos & albums/i })).toHaveClass("trip-photos-page");
     await expect(canvas.queryByRole("button", { name: /Add album/i })).toBeNull();
@@ -40,11 +38,7 @@ export const Viewer: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.traveler,
-    canEditPhotoAlbums: true,
-  },
+  args: tripPhotosTravelerStoryArgs,
   play: Owner.play,
 };
 
@@ -60,17 +54,11 @@ export const OwnerThai: Story = {
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    photoAlbumLinks: densePhotoAlbumLinks,
-  },
+  args: denseTripPhotosStoryArgs,
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    photoAlbumLinks: [],
-  },
+  args: emptyTripPhotosStoryArgs,
 };
 
 export const AddAlbumDialogOpen: Story = {
@@ -85,10 +73,7 @@ export const AddAlbumDialogOpen: Story = {
 };
 
 export const CoverStates: Story = {
-  args: {
-    ...Owner.args,
-    photoAlbumLinks: coverPhotoAlbumLinks,
-  },
+  args: coverStatesTripPhotosStoryArgs,
   play: async ({ canvas }) => {
     const harbourCover = canvas.getByLabelText(/Cover for Harbour skyline handoff/i);
     await expect(harbourCover).toHaveClass("photo-album-cover", "bg-cover", "bg-center");

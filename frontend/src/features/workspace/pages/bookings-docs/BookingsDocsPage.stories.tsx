@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { BookingsDocsPage } from "./BookingsDocsPage";
 import { paidCommitmentLifecyclePlay } from "./BookingsDocsPage.stories.plays";
 import {
   bookingsDocsOwnerStoryArgs,
-  denseBookingDocs,
+  bookingsDocsTravelerStoryArgs,
+  bookingsDocsViewerStoryArgs,
+  denseBookingsDocsStoryArgs,
+  emptyBookingsDocsStoryArgs,
   expectBookingsResponsiveContract,
-  onStoryCreateBookingDoc,
-  onStoryUpdateBookingDoc,
+  paidCommitmentLifecycleStoryArgs,
 } from "./BookingsDocsPage.stories.support";
 
 const meta = {
@@ -32,11 +33,7 @@ export const Owner: Story = {
 };
 
 export const Viewer: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.viewer,
-    canEditBookings: false,
-  },
+  args: bookingsDocsViewerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Bookings & Docs/i })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: /Add booking/i })).toBeNull();
@@ -45,11 +42,7 @@ export const Viewer: Story = {
 };
 
 export const Traveler: Story = {
-  args: {
-    ...Owner.args,
-    currentMember: tripFixture.currentMembers.traveler,
-    canEditBookings: true,
-  },
+  args: bookingsDocsTravelerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Bookings & Docs/i })).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Add booking/i })).toBeEnabled();
@@ -69,20 +62,14 @@ export const OwnerThai: Story = {
 };
 
 export const Dense: Story = {
-  args: {
-    ...Owner.args,
-    bookingDocs: denseBookingDocs,
-  },
+  args: denseBookingsDocsStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getAllByRole("button", { name: /Select/i }).length).toBeGreaterThan(8);
   },
 };
 
 export const Empty: Story = {
-  args: {
-    ...Owner.args,
-    bookingDocs: [],
-  },
+  args: emptyBookingsDocsStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/No items in this view/i)).toBeVisible();
   },
@@ -100,11 +87,7 @@ export const AddBookingDialogOpen: Story = {
 };
 
 export const PaidCommitmentLifecycle: Story = {
-  args: {
-    ...Owner.args,
-    onCreateBookingDoc: onStoryCreateBookingDoc,
-    onUpdateBookingDoc: onStoryUpdateBookingDoc,
-  },
+  args: paidCommitmentLifecycleStoryArgs,
   play: paidCommitmentLifecyclePlay,
 };
 

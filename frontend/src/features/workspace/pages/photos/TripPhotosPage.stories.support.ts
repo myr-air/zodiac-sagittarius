@@ -6,7 +6,7 @@ import type { TripPhotosPage } from "./TripPhotosPage";
 
 type TripPhotosPageStoryArgs = Parameters<typeof TripPhotosPage>[0];
 
-export const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 18 }, (_, index) => {
+const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 18 }, (_, index) => {
   const base = tripFixture.trip.photoAlbumLinks?.[index % (tripFixture.trip.photoAlbumLinks?.length || 1)];
 
   return {
@@ -28,7 +28,7 @@ export const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 1
   };
 });
 
-export const coverPhotoAlbumLinks: TripPhotoAlbumLink[] = [
+const coverPhotoAlbumLinks: TripPhotoAlbumLink[] = [
   {
     ...(tripFixture.trip.photoAlbumLinks?.[0] ?? densePhotoAlbumLinks[0]),
     id: "photo-album-cover-hong-kong",
@@ -61,6 +61,33 @@ export const tripPhotosOwnerStoryArgs = {
   onCreatePhotoAlbum: noop,
   onUpdatePhotoAlbum: noop,
   onDeletePhotoAlbum: noop,
+} satisfies TripPhotosPageStoryArgs;
+
+export const tripPhotosViewerStoryArgs = {
+  ...tripPhotosOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.viewer,
+  canEditPhotoAlbums: false,
+} satisfies TripPhotosPageStoryArgs;
+
+export const tripPhotosTravelerStoryArgs = {
+  ...tripPhotosOwnerStoryArgs,
+  currentMember: tripFixture.currentMembers.traveler,
+  canEditPhotoAlbums: true,
+} satisfies TripPhotosPageStoryArgs;
+
+export const denseTripPhotosStoryArgs = {
+  ...tripPhotosOwnerStoryArgs,
+  photoAlbumLinks: densePhotoAlbumLinks,
+} satisfies TripPhotosPageStoryArgs;
+
+export const emptyTripPhotosStoryArgs = {
+  ...tripPhotosOwnerStoryArgs,
+  photoAlbumLinks: [],
+} satisfies TripPhotosPageStoryArgs;
+
+export const coverStatesTripPhotosStoryArgs = {
+  ...tripPhotosOwnerStoryArgs,
+  photoAlbumLinks: coverPhotoAlbumLinks,
 } satisfies TripPhotosPageStoryArgs;
 
 export async function expectPhotosResponsiveContract(canvasElement: HTMLElement) {
