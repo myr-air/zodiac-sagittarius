@@ -57,4 +57,16 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(aboutPageStyles).toContain("export const statusPillReadyClassName");
   });
 
+  it("keeps itinerary timeline styles colocated outside the view component", () => {
+    const timelineView = readFileSync(join(frontendRoot, "src/features/itinerary/components/TimelineView.tsx"), "utf8");
+    const timelineStyles = readFileSync(join(frontendRoot, "src/features/itinerary/components/TimelineView.styles.ts"), "utf8");
+
+    expect(timelineView).toContain("./TimelineView.styles");
+    expect(timelineView).not.toContain("const timelinePanelClassName");
+    expect(timelineView).not.toContain("const timelineStopButtonClassName");
+    expect(timelineStyles).toContain("export const timelinePanelClassName");
+    expect(timelineStyles).toContain("export const timelineStopButtonClassName");
+    expect(timelineStyles).toContain("export const pageHeaderActionsClassName");
+  });
+
 });
