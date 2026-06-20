@@ -22,6 +22,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
       mapPageStory,
       mapTemplateStory,
       stopDialogStory,
+      bookingsDocsPageStory,
       tripSettingsPageStory,
     } = readWorkspaceBoundarySources(frontendRoot);
 
@@ -64,5 +65,7 @@ describe("Sagittarius workspace feature story boundaries", () => {
     });
     expect(tripSettingsPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(tripSettingsPageStory).not.toContain("defaultViewport:");
+    expect(bookingsDocsPageStory).toContain("@/src/shared/storybook/story-builders");
+    expect(bookingsDocsPageStory).not.toContain("defaultViewport:");
   });
 });

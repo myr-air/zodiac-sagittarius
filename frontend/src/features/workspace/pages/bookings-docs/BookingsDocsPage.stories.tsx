@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "@/src/shared/storybook/story-builders";
 import { BookingsDocsPage } from "./BookingsDocsPage";
 import {
   addBookingDialogOpenPlay,
@@ -31,6 +35,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: bookingsDocsOwnerStoryArgs,
@@ -47,11 +53,9 @@ export const Traveler: Story = {
   play: travelerPlay,
 };
 
-export const OwnerThai: Story = {
-  args: Owner.args,
-  parameters: { locale: "th" },
-  play: ownerThaiPlay,
-};
+export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
+  locale: "th",
+});
 
 export const Dense: Story = {
   args: denseBookingsDocsStoryArgs,
@@ -63,36 +67,37 @@ export const Empty: Story = {
   play: emptyPlay,
 };
 
-export const AddBookingDialogOpen: Story = {
-  args: Owner.args,
-  play: addBookingDialogOpenPlay,
-};
+export const AddBookingDialogOpen: Story = ownerStory(
+  Owner.args,
+  {},
+  addBookingDialogOpenPlay,
+);
 
 export const PaidCommitmentLifecycle: Story = {
   args: paidCommitmentLifecycleStoryArgs,
   play: paidCommitmentLifecyclePlay,
 };
 
-export const Mobile: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "mobile320" } },
-  play: mobilePlay,
-};
+export const Mobile: Story = viewportStoryForOwner(
+  Owner.args,
+  "mobile320",
+  mobilePlay,
+);
 
-export const Tablet: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "tablet768" } },
-  play: responsivePlay,
-};
+export const Tablet: Story = viewportStoryForOwner(
+  Owner.args,
+  "tablet768",
+  responsivePlay,
+);
 
-export const Desktop1024: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1024" } },
-  play: responsivePlay,
-};
+export const Desktop1024: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1024",
+  responsivePlay,
+);
 
-export const Desktop1440: Story = {
-  args: Owner.args,
-  parameters: { viewport: { defaultViewport: "desktop1440" } },
-  play: responsivePlay,
-};
+export const Desktop1440: Story = viewportStoryForOwner(
+  Owner.args,
+  "desktop1440",
+  responsivePlay,
+);
