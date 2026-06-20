@@ -741,8 +741,18 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceMainShell).toContain("WorkspaceRolePreview");
 
     const tripSettingsPage = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx"), "utf8");
-    expect(tripSettingsPage).toContain("@/src/trip/itinerary-time");
+    const tripSettingsSupport = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts"), "utf8");
+    const tripSettingsFormState = readFileSync(join(frontendRoot, "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts"), "utf8");
+    expect(tripSettingsPage).toContain("./TripSettingsPage.support");
+    expect(tripSettingsPage).toContain("./use-trip-settings-form-state");
+    expect(tripSettingsSupport).toContain("@/src/trip/itinerary-time");
     expect(tripSettingsPage).not.toContain("function daysBetweenIsoDates");
     expect(tripSettingsPage).not.toContain("function shiftIsoDate");
+    expect(tripSettingsPage).not.toContain("useState");
+    expect(tripSettingsPage).not.toContain("normalizeTripSettingsForm");
+    expect(tripSettingsSupport).not.toContain("function daysBetweenIsoDates");
+    expect(tripSettingsSupport).not.toContain("function shiftIsoDate");
+    expect(tripSettingsFormState).toContain("useTripSettingsFormState");
+    expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");
   });
 });

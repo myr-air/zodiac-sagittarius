@@ -10,11 +10,7 @@ import {
   overviewUndoToastClassName,
 } from "./overview-page.styles";
 import {
-  buildDestinationVisual,
-  buildHighlightItems,
-  getCountdownBadge,
   managerNextStopDetail,
-  overviewRoleLens,
   photoBoardEmptyMessage,
   travelerNextStopDetail,
 } from "@/src/features/itinerary/domain";
@@ -22,6 +18,7 @@ import { ManagerOverviewPanels, TravelerOverviewPanels, ViewerOverviewPanels } f
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewTaskDialog } from "./OverviewTaskDialog";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
+import { buildOverviewPageModel } from "./overview-page-model";
 import { useOverviewTaskState } from "./use-overview-task-state";
 
 interface OverviewPageProps {
@@ -54,13 +51,6 @@ export function OverviewPage({
   onToggleTaskStatus,
 }: OverviewPageProps) {
   const { locale, t } = useI18n();
-  const countdown = getCountdownBadge(trip.startDate, trip.endDate, locale);
-  const isCompleted = countdown.type === "completed";
-  const focusTodayHeading = isCompleted
-    ? (locale === "th" ? "ย้อนรอยความทรงจำ" : "Memories of the Journey")
-    : (countdown.type === "incoming"
-      ? (locale === "th" ? "จุดสตาร์ทแรกของทริป" : "First Stop Preview")
-      : t.overview.focusToday);
   const {
     closeTaskDialog,
     isTaskDialogOpen,
@@ -88,28 +78,43 @@ export function OverviewPage({
     onToggleTaskStatus,
     tasks,
   });
-  /* v8 ignore next */
-  const sortedItems = itineraryView?.sortedItems ?? items.slice().sort((a, b) => a.day.localeCompare(b.day) || a.sortOrder - b.sortOrder || a.startTime.localeCompare(b.startTime));
-  const nextStop = sortedItems[0];
-  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending").length;
-  const activeMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled").length;
-  const groupSpendLabel = `HK$${expenseSummary.groupSpend.toLocaleString("en-HK")}`;
-  const settlementCount = expenseSummary.settlementSuggestions.length;
-  const heroVisual = buildDestinationVisual(trip.destinationLabel);
-  const highlightItems = buildHighlightItems(sortedItems);
-  const currentMember = trip.members.find((member) => member.id === currentMemberId);
+  const {
+    activeMembers,
+    assignableMembers,
+    countdown,
+    currentMember,
+    focusTodayHeading,
+    foodStops,
+    groupSpendLabel,
+    heroVisual,
+    highlightItems,
+    isCompleted,
+    isManagerLens,
+    isTravelerLens,
+    isViewerLens,
+    nextDayItems,
+    nextStop,
+    pendingSuggestions,
+    roleLens,
+    settlementCount,
+    tripHighlights,
+    viewerHighlights,
+    warningCount,
+  } = buildOverviewPageModel({
+    completedFocusHeading: locale === "th" ? "ย้อนรอยความทรงจำ" : "Memories of the Journey",
+    currentMemberId,
+    expenseSummary,
+    focusTodayLabel: t.overview.focusToday,
+    incomingFocusHeading: locale === "th" ? "จุดสตาร์ทแรกของทริป" : "First Stop Preview",
+    items,
+    itineraryView,
+    locale,
+    suggestions,
+    trip,
+  });
   /* v8 ignore next */
   const currentMemberCard = currentMember ? <PageUserCard color={currentMember.color} name={currentMember.displayName} label={trip.destinationLabel} /> : null;
-  const roleLens = overviewRoleLens(currentMember);
-  const isManagerLens = roleLens === "manager";
-  const isTravelerLens = roleLens === "traveler";
-  const isViewerLens = roleLens === "viewer";
-  const assignableMembers = trip.members.filter((member) => member.id !== "member-viewer" && member.accessStatus !== "disabled");
-  const nextDayItems = nextStop ? sortedItems.filter((item) => item.day === nextStop.day).slice(0, 4) : [];
-  const foodStops = sortedItems.filter((item) => item.activityType === "food").slice(0, 3);
-  const tripHighlights = sortedItems.filter((item) => ["attraction", "experience", "shopping"].includes(item.activityType)).slice(0, 4);
-  const viewerHighlights = sortedItems.filter((item) => item.activityType !== "travel").slice(0, 5);
+
   function openExpenses() {
     onOpenExpenses?.();
   }

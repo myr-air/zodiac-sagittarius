@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import type {
   BookingDoc,
   BookingDocType,
@@ -15,6 +14,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailSelectedStopPanel } from "./ContextRailSelectedStopPanel";
+import { useContextRailState } from "./context-rail.state";
 import { ContextRailTab } from "./context-rail.utils";
 import {
   contextRailClassName,
@@ -112,55 +112,25 @@ export function ContextRail({
   onClose,
 }: ContextRailProps) {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<ContextRailTab>(preferredTab);
-
-  const selectedAdvisories = selectedItem?.advisories ?? [];
-  const selectedNotes = useMemo(() => {
-    if (!selectedItem) return [];
-    return stopNotes.filter((note) => note.itemId === selectedItem.id);
-  }, [selectedItem, stopNotes]);
-  const selectedExpenses = useMemo(() => {
-    if (!selectedItem) return trip.expenses;
-    return trip.expenses.filter(
-      (expense) => expense.itineraryItemId === selectedItem.id,
-    );
-  }, [selectedItem, trip.expenses]);
-  const selectedTasks = useMemo(() => {
-    if (!selectedItem) return [];
-    return tasks.filter(
-      (task) =>
-        task.relatedItemId === selectedItem.id ||
-        (task.kind === "booking" &&
-          task.title
-            .toLowerCase()
-            .includes(selectedItem.activity.toLowerCase())),
-    );
-  }, [selectedItem, tasks]);
-  const selectedBookingDocs = useMemo(() => {
-    if (!selectedItem) return [];
-    return bookingDocs.filter((bookingDoc) =>
-      bookingDoc.relatedItineraryItemIds.includes(selectedItem.id),
-    );
-  }, [bookingDocs, selectedItem]);
-  const selectedSuggestions = useMemo(() => {
-    if (!selectedItem) return [];
-    return suggestions.filter(
-      (suggestion) =>
-        suggestion.targetItemId === selectedItem.id &&
-        (suggestion.status === "pending" || suggestion.status === "conflicted"),
-    );
-  }, [selectedItem, suggestions]);
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) setActiveTab(preferredTab);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, preferredTab, selectedItem?.id]);
+  const {
+    activeTab,
+    setActiveTab,
+    selectedAdvisories,
+    selectedNotes,
+    selectedExpenses,
+    selectedTasks,
+    selectedBookingDocs,
+    selectedSuggestions,
+  } = useContextRailState({
+    trip,
+    selectedItem,
+    stopNotes,
+    tasks,
+    bookingDocs,
+    suggestions,
+    open,
+    preferredTab,
+  });
 
   return (
     <aside
