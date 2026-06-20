@@ -108,6 +108,17 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(expenseSettlements).toContain("export function attachReminderHistory");
     expect(expenseSettlements).toContain("export function upsertExpenseReminder");
     expect(expenseSettlements).toContain("function expenseReminderKey");
+    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
+    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
+    expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
+    expect(sagittariusAppTestSupport).not.toContain("Object.defineProperty(window, \"localStorage\"");
+    expect(sagittariusAppTestSupport).not.toContain("createMemoryStorage");
+    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
+    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountTripMemberSessionFetch");
+    expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
+    expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
+    expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
+    expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
     expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
@@ -115,14 +126,6 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
-    expect(sagittariusAppTestSupport).not.toContain("createMemoryStorage");
-    expect(sagittariusAppTestSupport).not.toContain("vi.spyOn(globalThis, \"fetch\")");
-    expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
-    expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
-    expect(sagittariusAppTestStorage).toContain("export function installLocalStorageStub");
-    expect(sagittariusAppTestStorage).toContain("createMemoryStorage");
 
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
     expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
