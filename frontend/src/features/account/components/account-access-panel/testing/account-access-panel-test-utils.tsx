@@ -1,10 +1,11 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type ReactElement, useState } from "react";
 import { expect, vi } from "vitest";
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { createMemoryStorage } from "@/src/testing/browser-storage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
@@ -31,6 +32,18 @@ export function authForm() {
   return within(form as HTMLElement);
 }
 
+export function fillAccountPasswordFields(
+  email: string,
+  password: string,
+) {
+  fireEvent.change(screen.getByLabelText(/Email/i), {
+    target: { value: email },
+  });
+  fireEvent.change(screen.getByLabelText(/^Password$/i), {
+    target: { value: password },
+  });
+}
+
 export async function switchToThai(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: /Language and currency/i }));
   await user.click(await screen.findByRole("menuitemradio", { name: /ภาษาไทย/i }));
@@ -44,13 +57,7 @@ export async function selectDestinationCity(user: ReturnType<typeof userEvent.se
 }
 
 export function installLocalStorageStub() {
-  const values = new Map<string, string>();
-  const storage = {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => values.set(key, value),
-    removeItem: (key: string) => values.delete(key),
-    clear: () => values.clear(),
-  };
+  const storage = createMemoryStorage();
   Object.defineProperty(window, "localStorage", {
     configurable: true,
     value: storage,

@@ -5,6 +5,7 @@ import { TripApiError } from "@/src/trip/api-client";
 import {
   authForm,
   createAccountClient,
+  fillAccountPasswordFields,
   installLocalStorageStub,
   renderAccountAccessPanel,
   switchToThai,
@@ -115,8 +116,7 @@ describe("AccountAccessPanel auth access", () => {
     expect(document.getElementById(emailHintId ?? "")).toHaveTextContent(/email tied to this trip space/i);
     expect(document.getElementById(passwordHintId ?? "")).toHaveTextContent(/at least 8 characters/i);
 
-    fireEvent.change(emailInput, { target: { value: "aom" } });
-    fireEvent.change(passwordInput, { target: { value: "account-secret" } });
+    fillAccountPasswordFields("aom", "account-secret");
     expect(emailInput).toHaveAttribute("aria-invalid", "true");
     expect(document.getElementById(emailHintId ?? "")).toHaveTextContent(/complete email address/i);
     expect(signInButton).toBeDisabled();
@@ -205,8 +205,7 @@ describe("AccountAccessPanel auth access", () => {
     const onAccountSessionChange = vi.fn();
     renderAccountAccessPanel({ accessMode: "account-login", accountClient, onAccountSessionChange });
 
-    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
+    fillAccountPasswordFields("aom@example.test", "account-secret");
     await user.click(authForm().getByRole("button", { name: /^Sign in$/i }));
 
     expect(accountClient.finishPasswordLogin).toHaveBeenCalledWith({
@@ -226,8 +225,7 @@ describe("AccountAccessPanel auth access", () => {
     vi.mocked(accountClient.finishPasswordLogin).mockRejectedValueOnce(new Error("Failed to fetch"));
     renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
-    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "account-secret" } });
+    fillAccountPasswordFields("aom@example.test", "account-secret");
     await user.click(authForm().getByRole("button", { name: /^Sign in$/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/Could not reach the login service/i);
@@ -242,8 +240,7 @@ describe("AccountAccessPanel auth access", () => {
     );
     renderAccountAccessPanel({ accessMode: "account-login", accountClient });
 
-    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "aom@example.test" } });
-    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "wrong-secret" } });
+    fillAccountPasswordFields("aom@example.test", "wrong-secret");
     await user.click(authForm().getByRole("button", { name: /^Sign in$/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Email or password is not valid.");
@@ -263,8 +260,7 @@ describe("AccountAccessPanel auth access", () => {
 
     renderAccountAccessPanel({ accessMode: "account-register", accountClient });
 
-    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: "mai@example.test" } });
-    fireEvent.change(await screen.findByLabelText(/Password/i), { target: { value: "account-secret" } });
+    fillAccountPasswordFields("mai@example.test", "account-secret");
     await user.click(screen.getByRole("button", { name: /Set password and continue/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Email service is not ready. Please try again soon.");
