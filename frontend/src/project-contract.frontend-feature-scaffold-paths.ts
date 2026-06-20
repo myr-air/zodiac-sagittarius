@@ -85,6 +85,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts",
   "src/features/workspace/components/app-shell/AppShell.styles.ts",
   "src/features/workspace/components/app-shell/app-shell.support.ts",
+  "src/features/workspace/stories/AppShell.stories.support.tsx",
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.tsx",
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.test.tsx",
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.stories.tsx",
