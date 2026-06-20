@@ -70,6 +70,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/itinerary/components/inline-option-picker-menu.tsx",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts",
+  "src/features/workspace/pages/trip-settings/TripSettingsPage.styles.ts",
+  "src/features/workspace/pages/trip-settings/TripSettingsPage.test-support.tsx",
   "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts",
   "src/features/workspace/components/app-shell/AppShell.styles.ts",
   "src/features/workspace/components/app-shell/app-shell.support.ts",

@@ -1,20 +1,10 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
-import { seedTrip } from "@/src/trip/seed";
-import { TripSettingsPage } from "./TripSettingsPage";
+import { renderTripSettingsPage } from "./TripSettingsPage.test-support";
 
 describe("TripSettingsPage", () => {
   it("uses calm cockpit surfaces for trip settings", () => {
-    renderWithI18n(
-      <TripSettingsPage
-        canEdit
-        currentMember={seedTrip.members[0]}
-        trip={seedTrip}
-        onSave={vi.fn()}
-      />,
-      { locale: "en" },
-    );
+    renderTripSettingsPage();
 
     const page = screen.getByRole("region", { name: "Trip settings" });
     expect(page).toHaveClass("trip-settings-page", "bg-transparent");
@@ -34,15 +24,7 @@ describe("TripSettingsPage", () => {
   it("normalizes trip settings before saving", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
 
-    renderWithI18n(
-      <TripSettingsPage
-        canEdit
-        currentMember={seedTrip.members[0]}
-        trip={seedTrip}
-        onSave={onSave}
-      />,
-      { locale: "en" },
-    );
+    renderTripSettingsPage({ onSave });
 
     fireEvent.change(screen.getByLabelText("Trip name"), {
       target: { value: " Summer trip " },
