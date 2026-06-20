@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { Expense, ItineraryItem } from "@/src/trip/types";
-import { mergeApiImportedPlanRecordsIntoTrip } from "./itinerary-import-model";
+import { mergeApiImportedPlanRecordsIntoTrip } from "./itinerary-import-record-merge";
 
 describe("API-created itinerary import merges", () => {
   it("merges API-created import items and linked records into the current trip", () => {

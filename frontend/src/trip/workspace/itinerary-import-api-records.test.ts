@@ -8,7 +8,7 @@ import {
   importedStopNote,
   importedTask,
 } from "./itinerary-import-api.test-support";
-import type { ImportedPlanRecords } from "./itinerary-import-model";
+import type { ImportedPlanRecords } from "./itinerary-import-record-mapping";
 
 describe("itinerary import API record creation", () => {
   it("creates imported records and remaps linked booking relations", async () => {

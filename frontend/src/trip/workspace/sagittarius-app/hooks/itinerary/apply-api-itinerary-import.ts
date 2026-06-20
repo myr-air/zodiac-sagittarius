@@ -4,13 +4,15 @@ import {
   createImportedPlanRecordsViaApi,
 } from "@/src/trip/workspace/itinerary-import-api";
 import {
-  buildImportedPlanRecordsForTripPlan,
   emptyItineraryExportRecords,
+  type PendingItineraryImport,
+} from "@/src/trip/workspace/itinerary-import-model";
+import { buildImportedPlanRecordsForTripPlan } from "@/src/trip/workspace/itinerary-import-record-mapping";
+import {
   mergeApiImportedPlanRecordsIntoTrip,
   mergeImportedStopNotes,
   mergeImportedTasks,
-  type PendingItineraryImport,
-} from "@/src/trip/workspace/itinerary-import-model";
+} from "@/src/trip/workspace/itinerary-import-record-merge";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import type {
   ExpenseSummary,

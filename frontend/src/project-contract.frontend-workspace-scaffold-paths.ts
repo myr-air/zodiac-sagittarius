@@ -95,6 +95,8 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/WorkspaceToast.tsx",
   "src/trip/workspace/itinerary-import-api-merge.test.ts",
   "src/trip/workspace/itinerary-import-model.ts",
+  "src/trip/workspace/itinerary-import-record-mapping.ts",
+  "src/trip/workspace/itinerary-import-record-merge.ts",
   "src/trip/workspace/itinerary-import-records.test.ts",
   "src/trip/workspace/itinerary-import-routing.test.ts",
   "src/trip/workspace/itinerary-import-api-records.test.ts",

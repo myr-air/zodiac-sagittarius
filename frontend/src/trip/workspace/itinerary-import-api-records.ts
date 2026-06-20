@@ -5,7 +5,7 @@ import type {
   StopNote,
   TripTask,
 } from "@/src/trip/types";
-import type { ImportedPlanRecords } from "./itinerary-import-model";
+import type { ImportedPlanRecords } from "./itinerary-import-record-mapping";
 import {
   buildImportedBookingDocCreateRequest,
   buildImportedExpenseCreateRequest,

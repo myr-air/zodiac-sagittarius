@@ -5,13 +5,15 @@ import {
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import {
-  buildImportedPlanRecordsForTripPlan,
   emptyItineraryExportRecords,
+  type PendingItineraryImport,
+} from "@/src/trip/workspace/itinerary-import-model";
+import { buildImportedPlanRecordsForTripPlan } from "@/src/trip/workspace/itinerary-import-record-mapping";
+import {
   mergeImportedRecordsIntoTripPlan,
   mergeImportedStopNotes,
   mergeImportedTasks,
-  type PendingItineraryImport,
-} from "@/src/trip/workspace/itinerary-import-model";
+} from "@/src/trip/workspace/itinerary-import-record-merge";
 import type {
   ExpenseSummary,
   StopNote,
