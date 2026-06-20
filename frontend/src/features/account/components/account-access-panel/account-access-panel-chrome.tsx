@@ -47,6 +47,21 @@ interface AccountAccessChromeProps {
   eyebrowLabel: string;
 }
 
+function AccountBackHomeLink({
+  className,
+  label,
+}: {
+  className: string;
+  label: string;
+}) {
+  return (
+    <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, className)}>
+      <Icon name="chevronLeft" className="size-3.5" />
+      {label}
+    </Link>
+  );
+}
+
 export function AccountAccessChrome({
   accessMode,
   backToHomeLabel,
@@ -67,17 +82,11 @@ export function AccountAccessChrome({
   return (
     <>
       {isAccountEntry ? (
-        <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, accountEntryBackHomeClassName)}>
-          <Icon name="chevronLeft" className="size-3.5" />
-          {backToHomeLabel}
-        </Link>
+        <AccountBackHomeLink className={accountEntryBackHomeClassName} label={backToHomeLabel} />
       ) : null}
       {isTripAccessEntry ? (
         <>
-          <Link href={appRoutes.home()} className={cn(backHomeButtonClassName, tripAccessBackHomeClassName)}>
-            <Icon name="chevronLeft" className="size-3.5" />
-            {backToHomeLabel}
-          </Link>
+          <AccountBackHomeLink className={tripAccessBackHomeClassName} label={backToHomeLabel} />
           <LanguageSwitch className={cn(accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName, tripAccessLanguageSwitchClassName)} />
         </>
       ) : null}
