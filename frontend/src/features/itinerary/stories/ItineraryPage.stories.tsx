@@ -42,6 +42,10 @@ import {
   travelerPlay,
   viewerPlay,
 } from "./ItineraryPage.stories.plays";
+import {
+  ownerArgsStory,
+  viewportStory,
+} from "./ItineraryPage.stories.builders";
 
 const meta = {
   title: "Pages/Itinerary",
@@ -52,8 +56,8 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-type StoryArgs = NonNullable<Story["args"]>;
-type StoryParameters = NonNullable<Story["parameters"]>;
+const ownerStory = ownerArgsStory<Story>;
+const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: buildOwnerStoryArgs({
@@ -65,29 +69,8 @@ export const Owner: Story = {
   play: ownerPlay,
 };
 
-function ownerArgsStory(
-  args: Partial<StoryArgs>,
-  play?: Story["play"],
-  parameters?: StoryParameters,
-): Story {
-  return {
-    args: { ...Owner.args, ...args },
-    ...(parameters ? { parameters } : {}),
-    ...(play ? { play } : {}),
-  };
-}
-
-function viewportStory(
-  defaultViewport: string,
-  play: Story["play"],
-  args: Partial<StoryArgs> = {},
-): Story {
-  return ownerArgsStory(args, play, {
-    viewport: { defaultViewport },
-  });
-}
-
-export const InlineQuickEdit: Story = ownerArgsStory(
+export const InlineQuickEdit: Story = ownerStory(
+  Owner.args,
   { onUpdateItemInline: onStoryInlineQuickEdit },
   inlineQuickEditPlay,
 );
@@ -98,31 +81,31 @@ export const OwnerThai: Story = {
   play: ownerThaiPlay,
 };
 
-export const TimeWindowDuration: Story = ownerArgsStory({
+export const TimeWindowDuration: Story = ownerStory(Owner.args, {
   items: pageWindowOnlyDurationItems,
   selectedItemId: "page-window-only-duration",
 });
 
-export const Viewer: Story = ownerArgsStory({ role: "viewer" }, viewerPlay);
+export const Viewer: Story = ownerStory(Owner.args, { role: "viewer" }, viewerPlay);
 
-export const Traveler: Story = ownerArgsStory({ role: "traveler" }, travelerPlay);
+export const Traveler: Story = ownerStory(Owner.args, { role: "traveler" }, travelerPlay);
 
-export const Dense: Story = ownerArgsStory({
+export const Dense: Story = ownerStory(Owner.args, {
   items: denseTripFixture.itineraryItems,
   selectedItemId: "",
 });
 
-export const Empty: Story = ownerArgsStory({
+export const Empty: Story = ownerStory(Owner.args, {
   items: emptyTripFixture.itineraryItems,
   selectedItemId: "",
 });
 
-export const OverlapConflictWarning: Story = ownerArgsStory({
+export const OverlapConflictWarning: Story = ownerStory(Owner.args, {
   selectedItemId: "overlap-dim-sum",
   items: pageOverlapConflictItems,
 }, overlapConflictWarningPlay);
 
-export const PlanAExample: Story = ownerArgsStory({
+export const PlanAExample: Story = ownerStory(Owner.args, {
   items: pagePlanAExampleItems,
   graphItems: pagePlanAExampleItems,
   selectedItemId: "page-plan-a-main-breakfast",
@@ -130,7 +113,7 @@ export const PlanAExample: Story = ownerArgsStory({
   pathOptions: planAPathOptions,
 }, planAExamplePlay);
 
-export const PlanABAlternatives: Story = ownerArgsStory({
+export const PlanABAlternatives: Story = ownerStory(Owner.args, {
   items: pagePlanABAlternativeItems,
   graphItems: pagePlanABAlternativeItems,
   selectedItemId: "page-plan-ab-main-breakfast",
@@ -138,7 +121,7 @@ export const PlanABAlternatives: Story = ownerArgsStory({
   pathOptions: planABPathOptions,
 }, planABAlternativesPlay);
 
-export const PathAndDurationInteractions: Story = ownerArgsStory({
+export const PathAndDurationInteractions: Story = ownerStory(Owner.args, {
   items: pagePlanABAlternativeItems,
   graphItems: pagePlanABAlternativeItems,
   selectedItemId: "page-plan-ab-main-breakfast",
@@ -150,7 +133,7 @@ export const PathAndDurationInteractions: Story = ownerArgsStory({
   onUpdateItemInline: onStoryUpdateItemInline,
 }, pathAndDurationInteractionsPlay);
 
-export const BranchGraph: Story = ownerArgsStory({
+export const BranchGraph: Story = ownerStory(Owner.args, {
   items: pageBranchGraphItems,
   graphItems: pageBranchGraphItems,
   selectedItemId: "page-graph-main",
@@ -158,7 +141,7 @@ export const BranchGraph: Story = ownerArgsStory({
   pathOptions: branchGraphPathOptions,
 }, branchGraphPlay);
 
-export const RequestedPlanExample: Story = ownerArgsStory({
+export const RequestedPlanExample: Story = ownerStory(Owner.args, {
   items: pageRequestedPlanExampleItems,
   graphItems: pageRequestedPlanExampleItems,
   selectedItemId: "page-requested-main-0800",
@@ -166,7 +149,7 @@ export const RequestedPlanExample: Story = ownerArgsStory({
   pathOptions: planAPathOptions,
 }, requestedPlanExamplePlay);
 
-export const StressPaths: Story = ownerArgsStory({
+export const StressPaths: Story = ownerStory(Owner.args, {
   items: pageStressPathItems,
   graphItems: pageStressPathItems,
   selectedItemId: "page-stress-0800-main",
@@ -174,7 +157,7 @@ export const StressPaths: Story = ownerArgsStory({
   pathOptions: stressPathOptions,
 }, stressPathsPlay);
 
-export const TableOverflow: Story = viewportStory("mobile320", tableOverflowPlay, {
+export const TableOverflow: Story = viewportStoryForOwner(Owner.args, "mobile320", tableOverflowPlay, {
   items: buildPageOverflowItems(),
   graphItems: pageStressPathItems,
   selectedItemId: "page-overflow-page-stress-0800-main",
@@ -182,20 +165,21 @@ export const TableOverflow: Story = viewportStory("mobile320", tableOverflowPlay
   pathOptions: stressPathOptions,
 });
 
-export const Tablet: Story = viewportStory("tablet768", responsivePlay);
+export const Tablet: Story = viewportStoryForOwner(Owner.args, "tablet768", responsivePlay);
 
-export const Desktop1024: Story = viewportStory("desktop1024", responsivePlay);
+export const Desktop1024: Story = viewportStoryForOwner(Owner.args, "desktop1024", responsivePlay);
 
-export const Desktop1440: Story = viewportStory("desktop1440", responsivePlay);
+export const Desktop1440: Story = viewportStoryForOwner(Owner.args, "desktop1440", responsivePlay);
 
-export const Mobile: Story = viewportStory("mobile320", mobilePlay);
+export const Mobile: Story = viewportStoryForOwner(Owner.args, "mobile320", mobilePlay);
 
-export const MobileInspectorQuickEdit: Story = viewportStory(
+export const MobileInspectorQuickEdit: Story = viewportStoryForOwner(
+  Owner.args,
   "mobile320",
   mobileInspectorQuickEditPlay,
   { onUpdateItemInline: onStoryInlineQuickEdit },
 );
 
-export const MobileViewer: Story = viewportStory("mobile320", mobilePlay, {
+export const MobileViewer: Story = viewportStoryForOwner(Owner.args, "mobile320", mobilePlay, {
   role: "viewer",
 });

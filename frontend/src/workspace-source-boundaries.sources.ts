@@ -129,6 +129,7 @@ export const workspaceBoundarySourcePaths = {
   itineraryStoryPathItems: "src/features/itinerary/stories/fixtures/itinerary-story-path-items.ts",
   itineraryStoryPathOptions: "src/features/itinerary/stories/itinerary-story-path-options.ts",
   itineraryPageStory: "src/features/itinerary/stories/ItineraryPage.stories.tsx",
+  itineraryPageStoryBuilders: "src/features/itinerary/stories/ItineraryPage.stories.builders.ts",
   itineraryPageStoryPlays: "src/features/itinerary/stories/ItineraryPage.stories.plays.ts",
   itineraryTemplateStory: "src/features/itinerary/stories/ItineraryTemplate.stories.tsx",
   itineraryTemplateStoryPlays: "src/features/itinerary/stories/ItineraryTemplate.stories.plays.ts",
