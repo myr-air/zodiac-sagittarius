@@ -213,12 +213,24 @@ describe("Sagittarius workspace source boundaries", () => {
       join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"),
       "utf8",
     );
+    const stopDialogStory = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/StopDialog.stories.tsx"),
+      "utf8",
+    );
+    const stopDialogStorySupport = readFileSync(
+      join(frontendRoot, "src/features/itinerary/stories/StopDialog.stories.support.ts"),
+      "utf8",
+    );
     const stopDialogModel = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"),
       "utf8",
     );
     const stopDialogForm = readFileSync(
       join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts"),
+      "utf8",
+    );
+    const stopDialogTimeFields = readFileSync(
+      join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts"),
       "utf8",
     );
     const tripSettingsPageSource = readFileSync(
@@ -624,8 +636,17 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(stopDialogModel).toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("parseRouteActivity");
     expect(stopDialog).not.toContain("endOffsetDaysBetweenTimes");
-    expect(stopDialogForm).toContain("export function applyStopStartTime");
+    expect(stopDialogStory).toContain("./StopDialog.stories.support");
+    expect(stopDialogStory).not.toContain("tripFixture");
+    expect(stopDialogStory).not.toContain("function categoryItem");
+    expect(stopDialogStorySupport).toContain("export const stopDialogCreateArgs");
+    expect(stopDialogStorySupport).toContain("export function stopDialogCategoryItem");
+    expect(stopDialogForm).toContain("./stop-dialog-time-fields");
+    expect(stopDialogForm).not.toContain("durationBetweenTimes");
     expect(stopDialogForm).toContain("export function applyStopActivityInput");
+    expect(stopDialogTimeFields).toContain("export function applyStopStartTime");
+    expect(stopDialogTimeFields).toContain("export function applyStopEndTime");
+    expect(stopDialogTimeFields).toContain("export function applyStopTimeMode");
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
     expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");
     expect(memberSupport).toContain("@/src/routes/invite-links");

@@ -297,7 +297,9 @@ describe("Sagittarius project scaffold", () => {
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/StopDialog.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/index.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "src/features/itinerary/stories/StopDialog.stories.support.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/RouteMapView.tsx"))).toBe(false);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapView.tsx"))).toBe(true);
     expect(existsSync(join(frontendRoot, "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx"))).toBe(true);

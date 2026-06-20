@@ -1,22 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import type { ItineraryItem } from "@/src/trip/types";
-import { tripFixture } from "@/src/trip/trip-fixtures";
 import { StopDialog } from "@/src/features/itinerary/components";
-
-const storyItem = tripFixture.planItems[0];
-
-function categoryItem(overrides: Partial<ItineraryItem>): ItineraryItem {
-  return {
-    ...storyItem,
-    ...overrides,
-    details: {
-      ...storyItem.details,
-      ...overrides.details,
-    },
-  };
-}
+import {
+  ambiguousPlaceResolution,
+  stopDialogCategoryItem,
+  stopDialogCreateArgs,
+  stopDialogEditArgs,
+} from "./StopDialog.stories.support";
 
 const meta = {
   title: "Pages/Stop Dialog",
@@ -30,18 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Create: Story = {
-  args: {
-    mode: "create",
-    startDate: tripFixture.trip.startDate,
-    endDate: tripFixture.trip.endDate,
-    initialDay: tripFixture.trip.startDate,
-    manualPathOptions: [
-      { id: "main", name: "Main" },
-      { id: "path-plan-a", name: "Plan A" },
-    ],
-    onClose: noop,
-    onSubmit: noop,
-  },
+  args: stopDialogCreateArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");
     await expect(canvas.getByRole("textbox", { name: /^Activity$/i })).toBeVisible();
@@ -49,12 +28,7 @@ export const Create: Story = {
 };
 
 export const Edit: Story = {
-  args: {
-    ...Create.args,
-    mode: "edit",
-    initialItem: tripFixture.planItems[0],
-    onDelete: noop,
-  },
+  args: stopDialogEditArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("dialog", { name: /Edit details/i })).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Delete stop/i })).toBeVisible();
@@ -64,29 +38,7 @@ export const Edit: Story = {
 export const AmbiguousPlace: Story = {
   args: {
     ...Create.args,
-    placeResolution: {
-      state: "ambiguous",
-      candidates: [
-        {
-          name: "Central Market Kuala Lumpur",
-          address: "Jalan Hang Kasturi, Kuala Lumpur",
-          coordinates: { lat: 3.1459, lng: 101.6956 },
-          mapLink: "https://maps.example.test/central-market-kl",
-          confidence: 0.92,
-          source: "storybook",
-          evidence: ["Name and district match"],
-        },
-        {
-          name: "Central Market Annexe",
-          address: "Pasar Seni, Kuala Lumpur",
-          coordinates: { lat: 3.1447, lng: 101.6962 },
-          mapLink: "https://maps.example.test/central-market-annexe",
-          confidence: 0.74,
-          source: "storybook",
-          evidence: ["Nearby alternate venue"],
-        },
-      ],
-    },
+    placeResolution: ambiguousPlaceResolution,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Central Market Kuala Lumpur/i)).toBeVisible();
@@ -97,7 +49,7 @@ export const AmbiguousPlace: Story = {
 export const TransportationForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "DMK -> HKG",
       activityType: "travel",
       durationMinutes: 175,
@@ -126,7 +78,7 @@ export const TransportationForm: Story = {
 export const ActivityForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "Dim sum lunch",
       activityType: "experience",
       itemKind: "activity",
@@ -151,7 +103,7 @@ export const ActivityForm: Story = {
 export const FoodForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "Dim sum lunch",
       activityType: "food",
       itemKind: "meal",
@@ -175,7 +127,7 @@ export const FoodForm: Story = {
 export const StayForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "Hotel check-in",
       activityType: "stay",
       itemKind: "lodging",
@@ -199,7 +151,7 @@ export const StayForm: Story = {
 export const ShoppingForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "Sneaker stop",
       activityType: "shopping",
       itemKind: "activity",
@@ -222,7 +174,7 @@ export const ShoppingForm: Story = {
 export const NoteTaskForm: Story = {
   args: {
     ...Edit.args,
-    initialItem: categoryItem({
+    initialItem: stopDialogCategoryItem({
       activity: "Confirm voucher names",
       activityType: "experience",
       itemKind: "note",
