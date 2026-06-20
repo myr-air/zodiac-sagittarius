@@ -59,16 +59,7 @@ export function useWorkspacePlanningCommands({
   tripPlanErrorMessage,
   updateApiTrip,
 }: UseWorkspacePlanningCommandsParams) {
-  const {
-    addStop,
-    addSubActivity,
-    createStop,
-    deleteStop,
-    moveItemToPath,
-    resolveMissingMapCoordinates,
-    updateItineraryItemInline,
-    updateSelectedStop,
-  } = useWorkspaceItineraryCommands({
+  const itineraryCommands = useWorkspaceItineraryCommands({
     canEdit,
     canSaveItineraryErrorMessage,
     currentMemberId: activeMemberId,
@@ -98,16 +89,7 @@ export function useWorkspacePlanningCommands({
     updateApiTrip,
   });
 
-  const {
-    changeBookingDocQuickFields,
-    changeBookingDocType,
-    createBookingDoc,
-    createItineraryBookingDraft,
-    deleteBookingDoc,
-    saveItineraryBookingTicket,
-    unlinkBookingFromItineraryItem,
-    updateBookingDoc,
-  } = useWorkspaceBookingCommands({
+  const bookingCommands = useWorkspaceBookingCommands({
     apiClient: resolvedApiClient,
     canEditBookings,
     commitTrip,
@@ -122,21 +104,15 @@ export function useWorkspacePlanningCommands({
     setContextRailPreferredTab,
     setSelectedItemId,
     trip,
-    updateItineraryItemInline,
+    updateItineraryItemInline: itineraryCommands.updateItineraryItemInline,
   });
 
-  const {
-    createExpense,
-    deleteExpense,
-    duplicateExpenseAsEstimate,
-    recordPaybackReminder,
-    updateExpense,
-  } = useWorkspaceExpenses({
+  const expenseCommands = useWorkspaceExpenses({
     apiClient: resolvedApiClient,
     canEditBookings,
     canEditExpenses,
     commitTrip,
-    createBookingDoc,
+    createBookingDoc: bookingCommands.createBookingDoc,
     currentMemberId: activeMemberId,
     isApiMode,
     participantSession,
@@ -147,12 +123,7 @@ export function useWorkspacePlanningCommands({
     updateApiTrip,
   });
 
-  const {
-    applyPendingItineraryImport,
-    clearPendingItineraryImport,
-    importItineraryError,
-    pendingItineraryImport,
-  } = useWorkspaceItineraryImport({
+  const importCommands = useWorkspaceItineraryImport({
     apiClient: resolvedApiClient,
     canEdit,
     commitTrip,
@@ -172,30 +143,9 @@ export function useWorkspacePlanningCommands({
   });
 
   return {
-    addStop,
-    addSubActivity,
-    applyPendingItineraryImport,
-    changeBookingDocQuickFields,
-    changeBookingDocType,
-    clearPendingItineraryImport,
-    createBookingDoc,
-    createExpense,
-    createItineraryBookingDraft,
-    createStop,
-    deleteBookingDoc,
-    deleteExpense,
-    deleteStop,
-    duplicateExpenseAsEstimate,
-    importItineraryError,
-    moveItemToPath,
-    pendingItineraryImport,
-    recordPaybackReminder,
-    resolveMissingMapCoordinates,
-    saveItineraryBookingTicket,
-    unlinkBookingFromItineraryItem,
-    updateBookingDoc,
-    updateExpense,
-    updateItineraryItemInline,
-    updateSelectedStop,
+    ...itineraryCommands,
+    ...bookingCommands,
+    ...expenseCommands,
+    ...importCommands,
   };
 }
