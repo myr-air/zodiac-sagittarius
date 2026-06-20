@@ -75,6 +75,7 @@ export const workspaceBoundarySourcePaths = {
   routeMapView: "src/features/itinerary/components/route-map/RouteMapView.tsx",
   routeMapUnresolvedPanel: "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx",
   routeLiveMapHook: "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  routeLiveMapMarkers: "src/features/itinerary/components/route-map/route-map.live-markers.ts",
   routeMapUtils: "src/features/itinerary/components/route-map/route-map.utils.ts",
   stopDialog: "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
   stopDialogStory: "src/features/itinerary/stories/StopDialog.stories.tsx",

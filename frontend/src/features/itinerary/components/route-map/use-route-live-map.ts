@@ -7,11 +7,12 @@ import {
   removeMapChromeFromTabOrder,
   synchronizeRouteLayers,
 } from "./route-map.live";
-import type { DayFilter, RouteDayGroup, RoutePoint } from "./route-map.types";
 import {
-  dayColorFor,
-  getRouteCenter,
-} from "./route-map.utils";
+  type LiveRouteMarkerRegistry,
+  synchronizeLiveRouteMarkers,
+} from "./route-map.live-markers";
+import type { DayFilter, RouteDayGroup, RoutePoint } from "./route-map.types";
+import { getRouteCenter } from "./route-map.utils";
 
 export type RouteLiveMapState = "idle" | "loading" | "ready" | "error";
 
@@ -39,7 +40,7 @@ export function useRouteLiveMap({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
-  const markersRef = useRef<Map<string, { marker: import("maplibre-gl").Marker; day: string }>>(new Map());
+  const markersRef = useRef<LiveRouteMarkerRegistry>(new Map());
   const sourceIdsRef = useRef<string[]>([]);
   const liveRoutePointsRef = useRef(liveRoutePoints);
   const liveMapState = liveMapAvailability === "auto" ? autoLiveMapState : liveMapAvailability;
@@ -119,51 +120,15 @@ export function useRouteLiveMap({
     const maplibregl = maplibreModuleRef.current;
     if (!map || liveMapState !== "ready" || !maplibregl) return;
 
-    const visibleCoordinates = new Map<string, number>(
-      visibleLiveRoutePoints
-        .map((point, index) => [point.item.id, index + 1]),
-    );
-
-    markersRef.current.forEach((entry, itemId) => {
-      if (!markerItems.has(itemId)) {
-        entry.marker.remove();
-        markersRef.current.delete(itemId);
-      }
-    });
-
-    liveRoutePoints.forEach((point) => {
-      const coordinates = point.item.coordinates;
-      if (!coordinates) return;
-      const markerLabel = String(visibleCoordinates.get(point.item.id) ?? 1);
-      const markerColor = dayColorFor(point.item.day, routeDayGroups);
-      const markerDisplay = activeDay === "all" || point.item.day === activeDay ? "" : "none";
-      const existing = markersRef.current.get(point.item.id);
-      if (existing) {
-        existing.day = point.item.day;
-        existing.marker.setLngLat([coordinates.lng, coordinates.lat]);
-        existing.marker.getElement().style.setProperty("--day-color", markerColor);
-        existing.marker.getElement().textContent = markerLabel;
-        existing.marker.getElement().style.display = markerDisplay;
-        return;
-      }
-
-      const markerElement = document.createElement("span");
-      markerElement.className = "ofm-marker";
-      markerElement.dataset.day = point.item.day;
-      markerElement.setAttribute("aria-hidden", "true");
-      markerElement.style.setProperty("--day-color", markerColor);
-      markerElement.style.display = markerDisplay;
-      markerElement.textContent = markerLabel;
-
-      const marker = new maplibregl.Marker({ element: markerElement })
-        .setLngLat([coordinates.lng, coordinates.lat])
-        .addTo(map);
-
-      markersRef.current.set(point.item.id, { marker, day: point.item.day });
-    });
-
-    markersRef.current.forEach((entry) => {
-      entry.marker.getElement().style.display = activeDay === "all" || entry.day === activeDay ? "" : "none";
+    synchronizeLiveRouteMarkers({
+      activeDay,
+      liveRoutePoints,
+      map,
+      maplibregl,
+      markerItems,
+      markers: markersRef.current,
+      routeDayGroups,
+      visibleLiveRoutePoints,
     });
 
     sourceIdsRef.current = synchronizeRouteLayers(map, sourceIdsRef.current, routeDayGroups, activeDay);

@@ -24,6 +24,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       routeMapView,
       routeMapUnresolvedPanel,
       routeLiveMapHook,
+      routeLiveMapMarkers,
       routeMapUtils,
       stopDialog,
       stopDialogStory,
@@ -43,6 +44,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsPage,
       tripSettingsSupport,
       tripSettingsFormState,
+      workspaceCoreFrameProps,
+      workspaceFrameProps,
       workspaceFrameActionProps,
     } = readWorkspaceBoundarySources(frontendRoot);
 
@@ -66,7 +69,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
-    expect(sagaCore).toContain("buildWorkspaceFrameActionProps");
+    expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
+    expect(sagaCore).not.toContain("buildWorkspaceFrameActionProps");
+    expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
+    expect(workspaceFrameProps).toContain("buildWorkspaceFrameActionProps");
     expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
@@ -117,6 +123,10 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(routeLiveMapHook).toContain("export function useRouteLiveMap");
     expect(routeLiveMapHook).toContain("maplibre-gl");
     expect(routeLiveMapHook).toContain("function mountLiveMap");
+    expect(routeLiveMapHook).toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMapHook).not.toContain("document.createElement(\"span\")");
+    expect(routeLiveMapMarkers).toContain("export function synchronizeLiveRouteMarkers");
+    expect(routeLiveMapMarkers).toContain("document.createElement(\"span\")");
     expect(routeMapView).toContain("RouteMapUnresolvedPanel");
     expect(routeMapView).not.toContain("unresolvedPanelListClassName");
     expect(routeMapUnresolvedPanel).toContain("unresolvedPanelListClassName");
