@@ -91,6 +91,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.support.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.styles.ts",
+  "src/features/workspace/pages/trip-settings/TripSettingsPage.stories.plays.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.stories.support.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.test-support.tsx",
   "src/features/workspace/pages/trip-settings/components/TripSettingsForm.tsx",
