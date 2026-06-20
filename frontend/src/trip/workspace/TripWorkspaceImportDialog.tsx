@@ -11,18 +11,14 @@ import type {
 } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
 import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
-
-const importModalBackdropClassName =
-  "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
-const importDialogClassName =
-  "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
-const importDialogTitleClassName =
-  "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
-const importDialogBodyClassName =
-  "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
-const importDialogFieldsClassName =
-  "grid gap-3 [&_label]:grid [&_label]:gap-1.5 [&_label>span]:text-xs [&_label>span]:font-bold [&_label>span]:text-(--color-text-muted) [&_input]:min-h-9 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2.5 [&_input]:text-sm [&_select]:min-h-9 [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2.5 [&_select]:text-sm";
-const importDialogActionsClassName = "mt-1 flex justify-end gap-2";
+import {
+  importDialogClassName,
+  importDialogFieldsClassName,
+  importDialogTitleClassName,
+  workspaceDialogActionsClassName,
+  workspaceDialogBackdropClassName,
+  workspaceDialogBodyClassName,
+} from "./TripWorkspaceDialog.styles";
 
 interface TripWorkspaceImportDialogProps {
   currentTripPathId: string;
@@ -87,7 +83,7 @@ export function TripWorkspaceImportDialog({
   }
 
   return (
-    <div className={importModalBackdropClassName} role="presentation">
+    <div className={workspaceDialogBackdropClassName} role="presentation">
       <form
         className={importDialogClassName}
         role="dialog"
@@ -101,11 +97,11 @@ export function TripWorkspaceImportDialog({
         >
           ตั้งค่า import itinerary
         </h2>
-        <p className={importDialogBodyClassName}>
+        <p className={workspaceDialogBodyClassName}>
           {previewLabel} · {importedItems.length} activities
         </p>
         {recordCount > 0 ? (
-          <p className={importDialogBodyClassName}>
+          <p className={workspaceDialogBodyClassName}>
             Records detected: {records.expenses.length} expenses,{" "}
             {records.bookingDocs.length} bookings, {records.stopNotes.length}{" "}
             notes, {records.tasks.length} tasks. Linked records will be
@@ -187,7 +183,7 @@ export function TripWorkspaceImportDialog({
             </label>
           ) : null}
         </div>
-        <div className={importDialogActionsClassName}>
+        <div className={workspaceDialogActionsClassName}>
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>

@@ -1,23 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fn, userEvent, within } from "storybook/test";
-import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
-import { buildExpenseSummary } from "@/src/trip/expenses";
+import { expect, userEvent, within } from "storybook/test";
+import { tripFixture } from "@/src/trip/trip-fixtures";
 import { TripExpensesPage } from "./TripExpensesPage";
-
-const onStoryUpdateExpense = fn();
-const denseTrip = buildDenseTripFixture();
-const emptyTrip = buildEmptyTripFixture();
-const inferredScopeTrip = {
-  ...tripFixture.trip,
-  expenses: [
-    {
-      ...tripFixture.trip.expenses[0],
-      tripPlanId: "plan-rain",
-      itineraryItemId: null,
-    },
-  ],
-};
+import {
+  denseExpenseSummary,
+  denseTrip,
+  emptyExpenseSummary,
+  emptyTrip,
+  expensesOwnerStoryArgs,
+  expectExpensesResponsiveContract,
+  inferredScopeExpenseSummary,
+  inferredScopeTrip,
+  onStoryUpdateExpense,
+} from "./ExpensesPage.stories.support";
 
 const meta = {
   title: "Pages/Expenses",
@@ -29,23 +24,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-async function expectExpensesResponsiveContract(canvasElement: HTMLElement) {
-  const canvas = within(canvasElement);
-  await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
-  await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
-  await expect(canvas.getByRole("table", { name: /Expense ledger|รายการค่าใช้จ่าย/i })).toHaveClass("expense-ledger-table");
-}
-
 export const Owner: Story = {
-  args: {
-    trip: tripFixture.trip,
-    currentMember: tripFixture.currentMembers.owner,
-    expenseSummary: tripFixture.expenseSummaries.owner,
-    canEditExpenses: true,
-    onCreateExpense: noop,
-    onUpdateExpense: noop,
-    onDeleteExpense: noop,
-  },
+  args: expensesOwnerStoryArgs,
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("region", { name: /Trip money/i })).toHaveClass("expenses-page");
     await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeEnabled();
@@ -92,7 +72,7 @@ export const Dense: Story = {
     ...Owner.args,
     trip: denseTrip,
     currentMember: denseTrip.members[0],
-    expenseSummary: buildExpenseSummary(denseTrip.expenses, denseTrip.members[0].id),
+    expenseSummary: denseExpenseSummary,
   },
 };
 
@@ -100,7 +80,7 @@ export const Empty: Story = {
   args: {
     ...Owner.args,
     trip: emptyTrip,
-    expenseSummary: buildExpenseSummary(emptyTrip.expenses, tripFixture.currentMembers.owner.id),
+    expenseSummary: emptyExpenseSummary,
   },
 };
 
@@ -138,7 +118,7 @@ export const PlanScopeAudit: Story = {
   args: {
     ...Owner.args,
     trip: inferredScopeTrip,
-    expenseSummary: buildExpenseSummary(inferredScopeTrip.expenses, tripFixture.currentMembers.owner.id),
+    expenseSummary: inferredScopeExpenseSummary,
     onUpdateExpense: onStoryUpdateExpense,
   },
   play: async ({ canvas }) => {

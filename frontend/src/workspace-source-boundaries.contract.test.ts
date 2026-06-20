@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { frontendRoot } from "./project-contract.helpers";
 import { expectSourceNotToContain } from "./workspace-source-boundaries.assertions";
@@ -120,5 +122,18 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("import-options-dialog");
     expect(sagaCore).not.toContain("ItineraryImportOptionsDialog");
     expect(workspaceMainShell).toContain("WorkspaceRolePreview");
+  });
+
+  it("keeps workspace dialog chrome styles shared", () => {
+    const importDialog = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"), "utf8");
+    const deleteDialog = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"), "utf8");
+    const dialogStyles = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDialog.styles.ts"), "utf8");
+
+    expect(importDialog).toContain("./TripWorkspaceDialog.styles");
+    expect(deleteDialog).toContain("./TripWorkspaceDialog.styles");
+    expect(importDialog).not.toContain("const importModalBackdropClassName");
+    expect(deleteDialog).not.toContain("const deleteModalBackdropClassName");
+    expect(dialogStyles).toContain("export const workspaceDialogBackdropClassName");
+    expect(dialogStyles).toContain("export const workspaceDialogActionsClassName");
   });
 });

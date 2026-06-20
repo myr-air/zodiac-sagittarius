@@ -1,6 +1,7 @@
 export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/TripWorkspaceApp.tsx",
   "src/trip/workspace/TripWorkspaceDeleteDialog.tsx",
+  "src/trip/workspace/TripWorkspaceDialog.styles.ts",
   "src/trip/workspace/TripWorkspaceFrame.tsx",
   "src/trip/workspace/TripWorkspaceImportDialog.tsx",
   "src/trip/workspace/TripWorkspaceRail.tsx",
