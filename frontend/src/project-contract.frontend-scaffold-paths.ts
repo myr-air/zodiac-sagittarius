@@ -31,6 +31,7 @@ export const frontendScaffoldPathsPresent = [
   "src/project-contract.frontend-scaffold-paths.ts",
   "src/project-contract.repo-scaffold-paths.ts",
   "src/project-contract.scaffold-paths.ts",
+  "src/project-frontend-architecture.contract.test.ts",
   "src/project-production-release.contract.test.ts",
   "src/project-production-routing.contract.test.ts",
   "src/workspace-source-boundaries.blocked-terms.ts",
