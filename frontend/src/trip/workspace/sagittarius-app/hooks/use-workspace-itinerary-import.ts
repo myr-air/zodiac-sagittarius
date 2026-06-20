@@ -1,10 +1,6 @@
 import { useCallback, useState } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import {
-  buildItineraryExport,
-  parseItineraryImportDocument,
-} from "@/src/trip/itinerary-import-export";
-import { slugifyFilePart } from "@/src/lib/file-names";
+import { parseItineraryImportDocument } from "@/src/trip/itinerary-import-export";
 import { buildImportItineraryRequest } from "@/src/trip/workspace/itinerary-import-api";
 import {
   pendingItineraryImportFromDocument,
@@ -19,6 +15,7 @@ import type {
   TripParticipantSession,
   ItineraryItem,
 } from "@/src/trip/types";
+import { useWorkspaceItineraryExportCommand } from "./itinerary/use-workspace-itinerary-export-command";
 import { useWorkspaceItineraryImportApplyCommand } from "./itinerary/use-workspace-itinerary-import-apply-command";
 
 interface UseWorkspaceItineraryImportOptions {
@@ -74,26 +71,12 @@ export function useWorkspaceItineraryImport({
     setItineraryImportError(null);
   }, []);
 
-  const exportItinerary = useCallback(() => {
-    const document = buildItineraryExport({
-      exportedAt: new Date().toISOString(),
-      items: planItems,
-      stopNotes,
-      tasks,
-      trip,
-    });
-    const blob = new Blob([`${JSON.stringify(document, null, 2)}\n`], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = window.document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${slugifyFilePart(trip.name)}-itinerary-v1.json`;
-    window.document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-  }, [planItems, stopNotes, tasks, trip]);
+  const exportItinerary = useWorkspaceItineraryExportCommand({
+    planItems,
+    stopNotes,
+    tasks,
+    trip,
+  });
 
   const importItineraryContent = useCallback(async ({
     fileName,
