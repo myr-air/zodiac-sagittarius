@@ -6,6 +6,8 @@ import {
   sortItemsForDay,
 } from "./itinerary-view";
 import { tripFixture } from "./trip-fixtures";
+import { seedTrip } from "./seed";
+import { hongKongDay, shenzhenDay } from "./itinerary.test-support";
 
 describe("itinerary view helpers", () => {
   it("groups sorted itinerary items with route stats", () => {
@@ -59,5 +61,88 @@ describe("itinerary view helpers", () => {
     expect(formatDayLabel("2026-06-20", "2026-06-18")).toBe("Day 3");
     expect(formatDayLabel("2026-06-20", "2026-06-18", "th")).toBe("วันที่ 3");
     expect(formatDayLabel("not-a-date", "2026-06-18")).toBe("not-a-date");
+  });
+
+  it("builds a shared itinerary view with sorted items and warning totals", () => {
+    const selectedItems = [
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-victoria-peak")!,
+        id: "item-overlap-a",
+        day: hongKongDay,
+        sortOrder: 300,
+        startTime: "09:30",
+        durationMinutes: 45,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-dimdim")!,
+        id: "item-overlap-b",
+        day: hongKongDay,
+        sortOrder: 100,
+        startTime: "09:00",
+        durationMinutes: 60,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-pacific-place")!,
+        id: "item-safe-stop",
+        day: hongKongDay,
+        sortOrder: 200,
+        startTime: "11:00",
+        durationMinutes: 30,
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-temple-street")!,
+        id: "item-invalid-fields",
+        day: hongKongDay,
+        sortOrder: 400,
+        startTime: "24:99",
+        durationMinutes: 0,
+        mapLink: " ",
+        transportation: " ",
+      },
+      {
+        ...seedTrip.itineraryItems.find((item) => item.id === "item-checkout")!,
+        id: "item-other-day",
+      },
+    ];
+
+    const view = buildItineraryView(selectedItems);
+
+    expect(view.sortedItems.map((item) => item.id)).toEqual([
+      "item-overlap-b",
+      "item-overlap-a",
+      "item-safe-stop",
+      "item-invalid-fields",
+      "item-other-day",
+    ]);
+    expect(view.dayGroups.map((group) => ({
+      day: group.day,
+      warningCount: group.warningCount,
+      ids: group.items.map((item) => item.id),
+    }))).toEqual([
+      {
+        day: hongKongDay,
+        warningCount: 6,
+        ids: ["item-overlap-b", "item-overlap-a", "item-safe-stop", "item-invalid-fields"],
+      },
+      {
+        day: shenzhenDay,
+        warningCount: 0,
+        ids: ["item-other-day"],
+      },
+    ]);
+    expect(view.routeDayStats).toEqual([
+      {
+        day: hongKongDay,
+        itemCount: 4,
+        coordinateItemCount: 4,
+        warningCount: 6,
+      },
+      {
+        day: shenzhenDay,
+        itemCount: 1,
+        coordinateItemCount: 1,
+        warningCount: 0,
+      },
+    ]);
   });
 });

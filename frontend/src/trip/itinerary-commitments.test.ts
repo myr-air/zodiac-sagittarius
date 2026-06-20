@@ -35,4 +35,44 @@ describe("itinerary commitments", () => {
       },
     });
   });
+
+  it("summarizes linked bookings, expenses, notes, and open tasks by itinerary item", () => {
+    const commitments = buildItineraryCommitmentsByItemId({
+      bookingDocs: [
+        {
+          relatedItineraryItemIds: ["item-dimdim", "item-peak"],
+        },
+        {
+          relatedItineraryItemIds: ["item-dimdim"],
+        },
+      ],
+      expenses: [
+        { itineraryItemId: "item-dimdim" },
+        { itineraryItemId: null },
+      ],
+      stopNotes: [
+        { itemId: "item-dimdim" },
+        { itemId: "item-peak" },
+      ],
+      tasks: [
+        { relatedItemId: "item-dimdim", status: "open" },
+        { relatedItemId: "item-dimdim", status: "done" },
+        { relatedItemId: "item-peak", status: "open" },
+      ],
+    });
+
+    expect(commitments).toEqual({
+      "item-dimdim": {
+        bookingCount: 2,
+        expenseCount: 1,
+        noteCount: 1,
+        openTaskCount: 1,
+      },
+      "item-peak": {
+        bookingCount: 1,
+        noteCount: 1,
+        openTaskCount: 1,
+      },
+    });
+  });
 });
