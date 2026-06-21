@@ -3,7 +3,7 @@ import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { BookingDoc } from "@/src/trip/types";
-import type { BookingDocInput, BookingsDocsPage } from "./BookingsDocsPage";
+import type { BookingDocInput, BookingsDocsPage } from "../BookingsDocsPage";
 
 type BookingsDocsPageStoryArgs = Parameters<typeof BookingsDocsPage>[0];
 

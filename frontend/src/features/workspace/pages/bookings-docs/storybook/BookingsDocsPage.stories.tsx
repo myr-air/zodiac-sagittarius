@@ -3,7 +3,7 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { BookingsDocsPage } from "./BookingsDocsPage";
+import { BookingsDocsPage } from "../BookingsDocsPage";
 import {
   addBookingDialogOpenPlay,
   densePlay,

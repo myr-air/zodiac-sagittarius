@@ -91,7 +91,7 @@ export const workspaceBoundarySourcePaths = {
   workspaceDialogs: "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx",
   sagittariusAppStory: "src/app/SagittariusApp.stories.tsx",
   appShellStory: "src/features/workspace/stories/AppShell.stories.tsx",
-  bookingsDocsPageStory: "src/features/workspace/pages/bookings-docs/BookingsDocsPage.stories.tsx",
+  bookingsDocsPageStory: "src/features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.tsx",
   bookingDisplay: "src/features/workspace/pages/bookings-docs/booking-display.ts",
   bookingFolders: "src/features/workspace/pages/bookings-docs/booking-folders.ts",
   bookingList: "src/features/workspace/pages/bookings-docs/booking-list.ts",

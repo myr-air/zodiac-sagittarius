@@ -49,7 +49,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/bookings-docs/BookingsDocsPage.stories.tsx",
+    "features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.tsx",
     [
       "Owner",
       "OwnerThai",
