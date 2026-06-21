@@ -76,7 +76,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-labels.ts",
   "src/features/account/components/account-access-panel/email-login/submit/email-login-auth-actions.ts",
   "src/features/account/components/account-access-panel/email-login/email-login-step-disabled-state.ts",
-  "src/features/account/components/account-access-panel/email-login/email-login-step-disabled-state.test.ts",
+  "src/features/account/components/account-access-panel/email-login/tests/email-login-step-disabled-state.test.ts",
   "src/features/account/components/account-access-panel/email-login/submit/email-login-submit-route.ts",
   "src/features/account/components/account-access-panel/email-login/submit/email-login-submit-route.test.ts",
   "src/features/account/components/account-access-panel/email-login/submit/email-login-submit-errors.ts",

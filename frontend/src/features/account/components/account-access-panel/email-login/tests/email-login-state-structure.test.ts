@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const emailLoginDir = dirname(fileURLToPath(import.meta.url));
+const emailLoginDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function readEmailLoginSource(fileName: string) {
   return readFileSync(join(emailLoginDir, fileName), "utf8");

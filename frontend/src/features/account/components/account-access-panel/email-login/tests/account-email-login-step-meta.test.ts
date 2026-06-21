@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AuthFlow } from "../auth";
+import type { AuthFlow } from "../../auth";
 import {
   buildEmailLoginStepMeta,
   emailLoginAuthStepValues,
@@ -8,7 +8,7 @@ import {
   emailLoginVisualStepValues,
   resolveEmailLoginVisualStep,
   type EmailLoginAuthStep,
-} from "./account-email-login-step-meta";
+} from "../account-email-login-step-meta";
 
 const headingLabels = {
   expiresAt: ({ value }: { value: string }) => `Expires ${value}`,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEmailLoginStepDisabledState } from "./email-login-step-disabled-state";
+import { buildEmailLoginStepDisabledState } from "../email-login-step-disabled-state";
 
 describe("email login step disabled state", () => {
   it("disables credential primary actions until email and password are ready", () => {
