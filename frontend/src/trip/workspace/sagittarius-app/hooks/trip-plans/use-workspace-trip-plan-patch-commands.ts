@@ -8,7 +8,7 @@ import {
 } from "@/src/trip/trip-plans";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import type { PlanStatus, Trip, TripParticipantSession } from "@/src/trip/types";
-import { runTripPlanApiCommand } from "./trip-plan-api-command";
+import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
 
 interface UseWorkspaceTripPlanPatchCommandsParams {
   canManageTripPlans: boolean;
@@ -47,7 +47,7 @@ export function useWorkspaceTripPlanPatchCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      return runTripPlanApiCommand({
+      return runWorkspaceApiCommand({
         command: async () => {
           const patchTripPlanMutation =
             resolvedApiClient.patchTripPlan ??
@@ -106,7 +106,7 @@ export function useWorkspaceTripPlanPatchCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      return runTripPlanApiCommand({
+      return runWorkspaceApiCommand({
         command: async () => {
           const patchTripPlanMutation =
             resolvedApiClient.patchTripPlan ??

@@ -81,6 +81,8 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/index.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-sagittarius-workspace-contexts.ts",
   "src/trip/workspace/sagittarius-app/support/index.ts",
+  "src/trip/workspace/sagittarius-app/support/workspace-api-command.ts",
+  "src/trip/workspace/sagittarius-app/support/workspace-api-command.test.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-support.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-expectations.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-fixtures.ts",

@@ -7,7 +7,7 @@ import {
 } from "@/src/trip/trip-plans";
 import { nextClientMutationId } from "@/src/trip/local-ids";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { runTripPlanApiCommand } from "./trip-plan-api-command";
+import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
 import { useWorkspaceTripPlanCreateCommand } from "./use-workspace-trip-plan-create-command";
 import { useWorkspaceTripPlanPatchCommands } from "./use-workspace-trip-plan-patch-commands";
 
@@ -81,7 +81,7 @@ export function useWorkspaceTripPlanMutationCommands({
     setTripPlanError(null);
 
     if (isApiMode && resolvedApiClient && participantSession) {
-      return runTripPlanApiCommand({
+      return runWorkspaceApiCommand({
         command: async () => {
           const setMainTripPlanRequest =
             resolvedApiClient.setMainTripPlan ??

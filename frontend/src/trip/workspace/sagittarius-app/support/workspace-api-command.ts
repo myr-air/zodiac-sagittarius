@@ -1,6 +1,6 @@
 import { isVersionConflict } from "@/src/trip/api-errors";
 
-export interface RunTripPlanApiCommandInput {
+export interface RunWorkspaceApiCommandInput {
   command: () => Promise<void>;
   reloadOnConflict: () => Promise<void>;
   setBusy: (busy: boolean) => void;
@@ -8,13 +8,13 @@ export interface RunTripPlanApiCommandInput {
   errorMessage: string;
 }
 
-export async function runTripPlanApiCommand({
+export async function runWorkspaceApiCommand({
   command,
   reloadOnConflict,
   setBusy,
   setError,
   errorMessage,
-}: RunTripPlanApiCommandInput): Promise<boolean> {
+}: RunWorkspaceApiCommandInput): Promise<boolean> {
   setBusy(true);
   try {
     await command();

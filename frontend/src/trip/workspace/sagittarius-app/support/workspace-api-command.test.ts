@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { TripApiError } from "@/src/trip/api-error";
-import { runTripPlanApiCommand } from "./trip-plan-api-command";
+import { runWorkspaceApiCommand } from "./workspace-api-command";
 
-describe("runTripPlanApiCommand", () => {
+describe("runWorkspaceApiCommand", () => {
   it("sets busy while a command succeeds", async () => {
     const events: string[] = [];
 
     await expect(
-      runTripPlanApiCommand({
+      runWorkspaceApiCommand({
         command: async () => {
           events.push("command");
         },
@@ -29,7 +29,7 @@ describe("runTripPlanApiCommand", () => {
     const setBusy = vi.fn();
 
     await expect(
-      runTripPlanApiCommand({
+      runWorkspaceApiCommand({
         command: async () => {
           throw new TripApiError({
             code: "version_conflict",
@@ -55,7 +55,7 @@ describe("runTripPlanApiCommand", () => {
     const setBusy = vi.fn();
 
     await expect(
-      runTripPlanApiCommand({
+      runWorkspaceApiCommand({
         command: async () => {
           throw new TripApiError({
             code: "request_failed",
