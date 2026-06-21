@@ -2,10 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   appendItineraryItemPlacement,
   mainItineraryPathId,
+  replaceItineraryItem,
 } from "@/src/trip/itinerary";
-import { applyItemToActivityBranch } from "@/src/trip/itinerary-paths";
+import {
+  applyItemToActivityBranch,
+  applyManualActivityPath,
+} from "@/src/trip/itinerary-paths";
 import { seedTrip } from "@/src/trip/seed";
-import { placeCreatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
+import {
+  placeCreatedWorkspaceStop,
+  placeUpdatedWorkspaceStop,
+} from "./workspace-itinerary-stop-placement";
 
 const baseItem = {
   ...seedTrip.itineraryItems[0]!,
@@ -39,5 +46,28 @@ describe("placeCreatedWorkspaceStop", () => {
         targetPathId: "path-rain",
       }),
     ).toEqual(appendItineraryItemPlacement(seedTrip, baseItem));
+  });
+});
+
+describe("placeUpdatedWorkspaceStop", () => {
+  it("places updated stops into the activity branch", () => {
+    const item = { ...seedTrip.itineraryItems[0]!, activity: "Updated stop" };
+    const tripWithItem = replaceItineraryItem(seedTrip, item);
+
+    expect(placeUpdatedWorkspaceStop(seedTrip, item)).toEqual(
+      applyItemToActivityBranch(tripWithItem, item),
+    );
+  });
+
+  it("applies manual path assignment after branch placement", () => {
+    const item = { ...seedTrip.itineraryItems[0]!, activity: "Updated stop" };
+    const pathPlacement = applyItemToActivityBranch(
+      replaceItineraryItem(seedTrip, item),
+      item,
+    );
+
+    expect(placeUpdatedWorkspaceStop(seedTrip, item, "path-rain")).toEqual(
+      applyManualActivityPath(pathPlacement.trip, item.id, "path-rain"),
+    );
   });
 });

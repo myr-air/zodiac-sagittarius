@@ -5,17 +5,12 @@ import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   buildUpdatedItineraryItem,
   mergeUpdatedItineraryBranchIntoTrip,
-  replaceItineraryItem,
 } from "@/src/trip/itinerary";
 import { buildPatchItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import {
-  applyItemToActivityBranch,
-  applyManualActivityPath,
-} from "@/src/trip/itinerary-paths";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
@@ -30,6 +25,7 @@ import {
   resolveStopFormLocation,
   shouldResolveUpdatedStopPlace,
 } from "./stop-place-resolution-command";
+import { placeUpdatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
 
 interface UseWorkspaceItineraryStopUpdateCommandParams {
   commitTrip: (
@@ -111,14 +107,11 @@ export function useWorkspaceItineraryStopUpdateCommand({
           ...patchedItem,
           day: values.day || patchedItem.day,
         };
-        const tripWithPatchedItem = replaceItineraryItem(trip, patchedItemWithDay);
-        const pathPlacement = applyItemToActivityBranch(
-          tripWithPatchedItem,
+        const branchPlacement = placeUpdatedWorkspaceStop(
+          trip,
           patchedItemWithDay,
+          values.pathId,
         );
-        const branchPlacement = values.pathId
-          ? applyManualActivityPath(pathPlacement.trip, itemId, values.pathId)
-          : pathPlacement;
         const patchedBranchItems = await patchApiItineraryBranchItems({
           apiClient: resolvedApiClient,
           items: branchPlacement.changedExistingItems,
@@ -151,18 +144,11 @@ export function useWorkspaceItineraryStopUpdateCommand({
               updatedAt: workspaceLocalMutationTimestamp,
             },
           );
-          const tripWithUpdatedItem = replaceItineraryItem(current, updatedItem);
-          const pathPlacement = applyItemToActivityBranch(
-            tripWithUpdatedItem,
+          return placeUpdatedWorkspaceStop(
+            current,
             updatedItem,
-          );
-          return values.pathId
-            ? applyManualActivityPath(
-                pathPlacement.trip,
-                itemId,
-                values.pathId,
-              ).trip
-            : pathPlacement.trip;
+            values.pathId,
+          ).trip;
         });
         setSelectedItemId(itemId);
         setDialogState(null);
