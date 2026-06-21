@@ -7,7 +7,7 @@ import { BookingInspector } from "./BookingInspector";
 import {
   bookingDocTestTasks,
   bookingFlightTestDoc,
-} from "../bookings-docs-test-fixtures";
+} from "../tests/bookings-docs-test-fixtures";
 
 describe("BookingInspector", () => {
   it("renders an empty inspector when no booking is selected", () => {

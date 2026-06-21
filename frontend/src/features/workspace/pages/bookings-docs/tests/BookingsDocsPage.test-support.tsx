@@ -2,7 +2,7 @@ import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import type { BookingDoc, Member } from "@/src/trip/types";
-import { BookingsDocsPage, type BookingDocInput } from "./BookingsDocsPage";
+import { BookingsDocsPage, type BookingDocInput } from "../BookingsDocsPage";
 import { bookingDocTestTasks } from "./bookings-docs-test-fixtures";
 
 interface RenderBookingsDocsPageOptions {

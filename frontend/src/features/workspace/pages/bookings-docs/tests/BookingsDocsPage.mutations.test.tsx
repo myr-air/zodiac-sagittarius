@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { BookingDocInput } from "./BookingsDocsPage";
+import type { BookingDocInput } from "../BookingsDocsPage";
 import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
 import { bookingFlightTestDoc } from "./bookings-docs-test-fixtures";
 
