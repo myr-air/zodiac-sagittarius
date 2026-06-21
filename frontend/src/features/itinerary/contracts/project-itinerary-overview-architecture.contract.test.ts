@@ -27,10 +27,9 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const overviewSections = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSections.tsx");
     const cockpit = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpit.tsx");
     const cockpitCard = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpitCard.tsx");
-    const overviewBarrel = readItineraryArchitectureSource("src/features/itinerary/components/overview/index.ts");
 
     expect(cockpit).toContain("./OverviewCockpitCard");
-    expect(overviewBarrel).toContain('export { CockpitCard } from "./OverviewCockpitCard"');
+    expect(cockpit).toContain("CockpitCard");
     expect(overviewSections).not.toContain("export function CockpitCard");
     expect(overviewSections).not.toContain("cockpitCardButtonClassName");
     expect(cockpitCard).toContain("export function CockpitCard");

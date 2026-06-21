@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import {
-  ManagerOverviewPanels,
-  TravelerOverviewPanels,
-  ViewerOverviewPanels,
-} from "@/src/features/itinerary/components/overview";
+import { ManagerOverviewPanels } from "@/src/features/itinerary/components/overview/ManagerOverviewPanels";
+import { TravelerOverviewPanels } from "@/src/features/itinerary/components/overview/TravelerOverviewPanels";
+import { ViewerOverviewPanels } from "@/src/features/itinerary/components/overview/ViewerOverviewPanels";
 import { managerPlay, travelerPlay, viewerPlay } from "./OverviewRolePanels.stories.plays";
 import {
   managerOverviewPanelStoryProps,

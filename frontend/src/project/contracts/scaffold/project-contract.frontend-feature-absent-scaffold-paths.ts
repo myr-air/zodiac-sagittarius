@@ -347,6 +347,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/overview/OverviewPage.visuals.test.tsx",
   "src/features/itinerary/components/overview/OverviewRolePanels.test.tsx",
   "src/features/itinerary/components/overview/OverviewRolePanels.tsx",
+  "src/features/itinerary/components/overview/index.ts",
   "src/features/itinerary/components/overview/overview-page-model.test.ts",
   "src/features/itinerary/components/overview/overview-role-panels.types.test.ts",
   "src/features/itinerary/components/ContextRail.tsx",
