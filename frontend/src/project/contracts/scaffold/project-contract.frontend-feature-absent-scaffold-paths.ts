@@ -417,6 +417,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/stop-dialog/StopDialog.sub-activity.test.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialog.test-support.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialog.time-window-ui.test.tsx",
+  "src/features/itinerary/components/stop-dialog/index.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-details.test.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.test.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-time.test.ts",

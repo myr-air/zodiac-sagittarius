@@ -196,7 +196,6 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/stop-dialog/tests/stop-dialog.form-schedule.test.ts",
   "src/features/itinerary/components/stop-dialog/tests/stop-dialog.form-submit.test.ts",
   "src/features/itinerary/components/stop-dialog/tests/stop-dialog.utils.test.ts",
-  "src/features/itinerary/components/stop-dialog/index.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-detail-definitions.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-details.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts",

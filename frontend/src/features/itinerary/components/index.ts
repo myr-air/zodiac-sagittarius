@@ -6,8 +6,8 @@ export type { ContextRailTab } from "./context-rail";
 export { RouteMapView } from "./route-map/RouteMapView";
 export { SmartItineraryTable } from "./smart-itinerary-table";
 export { TimelineView } from "./TimelineView";
-export { StopDialog } from "./stop-dialog";
+export { StopDialog } from "./stop-dialog/StopDialog";
 
 export type { InlineItineraryItemPatch } from "../lib/inline-itinerary-item-patch";
-export type { StopFormValues, StopManualPathOption } from "./stop-dialog";
+export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 export type { MapCoordinateResolutionResult } from "./route-map/route-map.types";
