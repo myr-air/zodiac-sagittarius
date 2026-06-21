@@ -3,7 +3,7 @@ import {
   tripInvitableRoleValues,
   tripMemberAccessStatusValues,
   tripRoleValues,
-} from "./trip-member-types";
+} from "../../trip-member-types";
 
 describe("trip member type values", () => {
   it("keeps member roles and access statuses in canonical order", () => {

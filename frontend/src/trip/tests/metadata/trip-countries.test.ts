@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveTripCountriesFromDestination } from "./trip-countries";
+import { deriveTripCountriesFromDestination } from "../../trip-countries";
 
 describe("trip countries", () => {
   it("derives known countries from destination text", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   advisorySeverityValues,
   itineraryPathScopeValues,
-} from "./trip-itinerary-types";
+} from "../../trip-itinerary-types";
 
 describe("trip itinerary type values", () => {
   it("keeps advisory severities in escalation order", () => {

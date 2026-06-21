@@ -7,7 +7,7 @@ import {
   destinationRouteCode,
   tripContinentValues,
   tripDestinationCards,
-} from "./trip-destinations";
+} from "../../trip-destinations";
 
 describe("trip destination helpers", () => {
   it("keeps continent filters in canonical order", () => {

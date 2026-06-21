@@ -6,7 +6,7 @@ import {
   planSuggestionStatusValues,
   suggestionStatusValues,
   suggestionTypeValues,
-} from "./trip-suggestion-types";
+} from "../../trip-suggestion-types";
 
 describe("trip suggestion type values", () => {
   it("keeps suggestion enum values in canonical order", () => {
