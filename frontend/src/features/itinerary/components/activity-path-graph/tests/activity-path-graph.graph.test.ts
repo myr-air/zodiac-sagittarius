@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
-import { laneColors } from "./activity-path-graph.styles";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
+import { laneColors } from "../activity-path-graph.styles";
 import type { ItineraryItem } from "@/src/trip/types";
-import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
 import {
   buildEdgePath,
   buildGraphEdges,
   buildLaneXByPathId,
   buildPathMetaForDay,
   buildVisibleLanePathIds,
-} from "./activity-path-graph.graph";
+} from "../activity-path-graph.graph";
 
 const itemForNode = (
   id: string,
@@ -17,7 +17,7 @@ const itemForNode = (
   pathRole: "main" | "alternative" = "main",
   day = "2026-06-19",
 ): ItineraryItem =>
-  makeItineraryGraphItem({
+  buildItineraryItem({
     id,
     day,
     activity: `Activity ${id}`,
@@ -95,4 +95,3 @@ describe("activity-path-graph.graph", () => {
     });
   });
 });
-

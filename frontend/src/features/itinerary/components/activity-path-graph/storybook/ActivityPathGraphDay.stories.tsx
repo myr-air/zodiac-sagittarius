@@ -1,19 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { buildItineraryItem, mainPathOption, pathRainPlanOption } from "@/src/features/itinerary/testing";
 import type { ItineraryItem } from "@/src/trip/types";
 import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
 import type { ActivityPathGraphDayProps } from "../activity-path-graph.types";
-import { mainPathOption, pathRainPlanOption } from "@/src/features/itinerary/testing";
-import { makeItineraryGraphItem } from "../activity-path-graph.test-fixtures";
 
 const rowItems: ItineraryItem[] = [
-  makeItineraryGraphItem({
+  buildItineraryItem({
     id: "item-main",
     activity: "Hotel check-in",
     place: "Grand Hotel",
     pathId: "main",
     pathRole: "main",
   }),
-  makeItineraryGraphItem({
+  buildItineraryItem({
     id: "item-rain",
     activity: "Airport pickup",
     place: "Terminal 1",
@@ -25,7 +24,7 @@ const rowItems: ItineraryItem[] = [
 
 const graphItems: ItineraryItem[] = [
   rowItems[0],
-  makeItineraryGraphItem({
+  buildItineraryItem({
     id: "item-rain-detail",
     activity: "Umbrella shopping",
     place: "Duty Free",

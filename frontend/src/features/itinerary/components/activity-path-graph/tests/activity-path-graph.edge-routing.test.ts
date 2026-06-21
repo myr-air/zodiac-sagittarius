@@ -4,16 +4,16 @@ import {
   findBestPreviousConnectableNode,
   isContinuousNode,
   shouldDashGapEdge,
-} from "./activity-path-graph.edge-routing";
-import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
-import type { GraphNode } from "./activity-path-graph.types";
+} from "../activity-path-graph.edge-routing";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
+import type { GraphNode } from "../activity-path-graph.types";
 
 function graphNode(id: string, patch: Partial<GraphNode> = {}): GraphNode {
   return {
     id,
     color: "red",
     end: 60,
-    item: makeItineraryGraphItem({ id }),
+    item: buildItineraryItem({ id }),
     pathId: "main",
     pathName: "Main",
     sourcePathId: "main",

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildFallbackGraphLayout, collectGraphMeasurementElements, measureRenderedGraphLayout } from "./activity-path-graph.layout";
+import { buildFallbackGraphLayout, collectGraphMeasurementElements, measureRenderedGraphLayout } from "../activity-path-graph.layout";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { mainItineraryPathId } from "@/src/trip/itinerary";
 import type { ItineraryItem } from "@/src/trip/types";
-import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
 
 function makeRect(left: number, top: number, width = 100, height = 40): DOMRect {
   return {
@@ -21,7 +21,7 @@ function makeRect(left: number, top: number, width = 100, height = 40): DOMRect 
 }
 
 const item: ItineraryItem = {
-  ...makeItineraryGraphItem({
+  ...buildItineraryItem({
     id: "item-a",
     activity: "Activity A",
     place: "Location",
@@ -29,7 +29,7 @@ const item: ItineraryItem = {
     pathId: "path-a",
   }),
 };
-const duplicateItem: ItineraryItem = makeItineraryGraphItem({
+const duplicateItem: ItineraryItem = buildItineraryItem({
   id: "item-b",
   pathGroupId: "group-b",
 });
