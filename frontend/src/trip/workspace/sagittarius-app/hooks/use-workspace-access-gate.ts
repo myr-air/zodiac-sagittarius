@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import type { AccountSession } from "@/src/account/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
-import { resolveJoinPostAuthReturnTo } from "@/src/trip/join-return";
 import { decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { SagittariusAccessMode } from "../types";
+import { resolveJoinPostAuthReturnTo } from "./participant-post-auth-navigation";
 import { resolveWorkspaceAccessState } from "./workspace-access-state";
 
 interface UseWorkspaceAccessGateOptions {
