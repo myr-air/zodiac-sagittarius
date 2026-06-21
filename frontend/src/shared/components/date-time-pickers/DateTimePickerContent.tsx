@@ -4,7 +4,7 @@ import {
   buildCalendarDays,
   pickerWeekdays,
   timePickerPresets,
-} from "./date-time-picker-model";
+} from "./model/date-time-picker-model";
 import {
   calendarGridClassName,
   dayButtonClassName,
@@ -14,7 +14,7 @@ import {
   timeButtonClassName,
   timeGridClassName,
   weekdayClassName,
-} from "./date-time-picker.styles";
+} from "./internal/date-time-picker.styles";
 
 export function CalendarContent({
   onChangeMonth,

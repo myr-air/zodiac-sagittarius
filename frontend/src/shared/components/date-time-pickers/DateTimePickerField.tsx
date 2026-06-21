@@ -2,13 +2,13 @@ import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Button } from "@/src/ui";
-import { monthStart, normalizeTime, todayDate } from "./date-time-picker-model";
+import { monthStart, normalizeTime, todayDate } from "./model/date-time-picker-model";
 import {
   PickerPanel,
   PickerTrigger,
   usePickerPosition,
-} from "./date-time-picker-popover";
-import { inputWrapClassName, pickerActionsClassName } from "./date-time-picker.styles";
+} from "./internal/date-time-picker-popover";
+import { inputWrapClassName, pickerActionsClassName } from "./internal/date-time-picker.styles";
 import { CalendarContent, TimePickerContent } from "./DateTimePickerContent";
 
 export function DateTimePickerField({

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 describe("Calm Travel Ops CSS contract", () => {
   const css = readFileSync("app/globals.css", "utf8");
-  const accountLayoutSource = readFileSync("src/features/account/components/account-access-panel/account-access-panel-layout.ts", "utf8");
+  const accountLayoutSource = readFileSync("src/features/account/components/account-access-panel/layout/account-access-panel-layout.ts", "utf8");
   const activityPathGraphSource = readSourceFiles([
     ...collectRuntimeSourceFiles("src/features/itinerary/components/activity-path-graph"),
   ]);
@@ -15,7 +15,7 @@ describe("Calm Travel Ops CSS contract", () => {
     ...collectRuntimeSourceFiles("src/features/itinerary/components/smart-itinerary-table"),
   ]);
   const motifSource = readFileSync("src/shared/components/travel-motifs/TravelMotifs.tsx", "utf8");
-  const motifStories = readFileSync("src/shared/components/travel-motifs/TravelMotifs.stories.tsx", "utf8");
+  const motifStories = readFileSync("src/shared/components/travel-motifs/storybook/TravelMotifs.stories.tsx", "utf8");
   const tripWorkspaceFrameSource = readFileSync("src/trip/workspace/TripWorkspaceFrame.tsx", "utf8");
   const workspaceToastSource = readFileSync("src/trip/workspace/WorkspaceToast.tsx", "utf8");
   const sourceFiles = collectSourceFiles("src").filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));

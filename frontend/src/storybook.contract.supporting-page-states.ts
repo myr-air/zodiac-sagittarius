@@ -1,14 +1,14 @@
 export const requiredSupportingPageStates: Array<[string, string[]]> = [
   [
-    "shared/components/people-panel/PeoplePanel.stories.tsx",
+    "shared/components/people-panel/storybook/PeoplePanel.stories.tsx",
     ["Manager", "ReadOnly", "Empty"],
   ],
   [
-    "shared/components/suggestion-panel/SuggestionPanel.stories.tsx",
+    "shared/components/suggestion-panel/storybook/SuggestionPanel.stories.tsx",
     ["Default", "Thai", "Empty", "ConflictedHeavy"],
   ],
   [
-    "shared/components/date-time-pickers/DateTimePickers.stories.tsx",
+    "shared/components/date-time-pickers/storybook/DateTimePickers.stories.tsx",
     [
       "TimePicker",
       "DatePicker",
@@ -22,11 +22,11 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "shared/components/weather/WeatherBriefingDrawer.stories.tsx",
+    "shared/components/weather/storybook/WeatherBriefingDrawer.stories.tsx",
     ["OrganizerDrawer", "TravelerDrawer", "MobileSheet", "PartialData"],
   ],
   [
-    "shared/components/weather/WeatherForecastStrip.stories.tsx",
+    "shared/components/weather/storybook/WeatherForecastStrip.stories.tsx",
     ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"],
   ],
   [
