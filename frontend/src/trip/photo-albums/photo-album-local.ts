@@ -1,5 +1,5 @@
 import type { PhotoAlbumInputForApi } from "./photo-album-inputs";
-import type { Trip, TripPhotoAlbumLink } from "./types";
+import type { Trip, TripPhotoAlbumLink } from "../types";
 
 export interface LocalPhotoAlbumCreateOptions {
   title: string;

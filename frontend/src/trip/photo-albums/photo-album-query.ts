@@ -1,5 +1,5 @@
-import { safeExternalHref } from "./safe-links";
-import { findMemberById } from "./member-lookup";
+import { findMemberById } from "../member-lookup";
+import { safeExternalHref } from "../safe-links";
 import type {
   ItineraryItem,
   Member,
@@ -7,7 +7,7 @@ import type {
   TripPhotoAlbumAccess,
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,
-} from "./types";
+} from "../types";
 
 export interface PhotoAlbumSummary {
   total: number;

@@ -1,7 +1,7 @@
 import type {
   CreatePhotoAlbumApiRequest,
   PatchPhotoAlbumApiRequest,
-} from "./api-client";
+} from "../api-client";
 import type { PhotoAlbumInputForApi } from "./photo-album-inputs";
 
 export interface BuildCreatePhotoAlbumRequestOptions {
