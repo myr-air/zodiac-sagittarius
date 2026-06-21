@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { TripDailyBriefing } from "@/src/trip/types";
-import { WeatherForecastStrip } from "./WeatherForecastStrip";
+import { WeatherForecastStrip } from "../WeatherForecastStrip";
 
 const briefing = (date: string, high: number, low: number): TripDailyBriefing => ({
   tripId: "trip-1",

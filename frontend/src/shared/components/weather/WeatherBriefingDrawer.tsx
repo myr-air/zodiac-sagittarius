@@ -11,7 +11,7 @@ import {
   formatSpeed,
   formatWeatherSummary,
   weatherDrawerCopy,
-} from "./weather-briefing-drawer-model";
+} from "./model/weather-briefing-drawer-model";
 
 interface WeatherBriefingDrawerProps {
   briefing: TripDailyBriefing | null;

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { viewportStory } from "@/src/shared/storybook/story-builders";
-import { weatherBriefings } from "./WeatherBriefing.fixtures";
-import { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
+import { weatherBriefings } from "../testing/WeatherBriefing.fixtures";
+import { WeatherBriefingDrawer } from "../WeatherBriefingDrawer";
 import { partialDataPlay } from "./WeatherBriefingDrawer.stories.plays";
 
 const meta = {

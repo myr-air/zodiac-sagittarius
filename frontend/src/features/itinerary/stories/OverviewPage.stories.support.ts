@@ -1,6 +1,6 @@
 import { expect } from "storybook/test";
 import type { OverviewPageProps } from "@/src/features/itinerary/components";
-import { weatherBriefings } from "@/src/shared/components/weather";
+import { weatherBriefings } from "@/src/shared/components/weather/testing/WeatherBriefing.fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/trip-fixtures";

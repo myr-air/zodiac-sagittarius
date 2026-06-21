@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { WeatherBriefingDrawer } from "./WeatherBriefingDrawer";
+import type { WeatherBriefingDrawer } from "../WeatherBriefingDrawer";
 
 type WeatherBriefingDrawerPlay = NonNullable<StoryObj<typeof WeatherBriefingDrawer>["play"]>;
 

@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { weatherBriefings } from "@/src/shared/components/weather";
+import { weatherBriefings } from "@/src/shared/components/weather/testing/WeatherBriefing.fixtures";
 import { renderSmartItineraryTable } from "@/src/features/itinerary/testing";
 
 const renderTable = renderSmartItineraryTable;

@@ -140,9 +140,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps weather briefing drawer formatting split from render", () => {
     const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
-    const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/weather-briefing-drawer-model.ts");
+    const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-model.ts");
 
-    expect(drawer).toContain("./weather-briefing-drawer-model");
+    expect(drawer).toContain("./model/weather-briefing-drawer-model");
     expect(drawer).not.toContain("function formatWeatherSummary");
     expect(drawer).not.toContain("function buildWeatherDetailLines");
     expect(drawer).not.toContain("function weatherDrawerCopy");
@@ -194,8 +194,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps expenses page state split from page composition", () => {
     const expensesPage = readItineraryArchitectureSource("src/features/workspace/pages/expenses/TripExpensesPage.tsx");
     const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
-    const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-actions.ts");
-    const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/expense-page-filters.ts");
+    const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
+    const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
@@ -206,8 +206,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expensesPage).not.toContain("buildExpenseCsv");
     expect(expensesPage).not.toContain("refundSplits");
     expect(expensesPage).not.toContain("function recordRefund");
-    expect(expensesState).toContain("./expense-page-filters");
-    expect(expensesState).toContain("./expense-page-actions");
+    expect(expensesState).toContain("./model/expense-page-filters");
+    expect(expensesState).toContain("./model/expense-page-actions");
     expect(expensesState).toContain("./hooks/useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
     expect(expensesState).not.toContain("buildExpenseCsv");
