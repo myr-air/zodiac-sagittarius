@@ -1,3 +1,5 @@
+import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface/workspace-surface.styles";
+
 export const overviewPageClassName =
   "overview-page grid min-h-full min-w-0 max-w-full overflow-hidden gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:overflow-y-auto";
 export const overviewCockpitClassName =
@@ -21,7 +23,7 @@ export const taskDialogActionsClassName =
 export const overviewGridClassName =
   "overview-grid m-0 grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)] gap-3 overflow-hidden max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 export const overviewPanelClassName =
-  "overview-panel grid min-h-40 min-w-0 max-w-full content-start gap-2.5 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)";
+  `overview-panel grid min-h-40 min-w-0 max-w-full content-start gap-2.5 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)`;
 export const overviewPanelWideClassName = "overview-panel--wide col-start-1 max-[1199px]:col-auto";
 export const overviewPanelHealthClassName = "overview-panel--health min-h-[132px]";
 export const overviewPanelButtonClassName =

@@ -1,9 +1,11 @@
+import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface/workspace-surface.styles";
+
 export const timelinePanelClassName =
   "timeline-panel grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:h-[calc(100dvh-48px)] max-[767px]:overflow-hidden";
 export const timelineGridClassName =
   "timeline-grid mb-[30px] grid w-full grid-cols-3 gap-3 p-0 max-[1199px]:mb-0 max-[1199px]:grid-cols-1 max-[1199px]:gap-0 max-[767px]:overflow-y-auto";
 export const timelineDayClassName =
-  "timeline-day overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:shadow-none";
+  `timeline-day overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route)_16%,var(--color-border))] bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName}`;
 export const timelineDayHeaderClassName =
   "timeline-day-header flex min-h-[50px] items-center justify-between gap-2.5 border-b border-[color-mix(in_srgb,var(--color-route)_18%,var(--color-border))] bg-[rgb(255_255_255_/_0.72)] px-3.5 py-2.5 [&_strong]:text-[13px] [&_strong]:font-extrabold [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_span:not(.badge)]:text-[11px] [&_span:not(.badge)]:font-bold [&_span:not(.badge)]:leading-[15px] [&_span:not(.badge)]:text-(--color-text-muted)";
 export const timelineDayHeaderCopyClassName = "grid min-w-0 gap-px";
