@@ -1,9 +1,9 @@
-import type { LocalStopNoteCreateInput } from "@/src/trip/stop-notes";
+import type { LocalStopNoteCreateInput } from "@/src/trip/records";
 import {
   buildTaskCreateDraft,
   type TaskCreateDraft,
   type TaskCreateInputLike,
-} from "@/src/trip/tasks";
+} from "@/src/trip/records";
 import type { Trip } from "@/src/trip/types";
 import { tripPlanIdForRecord } from "@/src/trip/workspace/trip-plan-records";
 

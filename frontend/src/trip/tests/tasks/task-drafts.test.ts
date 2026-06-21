@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTaskCreateDraft } from "../../tasks";
+import { buildTaskCreateDraft } from "../../records";
 
 describe("task drafts", () => {
   it("builds shared task drafts with optional assignees", () => {

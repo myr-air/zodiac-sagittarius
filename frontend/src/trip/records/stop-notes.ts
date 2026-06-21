@@ -1,8 +1,8 @@
 import type {
   CreateStopNoteApiRequest,
   PatchStopNoteApiRequest,
-} from "./api-client";
-import type { StopNote, Trip } from "./types";
+} from "../api-client";
+import type { StopNote, Trip } from "../types";
 
 export interface LocalStopNoteCreateInput {
   itemId: string;

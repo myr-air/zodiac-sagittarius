@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCreateStopNoteRequest,
   buildPatchStopNoteRequest,
-} from "../../stop-notes";
+} from "../../records";
 import { stopNote } from "./stop-notes.test-support";
 
 describe("stop note API requests", () => {

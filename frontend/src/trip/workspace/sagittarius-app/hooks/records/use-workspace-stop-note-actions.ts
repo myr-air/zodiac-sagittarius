@@ -10,7 +10,7 @@ import {
   removeStopNote,
   replaceStopNote,
   updateLocalStopNote,
-} from "@/src/trip/stop-notes";
+} from "@/src/trip/records";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   StopNote,

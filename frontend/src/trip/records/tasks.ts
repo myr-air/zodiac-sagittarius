@@ -1,8 +1,8 @@
 import type {
   CreateTaskApiRequest,
   PatchTaskApiRequest,
-} from "./api-client";
-import type { TripTask } from "./types";
+} from "../api-client";
+import type { TripTask } from "../types";
 
 export interface TaskCreateInputLike {
   title: string;

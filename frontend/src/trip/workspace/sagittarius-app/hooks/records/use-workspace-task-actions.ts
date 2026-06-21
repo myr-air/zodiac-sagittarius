@@ -8,7 +8,7 @@ import {
   createLocalTaskInList,
   replaceTask,
   toggleLocalTaskStatus,
-} from "@/src/trip/tasks";
+} from "@/src/trip/records";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   Trip,

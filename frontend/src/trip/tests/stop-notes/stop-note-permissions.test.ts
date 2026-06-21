@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deleteLocalStopNote,
   updateLocalStopNote,
-} from "../../stop-notes";
+} from "../../records";
 import { stopNote } from "./stop-notes.test-support";
 
 describe("stop note permissions", () => {

@@ -5,7 +5,7 @@ import {
   createLocalStopNoteInList,
   removeStopNote,
   replaceStopNote,
-} from "../../stop-notes";
+} from "../../records";
 import { stopNote } from "./stop-notes.test-support";
 import type { Trip } from "../../types";
 
