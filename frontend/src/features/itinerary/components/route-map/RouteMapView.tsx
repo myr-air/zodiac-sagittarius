@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";

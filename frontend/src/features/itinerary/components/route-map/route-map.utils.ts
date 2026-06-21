@@ -1,4 +1,4 @@
-import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary";
+import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary-core";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
   DARK_TEXT,

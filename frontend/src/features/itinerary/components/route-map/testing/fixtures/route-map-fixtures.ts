@@ -1,5 +1,5 @@
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { getTripDates } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary-core";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export const tripDates = getTripDates(tripFixture.trip.startDate, tripFixture.trip.endDate);

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
-import { groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary";
+import { groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary-core";
 import {
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
