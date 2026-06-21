@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   deriveItineraryPathOptions,
   itineraryPathOptionsForDay,
-} from "./itinerary-path-options";
+} from "../../../itinerary-path-options";
 import {
   pathIdPlanA,
   pathIdRain,
   pathNamePlanA,
   pathNameRain,
-} from "./testing/itinerary-path-fixtures";
+} from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path options", () => {
   it("derives main and named path options from metadata and item fields", () => {

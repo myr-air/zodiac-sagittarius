@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "./trip-fixtures";
-import { applyItemToActivityBranch } from "./itinerary-paths";
+import { tripFixture } from "../../../trip-fixtures";
+import { applyItemToActivityBranch } from "../../../itinerary-paths";
 import { overlappingActivityItems } from "./itinerary-activity-branches.test-support";
 
 describe("itinerary activity branch placement", () => {

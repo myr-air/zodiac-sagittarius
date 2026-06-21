@@ -1,4 +1,4 @@
-import type { ItineraryExportItem } from "./itinerary-import-export";
+import type { ItineraryExportItem } from "../../../itinerary-import-export";
 
 export const importItem: ItineraryExportItem = {
   id: "import-rain-museum",

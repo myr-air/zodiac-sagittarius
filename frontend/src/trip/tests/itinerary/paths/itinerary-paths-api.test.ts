@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { patchApiItineraryBranchItems } from "./itinerary-paths-api";
-import type { TripApiClient } from "./api-client";
-import type { ItineraryItem } from "./types";
-import { pathIdPlanA, pathNamePlanA } from "./testing/itinerary-path-fixtures";
+import { patchApiItineraryBranchItems } from "../../../itinerary-paths-api";
+import type { TripApiClient } from "../../../api-client";
+import type { ItineraryItem } from "../../../types";
+import { pathIdPlanA, pathNamePlanA } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path API adapter", () => {
   it("patches branch root items with current path fields", async () => {

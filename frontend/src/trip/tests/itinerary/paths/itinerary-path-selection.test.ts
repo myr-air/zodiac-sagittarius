@@ -5,12 +5,12 @@ import {
   normalizeStopHierarchyValues,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
-} from "./itinerary";
+} from "../../../itinerary";
 import {
   pathIdPlanA,
   pathIdRain,
   pathNamePlanA,
-} from "./testing/itinerary-path-fixtures";
+} from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path selection", () => {
   it("selects the effective itinerary path for a day", () => {

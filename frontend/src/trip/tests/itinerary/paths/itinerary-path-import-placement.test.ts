@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { applyImportedItemsToItineraryPath } from "./itinerary-paths";
-import { tripFixture } from "./trip-fixtures";
+import { applyImportedItemsToItineraryPath } from "../../../itinerary-paths";
+import { tripFixture } from "../../../trip-fixtures";
 import { importItem } from "./itinerary-path-imports.test-support";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path import placement", () => {
   it("keeps main items and adds imported rows as an alternative path", () => {

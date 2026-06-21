@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "./trip-fixtures";
+import { tripFixture } from "../../../trip-fixtures";
 import {
   applyItemToActivityBranch,
   applyManualActivityPath,
   deriveManualActivityPathOptions,
-} from "./itinerary-paths";
+} from "../../../itinerary-paths";
 import { overlappingActivityItems } from "./itinerary-activity-branches.test-support";
 import {
   pathIdPlanA,
   pathIdPlanB,
   pathNamePlanA,
   pathNamePlanB,
-} from "./testing/itinerary-path-fixtures";
+} from "../../../testing/itinerary-path-fixtures";
 
 describe("manual itinerary activity path assignment", () => {
   it("lets organizers explicitly assign overlapping activities to plan A or B", () => {

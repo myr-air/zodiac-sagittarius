@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { applyImportedItemsToItineraryPath } from "./itinerary-paths";
-import { tripFixture } from "./trip-fixtures";
+import { applyImportedItemsToItineraryPath } from "../../../itinerary-paths";
+import { tripFixture } from "../../../trip-fixtures";
 import { importItem } from "./itinerary-path-imports.test-support";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path import targets", () => {
   it("imports into a selected draft Trip Plan without switching the Main Plan", () => {

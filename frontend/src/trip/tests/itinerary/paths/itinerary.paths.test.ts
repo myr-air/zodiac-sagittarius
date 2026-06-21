@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { getTripFixtureItineraryItem } from "./trip-fixtures";
+import { seedTrip } from "../../../seed";
+import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
 import {
   getTripDates,
   groupItemsByDay,
   resolveItineraryPathItems,
-} from "./itinerary";
-import { arrivalDay } from "./itinerary.test-support";
+} from "../../../itinerary";
+import { arrivalDay } from "../../../itinerary.test-support";
 import {
   pathIdRain,
-} from "./testing/itinerary-path-fixtures";
+} from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary path domain", () => {
   it("resolves trip path items with time-slot fallback to main", () => {
