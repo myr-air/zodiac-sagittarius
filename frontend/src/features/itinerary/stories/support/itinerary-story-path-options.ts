@@ -1,11 +1,9 @@
-import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import {
-  mainPathOption,
+  branchGraphPathOptions,
   pathNameMain,
-  pathOptionStoryPlanA,
-  pathOptionStoryPlanB,
-  pathOptionStoryPlanC,
-  storyRainPathOption,
+  planABPathOptions,
+  planAPathOptions,
+  stressPathOptions,
 } from "@/src/features/itinerary/testing";
 import {
   pathNamePlanA,
@@ -14,27 +12,9 @@ import {
 } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 export { pathNameMain, pathNamePlanA, pathNamePlanB, pathNamePlanC };
-
-export const branchGraphPathOptions: ItineraryPathOption[] = [
-  mainPathOption,
-  storyRainPathOption,
-  pathOptionStoryPlanA,
-];
-
-export const planAPathOptions: ItineraryPathOption[] = [
-  mainPathOption,
-  pathOptionStoryPlanA,
-];
-
-export const planABPathOptions: ItineraryPathOption[] = [
-  mainPathOption,
-  pathOptionStoryPlanA,
-  pathOptionStoryPlanB,
-];
-
-export const stressPathOptions: ItineraryPathOption[] = [
-  mainPathOption,
-  pathOptionStoryPlanA,
-  pathOptionStoryPlanB,
-  pathOptionStoryPlanC,
-];
+export {
+  branchGraphPathOptions,
+  planABPathOptions,
+  planAPathOptions,
+  stressPathOptions,
+};

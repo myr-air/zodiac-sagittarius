@@ -6,8 +6,11 @@ export {
   defaultSmartItineraryPathOptions,
 } from "./fixtures/itinerary-items";
 export {
+  branchGraphPathOptions,
   itineraryFixtureDay,
   mainPathOption,
+  planABPathOptions,
+  planAPathOptions,
   pathIdMain,
   pathIdPlanA,
   pathIdPlanB,
@@ -26,6 +29,7 @@ export {
   pathPlanOneOption,
   pathRainOption,
   pathRainPlanOption,
+  stressPathOptions,
   storyRainDisplayPathOption,
   storyRainPathOption,
 } from "./fixtures/path-options";

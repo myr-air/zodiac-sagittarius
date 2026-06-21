@@ -47,7 +47,8 @@ describe("Sagittarius workspace feature story boundaries", () => {
     expect(itineraryStoryPathItems).toContain("./itinerary-story-alternative-items");
     expect(itineraryStoryPathItems).toContain("./itinerary-story-branch-items");
     expect(itineraryStoryPathItems).toContain("./itinerary-story-stress-items");
-    expect(itineraryStoryPathOptions).toContain("export const stressPathOptions");
+    expect(itineraryStoryPathOptions).toContain("@/src/features/itinerary/testing");
+    expect(itineraryStoryPathOptions).not.toContain("export const stressPathOptions");
     expect(itineraryPageStory).toContain("@/src/shared/storybook/story-builders");
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
     expect(itineraryPageStory).not.toContain("function ownerArgsStory");

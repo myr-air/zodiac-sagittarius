@@ -97,3 +97,27 @@ export const pathOptionStoryPlanC: ItineraryPathOption = {
   scope: "day",
   day: itineraryFixtureDay,
 };
+
+export const branchGraphPathOptions: ItineraryPathOption[] = [
+  mainPathOption,
+  storyRainPathOption,
+  pathOptionStoryPlanA,
+];
+
+export const planAPathOptions: ItineraryPathOption[] = [
+  mainPathOption,
+  pathOptionStoryPlanA,
+];
+
+export const planABPathOptions: ItineraryPathOption[] = [
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathOptionStoryPlanB,
+];
+
+export const stressPathOptions: ItineraryPathOption[] = [
+  mainPathOption,
+  pathOptionStoryPlanA,
+  pathOptionStoryPlanB,
+  pathOptionStoryPlanC,
+];
