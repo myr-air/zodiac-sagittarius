@@ -1,9 +1,12 @@
 import { useCallback } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { replaceItineraryItems } from "@/src/trip/itinerary";
-import { applyManualActivityPath } from "@/src/trip/itinerary-paths";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
+import {
+  buildWorkspacePathMovePlacement,
+  buildWorkspacePathMoveReplacementItems,
+} from "./workspace-itinerary-path-move-inputs";
 
 interface UseWorkspaceItineraryPathMoveCommandParams {
   canEdit: boolean;
@@ -35,13 +38,12 @@ export function useWorkspaceItineraryPathMoveCommand({
     async (itemId: string, pathId: string) => {
       if (!canEdit) return;
 
-      const branchPlacement = applyManualActivityPath(trip, itemId, pathId);
-      if (
-        branchPlacement.trip === trip ||
-        branchPlacement.changedExistingItems.length === 0
-      ) {
-        return;
-      }
+      const branchPlacement = buildWorkspacePathMovePlacement(
+        trip,
+        itemId,
+        pathId,
+      );
+      if (!branchPlacement) return;
 
       if (isApiMode && resolvedApiClient && participantSession) {
         const patchedBranchItems = await patchApiItineraryBranchItems({
@@ -51,17 +53,14 @@ export function useWorkspaceItineraryPathMoveCommand({
           sessionToken: participantSession.sessionToken,
           tripId: trip.id,
         });
-        const changedItemIds = new Set(
-          branchPlacement.changedExistingItems.map((item) => item.id),
-        );
-        const branchPlacementItems = branchPlacement.trip.itineraryItems.filter(
-          (item) => changedItemIds.has(item.id),
-        );
         updateApiTrip((current) =>
-          replaceItineraryItems(current, [
-            ...branchPlacementItems,
-            ...patchedBranchItems,
-          ]),
+          replaceItineraryItems(
+            current,
+            buildWorkspacePathMoveReplacementItems(
+              branchPlacement,
+              patchedBranchItems,
+            ),
+          ),
         );
         setSelectedItemId(itemId);
         return;
