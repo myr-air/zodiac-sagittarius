@@ -1,4 +1,22 @@
 export {
+  buildItineraryCommitmentsByItemId,
+} from "./itinerary-commitments";
+export type {
+  ItineraryCommitmentSummary,
+} from "./itinerary-commitments";
+export {
+  buildItineraryItemDraft,
+  buildUpdatedItineraryItem,
+  getNextChildSortOrder,
+  getNextSortOrder,
+  normalizeStopHierarchyValues,
+} from "./itinerary-drafts";
+export type {
+  BuildItineraryItemDraftInput,
+  BuildItineraryItemDraftOptions,
+  BuildUpdatedItineraryItemOptions,
+} from "./itinerary-drafts";
+export {
   buildItineraryView,
   formatDayLabel,
   getNowNext,

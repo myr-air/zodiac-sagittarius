@@ -36,6 +36,8 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/itinerary-item-ordering.ts",
   "src/trip/itinerary-item-placement-api-requests.ts",
   "src/trip/itinerary-mutations.ts",
+  "src/trip/itinerary-commitments.ts",
+  "src/trip/itinerary-drafts.ts",
   "src/trip/itinerary-manual-activity-paths.test.ts",
   "src/trip/itinerary-path-identifiers.test.ts",
   "src/trip/itinerary-path-import-placement.test.ts",

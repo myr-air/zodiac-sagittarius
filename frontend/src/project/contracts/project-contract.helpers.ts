@@ -16,6 +16,7 @@ export const productCopySourceRoots = [
 ];
 
 export function collectProductCopyFiles(root: string): string[] {
+  if (!existsSync(root)) return [];
   const entries = readdirSync(root);
   const files: string[] = [];
   for (const entry of entries) {
