@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
-import { OverviewPage } from "./OverviewPage";
+import { OverviewPage } from "../OverviewPage";
 import {
   installOverviewPageClock,
   renderOverview,

@@ -6,7 +6,7 @@ import { tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { OverviewPage } from "./OverviewPage";
+import { OverviewPage } from "../OverviewPage";
 import {
   installOverviewPageClock,
   renderOverview,

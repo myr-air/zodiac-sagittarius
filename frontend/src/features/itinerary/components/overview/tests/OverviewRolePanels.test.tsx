@@ -5,9 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture, tripFixtureTasks } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import type { Locale } from "@/src/i18n/types";
-import { ManagerOverviewPanels } from "./ManagerOverviewPanels";
-import { TravelerOverviewPanels } from "./TravelerOverviewPanels";
-import { ViewerOverviewPanels } from "./ViewerOverviewPanels";
+import { ManagerOverviewPanels } from "../ManagerOverviewPanels";
+import { TravelerOverviewPanels } from "../TravelerOverviewPanels";
+import { ViewerOverviewPanels } from "../ViewerOverviewPanels";
 
 const overviewTaskListLabels = {
   assignee: {
