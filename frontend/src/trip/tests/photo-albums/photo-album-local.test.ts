@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createLocalPhotoAlbum,
   updateLocalPhotoAlbum,
-} from "./photo-albums";
+} from "../../photo-albums";
 import {
   createPhotoAlbumTripFixture as tripFixture,
   photoAlbumTestAlbums as albums,

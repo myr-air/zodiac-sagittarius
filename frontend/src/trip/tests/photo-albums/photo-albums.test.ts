@@ -7,7 +7,7 @@ import {
   safePhotoAlbumCoverHref,
   safePhotoAlbumHref,
   serializePhotoAlbumInputForApi,
-} from "./photo-albums";
+} from "../../photo-albums";
 import {
   createPhotoAlbumTripFixture as tripFixture,
   photoAlbumTestAlbums as albums,

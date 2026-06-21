@@ -1,4 +1,4 @@
-import type { ItineraryItem, Member, Trip, TripPhotoAlbumLink } from "./types";
+import type { ItineraryItem, Member, Trip, TripPhotoAlbumLink } from "../../types";
 
 export const photoAlbumTestMembers: Member[] = [
   { id: "member-owner", displayName: "Aom", role: "owner", presence: "online", color: "#0f766e" },

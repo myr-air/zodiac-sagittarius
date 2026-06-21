@@ -4,7 +4,7 @@ import {
   removePhotoAlbumFromTrip,
   replacePhotoAlbumInTrip,
   updateLocalPhotoAlbumInTrip,
-} from "./photo-albums";
+} from "../../photo-albums";
 import {
   createPhotoAlbumFixture as photoAlbum,
   createPhotoAlbumTripFixture as tripFixture,

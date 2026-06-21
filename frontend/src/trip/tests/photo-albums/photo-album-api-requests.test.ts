@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCreatePhotoAlbumRequest,
   buildPatchPhotoAlbumRequest,
-} from "./photo-albums";
+} from "../../photo-albums";
 
 describe("photo album API requests", () => {
   it("builds create and patch photo album API requests", () => {
