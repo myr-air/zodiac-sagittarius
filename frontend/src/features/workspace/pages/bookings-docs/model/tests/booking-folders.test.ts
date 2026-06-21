@@ -3,12 +3,12 @@ import {
   bookingDocTestDocs,
   bookingFlightTestDoc,
   bookingPassportTestDoc,
-} from "../tests/bookings-docs-test-fixtures";
+} from "../../tests/bookings-docs-test-fixtures";
 import {
   bookingDocMatchesFolder,
   bookingFolders,
   countBookingFolders,
-} from "./booking-folders";
+} from "../booking-folders";
 
 describe("booking folder rules", () => {
   it("defines stable cockpit folders for the booking rail", () => {

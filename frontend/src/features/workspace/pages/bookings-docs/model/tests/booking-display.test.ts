@@ -4,7 +4,7 @@ import {
   formatDateTime,
   statusBadgeClassName,
   typeIconClassName,
-} from "./booking-display";
+} from "../booking-display";
 
 describe("booking display helpers", () => {
   it("formats booking date input values without changing stored semantics", () => {

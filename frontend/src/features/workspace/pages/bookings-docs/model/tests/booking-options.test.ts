@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { bookingCopy } from "../content/BookingsDocsPage.copy";
+import { bookingCopy } from "../../content/BookingsDocsPage.copy";
 import {
   bookingStatusFilterValues,
   bookingStatuses,
   bookingTypes,
   bookingVisibilities,
   formatEnumLabel,
-} from "./booking-options";
+} from "../booking-options";
 
 describe("booking options", () => {
   it("keeps dialog select options in stable domain order", () => {

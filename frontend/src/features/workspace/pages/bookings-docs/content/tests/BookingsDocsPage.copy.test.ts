@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { bookingCopy } from "./BookingsDocsPage.copy";
-import { enBookingCopy } from "./BookingsDocsPage.copy.en";
-import { thBookingCopy } from "./BookingsDocsPage.copy.th";
+import { bookingCopy } from "../BookingsDocsPage.copy";
+import { enBookingCopy } from "../BookingsDocsPage.copy.en";
+import { thBookingCopy } from "../BookingsDocsPage.copy.th";
 
 describe("bookings docs page copy", () => {
   it("keeps locale copy payloads split behind the stable aggregate export", () => {
