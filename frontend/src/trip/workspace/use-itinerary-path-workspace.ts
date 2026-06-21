@@ -5,7 +5,7 @@ import {
   resolveItineraryPathItems,
   updateItineraryPathSelection,
   type ItineraryPathSelection,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import type { Trip } from "@/src/trip/types";
 
 export function useItineraryPathWorkspace(

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mainItineraryPathId, mainItineraryPathName } from "@/src/trip/itinerary";
+import { mainItineraryPathId, mainItineraryPathName } from "@/src/trip/itinerary-paths";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 import { buildItineraryImportApplyTarget } from "../itinerary-import-target";
 

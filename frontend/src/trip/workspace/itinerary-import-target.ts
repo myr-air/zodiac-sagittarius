@@ -3,8 +3,8 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
   type ItineraryPathOption,
-} from "@/src/trip/itinerary";
-import type { ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
+  type ItineraryImportApplyTarget,
+} from "@/src/trip/itinerary-paths";
 
 export function buildItineraryImportApplyTarget({
   day,
