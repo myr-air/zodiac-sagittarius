@@ -6,6 +6,7 @@ describe("Sagittarius workspace hook source boundaries", () => {
   it("keeps workspace setup, data, and navigation hooks split by responsibility", () => {
     const {
       sagaCore,
+      workspaceContextsHook,
       accessContextHook,
       uiStateHook,
       apiClientsHook,
@@ -16,7 +17,9 @@ describe("Sagittarius workspace hook source boundaries", () => {
       navigationContextHook,
     } = readWorkspaceBoundarySources(frontendRoot);
 
-    expect(sagaCore).toContain("useWorkspaceSetupContext");
+    expect(sagaCore).toContain("useSagittariusWorkspaceContexts");
+    expect(sagaCore).not.toContain("useWorkspaceSetupContext");
+    expect(workspaceContextsHook).toContain("useWorkspaceSetupContext");
     expect(setupContextHook).toContain("useWorkspaceUiState");
     expect(sagaCore).not.toContain("useState");
     expect(uiStateHook).toContain("export function useWorkspaceUiState");

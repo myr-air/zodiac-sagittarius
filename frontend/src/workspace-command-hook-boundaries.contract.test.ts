@@ -8,6 +8,7 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       sagaCore,
       workspaceContextsHook,
       workspaceCommandsHook,
+      workspaceCommandsParams,
       itineraryBookingCommands,
       bookingCommandInputs,
       taskActionsHook,
@@ -23,6 +24,7 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       expenseMutationCommands,
       expenseDrafts,
       planningCommandsHook,
+      planningCommandsParams,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
@@ -38,9 +40,13 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryCommands");
     expect(workspaceCommandsHook).not.toContain("useWorkspaceItineraryImport");
     expect(workspaceCommandsHook).toContain("useWorkspaceAdministration");
+    expect(workspaceCommandsHook).not.toContain("type AdministrationParams");
+    expect(workspaceCommandsParams).toContain("type AdministrationParams");
     expect(planningCommandsHook).toContain("useWorkspaceBookingCommands");
     expect(planningCommandsHook).toContain("useWorkspaceItineraryCommands");
     expect(planningCommandsHook).toContain("useWorkspaceItineraryImport");
+    expect(planningCommandsHook).not.toContain("type BookingParams");
+    expect(planningCommandsParams).toContain("type BookingParams");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
     expect(itineraryBookingCommands).toContain(

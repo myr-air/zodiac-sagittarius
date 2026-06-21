@@ -2,24 +2,7 @@ import { useWorkspaceAdministration } from "./use-workspace-administration";
 import { useWorkspaceItineraryUiActions } from "./use-workspace-itinerary-ui-actions";
 import { useWorkspaceParticipantSessionActions } from "./use-workspace-participant-session-actions";
 import { useWorkspacePlanningCommands } from "./use-workspace-planning-commands";
-
-type AdministrationParams = Parameters<typeof useWorkspaceAdministration>[0];
-type ItineraryUiParams = Parameters<typeof useWorkspaceItineraryUiActions>[0];
-type ParticipantSessionParams = Parameters<
-  typeof useWorkspaceParticipantSessionActions
->[0];
-type PlanningParams = Parameters<typeof useWorkspacePlanningCommands>[0];
-
-type UseWorkspaceCommandsParams =
-  PlanningParams &
-  Omit<AdministrationParams, "currentMemberId" | "resolvedApiClient"> &
-  Omit<ItineraryUiParams, "createStop"> &
-  ParticipantSessionParams & {
-    currentMemberId: string;
-    resolvedApiClient:
-      | PlanningParams["resolvedApiClient"]
-      | AdministrationParams["resolvedApiClient"];
-  };
+import type { UseWorkspaceCommandsParams } from "./use-workspace-commands-params";
 
 export function useWorkspaceCommands({
   accountClient,
