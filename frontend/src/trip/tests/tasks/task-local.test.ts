@@ -7,7 +7,7 @@ import {
   replaceTask,
   toggledTaskStatus,
   toggleLocalTaskStatus,
-} from "./tasks";
+} from "../../tasks";
 import { task } from "./tasks.test-support";
 
 describe("task local mutations", () => {

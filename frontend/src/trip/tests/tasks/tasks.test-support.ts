@@ -1,4 +1,4 @@
-import type { TripTask } from "./types";
+import type { TripTask } from "../../types";
 
 export function task(input: Partial<TripTask> & Pick<TripTask, "id">): TripTask {
   return {
