@@ -1,11 +1,13 @@
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   buildItineraryItemDraft,
-  selectedItineraryPathIdForDay,
   type BuildItineraryItemDraftOptions,
+} from "@/src/trip/itinerary-core";
+import {
+  selectedItineraryPathIdForDay,
   type ItineraryPathOption,
   type ItineraryPathSelection,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import { nextLocalItemId } from "@/src/trip/identity";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";

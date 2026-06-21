@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildUpdatedItineraryItem } from "@/src/trip/itinerary";
+import { buildUpdatedItineraryItem } from "@/src/trip/itinerary-core";
 import { buildPatchItineraryItemRequest } from "@/src/trip/itinerary-items";
 import { seedTrip } from "@/src/trip/seed";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";

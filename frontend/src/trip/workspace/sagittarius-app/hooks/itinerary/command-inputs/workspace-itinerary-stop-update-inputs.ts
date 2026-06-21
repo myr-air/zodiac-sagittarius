@@ -2,7 +2,7 @@ import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   buildUpdatedItineraryItem,
   type BuildUpdatedItineraryItemOptions,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-core";
 import {
   buildPatchItineraryItemRequest,
   type BuildPatchItineraryItemRequestOptions,

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   moveTripItem,
   moveTripItemIntoPlanBlock,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-items";
 import {
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildItineraryItemDraft,
+} from "@/src/trip/itinerary-core";
+import {
   selectedItineraryPathIdForDay,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import { nextLocalItemId } from "@/src/trip/identity";
 import { seedTrip } from "@/src/trip/seed";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";

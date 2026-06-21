@@ -1,5 +1,5 @@
-import type { ItineraryItemPlacement } from "@/src/trip/itinerary";
 import { applyManualActivityPath } from "@/src/trip/itinerary-paths";
+import type { ItineraryItemPlacement } from "@/src/trip/itinerary-items";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 export function buildWorkspacePathMovePlacement(
