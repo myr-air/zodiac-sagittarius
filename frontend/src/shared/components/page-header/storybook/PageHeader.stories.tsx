@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { formatTripRange, PageHeader, PageUserCard } from "../PageHeader";
+import { PageHeader, PageUserCard } from "../PageHeader";
+import { formatTripRange } from "../page-header-date";
 import { friendlyPlay } from "./PageHeader.stories.plays";
 
 const meta = {

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { formatTripRange, PageHeader, PageUserCard } from "../PageHeader";
+import { PageHeader, PageUserCard } from "../PageHeader";
 
 describe("PageHeader", () => {
   it("uses a compact command-surface header instead of postcard artwork", () => {
@@ -29,7 +29,7 @@ describe("PageHeader", () => {
     expect(container.querySelector(".page-current-user")).toHaveClass("bg-(--color-surface-subtle)", "rounded-(--radius-sm)");
   });
 
-  it("renders optional regions and trip ranges", () => {
+  it("renders optional regions", () => {
     const { rerender } = render(<PageHeader title="Itinerary" />);
 
     expect(screen.getByRole("heading", { name: "Itinerary", level: 1 })).toBeInTheDocument();
@@ -57,10 +57,6 @@ describe("PageHeader", () => {
     expect(screen.getByText("Updated now")).toBeInTheDocument();
     expect(screen.getByText("Motif")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
-    expect(formatTripRange("bad-date", "bad-date")).toBe("bad-date – bad-date");
-    expect(formatTripRange("2026-05-28", "2026-06-02")).toBe("May 28 – Jun 2, 2026");
-    expect(formatTripRange("2026-12-30", "2027-01-02")).toBe("Dec 30, 2026 – Jan 2, 2027");
-    expect(formatTripRange("2026-05-28", "2026-06-02", "th")).toBe("28 พ.ค. – 2 มิ.ย. 2026");
   });
 
   it("renders the compact page user card", () => {

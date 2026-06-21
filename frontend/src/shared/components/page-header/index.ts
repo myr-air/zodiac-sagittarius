@@ -1,2 +1,2 @@
-export { PageHeader, PageUserCard, formatTripRange } from "./PageHeader";
-
+export { PageHeader, PageUserCard } from "./PageHeader";
+export { formatTripRange } from "./page-header-date";
