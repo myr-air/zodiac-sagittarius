@@ -4,7 +4,7 @@ import {
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
   replaceItineraryItem,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-items";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { useWorkspaceItineraryPathMoveCommand } from "./use-workspace-itinerary-path-move-command";

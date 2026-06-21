@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { deleteItineraryItemFromTrip } from "@/src/trip/itinerary";
+import { deleteItineraryItemFromTrip } from "@/src/trip/itinerary-items";
 import type {
   Trip,
   TripParticipantSession,

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { StopFormValues } from "@/src/features/itinerary/components";
-import { mergeUpdatedItineraryBranchIntoTrip } from "@/src/trip/itinerary";
+import { mergeUpdatedItineraryBranchIntoTrip } from "@/src/trip/itinerary-items";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,

@@ -4,7 +4,7 @@ import {
   moveTripItem,
   replaceItineraryItem,
   replaceItineraryItems,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-items";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { buildWorkspaceReorderApiInput } from "./command-inputs/workspace-itinerary-move-inputs";
