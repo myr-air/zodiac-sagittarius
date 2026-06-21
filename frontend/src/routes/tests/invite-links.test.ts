@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInviteEmailHref, buildInviteLink } from "./invite-links";
+import { buildInviteEmailHref, buildInviteLink } from "../invite-links";
 
 describe("invite link helpers", () => {
   it("builds absolute join links from join codes and invite tokens", () => {

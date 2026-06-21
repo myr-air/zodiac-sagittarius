@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { slugifyFilePart } from "./file-names";
+import { slugifyFilePart } from "../file-names";
 
 describe("file name helpers", () => {
   it("normalizes labels into safe lowercase file parts", () => {
