@@ -4,7 +4,7 @@ export type { OverviewPageProps } from "./overview/OverviewPage.types";
 export { ContextRail } from "./context-rail/ContextRail";
 export type { ContextRailTab } from "./context-rail/context-rail.utils";
 export { RouteMapView } from "./route-map/RouteMapView";
-export { SmartItineraryTable } from "./smart-itinerary-table";
+export { SmartItineraryTable } from "./smart-itinerary-table/SmartItineraryTable";
 export { TimelineView } from "./TimelineView";
 export { StopDialog } from "./stop-dialog/StopDialog";
 
