@@ -4,7 +4,7 @@ import {
 } from "@/src/trip/auth";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
-import { tripFromJoinResponse } from "../trip-join-response-mapper";
+import { tripFromJoinResponse } from "../model/trip-join-response-mapper";
 import { useTripJoinGateFormState } from "./use-trip-join-gate-form-state";
 import { useTripJoinInviteTokenResolution } from "./use-trip-join-invite-token-resolution";
 import { useTripJoinGateSubmitActions } from "../submit/use-trip-join-gate-submit-actions";

@@ -10,7 +10,7 @@ import {
   TripJoinParticipantAuthForm,
   type TripJoinParticipantAuthFormCopy,
 } from "./TripJoinParticipantAuthForm";
-import { participantStatusLabel } from "./trip-join-participant-status";
+import { participantStatusLabel } from "./model/trip-join-participant-status";
 import {
   participantAvatarClassName,
   participantCardClassName,

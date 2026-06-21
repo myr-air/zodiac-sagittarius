@@ -252,7 +252,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginStepContent).not.toContain("function EmailLoginOtpStep");
     expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
 
-    expect(tripJoinGate).toContain("./trip-join-response-mapper");
+    expect(tripJoinGate).toContain("./model/trip-join-response-mapper");
     expect(tripJoinGate).toContain("TripJoinGateChrome");
     expect(tripJoinGate).not.toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
@@ -269,7 +269,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinRoomForm).toContain("joinFormClassName");
     expect(tripJoinParticipantStep).toContain("export function TripJoinParticipantStep");
     expect(tripJoinParticipantStep).toContain("TripJoinParticipantAuthForm");
-    expect(tripJoinParticipantStep).toContain("./trip-join-participant-status");
+    expect(tripJoinParticipantStep).toContain("./model/trip-join-participant-status");
     expect(tripJoinParticipantStep).toContain("participantGridClassName");
     expect(tripJoinParticipantStep).not.toContain("passwordInputRowClassName");
     expect(tripJoinParticipantAuthForm).toContain(

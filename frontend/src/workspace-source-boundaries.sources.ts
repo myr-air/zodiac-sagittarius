@@ -191,9 +191,9 @@ export const workspaceBoundarySourcePaths = {
   tripJoinParticipantAuthForm:
     "src/features/account/components/trip-join-gate/TripJoinParticipantAuthForm.tsx",
   tripJoinParticipantStep: "src/features/account/components/trip-join-gate/TripJoinParticipantStep.tsx",
-  tripJoinParticipantStatus: "src/features/account/components/trip-join-gate/trip-join-participant-status.ts",
-  tripJoinResponseMapper: "src/features/account/components/trip-join-gate/trip-join-response-mapper.ts",
-  tripJoinErrorMessage: "src/features/account/components/trip-join-gate/trip-join-error-message.ts",
+  tripJoinParticipantStatus: "src/features/account/components/trip-join-gate/model/trip-join-participant-status.ts",
+  tripJoinResponseMapper: "src/features/account/components/trip-join-gate/model/trip-join-response-mapper.ts",
+  tripJoinErrorMessage: "src/features/account/components/trip-join-gate/model/trip-join-error-message.ts",
   tripJoinGateStyles: "src/features/account/components/trip-join-gate/layout/trip-join-gate.styles.ts",
   tripWizardFormSections:
     "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
