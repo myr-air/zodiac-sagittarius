@@ -13,19 +13,19 @@ import {
   installLocalStorageStub,
   installSessionStorageStub,
   persistTripParticipantSession as persistTripParticipantSessionForApi,
-} from "./sagittarius-app.test-storage";
+} from "./testing/support/sagittarius-app-storage";
 import type { SagittariusAppProps } from "./types";
 
 export {
   createApiClientForTrip,
   createDeferred,
-} from "./sagittarius-app.test-api-client";
+} from "./testing/support/sagittarius-app-api-client";
 
 export {
   mockAccountPortalApiFetch,
   mockAccountTripMemberSessionFetch,
   mockRejectedAccountTripMemberSessionFetch,
-} from "./sagittarius-app.test-account-api";
+} from "./testing/support/sagittarius-app-account-api";
 
 export {
   apiSeedTrip,
@@ -43,7 +43,7 @@ export {
   persistTripDraft,
   persistTripParticipantSession,
   persistTrustedAccountSession,
-} from "./sagittarius-app.test-storage";
+} from "./testing/support/sagittarius-app-storage";
 
 export function render(ui: ReactElement) {
   const result = renderWithI18n(ui, { locale: "th" });

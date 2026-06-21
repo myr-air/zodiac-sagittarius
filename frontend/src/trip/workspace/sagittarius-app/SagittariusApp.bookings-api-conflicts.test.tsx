@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TripApiError } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
-import { createBookingDocThroughDialog } from "./sagittarius-app.test-booking-actions";
+import { createBookingDocThroughDialog } from "./testing/support/sagittarius-app-booking-actions";
 import {
   createApiClientForTrip,
   installApiSession,
