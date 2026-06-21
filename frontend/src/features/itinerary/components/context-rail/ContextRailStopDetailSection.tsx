@@ -1,7 +1,7 @@
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { safeExternalHref } from "@/src/trip/safe-links";
+import { safeExternalHref } from "@/src/trip/places";
 import { activityTypeLabel, formatDuration, formatEndTime } from "@/src/features/itinerary/lib";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { ContextRailTab } from "./context-rail.utils";

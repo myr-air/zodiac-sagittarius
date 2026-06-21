@@ -7,7 +7,7 @@ import {
   mapResolutionPlaceHint,
   readItineraryDetailString,
   resolveStopPlace,
-} from "@/src/trip/place-resolution";
+} from "@/src/trip/places";
 import { seedTrip } from "@/src/trip/seed";
 import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
 

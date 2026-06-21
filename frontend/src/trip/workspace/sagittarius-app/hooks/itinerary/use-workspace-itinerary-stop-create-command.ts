@@ -11,7 +11,7 @@ import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-items";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,
-} from "@/src/trip/place-resolution";
+} from "@/src/trip/places";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
 import {
   nextClientMutationId as nextClientMutationIdFactory,

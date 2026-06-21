@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
+import type { StopPlaceResolutionState } from "@/src/trip/places";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import type { ItineraryDialogState } from "./itinerary/itinerary-dialog-state";
 

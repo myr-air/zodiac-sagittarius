@@ -15,7 +15,7 @@ import {
   normalizeWhitespace,
   stripSubItemPrefix,
 } from "./itinerary-spreadsheet-row";
-import { safeExternalHref } from "../safe-links";
+import { safeExternalHref } from "../places";
 import type { ItineraryAdvisory } from "../types";
 import type {
   ItineraryExportItem,

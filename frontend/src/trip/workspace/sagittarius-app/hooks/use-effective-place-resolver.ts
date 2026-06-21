@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type { PlaceResolver } from "@/src/trip/place-resolution";
+import type { PlaceResolver } from "@/src/trip/places";
 import type { TripParticipantSession } from "@/src/trip/types";
 
 interface UseEffectivePlaceResolverOptions {

@@ -10,7 +10,7 @@ import type {
 import type {
   PlaceResolver,
   StopPlaceResolutionState,
-} from "@/src/trip/place-resolution";
+} from "@/src/trip/places";
 import type { nextClientMutationId as nextClientMutationIdFactory } from "@/src/trip/identity";
 import type {
   ItineraryItem,

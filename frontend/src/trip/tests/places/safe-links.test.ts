@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeExternalHost, safeExternalHref } from "../../safe-links";
+import { safeExternalHost, safeExternalHref } from "../../places";
 
 describe("safe links", () => {
   it("normalizes http and https external hrefs", () => {

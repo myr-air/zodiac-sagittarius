@@ -11,7 +11,7 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import type { StopFormValues } from "@/src/features/itinerary/components";
-import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
+import type { StopPlaceResolutionState } from "@/src/trip/places";
 import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDeleteDialog";
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
 import type { PendingItineraryImport } from "@/src/trip/workspace/itinerary-import-model";

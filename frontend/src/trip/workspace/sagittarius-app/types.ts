@@ -1,6 +1,6 @@
 import type { PortalSection } from "@/src/shared/portal";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type { PlaceResolver } from "@/src/trip/place-resolution";
+import type { PlaceResolver } from "@/src/trip/places";
 import type { Trip } from "@/src/trip/types";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 

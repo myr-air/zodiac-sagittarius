@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { StopFormValues } from "@/src/features/itinerary/components";
-import type { StopPlaceResolutionState } from "@/src/trip/place-resolution";
+import type { StopPlaceResolutionState } from "@/src/trip/places";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { buildPromotedFoodRecommendationStop } from "../promote-food-recommendation";

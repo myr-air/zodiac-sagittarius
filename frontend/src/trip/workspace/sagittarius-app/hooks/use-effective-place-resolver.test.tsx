@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useEffectivePlaceResolver } from "./use-effective-place-resolver";
-import type { PlaceResolver } from "@/src/trip/place-resolution";
+import type { PlaceResolver } from "@/src/trip/places";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   PlaceResolutionRequest,

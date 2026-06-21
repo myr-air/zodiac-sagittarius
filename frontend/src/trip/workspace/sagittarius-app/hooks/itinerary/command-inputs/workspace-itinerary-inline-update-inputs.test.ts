@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
-import { buildMapLink } from "@/src/trip/place-resolution";
+import { buildMapLink } from "@/src/trip/places";
 import { seedTrip } from "@/src/trip/seed";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {

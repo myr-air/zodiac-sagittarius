@@ -1,4 +1,4 @@
-import { safeExternalHost } from "@/src/trip/safe-links";
+import { safeExternalHost } from "@/src/trip/places";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { photoProviders, type PhotoProviderFilter } from "./photo-page-options";
 

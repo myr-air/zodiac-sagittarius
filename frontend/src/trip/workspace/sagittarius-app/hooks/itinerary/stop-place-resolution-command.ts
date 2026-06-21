@@ -8,8 +8,8 @@ import {
   resolveStopPlace,
   type PlaceResolver,
   type StopPlaceResolutionState,
-} from "@/src/trip/place-resolution";
-import { safeExternalHref } from "@/src/trip/safe-links";
+} from "@/src/trip/places";
+import { safeExternalHref } from "@/src/trip/places";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 type StopLocationFields = ReturnType<typeof locationFieldsFromCandidate>;

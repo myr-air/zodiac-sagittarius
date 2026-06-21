@@ -5,7 +5,7 @@ import {
 import { itemKindFromActivityType } from "../itinerary-items";
 import { parseExportTrip } from "./itinerary-import-trip-parser";
 import { parseSpreadsheetItineraryImportDocument } from "./itinerary-spreadsheet-import";
-import { safeExternalHref } from "../safe-links";
+import { safeExternalHref } from "../places";
 import {
   isRecord,
   readActivityType,

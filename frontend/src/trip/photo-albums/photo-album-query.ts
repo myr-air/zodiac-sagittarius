@@ -1,5 +1,5 @@
 import { findMemberById } from "../members";
-import { safeExternalHref } from "../safe-links";
+import { safeExternalHref } from "../places";
 import type {
   ItineraryItem,
   Member,

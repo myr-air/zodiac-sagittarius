@@ -1,4 +1,4 @@
-import { safeExternalHref } from "@/src/trip/safe-links";
+import { safeExternalHref } from "./safe-links";
 import type {
   ItineraryItem,
   PlaceResolutionCandidate,

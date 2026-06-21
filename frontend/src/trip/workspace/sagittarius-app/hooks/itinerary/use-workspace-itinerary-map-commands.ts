@@ -5,7 +5,7 @@ import {
   buildMapPlaceResolutionRequest,
   mapResolutionPlaceHint,
   type PlaceResolver,
-} from "@/src/trip/place-resolution";
+} from "@/src/trip/places";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 interface UseWorkspaceItineraryMapCommandsParams {

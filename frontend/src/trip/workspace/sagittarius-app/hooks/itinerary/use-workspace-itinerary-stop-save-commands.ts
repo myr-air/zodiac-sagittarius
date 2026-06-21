@@ -7,7 +7,7 @@ import {
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,
-} from "@/src/trip/place-resolution";
+} from "@/src/trip/places";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
 } from "@/src/trip/identity";

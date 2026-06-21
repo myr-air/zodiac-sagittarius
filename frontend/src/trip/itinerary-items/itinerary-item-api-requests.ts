@@ -4,7 +4,7 @@ import type {
 } from "../api-client";
 import type { BuildItineraryItemDraftInput } from "../itinerary";
 import type { InlineItineraryTimePatch } from "../itinerary-time";
-import { buildMapLink } from "../place-resolution";
+import { buildMapLink } from "../places";
 import type { ItineraryItem } from "../types";
 
 export interface BuildPatchItineraryItemRequestOptions {
