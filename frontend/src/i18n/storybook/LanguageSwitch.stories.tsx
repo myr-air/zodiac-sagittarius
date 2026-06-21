@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { viewportStory } from "@/src/shared/storybook/story-builders";
-import { LanguageSwitch } from "./LanguageSwitch";
+import { LanguageSwitch } from "../LanguageSwitch";
 import { defaultPlay, thaiSelectedPlay } from "./LanguageSwitch.stories.plays";
 
 const meta = {

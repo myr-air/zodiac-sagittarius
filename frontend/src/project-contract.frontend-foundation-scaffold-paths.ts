@@ -11,6 +11,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/i18n/LanguageSwitchMenu.tsx",
   "src/i18n/language-switch.support.ts",
   "src/i18n/use-language-switch-state.ts",
+  "src/i18n/storybook/LanguageSwitch.stories.tsx",
+  "src/i18n/storybook/LanguageSwitch.stories.plays.ts",
   "src/i18n/messages/en.ts",
   "src/i18n/messages/en.access.ts",
   "src/i18n/messages/en.account-portal.ts",

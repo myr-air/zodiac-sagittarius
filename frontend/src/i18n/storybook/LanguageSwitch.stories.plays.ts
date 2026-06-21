@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { LanguageSwitch } from "./LanguageSwitch";
+import type { LanguageSwitch } from "../LanguageSwitch";
 
 type LanguageSwitchPlay = NonNullable<StoryObj<typeof LanguageSwitch>["play"]>;
 
