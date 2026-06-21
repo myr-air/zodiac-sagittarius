@@ -4,7 +4,7 @@ import {
   TravelMotif,
   travelMotifToneClassNames,
   travelMotifToneValues,
-} from "./TravelMotifs";
+} from "../TravelMotifs";
 
 describe("TravelMotif", () => {
   it("keeps motif tones and classes in story order", () => {

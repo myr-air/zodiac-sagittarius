@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { TravelMotif } from "./TravelMotifs";
+import type { TravelMotif } from "../TravelMotifs";
 
 type TravelMotifPlay = NonNullable<StoryObj<typeof TravelMotif>["play"]>;
 

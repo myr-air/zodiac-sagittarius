@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { TimelineMotif, TravelMotif, travelMotifToneValues } from "./TravelMotifs";
+import { TimelineMotif, TravelMotif, travelMotifToneValues } from "../TravelMotifs";
 import { routePlay } from "./TravelMotifs.stories.plays";
 
 const meta = {
