@@ -5,7 +5,7 @@ import {
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
   tripToSettingsForm,
-} from "./trip-settings-form-model";
+} from "../trip-settings-form-model";
 
 describe("trip settings form model", () => {
   it("derives a form from trip settings fields", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
-import { countPhotoProviders, photoAlbumLinkHost } from "./photo-page-selectors";
+import { countPhotoProviders, photoAlbumLinkHost } from "../photo-page-selectors";
 
 const albumBase: Omit<TripPhotoAlbumLink, "id" | "provider"> = {
   tripId: "trip-1",

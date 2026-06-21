@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { photoCopy } from "../content/TripPhotosPage.copy";
+import { photoCopy } from "../../content/TripPhotosPage.copy";
 import {
   photoAccessLabel,
   photoAccessOptions,
   photoProviderLabel,
   photoProviderOptions,
   photoProviders,
-} from "./photo-page-options";
+} from "../photo-page-options";
 
 describe("photo page options", () => {
   it("exports canonical provider and access option order", () => {

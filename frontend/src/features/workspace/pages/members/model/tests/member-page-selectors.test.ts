@@ -5,7 +5,7 @@ import {
   isMemberJoined,
   memberSummaryCounts,
   visibleTripMembers,
-} from "./member-page-selectors";
+} from "../member-page-selectors";
 
 const currentMember = seedTrip.members[0];
 const members = visibleTripMembers(seedTrip.members);
