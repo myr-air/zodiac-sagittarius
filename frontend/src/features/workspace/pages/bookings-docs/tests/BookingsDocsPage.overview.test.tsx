@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
-import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
+import { renderBookingsDocsPage } from "../testing/support/render-bookings-docs-page";
 
 describe("BookingsDocsPage overview", () => {
   it("renders booking folders, a file list, and selected booking inspector", () => {

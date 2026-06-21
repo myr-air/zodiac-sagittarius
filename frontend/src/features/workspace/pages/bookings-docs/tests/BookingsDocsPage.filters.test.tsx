@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { renderBookingsDocsPage } from "./BookingsDocsPage.test-support";
+import { renderBookingsDocsPage } from "../testing/support/render-bookings-docs-page";
 
 describe("BookingsDocsPage filters", () => {
   it("browses booking docs by friendly folders instead of table filters", async () => {

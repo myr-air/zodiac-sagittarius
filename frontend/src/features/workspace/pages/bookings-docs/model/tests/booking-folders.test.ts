@@ -3,7 +3,7 @@ import {
   bookingDocTestDocs,
   bookingFlightTestDoc,
   bookingPassportTestDoc,
-} from "../../tests/bookings-docs-test-fixtures";
+} from "../../testing/fixtures/bookings-docs-test-fixtures";
 import {
   bookingDocMatchesFolder,
   bookingFolders,

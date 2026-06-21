@@ -7,7 +7,7 @@ import { BookingDialog } from "../BookingDialog";
 import {
   bookingDocTestTasks,
   bookingFlightTestDoc,
-} from "../../tests/bookings-docs-test-fixtures";
+} from "../../testing/fixtures/bookings-docs-test-fixtures";
 
 describe("BookingDialog", () => {
   it("submits a trimmed new booking payload", async () => {
