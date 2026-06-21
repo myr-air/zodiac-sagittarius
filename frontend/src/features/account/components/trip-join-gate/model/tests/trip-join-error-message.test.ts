@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TripApiError } from "@/src/trip/api-client";
-import { errorMessage } from "./trip-join-error-message";
+import { errorMessage } from "../trip-join-error-message";
 
 describe("trip join error message", () => {
   it("keeps user-safe fallback copy for expected API errors", () => {

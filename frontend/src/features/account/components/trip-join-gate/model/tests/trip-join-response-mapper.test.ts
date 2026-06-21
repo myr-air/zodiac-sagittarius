@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { tripFromJoinResponse } from "./trip-join-response-mapper";
+import { tripFromJoinResponse } from "../trip-join-response-mapper";
 
 describe("trip join response mapper", () => {
   it("keeps canonical Main Plan aliases from API join summaries", () => {

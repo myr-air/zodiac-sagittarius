@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { participantStatusLabel } from "./trip-join-participant-status";
+import { participantStatusLabel } from "../trip-join-participant-status";
 
 const labels = {
   claimed: "Claimed",
