@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
@@ -27,7 +28,14 @@ describe("itinerary-time helpers", () => {
 
   it("computes midnight-overflow indicators and time formatting", () => {
     expect(endOffsetDaysBetweenTimes("18:00", "07:30")).toBe(1);
+    expect(endOffsetDaysBetweenTimes("23:00", "01:00")).toBe(1);
     expect(endOffsetDaysBetweenTimes("09:00", "10:00")).toBe(0);
     expect(minutesToTime(9 * 60 + 5)).toBe("09:05");
+  });
+
+  it("computes durations across day boundaries", () => {
+    expect(durationBetweenTimes("23:00", "01:00", 1)).toBe(120);
+    expect(durationBetweenTimes("bad", "01:00")).toBeNull();
+    expect(durationBetweenTimes("23:00", "bad")).toBeNull();
   });
 });

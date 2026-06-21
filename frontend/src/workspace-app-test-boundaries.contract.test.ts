@@ -16,9 +16,9 @@ describe("Sagittarius workspace app test source boundaries", () => {
       sagittariusAppAccountTripAccessTest,
     } = readWorkspaceBoundarySources(frontendRoot);
 
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-account-api");
+    expect(sagittariusAppTestSupport).toContain("./testing/support/sagittarius-app-account-api");
     expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-fixtures");
-    expect(sagittariusAppTestSupport).toContain("./sagittarius-app.test-storage");
+    expect(sagittariusAppTestSupport).toContain("./testing/support/sagittarius-app-storage");
     expect(sagittariusAppTestSupport).toContain("export function resetSagittariusAppTestEnvironment");
     expect(sagittariusAppTestSupport).toContain("window.history.pushState(null, \"\", appRoutes.home())");
     expect(sagittariusAppTestSupport).toContain("export function mockWindowLocation");
@@ -42,12 +42,12 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestAccountApi).toContain("export function mockAccountPortalApiFetch");
     expect(sagittariusAppTestAccountApi).toContain("export function mockAccountTripMemberSessionFetch");
     expect(sagittariusAppTestAccountApi).toContain("accountApiRoutes.accountTripMemberSessions");
-    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-briefing-fixtures");
+    expect(sagittariusAppTestFixtures).toContain("./testing/fixtures/sagittarius-app-briefing-fixtures");
     expect(
       sagittariusAppTestFixtures.match(/dailyBriefingFixture/g) ?? [],
     ).toHaveLength(1);
     expect(sagittariusAppTestBriefingFixtures).toContain("export function dailyBriefingFixture");
-    expect(sagittariusAppTestFixtures).toContain("./sagittarius-app.test-plan-fixtures");
+    expect(sagittariusAppTestFixtures).toContain("./testing/fixtures/sagittarius-app-plan-fixtures");
     expect(sagittariusAppTestFixtures).not.toContain("function dailyBriefingFixture");
     expect(sagittariusAppTestFixtures).not.toContain("function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function apiSeedTrip");

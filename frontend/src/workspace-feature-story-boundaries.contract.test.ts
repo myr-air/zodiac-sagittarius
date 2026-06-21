@@ -69,10 +69,10 @@ describe("Sagittarius workspace feature story boundaries", () => {
       expect(storySource).not.toContain("defaultViewport:");
     });
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
-    expect(itineraryPageStoryPlays).toContain("./itinerary-story-assertions");
+    expect(itineraryPageStoryPlays).toContain("./support/itinerary-story-assertions");
     expect(itineraryTemplateStory).toContain("./ItineraryTemplate.stories.plays");
     expect(itineraryTemplateStory).not.toContain("./itinerary-story-assertions");
-    expect(itineraryTemplateStoryPlays).toContain("./itinerary-story-assertions");
+    expect(itineraryTemplateStoryPlays).toContain("./support/itinerary-story-assertions");
     [
       appShellStory,
       overviewPageStory,

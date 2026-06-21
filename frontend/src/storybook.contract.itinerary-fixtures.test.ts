@@ -8,6 +8,7 @@ describe("Storybook itinerary fixture contracts", () => {
       "features",
       "itinerary",
       "stories",
+      "support",
       "itinerary-story-fixtures.ts",
     );
     const storyItemBuilders = readProjectFile(
@@ -15,6 +16,7 @@ describe("Storybook itinerary fixture contracts", () => {
       "features",
       "itinerary",
       "stories",
+      "support",
       "itinerary-story-item-builders.ts",
     );
 
@@ -31,6 +33,7 @@ describe("Storybook itinerary fixture contracts", () => {
       "features",
       "itinerary",
       "stories",
+      "support",
       "itinerary-story-path-scenarios.ts",
     );
     const pathOptions = readProjectFile(
@@ -38,6 +41,7 @@ describe("Storybook itinerary fixture contracts", () => {
       "features",
       "itinerary",
       "stories",
+      "support",
       "itinerary-story-path-options.ts",
     );
     const pathItems = readProjectFile(

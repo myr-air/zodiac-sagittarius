@@ -15,6 +15,7 @@ describe("Sagittarius workspace import hook source boundaries", () => {
       itineraryImportRecordMerge,
       importHook,
       importApplyCommand,
+      importApplyCommandInputs,
       apiImportApplyCommand,
     } = readWorkspaceBoundarySources(frontendRoot);
 
@@ -40,8 +41,12 @@ describe("Sagittarius workspace import hook source boundaries", () => {
     expect(itineraryImportRecordMerge).toContain("export function mergeImportedRecordsIntoTripPlan");
     expect(itineraryImportRecordMerge).toContain("export function mergeApiImportedPlanRecordsIntoTrip");
     expect(itineraryImportRecordMerge).toContain("export function upsertById");
-    expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
+    expect(importApplyCommand).toContain("./command-inputs/workspace-itinerary-import-apply-inputs");
+    expect(importApplyCommand).not.toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
+    expect(importApplyCommandInputs).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
+    expect(importApplyCommandInputs).toContain("export function buildWorkspaceItineraryImportPreview");
+    expect(importApplyCommandInputs).toContain("export function buildWorkspaceLocalItineraryImportApplyInput");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-item-api-requests");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
