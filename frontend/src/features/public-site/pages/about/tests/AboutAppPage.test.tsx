@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { AboutAppPage } from "./AboutAppPage";
+import { AboutAppPage } from "../AboutAppPage";
 
 const webVersion = {
   apiHost: "api.example.test",
