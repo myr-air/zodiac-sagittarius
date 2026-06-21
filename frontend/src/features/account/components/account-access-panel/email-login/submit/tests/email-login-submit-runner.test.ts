@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runEmailLoginSubmission } from "./email-login-submit-runner";
+import { runEmailLoginSubmission } from "../email-login-submit-runner";
 
 describe("runEmailLoginSubmission", () => {
   it("wraps successful submissions with submitting state", async () => {

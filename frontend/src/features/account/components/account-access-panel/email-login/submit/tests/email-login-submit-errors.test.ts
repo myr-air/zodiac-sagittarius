@@ -6,7 +6,7 @@ import {
   emailLoginPasswordSetupError,
   emailLoginPasswordSubmitError,
   emailLoginStartError,
-} from "./email-login-submit-errors";
+} from "../email-login-submit-errors";
 
 const context = {
   emailLoginMessages: enMessages.access.emailLogin,

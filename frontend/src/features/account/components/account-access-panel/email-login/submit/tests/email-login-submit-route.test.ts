@@ -3,7 +3,7 @@ import {
   emailLoginSubmitRouteValues,
   selectEmailLoginSubmitHandler,
   selectEmailLoginSubmitRoute,
-} from "./email-login-submit-route";
+} from "../email-login-submit-route";
 
 const handlers = {
   setup: "setup-handler",

@@ -5,7 +5,7 @@ import {
   finishEmailPasswordLogin,
   finishEmailRegistrationSetup,
   trustedDeviceForFlow,
-} from "./email-login-auth-actions";
+} from "../email-login-auth-actions";
 
 function createActionClient() {
   const session = {
