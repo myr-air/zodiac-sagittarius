@@ -2,7 +2,7 @@ import type {
   ItineraryAdvisory,
   ItineraryCoordinates,
   ItineraryItem,
-} from "./types";
+} from "../types";
 import { isRecord, unsupportedImportFileError } from "./itinerary-import-reader-utils";
 
 export { isRecord, unsupportedImportFileError } from "./itinerary-import-reader-utils";

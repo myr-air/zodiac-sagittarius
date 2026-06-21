@@ -1,4 +1,4 @@
-import type { ItineraryItem, TripPlan } from "./types";
+import type { ItineraryItem, TripPlan } from "../types";
 import {
   activitySubtypeValues,
   activityTypeValues,
@@ -7,11 +7,11 @@ import {
   itineraryItemStatusValues,
   itineraryPathRoleValues,
   itineraryTimeModeValues,
-} from "./trip-itinerary-types";
+} from "../trip-itinerary-types";
 import {
   planStatusValues,
   planVariantKindValues,
-} from "./trip-plans/trip-plan-types";
+} from "../trip-plans/trip-plan-types";
 import { readEnum, readOptionalEnum } from "./itinerary-import-reader-utils";
 
 export function readActivityType(value: unknown): ItineraryItem["activityType"] {

@@ -7,7 +7,7 @@ import type {
   StopNote,
   Trip,
   TripTask,
-} from "./types";
+} from "../types";
 import type {
   itineraryExportSchema,
   itineraryExportVersion,

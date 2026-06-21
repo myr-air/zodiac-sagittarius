@@ -2,10 +2,10 @@ import {
   itineraryExportSchema,
   itineraryExportVersion,
 } from "./itinerary-import-export-schema";
-import { itemKindFromActivityType } from "./itinerary-item-kind";
+import { itemKindFromActivityType } from "../itinerary-item-kind";
 import { parseExportTrip } from "./itinerary-import-trip-parser";
 import { parseSpreadsheetItineraryImportDocument } from "./itinerary-spreadsheet-import";
-import { safeExternalHref } from "./safe-links";
+import { safeExternalHref } from "../safe-links";
 import {
   isRecord,
   readActivityType,

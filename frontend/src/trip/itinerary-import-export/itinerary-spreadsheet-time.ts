@@ -1,4 +1,4 @@
-import type { ItineraryAdvisory, ItineraryItem } from "./types";
+import type { ItineraryAdvisory, ItineraryItem } from "../types";
 
 export interface ParsedTimeWindow {
   startTime: string;

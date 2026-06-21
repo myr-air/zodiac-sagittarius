@@ -1,4 +1,4 @@
-import type { TripPlan } from "./types";
+import type { TripPlan } from "../types";
 import type { ItineraryExportDocument } from "./itinerary-import-export-types";
 import {
   isRecord,

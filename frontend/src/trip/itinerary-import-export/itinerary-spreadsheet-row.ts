@@ -1,9 +1,9 @@
-import { itemKindFromActivityType } from "./itinerary-item-kind";
+import { itemKindFromActivityType } from "../itinerary-item-kind";
 import {
   hasBookingHint,
   parseMoneyHint,
 } from "./itinerary-spreadsheet-records";
-import type { ItineraryAdvisory, ItineraryItem } from "./types";
+import type { ItineraryAdvisory, ItineraryItem } from "../types";
 
 export function classifySpreadsheetRow({
   activity,
