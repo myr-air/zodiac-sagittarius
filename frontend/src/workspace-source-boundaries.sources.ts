@@ -148,6 +148,8 @@ export const workspaceBoundarySourcePaths = {
   accountAccessModes: "src/features/account/components/account-access-panel/account-access-modes.ts",
   accountPortalNavItems: "src/features/account/components/account-access-panel/account-portal-nav-items.ts",
   accountPortalDataCache: "src/features/account/components/account-access-panel/account-portal-data-cache.ts",
+  accountPortalDashboardClassNames:
+    "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
   accountTripDates: "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts",
   accountTripForm: "src/features/account/components/account-access-panel/trip-wizard/account-trip-form.ts",
   accountTripWizardSupport: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",

@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/cn";
-import { accountStepSummaryClassName, buildAccountAuthCardClassName } from "./email-login/account-email-login-styles";
+import { buildAccountAuthCardClassName } from "./email-login/account-email-login-styles";
 
 export const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
 export const accountToastStackClassName =
@@ -73,26 +73,3 @@ export const accountTwoColClassName =
   "account-two-col grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 export const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
 export const accountAuthCardClassName = buildAccountAuthCardClassName(accountCardClassName, accountFormClassName);
-
-export const accountPortalDashboardClassNames = {
-  avatar: accountAvatarClassName,
-  dashboard: accountDashboardClassName,
-  deviceList: accountDeviceListClassName,
-  deviceRow: accountDeviceRowClassName,
-  empty: accountEmptyClassName,
-  featureCard: portalFeatureCardClassName,
-  historyCard: portalHistoryCardClassName,
-  newTripCard: portalNewTripCardClassName,
-  portalContent: portalContentClassName,
-  profileCard: portalProfileCardClassName,
-  profileRow: accountProfileRowClassName,
-  sectionTopline: portalSectionToplineClassName,
-  settingsCard: portalSettingsCardClassName,
-  settingsForm: accountSettingsFormClassName,
-  settingsGrid: accountSettingsGridClassName,
-  settingsProfilePreview: settingsProfilePreviewClassName,
-  statGrid: accountStatGridClassName,
-  stepSummary: accountStepSummaryClassName,
-  tripBuilderTopbar: tripBuilderTopbarClassName,
-  twoCol: accountTwoColClassName,
-};
