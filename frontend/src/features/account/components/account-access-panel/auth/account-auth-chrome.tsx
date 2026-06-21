@@ -6,7 +6,7 @@ import { cn } from "@/src/lib/cn";
 import {
   accessLanguageSwitchClassName,
   accountEntryLanguageSwitchClassName,
-} from "../account-panel-shared-styles";
+} from "../layout/account-panel-shared-styles";
 
 export const authFlowValues = ["login", "register"] as const;
 export type AuthFlow = (typeof authFlowValues)[number];

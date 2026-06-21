@@ -17,7 +17,7 @@ import {
   accountDashboardClassName,
   portalContentClassName,
   portalLoadingCardClassName,
-} from "./account-access-panel-layout";
+} from "./layout/account-access-panel-layout";
 import { AccountAccessPanelPortalContent } from "./portal/account-access-panel-portal-content";
 import type { UseAccountAccessPanelState } from "./use-account-access-panel-state";
 

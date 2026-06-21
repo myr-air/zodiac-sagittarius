@@ -19,11 +19,11 @@ import {
 import { AccountAccessPanelContent } from "./account-access-panel-content";
 import {
   accountToastStackClassName,
-} from "./account-access-panel-layout";
+} from "./layout/account-access-panel-layout";
 import {
   accountAccessPanelPageClassName,
   accountAccessPanelShellClassName,
-} from "./account-access-panel-shell-classes";
+} from "./layout/account-access-panel-shell-classes";
 import { useAccountAccessPanelState } from "./use-account-access-panel-state";
 
 interface AccountAccessPanelProps {

@@ -24,9 +24,9 @@ import {
   backHomeButtonClassName,
   tripAccessBackHomeClassName,
   tripAccessLanguageSwitchClassName,
-} from "./account-access-panel-layout";
+} from "./layout/account-access-panel-layout";
 import { AuthHighlights, AuthTravelCollage } from "./account-entry-hero";
-import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./account-panel-shared-styles";
+import { accessLanguageSwitchClassName, accountEntryLanguageSwitchClassName } from "./layout/account-panel-shared-styles";
 import type { AuthFlow } from "./auth";
 
 interface AccountAccessChromeProps {

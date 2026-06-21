@@ -18,7 +18,7 @@ import {
   portalSettingsCardClassName,
   settingsProfilePreviewClassName,
   tripBuilderTopbarClassName,
-} from "../account-access-panel-layout";
+} from "../layout/account-access-panel-layout";
 import { accountStepSummaryClassName } from "../email-login/account-email-login-styles";
 
 export const accountPortalDashboardClassNames = {
