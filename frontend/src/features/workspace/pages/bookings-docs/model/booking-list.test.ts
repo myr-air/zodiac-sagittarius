@@ -4,7 +4,7 @@ import type { BookingDoc } from "@/src/trip/types";
 import {
   bookingDocTestDocs,
   bookingFlightTestDoc,
-} from "./tests/bookings-docs-test-fixtures";
+} from "../tests/bookings-docs-test-fixtures";
 import {
   bookingDocLinkedContext,
   bookingDocMatchesQuery,

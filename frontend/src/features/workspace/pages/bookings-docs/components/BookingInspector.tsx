@@ -4,9 +4,9 @@ import { cn } from "@/src/lib/cn";
 import { Button, IconButton, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../BookingsDocsPage.copy";
-import { formatEnumLabel } from "../booking-options";
+import { formatEnumLabel } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import { formatDateTime, statusBadgeClassName } from "../booking-display";
+import { formatDateTime, statusBadgeClassName } from "../model/booking-display";
 
 interface BookingInspectorProps {
   booking: BookingDoc | null;

@@ -5,17 +5,17 @@ import {
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
-import type { BookingStatusFilter } from "./booking-options";
+import type { BookingStatusFilter } from "./model/booking-options";
 import {
   bookingDocMatchesFolder,
   bookingFolders,
   countBookingFolders,
   type BookingFolderId,
-} from "./booking-folders";
+} from "./model/booking-folders";
 import {
   bookingDocMatchesQuery,
   compareBookingStartWithUndated,
-} from "./booking-list";
+} from "./model/booking-list";
 
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];

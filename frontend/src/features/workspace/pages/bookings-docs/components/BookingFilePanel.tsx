@@ -4,7 +4,7 @@ import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-sta
 import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../BookingsDocsPage.copy";
-import { bookingStatusFilterValues, formatEnumLabel, type BookingStatusFilter } from "../booking-options";
+import { bookingStatusFilterValues, formatEnumLabel, type BookingStatusFilter } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { BookingFileRow } from "./BookingFileRow";
 

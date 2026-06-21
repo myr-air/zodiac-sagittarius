@@ -8,7 +8,7 @@ import {
   bookingTypes,
   bookingVisibilities,
   formatEnumLabel,
-} from "../booking-options";
+} from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { BookingDialogState } from "./useBookingDialogState";
 

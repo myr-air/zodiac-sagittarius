@@ -4,7 +4,7 @@ import {
   bookingDocVisibilityValues,
 } from "@/src/trip/trip-record-types";
 
-import type { BookingCopy } from "./BookingsDocsPage.copy";
+import type { BookingCopy } from "../BookingsDocsPage.copy";
 
 export const bookingTypes = bookingDocTypeValues;
 export const bookingStatuses = bookingDocStatusValues;

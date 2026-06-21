@@ -3,7 +3,7 @@ import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import { bookingFolders, type BookingFolderId } from "../booking-folders";
+import { bookingFolders, type BookingFolderId } from "../model/booking-folders";
 
 interface BookingFolderRailProps {
   activeFolderId: BookingFolderId;
