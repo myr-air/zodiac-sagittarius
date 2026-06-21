@@ -2,7 +2,7 @@
 
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { Icon } from "@/src/ui/icons";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface TripWizardReviewSummaryProps {
   destinationSummary: string;

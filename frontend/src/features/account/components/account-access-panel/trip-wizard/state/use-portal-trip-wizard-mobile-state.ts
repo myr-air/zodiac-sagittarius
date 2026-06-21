@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/src/lib/cn";
 import type { TripWizardStepId } from "../model/account-trip-wizard-steps";
-import * as wizardStyles from "../portal-trip-wizard-styles";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 export function usePortalTripWizardMobileState() {
   const [activeMobileStep, setActiveMobileStep] = useState<TripWizardStepId>("trip");

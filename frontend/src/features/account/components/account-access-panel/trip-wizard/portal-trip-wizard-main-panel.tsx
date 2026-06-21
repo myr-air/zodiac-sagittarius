@@ -8,7 +8,7 @@ import {
   TripWizardReviewSummary,
   TripWizardTripStep,
 } from "./portal-trip-wizard-form-sections";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 import type { PortalTripWizardModel } from "./state/use-portal-trip-wizard-model";
 
 interface PortalTripWizardMainPanelProps {

@@ -3,7 +3,7 @@
 import { Icon } from "@/src/ui/icons";
 import { tripDestinationCards } from "./model/account-trip-destinations";
 import { DestinationCardMeta } from "./destination-card-meta";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface TripWizardSelectedDestinationsProps {
   destinationCards: ReturnType<typeof tripDestinationCards>;

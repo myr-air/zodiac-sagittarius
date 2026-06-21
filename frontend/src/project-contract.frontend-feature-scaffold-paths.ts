@@ -14,6 +14,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map-fallback.test.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map-geometry.ts",
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map-geometry.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/layout/portal-trip-wizard-styles.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-credentials.ts",
   "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-model-actions.ts",
   "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-model-actions.test.ts",

@@ -5,7 +5,7 @@ import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { tripWizardSteps, type TripWizardStepId } from "./model/account-trip-wizard-steps";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface TripWizardWorkflowNavProps {
   activeMobileStep: TripWizardStepId;

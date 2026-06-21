@@ -5,7 +5,7 @@ import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
 import type { TripCity } from "@/src/trip/types";
 import { defaultTripOriginCity } from "./model/account-trip-destinations";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface TripWizardDateFieldsProps {
   selectedDestinationCities: TripCity[];

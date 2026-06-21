@@ -4,7 +4,7 @@ import Link from "next/link";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface PortalTripWizardActionsProps {
   canSubmit: boolean;

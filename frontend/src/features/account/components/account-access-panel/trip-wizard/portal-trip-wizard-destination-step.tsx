@@ -11,7 +11,7 @@ import { tripWizardSteps } from "./model/account-trip-wizard-steps";
 import { TripWizardDestinationSearch } from "./portal-trip-wizard-destination-search";
 import { TripWizardManualCityEntry } from "./portal-trip-wizard-manual-city-entry";
 import { TripWizardSelectedDestinations } from "./portal-trip-wizard-selected-destinations";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface TripWizardDestinationStepProps {
   activeMobileStep: string;

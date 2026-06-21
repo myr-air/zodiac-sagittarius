@@ -49,6 +49,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-steps.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-styles.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-model-actions.ts",

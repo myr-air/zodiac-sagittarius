@@ -14,7 +14,7 @@ import {
 import { tripWizardSteps, type TripWizardStepId } from "./model/account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
 import { TripPreviewLiveMap } from "./map";
-import * as wizardStyles from "./portal-trip-wizard-styles";
+import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 
 interface PortalTripWizardPreviewProps {
   activeMobileStep: TripWizardStepId;
