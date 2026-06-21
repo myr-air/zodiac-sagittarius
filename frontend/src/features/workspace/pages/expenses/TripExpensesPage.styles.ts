@@ -1,5 +1,8 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
-import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface";
+import {
+  workspaceResponsiveInlinePanelResetClassName,
+  workspaceResponsivePanelResetClassName,
+} from "@/src/shared/components/workspace-surface";
 import {
   workspaceDialogActionsClassName,
   workspaceDialogBackdropClassName,
@@ -29,7 +32,7 @@ export const filterGridClassName = "grid grid-cols-[minmax(180px,1fr)_minmax(150
 export const commandActionsClassName = "expenses-command-actions flex flex-wrap items-center gap-2 max-[767px]:[&>*]:flex-[1_1_180px]";
 export const copyFeedbackClassName = "expense-copy-feedback inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold leading-4 text-(--color-text-muted) data-[state=copied]:border-(--color-success-border) data-[state=copied]:bg-(--color-success-soft) data-[state=copied]:text-(--color-success) data-[state=error]:border-(--color-danger-border) data-[state=error]:bg-(--color-danger-soft) data-[state=error]:text-(--color-danger)";
 export const fieldClassName = workspaceFieldClassName;
-export const tableWrapClassName = "expenses-table-wrap min-h-0 overflow-auto rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_42%,var(--color-border))] bg-(--color-surface) p-2 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:p-0 max-[1199px]:shadow-none";
+export const tableWrapClassName = `expenses-table-wrap min-h-0 overflow-auto rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_42%,var(--color-border))] bg-(--color-surface) p-2 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsiveInlinePanelResetClassName} max-[1199px]:p-0`;
 export const tableClassName = "expense-ledger-table w-full min-w-[780px] border-separate border-spacing-y-2 text-left text-sm";
 export const tableHeaderClassName = "sticky top-0 z-[1] bg-(--color-surface-subtle) text-[11px] font-black uppercase text-(--color-text-muted) [&_th]:px-3 [&_th]:py-2";
 export const tableBodyClassName = "[&_td]:border-y [&_td]:border-[rgb(15_23_42_/_0.08)] [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td:first-child]:rounded-l-(--radius-md) [&_td:first-child]:border-l [&_td:last-child]:rounded-r-(--radius-md) [&_td:last-child]:border-r [&_tr:hover_td]:bg-(--color-surface-subtle)";

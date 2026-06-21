@@ -1,1 +1,4 @@
-export { workspaceResponsivePanelResetClassName } from "./workspace-surface.styles";
+export {
+  workspaceResponsiveInlinePanelResetClassName,
+  workspaceResponsivePanelResetClassName,
+} from "./workspace-surface.styles";
