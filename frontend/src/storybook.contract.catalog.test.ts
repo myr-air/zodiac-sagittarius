@@ -37,6 +37,7 @@ describe("Storybook catalog contracts", () => {
     const appStories = readProjectFile(
       "src",
       "app",
+      "storybook",
       "SagittariusApp.stories.tsx",
     );
 
@@ -51,7 +52,7 @@ describe("Storybook catalog contracts", () => {
 
   it("documents app-level responsive stories for every primary cockpit view", () => {
     expectStoryExports(
-      "app/SagittariusApp.stories.tsx",
+      "app/storybook/SagittariusApp.stories.tsx",
       requiredAppResponsiveStates,
     );
   });

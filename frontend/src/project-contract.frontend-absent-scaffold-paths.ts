@@ -78,6 +78,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/public-site/pages/home/HomeLanding.stories.plays.ts",
   "src/features/public-site/pages/about/AboutAppPage.stories.tsx",
   "src/features/public-site/pages/about/AboutAppPage.stories.plays.ts",
+  "src/app/SagittariusApp.stories.tsx",
   "src/shared/components/page-header/PageHeader.test.tsx",
   "src/shared/components/page-header/PageHeader.stories.tsx",
   "src/shared/components/page-header/PageHeader.stories.plays.ts",

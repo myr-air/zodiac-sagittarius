@@ -52,7 +52,7 @@ describe("Sagittarius project scaffold", () => {
 
   it("splits Sagittarius story fixtures and asserts via shared storybook support", () => {
     const stories = readFileSync(
-      join(frontendRoot, "src/app/SagittariusApp.stories.tsx"),
+      join(frontendRoot, "src/app/storybook/SagittariusApp.stories.tsx"),
       "utf8",
     );
     const storySupport = readFileSync(

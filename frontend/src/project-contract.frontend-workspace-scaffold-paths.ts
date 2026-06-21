@@ -123,7 +123,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-planning-records-context.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-planning-commands.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts",
-  "src/app/SagittariusApp.stories.tsx",
+  "src/app/storybook/SagittariusApp.stories.tsx",
   "src/trip/workspace/TripAccessLoadingFrame.tsx",
   "src/trip/workspace/WorkspaceToast.tsx",
   "src/trip/workspace/itinerary-import-api-merge.test.ts",

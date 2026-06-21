@@ -34,6 +34,7 @@ describe("Storybook access route contracts", () => {
     const appStories = readProjectFile(
       "src",
       "app",
+      "storybook",
       "SagittariusApp.stories.tsx",
     );
     const gatedStoryLines = appStories
