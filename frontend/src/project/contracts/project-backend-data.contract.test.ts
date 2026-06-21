@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { repoRoot } from "./project-contract.helpers";
+import { repoRoot } from "../../project-contract.helpers";
 
 describe("Sagittarius backend data contracts", () => {
   it("documents the Rust/PostgreSQL API data contract", () => {

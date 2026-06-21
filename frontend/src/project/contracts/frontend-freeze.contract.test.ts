@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const frontendRoot = resolve(testDir, "..");
+const frontendRoot = resolve(testDir, "../../..");
 const repoRoot = resolve(frontendRoot, "..");
 
 describe("frontend core freeze contract", () => {
