@@ -7,14 +7,14 @@ import {
   bookingTypeForBookingTemplate,
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
-} from "./booking-docs";
+} from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   bookingDocTestMembers as members,
   createBookingDocTripFixture as tripFixture,
   createItineraryItemFixture as itineraryItem,
 } from "./booking-docs.test-support";
-import type { Expense, ItineraryItem } from "./types";
+import type { Expense, ItineraryItem } from "../../types";
 
 describe("booking doc estimates", () => {
   it("classifies itinerary rows and expense estimates into booking types", () => {

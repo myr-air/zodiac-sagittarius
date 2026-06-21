@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingDocInputFromRecord } from "./booking-docs";
+import { bookingDocInputFromRecord } from "../../booking-docs";
 import { bookingDocTestDocs as docs } from "./booking-docs.test-support";
 
 describe("booking docs facade inputs", () => {

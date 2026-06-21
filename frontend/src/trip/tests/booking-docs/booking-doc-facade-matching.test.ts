@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findDuplicateBookingDoc } from "./booking-docs";
+import { findDuplicateBookingDoc } from "../../booking-docs";
 import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 describe("booking docs facade matching", () => {

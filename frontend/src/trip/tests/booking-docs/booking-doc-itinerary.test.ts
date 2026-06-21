@@ -3,7 +3,7 @@ import {
   clearItineraryBookingTicketDetails,
   syncItineraryDetailsWithBookingTicket,
   uniqueStringIds,
-} from "./booking-docs";
+} from "../../booking-docs";
 import { createItineraryItemFixture as itineraryItem } from "./booking-docs.test-support";
 
 describe("booking doc itinerary ticket helpers", () => {

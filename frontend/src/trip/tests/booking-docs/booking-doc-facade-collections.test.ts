@@ -3,7 +3,7 @@ import {
   removeBookingDocFromTrip,
   replaceBookingDocInTrip,
   updateLocalBookingDocInTrip,
-} from "./booking-docs";
+} from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   createBookingDocTripFixture as tripFixture,

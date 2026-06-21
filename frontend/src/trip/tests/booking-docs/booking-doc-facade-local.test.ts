@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLocalBookingDoc } from "./booking-docs";
+import { createLocalBookingDoc } from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   createBookingDocTripFixture as tripFixture,

@@ -3,7 +3,7 @@ import {
   buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   serializeBookingDocInputForApi,
-} from "./booking-docs";
+} from "../../booking-docs";
 
 describe("booking docs API requests", () => {
   it("serializes booking input for API patches", () => {

@@ -6,7 +6,7 @@ import {
   canViewBookingDoc,
   compareBookingStartWithUndated,
   filterBookingDocs,
-} from "./booking-docs";
+} from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   bookingDocTestMembers as members,

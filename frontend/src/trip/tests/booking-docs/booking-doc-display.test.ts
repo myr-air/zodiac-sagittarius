@@ -3,7 +3,7 @@ import { createItineraryItemFixture as itineraryItem } from "./booking-docs.test
 import {
   bookingDraftTitleForItineraryItem,
   bookingTitleForItineraryItem,
-} from "./booking-doc-display";
+} from "../../booking-doc-display";
 
 describe("booking doc display helpers", () => {
   it("builds booking titles from itinerary activity and booking type", () => {
