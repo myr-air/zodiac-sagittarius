@@ -1,6 +1,7 @@
 import type { Locale } from "@/src/i18n/types";
 import { formatDuration } from "@/src/features/itinerary/lib";
 import {
+  durationBetweenTimes,
   formatTimeRangeLabel,
   parseTimeToMinutes,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
@@ -36,7 +37,7 @@ export function buildTimeEditModalModel({
   const needsStartForEnd = Boolean(endTime && !startTime.trim());
   const derivedDuration =
     startMinutes !== null && endMinutes !== null
-      ? Math.max(1, endMinutes + endOffsetDays * 24 * 60 - startMinutes)
+      ? durationBetweenTimes(startTime, endTime, endOffsetDays)
       : null;
   const timeFormatHint =
     locale === "th"

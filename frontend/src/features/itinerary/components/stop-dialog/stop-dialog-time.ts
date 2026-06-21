@@ -1,4 +1,5 @@
 import {
+  durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   minutesToTime,
   parseTimeToMinutes,
@@ -19,18 +20,6 @@ export function endWindowFromDuration(stopStartTime: string, durationMinutes: nu
     endTime: minutesToTime(total % (24 * 60)),
     endOffsetDays: Math.floor(total / (24 * 60)),
   };
-}
-
-export function durationBetweenTimes(
-  startTime: string,
-  endTime: string,
-  endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
-): number | null {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-  if (start === null || end === null) return null;
-  const duration = end + endOffsetDays * 24 * 60 - start;
-  return Math.max(1, duration);
 }
 
 export function parseRouteActivity(value: string): { destination: string; durationMinutes?: number; origin: string; startTime?: string } | null {
@@ -74,4 +63,4 @@ function normalizeClockTime(hourText: string, minuteText: string, meridiem?: str
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
-export { endOffsetDaysBetweenTimes, parseTimeToMinutes as timeToMinutes };
+export { durationBetweenTimes, endOffsetDaysBetweenTimes, parseTimeToMinutes as timeToMinutes };

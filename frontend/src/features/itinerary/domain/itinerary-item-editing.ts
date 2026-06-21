@@ -4,6 +4,7 @@ import { formatDuration } from "@/src/features/itinerary/lib";
 import {
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
+  durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   parseTimeToMinutes,
   toDateTimeLocalValue,
@@ -67,6 +68,7 @@ export {
   bookingTitleForItem,
   buildActivitySubtypePatch,
   buildActivityTypePatch,
+  durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   formatBookingSummary,
   formatTimeRangeLabel,

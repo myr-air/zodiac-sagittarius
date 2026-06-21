@@ -26,6 +26,18 @@ export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): n
   return end <= start ? 1 : 0;
 }
 
+export function durationBetweenTimes(
+  startTime: string,
+  endTime: string,
+  endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
+): number | null {
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
+  if (start === null || end === null) return null;
+  const duration = end + endOffsetDays * 24 * 60 - start;
+  return Math.max(1, duration);
+}
+
 export function minutesToTime(value: number): string {
   const hour = Math.floor(value / 60);
   const minute = value % 60;
