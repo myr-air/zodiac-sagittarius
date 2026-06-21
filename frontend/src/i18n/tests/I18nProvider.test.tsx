@@ -6,8 +6,8 @@ import {
   createMutableMemoryStorage,
   installLocalStorageStub,
 } from "@/src/testing/browser-storage";
-import { I18nProvider, useI18n } from "./I18nProvider";
-import { LanguageSwitch } from "./LanguageSwitch";
+import { I18nProvider, useI18n } from "../I18nProvider";
+import { LanguageSwitch } from "../LanguageSwitch";
 
 const localStorage = createMutableMemoryStorage();
 installLocalStorageStub(localStorage);

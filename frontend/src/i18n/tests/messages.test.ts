@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { messages } from "./messages";
+import { messages } from "../messages";
 
 describe("messages", () => {
   it("keeps Thai cockpit labels localized instead of leaking English UI copy", () => {

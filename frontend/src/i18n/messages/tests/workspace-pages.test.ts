@@ -7,13 +7,13 @@ import {
   enStopDialogMessages,
   enSuggestionsMessages,
   enTimelineMessages,
-} from "./en.workspace-pages";
-import { enContextRailMessages as enContextRailSectionMessages } from "./en.workspace-pages.context-rail";
-import { enMapMessages as enMapSectionMessages } from "./en.workspace-pages.map";
-import { enMembersMessages as enMembersSectionMessages } from "./en.workspace-pages.members";
-import { enStopDialogMessages as enStopDialogSectionMessages } from "./en.workspace-pages.stop-dialog";
-import { enSuggestionsMessages as enSuggestionsSectionMessages } from "./en.workspace-pages.suggestions";
-import { enTimelineMessages as enTimelineSectionMessages } from "./en.workspace-pages.timeline";
+} from "../en.workspace-pages";
+import { enContextRailMessages as enContextRailSectionMessages } from "../en.workspace-pages.context-rail";
+import { enMapMessages as enMapSectionMessages } from "../en.workspace-pages.map";
+import { enMembersMessages as enMembersSectionMessages } from "../en.workspace-pages.members";
+import { enStopDialogMessages as enStopDialogSectionMessages } from "../en.workspace-pages.stop-dialog";
+import { enSuggestionsMessages as enSuggestionsSectionMessages } from "../en.workspace-pages.suggestions";
+import { enTimelineMessages as enTimelineSectionMessages } from "../en.workspace-pages.timeline";
 import {
   thContextRailMessages,
   thMapMessages,
@@ -21,13 +21,13 @@ import {
   thStopDialogMessages,
   thSuggestionsMessages,
   thTimelineMessages,
-} from "./th.workspace-pages";
-import { thContextRailMessages as thContextRailSectionMessages } from "./th.workspace-pages.context-rail";
-import { thMapMessages as thMapSectionMessages } from "./th.workspace-pages.map";
-import { thMembersMessages as thMembersSectionMessages } from "./th.workspace-pages.members";
-import { thStopDialogMessages as thStopDialogSectionMessages } from "./th.workspace-pages.stop-dialog";
-import { thSuggestionsMessages as thSuggestionsSectionMessages } from "./th.workspace-pages.suggestions";
-import { thTimelineMessages as thTimelineSectionMessages } from "./th.workspace-pages.timeline";
+} from "../th.workspace-pages";
+import { thContextRailMessages as thContextRailSectionMessages } from "../th.workspace-pages.context-rail";
+import { thMapMessages as thMapSectionMessages } from "../th.workspace-pages.map";
+import { thMembersMessages as thMembersSectionMessages } from "../th.workspace-pages.members";
+import { thStopDialogMessages as thStopDialogSectionMessages } from "../th.workspace-pages.stop-dialog";
+import { thSuggestionsMessages as thSuggestionsSectionMessages } from "../th.workspace-pages.suggestions";
+import { thTimelineMessages as thTimelineSectionMessages } from "../th.workspace-pages.timeline";
 
 describe("workspace page messages", () => {
   it("keeps workspace page copy split behind stable aggregate exports", () => {
