@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { frontendRoot } from "./project-contract.helpers";
-import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
+import { readWorkspaceBoundarySources } from "./workspace/contracts/workspace-source-boundaries.sources";
 
 describe("Sagittarius account source boundaries", () => {
   it("keeps account access, email login, portal, and trip join code split by responsibility", () => {

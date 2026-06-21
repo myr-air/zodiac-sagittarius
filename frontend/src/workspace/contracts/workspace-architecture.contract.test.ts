@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-
-const testDir = dirname(fileURLToPath(import.meta.url));
-const frontendRoot = resolve(testDir, "..");
+import { frontendRoot } from "../../project-contract.helpers";
 
 describe("Sagittarius workspace architecture", () => {
   it("keeps account and trip access separated on production page routes", () => {
