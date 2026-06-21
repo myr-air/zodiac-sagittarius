@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
+import { TimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Icon } from "@/src/ui/icons";
 import {
   endOffsetDaysBetweenTimes,
@@ -115,26 +116,18 @@ export function TimeEditModal({
           <div className={timeEditFieldsClassName}>
             <label className={timeEditFieldClassName}>
               <span>{model.startLabel}</span>
-              <input
+              <TimePickerField
                 className={timeEditInputClassName}
-                inputMode="numeric"
-                maxLength={5}
-                placeholder="08:30"
-                title={model.timeFormatHint}
                 value={startTime}
-                onChange={(event) => updateStartTime(event.target.value)}
+                onChange={updateStartTime}
               />
             </label>
             <label className={timeEditFieldClassName}>
               <span>{model.endLabel}</span>
-              <input
+              <TimePickerField
                 className={timeEditInputClassName}
-                inputMode="numeric"
-                maxLength={5}
-                placeholder="10:00"
-                title={`${model.timeFormatHint} ${model.optionalEndHint}`}
                 value={endTime}
-                onChange={(event) => updateEndTime(event.target.value)}
+                onChange={updateEndTime}
               />
             </label>
           </div>
