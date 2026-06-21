@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { frontendRoot, repoRoot } from "./project-contract.helpers";
+import { frontendRoot, repoRoot } from "../../project-contract.helpers";
 
 describe("Sagittarius production e2e contracts", () => {
   it("keeps the real API e2e runnable from a seeded local backend", () => {

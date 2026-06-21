@@ -5,7 +5,7 @@ import {
   collectProductCopyFiles,
   frontendRoot,
   productCopySourceRoots,
-} from "./project-contract.helpers";
+} from "../../project-contract.helpers";
 
 describe("Sagittarius production and routing contracts", () => {
   it("uses Next App Router with trip-scoped production routes", () => {
