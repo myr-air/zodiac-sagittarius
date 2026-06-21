@@ -3,7 +3,7 @@ import {
   formatPreviewTravelDate,
   routeCalendarDays,
   tripNightCount,
-} from "../../trip-date-calendar";
+} from "../../metadata";
 
 describe("trip date calendar helpers", () => {
   it("formats preview dates and night counts", () => {

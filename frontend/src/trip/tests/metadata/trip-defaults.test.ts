@@ -4,7 +4,7 @@ import type { TripSummaryResponse } from "../../api-client/api-response-types";
 import {
   DEFAULT_TRIP_ORIGIN_CITY,
   DEFAULT_TRIP_TIMEZONE,
-} from "../../trip-defaults";
+} from "../../metadata";
 
 describe("trip defaults", () => {
   it("keeps the default trip origin and timezone in one source", () => {

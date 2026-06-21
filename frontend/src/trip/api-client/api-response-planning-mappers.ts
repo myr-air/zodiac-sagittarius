@@ -11,7 +11,7 @@ import type {
   TripSummaryResponse,
   TripTaskResponse,
 } from "./api-response-types";
-import { DEFAULT_TRIP_TIMEZONE } from "../trip-defaults";
+import { DEFAULT_TRIP_TIMEZONE } from "../metadata";
 import {
   legacyKindForPlanStatus,
   planStatusForLegacyKind,

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { deriveTripCountriesFromDestination } from "@/src/trip/trip-countries";
+import { deriveTripCountriesFromDestination } from "@/src/trip/metadata";
 import {
   applyTripSettingsToTrip,
   buildShiftedItineraryItemDayRequests,

@@ -1,4 +1,4 @@
-import { DEFAULT_TRIP_ORIGIN_CITY } from "@/src/trip/trip-defaults";
+import { DEFAULT_TRIP_ORIGIN_CITY } from "./trip-defaults";
 import type { TripCity } from "@/src/trip/types";
 
 export const tripContinentValues = [

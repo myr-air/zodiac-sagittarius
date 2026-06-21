@@ -1,4 +1,4 @@
-import type { TripCity } from "./types";
+import type { TripCity } from "../types";
 
 export const DEFAULT_TRIP_ORIGIN_CITY: TripCity = {
   city: "Bangkok",

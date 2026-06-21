@@ -4,8 +4,8 @@ export {
   formatPreviewTravelDate,
   routeCalendarDays,
   tripNightCount,
-} from "@/src/trip/trip-date-calendar";
-export type { RouteCalendarDay } from "@/src/trip/trip-date-calendar";
+} from "@/src/trip/metadata";
+export type { RouteCalendarDay } from "@/src/trip/metadata";
 
 export const tripWizardDateSelectionStepValues = ["depart", "return"] as const;
 export type TripWizardDateSelectionStep = (typeof tripWizardDateSelectionStepValues)[number];
