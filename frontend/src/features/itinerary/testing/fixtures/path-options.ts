@@ -1,4 +1,4 @@
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import { mainItineraryPathId, mainItineraryPathName } from "@/src/trip/itinerary-paths";
 import {
   pathIdPlanA as pathIdFixtureStoryA,

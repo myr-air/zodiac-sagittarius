@@ -1,5 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { getTripDates } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
 import { StopDialogActions } from "./StopDialogActions";
 import { StopDialogFormFields } from "./StopDialogFormFields";

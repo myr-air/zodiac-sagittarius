@@ -1,4 +1,4 @@
-import { formatDayLabel } from "@/src/trip/itinerary";
+import { formatDayLabel } from "@/src/trip/itinerary-core";
 import { Select } from "@/src/ui";
 import { formatThaiDate } from "@/src/features/itinerary/lib";
 import type { Locale } from "@/src/i18n/types";
