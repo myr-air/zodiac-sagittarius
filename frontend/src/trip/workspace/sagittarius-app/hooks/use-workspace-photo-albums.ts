@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
-import type { TripPhotoAlbumInput } from "@/src/features/workspace/pages/photos";
+import type { TripPhotoAlbumInput } from "@/src/features/workspace/pages/photos/TripPhotosPage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
   normalizePhotoAlbumCreateInput,

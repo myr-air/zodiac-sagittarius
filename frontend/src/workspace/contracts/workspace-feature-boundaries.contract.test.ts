@@ -8,7 +8,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       sagaCore,
       itineraryTimeLib,
       tripSettingsPageSource,
-      tripSettingsIndexSource,
+      tripSettingsTypesSource,
       memberInviteActions,
       memberPageOptions,
       memberPageSelectors,
@@ -46,7 +46,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
 
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
-    expect(tripSettingsIndexSource).toContain("./TripSettingsPage.types");
+    expect(tripSettingsTypesSource).toContain("export interface TripSettingsFormValues");
     expect(memberInviteActions).toContain("@/src/routes/invite-links");
     expect(memberInviteActions).not.toContain("./TripMembersPage.support");
     expect(memberPageOptions).toContain("export const memberRoleFilterValues");

@@ -141,7 +141,7 @@ export const workspaceBoundarySourcePaths = {
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsPageStory:
     "src/features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.tsx",
-  tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
+  tripSettingsTypesSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts",
   memberPageOptions: "src/features/workspace/pages/members/model/member-page-options.ts",
   memberPageSelectors: "src/features/workspace/pages/members/model/member-page-selectors.ts",
   memberInviteActions: "src/features/workspace/pages/members/use-member-invite-actions.ts",

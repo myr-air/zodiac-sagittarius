@@ -2,11 +2,11 @@
 
 import type { ComponentProps } from "react";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
-import { BookingsDocsPage } from "@/src/features/workspace/pages/bookings-docs";
-import { TripExpensesPage } from "@/src/features/workspace/pages/expenses";
-import { TripMembersPage } from "@/src/features/workspace/pages/members";
-import { TripPhotosPage } from "@/src/features/workspace/pages/photos";
-import { TripSettingsPage } from "@/src/features/workspace/pages/trip-settings";
+import { BookingsDocsPage } from "@/src/features/workspace/pages/bookings-docs/BookingsDocsPage";
+import { TripExpensesPage } from "@/src/features/workspace/pages/expenses/TripExpensesPage";
+import { TripMembersPage } from "@/src/features/workspace/pages/members/TripMembersPage";
+import { TripPhotosPage } from "@/src/features/workspace/pages/photos/TripPhotosPage";
+import { TripSettingsPage } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
 import type { PlanningView } from "./planning-view";
 
 interface TripWorkspaceViewsProps {

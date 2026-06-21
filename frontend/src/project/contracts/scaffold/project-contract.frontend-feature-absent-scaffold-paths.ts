@@ -1,5 +1,10 @@
 export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/workspace/pages/expenses/TripExpensesPage.test.tsx",
+  "src/features/workspace/pages/bookings-docs/index.ts",
+  "src/features/workspace/pages/expenses/index.ts",
+  "src/features/workspace/pages/members/index.ts",
+  "src/features/workspace/pages/photos/index.ts",
+  "src/features/workspace/pages/trip-settings/index.ts",
   "src/features/workspace/components/app-shell/AppShell.test.tsx",
   "src/account/api-client-auth.test.ts",
   "src/features/account/components/account-access-panel/account-access-panel-support.ts",

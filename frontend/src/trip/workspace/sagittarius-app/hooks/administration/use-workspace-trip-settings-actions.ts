@@ -12,7 +12,7 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings";
+import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage.types";
 
 interface UseWorkspaceTripSettingsActionsOptions {
   canManagePeople: boolean;
