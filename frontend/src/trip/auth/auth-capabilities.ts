@@ -1,4 +1,4 @@
-import type { TripCapability, TripRole } from "./types";
+import type { TripCapability, TripRole } from "../types";
 
 const roleCapabilities: Record<TripRole, TripCapability[]> = {
   owner: ["viewPlan", "editItinerary", "reviewSuggestions", "createSuggestion", "viewExpenses", "editExpenses", "managePeople", "manageTripPlans", "managePhotoAlbums"],

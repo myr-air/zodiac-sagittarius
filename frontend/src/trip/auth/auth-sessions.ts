@@ -1,6 +1,6 @@
 import { createLocalSessionToken } from "./auth-local-secrets";
 import { isTripParticipantDisabled } from "./auth-member-local";
-import type { Member, Trip, TripParticipantSession } from "./types";
+import type { Member, Trip, TripParticipantSession } from "../types";
 
 interface TripParticipantSessionOptions {
   now?: Date;

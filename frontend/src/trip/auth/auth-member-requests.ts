@@ -2,9 +2,9 @@ import type {
   CreateMemberApiRequest,
   PatchMemberApiRequest,
   UpdatePresenceApiRequest,
-} from "./api-client";
+} from "../api-client";
 import { nextTripMemberColor } from "./auth-member-palette";
-import type { Member, TripMemberAccessStatus, TripRole } from "./types";
+import type { Member, TripMemberAccessStatus, TripRole } from "../types";
 
 export function buildCreateMemberRequest(
   input: { displayName: string; role: Exclude<TripRole, "owner"> },

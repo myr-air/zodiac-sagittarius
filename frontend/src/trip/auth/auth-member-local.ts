@@ -1,6 +1,6 @@
 import { nextTripMemberColor, nextTripMemberId } from "./auth-member-palette";
 import { hashLocalSecret } from "./auth-local-secrets";
-import type { Member, Trip, TripMemberAccessStatus, TripRole } from "./types";
+import type { Member, Trip, TripMemberAccessStatus, TripRole } from "../types";
 
 export function claimTripParticipant(trip: Trip, memberId: string, password: string): Trip {
   const trimmedPassword = password.trim();

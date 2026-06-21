@@ -1,4 +1,4 @@
-import type { Member } from "./types";
+import type { Member } from "../types";
 
 export function nextTripMemberId(members: Member[], displayName: string): string {
   const slug = displayName
