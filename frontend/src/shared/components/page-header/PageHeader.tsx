@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
+import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface/workspace-surface.styles";
 
 interface PageHeaderProps {
   allowOverflow?: boolean;
@@ -13,7 +14,7 @@ interface PageHeaderProps {
   motif?: ReactNode;
 }
 
-const pageHeaderClassName = "page-header relative isolate mb-3 flex min-h-[92px] min-w-0 items-center justify-between justify-self-stretch gap-4 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-4 py-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:mb-0 max-[1199px]:grid max-[1199px]:min-h-[84px] max-[1199px]:items-center max-[1199px]:gap-3 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0 max-[1199px]:px-4 max-[1199px]:py-3 max-[1199px]:shadow-none max-[767px]:hidden";
+const pageHeaderClassName = `page-header relative isolate mb-3 flex min-h-[92px] min-w-0 items-center justify-between justify-self-stretch gap-4 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-4 py-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:mb-0 max-[1199px]:grid max-[1199px]:min-h-[84px] max-[1199px]:items-center max-[1199px]:gap-3 ${workspaceResponsivePanelResetClassName} max-[1199px]:px-4 max-[1199px]:py-3 max-[767px]:hidden`;
 const pageHeaderWithAsideClassName = "max-[1199px]:grid-cols-[minmax(0,1fr)_minmax(180px,260px)]";
 const pageHeaderWithoutAsideClassName = "max-[1199px]:grid-cols-1";
 const pageHeaderCopyClassName = "page-header-copy relative z-[1] grid min-w-0 gap-1";
