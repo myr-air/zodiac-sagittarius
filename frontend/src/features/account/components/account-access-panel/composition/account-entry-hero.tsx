@@ -4,7 +4,7 @@ import Image from "next/image";
 import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import type { AuthFlow } from "./auth";
+import type { AuthFlow } from "../auth";
 
 const accountAuthHighlightsClassName =
   "account-auth-highlights absolute bottom-[76px] left-11 z-[2] col-span-full grid w-[330px] list-none gap-[18px] self-end border-t-0 p-0 m-[clamp(24px,7vh,64px)_0_0] max-[767px]:relative max-[767px]:inset-auto max-[767px]:w-auto max-[767px]:gap-3 max-[767px]:mt-[18px]";

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { AccountPortalNav } from "./account-portal-nav";
-import { PanelHeading } from "../account-panel-heading";
+import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton, PortalStatSkeleton, SettingLine, Stat } from "./account-portal-primitives";
 import { overviewPlay } from "./account-portal-primitives.stories.plays";
 

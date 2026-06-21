@@ -7,19 +7,19 @@ import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { TripJoinGate } from "@/src/features/account/components/trip-join-gate";
 import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
-import { StatusMessage, type AuthFlow } from "./auth";
+import { StatusMessage, type AuthFlow } from "../auth";
 import {
   AccountPortalLoadingFrame,
-} from "./portal";
-import { EmailLoginPanel } from "./email-login";
+} from "../portal";
+import { EmailLoginPanel } from "../email-login";
 import {
   accountAuthCardClassName,
   accountDashboardClassName,
   portalContentClassName,
   portalLoadingCardClassName,
-} from "./layout/account-access-panel-layout";
-import { AccountAccessPanelPortalContent } from "./portal/account-access-panel-portal-content";
-import type { UseAccountAccessPanelState } from "./use-account-access-panel-state";
+} from "../layout/account-access-panel-layout";
+import { AccountAccessPanelPortalContent } from "../portal/account-access-panel-portal-content";
+import type { UseAccountAccessPanelState } from "../use-account-access-panel-state";
 
 interface AccountAccessPanelContentProps {
   accountClient: AccountApiClient;

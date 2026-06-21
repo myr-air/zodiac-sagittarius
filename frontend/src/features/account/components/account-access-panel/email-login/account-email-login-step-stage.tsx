@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/src/lib/cn";
-import { PanelHeading } from "../account-panel-heading";
+import { PanelHeading } from "../primitives/account-panel-heading";
 import {
   accountStepStageClassName,
   accountStepStageDirectionClassNames,

@@ -12,7 +12,7 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { errorMessage } from "../auth";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import { PanelHeading } from "../account-panel-heading";
+import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalListSkeleton } from "./account-portal-primitives";
 import { PortalVaultCloudProviderPanel } from "./portal-vault-cloud-provider-panel";
 import {

@@ -12,11 +12,11 @@ import {
   mainLabel,
   type AccountAccessMode,
 } from "./account-access-modes";
-import { AccountAccessChrome } from "./account-access-panel-chrome";
+import { AccountAccessChrome } from "./composition/account-access-panel-chrome";
 import {
   StatusMessage,
 } from "./auth";
-import { AccountAccessPanelContent } from "./account-access-panel-content";
+import { AccountAccessPanelContent } from "./composition/account-access-panel-content";
 import {
   accountToastStackClassName,
 } from "./layout/account-access-panel-layout";

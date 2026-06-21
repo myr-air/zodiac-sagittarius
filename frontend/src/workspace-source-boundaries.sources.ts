@@ -141,8 +141,10 @@ export const workspaceBoundarySourcePaths = {
   photoAlbumDialogRelatedItems: "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
   photoAlbumDialogState: "src/features/workspace/pages/photos/components/usePhotoAlbumDialogState.ts",
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
-  accountAccessPanelContent: "src/features/account/components/account-access-panel/account-access-panel-content.tsx",
-  accountAccessChrome: "src/features/account/components/account-access-panel/account-access-panel-chrome.tsx",
+  accountAccessPanelContent:
+    "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx",
+  accountAccessChrome:
+    "src/features/account/components/account-access-panel/composition/account-access-panel-chrome.tsx",
   accountAccessShellClasses:
     "src/features/account/components/account-access-panel/layout/account-access-panel-shell-classes.ts",
   accountAccessPortalHandlers:

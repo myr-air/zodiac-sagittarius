@@ -1,7 +1,7 @@
 import type { AccountSession, AccountSettings, AccountTripStats } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { PanelHeading } from "../account-panel-heading";
+import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalStatSkeleton, Stat } from "./account-portal-primitives";
 
 interface PortalDashboardSectionClassNames {

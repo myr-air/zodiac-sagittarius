@@ -8,7 +8,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { cn } from "@/src/lib/cn";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import { PanelHeading } from "../account-panel-heading";
+import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton, SettingLine } from "./account-portal-primitives";
 
 interface PortalExplorerSectionClassNames {
