@@ -6,7 +6,7 @@ import {
   sortItemsForDay,
 } from "../../../itinerary-view";
 import { getTripFixtureItineraryItem, tripFixture } from "../../../trip-fixtures";
-import { hongKongDay, shenzhenDay } from "./itinerary.test-support";
+import { hongKongDay, shenzhenDay } from "../../../testing/itinerary-test-days";
 
 describe("itinerary view helpers", () => {
   it("groups sorted itinerary items with route stats", () => {

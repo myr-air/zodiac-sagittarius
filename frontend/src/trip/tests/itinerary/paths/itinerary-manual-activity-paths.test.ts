@@ -5,7 +5,7 @@ import {
   applyManualActivityPath,
   deriveManualActivityPathOptions,
 } from "../../../itinerary-paths";
-import { overlappingActivityItems } from "./itinerary-activity-branches.test-support";
+import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
 import {
   pathIdPlanA,
   pathIdPlanB,

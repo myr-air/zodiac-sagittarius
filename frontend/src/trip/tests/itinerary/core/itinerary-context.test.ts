@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hongKongDay, shenzhenDay } from "./itinerary.test-support";
+import { hongKongDay, shenzhenDay } from "../../../testing/itinerary-test-days";
 import {
   buildItineraryView,
   formatDayLabel,

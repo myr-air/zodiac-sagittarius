@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { applyManualActivityPath } from "@/src/trip/itinerary-paths";
-import { overlappingActivityItems } from "@/src/trip/tests/itinerary/paths/itinerary-activity-branches.test-support";
+import { overlappingActivityItems } from "@/src/trip/testing/itinerary-activity-branch-fixtures";
 import {
   pathIdPlanA,
   pathIdPlanB,

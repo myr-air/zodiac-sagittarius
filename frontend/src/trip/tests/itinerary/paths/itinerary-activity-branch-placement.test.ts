@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "../../../trip-fixtures";
 import { applyItemToActivityBranch } from "../../../itinerary-paths";
-import { overlappingActivityItems } from "./itinerary-activity-branches.test-support";
+import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
 
 describe("itinerary activity branch placement", () => {
   it("keeps overlapping created activities on main until an organizer explicitly chooses an alternative path", () => {

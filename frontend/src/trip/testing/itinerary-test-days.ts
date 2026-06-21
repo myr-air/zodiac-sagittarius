@@ -1,5 +1,5 @@
-import { seedTrip } from "../../../seed";
-import { getTripDates } from "../../../itinerary";
+import { getTripDates } from "../itinerary";
+import { seedTrip } from "../seed";
 
 const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
 

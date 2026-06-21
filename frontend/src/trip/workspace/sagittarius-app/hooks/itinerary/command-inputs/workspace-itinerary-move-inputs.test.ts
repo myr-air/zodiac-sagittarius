@@ -10,7 +10,7 @@ import {
 } from "@/src/trip/itinerary-api-requests";
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
-import { shenzhenDay } from "@/src/trip/tests/itinerary/core/itinerary.test-support";
+import { shenzhenDay } from "@/src/trip/testing/itinerary-test-days";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   buildWorkspaceMoveItemPatchRequest,

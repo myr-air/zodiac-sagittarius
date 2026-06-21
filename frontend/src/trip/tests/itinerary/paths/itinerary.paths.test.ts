@@ -6,7 +6,7 @@ import {
   groupItemsByDay,
   resolveItineraryPathItems,
 } from "../../../itinerary";
-import { arrivalDay } from "../core/itinerary.test-support";
+import { arrivalDay } from "../../../testing/itinerary-test-days";
 import {
   pathIdRain,
 } from "../../../testing/itinerary-path-fixtures";

@@ -3,7 +3,7 @@ import {
   buildActivityBranchPlacement,
   cascadePathFieldsToSubActivities,
 } from "../../../itinerary-activity-branch-placement";
-import { overlappingActivityItems } from "./itinerary-activity-branches.test-support";
+import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
 import { tripFixture } from "../../../trip-fixtures";
 import {
   pathIdPlanA,
