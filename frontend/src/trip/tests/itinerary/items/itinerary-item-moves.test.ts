@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { getTripFixtureItineraryItem } from "./trip-fixtures";
-import { shenzhenDay } from "./itinerary.test-support";
+import { seedTrip } from "../../../seed";
+import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
+import { shenzhenDay } from "../../../itinerary.test-support";
 import {
   hasDescendantItem,
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
-} from "./itinerary";
+} from "../../../itinerary";
 
 describe("itinerary item moves", () => {
   it("moves an itinerary item before a target and reorders the target day", () => {

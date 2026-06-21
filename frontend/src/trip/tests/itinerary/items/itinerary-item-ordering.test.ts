@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,
   sortItineraryItemsByDayAndHierarchy,
-} from "./itinerary-item-ordering";
+} from "../../../itinerary-item-ordering";
 
 describe("itinerary item ordering", () => {
   it("sorts items by day, then timed order, then fallback", () => {

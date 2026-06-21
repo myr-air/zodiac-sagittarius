@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   mergeItineraryDayItems,
   renumberItineraryDayItems,
   sortedTargetDayItemsExcluding,
-} from "./itinerary-item-move-ordering";
+} from "../../../itinerary-item-move-ordering";
 
 describe("itinerary item move ordering", () => {
   it("sorts target day items and excludes the dragged item", () => {

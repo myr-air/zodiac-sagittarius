@@ -3,9 +3,9 @@ import {
   buildCreateItineraryItemRequest,
   buildInlineItineraryItemPatchRequest,
   buildPatchItineraryItemRequest,
-} from "./itinerary-item-api-requests";
-import { seedTrip } from "./seed";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+} from "../../../itinerary-item-api-requests";
+import { seedTrip } from "../../../seed";
+import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary item API request builders", () => {
   it("builds create itinerary item requests from the draft item", () => {

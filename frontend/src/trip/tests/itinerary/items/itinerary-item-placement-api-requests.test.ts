@@ -4,7 +4,7 @@ import {
   buildMoveItineraryItemToDayRequest,
   buildReorderItineraryItemsRequest,
   buildShiftItineraryItemDayRequest,
-} from "./itinerary-item-placement-api-requests";
+} from "../../../itinerary-item-placement-api-requests";
 
 describe("itinerary item placement API request builders", () => {
   it("builds move itinerary item patch requests", () => {
