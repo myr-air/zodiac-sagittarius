@@ -7,7 +7,7 @@ import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
+import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
 } from "@/src/trip/local-ids";

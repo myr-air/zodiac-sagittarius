@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
-import { itineraryItemPathId } from "@/src/trip/itinerary-path-identifiers";
+import { itineraryItemPathId } from "@/src/trip/itinerary-paths";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
   dedupePathOptions,

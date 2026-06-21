@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { replaceItineraryItems } from "@/src/trip/itinerary";
-import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
+import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import {
   buildWorkspacePathMovePlacement,

@@ -1,9 +1,9 @@
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 import {
   itineraryItemPathId,
   mainItineraryPathId,
 } from "./itinerary-path-identifiers";
-import { sortItineraryItemsByDayAndHierarchy } from "./itinerary-item-ordering";
+import { sortItineraryItemsByDayAndHierarchy } from "../itinerary-item-ordering";
 
 export interface ItineraryPathSelection {
   tripPathId?: string;

@@ -3,7 +3,7 @@ import {
   humanizePathId,
   itineraryItemPathId,
   mainItineraryPathName,
-} from "@/src/trip/itinerary-path-identifiers";
+} from "@/src/trip/itinerary-paths";
 import type { ItineraryItem } from "@/src/trip/types";
 import { dotLaneGap, laneColors } from "./activity-path-graph.styles";
 import type { GraphNode } from "./activity-path-graph.types";

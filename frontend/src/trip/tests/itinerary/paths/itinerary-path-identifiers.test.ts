@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mainItineraryPathId, humanizePathId, itineraryItemPathId } from "../../../itinerary-path-identifiers";
+import { mainItineraryPathId, humanizePathId, itineraryItemPathId } from "../../../itinerary-paths";
 import type { ItineraryItem } from "../../../types";
 
 function fixtureItem(overrides: Partial<ItineraryItem>): ItineraryItem {

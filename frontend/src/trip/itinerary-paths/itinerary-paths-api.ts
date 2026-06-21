@@ -1,5 +1,5 @@
-import type { TripApiClient } from "./api-client";
-import type { ItineraryItem } from "./types";
+import type { TripApiClient } from "../api-client";
+import type { ItineraryItem } from "../types";
 
 interface PatchApiItineraryBranchItemsInput {
   apiClient: TripApiClient;

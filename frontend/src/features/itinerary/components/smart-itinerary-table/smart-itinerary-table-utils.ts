@@ -8,7 +8,7 @@ import type { ItineraryDayGroup, ItineraryPathOption } from "@/src/trip/itinerar
 import {
   mainItineraryPathId,
   mainItineraryPathName,
-} from "@/src/trip/itinerary-path-identifiers";
+} from "@/src/trip/itinerary-paths";
 
 export function mergeTripDayGroups(
   groups: ItineraryDayGroup[],

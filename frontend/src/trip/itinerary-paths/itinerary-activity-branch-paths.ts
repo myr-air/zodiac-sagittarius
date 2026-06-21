@@ -2,7 +2,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 
 export interface ManualActivityPathOption {
   id: string;

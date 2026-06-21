@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { patchApiItineraryBranchItems } from "../../../itinerary-paths-api";
+import { patchApiItineraryBranchItems } from "../../../itinerary-paths";
 import type { TripApiClient } from "../../../api-client";
 import type { ItineraryItem } from "../../../types";
 import { pathIdPlanA, pathNamePlanA } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";

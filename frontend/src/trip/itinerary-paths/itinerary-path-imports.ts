@@ -1,4 +1,4 @@
-import type { ItineraryExportItem } from "./itinerary-import-export";
+import type { ItineraryExportItem } from "../itinerary-import-export";
 import {
   mainItineraryPathId,
 } from "./itinerary-path-identifiers";
@@ -7,7 +7,7 @@ import type {
   ItineraryPath,
   ItineraryPathScope,
   Trip,
-} from "./types";
+} from "../types";
 
 export interface ItineraryImportApplyTarget {
   memberId: string;

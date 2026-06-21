@@ -21,18 +21,18 @@ export {
   resolveItineraryPathItems,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
-} from "./itinerary-path-selection";
+} from "./itinerary-paths";
 export {
   type ItineraryPathOption,
   deriveItineraryPathOptions,
   itineraryPathOptionsForDay,
-} from "./itinerary-path-options";
+} from "./itinerary-paths";
 export {
   humanizePathId,
   itineraryItemPathId,
   mainItineraryPathId,
   mainItineraryPathName,
-} from "./itinerary-path-identifiers";
+} from "./itinerary-paths";
 export {
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,

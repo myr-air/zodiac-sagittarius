@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildActivityBranchPlacement,
   cascadePathFieldsToSubActivities,
-} from "../../../itinerary-activity-branch-placement";
+} from "../../../itinerary-paths/itinerary-activity-branch-placement";
 import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {

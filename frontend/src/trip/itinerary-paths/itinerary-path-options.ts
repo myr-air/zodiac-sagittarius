@@ -3,7 +3,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
-import type { ItineraryItem, ItineraryPath, ItineraryPathScope } from "./types";
+import type { ItineraryItem, ItineraryPath, ItineraryPathScope } from "../types";
 
 export interface ItineraryPathOption {
   id: string;

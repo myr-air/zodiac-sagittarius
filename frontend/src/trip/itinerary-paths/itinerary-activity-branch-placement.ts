@@ -1,4 +1,4 @@
-import type { ItineraryItem, Trip } from "./types";
+import type { ItineraryItem, Trip } from "../types";
 
 export interface ItineraryActivityBranchPlacement {
   trip: Trip;

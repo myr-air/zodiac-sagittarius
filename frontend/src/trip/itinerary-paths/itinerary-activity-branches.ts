@@ -18,7 +18,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
-import type { ItineraryItem, Trip } from "./types";
+import type { ItineraryItem, Trip } from "../types";
 
 export type { ItineraryActivityBranchPlacement } from "./itinerary-activity-branch-placement";
 export type { ManualActivityPathOption } from "./itinerary-activity-branch-paths";

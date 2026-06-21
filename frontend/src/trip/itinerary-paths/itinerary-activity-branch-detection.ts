@@ -1,5 +1,5 @@
-import { parseTime } from "./itinerary";
-import type { ItineraryItem } from "./types";
+import { parseTime } from "../itinerary";
+import type { ItineraryItem } from "../types";
 
 export function findOverlappingActivityBranch(
   items: ItineraryItem[],

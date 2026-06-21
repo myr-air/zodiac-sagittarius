@@ -2,7 +2,7 @@ import type {
   ItineraryItem,
   Trip,
 } from "./types";
-import { itineraryItemPathFieldsForTarget } from "./itinerary-path-selection";
+import { itineraryItemPathFieldsForTarget } from "./itinerary-paths";
 
 export type BuildItineraryItemDraftInput = Pick<
   ItineraryItem,

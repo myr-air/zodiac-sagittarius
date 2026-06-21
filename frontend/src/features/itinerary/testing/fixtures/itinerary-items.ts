@@ -12,7 +12,7 @@ import {
   pathPlanOneOption,
   storyRainPathOption,
 } from "./path-options";
-import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
+import { mainItineraryPathName } from "@/src/trip/itinerary-paths";
 
 export const defaultSmartItineraryPathOptions = [
   mainPathOption,

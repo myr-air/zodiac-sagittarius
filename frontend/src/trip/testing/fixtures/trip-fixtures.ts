@@ -3,7 +3,7 @@ import { seedTrip } from "../../seed";
 import {
   mainItineraryPathId,
   mainItineraryPathName,
-} from "../../itinerary-path-identifiers";
+} from "../../itinerary-paths";
 import { expenseCategoryValues } from "../../trip-record-types";
 import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "../../types";
 

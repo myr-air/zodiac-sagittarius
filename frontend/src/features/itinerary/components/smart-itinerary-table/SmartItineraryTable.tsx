@@ -2,7 +2,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   mainItineraryPathId,
 } from "@/src/trip/itinerary";
-import { mainItineraryPathName } from "@/src/trip/itinerary-path-identifiers";
+import { mainItineraryPathName } from "@/src/trip/itinerary-paths";
 import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 import { SmartItineraryTablePageHeader } from "./SmartItineraryTablePageHeader";
 import { useSmartItineraryTableState } from "./hooks/useSmartItineraryTableState";
