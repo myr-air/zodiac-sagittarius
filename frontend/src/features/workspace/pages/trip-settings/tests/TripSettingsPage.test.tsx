@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { renderTripSettingsPage } from "./TripSettingsPage.test-support";
+import { renderTripSettingsPage } from "../testing/support/render-trip-settings-page";
 
 describe("TripSettingsPage", () => {
   it("uses calm cockpit surfaces for trip settings", () => {
