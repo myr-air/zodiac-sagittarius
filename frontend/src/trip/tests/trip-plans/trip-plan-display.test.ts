@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { tripPlanName } from "./trip-plan-display";
+import { seedTrip } from "../../seed";
+import { tripPlanName } from "../../trip-plan-display";
 
 describe("trip plan display", () => {
   it("resolves Trip Plan names from canonical tripPlans", () => {

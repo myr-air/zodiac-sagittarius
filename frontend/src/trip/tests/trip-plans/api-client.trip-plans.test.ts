@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mapCockpitResponse } from "./api-client";
-import { cockpitResponse } from "./api-client.test-support";
+import { mapCockpitResponse } from "../../api-client";
+import { cockpitResponse } from "../../api-client.test-support";
 
 describe("Trip API client Trip Plans", () => {
   it("falls back to an empty active plan id when the backend has no active or listed variant", () => {
