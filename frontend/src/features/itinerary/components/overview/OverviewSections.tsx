@@ -5,8 +5,8 @@ import { cn } from "@/src/lib/cn";
 import { getTripDates } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { DestinationVisual } from "@/src/features/itinerary/domain";
-import { viewerNextStopDetail } from "@/src/features/itinerary/domain";
+import type { DestinationVisual } from "@/src/features/itinerary/domain/overview";
+import { viewerNextStopDetail } from "@/src/features/itinerary/domain/overview";
 import {
   overviewFocusListClassName,
   overviewHeroAsideClassName,

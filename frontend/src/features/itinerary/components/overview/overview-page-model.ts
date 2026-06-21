@@ -12,7 +12,7 @@ import {
   buildHighlightItems,
   getCountdownBadge,
   overviewRoleLens,
-} from "@/src/features/itinerary/domain";
+} from "@/src/features/itinerary/domain/overview";
 
 interface OverviewPageModelInput {
   completedFocusHeading: string;

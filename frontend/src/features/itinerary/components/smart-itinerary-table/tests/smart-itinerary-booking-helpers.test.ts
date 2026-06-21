@@ -8,11 +8,13 @@ import {
   bookingTemplateLabel,
   formatBookingSummary,
   ticketModalCopy,
-  toDateTimeLocalValue,
   ticketNotesForItem,
-  travelSubtypeForItem,
+} from "../../../domain/itinerary-booking-display";
+import {
   fromDateTimeLocalValue,
-} from "../../../domain";
+  toDateTimeLocalValue,
+} from "../../../lib/itinerary-time";
+import { travelSubtypeForItem } from "../../../domain/itinerary-activity-types";
 import { readItineraryDetailString, toggleId, uniqueIds } from "../../../lib/itinerary-item-helpers";
 
 describe("smart itinerary booking helpers", () => {

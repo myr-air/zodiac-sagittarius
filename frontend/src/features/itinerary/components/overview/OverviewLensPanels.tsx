@@ -2,7 +2,7 @@ import type { FormEvent } from "react";
 import {
   managerNextStopDetail,
   travelerNextStopDetail,
-} from "@/src/features/itinerary/domain";
+} from "@/src/features/itinerary/domain/overview";
 import type { Locale } from "@/src/i18n/types";
 import type { ExpenseSummary, ItineraryItem, Trip, TripTask } from "@/src/trip/types";
 import { ManagerOverviewPanels } from "./ManagerOverviewPanels";

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
-import { taskKindLabel, stopLabel } from "@/src/features/itinerary/domain";
+import { taskKindLabel, stopLabel } from "@/src/features/itinerary/domain/overview";
 import { TaskAssigneeBadge, type TaskAssigneeLabels } from "./OverviewTaskAssigneeBadge";
 import {
   overviewTaskMetaClassName,

@@ -1,6 +1,6 @@
 import { type FormEvent, useMemo, useState } from "react";
 import type { TripTask } from "@/src/trip/types";
-import { isMyTask } from "@/src/features/itinerary/domain";
+import { isMyTask } from "@/src/features/itinerary/domain/overview";
 import type {
   TaskScopeFilter,
   TaskStatusFilter,

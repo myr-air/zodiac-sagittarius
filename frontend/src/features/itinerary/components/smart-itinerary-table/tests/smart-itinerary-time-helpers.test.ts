@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   endOffsetDaysBetweenTimes,
+  parseTimeToMinutes,
+} from "../../../lib/itinerary-time";
+import {
   formatTimeRangeLabel,
   formatTimeTooltip,
-  parseTimeToMinutes,
-} from "../../../domain";
+} from "../../../domain/itinerary-item-editing";
 
 describe("smart itinerary time helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {

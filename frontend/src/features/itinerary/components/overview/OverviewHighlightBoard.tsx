@@ -6,7 +6,7 @@ import { Icon } from "@/src/ui/icons";
 import {
   getHighlightImage,
   highlightTone,
-} from "@/src/features/itinerary/domain";
+} from "@/src/features/itinerary/domain/overview";
 import { formatOverviewStopSchedule } from "./overview-stop-labels";
 import {
   overviewBoardTitleClassName,

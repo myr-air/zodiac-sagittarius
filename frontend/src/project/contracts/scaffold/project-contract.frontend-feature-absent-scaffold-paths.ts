@@ -332,6 +332,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/domain/itinerary-booking-display.test.ts",
   "src/features/itinerary/domain/itinerary-ticket-display.test.ts",
   "src/features/itinerary/domain/itinerary-travel-subtypes.test.ts",
+  "src/features/itinerary/domain/index.ts",
   "src/features/itinerary/domain/overview-countdown.test.ts",
   "src/features/itinerary/domain/overview-highlights.test.ts",
   "src/features/itinerary/domain/overview-roles.test.ts",

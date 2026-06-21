@@ -7,8 +7,8 @@ import type {
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatTripRange } from "@/src/shared/components/page-header";
-import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain";
-import type { OverviewRoleLens } from "@/src/features/itinerary/domain";
+import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
+import type { OverviewRoleLens } from "@/src/features/itinerary/domain/overview";
 import { HighlightBoard, OverviewHero } from "./OverviewSections";
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
