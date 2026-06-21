@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import { renderExpenses } from "./TripExpensesPage.test-support";
+import { renderExpenses } from "../testing/support/render-expenses-page";
 
 describe("TripExpensesPage plan scope", () => {
   afterEach(() => {
