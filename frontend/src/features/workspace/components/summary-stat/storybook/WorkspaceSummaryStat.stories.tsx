@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   WorkspaceSummaryStat,
   workspaceSummaryStatToneValues,
-} from "./WorkspaceSummaryStat";
+} from "../WorkspaceSummaryStat";
 
 const meta = {
   title: "Design System/Workspace Summary Stat",

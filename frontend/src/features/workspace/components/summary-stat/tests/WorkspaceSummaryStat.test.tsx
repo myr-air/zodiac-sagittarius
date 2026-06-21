@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   WorkspaceSummaryStat,
   workspaceSummaryStatToneValues,
-} from "./WorkspaceSummaryStat";
+} from "../WorkspaceSummaryStat";
 
 describe("WorkspaceSummaryStat", () => {
   it("defines summary stat tones in emphasis order", () => {
