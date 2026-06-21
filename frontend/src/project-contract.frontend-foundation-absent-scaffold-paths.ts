@@ -39,6 +39,8 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/account/api-client-trips.test.ts",
   "src/account/real-portal.e2e.test.ts",
   "src/account/session-storage.test.ts",
+  "src/account-source-boundaries.contract.test.ts",
+  "src/project-account-architecture.contract.test.ts",
   "src/release-gates.test-support.ts",
   "src/release-production-env-gates.test.ts",
   "src/release-signoff-gates.test.ts",
