@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { isAuthFailure } from "@/src/trip/api-errors";
+import { isAuthFailure } from "@/src/trip/api-client";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import {
   buildUpdatePresenceRequest,

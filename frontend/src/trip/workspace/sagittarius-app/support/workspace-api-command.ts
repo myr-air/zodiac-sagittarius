@@ -1,4 +1,4 @@
-import { isVersionConflict } from "@/src/trip/api-errors";
+import { isVersionConflict } from "@/src/trip/api-client";
 
 export interface RunWorkspaceApiCommandInput {
   command: () => Promise<void>;

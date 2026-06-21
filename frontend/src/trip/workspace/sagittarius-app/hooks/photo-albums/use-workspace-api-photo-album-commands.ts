@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
+import { isVersionConflict } from "@/src/trip/api-client";
 import { nextClientMutationId } from "@/src/trip/identity";
 import {
   appendPhotoAlbumToTrip,

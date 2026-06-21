@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import {
   isForbidden,
   isUnauthenticated,
-} from "@/src/trip/api-errors";
+} from "@/src/trip/api-client";
 import type { AccountApiClient } from "@/src/account/api-client";
 import {
   clearParticipantSession,

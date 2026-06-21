@@ -114,6 +114,8 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/tasks.ts",
   "src/trip/api-contract.test.ts",
   "src/trip/api-errors.test.ts",
+  "src/trip/api-errors.ts",
+  "src/trip/api-routes.ts",
   "src/trip/api-response-mappers.contract.test.ts",
   "src/trip/api-error.ts",
   "src/trip/api-client.ts",

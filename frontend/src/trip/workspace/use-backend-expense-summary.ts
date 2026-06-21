@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { isAuthFailure } from "@/src/trip/api-errors";
+import { isAuthFailure } from "@/src/trip/api-client";
 import type {
   ExpenseSummary,
   TripParticipantSession,

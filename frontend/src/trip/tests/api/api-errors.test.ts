@@ -5,7 +5,7 @@ import {
   isForbidden,
   isUnauthenticated,
   isVersionConflict,
-} from "../../api-errors";
+} from "../../api-client";
 
 describe("trip API error helpers", () => {
   it("classifies unauthenticated and forbidden API errors", () => {

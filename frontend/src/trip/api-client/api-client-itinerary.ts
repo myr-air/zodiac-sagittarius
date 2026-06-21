@@ -4,7 +4,7 @@ import type {
   Suggestion,
 } from "../types";
 import { parseItineraryImportDocument } from "../itinerary-import-export";
-import { tripApiRoutes } from "../api-routes";
+import { tripApiRoutes } from "./api-routes";
 import {
   serializeItineraryLocation,
   type TripApiRequester,

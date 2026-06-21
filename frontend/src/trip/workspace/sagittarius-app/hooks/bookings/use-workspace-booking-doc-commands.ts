@@ -7,7 +7,7 @@ import {
   removeBookingDocFromTrip,
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
+import { isVersionConflict } from "@/src/trip/api-client";
 import { nextLocalBookingDocId } from "@/src/trip/identity";
 import type {
   BookingDoc,
