@@ -1,4 +1,4 @@
-import { mainItineraryPathId } from "@/src/trip/itinerary";
+import { mainItineraryPathId } from "@/src/trip/itinerary-paths";
 import { laneColors } from "./activity-path-graph.styles";
 import { isOverlappingNode } from "./activity-path-graph.edge-path";
 import {

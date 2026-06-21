@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildFallbackGraphLayout, collectGraphMeasurementElements, measureRenderedGraphLayout } from "../activity-path-graph.layout";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
-import { mainItineraryPathId } from "@/src/trip/itinerary";
+import { mainItineraryPathId } from "@/src/trip/itinerary-paths";
 import type { ItineraryItem } from "@/src/trip/types";
 
 function makeRect(left: number, top: number, width = 100, height = 40): DOMRect {

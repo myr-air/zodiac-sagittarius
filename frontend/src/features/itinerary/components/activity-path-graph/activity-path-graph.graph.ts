@@ -1,8 +1,11 @@
-import { parseTime, mainItineraryPathId, itineraryPathOptionsForDay, type ItineraryPathOption } from "@/src/trip/itinerary";
+import { parseTime } from "@/src/trip/itinerary-core";
 import {
   humanizePathId,
   itineraryItemPathId,
   mainItineraryPathName,
+  mainItineraryPathId,
+  itineraryPathOptionsForDay,
+  type ItineraryPathOption,
 } from "@/src/trip/itinerary-paths";
 import type { ItineraryItem } from "@/src/trip/types";
 import { dotLaneGap, laneColors } from "./activity-path-graph.styles";

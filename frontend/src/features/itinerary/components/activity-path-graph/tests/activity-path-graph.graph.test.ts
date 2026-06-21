@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary";
+import { mainItineraryPathId, type ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { laneColors } from "../activity-path-graph.styles";
 import type { ItineraryItem } from "@/src/trip/types";
