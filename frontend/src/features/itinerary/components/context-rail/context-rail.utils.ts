@@ -1,4 +1,4 @@
-import { bookingDocTypeValues } from "@/src/trip/trip-record-types";
+import { bookingDocTypeValues } from "@/src/trip/booking-docs";
 import type { BookingDocType, Member, Suggestion } from "@/src/trip/types";
 import { taskKindLabel } from "@/src/features/itinerary/domain/overview";
 

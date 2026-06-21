@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  bookingDocStatusValues,
-  bookingDocTypeValues,
-  bookingDocVisibilityValues,
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
 } from "../../trip-record-types";
 import { expenseCategoryValues } from "../../expenses";
+import {
+  bookingDocStatusValues,
+  bookingDocTypeValues,
+  bookingDocVisibilityValues,
+} from "../../booking-docs";
 
 describe("trip record type values", () => {
   it("keeps expense and booking record enums in canonical display order", () => {

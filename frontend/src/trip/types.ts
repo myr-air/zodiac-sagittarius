@@ -4,6 +4,8 @@ import type {
 } from "./expenses/expense-types";
 import type {
   BookingDoc,
+} from "./booking-docs/booking-doc-types";
+import type {
   TripPhotoAlbumLink,
 } from "./trip-record-types";
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
@@ -76,6 +78,8 @@ export type {
   BookingDocStatus,
   BookingDocType,
   BookingDocVisibility,
+} from "./booking-docs/booking-doc-types";
+export type {
   TripPhotoAlbumAccess,
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,

@@ -2,7 +2,7 @@ import {
   bookingDocStatusValues,
   bookingDocTypeValues,
   bookingDocVisibilityValues,
-} from "@/src/trip/trip-record-types";
+} from "@/src/trip/booking-docs";
 
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 

@@ -1,3 +1,4 @@
+export * from "./booking-doc-types";
 export {
   bookingTitleForItineraryItem,
 } from "./booking-doc-display";

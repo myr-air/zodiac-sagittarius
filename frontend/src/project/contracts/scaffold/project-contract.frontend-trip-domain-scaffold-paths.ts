@@ -207,6 +207,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/booking-docs/booking-doc-record-inputs.ts",
   "src/trip/booking-docs/booking-doc-relations.ts",
   "src/trip/booking-docs/booking-doc-search.ts",
+  "src/trip/booking-docs/booking-doc-types.ts",
   "src/trip/seed/seed-expenses.ts",
   "src/trip/seed/seed-photo-albums.ts",
   "src/trip/seed/seed-records.ts",
