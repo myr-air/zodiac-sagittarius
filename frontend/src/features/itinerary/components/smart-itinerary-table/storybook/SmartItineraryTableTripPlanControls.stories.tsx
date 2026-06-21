@@ -4,6 +4,7 @@ import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
+import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
 const tripPlans = tripFixture.trip.planVariants;
 const selectedTripPlanId = tripPlans[0]?.id ?? "plan-main";
@@ -28,22 +29,22 @@ const tripPlanControlArgs = {
 } satisfies TripPlanControlsProps;
 
 const renderTripPlanControls = (args: Partial<TripPlanControlsProps>) => (
-  <div className="w-[360px]">
+  <SmartItineraryStoryFrame size="narrow">
     <SmartItineraryTableTripPlanControls {...tripPlanControlArgs} {...args} />
-  </div>
+  </SmartItineraryStoryFrame>
 );
 
 const StoryRenderer = (args: TripPlanControlsProps) => {
   const [selectedId, setSelectedId] = useState(args.selectedTripPlanId);
 
   return (
-    <div className="w-[360px]">
+    <SmartItineraryStoryFrame size="narrow">
       <SmartItineraryTableTripPlanControls
         {...args}
         onChangeTripPlan={setSelectedId}
         selectedTripPlanId={selectedId}
       />
-    </div>
+    </SmartItineraryStoryFrame>
   );
 };
 

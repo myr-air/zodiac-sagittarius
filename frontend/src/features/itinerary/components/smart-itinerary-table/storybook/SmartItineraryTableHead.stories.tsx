@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { messages } from "@/src/i18n/messages";
 import { SmartItineraryTableHead } from "../SmartItineraryTableHead";
+import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
 const meta = {
   title: "Features/Itinerary/SmartItineraryTableHead",
@@ -17,10 +18,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <div className="w-[720px]">
+    <SmartItineraryStoryFrame size="table">
       <table>
         <SmartItineraryTableHead {...args} />
       </table>
-    </div>
+    </SmartItineraryStoryFrame>
   ),
 };

@@ -11,13 +11,14 @@ import {
   pathOptionPlanA,
   pathOptionPlanB,
 } from "@/src/features/itinerary/testing";
+import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
 const StoryRenderer = (args: ComponentProps<typeof SmartItineraryTablePathFilters>) => {
   const [selected, setSelected] = useState(new Set(args.selectedPathIds));
   const [showAllPaths, setShowAllPaths] = useState(args.showAllPaths);
 
   return (
-    <div className="w-[360px]">
+    <SmartItineraryStoryFrame size="narrow">
       <SmartItineraryTablePathFilters
         {...args}
         selectedPathIds={selected}
@@ -36,7 +37,7 @@ const StoryRenderer = (args: ComponentProps<typeof SmartItineraryTablePathFilter
           args.onChangeShowAllPaths?.(next);
         }}
       />
-    </div>
+    </SmartItineraryStoryFrame>
   );
 };
 

@@ -4,6 +4,7 @@ import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { mainPathOption, storyRainDisplayPathOption } from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "../SmartItineraryTableBody";
+import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
 const meta = {
   title: "Features/Itinerary/SmartItineraryTableBody",
@@ -38,9 +39,9 @@ const meta = {
     tHeaders: messages.en.itinerary.headers,
   },
   render: (args) => (
-    <div className="p-6">
+    <SmartItineraryStoryFrame padded>
       <SmartItineraryTableBody {...args} />
-    </div>
+    </SmartItineraryStoryFrame>
   ),
 } satisfies Meta<typeof SmartItineraryTableBody>;
 
