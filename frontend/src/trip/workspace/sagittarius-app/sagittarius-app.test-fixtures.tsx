@@ -1,7 +1,7 @@
-export { dailyBriefingFixture } from "./sagittarius-app.test-briefing-fixtures";
+export { dailyBriefingFixture } from "./testing/fixtures/sagittarius-app-briefing-fixtures";
 export {
   apiSeedTrip,
   apiTripWithPlans,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
-} from "./sagittarius-app.test-plan-fixtures";
+} from "./testing/fixtures/sagittarius-app-plan-fixtures";
