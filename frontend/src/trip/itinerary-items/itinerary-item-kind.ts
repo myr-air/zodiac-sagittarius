@@ -1,4 +1,4 @@
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 
 export function itemKindFromActivityType(
   activityType: ItineraryItem["activityType"],

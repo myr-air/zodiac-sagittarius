@@ -4,7 +4,7 @@ import {
   mergeItineraryDayItems,
   renumberItineraryDayItems,
   sortedTargetDayItemsExcluding,
-} from "../../../itinerary-item-move-ordering";
+} from "../../../itinerary-items/itinerary-item-move-ordering";
 
 describe("itinerary item move ordering", () => {
   it("sorts target day items and excludes the dragged item", () => {

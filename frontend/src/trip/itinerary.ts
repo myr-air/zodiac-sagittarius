@@ -57,10 +57,10 @@ export {
   moveTripItemToDay,
   replaceItineraryItem,
   replaceItineraryItems,
-} from "./itinerary-mutations";
+} from "./itinerary-items";
 export type {
   ItineraryItemPlacement,
-} from "./itinerary-mutations";
+} from "./itinerary-items";
 
 export function getTripDates(startDate: string, endDate: string): string[] {
   const start = new Date(`${startDate}T00:00:00Z`);

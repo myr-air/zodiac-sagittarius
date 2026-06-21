@@ -4,7 +4,7 @@ import {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,
   sortItineraryItemsByDayAndHierarchy,
-} from "./itinerary-item-ordering";
+} from "./itinerary-items";
 import {
   buildOverlapWarnings,
   getTimeWindowInterval,

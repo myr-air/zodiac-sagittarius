@@ -7,7 +7,7 @@ import {
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,
   buildReorderItineraryItemsRequest,
-} from "@/src/trip/itinerary-api-requests";
+} from "@/src/trip/itinerary-items";
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { shenzhenDay } from "@/src/trip/testing/fixtures/itinerary-test-days";

@@ -1,8 +1,8 @@
 import type {
   PatchItineraryItemApiRequest,
   ReorderItineraryItemsApiRequest,
-} from "./api-client";
-import type { ItineraryItem } from "./types";
+} from "../api-client";
+import type { ItineraryItem } from "../types";
 
 export interface BuildMoveItineraryItemRequestOptions {
   clientMutationId: string;

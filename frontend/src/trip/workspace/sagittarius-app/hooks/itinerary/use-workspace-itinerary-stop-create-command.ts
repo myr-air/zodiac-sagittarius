@@ -7,7 +7,7 @@ import {
   type ItineraryPathOption,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
-import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
+import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-items";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,

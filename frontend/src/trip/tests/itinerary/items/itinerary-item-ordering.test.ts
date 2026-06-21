@@ -4,7 +4,7 @@ import {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,
   sortItineraryItemsByDayAndHierarchy,
-} from "../../../itinerary-item-ordering";
+} from "../../../itinerary-items";
 
 describe("itinerary item ordering", () => {
   it("sorts items by day, then timed order, then fallback", () => {

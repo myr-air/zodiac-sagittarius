@@ -6,7 +6,7 @@ import {
 import type {
   ItineraryItem,
   Trip,
-} from "./types";
+} from "../types";
 
 export function moveTripItem(
   current: Trip,

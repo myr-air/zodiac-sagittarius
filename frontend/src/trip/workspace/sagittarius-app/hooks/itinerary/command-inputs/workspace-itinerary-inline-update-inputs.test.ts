@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-api-requests";
+import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
 import { buildMapLink } from "@/src/trip/place-resolution";
 import { seedTrip } from "@/src/trip/seed";

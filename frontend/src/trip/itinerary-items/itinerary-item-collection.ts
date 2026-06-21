@@ -1,7 +1,7 @@
 import type {
   ItineraryItem,
   Trip,
-} from "./types";
+} from "../types";
 
 export interface ItineraryItemPlacement {
   trip: Trip;

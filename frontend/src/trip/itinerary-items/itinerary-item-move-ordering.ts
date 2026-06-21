@@ -1,5 +1,5 @@
 import { compareItineraryItemsWithinDay } from "./itinerary-item-ordering";
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 
 export function sortedTargetDayItemsExcluding(
   items: ItineraryItem[],

@@ -6,7 +6,7 @@ import {
 import {
   buildPatchItineraryItemRequest,
   type BuildPatchItineraryItemRequestOptions,
-} from "@/src/trip/itinerary-api-requests";
+} from "@/src/trip/itinerary-items";
 import type { ItineraryItem } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 

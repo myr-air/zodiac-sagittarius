@@ -3,7 +3,7 @@ import {
   buildCreateItineraryItemRequest,
   buildInlineItineraryItemPatchRequest,
   buildPatchItineraryItemRequest,
-} from "../../../itinerary-item-api-requests";
+} from "../../../itinerary-items";
 import { seedTrip } from "../../../seed";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 

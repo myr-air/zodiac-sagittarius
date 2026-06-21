@@ -1,5 +1,5 @@
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
-import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-api-requests";
+import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
 import { buildMapLink } from "@/src/trip/place-resolution";
 import type { ItineraryItem } from "@/src/trip/types";

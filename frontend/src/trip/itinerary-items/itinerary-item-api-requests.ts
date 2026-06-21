@@ -1,11 +1,11 @@
 import type {
   CreateItineraryItemApiRequest,
   PatchItineraryItemApiRequest,
-} from "./api-client";
-import type { BuildItineraryItemDraftInput } from "./itinerary";
-import type { InlineItineraryTimePatch } from "./itinerary-time";
-import { buildMapLink } from "./place-resolution";
-import type { ItineraryItem } from "./types";
+} from "../api-client";
+import type { BuildItineraryItemDraftInput } from "../itinerary";
+import type { InlineItineraryTimePatch } from "../itinerary-time";
+import { buildMapLink } from "../place-resolution";
+import type { ItineraryItem } from "../types";
 
 export interface BuildPatchItineraryItemRequestOptions {
   address: ItineraryItem["address"];

@@ -3,7 +3,7 @@ import {
   itineraryItemPathId,
   mainItineraryPathId,
 } from "./itinerary-path-identifiers";
-import { sortItineraryItemsByDayAndHierarchy } from "../itinerary-item-ordering";
+import { sortItineraryItemsByDayAndHierarchy } from "../itinerary-items";
 
 export interface ItineraryPathSelection {
   tripPathId?: string;

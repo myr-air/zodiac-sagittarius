@@ -2,7 +2,7 @@ import {
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,
   buildReorderItineraryItemsRequest,
-} from "@/src/trip/itinerary-api-requests";
+} from "@/src/trip/itinerary-items";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 interface WorkspaceMoveItemPatchRequestContext {

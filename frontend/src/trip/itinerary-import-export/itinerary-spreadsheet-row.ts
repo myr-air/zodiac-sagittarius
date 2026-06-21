@@ -1,4 +1,4 @@
-import { itemKindFromActivityType } from "../itinerary-item-kind";
+import { itemKindFromActivityType } from "../itinerary-items";
 import {
   hasBookingHint,
   parseMoneyHint,
