@@ -3,7 +3,7 @@ import {
   generateJoinPassword,
   generateTripJoinId,
   randomToken,
-} from "../../trip-join-credentials";
+} from "../../auth";
 
 describe("trip join credentials", () => {
   it("formats join ids from trip dates, route codes, and suffixes", () => {

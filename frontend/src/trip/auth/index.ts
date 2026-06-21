@@ -1,6 +1,11 @@
 export { canTripRole } from "./auth-capabilities";
 export { seedTripJoinId, seedTripJoinPassword, tripParticipantSessionStorageKey } from "./auth-constants";
 export { verifyTripCredentials } from "./auth-credentials";
+export {
+  generateJoinPassword,
+  generateTripJoinId,
+  randomToken,
+} from "./auth-join-credentials";
 export { hashLocalSecret } from "./auth-local-secrets";
 export { nextTripMemberColor } from "./auth-member-palette";
 export {
