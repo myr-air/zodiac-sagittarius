@@ -5,7 +5,7 @@ import {
   toLegacyStagingSignoffEnv,
   validProductionRuntimeEnv,
   validReleaseSignoffEnv,
-} from "./release-gates.test-support";
+} from "../testing/release-gates-test-support";
 
 describe("production runtime env release gates", () => {
   it("accepts the approved canonical same-origin production runtime env", () => {

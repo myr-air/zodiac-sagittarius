@@ -5,7 +5,7 @@ import {
   runGate,
   toLegacyStagingSignoffEnv,
   validReleaseSignoffEnv,
-} from "./release-gates.test-support";
+} from "../testing/release-gates-test-support";
 
 describe("release signoff evidence gates", () => {
   it("accepts release signoff evidence with the new neutral variable names", () => {

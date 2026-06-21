@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const frontendRoot = resolve(testDir, "..");
+const frontendRoot = resolve(testDir, "../../..");
 const baseEnv = {
   HOME: process.env.HOME ?? "",
   NODE_ENV: process.env.NODE_ENV ?? "test",
