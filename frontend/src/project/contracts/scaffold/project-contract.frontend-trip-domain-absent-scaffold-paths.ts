@@ -105,6 +105,8 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/suggestions.test.ts",
   "src/trip/weather-briefing-display.test.ts",
   "src/trip/weather-briefings.test.ts",
+  "src/trip/weather-briefing-display.ts",
+  "src/trip/weather-briefings.ts",
   "src/trip/real-api.e2e.test.ts",
   "src/trip/seed-itinerary-data.test.ts",
   "src/trip/booking-docs.test.ts",

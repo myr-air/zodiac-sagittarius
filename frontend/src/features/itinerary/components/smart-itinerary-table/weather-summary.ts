@@ -3,7 +3,7 @@ import {
   formatSolarTime,
   formatWeatherTemp,
   weatherGraphicLabel,
-} from "@/src/trip/weather-briefings";
+} from "@/src/trip/weather";
 
 function formatWeatherSummaryParts(
   weather: TripDailyBriefing["weather"],

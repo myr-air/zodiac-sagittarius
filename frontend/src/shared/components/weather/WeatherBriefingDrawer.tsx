@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { DailyBriefingOverrides, TextBriefingBlock, TripDailyBriefing } from "@/src/trip/types";
-import { formatSolarTime } from "@/src/trip/weather-briefings";
+import { formatSolarTime } from "@/src/trip/weather";
 import { Button } from "@/src/ui";
 import {
   buildWeatherDetailLines,

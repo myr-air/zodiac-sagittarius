@@ -3,7 +3,7 @@ import type { Trip, TripDailyBriefing } from "../../types";
 import {
   applyDailyBriefingOverrides,
   buildPatchDailyBriefingRequest,
-} from "../../weather-briefings";
+} from "../../weather";
 
 const briefing = (date: string, high: number | null, low: number | null): TripDailyBriefing => ({
   tripId: "trip-1",

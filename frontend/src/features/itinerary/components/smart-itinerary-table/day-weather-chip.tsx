@@ -4,7 +4,7 @@ import {
   formatWeatherTemp,
   weatherGraphicLabel,
   weatherIconForCondition,
-} from "@/src/trip/weather-briefings";
+} from "@/src/trip/weather";
 import { Icon } from "@/src/ui/icons";
 import { buildWeatherTooltip } from "./weather-summary";
 import {
