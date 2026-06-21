@@ -1,11 +1,12 @@
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import { formatDayLabel, getTripDates } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary";
 import { CockpitCard } from "./OverviewCockpitCard";
 import {
   overviewCockpitClassName,
   overviewReadinessChipsClassName,
 } from "./overview-page.styles";
+import { formatOverviewStopSchedule } from "./overview-stop-labels";
 
 interface OverviewCockpitLabels {
   alertSummary: (params: { warnings: number; suggestions: number }) => string;
@@ -54,7 +55,7 @@ export function OverviewCockpit({
         icon="route"
         label={labels.nextStop}
         value={nextStop?.place ?? trip.destinationLabel}
-        detail={nextStop ? `${formatDayLabel(nextStop.day, trip.startDate, locale)} · ${nextStop.startTime}` : labels.stopCount({ count: itemCount })}
+        detail={nextStop ? formatOverviewStopSchedule(nextStop, trip.startDate, locale) : labels.stopCount({ count: itemCount })}
       />
       <CockpitCard
         icon="wallet"

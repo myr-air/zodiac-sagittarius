@@ -2,12 +2,12 @@ import Image from "next/image";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import {
   getHighlightImage,
   highlightTone,
 } from "@/src/features/itinerary/domain";
+import { formatOverviewStopSchedule } from "./overview-stop-labels";
 import {
   overviewBoardTitleClassName,
   overviewHighlightBoardClassName,
@@ -72,7 +72,7 @@ export function HighlightBoard({
                   </>
                 )}
                 <span className={cn("relative z-10 mb-1 text-[11px] font-bold uppercase tracking-normal", imgUrl ? "text-white/82" : "text-(--overview-highlight-accent)")}>
-                  {formatDayLabel(item.day, startDate, locale)} · {item.startTime}
+                  {formatOverviewStopSchedule(item, startDate, locale)}
                 </span>
                 <strong className={cn("relative z-10 mb-0.5 text-sm font-black leading-snug [overflow-wrap:anywhere]", imgUrl ? "text-white" : "text-(--color-text)")}>
                   {item.activity}

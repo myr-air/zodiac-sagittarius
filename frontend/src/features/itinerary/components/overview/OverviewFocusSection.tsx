@@ -1,11 +1,11 @@
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
-import { formatDayLabel } from "@/src/trip/itinerary";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { overviewNextStopClassName } from "./overview.styles";
 import { cn } from "@/src/lib/cn";
 import { OverviewFocusList, TripCompletedPostcard } from "./OverviewSections";
 import { overviewPanelClassName, overviewPanelTitleClassName, overviewPanelWideClassName } from "./overview-page.styles";
+import { formatOverviewStopScheduleWithPlace } from "./overview-stop-labels";
 
 interface OverviewFocusSectionProps {
   ariaLabel: string;
@@ -52,9 +52,7 @@ export function OverviewFocusSection({
           {nextStop ? (
             <div className={overviewNextStopClassName}>
               <strong>{nextStop.activity}</strong>
-              <span>
-                {formatDayLabel(nextStop.day, startDate, locale)} · {nextStop.startTime} · {nextStop.place}
-              </span>
+              <span>{formatOverviewStopScheduleWithPlace(nextStop, startDate, locale)}</span>
               <p>{detailFallback}</p>
             </div>
           ) : (

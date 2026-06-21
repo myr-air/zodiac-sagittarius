@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { getTripDates, formatDayLabel } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { DestinationVisual } from "@/src/features/itinerary/domain";
@@ -23,6 +23,10 @@ import {
   overviewStopListClassName,
   tripCompletedClassName,
 } from "./overview.styles";
+import {
+  formatOverviewStopSchedule,
+  formatOverviewStopScheduleWithPlace,
+} from "./overview-stop-labels";
 
 export function ViewerNextStopPanel({
   item,
@@ -41,7 +45,7 @@ export function ViewerNextStopPanel({
   return item ? (
     <div className={overviewNextStopClassName}>
       <strong>{item.activity}</strong>
-      <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime} · {item.place}</span>
+      <span>{formatOverviewStopScheduleWithPlace(item, startDate, locale)}</span>
       <p>{viewerNextStopDetail(item, detailFallback)}</p>
     </div>
   ) : (
@@ -56,7 +60,7 @@ export function OverviewStopList({ items, startDate, locale, emptyMessage }: { i
     <ul className={overviewStopListClassName}>
       {items.map((item) => (
         <li key={item.id}>
-          <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
+          <span>{formatOverviewStopSchedule(item, startDate, locale)}</span>
           <strong>{item.activity}</strong>
           <small>{item.place}</small>
         </li>
@@ -72,7 +76,7 @@ export function OverviewFocusList({ items, startDate, locale, label }: { items: 
     <ul className={overviewFocusListClassName} aria-label={label}>
       {items.slice(1).map((item) => (
         <li key={item.id}>
-          <span>{formatDayLabel(item.day, startDate, locale)} · {item.startTime}</span>
+          <span>{formatOverviewStopSchedule(item, startDate, locale)}</span>
           <strong>{item.activity}</strong>
         </li>
       ))}
