@@ -1,4 +1,4 @@
-import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
+import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
 import * as memberStyles from "../TripMembersPage.styles";
 
 interface MemberSummaryStatsProps {

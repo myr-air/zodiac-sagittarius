@@ -120,6 +120,8 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/shared/components/checkbox-group/CheckboxGroup.test.tsx",
   "src/shared/components/workspace-empty-state/WorkspaceEmptyState.test.tsx",
   "src/shared/components/workspace-empty-state/WorkspaceEmptyState.stories.tsx",
+  "src/shared/components/workspace-summary-stat/WorkspaceSummaryStat.test.tsx",
+  "src/shared/components/workspace-summary-stat/WorkspaceSummaryStat.stories.tsx",
   "src/shared/components/weather/WeatherBriefing.fixtures.ts",
   "src/shared/components/weather/WeatherBriefingDrawer.test.tsx",
   "src/shared/components/weather/WeatherBriefingDrawer.stories.tsx",

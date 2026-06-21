@@ -30,7 +30,7 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"],
   ],
   [
-    "features/workspace/components/summary-stat/storybook/WorkspaceSummaryStat.stories.tsx",
+    "shared/components/workspace-summary-stat/storybook/WorkspaceSummaryStat.stories.tsx",
     ["Default", "Positive", "Negative"],
   ],
   [
