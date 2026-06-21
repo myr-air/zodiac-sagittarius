@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildItineraryView } from "@/src/trip/itinerary";
+import { buildItineraryView } from "@/src/trip/itinerary-core";
 import { seedTrip } from "@/src/trip/seed";
 import { resolveSelectedWorkspaceItem } from "../selected-itinerary-item";
 

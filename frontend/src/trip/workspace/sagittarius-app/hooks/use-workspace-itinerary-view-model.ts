@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { buildItineraryView } from "@/src/trip/itinerary";
+import { buildItineraryView } from "@/src/trip/itinerary-core";
 import { resolveSelectedWorkspaceItem } from "@/src/trip/workspace/selected-itinerary-item";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 

@@ -1,4 +1,4 @@
-import type { ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary-core";
 import type { ItineraryItem } from "@/src/trip/types";
 
 interface ResolveSelectedWorkspaceItemInput {

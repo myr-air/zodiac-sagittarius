@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { buildItineraryCommitmentsByItemId } from "@/src/trip/itinerary";
+import { buildItineraryCommitmentsByItemId } from "@/src/trip/itinerary-core";
 import {
   buildExpenseSummary,
   filterExpenseRemindersForTripPlan,
