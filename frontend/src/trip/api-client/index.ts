@@ -1,5 +1,5 @@
-import type { TripDailyBriefing } from "./types";
-import { tripApiRoutes } from "./api-routes";
+import type { TripDailyBriefing } from "../types";
+import { tripApiRoutes } from "../api-routes";
 import { createTripApiRequester } from "./api-client-transport";
 import { createTripItineraryApiClient } from "./api-client-itinerary";
 import { createTripMemberApiClient } from "./api-client-members";
@@ -19,7 +19,7 @@ import type {
   TripCockpitResponse,
   TripSummaryResponse,
 } from "./api-response-types";
-export { TripApiError } from "./api-error";
+export { TripApiError } from "../api-error";
 export {
   assertMainPlanPointerAliasesMatch,
 } from "./api-response-planning-mappers";

@@ -19,7 +19,7 @@ import type {
   TripPhotoAlbumLink,
   TripRole,
   TripTask,
-} from "./types";
+} from "../types";
 
 export interface TripSummaryResponse {
   id: string;

@@ -17,12 +17,12 @@ import type {
   TripParticipantSession,
   TripPhotoAlbumLink,
   TripTask,
-} from "./types";
+} from "../types";
 import type {
   JoinTripResponse,
   TripCockpit,
 } from "./api-response-types";
-import type { ItineraryExportDocument } from "./itinerary-import-export";
+import type { ItineraryExportDocument } from "../itinerary-import-export";
 import type {
   CreateBookingDocApiRequest,
   CreateExpenseApiRequest,

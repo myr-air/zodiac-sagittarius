@@ -1,4 +1,4 @@
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 import type { ItineraryItemResponse } from "./api-response-types";
 
 export function mapItineraryItem(item: ItineraryItemResponse): ItineraryItem {

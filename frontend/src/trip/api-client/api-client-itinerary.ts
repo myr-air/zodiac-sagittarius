@@ -2,9 +2,9 @@ import type {
   PlaceResolutionResponse,
   StopNote,
   Suggestion,
-} from "./types";
-import { parseItineraryImportDocument } from "./itinerary-import-export";
-import { tripApiRoutes } from "./api-routes";
+} from "../types";
+import { parseItineraryImportDocument } from "../itinerary-import-export";
+import { tripApiRoutes } from "../api-routes";
 import {
   serializeItineraryLocation,
   type TripApiRequester,

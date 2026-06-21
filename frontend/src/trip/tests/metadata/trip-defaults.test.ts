@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mapTripSummary } from "../../api-response-planning-mappers";
-import type { TripSummaryResponse } from "../../api-response-types";
+import { mapTripSummary } from "../../api-client/api-response-planning-mappers";
+import type { TripSummaryResponse } from "../../api-client/api-response-types";
 import {
   DEFAULT_TRIP_ORIGIN_CITY,
   DEFAULT_TRIP_TIMEZONE,

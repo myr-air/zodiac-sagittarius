@@ -2,7 +2,7 @@ import type {
   Member,
   TripMemberAccessStatus,
   TripRole,
-} from "./types";
+} from "../types";
 
 export interface JoinInviteTokenResponse {
   token: string;

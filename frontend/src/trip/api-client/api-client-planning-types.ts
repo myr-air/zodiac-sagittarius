@@ -3,7 +3,7 @@ import type {
   PlanSuggestion,
   PlanVariant,
   TripTask,
-} from "./types";
+} from "../types";
 
 export interface CreateTaskApiRequest {
   clientMutationId: string;

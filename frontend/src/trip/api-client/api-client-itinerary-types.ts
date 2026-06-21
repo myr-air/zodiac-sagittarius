@@ -3,7 +3,7 @@ import type {
   ItineraryCoordinates,
   ItineraryItem,
   SuggestionType,
-} from "./types";
+} from "../types";
 
 export interface ImportItineraryApiRequest {
   fileName?: string;

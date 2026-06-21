@@ -2,8 +2,8 @@ import {
   createJsonApiRequester,
   type JsonApiRequester,
 } from "@/src/shared/api/json-api-requester";
-import type { ItineraryCoordinates } from "./types";
-import { TripApiError } from "./api-error";
+import type { ItineraryCoordinates } from "../types";
+import { TripApiError } from "../api-error";
 
 export type TripApiRequester = JsonApiRequester;
 

@@ -4,7 +4,7 @@ import type {
   ExpenseComment,
   ExpenseLineItem,
   TripPhotoAlbumLink,
-} from "./types";
+} from "../types";
 
 export interface CreateExpenseApiRequest {
   clientMutationId: string;

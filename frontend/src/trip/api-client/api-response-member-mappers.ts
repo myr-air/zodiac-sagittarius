@@ -1,4 +1,4 @@
-import type { Member } from "./types";
+import type { Member } from "../types";
 import type { TripMemberResponse } from "./api-response-types";
 
 export function mapMember(member: TripMemberResponse): Member {

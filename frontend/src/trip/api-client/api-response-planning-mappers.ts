@@ -1,9 +1,9 @@
-import { TripApiError } from "./api-error";
+import { TripApiError } from "../api-error";
 import type {
   PlanVariant,
   Trip,
   TripTask,
-} from "./types";
+} from "../types";
 import type {
   JoinTripResponse,
   PlanVariantResponse,
@@ -11,11 +11,11 @@ import type {
   TripSummaryResponse,
   TripTaskResponse,
 } from "./api-response-types";
-import { DEFAULT_TRIP_TIMEZONE } from "./trip-defaults";
+import { DEFAULT_TRIP_TIMEZONE } from "../trip-defaults";
 import {
   legacyKindForPlanStatus,
   planStatusForLegacyKind,
-} from "./trip-plans/trip-plan-aliases";
+} from "../trip-plans/trip-plan-aliases";
 
 export function mapTripSummary(trip: TripSummaryResponse): Trip {
   return {

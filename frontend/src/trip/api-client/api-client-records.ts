@@ -2,8 +2,8 @@ import type {
   BookingDoc,
   ExpenseSummary,
   TripPhotoAlbumLink,
-} from "./types";
-import { tripApiRoutes } from "./api-routes";
+} from "../types";
+import { tripApiRoutes } from "../api-routes";
 import type { TripApiRequester } from "./api-client-transport";
 import type { TripApiClient } from "./api-client-types";
 import {
