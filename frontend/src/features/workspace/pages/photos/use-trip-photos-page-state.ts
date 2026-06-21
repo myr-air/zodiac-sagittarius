@@ -7,12 +7,17 @@ import {
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoProviderFilter } from "./model/photo-page-options";
 import { countPhotoProviders } from "./model/photo-page-selectors";
-import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
+import type {
+  CreatePhotoAlbumHandler,
+  DeletePhotoAlbumHandler,
+  TripPhotoAlbumInput,
+  UpdatePhotoAlbumHandler,
+} from "./TripPhotosPage.types";
 
 interface UseTripPhotosPageStateInput {
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void | Promise<void>;
-  onDeletePhotoAlbum: (albumId: string) => void | Promise<void>;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void | Promise<void>;
+  onCreatePhotoAlbum: CreatePhotoAlbumHandler;
+  onDeletePhotoAlbum: DeletePhotoAlbumHandler;
+  onUpdatePhotoAlbum: UpdatePhotoAlbumHandler;
   photoAlbumLinks: TripPhotoAlbumLink[];
   trip: Trip;
 }

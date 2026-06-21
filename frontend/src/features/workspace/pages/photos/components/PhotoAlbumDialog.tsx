@@ -3,7 +3,7 @@ import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import type { TripPhotoAlbumInput } from "../TripPhotosPage.types";
+import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
 import { PhotoAlbumDialogFields } from "./PhotoAlbumDialogFields";
 import { PhotoAlbumDialogRelatedItems } from "./PhotoAlbumDialogRelatedItems";
 import { usePhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
@@ -14,7 +14,7 @@ interface PhotoAlbumDialogProps {
   currentMember: Member;
   trip: Trip;
   onCancel: () => void;
-  onSubmit: (input: TripPhotoAlbumInput) => void | Promise<void>;
+  onSubmit: SubmitPhotoAlbumHandler;
 }
 
 export function PhotoAlbumDialog({

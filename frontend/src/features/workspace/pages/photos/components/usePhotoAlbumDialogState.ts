@@ -6,13 +6,13 @@ import type {
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,
 } from "@/src/trip/types";
-import type { TripPhotoAlbumInput } from "../TripPhotosPage.types";
+import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
 
 interface PhotoAlbumDialogStateInput {
   album: TripPhotoAlbumLink | null;
   currentMember: Member;
   trip: Trip;
-  onSubmit: (input: TripPhotoAlbumInput) => void | Promise<void>;
+  onSubmit: SubmitPhotoAlbumHandler;
 }
 
 export function usePhotoAlbumDialogState({

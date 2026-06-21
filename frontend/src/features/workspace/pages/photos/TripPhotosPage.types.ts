@@ -12,3 +12,22 @@ export interface TripPhotoAlbumInput {
   accessNote?: string | null;
   coverUrl?: string | null;
 }
+
+export type TripPhotoAlbumMutationResult = void | Promise<void>;
+
+export type CreatePhotoAlbumHandler = (
+  input: TripPhotoAlbumInput,
+) => TripPhotoAlbumMutationResult;
+
+export type UpdatePhotoAlbumHandler = (
+  albumId: string,
+  input: TripPhotoAlbumInput,
+) => TripPhotoAlbumMutationResult;
+
+export type DeletePhotoAlbumHandler = (
+  albumId: string,
+) => TripPhotoAlbumMutationResult;
+
+export type SubmitPhotoAlbumHandler = (
+  input: TripPhotoAlbumInput,
+) => TripPhotoAlbumMutationResult;

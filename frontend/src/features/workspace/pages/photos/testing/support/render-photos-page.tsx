@@ -2,14 +2,19 @@ import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import type { Member, TripPhotoAlbumLink } from "@/src/trip/types";
-import { TripPhotosPage, type TripPhotoAlbumInput } from "../../TripPhotosPage";
+import {
+  TripPhotosPage,
+  type CreatePhotoAlbumHandler,
+  type DeletePhotoAlbumHandler,
+  type UpdatePhotoAlbumHandler,
+} from "../../TripPhotosPage";
 import { photoAlbumPageTestAlbums } from "../fixtures/photo-album-page-fixtures";
 
 interface RenderTripPhotosPageOptions {
   currentMember: Member;
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void;
-  onDeletePhotoAlbum: (albumId: string) => void;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void;
+  onCreatePhotoAlbum: CreatePhotoAlbumHandler;
+  onDeletePhotoAlbum: DeletePhotoAlbumHandler;
+  onUpdatePhotoAlbum: UpdatePhotoAlbumHandler;
   photoAlbumLinks: TripPhotoAlbumLink[];
 }
 

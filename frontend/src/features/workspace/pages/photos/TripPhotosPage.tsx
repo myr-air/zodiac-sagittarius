@@ -9,19 +9,28 @@ import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy } from "./content/TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
-import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
+import type {
+  CreatePhotoAlbumHandler,
+  DeletePhotoAlbumHandler,
+  UpdatePhotoAlbumHandler,
+} from "./TripPhotosPage.types";
 import { useTripPhotosPageState } from "./use-trip-photos-page-state";
 
-export type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
+export type {
+  CreatePhotoAlbumHandler,
+  DeletePhotoAlbumHandler,
+  TripPhotoAlbumInput,
+  UpdatePhotoAlbumHandler,
+} from "./TripPhotosPage.types";
 
 interface TripPhotosPageProps {
   trip: Trip;
   currentMember: Member;
   photoAlbumLinks: TripPhotoAlbumLink[];
   canEditPhotoAlbums: boolean;
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void | Promise<void>;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void | Promise<void>;
-  onDeletePhotoAlbum: (albumId: string) => void | Promise<void>;
+  onCreatePhotoAlbum: CreatePhotoAlbumHandler;
+  onUpdatePhotoAlbum: UpdatePhotoAlbumHandler;
+  onDeletePhotoAlbum: DeletePhotoAlbumHandler;
 }
 
 export function TripPhotosPage({
