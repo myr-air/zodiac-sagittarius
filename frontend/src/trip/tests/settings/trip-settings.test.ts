@@ -4,7 +4,7 @@ import {
   buildShiftedItineraryItemDayRequests,
   buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
-} from "@/src/trip/trip-settings";
+} from "@/src/trip/settings";
 import { seedTrip } from "@/src/trip/seed";
 
 describe("trip settings", () => {

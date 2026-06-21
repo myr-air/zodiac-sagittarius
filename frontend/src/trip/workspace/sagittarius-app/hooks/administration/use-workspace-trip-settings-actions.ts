@@ -6,7 +6,7 @@ import {
   buildShiftedItineraryItemDayRequests,
   buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
-} from "@/src/trip/trip-settings";
+} from "@/src/trip/settings";
 import { nextClientMutationId } from "@/src/trip/identity";
 import type {
   Trip,
