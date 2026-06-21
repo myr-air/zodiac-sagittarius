@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   appendItineraryItemPlacement,
-  mainItineraryPathId,
   replaceItineraryItem,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-items";
 import {
   applyItemToActivityBranch,
   applyManualActivityPath,
+  mainItineraryPathId,
 } from "@/src/trip/itinerary-paths";
 import { seedTrip } from "@/src/trip/seed";
 import {

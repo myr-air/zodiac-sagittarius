@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   normalizeStopHierarchyValues,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-core";
 import {
   locationFieldsFromCandidate,
   resolveStopPlace,

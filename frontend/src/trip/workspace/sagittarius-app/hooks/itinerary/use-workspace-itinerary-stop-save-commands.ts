@@ -3,7 +3,7 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import {
   type ItineraryPathOption,
   type ItineraryPathSelection,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,

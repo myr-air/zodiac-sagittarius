@@ -1,13 +1,13 @@
 import {
   appendItineraryItemPlacement,
-  mainItineraryPathId,
   replaceItineraryItem,
-} from "@/src/trip/itinerary";
+  type ItineraryItemPlacement,
+} from "@/src/trip/itinerary-items";
 import {
   applyItemToActivityBranch,
   applyManualActivityPath,
+  mainItineraryPathId,
 } from "@/src/trip/itinerary-paths";
-import type { ItineraryItemPlacement } from "@/src/trip/itinerary";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 interface PlaceCreatedWorkspaceStopOptions {

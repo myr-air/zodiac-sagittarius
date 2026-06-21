@@ -4,9 +4,11 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
   mergeCreatedItineraryItemIntoTrip,
+} from "@/src/trip/itinerary-items";
+import {
   type ItineraryPathOption,
   type ItineraryPathSelection,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-items";
 import {
   type PlaceResolver,
