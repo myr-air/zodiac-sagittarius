@@ -1,13 +1,13 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { RouteMapView } from "./RouteMapView";
+import { RouteMapView } from "../RouteMapView";
 import {
   hongKongDay,
   renderWithThaiI18n,
   routeMapCoordinateItems,
   routeMapItems,
-} from "./route-map-test-support";
+} from "../testing/route-map-test-support";
 
 describe("RouteMapView summary", () => {
   const render = renderWithThaiI18n;

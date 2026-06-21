@@ -10,11 +10,11 @@ import {
   getRouteCenter,
   liveMapStatusText,
   RouteMapView,
-} from "./RouteMapView";
+} from "../RouteMapView";
 import {
   renderWithThaiI18n,
   routeMapItems,
-} from "./route-map-test-support";
+} from "../testing/route-map-test-support";
 
 describe("RouteMapView helpers", () => {
   const render = renderWithThaiI18n;

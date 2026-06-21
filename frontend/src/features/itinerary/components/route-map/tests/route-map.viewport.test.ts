@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { routeMapCoordinateItems } from "./route-map-test-support";
+import { routeMapCoordinateItems } from "../testing/route-map-test-support";
 import {
   fallbackRouteViewport,
   getRouteCenter,
-} from "./route-map.viewport";
+} from "../route-map.viewport";
 
 describe("route map viewport helpers", () => {
   it("resolves viewport fallbacks consistently", () => {

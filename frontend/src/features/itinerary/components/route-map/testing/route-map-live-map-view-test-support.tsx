@@ -1,7 +1,7 @@
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { renderWithThaiI18n, routeMapItems } from "./route-map-test-support";
-import { RouteMapView } from "./RouteMapView";
+import { RouteMapView } from "../RouteMapView";
 
 type RouteMapViewProps = Parameters<typeof RouteMapView>[0];
 

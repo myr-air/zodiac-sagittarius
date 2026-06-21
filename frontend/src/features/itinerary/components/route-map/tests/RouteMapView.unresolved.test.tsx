@@ -2,12 +2,12 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { RouteMapView } from "./RouteMapView";
+import { RouteMapView } from "../RouteMapView";
 import {
   hongKongDay,
   renderWithThaiI18n,
   routeMapUnresolvedItems,
-} from "./route-map-test-support";
+} from "../testing/route-map-test-support";
 
 describe("RouteMapView unresolved coordinates", () => {
   const render = renderWithThaiI18n;

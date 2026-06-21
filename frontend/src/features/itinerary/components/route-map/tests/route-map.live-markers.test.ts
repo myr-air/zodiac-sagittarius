@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { routeMapCoordinateItems } from "./route-map-test-support";
-import { allDaysFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
+import { routeMapCoordinateItems } from "../testing/route-map-test-support";
+import { allDaysFilter, type RouteDayGroup, type RoutePoint } from "../route-map.types";
 import {
   type LiveRouteMarkerRegistry,
   synchronizeLiveRouteMarkers,
-} from "./route-map.live-markers";
+} from "../route-map.live-markers";
 
 describe("route map live marker utilities", () => {
   it("creates, filters, updates, and removes live route markers", () => {

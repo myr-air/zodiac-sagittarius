@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { liveMapStatusText } from "./route-map.live-status";
+import { liveMapStatusText } from "../route-map.live-status";
 
 describe("route map live status", () => {
   it("uses loading copy for non-error live map states", () => {

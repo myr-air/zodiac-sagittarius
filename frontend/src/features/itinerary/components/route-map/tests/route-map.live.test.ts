@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { routeMapCoordinateItems } from "./route-map-test-support";
-import { allDaysFilter } from "./route-map.types";
-import { cleanupRouteLayers, applyRouteMapTheme, fitLiveRoute, synchronizeRouteLayers } from "./route-map.live";
+import { routeMapCoordinateItems } from "../testing/route-map-test-support";
+import { allDaysFilter } from "../route-map.types";
+import { cleanupRouteLayers, applyRouteMapTheme, fitLiveRoute, synchronizeRouteLayers } from "../route-map.live";
 
 describe("route map live utilities", () => {
   it("uses fallback center and supports live route fit transitions", () => {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { allDaysFilter } from "./route-map.types";
+import { allDaysFilter } from "../route-map.types";
 import {
   activeDayLabel,
   dayColorFor,
-} from "./route-map.utils";
+} from "../route-map.utils";
 
 describe("route map utilities", () => {
   it("builds route labels", () => {

@@ -5,12 +5,12 @@ import {
   getMaplibreMock,
   resetMaplibreMock,
   triggerLiveMapEvent,
-} from "./route-map-live-map-test-support";
-import { renderLiveRouteMap } from "./route-map-live-map-view-test-support";
+} from "../testing/route-map-live-map-test-support";
+import { renderLiveRouteMap } from "../testing/route-map-live-map-view-test-support";
 import {
   routeMapCoordinateItemEastOf,
   routeMapUnresolvedItems,
-} from "./route-map-test-support";
+} from "../testing/route-map-test-support";
 
 const maplibreMock = getMaplibreMock();
 
