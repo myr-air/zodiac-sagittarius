@@ -1,37 +1,13 @@
-import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import type { InlineOptionPickerOption } from "./InlineOptionPicker";
 import { inlineOptionPickerSideMenuPosition } from "./model/inline-option-picker-position";
+import type { InlineOptionPickerMenuProps } from "./inline-option-picker.types";
 
 const floatingOptionMenuClassName =
   "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
 const floatingOptionButtonClassName =
   "grid min-h-8 w-full min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_16px] items-center gap-2 rounded-(--radius-sm) px-2.5 py-1.5 text-left text-xs font-bold text-(--color-text) transition-colors hover:bg-(--color-route-soft) focus-visible:bg-(--color-route-soft) focus-visible:outline-none aria-selected:bg-(--color-route-soft) aria-selected:text-(--color-route) data-[active=true]:bg-(--color-route-soft)";
-
-interface InlineOptionPickerMenuProps {
-  activeIndex: number;
-  activeOption: InlineOptionPickerOption | undefined;
-  activeSubOptions: InlineOptionPickerOption[];
-  ariaLabel: string;
-  buttonRef: RefObject<HTMLButtonElement | null>;
-  commitOption: (option: InlineOptionPickerOption) => void;
-  commitSubOption: (
-    parentOption: InlineOptionPickerOption,
-    option: InlineOptionPickerOption,
-  ) => void;
-  menuRef: RefObject<HTMLDivElement | null>;
-  optionKeyPrefix: string;
-  options: InlineOptionPickerOption[];
-  position: { left: number; top: number; width: number };
-  selectedSubValue?: string;
-  setActiveIndex: Dispatch<SetStateAction<number>>;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-  sideMenuRef: RefObject<HTMLDivElement | null>;
-  subOptionsByValue?: Record<string, InlineOptionPickerOption[]>;
-  value: string;
-}
 
 export function InlineOptionPickerMenu({
   activeIndex,

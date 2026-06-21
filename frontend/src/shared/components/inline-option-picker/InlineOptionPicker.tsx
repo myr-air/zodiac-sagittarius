@@ -1,15 +1,13 @@
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
-import { Icon, type IconName } from "@/src/ui/icons";
+import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { InlineOptionPickerMenu } from "./InlineOptionPickerMenu";
 import { inlineOptionPickerMenuPosition } from "./model/inline-option-picker-position";
-
-export interface InlineOptionPickerOption {
-  icon?: IconName;
-  label: string;
-  value: string;
-}
+import type {
+  InlineOptionPickerOption,
+  InlineOptionPickerProps,
+} from "./inline-option-picker.types";
 
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-subtle) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
@@ -18,19 +16,6 @@ const inlineOptionPickerButtonClassName = cn(
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
 );
 const inlineOptionPickerCaretClassName = "shrink-0 text-(--color-text-subtle)";
-
-interface InlineOptionPickerProps {
-  ariaLabel: string;
-  buttonClassName?: string;
-  disabled?: boolean;
-  onCommit: (value: string) => void | Promise<void>;
-  onCommitSubOption?: (value: string, subValue: string) => void | Promise<void>;
-  optionKeyPrefix?: string;
-  options: InlineOptionPickerOption[];
-  selectedSubValue?: string;
-  subOptionsByValue?: Record<string, InlineOptionPickerOption[]>;
-  value: string;
-}
 
 export function InlineOptionPicker({
   ariaLabel,

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { InlineOptionPicker } from "../InlineOptionPicker";
-import type { InlineOptionPickerOption } from "../InlineOptionPicker";
+import type { InlineOptionPickerOption } from "../inline-option-picker.types";
 
 const options: InlineOptionPickerOption[] = [
   { value: "train", label: "Train" },
