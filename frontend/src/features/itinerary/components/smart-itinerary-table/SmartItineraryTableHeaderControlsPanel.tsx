@@ -1,5 +1,3 @@
-import type { PlanStatus, PlanVariant } from "@/src/trip/types";
-import type { Messages } from "@/src/i18n/messages";
 import {
   headerControlsContentClassName,
   headerControlsTitleBarClassName,
@@ -8,35 +6,7 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
-import type { TripPlanMutationResult } from "./trip-plan-controls.types";
-
-interface SmartItineraryTableHeaderControlsPanelProps {
-  canManageTripPlans: boolean;
-  filterOptions: { id: string; name: string }[];
-  itineraryLabels: Messages["itinerary"];
-  isTripPlanBusy: boolean;
-  mainTripPlanId: string;
-  onChangeShowAllPaths?: (showAll: boolean) => void;
-  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
-  onChangeTripPlanStatus: (
-    tripPlanId: string,
-    status: Exclude<PlanStatus, "main">,
-  ) => TripPlanMutationResult;
-  onCreateTripPlan: (name: string) => TripPlanMutationResult;
-  onRenameTripPlan: (
-    tripPlanId: string,
-    name: string,
-  ) => TripPlanMutationResult;
-  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
-  onTogglePathFilter: (pathId: string) => void;
-  selectedFilterLabel: string;
-  selectedPathIds: Set<string>;
-  selectedTripPlan: PlanVariant | null;
-  selectedTripPlanId: string;
-  showAllPaths: boolean;
-  tripPlanError: string | null;
-  tripPlans: PlanVariant[];
-}
+import type { SmartItineraryTableHeaderControlsPanelProps } from "./trip-plan-controls.types";
 
 export function SmartItineraryTableHeaderControlsPanel({
   canManageTripPlans,

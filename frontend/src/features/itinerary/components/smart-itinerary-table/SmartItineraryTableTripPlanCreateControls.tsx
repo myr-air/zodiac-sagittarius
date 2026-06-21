@@ -1,5 +1,3 @@
-import type { FormEvent } from "react";
-import type { Messages } from "@/src/i18n/messages";
 import { Button } from "@/src/ui";
 import {
   tripPlanButtonClassName,
@@ -8,17 +6,7 @@ import {
   tripPlanNameInputClassName,
   tripPlanSecondaryButtonClassName,
 } from "./smart-itinerary-table.styles";
-
-interface SmartItineraryTableTripPlanCreateControlsProps {
-  isCreatingTripPlan: boolean;
-  isTripPlanBusy: boolean;
-  labels: Messages["itinerary"]["tripPlans"];
-  newTripPlanName: string;
-  onCancel: () => void;
-  onChangeName: (name: string) => void;
-  onOpen: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}
+import type { SmartItineraryTableTripPlanCreateControlsProps } from "./trip-plan-controls.types";
 
 export function SmartItineraryTableTripPlanCreateControls({
   isCreatingTripPlan,

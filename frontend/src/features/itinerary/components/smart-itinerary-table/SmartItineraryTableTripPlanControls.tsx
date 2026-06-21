@@ -1,5 +1,4 @@
-import type { PlanStatus, PlanVariant } from "@/src/trip/types";
-import type { Messages } from "@/src/i18n/messages";
+import type { PlanStatus } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import {
   headerControlsSectionClassName,
@@ -11,28 +10,8 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableTripPlanCreateControls } from "./SmartItineraryTableTripPlanCreateControls";
 import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
-import type { TripPlanMutationResult } from "./trip-plan-controls.types";
+import type { SmartItineraryTableTripPlanControlsProps } from "./trip-plan-controls.types";
 import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
-
-interface SmartItineraryTableTripPlanControlsProps {
-  canManageTripPlans: boolean;
-  itineraryLabels: Messages["itinerary"];
-  isTripPlanBusy: boolean;
-  mainTripPlanId: string;
-  onChangeTripPlan: (tripPlanId: string) => void;
-  onChangeTripPlanStatus: (
-    tripPlanId: string,
-    status: Exclude<PlanStatus, "main">,
-  ) => TripPlanMutationResult;
-  onCreateTripPlan: (name: string) => TripPlanMutationResult;
-  onRenameTripPlan: (
-    tripPlanId: string,
-    name: string,
-  ) => TripPlanMutationResult;
-  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
-  selectedTripPlanId: string;
-  tripPlans: PlanVariant[];
-}
 
 export function SmartItineraryTableTripPlanControls({
   canManageTripPlans,

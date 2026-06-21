@@ -1,4 +1,3 @@
-import type { Messages } from "@/src/i18n/messages";
 import {
   headerControlsSectionClassName,
   headerControlsSectionHeaderClassName,
@@ -7,18 +6,7 @@ import {
   pathFilterSummaryClassName,
   showAllPathsToggleClassName,
 } from "./smart-itinerary-table.styles";
-
-type FilterOption = { id: string; name: string };
-
-interface SmartItineraryTablePathFiltersProps {
-  filterOptions: FilterOption[];
-  itineraryLabels: Messages["itinerary"];
-  onChangeShowAllPaths?: (showAll: boolean) => void;
-  onTogglePathFilter: (pathId: string) => void;
-  selectedFilterLabel: string;
-  selectedPathIds: Set<string>;
-  showAllPaths: boolean;
-}
+import type { SmartItineraryTablePathFiltersProps } from "./trip-plan-controls.types";
 
 export function SmartItineraryTablePathFilters({
   filterOptions,

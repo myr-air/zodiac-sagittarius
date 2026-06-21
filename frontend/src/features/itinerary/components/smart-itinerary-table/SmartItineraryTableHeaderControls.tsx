@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
-import type { PlanStatus, PlanVariant } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
-import type { Messages } from "@/src/i18n/messages";
 import {
   headerControlsButtonClassName,
   headerControlsPanelClassName,
@@ -12,35 +10,7 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
 import { selectedTripPlanIdForControl } from "./smart-itinerary-table-utils";
-import type { TripPlanMutationResult } from "./trip-plan-controls.types";
-
-interface TripPlanHeaderControlsProps {
-  canEdit: boolean;
-  canManageTripPlans: boolean;
-  filterOptions: { id: string; name: string }[];
-  itineraryLabels: Messages["itinerary"];
-  isTripPlanBusy: boolean;
-  mainTripPlanId: string;
-  onChangeShowAllPaths?: (showAll: boolean) => void;
-  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
-  onChangeTripPlanStatus: (
-    tripPlanId: string,
-    status: Exclude<PlanStatus, "main">,
-  ) => TripPlanMutationResult;
-  onCreateTripPlan: (name: string) => TripPlanMutationResult;
-  onRenameTripPlan: (
-    tripPlanId: string,
-    name: string,
-  ) => TripPlanMutationResult;
-  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
-  selectedFilterLabel: string;
-  selectedPathIds: Set<string>;
-  selectedTripPlanId: string;
-  showAllPaths: boolean;
-  tripPlanError: string | null;
-  tripPlans: PlanVariant[];
-  onTogglePathFilter: (pathId: string) => void;
-}
+import type { TripPlanHeaderControlsProps } from "./trip-plan-controls.types";
 
 export function SmartItineraryTableHeaderControls({
   canEdit,
