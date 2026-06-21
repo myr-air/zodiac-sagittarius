@@ -5,7 +5,7 @@ import type {
   TripPhotoAlbumLink,
 } from "./trip-record-types";
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
-import type { Member } from "./trip-member-types";
+import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./trip-place-types";
 import type { TripTask } from "./trip-task-types";
@@ -45,7 +45,7 @@ export type {
   TripParticipantSession,
   TripInvitableRole,
   TripRole,
-} from "./trip-member-types";
+} from "./members/member-types";
 export type {
   PlanStatus,
   PlanVariant,

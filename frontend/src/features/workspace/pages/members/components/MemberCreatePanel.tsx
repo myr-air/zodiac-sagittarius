@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/cn";
-import { tripInvitableRoleValues } from "@/src/trip/trip-member-types";
+import { tripInvitableRoleValues } from "@/src/trip/members";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";

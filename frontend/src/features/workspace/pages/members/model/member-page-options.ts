@@ -1,7 +1,7 @@
 import {
   tripMemberAccessStatusValues,
   tripRoleValues,
-} from "@/src/trip/trip-member-types";
+} from "@/src/trip/members";
 
 export const memberRoleFilterValues = ["all", ...tripRoleValues] as const;
 export type MemberRoleFilter = (typeof memberRoleFilterValues)[number];
