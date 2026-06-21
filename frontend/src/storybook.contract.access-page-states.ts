@@ -1,6 +1,6 @@
 export const requiredAccessPageStates: Array<[string, string[]]> = [
   [
-    "features/account/components/trip-join-gate/TripJoinGate.stories.tsx",
+    "features/account/components/trip-join-gate/storybook/TripJoinGate.stories.tsx",
     [
       "RoomCredentials",
       "TripAccess",

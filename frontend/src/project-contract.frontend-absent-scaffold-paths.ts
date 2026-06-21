@@ -160,6 +160,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/trip-join-gate/trip-join-error-message.test.ts",
   "src/features/account/components/trip-join-gate/TripJoinGate.stories.plays.ts",
   "src/features/account/components/trip-join-gate/TripJoinGate.stories.support.ts",
+  "src/features/account/components/trip-join-gate/TripJoinGate.stories.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGate.test.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGate.api-errors.test.tsx",
   "src/features/account/components/trip-join-gate/TripJoinGate.api.test.tsx",

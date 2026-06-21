@@ -138,6 +138,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/trip-join-gate/model/trip-join-error-message.ts",
   "src/features/account/components/trip-join-gate/model/trip-join-error-message.test.ts",
   "src/features/account/components/trip-join-gate/layout/trip-join-gate.styles.ts",
+  "src/features/account/components/trip-join-gate/storybook/TripJoinGate.stories.tsx",
   "src/features/account/components/trip-join-gate/storybook/TripJoinGate.stories.plays.ts",
   "src/features/account/components/trip-join-gate/storybook/TripJoinGate.stories.support.ts",
   "src/features/account/components/trip-join-gate/tests/TripJoinGate.api.test.tsx",

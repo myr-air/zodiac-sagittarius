@@ -3,7 +3,7 @@ import {
   argsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { TripJoinGate } from "./TripJoinGate";
+import { TripJoinGate } from "../TripJoinGate";
 import {
   desktop1440Play,
   mobilePlay,
@@ -12,12 +12,12 @@ import {
   selectIdentityPlay,
   thaiPlay,
   tripAccessPlay,
-} from "./storybook/TripJoinGate.stories.plays";
+} from "./TripJoinGate.stories.plays";
 import {
   roomCredentialsStoryArgs,
   selectIdentityStoryArgs,
   tripAccessStoryArgs,
-} from "./storybook/TripJoinGate.stories.support";
+} from "./TripJoinGate.stories.support";
 
 const meta = {
   title: "Pages/Trip Join Gate",
