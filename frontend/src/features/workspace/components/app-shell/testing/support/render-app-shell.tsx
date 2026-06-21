@@ -4,21 +4,13 @@ import type { Locale } from "@/src/i18n/types";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
-import type { PlanningView } from "@/src/trip/workspace/planning-view";
-import type { Member, Trip } from "@/src/trip/types";
 import { AppShell } from "../../AppShell";
+import type { AppShellProps } from "../../app-shell.types";
 
-interface RenderAppShellOptions {
-  activeView?: PlanningView;
+type RenderAppShellOptions = Partial<Omit<AppShellProps, "children">> & {
   children?: ReactNode;
-  collapsed?: boolean;
-  currentMember?: Member;
   locale?: Locale;
-  onLeaveParticipantSession?: () => void;
-  onNavigateView?: (view: PlanningView, href: string) => void;
-  onToggleCollapsed?: () => void;
-  trip?: Trip;
-}
+};
 
 export function renderAppShell({
   activeView = "overview",

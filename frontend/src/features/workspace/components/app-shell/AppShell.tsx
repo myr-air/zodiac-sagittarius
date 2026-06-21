@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import type { PlanningView } from "@/src/trip/workspace/planning-view";
-import type { Member, Trip } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/trip/workspace/sagittarius-app/support";
+import type { AppShellProps } from "./app-shell.types";
 import {
   activeRailLinkClassName,
   appLayoutClassName,
@@ -29,17 +28,6 @@ import {
 import { AppShellMemberCard } from "./AppShellMemberCard";
 
 export { resolveViewFromPath } from "./app-shell.support";
-
-interface AppShellProps {
-  activeView: PlanningView;
-  children: ReactNode;
-  collapsed: boolean;
-  currentMember: Member;
-  onLeaveParticipantSession?: () => void;
-  onNavigateView?: (view: PlanningView, href: string) => void;
-  trip: Trip;
-  onToggleCollapsed: () => void;
-}
 
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();

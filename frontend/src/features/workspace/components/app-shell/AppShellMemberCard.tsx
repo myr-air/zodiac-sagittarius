@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { memberInitial, roleLabel } from "@/src/trip/members";
-import type { Member } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
+import type { AppShellMemberCardProps } from "./app-shell.types";
 import {
   identityDialogActionsClassName,
   identityDialogBackdropClassName,
@@ -24,12 +24,6 @@ import {
   memberFallbackIconClassName,
   memberSwitchButtonClassName,
 } from "./AppShell.styles";
-
-interface AppShellMemberCardProps {
-  collapsed: boolean;
-  currentMember: Member;
-  onLeaveParticipantSession?: () => void;
-}
 
 export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipantSession }: AppShellMemberCardProps) {
   const { t } = useI18n();
