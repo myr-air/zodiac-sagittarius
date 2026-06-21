@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   displayDateTimeLocaleCode,
+  displayGregorianDateTimeLocaleCode,
   formatDisplayDateTime,
   formatOptionalDisplayDateTime,
 } from "../date-time-display";
@@ -9,6 +10,11 @@ describe("date time display helpers", () => {
   it("maps supported app locales to Intl locale codes", () => {
     expect(displayDateTimeLocaleCode("en")).toBe("en-US");
     expect(displayDateTimeLocaleCode("th")).toBe("th-TH");
+  });
+
+  it("maps app locales to Gregorian Intl locale codes when Buddhist years would be misleading", () => {
+    expect(displayGregorianDateTimeLocaleCode("en")).toBe("en-US");
+    expect(displayGregorianDateTimeLocaleCode("th")).toBe("th-TH-u-ca-gregory");
   });
 
   it("formats required and optional date-time values through one Intl helper", () => {

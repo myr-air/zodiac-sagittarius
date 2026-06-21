@@ -10,4 +10,8 @@ describe("expense reminder display", () => {
     expect(formatReminderDate("2026-06-18T12:30:00.000Z", "en")).toContain("2026");
     expect(formatReminderDate("2026-06-18T12:30:00.000Z", "th")).toContain("2026");
   });
+
+  it("keeps Thai reminder years Gregorian for trip finance records", () => {
+    expect(formatReminderDate("2026-06-18T12:30:00.000Z", "th")).not.toContain("2569");
+  });
 });

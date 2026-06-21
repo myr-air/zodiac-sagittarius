@@ -4,6 +4,10 @@ export function displayDateTimeLocaleCode(locale: DisplayDateTimeLocale): string
   return locale === "th" ? "th-TH" : "en-US";
 }
 
+export function displayGregorianDateTimeLocaleCode(locale: DisplayDateTimeLocale): string {
+  return locale === "th" ? "th-TH-u-ca-gregory" : "en-US";
+}
+
 export function formatDisplayDateTime(
   value: string | Date,
   locale: string,
