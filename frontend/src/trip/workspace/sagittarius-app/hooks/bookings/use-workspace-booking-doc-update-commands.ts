@@ -18,7 +18,10 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { queueKeyedUpdate } from "../../support/queued-updates";
-import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-conflict-retry";
+import {
+  reloadWorkspaceCockpitAfterConflict,
+  runWorkspaceVersionConflictRetry,
+} from "../../support/workspace-api-conflict-retry";
 
 interface UseWorkspaceBookingDocUpdateCommandsOptions {
   apiClient?: TripApiClient;
@@ -54,12 +57,13 @@ export function useWorkspaceBookingDocUpdateCommands({
         await runWorkspaceVersionConflictRetry({
           getContext: () => latestTripRef.current,
           reloadOnConflict: async (currentTrip) => {
-            const cockpit = await apiClient.loadTrip(
-              currentTrip.id,
-              participantSession.sessionToken,
-            );
-            replaceCockpitFromApi(cockpit);
-            latestTripRef.current = cockpit.trip;
+            await reloadWorkspaceCockpitAfterConflict({
+              apiClient,
+              currentTrip,
+              latestTripRef,
+              participantSession,
+              replaceCockpitFromApi,
+            });
           },
           run: async (currentTrip) => {
             const bookingDoc = currentTrip.bookingDocs?.find(

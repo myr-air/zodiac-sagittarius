@@ -11,7 +11,10 @@ import type {
   TripParticipantSession,
 } from "@/src/trip/types";
 import { queueKeyedUpdate } from "../../support/queued-updates";
-import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-conflict-retry";
+import {
+  reloadWorkspaceCockpitAfterConflict,
+  runWorkspaceVersionConflictRetry,
+} from "../../support/workspace-api-conflict-retry";
 import {
   buildWorkspaceInlinePatchRequest,
   buildWorkspaceInlineUpdatedItem,
@@ -57,12 +60,13 @@ export function useWorkspaceItineraryInlineUpdateCommand({
         await runWorkspaceVersionConflictRetry({
           getContext: () => latestTripRef.current,
           reloadOnConflict: async (currentTrip) => {
-            const cockpit = await resolvedApiClient.loadTrip(
-              currentTrip.id,
-              participantSession.sessionToken,
-            );
-            replaceCockpitFromApi(cockpit);
-            latestTripRef.current = cockpit.trip;
+            await reloadWorkspaceCockpitAfterConflict({
+              apiClient: resolvedApiClient,
+              currentTrip,
+              latestTripRef,
+              participantSession,
+              replaceCockpitFromApi,
+            });
           },
           run: async (currentTrip) => {
             const item = currentTrip.itineraryItems.find(
