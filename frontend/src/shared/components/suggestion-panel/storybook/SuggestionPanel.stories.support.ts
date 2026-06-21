@@ -1,5 +1,5 @@
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import type { SuggestionPanel } from "./SuggestionPanel";
+import type { SuggestionPanel } from "../SuggestionPanel";
 
 type SuggestionPanelStoryArgs = Parameters<typeof SuggestionPanel>[0];
 

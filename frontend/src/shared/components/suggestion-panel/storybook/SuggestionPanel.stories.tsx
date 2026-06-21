@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { SuggestionPanel } from "./SuggestionPanel";
+import { SuggestionPanel } from "../SuggestionPanel";
 import { emptyPlay } from "./SuggestionPanel.stories.plays";
 import {
   conflictedSuggestionPanelStoryArgs,
