@@ -1,5 +1,12 @@
 import { CheckboxGroup } from "@/src/shared/components/checkbox-group";
 import type { Trip, TripTask } from "@/src/trip/types";
+import {
+  buildExpenseOptions,
+  buildItineraryItemOptions,
+  buildMemberOptions,
+  buildStopNoteOptions,
+  buildTaskOptions,
+} from "@/src/features/workspace/model/related-checkbox-options";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import type { BookingDialogState } from "./useBookingDialogState";
 
@@ -17,31 +24,31 @@ export function BookingDialogLinks({ copy, state, tasks, trip }: BookingDialogLi
     <div className="grid gap-3">
       <CheckboxGroup
         label={copy.travelersField}
-        options={trip.members.map((member) => ({ id: member.id, label: member.displayName }))}
+        options={buildMemberOptions(trip.members)}
         selectedIds={state.travelerIds}
         onToggle={state.toggleTraveler}
       />
       <CheckboxGroup
         label={copy.linkedItinerary}
-        options={trip.itineraryItems.map((item) => ({ id: item.id, label: `${item.day} · ${item.activity}` }))}
+        options={buildItineraryItemOptions(trip.itineraryItems)}
         selectedIds={state.relatedItineraryItemIds}
         onToggle={state.toggleItineraryItem}
       />
       <CheckboxGroup
         label={copy.linkedTodos}
-        options={tasks.map((task) => ({ id: task.id, label: task.title }))}
+        options={buildTaskOptions(tasks)}
         selectedIds={state.relatedTaskIds}
         onToggle={state.toggleTask}
       />
       <CheckboxGroup
         label={copy.linkedExpenses}
-        options={trip.expenses.map((expense) => ({ id: expense.id, label: expense.title }))}
+        options={buildExpenseOptions(trip.expenses)}
         selectedIds={state.relatedExpenseIds}
         onToggle={state.toggleExpense}
       />
       <CheckboxGroup
         label={copy.linkedNotes}
-        options={stopNotes.map((note) => ({ id: note.id, label: note.body }))}
+        options={buildStopNoteOptions(stopNotes)}
         selectedIds={state.noteIds}
         onToggle={state.toggleNote}
       />

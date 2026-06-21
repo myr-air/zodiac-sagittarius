@@ -1,5 +1,6 @@
 import { CheckboxGroup } from "@/src/shared/components/checkbox-group";
 import type { Trip } from "@/src/trip/types";
+import { buildItineraryItemOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import type { PhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
 
@@ -18,7 +19,7 @@ export function PhotoAlbumDialogRelatedItems({
     <CheckboxGroup
       label={copy.relatedItinerary}
       maxHeightClassName="max-h-48"
-      options={trip.itineraryItems.map((item) => ({ id: item.id, label: `${item.day} · ${item.activity}` }))}
+      options={buildItineraryItemOptions(trip.itineraryItems)}
       selectedIds={state.relatedItineraryItemIds}
       onToggle={state.toggleRelatedItem}
     />

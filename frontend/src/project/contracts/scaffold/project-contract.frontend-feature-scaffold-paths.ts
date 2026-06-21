@@ -235,6 +235,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/components/app-shell/tests/AppShell.routing.test.ts",
   "src/features/workspace/stories/AppShell.stories.plays.ts",
   "src/features/workspace/stories/AppShell.stories.support.tsx",
+  "src/features/workspace/model/related-checkbox-options.ts",
+  "src/features/workspace/model/tests/related-checkbox-options.test.ts",
   "src/features/workspace/pages/bookings-docs/use-bookings-docs-page-state.ts",
   "src/features/workspace/pages/bookings-docs/content/BookingsDocsPage.copy.ts",
   "src/features/workspace/pages/bookings-docs/content/tests/BookingsDocsPage.copy.test.ts",
