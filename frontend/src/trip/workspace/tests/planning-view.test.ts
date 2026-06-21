@@ -3,7 +3,7 @@ import {
   type PlanningView,
   workspaceViewShouldSyncBackendExpenseSummary,
   workspaceViewSupportsContextRail,
-} from "./planning-view";
+} from "../planning-view";
 
 const allViews: PlanningView[] = [
   "overview",

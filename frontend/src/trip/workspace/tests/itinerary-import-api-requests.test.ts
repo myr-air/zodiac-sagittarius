@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
   buildImportItineraryRequest,
-} from "./itinerary-import-api-requests";
+} from "../itinerary-import-api-requests";
 import {
   buildImportedItineraryItemCreateRequest,
-} from "./itinerary-import-item-api-requests";
+} from "../itinerary-import-item-api-requests";
 import {
   buildImportedBookingDocCreateRequest,
   buildImportedExpenseCreateRequest,
   buildImportedStopNoteCreateRequest,
   buildImportedTaskCreateRequest,
   buildImportedTaskStatusPatchRequest,
-} from "./itinerary-import-record-api-requests";
+} from "../itinerary-import-record-api-requests";
 import {
   importedBookingDoc,
   importedExpense,
   importedItineraryItem,
   importedStopNote,
   importedTask,
-} from "./itinerary-import-api.test-support";
-import { pathIdRain } from "../testing/itinerary-path-fixtures";
+} from "../itinerary-import-api.test-support";
+import { pathIdRain } from "../../testing/itinerary-path-fixtures";
 
 describe("itinerary import API request builders", () => {
   it("builds API import requests for itinerary content", () => {

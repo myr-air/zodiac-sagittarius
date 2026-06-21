@@ -3,12 +3,12 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { Expense, ItineraryItem, StopNote, TripTask } from "@/src/trip/types";
 import {
   buildImportedPlanRecordsForTripPlan,
-} from "./itinerary-import-record-mapping";
+} from "../itinerary-import-record-mapping";
 import {
   mergeImportedRecordsIntoTripPlan,
   mergeImportedStopNotes,
   mergeImportedTasks,
-} from "./itinerary-import-record-merge";
+} from "../itinerary-import-record-merge";
 
 describe("itinerary import linked records", () => {
   it("remaps imported linked records to the applied activity ids", () => {

@@ -4,7 +4,7 @@ import {
   pendingItineraryImportFromDocument,
   resolveCreatedImportId,
   shouldUseApiItineraryImport,
-} from "./itinerary-import-model";
+} from "../itinerary-import-model";
 
 describe("itinerary import routing model", () => {
   it("keeps spreadsheet-like imports local and sends structured JSON through the API", () => {

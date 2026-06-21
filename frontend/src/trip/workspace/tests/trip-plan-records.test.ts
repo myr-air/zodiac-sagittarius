@@ -3,7 +3,7 @@ import {
   selectTripPlanRecords,
   tripPlanIdForBookingRecord,
   tripPlanIdForRecord,
-} from "./trip-plan-records";
+} from "../trip-plan-records";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { BookingDoc, Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
 

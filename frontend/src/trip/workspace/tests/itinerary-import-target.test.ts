@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mainItineraryPathId, mainItineraryPathName } from "@/src/trip/itinerary";
-import { pathIdRain } from "../testing/itinerary-path-fixtures";
-import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
+import { pathIdRain } from "../../testing/itinerary-path-fixtures";
+import { buildItineraryImportApplyTarget } from "../itinerary-import-target";
 
 describe("buildItineraryImportApplyTarget", () => {
   it("reuses existing paths by id or case-insensitive name", () => {

@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { BookingDoc, Expense, StopNote, TripTask } from "@/src/trip/types";
-import { createImportedPlanRecordsViaApi } from "./itinerary-import-api-records";
+import { createImportedPlanRecordsViaApi } from "../itinerary-import-api-records";
 import {
   importedBookingDoc,
   importedExpense,
   importedStopNote,
   importedTask,
-} from "./itinerary-import-api.test-support";
-import type { ImportedPlanRecords } from "./itinerary-import-record-mapping";
+} from "../itinerary-import-api.test-support";
+import type { ImportedPlanRecords } from "../itinerary-import-record-mapping";
 
 describe("itinerary import API record creation", () => {
   it("creates imported records and remaps linked booking relations", async () => {

@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { TripWorkspaceImportDialog } from "./TripWorkspaceImportDialog";
+import { TripWorkspaceImportDialog } from "../TripWorkspaceImportDialog";
 import type { ItineraryExportRecords } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
-import { pathIdRain } from "../testing/itinerary-path-fixtures";
+import { pathIdRain } from "../../testing/itinerary-path-fixtures";
 
 const emptyRecords: ItineraryExportRecords = {
   bookingDocs: [],

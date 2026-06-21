@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildItineraryView } from "@/src/trip/itinerary";
 import { seedTrip } from "@/src/trip/seed";
-import { resolveSelectedWorkspaceItem } from "./selected-itinerary-item";
+import { resolveSelectedWorkspaceItem } from "../selected-itinerary-item";
 
 const [baseItem] = seedTrip.itineraryItems;
 
