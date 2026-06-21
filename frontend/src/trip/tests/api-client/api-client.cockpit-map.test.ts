@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mapCockpitResponse, type TripCockpitResponse } from "../../api-client";
-import { cockpitResponse } from "./api-client.test-support";
+import { cockpitResponse } from "../../testing/api-client-test-utils";
 
 describe("Trip API cockpit response mapping", () => {
   it("maps V1 trip, item, and latest plan check fields from cockpit response", () => {

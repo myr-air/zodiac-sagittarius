@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTripApiClient } from "../../api-client";
-import { cockpitResponse, jsonResponse } from "./api-client.test-support";
+import { cockpitResponse, jsonResponse } from "../../testing/api-client-test-utils";
 
 describe("Trip API client expense routes", () => {
   it("creates, patches, and deletes expenses through authenticated backend routes", async () => {

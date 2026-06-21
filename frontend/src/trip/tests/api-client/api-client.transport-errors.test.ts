@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTripApiClient } from "../../api-client";
-import { jsonResponse } from "./api-client.test-support";
+import { jsonResponse } from "../../testing/api-client-test-utils";
 
 describe("Trip API client transport errors", () => {
   it("surfaces backend errors without leaking transport details into UI code", async () => {
