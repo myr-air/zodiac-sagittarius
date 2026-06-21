@@ -17,7 +17,7 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { buildWorkspaceStopNoteCreateInput } from "./workspace-record-command-inputs";
+import { buildWorkspaceStopNoteCreateInput } from "../../support/workspace-record-command-inputs";
 
 interface UseWorkspaceStopNoteActionsParams {
   canCreateStopNote: boolean;

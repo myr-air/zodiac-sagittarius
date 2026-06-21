@@ -15,7 +15,7 @@ import type {
   TripParticipantSession,
   TripTask,
 } from "@/src/trip/types";
-import { buildWorkspaceTaskCreateDraft } from "./workspace-record-command-inputs";
+import { buildWorkspaceTaskCreateDraft } from "../../support/workspace-record-command-inputs";
 
 interface UseWorkspaceTaskActionsParams {
   canEdit: boolean;

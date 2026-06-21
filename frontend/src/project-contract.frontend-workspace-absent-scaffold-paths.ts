@@ -17,6 +17,8 @@ export const frontendWorkspaceScaffoldPathsAbsent = [
   "src/trip/workspace/trip-plan-records.test.ts",
   "src/trip/workspace/sagittarius-app/hooks/trip-plans/trip-plan-api-command.ts",
   "src/trip/workspace/sagittarius-app/hooks/trip-plans/trip-plan-api-command.test.ts",
+  "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.ts",
+  "src/trip/workspace/sagittarius-app/hooks/records/workspace-record-command-inputs.test.ts",
   "src/trip/workspace/sagittarius-app/SagittariusApp.map-timeline.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.navigation.test.tsx",
   "src/trip/workspace/sagittarius-app/SagittariusApp.overview-api.test.tsx",
