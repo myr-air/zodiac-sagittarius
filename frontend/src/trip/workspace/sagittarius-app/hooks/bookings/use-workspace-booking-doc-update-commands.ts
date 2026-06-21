@@ -11,7 +11,6 @@ import {
   updateLocalBookingDocInTrip,
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
 import type {
   BookingDocType,
   Trip,
@@ -19,6 +18,7 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { queueKeyedUpdate } from "../../support/queued-updates";
+import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-conflict-retry";
 
 interface UseWorkspaceBookingDocUpdateCommandsOptions {
   apiClient?: TripApiClient;
@@ -51,13 +51,21 @@ export function useWorkspaceBookingDocUpdateCommands({
     async (bookingDocId: string, input: BookingDocInputLike) => {
       if (!canEditBookings) return;
       if (isApiMode && apiClient && participantSession) {
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          const currentTrip = latestTripRef.current;
-          const bookingDoc = currentTrip.bookingDocs?.find(
-            (candidate) => candidate.id === bookingDocId,
-          );
-          if (!bookingDoc) return;
-          try {
+        await runWorkspaceVersionConflictRetry({
+          getContext: () => latestTripRef.current,
+          reloadOnConflict: async (currentTrip) => {
+            const cockpit = await apiClient.loadTrip(
+              currentTrip.id,
+              participantSession.sessionToken,
+            );
+            replaceCockpitFromApi(cockpit);
+            latestTripRef.current = cockpit.trip;
+          },
+          run: async (currentTrip) => {
+            const bookingDoc = currentTrip.bookingDocs?.find(
+              (candidate) => candidate.id === bookingDocId,
+            );
+            if (!bookingDoc) return;
             const patchedBookingDoc = await apiClient.patchBookingDoc(
               currentTrip.id,
               bookingDocId,
@@ -78,18 +86,8 @@ export function useWorkspaceBookingDocUpdateCommands({
               patchedBookingDoc,
             );
             replaceApiTrip(nextTrip);
-            return;
-          } catch (error) {
-            if (!isVersionConflict(error) || attempt > 0)
-              throw error;
-            const cockpit = await apiClient.loadTrip(
-              currentTrip.id,
-              participantSession.sessionToken,
-            );
-            replaceCockpitFromApi(cockpit);
-            latestTripRef.current = cockpit.trip;
-          }
-        }
+          },
+        });
         return;
       }
       commitTrip((current) =>
@@ -114,7 +112,11 @@ export function useWorkspaceBookingDocUpdateCommands({
 
   const queueBookingDocUpdate = useCallback(
     async (bookingDocId: string, update: () => void | Promise<void>) => {
-      await queueKeyedUpdate(bookingDocUpdateQueueRef.current, bookingDocId, update);
+      await queueKeyedUpdate(
+        bookingDocUpdateQueueRef.current,
+        bookingDocId,
+        update,
+      );
     },
     [],
   );
@@ -134,9 +136,12 @@ export function useWorkspaceBookingDocUpdateCommands({
         (candidate) => candidate.id === bookingDocId,
       );
       if (!bookingDoc || bookingDoc.type === type) return;
-      await updateBookingDoc(bookingDoc.id, bookingDocInputFromRecord(bookingDoc, {
-        type,
-      }));
+      await updateBookingDoc(
+        bookingDoc.id,
+        bookingDocInputFromRecord(bookingDoc, {
+          type,
+        }),
+      );
     },
     [latestTripRef, updateBookingDoc],
   );

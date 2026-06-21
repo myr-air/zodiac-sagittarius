@@ -4,7 +4,6 @@ import type {
   TripApiClient,
   TripCockpit,
 } from "@/src/trip/api-client";
-import { isVersionConflict } from "@/src/trip/api-errors";
 import { replaceItineraryItem } from "@/src/trip/itinerary";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
 import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-api-requests";
@@ -16,6 +15,7 @@ import type {
 } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { queueKeyedUpdate } from "../../support/queued-updates";
+import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-conflict-retry";
 
 interface UseWorkspaceItineraryInlineUpdateCommandParams {
   canEdit: boolean;
@@ -54,15 +54,23 @@ export function useWorkspaceItineraryInlineUpdateCommand({
   const runItineraryItemInlineUpdate = useCallback(
     async (itemId: string, patch: InlineItineraryItemPatch) => {
       if (isApiMode && resolvedApiClient && participantSession) {
-        let currentTrip = latestTripRef.current;
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          const item = currentTrip.itineraryItems.find(
-            (candidate) => candidate.id === itemId,
-          );
-          if (!item) return;
-          const nextPatch = buildInlineItineraryItemPatch(item, patch);
-          if (!nextPatch) return;
-          try {
+        await runWorkspaceVersionConflictRetry({
+          getContext: () => latestTripRef.current,
+          reloadOnConflict: async (currentTrip) => {
+            const cockpit = await resolvedApiClient.loadTrip(
+              currentTrip.id,
+              participantSession.sessionToken,
+            );
+            replaceCockpitFromApi(cockpit);
+            latestTripRef.current = cockpit.trip;
+          },
+          run: async (currentTrip) => {
+            const item = currentTrip.itineraryItems.find(
+              (candidate) => candidate.id === itemId,
+            );
+            if (!item) return;
+            const nextPatch = buildInlineItineraryItemPatch(item, patch);
+            if (!nextPatch) return;
             const patchedItem = await resolvedApiClient.patchItineraryItem(
               currentTrip.id,
               itemId,
@@ -80,20 +88,8 @@ export function useWorkspaceItineraryInlineUpdateCommand({
             );
             replaceApiTrip(nextTrip);
             setSelectedItemId(itemId);
-            return;
-          } catch (error) {
-            if (!isVersionConflict(error) || attempt > 0) {
-              throw error;
-            }
-            const cockpit = await resolvedApiClient.loadTrip(
-              currentTrip.id,
-              participantSession.sessionToken,
-            );
-            replaceCockpitFromApi(cockpit);
-            latestTripRef.current = cockpit.trip;
-            currentTrip = cockpit.trip;
-          }
-        }
+          },
+        });
         return;
       }
 
