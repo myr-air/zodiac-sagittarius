@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CheckboxGroup } from "./CheckboxGroup";
+import { CheckboxGroup } from "../CheckboxGroup";
 
 describe("CheckboxGroup", () => {
   it("does not render an empty fieldset", () => {

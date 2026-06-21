@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { WorkspaceEmptyState } from "./WorkspaceEmptyState";
+import { WorkspaceEmptyState } from "../WorkspaceEmptyState";
 
 describe("WorkspaceEmptyState", () => {
   it("renders a compact workspace empty state with caller layout classes", () => {

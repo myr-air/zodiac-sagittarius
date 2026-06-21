@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { WorkspaceEmptyState } from "./WorkspaceEmptyState";
+import { WorkspaceEmptyState } from "../WorkspaceEmptyState";
 
 const meta = {
   title: "Design System/Workspace Empty State",
