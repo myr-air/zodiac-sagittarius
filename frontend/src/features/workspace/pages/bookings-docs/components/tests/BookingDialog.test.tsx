@@ -2,12 +2,12 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { bookingCopy } from "../content/BookingsDocsPage.copy";
-import { BookingDialog } from "./BookingDialog";
+import { bookingCopy } from "../../content/BookingsDocsPage.copy";
+import { BookingDialog } from "../BookingDialog";
 import {
   bookingDocTestTasks,
   bookingFlightTestDoc,
-} from "../tests/bookings-docs-test-fixtures";
+} from "../../tests/bookings-docs-test-fixtures";
 
 describe("BookingDialog", () => {
   it("submits a trimmed new booking payload", async () => {

@@ -2,8 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { bookingCopy } from "../content/BookingsDocsPage.copy";
-import { BookingsDocsHeader } from "./BookingsDocsHeader";
+import { bookingCopy } from "../../content/BookingsDocsPage.copy";
+import { BookingsDocsHeader } from "../BookingsDocsHeader";
 
 describe("BookingsDocsHeader", () => {
   it("renders trip metadata and add action when editable", async () => {

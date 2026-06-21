@@ -1,8 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { bookingCopy } from "../content/BookingsDocsPage.copy";
-import { BookingDeleteDialog } from "./BookingDeleteDialog";
+import { bookingCopy } from "../../content/BookingsDocsPage.copy";
+import { BookingDeleteDialog } from "../BookingDeleteDialog";
 
 describe("BookingDeleteDialog", () => {
   it("renders the delete prompt and reports cancel or confirm actions", async () => {
