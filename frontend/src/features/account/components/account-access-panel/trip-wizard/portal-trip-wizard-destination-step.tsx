@@ -6,8 +6,8 @@ import type { TripCity } from "@/src/trip/types";
 import {
   tripDestinationCards,
   type TripCityOption,
-} from "./account-trip-destinations";
-import { tripWizardSteps } from "./account-trip-wizard-steps";
+} from "./model/account-trip-destinations";
+import { tripWizardSteps } from "./model/account-trip-wizard-steps";
 import { TripWizardDestinationSearch } from "./portal-trip-wizard-destination-search";
 import { TripWizardManualCityEntry } from "./portal-trip-wizard-manual-city-entry";
 import { TripWizardSelectedDestinations } from "./portal-trip-wizard-selected-destinations";

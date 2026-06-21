@@ -1,7 +1,7 @@
 import {
   generateJoinIdForTrip,
   generateJoinPassword,
-} from "./account-trip-credentials";
+} from "./model/account-trip-credentials";
 
 export interface PortalTripWizardCredentials {
   joinId: string;

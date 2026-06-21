@@ -5,7 +5,7 @@ import type { TripCity } from "@/src/trip/types";
 import {
   citySuggestions,
   type TripCityOption,
-} from "./account-trip-destinations";
+} from "./model/account-trip-destinations";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 
 interface TripWizardDestinationSearchProps {

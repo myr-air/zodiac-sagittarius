@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@/src/ui/icons";
-import { tripDestinationCards } from "./account-trip-destinations";
+import { tripDestinationCards } from "./model/account-trip-destinations";
 import { DestinationCardMeta } from "./destination-card-meta";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 

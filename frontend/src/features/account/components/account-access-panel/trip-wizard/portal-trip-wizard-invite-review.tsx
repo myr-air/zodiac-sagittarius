@@ -1,6 +1,6 @@
 "use client";
 
-import { tripWizardSteps } from "./account-trip-wizard-steps";
+import { tripWizardSteps } from "./model/account-trip-wizard-steps";
 import { TripWizardGeneratedAccess } from "./portal-trip-wizard-generated-access";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 

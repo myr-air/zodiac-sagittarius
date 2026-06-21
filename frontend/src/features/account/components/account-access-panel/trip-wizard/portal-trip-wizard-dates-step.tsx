@@ -8,8 +8,8 @@ import { Icon } from "@/src/ui/icons";
 import {
   routeCalendarDays,
   type TripWizardDateSelectionStep,
-} from "./account-trip-dates";
-import { tripWizardSteps } from "./account-trip-wizard-steps";
+} from "./model/account-trip-dates";
+import { tripWizardSteps } from "./model/account-trip-wizard-steps";
 import { TripWizardDateFields } from "./portal-trip-wizard-date-fields";
 import * as wizardStyles from "./portal-trip-wizard-styles";
 

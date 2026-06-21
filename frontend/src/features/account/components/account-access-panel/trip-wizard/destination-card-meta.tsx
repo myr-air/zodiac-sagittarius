@@ -1,4 +1,4 @@
-import { destinationMetaParts } from "./account-trip-destinations";
+import { destinationMetaParts } from "./model/account-trip-destinations";
 
 export function DestinationCardMeta({ detail, meta }: { detail: string; meta: string }) {
   const parts = [detail, ...destinationMetaParts(meta)].filter(Boolean);

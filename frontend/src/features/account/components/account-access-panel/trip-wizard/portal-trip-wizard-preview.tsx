@@ -10,8 +10,8 @@ import {
   destinationRouteCode,
   tripCityFromFormOrigin,
   type TripDestinationCard,
-} from "./account-trip-destinations";
-import { tripWizardSteps, type TripWizardStepId } from "./account-trip-wizard-steps";
+} from "./model/account-trip-destinations";
+import { tripWizardSteps, type TripWizardStepId } from "./model/account-trip-wizard-steps";
 import { DestinationCardMeta } from "./destination-card-meta";
 import { TripPreviewLiveMap } from "./map";
 import * as wizardStyles from "./portal-trip-wizard-styles";

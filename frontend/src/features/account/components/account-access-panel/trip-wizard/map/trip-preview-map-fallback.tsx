@@ -1,7 +1,7 @@
 import type { TripCity } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
-import { customTripCity } from "../account-trip-destinations";
+import { customTripCity } from "../model/account-trip-destinations";
 
 const tripPreviewMapFallbackClassName = "trip-preview-map-fallback absolute inset-0 z-[2]";
 const tripCountrySvgFallbackClassName =

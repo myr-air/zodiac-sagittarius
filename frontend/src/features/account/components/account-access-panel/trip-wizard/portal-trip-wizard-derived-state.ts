@@ -4,15 +4,15 @@ import {
   formatPreviewTravelDate,
   routeCalendarDays,
   tripNightCount,
-} from "./account-trip-dates";
+} from "./model/account-trip-dates";
 import {
   destinationRouteCode,
   tripDestinationCards,
-} from "./account-trip-destinations";
+} from "./model/account-trip-destinations";
 import {
   uniqueList,
-} from "./account-trip-form";
-import { tripStepComplete, type TripWizardStepId } from "./account-trip-wizard-steps";
+} from "./model/account-trip-form";
+import { tripStepComplete, type TripWizardStepId } from "./model/account-trip-wizard-steps";
 import {
   buildPortalTripWizardCredentials,
   isValidPortalTripWizardJoinPassword,

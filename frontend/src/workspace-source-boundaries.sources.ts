@@ -156,10 +156,12 @@ export const workspaceBoundarySourcePaths = {
   accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
   accountPortalDashboardClassNames:
     "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
-  accountTripDates: "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.ts",
-  accountTripForm: "src/features/account/components/account-access-panel/trip-wizard/account-trip-form.ts",
-  accountTripWizardSupport: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-support.ts",
-  accountTripWizardSteps: "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-steps.ts",
+  accountTripDates: "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-dates.ts",
+  accountTripForm: "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-form.ts",
+  accountTripWizardSupport:
+    "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-support.ts",
+  accountTripWizardSteps:
+    "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.ts",
   portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
   portalTripWizardMainPanel: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx",
   portalTripWizardModel: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts",

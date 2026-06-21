@@ -1,5 +1,5 @@
 import { Button } from "@/src/ui";
-import { buildInviteEmailHref } from "./account-trip-wizard-support";
+import { buildInviteEmailHref } from "./model/account-trip-wizard-support";
 
 export interface CreatedTripShare {
   inviteLink: string;
