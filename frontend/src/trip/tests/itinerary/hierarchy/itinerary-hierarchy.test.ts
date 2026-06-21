@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { sortItemsForDay } from "./itinerary";
+import { sortItemsForDay } from "../../../itinerary";
 import { hierarchyItem } from "./itinerary-hierarchy.test-support";
-import { arrivalDay } from "./itinerary.test-support";
+import { arrivalDay } from "../../../itinerary.test-support";
 
 describe("itinerary hierarchy and ordering", () => {
   it("orders scheduled rows before flexible rows while keeping flexible manual order", () => {

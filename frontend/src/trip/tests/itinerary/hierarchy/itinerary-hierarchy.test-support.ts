@@ -1,6 +1,6 @@
-import { arrivalDay } from "./itinerary.test-support";
-import { seedTrip } from "./seed";
-import type { ItineraryItem } from "./types";
+import { arrivalDay } from "../../../itinerary.test-support";
+import { seedTrip } from "../../../seed";
+import type { ItineraryItem } from "../../../types";
 
 export function hierarchyItem(overrides: Partial<ItineraryItem>): ItineraryItem {
   return {

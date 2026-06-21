@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateItineraryItem } from "./itinerary";
+import { validateItineraryItem } from "../../../itinerary";
 import { hierarchyItem } from "./itinerary-hierarchy.test-support";
 
 describe("itinerary hierarchy validation", () => {
