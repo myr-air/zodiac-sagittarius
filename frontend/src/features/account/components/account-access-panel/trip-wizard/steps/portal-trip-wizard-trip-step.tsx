@@ -1,8 +1,8 @@
 "use client";
 
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { tripWizardSteps } from "./model/account-trip-wizard-steps";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+import { tripWizardSteps } from "../model/account-trip-wizard-steps";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardTripStepProps {
   activeMobileStep: string;

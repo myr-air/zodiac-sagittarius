@@ -5,8 +5,8 @@ import type { TripCity } from "@/src/trip/types";
 import {
   citySuggestions,
   type TripCityOption,
-} from "./model/account-trip-destinations";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+} from "../model/account-trip-destinations";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardDestinationSearchProps {
   cityQuery: string;

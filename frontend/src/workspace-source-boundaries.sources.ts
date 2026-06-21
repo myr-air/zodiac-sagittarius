@@ -195,7 +195,8 @@ export const workspaceBoundarySourcePaths = {
   tripJoinResponseMapper: "src/features/account/components/trip-join-gate/trip-join-response-mapper.ts",
   tripJoinErrorMessage: "src/features/account/components/trip-join-gate/trip-join-error-message.ts",
   tripJoinGateStyles: "src/features/account/components/trip-join-gate/trip-join-gate.styles.ts",
-  tripWizardFormSections: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
+  tripWizardFormSections:
+    "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
   tripJoinGateStory: "src/features/account/components/trip-join-gate/TripJoinGate.stories.tsx",
   membersPageStory: "src/features/workspace/pages/members/MembersPage.stories.tsx",
   membersTemplateStory: "src/features/workspace/pages/members/MembersTemplate.stories.tsx",

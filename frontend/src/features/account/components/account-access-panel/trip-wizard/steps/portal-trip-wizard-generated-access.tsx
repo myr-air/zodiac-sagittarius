@@ -2,7 +2,7 @@
 
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardGeneratedAccessProps {
   generatedJoinId: string;

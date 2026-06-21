@@ -1,8 +1,8 @@
 "use client";
 
-import { tripWizardSteps } from "./model/account-trip-wizard-steps";
+import { tripWizardSteps } from "../model/account-trip-wizard-steps";
 import { TripWizardGeneratedAccess } from "./portal-trip-wizard-generated-access";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardInviteStepProps {
   activeMobileStep: string;

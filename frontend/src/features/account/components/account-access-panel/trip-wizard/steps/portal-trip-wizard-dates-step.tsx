@@ -8,10 +8,10 @@ import { Icon } from "@/src/ui/icons";
 import {
   routeCalendarDays,
   type TripWizardDateSelectionStep,
-} from "./model/account-trip-dates";
-import { tripWizardSteps } from "./model/account-trip-wizard-steps";
+} from "../model/account-trip-dates";
+import { tripWizardSteps } from "../model/account-trip-wizard-steps";
 import { TripWizardDateFields } from "./portal-trip-wizard-date-fields";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardDatesStepProps {
   activeMobileStep: string;
