@@ -6,16 +6,11 @@ import { cn } from "@/src/lib/cn";
 import type { Messages } from "@/src/i18n/messages";
 import {
   headerControlsButtonClassName,
-  headerControlsContentClassName,
   headerControlsPanelClassName,
-  headerControlsTitleBarClassName,
-  headerControlsTitleClassName,
   pageHeaderActionsClassName,
   pageHeaderNoteClassName,
-  pathFilterSummaryClassName,
 } from "./smart-itinerary-table.styles";
-import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
-import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
+import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
 import { selectedTripPlanIdForControl } from "./smart-itinerary-table-utils";
 
 interface TripPlanHeaderControlsProps {
@@ -143,45 +138,27 @@ export function SmartItineraryTableHeaderControls({
           aria-hidden={!headerControlsExpanded}
           inert={headerControlsExpanded ? undefined : true}
         >
-          <div className={headerControlsTitleBarClassName}>
-            <div className={headerControlsTitleClassName}>
-              <strong>{itineraryLabels.tripPlans.selectorLabel}</strong>
-              {isTripPlanBusy ? (
-                <span className={pathFilterSummaryClassName}>
-                  {itineraryLabels.tripPlans.busy}
-                </span>
-              ) : tripPlanError ? (
-                <span className={pathFilterSummaryClassName}>{tripPlanError}</span>
-              ) : null}
-            </div>
-            <span className={pathFilterSummaryClassName}>
-              {selectedTripPlan?.name ?? itineraryLabels.tripPlans.selectorLabel}
-            </span>
-          </div>
-          <div className={headerControlsContentClassName}>
-            <SmartItineraryTableTripPlanControls
-              canManageTripPlans={canManageTripPlans}
-              itineraryLabels={itineraryLabels}
-              isTripPlanBusy={isTripPlanBusy}
-              mainTripPlanId={mainTripPlanId}
-              onChangeTripPlan={onChangeTripPlan}
-              onChangeTripPlanStatus={onChangeTripPlanStatus}
-              onCreateTripPlan={onCreateTripPlan}
-              onRenameTripPlan={onRenameTripPlan}
-              onSetMainTripPlan={onSetMainTripPlan}
-              selectedTripPlanId={selectedTripPlanIdForControlValue}
-              tripPlans={tripPlans}
-            />
-            <SmartItineraryTablePathFilters
-              filterOptions={filterOptions}
-              itineraryLabels={itineraryLabels}
-              onChangeShowAllPaths={onChangeShowAllPaths}
-              onTogglePathFilter={onTogglePathFilter}
-              selectedFilterLabel={selectedFilterLabel}
-              selectedPathIds={selectedPathIds}
-              showAllPaths={showAllPaths}
-            />
-          </div>
+          <SmartItineraryTableHeaderControlsPanel
+            canManageTripPlans={canManageTripPlans}
+            filterOptions={filterOptions}
+            itineraryLabels={itineraryLabels}
+            isTripPlanBusy={isTripPlanBusy}
+            mainTripPlanId={mainTripPlanId}
+            onChangeShowAllPaths={onChangeShowAllPaths}
+            onChangeTripPlan={onChangeTripPlan}
+            onChangeTripPlanStatus={onChangeTripPlanStatus}
+            onCreateTripPlan={onCreateTripPlan}
+            onRenameTripPlan={onRenameTripPlan}
+            onSetMainTripPlan={onSetMainTripPlan}
+            onTogglePathFilter={onTogglePathFilter}
+            selectedFilterLabel={selectedFilterLabel}
+            selectedPathIds={selectedPathIds}
+            selectedTripPlan={selectedTripPlan}
+            selectedTripPlanId={selectedTripPlanIdForControlValue}
+            showAllPaths={showAllPaths}
+            tripPlanError={tripPlanError}
+            tripPlans={tripPlans}
+          />
         </div>
       ) : null}
     </div>
