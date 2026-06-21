@@ -66,7 +66,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/i18n/messages/th.workspace-pages.stop-dialog.ts",
   "src/i18n/messages/th.workspace-pages.suggestions.ts",
   "src/i18n/messages/th.workspace-pages.timeline.ts",
-  "src/project-contract.helpers.ts",
+  "src/project/contracts/project-contract.helpers.ts",
   "src/project/contracts/scaffold/project-contract.frontend-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-feature-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-foundation-absent-scaffold-paths.ts",

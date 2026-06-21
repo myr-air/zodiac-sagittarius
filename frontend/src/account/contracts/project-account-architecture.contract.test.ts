@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { frontendRoot } from "../../project-contract.helpers";
+import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 
 describe("Sagittarius account architecture contracts", () => {
   it("keeps portal trip wizard model logic out of the render component", () => {

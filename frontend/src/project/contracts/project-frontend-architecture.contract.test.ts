@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { frontendRoot } from "../../project-contract.helpers";
+import { frontendRoot } from "./project-contract.helpers";
 
 describe("Sagittarius frontend architecture contracts", () => {
   it("keeps shared UI primitives split by responsibility", () => {

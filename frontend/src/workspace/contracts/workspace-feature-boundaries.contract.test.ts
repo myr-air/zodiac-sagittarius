@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { frontendRoot } from "../../project-contract.helpers";
+import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
 
 describe("Sagittarius workspace feature source boundaries", () => {

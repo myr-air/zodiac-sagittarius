@@ -6,7 +6,7 @@ import {
   collectSourceFiles,
   frontendRoot,
   repoRoot,
-} from "../../project-contract.helpers";
+} from "../../project/contracts/project-contract.helpers";
 
 describe("Sagittarius production runtime contracts", () => {
   it("documents the runtime internal API proxy used by production Docker", () => {

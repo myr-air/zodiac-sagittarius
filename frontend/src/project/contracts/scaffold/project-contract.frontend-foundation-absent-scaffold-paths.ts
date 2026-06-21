@@ -41,6 +41,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/account/session-storage.test.ts",
   "src/account-source-boundaries.contract.test.ts",
   "src/frontend-freeze.contract.test.ts",
+  "src/project-contract.helpers.ts",
   "src/project-contract.frontend-absent-scaffold-paths.ts",
   "src/project-contract.frontend-feature-absent-scaffold-paths.ts",
   "src/project-contract.frontend-feature-scaffold-paths.ts",

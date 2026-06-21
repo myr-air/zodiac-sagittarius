@@ -6,7 +6,7 @@ import {
   envFileValue,
   frontendRoot,
   repoRoot,
-} from "../../project-contract.helpers";
+} from "../../project/contracts/project-contract.helpers";
 
 describe("Sagittarius production release contracts", () => {
   it("splits runtime env examples from release signoff evidence", () => {

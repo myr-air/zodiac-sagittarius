@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { expect } from "vitest";
 
 export const testDir = dirname(fileURLToPath(import.meta.url));
-export const frontendRoot = resolve(testDir, "..");
+export const frontendRoot = resolve(testDir, "../../..");
 export const repoRoot = resolve(frontendRoot, "..");
 
 export const productCopySourceRoots = [

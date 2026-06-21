@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { frontendRoot } from "../../project-contract.helpers";
+import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 import { expectSourceNotToContain } from "./workspace-source-boundaries.assertions";
 import { sagittariusAppBlockedBoundaryTerms } from "./workspace-source-boundaries.blocked-terms";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
