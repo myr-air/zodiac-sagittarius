@@ -1,4 +1,4 @@
-import type { BookingDoc, Trip } from "./types";
+import type { BookingDoc, Trip } from "../types";
 
 export function compareBookingStartWithUndated(left: BookingDoc, right: BookingDoc): number {
   return bookingDocStartTime(left) - bookingDocStartTime(right) ||

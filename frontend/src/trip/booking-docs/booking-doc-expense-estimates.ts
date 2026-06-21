@@ -4,7 +4,7 @@ import type {
   Expense,
   ItineraryItem,
   Member,
-} from "./types";
+} from "../types";
 
 export interface ExpenseEstimateBookingContext {
   currentMemberId: string;

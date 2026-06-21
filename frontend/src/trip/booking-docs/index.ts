@@ -1,4 +1,7 @@
 export {
+  bookingTitleForItineraryItem,
+} from "./booking-doc-display";
+export {
   buildCreateBookingDocRequest,
   buildPatchBookingDocRequest,
   serializeBookingDocInputForApi,

@@ -1,8 +1,8 @@
-import { itineraryDateTime, shiftIsoDate } from "./itinerary-time";
+import { itineraryDateTime, shiftIsoDate } from "../itinerary-time";
 import type {
   BookingDocType,
   ItineraryItem,
-} from "./types";
+} from "../types";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInputLike,

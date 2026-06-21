@@ -3,7 +3,7 @@ import {
   bookingDocLinkedContext,
   bookingDocMatchesQuery,
   compareBookingStartWithUndated,
-} from "../../booking-doc-search";
+} from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   createBookingDocFixture as bookingDoc,

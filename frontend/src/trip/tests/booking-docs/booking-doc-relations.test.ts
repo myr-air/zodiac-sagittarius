@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findBookingDocRelations } from "../../booking-doc-relations";
+import { findBookingDocRelations } from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
   createBookingDocTripFixture as tripFixture,

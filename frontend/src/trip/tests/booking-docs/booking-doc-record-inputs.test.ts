@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   bookingDocInputFromRecord,
   bookingDocQuickFieldsInputFromRecord,
-} from "../../booking-doc-record-inputs";
+} from "../../booking-docs";
 import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 describe("booking doc record inputs", () => {

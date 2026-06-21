@@ -1,4 +1,4 @@
-import type { BookingDoc, Trip } from "./types";
+import type { BookingDoc, Trip } from "../types";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 
 export interface LocalBookingDocOptions {

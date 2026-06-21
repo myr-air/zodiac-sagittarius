@@ -1,7 +1,7 @@
 import type {
   BookingDocType,
   ItineraryItem,
-} from "./types";
+} from "../types";
 
 const bookingTitleSuffixByType: Partial<Record<BookingDocType, string>> = {
   activity_ticket: "ticket",

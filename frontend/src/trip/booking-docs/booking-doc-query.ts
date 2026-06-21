@@ -4,7 +4,7 @@ import type {
   BookingDocType,
   Member,
   Trip,
-} from "./types";
+} from "../types";
 import { bookingDocMatchesQuery } from "./booking-doc-search";
 
 export {

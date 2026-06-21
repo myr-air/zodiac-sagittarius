@@ -3,7 +3,7 @@ import type {
   BookingDocStatus,
   BookingDocType,
   BookingDocVisibility,
-} from "./types";
+} from "../types";
 
 export type ItineraryBookingTemplate =
   | "recommended"

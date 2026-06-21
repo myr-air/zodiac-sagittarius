@@ -1,8 +1,8 @@
 import type {
   CreateBookingDocApiRequest,
   PatchBookingDocApiRequest,
-} from "./api-client";
-import type { BookingDoc } from "./types";
+} from "../api-client";
+import type { BookingDoc } from "../types";
 import type {
   BookingDocInputLike,
   BuildCreateBookingDocRequestOptions,

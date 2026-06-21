@@ -1,6 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDocType, ItineraryItem } from "@/src/trip/types";
-import { bookingTitleForItineraryItem } from "@/src/trip/booking-doc-display";
+import { bookingTitleForItineraryItem } from "@/src/trip/booking-docs";
 import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 
 export type TicketModalCopy = {

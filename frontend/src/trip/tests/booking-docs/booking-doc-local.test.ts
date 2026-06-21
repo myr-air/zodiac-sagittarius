@@ -6,8 +6,8 @@ import {
   replaceBookingDocInTrip,
   resolveBookingDocCreateTripPlanId,
   updateLocalBookingDocInTrip,
-} from "../../booking-doc-local";
-import { bookingDocInputFromRecord } from "../../booking-doc-record-inputs";
+} from "../../booking-docs";
+import { bookingDocInputFromRecord } from "../../booking-docs";
 import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 describe("booking doc local trip mutations", () => {

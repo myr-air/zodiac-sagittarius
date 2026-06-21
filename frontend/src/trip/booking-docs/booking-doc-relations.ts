@@ -6,7 +6,7 @@ import type {
   StopNote,
   Trip,
   TripTask,
-} from "./types";
+} from "../types";
 
 export interface BookingDocRelations {
   itineraryItems: ItineraryItem[];

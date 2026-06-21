@@ -1,4 +1,4 @@
-import type { BookingDoc } from "./types";
+import type { BookingDoc } from "../types";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 
 export interface BookingDocQuickFieldsPatch {
