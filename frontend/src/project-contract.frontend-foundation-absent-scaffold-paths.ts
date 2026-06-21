@@ -14,6 +14,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/ui/page-header.test.tsx",
   "src/ui/ui-primitives.test.tsx",
   "src/app/SagittariusApp.stories.tsx",
+  "src/api/sagittarius-api-clients.test.ts",
   "src/lib/cn.test.ts",
   "src/lib/file-names.test.ts",
   "src/routes/app-routes.test.ts",

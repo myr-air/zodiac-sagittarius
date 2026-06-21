@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { publicSagittariusApiBaseUrl } from "./sagittarius-api-clients";
+import { publicSagittariusApiBaseUrl } from "../sagittarius-api-clients";
 
 const originalApiBaseUrl = process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL;
 

@@ -10,6 +10,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/routes/app-routes.ts",
   "src/routes/tests/app-routes.test.ts",
   "src/routes/tests/invite-links.test.ts",
+  "src/api/sagittarius-api-clients.ts",
+  "src/api/tests/sagittarius-api-clients.test.ts",
   "src/shared/storage/browser-session-json.ts",
   "src/testing/browser-storage.test.ts",
   "src/testing/browser-storage.ts",
