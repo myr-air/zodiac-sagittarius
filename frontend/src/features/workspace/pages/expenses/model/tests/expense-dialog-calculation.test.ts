@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   calculateExpenseDialogState,
-} from "./expense-dialog-calculation";
+} from "../expense-dialog-calculation";
 import {
   canSubmitExpenseDialog,
-} from "./expense-dialog-submit-guard";
+} from "../expense-dialog-submit-guard";
 
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 

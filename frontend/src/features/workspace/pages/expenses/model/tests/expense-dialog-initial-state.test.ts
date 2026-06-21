@@ -4,12 +4,12 @@ import type { Expense } from "@/src/trip/types";
 import {
   emptyExpenseLineItem,
   initialExpenseLineItems,
-} from "./expense-dialog-line-items";
+} from "../expense-dialog-line-items";
 import {
   expenseSplitValuesForMode,
   initialExpenseSplitValues,
   initialExpenseTripPlanId,
-} from "./expense-dialog-initial-state";
+} from "../expense-dialog-initial-state";
 
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 

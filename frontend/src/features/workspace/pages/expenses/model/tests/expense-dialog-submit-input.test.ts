@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import type { Expense } from "@/src/trip/types";
-import { calculateExpenseDialogState } from "./expense-dialog-calculation";
-import { buildExpenseDialogSubmitInput } from "./expense-dialog-submit-input";
+import { calculateExpenseDialogState } from "../expense-dialog-calculation";
+import { buildExpenseDialogSubmitInput } from "../expense-dialog-submit-input";
 
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 

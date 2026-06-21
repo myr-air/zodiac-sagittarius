@@ -4,7 +4,7 @@ import type { Expense } from "@/src/trip/types";
 import {
   buildRefundExpenseInput,
   buildSettlementExpenseInput,
-} from "./expense-page-actions";
+} from "../expense-page-actions";
 
 describe("expense page action builders", () => {
   it("builds a settlement expense input from a payback suggestion", () => {

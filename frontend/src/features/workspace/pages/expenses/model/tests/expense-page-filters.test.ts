@@ -6,7 +6,7 @@ import {
   expenseCategorySpend,
   filterExpenses,
   inferredScopeExpenses,
-} from "./expense-page-filters";
+} from "../expense-page-filters";
 
 describe("expense page filters", () => {
   it("filters expenses by search text, category, payer, and linked itinerary item", () => {

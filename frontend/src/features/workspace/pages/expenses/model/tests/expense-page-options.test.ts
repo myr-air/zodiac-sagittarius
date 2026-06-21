@@ -3,7 +3,7 @@ import {
   categoryTone,
   expenseCategories,
   expenseCategoryFilterValues,
-} from "./expense-page-options";
+} from "../expense-page-options";
 
 describe("expense page options", () => {
   it("keeps category filters aligned with expense categories", () => {
