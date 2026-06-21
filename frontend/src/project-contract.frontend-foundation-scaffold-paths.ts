@@ -143,6 +143,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/account/api-client-trip-types.ts",
   "src/account/api-client-types.ts",
   "src/account/api-client-auth.ts",
+  "src/account/real-api-e2e/real-portal.e2e.test.ts",
+  "src/account/tests/session-storage.test.ts",
   "src/account/tests/api-client/api-client-auth.email.test.ts",
   "src/account/tests/api-client/api-client-auth.passkeys.test.ts",
   "src/account/tests/api-client/api-client-auth.sessions.test.ts",

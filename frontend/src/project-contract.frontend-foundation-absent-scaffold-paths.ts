@@ -26,6 +26,8 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/account/api-client-portal.test.ts",
   "src/account/api-client-settings.test.ts",
   "src/account/api-client-trips.test.ts",
+  "src/account/real-portal.e2e.test.ts",
+  "src/account/session-storage.test.ts",
   "src/shared/components/page-header/PageHeader.test.tsx",
   "src/shared/components/page-header/PageHeader.stories.tsx",
   "src/shared/components/page-header/PageHeader.stories.plays.ts",

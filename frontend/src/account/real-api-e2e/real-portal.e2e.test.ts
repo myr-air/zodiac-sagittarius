@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTripApiClient } from "@/src/trip/api-client";
-import { createAccountApiClient } from "./api-client";
+import { createAccountApiClient } from "../api-client";
 
 const baseUrl = process.env.SAGITTARIUS_E2E_API_BASE_URL;
 const required = process.env.SAGITTARIUS_E2E_REQUIRED === "1";

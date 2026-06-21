@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installBrowserStorage } from "@/src/testing/browser-storage";
-import type { AccountSession } from "./api-client";
+import type { AccountSession } from "../api-client";
 import {
   accountSessionStorageKey,
   loadPersistedAccountSession,
   persistAccountSession,
-} from "./session-storage";
+} from "../session-storage";
 
 const trustedSession: AccountSession = {
   createdAt: "2026-06-16T00:00:00.000Z",
