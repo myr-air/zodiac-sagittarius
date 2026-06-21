@@ -12,12 +12,12 @@ import {
   selectIdentityPlay,
   thaiPlay,
   tripAccessPlay,
-} from "./TripJoinGate.stories.plays";
+} from "./storybook/TripJoinGate.stories.plays";
 import {
   roomCredentialsStoryArgs,
   selectIdentityStoryArgs,
   tripAccessStoryArgs,
-} from "./TripJoinGate.stories.support";
+} from "./storybook/TripJoinGate.stories.support";
 
 const meta = {
   title: "Pages/Trip Join Gate",

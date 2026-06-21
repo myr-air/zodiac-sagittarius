@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { TripJoinGate } from "./TripJoinGate";
+import type { TripJoinGate } from "../TripJoinGate";
 import { expectJoinResponsiveContract } from "./TripJoinGate.stories.support";
 
 type TripJoinGatePlay = NonNullable<StoryObj<typeof TripJoinGate>["play"]>;

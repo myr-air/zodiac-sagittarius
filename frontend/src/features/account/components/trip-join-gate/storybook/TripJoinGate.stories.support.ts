@@ -2,7 +2,7 @@ import { expect } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
-import type { TripJoinGate } from "./TripJoinGate";
+import type { TripJoinGate } from "../TripJoinGate";
 
 type TripJoinGateStoryArgs = Parameters<typeof TripJoinGate>[0];
 
