@@ -7,7 +7,7 @@ import {
   importedExpense,
   importedStopNote,
   importedTask,
-} from "../itinerary-import-api.test-support";
+} from "../testing/fixtures/itinerary-import-api-fixtures";
 import type { ImportedPlanRecords } from "../itinerary-import-record-mapping";
 
 describe("itinerary import API record creation", () => {

@@ -18,7 +18,7 @@ import {
   importedItineraryItem,
   importedStopNote,
   importedTask,
-} from "../itinerary-import-api.test-support";
+} from "../testing/fixtures/itinerary-import-api-fixtures";
 import { pathIdRain } from "../../testing/itinerary-path-fixtures";
 
 describe("itinerary import API request builders", () => {
