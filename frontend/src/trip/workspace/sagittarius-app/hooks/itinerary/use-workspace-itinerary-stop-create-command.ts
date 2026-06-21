@@ -3,9 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
-  buildItineraryItemDraft,
   mergeCreatedItineraryItemIntoTrip,
-  selectedItineraryPathIdForDay,
   type ItineraryPathOption,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
@@ -17,16 +15,15 @@ import {
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
-  nextLocalItemId,
 } from "@/src/trip/local-ids";
 import type {
   ItineraryItem,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import { resolveStopFormLocation } from "./stop-place-resolution-command";
+import { buildWorkspaceCreatedStop } from "./workspace-itinerary-stop-create-inputs";
 import { placeCreatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
 
 interface UseWorkspaceItineraryStopCreateCommandParams {
@@ -87,32 +84,20 @@ export function useWorkspaceItineraryStopCreateCommand({
       if (!resolvedLocation) return;
       values = resolvedLocation.values;
       const locationFields = resolvedLocation.locationFields;
-      const parentItem = values.parentItemId
-        ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
-        : undefined;
-      const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
-      const targetPathName = pathOptions.find(
-        (option) => option.id === targetPathId,
-      )?.name;
-      const nextItemId = nextLocalItemId(trip.itineraryItems, "item-new");
-      const draftItem = buildItineraryItemDraft(
-        { ...values, day },
-        {
-          address: locationFields.address,
-          coordinates: locationFields.coordinates,
-          createdBy: currentMemberId,
-          mapLink: locationFields.mapLink,
-          nextItemId,
-          pathId: targetPathId,
-          pathName: targetPathName,
+      const { draftItem, hasParentItem, targetPathId } =
+        buildWorkspaceCreatedStop({
+          currentMemberId,
+          day,
+          locationFields,
+          pathOptions,
+          pathSelection,
           planItems,
           selectedTripPlanId,
           trip,
-          updatedAt: workspaceLocalMutationTimestamp,
-        },
-      );
+          values,
+        });
       const branchPlacement = placeCreatedWorkspaceStop(trip, draftItem, {
-        hasParentItem: Boolean(parentItem),
+        hasParentItem,
         targetPathId,
       });
 
@@ -149,7 +134,7 @@ export function useWorkspaceItineraryStopCreateCommand({
       commitTrip(
         (current) =>
           placeCreatedWorkspaceStop(current, draftItem, {
-            hasParentItem: Boolean(parentItem),
+            hasParentItem,
             targetPathId,
           }).trip,
         draftItem.id,
