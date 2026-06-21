@@ -1,6 +1,4 @@
 import { type FormEvent, useState } from "react";
-import type { Locale } from "@/src/i18n/types";
-import type { DailyBriefingOverrides, TextBriefingBlock, TripDailyBriefing } from "@/src/trip/types";
 import { formatSolarTime } from "@/src/trip/weather";
 import { Button } from "@/src/ui";
 import {
@@ -12,15 +10,12 @@ import {
   formatWeatherSummary,
   weatherDrawerCopy,
 } from "./model/weather-briefing-drawer-model";
-
-interface WeatherBriefingDrawerProps {
-  briefing: TripDailyBriefing | null;
-  locale: Locale;
-  canEdit: boolean;
-  isOpen: boolean;
-  onClose: () => void;
-  onSaveOverrides?: (date: string, version: number, overrides: DailyBriefingOverrides) => void;
-}
+import type {
+  OrganizerOverrideFormProps,
+  WeatherBriefingDrawerProps,
+  WeatherSourceMetaProps,
+  WeatherTextBlockProps,
+} from "./weather-briefing-drawer.types";
 
 const drawerClassName =
   "weather-briefing-drawer fixed bottom-0 right-0 top-0 z-[50] grid w-[min(720px,78vw)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-l border-(--color-border) bg-(--color-surface) shadow-[-28px_0_70px_rgb(15_23_42_/_0.18)] transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none max-[767px]:top-auto max-[767px]:h-[88vh] max-[767px]:w-full max-[767px]:rounded-t-[24px] max-[767px]:border-l-0 max-[767px]:border-t max-[767px]:shadow-[0_-24px_70px_rgb(15_23_42_/_0.22)]";
@@ -95,11 +90,7 @@ function OrganizerOverrideForm({
   briefing,
   locale,
   onSaveOverrides,
-}: {
-  briefing: TripDailyBriefing;
-  locale: Locale;
-  onSaveOverrides?: (date: string, version: number, overrides: DailyBriefingOverrides) => void;
-}) {
+}: OrganizerOverrideFormProps) {
   const copy = weatherDrawerCopy(locale);
   const [outfitAdvice, setOutfitAdvice] = useState(briefing.manualOverrides.outfitAdvice ?? "");
   const [festivalNote, setFestivalNote] = useState(briefing.manualOverrides.festivalNote ?? "");
@@ -134,7 +125,7 @@ function OrganizerOverrideForm({
   );
 }
 
-function TextBlock({ title, block, locale }: { title: string; block: TextBriefingBlock | null; locale: Locale }) {
+function TextBlock({ title, block, locale }: WeatherTextBlockProps) {
   return (
     <section className={briefingBlockClassName}>
       <h3 className="m-0 text-sm font-black">{title}</h3>
@@ -144,7 +135,7 @@ function TextBlock({ title, block, locale }: { title: string; block: TextBriefin
   );
 }
 
-function SourceMeta({ source, fetchedAt, expiresAt, locale }: { source?: string; fetchedAt?: string | null; expiresAt?: string | null; locale: Locale }) {
+function SourceMeta({ source, fetchedAt, expiresAt, locale }: WeatherSourceMetaProps) {
   const copy = weatherDrawerCopy(locale);
   return <p className={metaClassName}>{source ?? copy.noSource}{fetchedAt ? ` · ${copy.fetched} ${fetchedAt}` : ""}{expiresAt ? ` · ${copy.expires} ${expiresAt}` : ""}</p>;
 }
