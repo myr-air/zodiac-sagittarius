@@ -3,7 +3,7 @@ import type { Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 
 interface BookingsDocsHeaderProps {

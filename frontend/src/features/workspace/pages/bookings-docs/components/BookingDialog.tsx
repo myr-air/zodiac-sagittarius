@@ -1,7 +1,7 @@
 import type { BookingDoc, Trip, TripTask } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { BookingDocInput } from "../BookingsDocsPage.types";
 import { BookingDialogFields } from "./BookingDialogFields";

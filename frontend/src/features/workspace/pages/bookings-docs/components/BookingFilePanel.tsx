@@ -3,7 +3,7 @@ import { cn } from "@/src/lib/cn";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import { bookingStatusFilterValues, formatEnumLabel, type BookingStatusFilter } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { BookingFileRow } from "./BookingFileRow";

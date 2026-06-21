@@ -8,7 +8,7 @@ import type {
   BookingDocVisibility,
   Trip,
 } from "@/src/trip/types";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import type { BookingDocInput } from "../BookingsDocsPage.types";
 
 interface BookingDialogStateInput {

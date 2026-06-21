@@ -1,5 +1,5 @@
 import { Button } from "@/src/ui";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 
 interface BookingDeleteDialogProps {

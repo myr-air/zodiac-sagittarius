@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { bookingCopy } from "../BookingsDocsPage.copy";
+import { bookingCopy } from "../content/BookingsDocsPage.copy";
 import { BookingDialog } from "./BookingDialog";
 import {
   bookingDocTestTasks,

@@ -2,7 +2,7 @@ import type { BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/s
 import { cn } from "@/src/lib/cn";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Select } from "@/src/ui";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import {
   bookingStatuses,
   bookingTypes,

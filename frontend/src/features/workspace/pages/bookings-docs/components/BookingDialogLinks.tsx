@@ -1,6 +1,6 @@
 import { CheckboxGroup } from "@/src/shared/components/checkbox-group";
 import type { Trip, TripTask } from "@/src/trip/types";
-import type { BookingCopy } from "../BookingsDocsPage.copy";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import type { BookingDialogState } from "./useBookingDialogState";
 
 interface BookingDialogLinksProps {

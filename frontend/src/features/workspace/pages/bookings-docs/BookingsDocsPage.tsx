@@ -8,7 +8,7 @@ import { BookingFilePanel } from "./components/BookingFilePanel";
 import { BookingFolderRail } from "./components/BookingFolderRail";
 import { BookingsDocsHeader } from "./components/BookingsDocsHeader";
 import { BookingInspector } from "./components/BookingInspector";
-import { bookingCopy } from "./BookingsDocsPage.copy";
+import { bookingCopy } from "./content/BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
 import type { BookingDocInput } from "./BookingsDocsPage.types";
 import { useBookingsDocsPageState } from "./use-bookings-docs-page-state";
