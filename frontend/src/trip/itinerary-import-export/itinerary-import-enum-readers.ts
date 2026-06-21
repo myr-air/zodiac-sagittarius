@@ -7,7 +7,7 @@ import {
   itineraryItemStatusValues,
   itineraryPathRoleValues,
   itineraryTimeModeValues,
-} from "../trip-itinerary-types";
+} from "../itinerary-core";
 import {
   planStatusValues,
   planVariantKindValues,

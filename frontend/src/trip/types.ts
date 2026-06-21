@@ -8,7 +8,7 @@ import type {
 import type {
   TripPhotoAlbumLink,
 } from "./photo-albums/photo-album-types";
-import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
+import type { ItineraryItem, ItineraryPath, StopNote } from "./itinerary-core/itinerary-types";
 import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./places/place-types";
@@ -40,7 +40,7 @@ export type {
   StopNote,
   ValidationWarning,
   ValidationWarningCode,
-} from "./trip-itinerary-types";
+} from "./itinerary-core/itinerary-types";
 export type {
   Member,
   TripCapability,

@@ -1,4 +1,35 @@
 export {
+  activitySubtypeValues,
+  activityTypeValues,
+  advisorySeverityValues,
+  itineraryItemKindValues,
+  itineraryItemPriorityValues,
+  itineraryItemStatusValues,
+  itineraryPathRoleValues,
+  itineraryPathScopeValues,
+  itineraryTimeModeValues,
+} from "./itinerary-types";
+export type {
+  ActivitySubtype,
+  ActivityType,
+  AdvisorySeverity,
+  ItineraryAdvisory,
+  ItineraryCoordinates,
+  ItineraryItem,
+  ItineraryItemDetails,
+  ItineraryItemKind,
+  ItineraryItemPriority,
+  ItineraryItemStatus,
+  ItineraryPath,
+  ItineraryPathRole,
+  ItineraryPathScope,
+  ItineraryTimeMode,
+  NowNextState,
+  StopNote,
+  ValidationWarning,
+  ValidationWarningCode,
+} from "./itinerary-types";
+export {
   buildItineraryCommitmentsByItemId,
 } from "./itinerary-commitments";
 export type {

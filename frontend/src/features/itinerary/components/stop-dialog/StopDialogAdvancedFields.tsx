@@ -10,7 +10,7 @@ import {
   itineraryItemPriorityValues,
   itineraryItemStatusValues,
   itineraryTimeModeValues,
-} from "@/src/trip/trip-itinerary-types";
+} from "@/src/trip/itinerary-core";
 import {
   advancedDetailsClassName,
   advancedDetailsGridClassName,

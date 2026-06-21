@@ -1,4 +1,4 @@
-import type { ItineraryCoordinates } from "../trip-itinerary-types";
+import type { ItineraryCoordinates } from "../itinerary-core";
 
 export interface TripCity {
   city: string;

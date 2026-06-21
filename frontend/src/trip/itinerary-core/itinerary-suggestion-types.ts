@@ -1,4 +1,4 @@
-import type { ItineraryItem } from "../trip-itinerary-types";
+import type { ItineraryItem } from "./itinerary-types";
 
 export const suggestionTypeValues = ["add", "edit", "delete", "reorder"] as const;
 export type SuggestionType = (typeof suggestionTypeValues)[number];
