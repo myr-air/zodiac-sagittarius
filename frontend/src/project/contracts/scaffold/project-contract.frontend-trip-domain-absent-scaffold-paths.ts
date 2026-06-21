@@ -189,6 +189,7 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/storage.ts",
   "src/trip/tests/utilities/repository.test.ts",
   "src/trip/tests/utilities/storage.test.ts",
+  "src/trip/suggestions.ts",
   "src/trip/suggestions.test.ts",
   "src/trip/weather-briefing-display.test.ts",
   "src/trip/weather-briefings.test.ts",

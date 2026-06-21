@@ -1,5 +1,5 @@
-import type { CreateSuggestionApiRequest } from "./api-client";
-import type { ItineraryItem, Suggestion } from "./types";
+import type { CreateSuggestionApiRequest } from "../api-client";
+import type { ItineraryItem, Suggestion } from "../types";
 
 export interface LocalEditSuggestionInput {
   tripId: string;

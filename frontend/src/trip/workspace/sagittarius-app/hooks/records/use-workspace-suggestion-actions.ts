@@ -6,7 +6,7 @@ import {
   createLocalEditSuggestion,
   rejectSuggestionById,
   replaceSuggestionById,
-} from "@/src/trip/suggestions";
+} from "@/src/trip/itinerary-core";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   ItineraryItem,

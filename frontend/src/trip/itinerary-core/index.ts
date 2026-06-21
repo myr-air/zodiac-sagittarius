@@ -17,6 +17,17 @@ export type {
   BuildUpdatedItineraryItemOptions,
 } from "./itinerary-drafts";
 export {
+  approveSuggestion,
+  buildCreateEditSuggestionRequest,
+  createLocalEditSuggestion,
+  detectSuggestionConflict,
+  rejectSuggestionById,
+  replaceSuggestionById,
+} from "./itinerary-suggestions";
+export type {
+  LocalEditSuggestionInput,
+} from "./itinerary-suggestions";
+export {
   buildItineraryView,
   formatDayLabel,
   getNowNext,

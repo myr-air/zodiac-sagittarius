@@ -6,7 +6,7 @@ import {
   detectSuggestionConflict,
   rejectSuggestionById,
   replaceSuggestionById,
-} from "../../../suggestions";
+} from "../../../itinerary-core";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { Suggestion } from "../../../types";
 

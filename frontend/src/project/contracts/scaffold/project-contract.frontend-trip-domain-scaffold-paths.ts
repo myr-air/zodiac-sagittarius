@@ -257,6 +257,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/itinerary-core/index.ts",
   "src/trip/itinerary-core/itinerary-commitments.ts",
   "src/trip/itinerary-core/itinerary-drafts.ts",
+  "src/trip/itinerary-core/itinerary-suggestions.ts",
   "src/trip/itinerary-core/itinerary-time.ts",
   "src/trip/itinerary-core/itinerary-validation.ts",
   "src/trip/itinerary-core/itinerary-view.ts",
