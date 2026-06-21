@@ -3,7 +3,7 @@ import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
   buildActivitySubtypePatch,
   buildActivityTypePatch,
-} from "./itinerary-activity-types";
+} from "../itinerary-activity-types";
 
 describe("itinerary-activity-types", () => {
   it("removes travel subtype details when switching away from travel", () => {

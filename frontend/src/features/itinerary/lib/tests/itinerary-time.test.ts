@@ -6,7 +6,7 @@ import {
   minutesToTime,
   parseTimeToMinutes,
   toDateTimeLocalValue,
-} from "./itinerary-time";
+} from "../itinerary-time";
 
 describe("itinerary-time helpers", () => {
   it("parses HH:MM into minute offsets with validation", () => {

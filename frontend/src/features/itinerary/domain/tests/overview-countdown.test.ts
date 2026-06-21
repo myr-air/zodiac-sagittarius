@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Locale } from "@/src/i18n/types";
-import { getCountdownBadge } from "./overview-countdown";
+import { getCountdownBadge } from "../overview-countdown";
 
 describe("overview countdown helpers", () => {
   it("computes countdown badge for incoming, active, and completed trips", () => {

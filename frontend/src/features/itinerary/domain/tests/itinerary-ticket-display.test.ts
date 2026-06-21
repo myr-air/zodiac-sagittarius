@@ -4,7 +4,7 @@ import {
   bookingTitleForItem,
   ticketModalCopy,
   ticketNotesForItem,
-} from "./itinerary-ticket-display";
+} from "../itinerary-ticket-display";
 
 describe("itinerary ticket display", () => {
   it("builds localized ticket modal copy", () => {

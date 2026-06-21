@@ -5,7 +5,7 @@ import {
   getHighlightImage,
   highlightTone,
   photoBoardEmptyMessage,
-} from "./overview-highlights";
+} from "../overview-highlights";
 import { overviewItem } from "./overview.test-support";
 
 describe("overview highlight helpers", () => {

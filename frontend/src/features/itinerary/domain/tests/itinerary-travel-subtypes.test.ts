@@ -4,7 +4,7 @@ import {
   normalizeTravelSubtype,
   travelSubtypeForItem,
   withoutTravelSubtypeDetails,
-} from "./itinerary-travel-subtypes";
+} from "../itinerary-travel-subtypes";
 
 describe("itinerary travel subtypes", () => {
   it("normalizes explicit and inferred travel subtypes", () => {

@@ -9,7 +9,7 @@ import {
   taskKindLabel,
   travelerNextStopDetail,
   viewerNextStopDetail,
-} from "./overview-roles";
+} from "../overview-roles";
 import { overviewItem } from "./overview.test-support";
 
 describe("overview role helpers", () => {

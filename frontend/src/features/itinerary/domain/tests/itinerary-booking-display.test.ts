@@ -7,7 +7,7 @@ import {
   bookingTemplateForItem,
   bookingTemplateLabel,
   formatBookingSummary,
-} from "./itinerary-booking-display";
+} from "../itinerary-booking-display";
 
 describe("itinerary-booking-display", () => {
   it("derives booking template, type, icon, and label from itinerary activity", () => {

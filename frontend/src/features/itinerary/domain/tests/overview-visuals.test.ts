@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildDestinationVisual,
   destinationToneValues,
-} from "./overview-visuals";
+} from "../overview-visuals";
 
 describe("overview visual helpers", () => {
   it("keeps destination tones in visual fallback order", () => {

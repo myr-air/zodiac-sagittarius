@@ -6,7 +6,7 @@ import {
   formatEndTime,
   formatThaiDate,
   formatTimeWindow,
-} from "./itinerary-display";
+} from "../itinerary-display";
 
 describe("itinerary display formatting", () => {
   it("labels known route days and activity types", () => {
