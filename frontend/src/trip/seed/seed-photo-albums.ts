@@ -1,4 +1,4 @@
-import type { TripPhotoAlbumLink } from "./types";
+import type { TripPhotoAlbumLink } from "../types";
 
 export function createSeedPhotoAlbumLinks({
   tripId,

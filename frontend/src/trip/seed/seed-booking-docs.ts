@@ -1,4 +1,4 @@
-import type { BookingDoc } from "./types";
+import type { BookingDoc } from "../types";
 
 export function createSeedBookingDocs({
   tripId,

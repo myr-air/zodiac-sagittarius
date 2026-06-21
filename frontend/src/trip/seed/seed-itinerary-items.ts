@@ -1,4 +1,4 @@
-import type { ItineraryItem } from "./types";
+import type { ItineraryItem } from "../types";
 import { seedItineraryItemInputs } from "./seed-itinerary-data";
 
 interface CreateSeedItineraryItemsInput {

@@ -1,5 +1,5 @@
-import type { Trip } from "./types";
-import { hashLocalSecret, seedTripJoinId, seedTripJoinPassword } from "./auth";
+import type { Trip } from "../types";
+import { hashLocalSecret, seedTripJoinId, seedTripJoinPassword } from "../auth";
 import { createSeedItineraryItems } from "./seed-itinerary-items";
 import { createSeedRecords } from "./seed-records";
 

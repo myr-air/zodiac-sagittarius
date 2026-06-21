@@ -1,4 +1,4 @@
-import type { Expense } from "./types";
+import type { Expense } from "../types";
 
 function split(
   amount: number,
