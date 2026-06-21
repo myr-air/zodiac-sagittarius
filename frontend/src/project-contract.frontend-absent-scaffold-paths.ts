@@ -81,6 +81,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/app/SagittariusApp.stories.tsx",
   "src/features/account/components/account-access-panel/portal/account-portal-primitives.stories.tsx",
   "src/features/account/components/account-access-panel/portal/account-portal-primitives.stories.plays.ts",
+  "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.stories.tsx",
   "src/shared/components/page-header/PageHeader.test.tsx",
   "src/shared/components/page-header/PageHeader.stories.tsx",
   "src/shared/components/page-header/PageHeader.stories.plays.ts",

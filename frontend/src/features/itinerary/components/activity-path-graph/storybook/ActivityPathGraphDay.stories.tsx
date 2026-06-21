@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ItineraryItem } from "@/src/trip/types";
-import { ActivityPathGraphDay } from "./ActivityPathGraphDay";
-import type { ActivityPathGraphDayProps } from "./activity-path-graph.types";
+import { ActivityPathGraphDay } from "../ActivityPathGraphDay";
+import type { ActivityPathGraphDayProps } from "../activity-path-graph.types";
 import { mainPathOption, pathRainPlanOption } from "@/src/features/itinerary/testing";
-import { makeItineraryGraphItem } from "./activity-path-graph.test-fixtures";
+import { makeItineraryGraphItem } from "../activity-path-graph.test-fixtures";
 
 const rowItems: ItineraryItem[] = [
   makeItineraryGraphItem({
