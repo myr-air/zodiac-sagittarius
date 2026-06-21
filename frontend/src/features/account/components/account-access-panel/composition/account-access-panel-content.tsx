@@ -4,7 +4,7 @@ import type {
 } from "@/src/account/api-client";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { TripJoinGate } from "@/src/features/account/components/trip-join-gate";
+import { TripJoinGate } from "@/src/features/account/components/trip-join-gate/TripJoinGate";
 import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
 import { StatusMessage, type AuthFlow } from "../auth";

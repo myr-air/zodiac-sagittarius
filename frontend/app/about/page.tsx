@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AboutAppPage } from "@/src/features/public-site/pages/about";
+import { AboutAppPage } from "@/src/features/public-site/pages/about/AboutAppPage";
 import { getWebAppVersionInfo } from "@/src/app-version";
 
 export const metadata: Metadata = {
