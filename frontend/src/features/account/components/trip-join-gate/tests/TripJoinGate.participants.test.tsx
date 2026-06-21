@@ -8,7 +8,7 @@ import { TripJoinGate } from "../TripJoinGate";
 import {
   enterTripRoom,
   installLocalStorageStub,
-} from "./TripJoinGate.test-support";
+} from "../testing/support/trip-join-gate-test-utils";
 
 const render = renderWithI18n;
 

@@ -5,7 +5,7 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "../TripJoinGate";
-import { installLocalStorageStub } from "./TripJoinGate.test-support";
+import { installLocalStorageStub } from "../testing/support/trip-join-gate-test-utils";
 
 const render = renderWithI18n;
 
