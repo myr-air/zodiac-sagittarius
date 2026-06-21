@@ -285,6 +285,8 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/workspace/selected-itinerary-item.test.ts",
   "src/trip/workspace/selected-trip-plan.test.ts",
   "src/trip/workspace/trip-plan-records.test.ts",
+  "src/trip/real-api.e2e.test.ts",
+  "src/trip/seed-itinerary-data.test.ts",
   "src/trip/booking-docs.test.ts",
   "src/trip/api-client.workspace-routes.test.ts",
   "src/trip/api-client.booking-photo.test.ts",

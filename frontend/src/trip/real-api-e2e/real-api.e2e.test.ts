@@ -8,7 +8,7 @@ import {
   hasRealApiE2eCredentials,
   realApiE2eCredentials,
   updatePresenceAndTripMetadata,
-} from "./real-api-e2e";
+} from ".";
 
 describe.skipIf(!realApiE2eCredentials.required && !hasRealApiE2eCredentials)("real Sagittarius API e2e", () => {
   it("joins a real backend and runs core production write flows", async () => {

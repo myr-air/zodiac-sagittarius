@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { seedItineraryItemInputs } from "./seed-itinerary-data";
-import { arrivalDayItineraryItems } from "./seed-itinerary-days/arrival-day";
-import { hongKongDayItineraryItems } from "./seed-itinerary-days/hong-kong-day";
-import { shenzhenDayItineraryItems } from "./seed-itinerary-days/shenzhen-day";
+import { seedItineraryItemInputs } from "../../seed-itinerary-data";
+import { arrivalDayItineraryItems } from "../../seed-itinerary-days/arrival-day";
+import { hongKongDayItineraryItems } from "../../seed-itinerary-days/hong-kong-day";
+import { shenzhenDayItineraryItems } from "../../seed-itinerary-days/shenzhen-day";
 
 describe("seed itinerary data", () => {
   it("keeps day modules grouped in itinerary order", () => {

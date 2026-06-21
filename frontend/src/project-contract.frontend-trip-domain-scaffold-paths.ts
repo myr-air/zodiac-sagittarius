@@ -1,6 +1,6 @@
 export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/tests/api-client/api-client.test-support.ts",
-  "src/trip/real-api.e2e.test.ts",
+  "src/trip/real-api-e2e/real-api.e2e.test.ts",
   "src/trip/real-api-e2e/index.ts",
   "src/trip/real-api-e2e/context.ts",
   "src/trip/real-api-e2e/trip-flows.ts",
@@ -166,7 +166,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/tests/utilities/storage.test.ts",
   "src/trip/tests/utilities/suggestions.test.ts",
   "src/trip/participant-session-storage.ts",
-  "src/trip/seed-itinerary-data.test.ts",
+  "src/trip/tests/seed/seed-itinerary-data.test.ts",
   "src/trip/seed-itinerary-data.ts",
   "src/trip/seed-itinerary-types.ts",
   "src/trip/seed-itinerary-days/arrival-day.ts",
