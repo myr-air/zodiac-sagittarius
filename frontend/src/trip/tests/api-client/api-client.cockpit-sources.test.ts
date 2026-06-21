@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapCockpitResponse, type TripCockpitResponse } from "./api-client";
+import { mapCockpitResponse, type TripCockpitResponse } from "../../api-client";
 import { cockpitResponse } from "./api-client.test-support";
 
 describe("Trip API cockpit source validation", () => {

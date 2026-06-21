@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTripApiClient } from "./api-client";
+import { createTripApiClient } from "../../api-client";
 import { cockpitResponse, jsonResponse } from "./api-client.test-support";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+import { pathIdRain } from "../../testing/itinerary-path-fixtures";
 
 describe("Trip API session and transport routes", () => {
   it("joins, claims, and loads the backend cockpit through stable v1 routes", async () => {

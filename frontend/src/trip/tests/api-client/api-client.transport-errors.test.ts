@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTripApiClient } from "./api-client";
+import { createTripApiClient } from "../../api-client";
 import { jsonResponse } from "./api-client.test-support";
 
 describe("Trip API client transport errors", () => {

@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import type { TripCockpit } from "../api-client";
-import { cockpitResponse } from "../api-client.test-support";
+import { cockpitResponse } from "../tests/api-client/api-client.test-support";
 import { pathIdRain } from "../testing/itinerary-path-fixtures";
 
 export function expectLoadedCockpit(cockpit: TripCockpit, tripId: string): void {

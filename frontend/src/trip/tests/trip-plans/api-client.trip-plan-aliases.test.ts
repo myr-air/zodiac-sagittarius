@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTripApiClient, mapCockpitResponse, TripApiError, type TripCockpitResponse } from "../../api-client";
-import { cockpitResponse, jsonResponse } from "../../api-client.test-support";
+import { cockpitResponse, jsonResponse } from "../api-client/api-client.test-support";
 
 describe("Trip API client Trip Plan aliases", () => {
   it("rejects join and invite Main Plan pointer alias drift", async () => {
