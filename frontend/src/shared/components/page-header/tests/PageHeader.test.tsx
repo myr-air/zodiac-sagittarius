@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PageHeader, PageUserCard } from "./PageHeader";
+import { PageHeader, PageUserCard } from "../PageHeader";
 
 describe("PageHeader", () => {
   it("uses a compact command-surface header instead of postcard artwork", () => {
