@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPortalTripWizardCredentials,
   isValidPortalTripWizardJoinPassword,
-} from "./portal-trip-wizard-credentials";
+} from "../portal-trip-wizard-credentials";
 
 describe("portal trip wizard credentials", () => {
   it("builds route-aware join ids and preserves valid join passwords", () => {

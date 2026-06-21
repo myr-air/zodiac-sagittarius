@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   accountAccessPanelPageClassName,
   accountAccessPanelShellClassName,
-} from "./account-access-panel-shell-classes";
+} from "../account-access-panel-shell-classes";
 
 describe("account access panel shell classes", () => {
   it("adds account-entry page and shell modifiers", () => {

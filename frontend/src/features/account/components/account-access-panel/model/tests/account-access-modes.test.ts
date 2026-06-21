@@ -7,7 +7,7 @@ import {
   heroTitle,
   isAccountEntryMode,
   mainLabel,
-} from "./account-access-modes";
+} from "../account-access-modes";
 
 describe("account access modes", () => {
   it("defines access modes in route specificity order", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
+import { buildEmailLoginPanelDerivedState } from "../email-login-panel-derived-state";
 
 describe("email-login-panel-derived-state", () => {
   it("derives login validation state and stable input ids", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripWizardDefaultTimezone } from "./portal-trip-wizard-date-fields";
+import { tripWizardDefaultTimezone } from "../portal-trip-wizard-date-fields";
 
 describe("trip wizard date fields", () => {
   it("prefers the explicit trip timezone", () => {
