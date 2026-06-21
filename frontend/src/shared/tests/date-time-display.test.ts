@@ -16,6 +16,11 @@ describe("date time display helpers", () => {
       dateStyle: "medium",
       timeStyle: "short",
     })).toContain("2026");
+    expect(formatDisplayDateTime(new Date("2026-06-18T00:00:00"), "en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })).toBe("18 Jun 2026");
 
     expect(formatOptionalDisplayDateTime({
       emptyValue: "-",

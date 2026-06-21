@@ -5,11 +5,13 @@ export function displayDateTimeLocaleCode(locale: DisplayDateTimeLocale): string
 }
 
 export function formatDisplayDateTime(
-  value: string,
+  value: string | Date,
   locale: string,
   options: Intl.DateTimeFormatOptions,
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, options).format(
+    typeof value === "string" ? new Date(value) : value,
+  );
 }
 
 export function formatOptionalDisplayDateTime({

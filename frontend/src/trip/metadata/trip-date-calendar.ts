@@ -1,3 +1,5 @@
+import { formatDisplayDateTime } from "@/src/shared/date-time-display";
+
 export interface RouteCalendarDay {
   value: string;
   day: string;
@@ -12,7 +14,7 @@ export function formatPreviewTravelDate(value: string): string {
   if (!value) return "--";
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  return formatDisplayDateTime(date, "en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function routeCalendarDays(seed: string, startDate: string, endDate: string): RouteCalendarDay[] {
@@ -33,7 +35,7 @@ export function routeCalendarDays(seed: string, startDate: string, endDate: stri
     return {
       value,
       day: String(index + 1),
-      label: new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date),
+      label: formatDisplayDateTime(date, "en", { day: "numeric", month: "short", year: "numeric" }),
       inRange,
       tourDay,
       tourTone: tourDay ? (tourDay % 2 ? "odd" : "even") : "none",
