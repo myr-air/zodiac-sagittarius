@@ -10,10 +10,19 @@ import { BookingsDocsHeader } from "./components/BookingsDocsHeader";
 import { BookingInspector } from "./components/BookingInspector";
 import { bookingCopy } from "./content/BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
-import type { BookingDocInput } from "./BookingsDocsPage.types";
+import type {
+  CreateBookingDocHandler,
+  DeleteBookingDocHandler,
+  UpdateBookingDocHandler,
+} from "./BookingsDocsPage.types";
 import { useBookingsDocsPageState } from "./use-bookings-docs-page-state";
 
-export type { BookingDocInput } from "./BookingsDocsPage.types";
+export type {
+  BookingDocInput,
+  CreateBookingDocHandler,
+  DeleteBookingDocHandler,
+  UpdateBookingDocHandler,
+} from "./BookingsDocsPage.types";
 
 interface BookingsDocsPageProps {
   trip: Trip;
@@ -21,9 +30,9 @@ interface BookingsDocsPageProps {
   currentMember: Member;
   bookingDocs: BookingDoc[];
   canEditBookings: boolean;
-  onCreateBookingDoc: (input: BookingDocInput) => void | Promise<void>;
-  onUpdateBookingDoc: (bookingDocId: string, input: BookingDocInput) => void | Promise<void>;
-  onDeleteBookingDoc: (bookingDocId: string) => void | Promise<void>;
+  onCreateBookingDoc: CreateBookingDocHandler;
+  onUpdateBookingDoc: UpdateBookingDocHandler;
+  onDeleteBookingDoc: DeleteBookingDocHandler;
 }
 
 export function BookingsDocsPage({

@@ -3,7 +3,7 @@ import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import type { BookingDocInput } from "../BookingsDocsPage.types";
+import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
 import { BookingDialogFields } from "./BookingDialogFields";
 import { BookingDialogLinks } from "./BookingDialogLinks";
 import { useBookingDialogState } from "./useBookingDialogState";
@@ -14,7 +14,7 @@ interface BookingDialogProps {
   trip: Trip;
   tasks: TripTask[];
   onCancel: () => void;
-  onSubmit: (input: BookingDocInput) => void | Promise<void>;
+  onSubmit: SubmitBookingDocHandler;
 }
 
 export function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: BookingDialogProps) {

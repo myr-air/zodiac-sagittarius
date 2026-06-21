@@ -2,18 +2,20 @@ import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import type { BookingDoc, Member } from "@/src/trip/types";
-import { BookingsDocsPage, type BookingDocInput } from "../../BookingsDocsPage";
+import {
+  BookingsDocsPage,
+  type CreateBookingDocHandler,
+  type DeleteBookingDocHandler,
+  type UpdateBookingDocHandler,
+} from "../../BookingsDocsPage";
 import { bookingDocTestTasks } from "../fixtures/bookings-docs-test-fixtures";
 
 interface RenderBookingsDocsPageOptions {
   bookingDocs: BookingDoc[];
   currentMember: Member;
-  onCreateBookingDoc: (input: BookingDocInput) => void;
-  onDeleteBookingDoc: (bookingDocId: string) => void;
-  onUpdateBookingDoc: (
-    bookingDocId: string,
-    input: BookingDocInput,
-  ) => void;
+  onCreateBookingDoc: CreateBookingDocHandler;
+  onDeleteBookingDoc: DeleteBookingDocHandler;
+  onUpdateBookingDoc: UpdateBookingDocHandler;
 }
 
 export function renderBookingsDocsPage(

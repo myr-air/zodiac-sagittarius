@@ -22,3 +22,22 @@ export interface BookingDocInput {
   noteIds: string[];
   notes?: string | null;
 }
+
+export type BookingDocMutationResult = void | Promise<void>;
+
+export type CreateBookingDocHandler = (
+  input: BookingDocInput,
+) => BookingDocMutationResult;
+
+export type UpdateBookingDocHandler = (
+  bookingDocId: string,
+  input: BookingDocInput,
+) => BookingDocMutationResult;
+
+export type DeleteBookingDocHandler = (
+  bookingDocId: string,
+) => BookingDocMutationResult;
+
+export type SubmitBookingDocHandler = (
+  input: BookingDocInput,
+) => BookingDocMutationResult;

@@ -9,13 +9,13 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import type { BookingDocInput } from "../BookingsDocsPage.types";
+import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
 
 interface BookingDialogStateInput {
   booking: BookingDoc | null;
   copy: Pick<BookingCopy, "externalLinkLabel">;
   trip: Trip;
-  onSubmit: (input: BookingDocInput) => void | Promise<void>;
+  onSubmit: SubmitBookingDocHandler;
 }
 
 export function useBookingDialogState({

@@ -3,7 +3,10 @@ import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { BookingDoc } from "@/src/trip/types";
-import type { BookingDocInput, BookingsDocsPage } from "../BookingsDocsPage";
+import type {
+  BookingsDocsPage,
+  CreateBookingDocHandler,
+} from "../BookingsDocsPage";
 
 type BookingsDocsPageStoryArgs = Parameters<typeof BookingsDocsPage>[0];
 
@@ -58,7 +61,7 @@ export const bookingsDocsOwnerStoryArgs = {
   currentMember: tripFixture.currentMembers.owner,
   bookingDocs: seedTrip.bookingDocs ?? [],
   canEditBookings: true,
-  onCreateBookingDoc: noop as (input: BookingDocInput) => void,
+  onCreateBookingDoc: noop as CreateBookingDocHandler,
   onUpdateBookingDoc: noop,
   onDeleteBookingDoc: noop,
 } satisfies BookingsDocsPageStoryArgs;

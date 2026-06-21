@@ -4,7 +4,12 @@ import {
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
-import type { BookingDocInput } from "./BookingsDocsPage.types";
+import type {
+  BookingDocInput,
+  CreateBookingDocHandler,
+  DeleteBookingDocHandler,
+  UpdateBookingDocHandler,
+} from "./BookingsDocsPage.types";
 import type { BookingStatusFilter } from "./model/booking-options";
 import {
   bookingDocMatchesFolder,
@@ -20,9 +25,9 @@ import {
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];
   currentMember: Member;
-  onCreateBookingDoc: (input: BookingDocInput) => void | Promise<void>;
-  onDeleteBookingDoc: (bookingDocId: string) => void | Promise<void>;
-  onUpdateBookingDoc: (bookingDocId: string, input: BookingDocInput) => void | Promise<void>;
+  onCreateBookingDoc: CreateBookingDocHandler;
+  onDeleteBookingDoc: DeleteBookingDocHandler;
+  onUpdateBookingDoc: UpdateBookingDocHandler;
   tasks: TripTask[];
   trip: Trip;
 }
