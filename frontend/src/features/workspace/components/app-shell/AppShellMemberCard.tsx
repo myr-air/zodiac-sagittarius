@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { memberInitial, roleLabel } from "@/src/trip/member-labels";
+import { memberInitial, roleLabel } from "@/src/trip/members";
 import type { Member } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import {

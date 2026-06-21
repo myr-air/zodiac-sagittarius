@@ -1,4 +1,4 @@
-import type { Member } from "./types";
+import type { Member } from "../types";
 
 export function findMemberById(members: Member[], memberId: string | null | undefined): Member | undefined {
   if (!memberId) return undefined;

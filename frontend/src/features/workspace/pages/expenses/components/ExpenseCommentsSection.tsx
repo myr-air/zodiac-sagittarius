@@ -1,4 +1,4 @@
-import { findMemberById } from "@/src/trip/member-lookup";
+import { findMemberById } from "@/src/trip/members";
 import type { ExpenseComment, Member } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";

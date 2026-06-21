@@ -1,6 +1,5 @@
 import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
-import { memberInitial } from "@/src/trip/member-labels";
-import { findMemberById } from "@/src/trip/member-lookup";
+import { findMemberById, memberInitial } from "@/src/trip/members";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";

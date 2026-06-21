@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/cn";
-import { memberInitial } from "@/src/trip/member-labels";
+import { memberInitial } from "@/src/trip/members";
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Select } from "@/src/ui";
 import {

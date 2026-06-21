@@ -1,5 +1,5 @@
 import { refundSplits, sumShares } from "@/src/trip/expenses";
-import { findMemberById } from "@/src/trip/member-lookup";
+import { findMemberById } from "@/src/trip/members";
 import type { Expense, Member, SettlementSuggestion } from "@/src/trip/types";
 import type { ExpenseInput } from "./expense-page-types";
 

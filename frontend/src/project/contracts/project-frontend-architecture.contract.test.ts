@@ -59,7 +59,7 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(appShell).not.toContain("identityDialogOpen");
     expect(appShell).not.toContain("function roleLabel");
     expect(appShellMemberCard).toContain("export function AppShellMemberCard");
-    expect(appShellMemberCard).toContain("@/src/trip/member-labels");
+    expect(appShellMemberCard).toContain("@/src/trip/members");
     expect(appShellMemberCard).toContain("roleLabel");
     expect(appShellMemberCard).toContain("identityDialogOpen");
     expect(appShellStyles).toContain("export const appLayoutClassName");

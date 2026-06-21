@@ -1,4 +1,4 @@
-import { findMemberById } from "../member-lookup";
+import { findMemberById } from "../members";
 import { safeExternalHref } from "../safe-links";
 import type {
   ItineraryItem,

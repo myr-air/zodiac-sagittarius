@@ -2,7 +2,7 @@ import { Fragment, type FormEvent } from "react";
 import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import { isTripParticipantDisabled } from "@/src/trip/auth";
-import { memberInitial, roleLabel } from "@/src/trip/member-labels";
+import { memberInitial, roleLabel } from "@/src/trip/members";
 import type { Member } from "@/src/trip/types";
 import { Badge } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";

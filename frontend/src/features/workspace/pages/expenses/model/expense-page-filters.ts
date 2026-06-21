@@ -1,5 +1,5 @@
 import { expenseAmountInSettlementCurrency } from "@/src/trip/expenses";
-import { findMemberById } from "@/src/trip/member-lookup";
+import { findMemberById } from "@/src/trip/members";
 import type { Expense, ItineraryItem, Member } from "@/src/trip/types";
 
 import type { ExpenseCategoryFilter } from "./expense-page-types";
