@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { AboutAppPage } from "./AboutAppPage";
+import type { AboutAppPage } from "../AboutAppPage";
 
 type AboutAppPagePlay = NonNullable<StoryObj<typeof AboutAppPage>["play"]>;
 

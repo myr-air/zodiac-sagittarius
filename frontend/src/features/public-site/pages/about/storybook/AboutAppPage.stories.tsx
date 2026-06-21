@@ -4,7 +4,7 @@ import {
   argsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { AboutAppPage } from "./AboutAppPage";
+import { AboutAppPage } from "../AboutAppPage";
 import {
   apiUnavailablePlay,
   mobilePlay,

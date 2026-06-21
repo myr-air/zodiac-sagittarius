@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, within } from "storybook/test";
-import type { HomeLanding } from "./HomeLanding";
+import type { HomeLanding } from "../HomeLanding";
 
 type HomeLandingPlay = NonNullable<StoryObj<typeof HomeLanding>["play"]>;
 

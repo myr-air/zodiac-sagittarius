@@ -3,7 +3,7 @@ import {
   argsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { HomeLanding } from "./HomeLanding";
+import { HomeLanding } from "../HomeLanding";
 import {
   compactHeroPlay,
   desktop1440Play,

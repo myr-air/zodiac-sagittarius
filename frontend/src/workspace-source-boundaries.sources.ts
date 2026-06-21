@@ -220,8 +220,8 @@ export const workspaceBoundarySourcePaths = {
   timelineTemplateStory: "src/features/itinerary/stories/TimelineTemplate.stories.tsx",
   mapPageStory: "src/features/itinerary/stories/workspace/MapPage.stories.tsx",
   mapTemplateStory: "src/features/itinerary/stories/workspace/MapTemplate.stories.tsx",
-  homeLandingStory: "src/features/public-site/pages/home/HomeLanding.stories.tsx",
-  aboutAppPageStory: "src/features/public-site/pages/about/AboutAppPage.stories.tsx",
+  homeLandingStory: "src/features/public-site/pages/home/storybook/HomeLanding.stories.tsx",
+  aboutAppPageStory: "src/features/public-site/pages/about/storybook/AboutAppPage.stories.tsx",
   accountAccessStory:
     "src/features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",
   accountAccessFixtures:

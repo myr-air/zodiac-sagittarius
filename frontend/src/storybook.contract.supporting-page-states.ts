@@ -34,7 +34,7 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ["Default", "Positive", "Negative"],
   ],
   [
-    "features/public-site/pages/home/HomeLanding.stories.tsx",
+    "features/public-site/pages/home/storybook/HomeLanding.stories.tsx",
     ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"],
   ],
   [

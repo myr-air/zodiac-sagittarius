@@ -13,7 +13,7 @@ export const requiredAccessPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/public-site/pages/about/AboutAppPage.stories.tsx",
+    "features/public-site/pages/about/storybook/AboutAppPage.stories.tsx",
     [
       "Ready",
       "ApiUnavailable",
