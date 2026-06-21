@@ -1,7 +1,7 @@
 import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { PhotoCopy } from "../TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import type { TripPhotoAlbumInput } from "../TripPhotosPage.types";
 import { PhotoAlbumDialogFields } from "./PhotoAlbumDialogFields";

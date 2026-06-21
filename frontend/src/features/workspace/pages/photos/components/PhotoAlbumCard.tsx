@@ -3,9 +3,9 @@ import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Badge, Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { PhotoCopy } from "../TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import { photoAccessLabel, photoProviderLabel } from "../photo-page-options";
+import { photoAccessLabel, photoProviderLabel } from "../model/photo-page-options";
 
 interface PhotoAlbumCardProps {
   album: TripPhotoAlbumLink;

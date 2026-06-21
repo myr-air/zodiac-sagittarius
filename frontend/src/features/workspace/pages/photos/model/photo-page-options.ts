@@ -3,7 +3,7 @@ import {
   tripPhotoAlbumProviderValues,
 } from "@/src/trip/trip-record-types";
 import type { TripPhotoAlbumAccess } from "@/src/trip/types";
-import type { PhotoCopy } from "./TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 
 export const photoProviders = ["all", ...tripPhotoAlbumProviderValues] as const;
 export type PhotoProviderFilter = (typeof photoProviders)[number];

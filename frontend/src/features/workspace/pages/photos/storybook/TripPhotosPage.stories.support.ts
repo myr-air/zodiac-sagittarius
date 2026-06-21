@@ -2,7 +2,7 @@ import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
-import type { TripPhotosPage } from "./TripPhotosPage";
+import type { TripPhotosPage } from "../TripPhotosPage";
 
 type TripPhotosPageStoryArgs = Parameters<typeof TripPhotosPage>[0];
 

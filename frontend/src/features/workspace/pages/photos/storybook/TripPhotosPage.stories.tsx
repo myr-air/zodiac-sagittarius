@@ -3,7 +3,7 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { TripPhotosPage } from "./TripPhotosPage";
+import { TripPhotosPage } from "../TripPhotosPage";
 import {
   addAlbumDialogOpenPlay,
   coverStatesPlay,

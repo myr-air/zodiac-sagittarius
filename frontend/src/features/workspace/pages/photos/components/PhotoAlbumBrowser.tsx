@@ -3,13 +3,13 @@ import { cn } from "@/src/lib/cn";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { PhotoCopy } from "../TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import {
   type PhotoProviderFilter,
   photoProviderLabel,
   photoProviders,
-} from "../photo-page-options";
+} from "../model/photo-page-options";
 import { PhotoAlbumCard } from "./PhotoAlbumCard";
 
 interface PhotoAlbumBrowserProps {

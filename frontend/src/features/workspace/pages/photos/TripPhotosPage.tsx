@@ -7,7 +7,7 @@ import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summar
 import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
 import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
-import { photoCopy } from "./TripPhotosPage.copy";
+import { photoCopy } from "./content/TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
 import type { TripPhotoAlbumInput } from "./TripPhotosPage.types";
 import { useTripPhotosPageState } from "./use-trip-photos-page-state";

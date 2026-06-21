@@ -4,14 +4,14 @@ import type {
   TripPhotoAlbumProvider,
 } from "@/src/trip/types";
 import { Select } from "@/src/ui";
-import type { PhotoCopy } from "../TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import {
   photoAccessLabel,
   photoAccessOptions,
   photoProviderLabel,
   photoProviderOptions,
-} from "../photo-page-options";
+} from "../model/photo-page-options";
 import type { PhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogFieldsProps {

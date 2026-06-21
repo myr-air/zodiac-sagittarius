@@ -2,7 +2,7 @@ import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import type { Member, TripPhotoAlbumLink } from "@/src/trip/types";
-import { TripPhotosPage, type TripPhotoAlbumInput } from "./TripPhotosPage";
+import { TripPhotosPage, type TripPhotoAlbumInput } from "../TripPhotosPage";
 
 export const photoAlbumPageTestAlbums: TripPhotoAlbumLink[] = [
   {

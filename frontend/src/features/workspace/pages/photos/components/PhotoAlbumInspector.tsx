@@ -2,10 +2,10 @@ import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-a
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import type { PhotoCopy } from "../TripPhotosPage.copy";
+import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import { photoAccessLabel, photoProviderLabel } from "../photo-page-options";
-import { photoAlbumLinkHost } from "../photo-page-selectors";
+import { photoAccessLabel, photoProviderLabel } from "../model/photo-page-options";
+import { photoAlbumLinkHost } from "../model/photo-page-selectors";
 
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;

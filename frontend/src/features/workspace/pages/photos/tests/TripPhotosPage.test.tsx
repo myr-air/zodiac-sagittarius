@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
-import type { TripPhotoAlbumInput } from "./TripPhotosPage";
+import type { TripPhotoAlbumInput } from "../TripPhotosPage";
 import { renderTripPhotosPage } from "./TripPhotosPage.test-support";
 
 describe("TripPhotosPage", () => {
