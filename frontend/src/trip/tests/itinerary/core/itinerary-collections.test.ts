@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   appendItineraryItemPlacement,
   appendItineraryItemToTrip,
   deleteItineraryItemFromTrip,
   replaceItineraryItem,
   replaceItineraryItems,
-} from "./itinerary";
+} from "../../../itinerary";
 
 describe("itinerary collection mutations", () => {
   it("appends itinerary items to trips without branch side effects", () => {

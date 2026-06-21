@@ -1,4 +1,4 @@
-import { arrivalDay } from "../../../itinerary.test-support";
+import { arrivalDay } from "../core/itinerary.test-support";
 import { seedTrip } from "../../../seed";
 import type { ItineraryItem } from "../../../types";
 

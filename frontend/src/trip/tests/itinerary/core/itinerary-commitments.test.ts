@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildItineraryCommitmentsByItemId } from "./itinerary-commitments";
+import { buildItineraryCommitmentsByItemId } from "../../../itinerary-commitments";
 
 describe("itinerary commitments", () => {
   it("aggregates linked booking, expense, note, and open task counts by item", () => {

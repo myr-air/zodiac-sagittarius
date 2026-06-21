@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   approveSuggestion,
   createLocalEditSuggestion,
   detectSuggestionConflict,
   rejectSuggestionById,
   replaceSuggestionById,
-} from "./suggestions";
-import { getTripFixtureItineraryItem } from "./trip-fixtures";
-import type { Suggestion } from "./types";
+} from "../../../suggestions";
+import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
+import type { Suggestion } from "../../../types";
 
 describe("itinerary suggestions", () => {
   it("detects stale suggestion conflicts and approves fresh suggestions", () => {

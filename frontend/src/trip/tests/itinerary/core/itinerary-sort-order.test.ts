@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   getNextChildSortOrder,
   getNextSortOrder,
-} from "./itinerary";
+} from "../../../itinerary";
 
 describe("itinerary sort order helpers", () => {
   it("derives next sort order for a trip day", () => {

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,
   mainItineraryPathId,
-} from "./itinerary";
+} from "../../../itinerary";
 import {
   pathIdRainDay,
   pathNameRainDay,
-} from "./testing/itinerary-path-fixtures";
+} from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary draft builders", () => {
   it("builds new itinerary item drafts with target path fields", () => {

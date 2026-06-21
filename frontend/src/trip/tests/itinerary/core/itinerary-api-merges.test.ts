@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   mergeCreatedItineraryItemIntoTrip,
   mergeUpdatedItineraryBranchIntoTrip,
-} from "./itinerary";
-import { seedTrip } from "./seed";
+} from "../../../itinerary";
+import { seedTrip } from "../../../seed";
 
 describe("itinerary API merge helpers", () => {
   it("merges API-created itinerary items with placement path fields and patched branch items", () => {

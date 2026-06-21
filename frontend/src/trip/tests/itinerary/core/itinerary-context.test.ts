@@ -8,9 +8,9 @@ import {
   parseTime,
   sortItemsForDay,
   validateItineraryItem,
-} from "./itinerary";
-import { seedTrip } from "./seed";
-import { getTripFixtureItineraryItem } from "./trip-fixtures";
+} from "../../../itinerary";
+import { seedTrip } from "../../../seed";
+import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
 
 describe("itinerary warnings, dates, and on-trip context", () => {
   it("keeps invalid field warning totals stable in shared derive", () => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../../seed";
 import {
   buildOverlapWarnings,
   getTimeWindowInterval,
   validateHierarchyFields,
   validateItemFields,
-} from "./itinerary-validation";
+} from "../../../itinerary-validation";
 
 describe("itinerary validation", () => {
   const base = seedTrip.itineraryItems[0]!;

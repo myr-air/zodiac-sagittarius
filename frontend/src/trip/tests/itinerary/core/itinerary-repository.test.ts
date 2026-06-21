@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { createLocalTripRepository } from "./repository";
+import { seedTrip } from "../../../seed";
+import { createLocalTripRepository } from "../../../repository";
 
 describe("itinerary repository boundary", () => {
   it("saves through a repository boundary instead of direct UI storage", () => {
