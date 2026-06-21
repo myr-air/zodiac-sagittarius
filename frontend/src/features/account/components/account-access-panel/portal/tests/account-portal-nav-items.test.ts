@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
-import { getPortalNavItems } from "./account-portal-nav-items";
+import { getPortalNavItems } from "../account-portal-nav-items";
 
 describe("account portal nav items", () => {
   it("builds portal navigation from app routes and localized labels", () => {

@@ -5,7 +5,7 @@ import {
   accountPortalSectionOrder,
   accountPortalSectionStorageKey,
   accountPortalTransitionDirection,
-} from "./account-portal-dashboard-state";
+} from "../account-portal-dashboard-state";
 
 describe("account portal dashboard state", () => {
   it("keeps the portal section order stable for transition state", () => {

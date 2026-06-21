@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AccountPortalDashboardClassNames } from "./account-portal-dashboard.types";
+import type { AccountPortalDashboardClassNames } from "../account-portal-dashboard.types";
 import {
   accountPortalDashboardSectionClassNames,
   accountPortalExplorerSectionClassNames,
@@ -7,7 +7,7 @@ import {
   accountPortalSettingsSectionClassNames,
   accountPortalTripsSectionClassNames,
   accountPortalVaultSectionClassNames,
-} from "./account-portal-section-classnames";
+} from "../account-portal-section-classnames";
 
 const classNames = {
   avatar: "avatar",

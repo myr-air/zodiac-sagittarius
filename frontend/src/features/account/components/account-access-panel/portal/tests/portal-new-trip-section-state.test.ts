@@ -5,7 +5,7 @@ import type { TripParticipantSession } from "@/src/trip/types";
 import {
   buildPortalCreatedTripShare,
   resolvePortalCreatedTripInviteToken,
-} from "./portal-new-trip-section-state";
+} from "../portal-new-trip-section-state";
 
 const memberSession = {
   memberId: "member-1",

@@ -5,7 +5,7 @@ import {
   getAccountPortalDataCache,
   getLatestAccountPortalDataCache,
   type AccountPortalDataCache,
-} from "./account-portal-data-cache";
+} from "../account-portal-data-cache";
 
 const emptyPortalData: AccountPortalDataCache = {
   explorer: null,

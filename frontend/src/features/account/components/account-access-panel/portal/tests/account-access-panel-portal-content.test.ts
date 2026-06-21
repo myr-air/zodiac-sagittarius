@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AccountVaultItemSummary } from "@/src/account/api-client";
-import { prependPortalVaultItem } from "./account-access-panel-portal-content";
+import { prependPortalVaultItem } from "../account-access-panel-portal-content";
 
 const existingItem = {
   createdAt: "2026-06-01T00:00:00.000Z",

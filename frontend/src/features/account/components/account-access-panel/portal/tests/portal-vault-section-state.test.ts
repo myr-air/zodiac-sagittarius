@@ -3,7 +3,7 @@ import {
   buildPortalVaultCreateRequest,
   createEmptyPortalVaultForm,
   portalVaultCloudProviders,
-} from "./portal-vault-section-state";
+} from "../portal-vault-section-state";
 
 describe("portal vault section state", () => {
   it("creates the default note form state", () => {
