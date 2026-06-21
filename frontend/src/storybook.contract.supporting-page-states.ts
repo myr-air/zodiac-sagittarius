@@ -30,7 +30,7 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ["AtmosphericGlass", "MobileOverflow", "Thai", "Empty"],
   ],
   [
-    "features/workspace/components/summary-stat/WorkspaceSummaryStat.stories.tsx",
+    "features/workspace/components/summary-stat/storybook/WorkspaceSummaryStat.stories.tsx",
     ["Default", "Positive", "Negative"],
   ],
   [
@@ -38,7 +38,7 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ["PixelPerfect", "Thai", "Tablet", "Mobile", "Desktop1024", "Desktop1440"],
   ],
   [
-    "features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
+    "features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",
     [
       "AccountLogin",
       "AccountRegister",

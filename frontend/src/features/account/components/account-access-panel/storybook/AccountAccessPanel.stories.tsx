@@ -4,7 +4,7 @@ import {
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
 import { seedTrip } from "@/src/trip/seed";
-import { AccountAccessPanel } from "./AccountAccessPanel";
+import { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   accountLoginPlay,
   accountLoginThaiPlay,
@@ -13,11 +13,11 @@ import {
   newTripMobilePlay,
   portalDashboardPlay,
   tripAccessPlay,
-} from "./storybook/AccountAccessPanel.stories.plays";
+} from "./AccountAccessPanel.stories.plays";
 import {
   accountLoginStoryArgs,
   portalDashboardStoryArgs,
-} from "./storybook/account-access-panel.stories.support";
+} from "./account-access-panel.stories.support";
 
 const meta = {
   title: "Pages/Account Access",

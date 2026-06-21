@@ -67,12 +67,12 @@ export const workspaceBoundarySourcePaths = {
   photoAlbumApi: "src/trip/photo-album-api.ts",
   photoAlbumLocal: "src/trip/photo-album-local.ts",
   photoAlbumQuery: "src/trip/photo-album-query.ts",
-  expensesPageStory: "src/features/workspace/pages/expenses/ExpensesPage.stories.tsx",
+  expensesPageStory: "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.tsx",
   expenseMutationCommands: "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts",
   expenseDrafts: "src/trip/expense-drafts.ts",
   expenseSummary: "src/trip/expense-summary.ts",
   expenseSettlements: "src/trip/expense-settlements.ts",
-  expensePageOptions: "src/features/workspace/pages/expenses/expense-page-options.ts",
+  expensePageOptions: "src/features/workspace/pages/expenses/model/expense-page-options.ts",
   itineraryViewModelHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-view-model.ts",
   apiClientsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-api-clients.ts",
   setupContextHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-setup-context.ts",
@@ -128,14 +128,15 @@ export const workspaceBoundarySourcePaths = {
   stopDialogForm: "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts",
   stopDialogTimeFields: "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts",
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
-  tripSettingsPageStory: "src/features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx",
+  tripSettingsPageStory:
+    "src/features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.tsx",
   tripSettingsIndexSource: "src/features/workspace/pages/trip-settings/index.ts",
-  memberPageOptions: "src/features/workspace/pages/members/member-page-options.ts",
-  memberPageSelectors: "src/features/workspace/pages/members/member-page-selectors.ts",
+  memberPageOptions: "src/features/workspace/pages/members/model/member-page-options.ts",
+  memberPageSelectors: "src/features/workspace/pages/members/model/member-page-selectors.ts",
   memberInviteActions: "src/features/workspace/pages/members/use-member-invite-actions.ts",
-  photoPageOptions: "src/features/workspace/pages/photos/photo-page-options.ts",
-  photoPageSelectors: "src/features/workspace/pages/photos/photo-page-selectors.ts",
-  photosPageStory: "src/features/workspace/pages/photos/TripPhotosPage.stories.tsx",
+  photoPageOptions: "src/features/workspace/pages/photos/model/photo-page-options.ts",
+  photoPageSelectors: "src/features/workspace/pages/photos/model/photo-page-selectors.ts",
+  photosPageStory: "src/features/workspace/pages/photos/storybook/TripPhotosPage.stories.tsx",
   photoAlbumBrowser: "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",
   photoAlbumDialogRelatedItems: "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
@@ -198,8 +199,8 @@ export const workspaceBoundarySourcePaths = {
   tripWizardFormSections:
     "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
   tripJoinGateStory: "src/features/account/components/trip-join-gate/storybook/TripJoinGate.stories.tsx",
-  membersPageStory: "src/features/workspace/pages/members/MembersPage.stories.tsx",
-  membersTemplateStory: "src/features/workspace/pages/members/MembersTemplate.stories.tsx",
+  membersPageStory: "src/features/workspace/pages/members/storybook/MembersPage.stories.tsx",
+  membersTemplateStory: "src/features/workspace/pages/members/storybook/MembersTemplate.stories.tsx",
   itineraryStoryFixtures: "src/features/itinerary/stories/itinerary-story-fixtures.ts",
   itineraryStoryPathScenarios: "src/features/itinerary/stories/itinerary-story-path-scenarios.ts",
   itineraryStoryPathItems: "src/features/itinerary/stories/fixtures/itinerary-story-path-items.ts",
@@ -221,7 +222,8 @@ export const workspaceBoundarySourcePaths = {
   mapTemplateStory: "src/features/itinerary/stories/workspace/MapTemplate.stories.tsx",
   homeLandingStory: "src/features/public-site/pages/home/HomeLanding.stories.tsx",
   aboutAppPageStory: "src/features/public-site/pages/about/AboutAppPage.stories.tsx",
-  accountAccessStory: "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
+  accountAccessStory:
+    "src/features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",
   accountAccessFixtures:
     "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
   accountAccessTestClients: "src/features/account/components/account-access-panel/testing/account-access-panel-test-clients.ts",
@@ -251,9 +253,12 @@ export const workspaceBoundarySourcePaths = {
   emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",
   appFacade: "src/app/SagittariusApp.tsx",
   tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
-  tripSettingsStateKey: "src/features/workspace/pages/trip-settings/trip-settings-state-key.ts",
-  tripSettingsFormModel: "src/features/workspace/pages/trip-settings/trip-settings-form-model.ts",
-  tripSettingsDateImpact: "src/features/workspace/pages/trip-settings/trip-settings-date-impact.ts",
+  tripSettingsStateKey:
+    "src/features/workspace/pages/trip-settings/model/trip-settings-state-key.ts",
+  tripSettingsFormModel:
+    "src/features/workspace/pages/trip-settings/model/trip-settings-form-model.ts",
+  tripSettingsDateImpact:
+    "src/features/workspace/pages/trip-settings/model/trip-settings-date-impact.ts",
   tripSettingsFormState: "src/features/workspace/pages/trip-settings/use-trip-settings-form-state.ts",
 } as const;
 

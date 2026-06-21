@@ -92,7 +92,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountPortalDataCache).toContain("export function getLatestAccountPortalDataCache");
     expect(accountPortalDashboardClassNames).toContain("export const accountPortalDashboardClassNames");
     expect(accountPortalDashboardClassNames).toContain("accountStepSummaryClassName");
-    expect(accountAccessStory).toContain("./storybook/account-access-panel.stories.support");
+    expect(accountAccessStory).toContain("./account-access-panel.stories.support");
     expect(accountAccessStory).not.toContain("AccountApiClient");
     expect(accountAccessStory).not.toContain("const accountSettings");
     expect(accountAccessStorySupport).toContain("./account-access-panel.stories.clients");

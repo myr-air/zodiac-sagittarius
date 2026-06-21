@@ -236,6 +236,7 @@ export const frontendScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/account-access-panel-fixtures.ts",
   "src/features/account/components/account-access-panel/account-access-panel.stories.clients.ts",
   "src/features/account/components/account-access-panel/account-access-panel.stories.support.ts",
+  "src/features/account/components/account-access-panel/AccountAccessPanel.stories.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.stories.plays.ts",
   "src/features/account/components/account-access-panel/AccountAccessPanel.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.auth-code.test.tsx",

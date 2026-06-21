@@ -1,6 +1,6 @@
 export const requiredWorkspacePageStates: Array<[string, string[]]> = [
   [
-    "features/workspace/pages/members/MembersPage.stories.tsx",
+    "features/workspace/pages/members/storybook/MembersPage.stories.tsx",
     [
       "Owner",
       "OwnerThai",
@@ -15,7 +15,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/expenses/ExpensesPage.stories.tsx",
+    "features/workspace/pages/expenses/storybook/ExpensesPage.stories.tsx",
     [
       "Owner",
       "OwnerThai",
@@ -65,7 +65,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/trip-settings/TripSettingsPage.stories.tsx",
+    "features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.tsx",
     [
       "Owner",
       "Traveler",
