@@ -4,7 +4,7 @@ import {
   formatDayLabel,
   getNowNext,
   sortItemsForDay,
-} from "../../../itinerary-view";
+} from "../../../itinerary-core";
 import { getTripFixtureItineraryItem, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { hongKongDay, shenzhenDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 

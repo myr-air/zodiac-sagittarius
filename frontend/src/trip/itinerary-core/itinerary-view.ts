@@ -1,17 +1,17 @@
 import type { Locale } from "@/src/i18n/types";
-import type { ItineraryItem, ValidationWarning } from "./types";
+import type { ItineraryItem, ValidationWarning } from "../types";
 import {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,
   sortItineraryItemsByDayAndHierarchy,
-} from "./itinerary-items";
+} from "../itinerary-items";
 import {
   buildOverlapWarnings,
   getTimeWindowInterval,
   validateHierarchyFields,
   validateItemFields,
 } from "./itinerary-validation";
-import { parseTime } from "./itinerary-core";
+import { parseTime } from "./itinerary-time";
 
 export interface ItineraryDayGroup {
   day: string;

@@ -13,7 +13,7 @@ export {
   type ItineraryView,
   sortItemsForDay,
   validateItineraryItem,
-} from "./itinerary-view";
+} from "./itinerary-core";
 export {
   type ItineraryPathSelection,
   type ItineraryPathSelectionAction,

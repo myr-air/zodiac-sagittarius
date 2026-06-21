@@ -5,7 +5,7 @@ import {
   getTimeWindowInterval,
   validateHierarchyFields,
   validateItemFields,
-} from "../../../itinerary-validation";
+} from "../../../itinerary-core";
 
 describe("itinerary validation", () => {
   const base = seedTrip.itineraryItems[0]!;
