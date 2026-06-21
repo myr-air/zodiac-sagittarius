@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildUpdatedItineraryItem } from "@/src/trip/itinerary";
 import { buildPatchItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
 import { seedTrip } from "@/src/trip/seed";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   stopFormValues,
   stopLocationFields,

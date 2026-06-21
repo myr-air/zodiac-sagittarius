@@ -22,7 +22,7 @@ import { applyApiItineraryImport } from "./apply-api-itinerary-import";
 import {
   buildWorkspaceItineraryImportPreview,
   buildWorkspaceLocalItineraryImportApplyInput,
-} from "./workspace-itinerary-import-apply-inputs";
+} from "./command-inputs/workspace-itinerary-import-apply-inputs";
 
 interface UseWorkspaceItineraryImportApplyCommandOptions {
   apiClient?: TripApiClient;

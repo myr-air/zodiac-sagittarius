@@ -23,7 +23,7 @@ import type {
 } from "@/src/trip/types";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import { resolveStopFormLocation } from "./stop-place-resolution-command";
-import { buildWorkspaceCreatedStop } from "./workspace-itinerary-stop-create-inputs";
+import { buildWorkspaceCreatedStop } from "./command-inputs/workspace-itinerary-stop-create-inputs";
 import { placeCreatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
 
 interface UseWorkspaceItineraryStopCreateCommandParams {

@@ -3,7 +3,7 @@ import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-api-r
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
 import { buildMapLink } from "@/src/trip/place-resolution";
 import type { ItineraryItem } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 
 interface WorkspaceInlinePatchRequestContext {
   clientMutationId: string;

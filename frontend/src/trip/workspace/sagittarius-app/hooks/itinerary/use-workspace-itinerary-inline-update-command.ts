@@ -15,7 +15,7 @@ import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-co
 import {
   buildWorkspaceInlinePatchRequest,
   buildWorkspaceInlineUpdatedItem,
-} from "./workspace-itinerary-inline-update-inputs";
+} from "./command-inputs/workspace-itinerary-inline-update-inputs";
 
 interface UseWorkspaceItineraryInlineUpdateCommandParams {
   canEdit: boolean;

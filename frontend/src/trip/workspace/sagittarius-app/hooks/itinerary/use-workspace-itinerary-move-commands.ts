@@ -12,7 +12,7 @@ import { useWorkspaceItineraryReorderCommand } from "./use-workspace-itinerary-r
 import {
   buildWorkspaceMoveItemPatchRequest,
   buildWorkspaceMoveItemToDayPatchRequest,
-} from "./workspace-itinerary-move-inputs";
+} from "./command-inputs/workspace-itinerary-move-inputs";
 
 interface UseWorkspaceItineraryMoveCommandsParams {
   canEdit: boolean;

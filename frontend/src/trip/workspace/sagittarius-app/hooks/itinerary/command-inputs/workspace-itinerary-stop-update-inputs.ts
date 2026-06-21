@@ -8,7 +8,7 @@ import {
   type BuildPatchItineraryItemRequestOptions,
 } from "@/src/trip/itinerary-api-requests";
 import type { ItineraryItem } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 
 type StopLocationFields = Pick<
   BuildPatchItineraryItemRequestOptions,

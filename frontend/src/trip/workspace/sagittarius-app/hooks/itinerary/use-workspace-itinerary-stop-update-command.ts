@@ -24,7 +24,7 @@ import { placeUpdatedWorkspaceStop } from "./workspace-itinerary-stop-placement"
 import {
   buildWorkspaceStopUpdatePatchRequest,
   buildWorkspaceUpdatedStop,
-} from "./workspace-itinerary-stop-update-inputs";
+} from "./command-inputs/workspace-itinerary-stop-update-inputs";
 
 interface UseWorkspaceItineraryStopUpdateCommandParams {
   commitTrip: (

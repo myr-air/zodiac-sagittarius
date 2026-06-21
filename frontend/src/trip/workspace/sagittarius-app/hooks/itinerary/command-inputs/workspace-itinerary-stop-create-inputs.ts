@@ -8,7 +8,7 @@ import {
 } from "@/src/trip/itinerary";
 import { nextLocalItemId } from "@/src/trip/local-ids";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 
 type StopLocationFields = Pick<
   BuildItineraryItemDraftOptions,

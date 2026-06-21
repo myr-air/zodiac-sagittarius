@@ -11,7 +11,7 @@ import {
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
 import { shenzhenDay } from "@/src/trip/tests/itinerary/core/itinerary.test-support";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   buildWorkspaceMoveItemPatchRequest,
   buildWorkspaceMoveItemToDayPatchRequest,

@@ -6,7 +6,7 @@ import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import {
   buildWorkspacePathMovePlacement,
   buildWorkspacePathMoveReplacementItems,
-} from "./workspace-itinerary-path-move-inputs";
+} from "./command-inputs/workspace-itinerary-path-move-inputs";
 
 interface UseWorkspaceItineraryPathMoveCommandParams {
   canEdit: boolean;

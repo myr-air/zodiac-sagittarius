@@ -5,7 +5,7 @@ import {
 } from "@/src/trip/itinerary";
 import { nextLocalItemId } from "@/src/trip/local-ids";
 import { seedTrip } from "@/src/trip/seed";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   stopFormValues,
   stopLocationFields,

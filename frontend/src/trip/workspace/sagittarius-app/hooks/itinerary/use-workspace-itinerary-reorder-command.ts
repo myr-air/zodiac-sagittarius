@@ -7,7 +7,7 @@ import {
 } from "@/src/trip/itinerary";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
-import { buildWorkspaceReorderApiInput } from "./workspace-itinerary-move-inputs";
+import { buildWorkspaceReorderApiInput } from "./command-inputs/workspace-itinerary-move-inputs";
 
 interface UseWorkspaceItineraryReorderCommandParams {
   canEdit: boolean;
