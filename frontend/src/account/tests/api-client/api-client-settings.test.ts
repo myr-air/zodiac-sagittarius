@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAccountApiClient } from "./api-client";
-import { accountProfile, jsonResponse } from "./testing/support/api-client-test-utils";
+import { createAccountApiClient } from "../../api-client";
+import { accountProfile, jsonResponse } from "../../testing/support/api-client-test-utils";
 
 describe("Account API client settings routes", () => {
   it("loads and updates account settings with bearer auth", async () => {

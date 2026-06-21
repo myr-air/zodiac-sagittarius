@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAccountApiClient } from "./api-client";
+import { createAccountApiClient } from "../../api-client";
 import {
   accountTripCreateRequest,
   accountTripCreateResponse,
   jsonResponse,
-} from "./testing/support/api-client-test-utils";
+} from "../../testing/support/api-client-test-utils";
 
 describe("Account API client trip management routes", () => {
   it("creates account-owned trips, claims temp members, and transfers owner", async () => {

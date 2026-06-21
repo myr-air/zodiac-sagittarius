@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAccountApiClient } from "./api-client";
+import { createAccountApiClient } from "../../api-client";
 import {
   accountExplorer,
   accountTodo,
   accountTrip,
   accountVaultItem,
   jsonResponse,
-} from "./testing/support/api-client-test-utils";
+} from "../../testing/support/api-client-test-utils";
 
 describe("Account API client portal routes", () => {
   it("loads trip history and stats with bearer auth", async () => {
