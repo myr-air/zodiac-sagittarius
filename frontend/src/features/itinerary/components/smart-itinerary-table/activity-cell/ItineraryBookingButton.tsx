@@ -9,6 +9,10 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
+import type {
+  ItineraryAsyncVoidResult,
+  ItineraryBookingMutationResult,
+} from "../itinerary-action.types";
 
 import {
   bookingIconForItem,
@@ -40,14 +44,14 @@ export function ItineraryBookingButton({
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onUnlinkBookingForItem?: (
     bookingDocId: string,
     itemId: string,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
 }) {
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   if (!onAddBookingForItem && !onSaveBookingForItem) return null;

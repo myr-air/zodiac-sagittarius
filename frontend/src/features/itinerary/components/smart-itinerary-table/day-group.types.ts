@@ -11,6 +11,10 @@ import type {
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
 import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
+import type {
+  ItineraryAsyncVoidResult,
+  ItineraryBookingMutationResult,
+} from "./itinerary-action.types";
 
 export interface DayGroupProps {
   graphColumnWidth: number;
@@ -30,19 +34,19 @@ export interface DayGroupProps {
   canEdit: boolean;
   collapsed: boolean;
   onAddStop?: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
+  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onUnlinkBookingForItem?: (
     bookingDocId: string,
     itemId: string,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onDeleteItem?: (itemId: string) => void;
@@ -54,10 +58,10 @@ export interface DayGroupProps {
     date: string,
     version: number,
     title: string | null,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onToggleDay: (day: string) => void;
 }

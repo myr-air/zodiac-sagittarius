@@ -11,6 +11,10 @@ import type {
 import type { CSSProperties } from "react";
 import { DayGroup } from "./day-group";
 import { SmartItineraryTableHead } from "./SmartItineraryTableHead";
+import type {
+  ItineraryAsyncVoidResult,
+  ItineraryBookingMutationResult,
+} from "./itinerary-action.types";
 import { smartTableClassName } from "./smart-itinerary-table.styles";
 
 interface SmartItineraryTableBodyProps {
@@ -31,29 +35,29 @@ interface SmartItineraryTableBodyProps {
   bookingLinkItems: ItineraryItem[];
   canRestructureItems: boolean;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
+  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onUnlinkBookingForItem?: (
     bookingDocId: string,
     itemId: string,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
   onSelectItem: (itemId: string) => void;
-  onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
+  onSaveDayTitle?: (date: string, version: number, title: string | null) => ItineraryAsyncVoidResult;
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onToggleDay: (day: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;

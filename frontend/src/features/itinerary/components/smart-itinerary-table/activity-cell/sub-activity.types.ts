@@ -6,6 +6,10 @@ import type {
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
+import type {
+  ItineraryAsyncVoidResult,
+  ItineraryBookingMutationResult,
+} from "../itinerary-action.types";
 
 export interface SubActivitySharedProps {
   canEdit: boolean;
@@ -13,20 +17,20 @@ export interface SubActivitySharedProps {
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
   subItems: ItineraryItem[];
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
+  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
   onOpenNoteForItem?: (item: ItineraryItem, compact?: boolean) => void;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onUnlinkBookingForItem?: (
     bookingDocId: string,
     itemId: string,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
   onDeleteItem?: (itemId: string) => void;
@@ -34,7 +38,7 @@ export interface SubActivitySharedProps {
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
 }
 
 export interface SubActivityModalProps extends SubActivitySharedProps {

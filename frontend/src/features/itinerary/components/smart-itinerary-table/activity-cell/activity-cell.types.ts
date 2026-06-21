@@ -3,6 +3,10 @@ import type { Locale } from "@/src/i18n/types";
 import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
+import type {
+  ItineraryAsyncVoidResult,
+  ItineraryBookingMutationResult,
+} from "../itinerary-action.types";
 
 export interface ActivityCellProps {
   canEdit: boolean;
@@ -13,19 +17,19 @@ export interface ActivityCellProps {
   subItems: ItineraryItem[];
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
-  onAddNoteForItem?: (itemId: string, body: string) => void | Promise<void>;
+  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
+  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
   onAddBookingForItem?: (
     itemId: string,
     template?: ItineraryBookingTemplate,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onSaveBookingForItem?: (
     input: ItineraryBookingTicketInput,
-  ) => string | void | Promise<string | void>;
+  ) => ItineraryBookingMutationResult;
   onUnlinkBookingForItem?: (
     bookingDocId: string,
     itemId: string,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   onDeleteItem?: (itemId: string) => void;
   onEditItem?: (itemId: string) => void;
   onOpenItemDetails: (itemId: string) => void;
@@ -33,5 +37,5 @@ export interface ActivityCellProps {
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
 }
