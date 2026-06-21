@@ -23,6 +23,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/ui/ui.stories.plays.ts",
   "src/ui/icons.test.tsx",
   "src/ui/page-header.test.tsx",
+  "src/ui/tests/page-header.test.tsx",
   "src/ui/ui-primitives.test.tsx",
   "src/app/SagittariusApp.stories.tsx",
   "src/api/sagittarius-api-clients.test.ts",

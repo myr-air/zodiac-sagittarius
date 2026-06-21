@@ -17,7 +17,6 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/testing/browser-storage.ts",
   "src/testing/storybook-actions.ts",
   "src/ui/tests/icons.test.tsx",
-  "src/ui/tests/page-header.test.tsx",
   "src/ui/tests/ui-primitives.test.tsx",
   "src/i18n/LanguageSwitchMenu.tsx",
   "src/i18n/language-switch.support.ts",
