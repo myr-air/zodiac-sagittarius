@@ -5,7 +5,7 @@ import { StopDialog } from "../StopDialog";
 import {
   renderStopDialog as render,
   renderStopDialogEn as renderEn,
-} from "../testing/StopDialog.test-support";
+} from "../testing/support/stop-dialog-render";
 
 describe("StopDialog create mode", () => {
   it("trims submitted values and allows optional end time", async () => {

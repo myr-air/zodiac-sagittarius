@@ -4,7 +4,7 @@ import { StopDialog } from "../StopDialog";
 import {
   renderStopDialog as render,
   renderStopDialogEn as renderEn,
-} from "../testing/StopDialog.test-support";
+} from "../testing/support/stop-dialog-render";
 
 describe("StopDialog time window UI", () => {
   it("uses Joii time inputs, derived duration text, and a standard close icon", () => {

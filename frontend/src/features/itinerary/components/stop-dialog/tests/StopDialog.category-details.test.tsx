@@ -2,7 +2,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { StopDialog } from "../StopDialog";
-import { renderStopDialogEn as renderEn } from "../testing/StopDialog.test-support";
+import { renderStopDialogEn as renderEn } from "../testing/support/stop-dialog-render";
 
 describe("StopDialog category details", () => {
   it("shows transportation detail fields and submits a compatible travel payload", () => {
