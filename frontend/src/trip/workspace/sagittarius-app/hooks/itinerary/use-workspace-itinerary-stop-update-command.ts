@@ -2,11 +2,7 @@ import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { StopFormValues } from "@/src/features/itinerary/components";
-import {
-  buildUpdatedItineraryItem,
-  mergeUpdatedItineraryBranchIntoTrip,
-} from "@/src/trip/itinerary";
-import { buildPatchItineraryItemRequest } from "@/src/trip/itinerary-api-requests";
+import { mergeUpdatedItineraryBranchIntoTrip } from "@/src/trip/itinerary";
 import {
   type PlaceResolver,
   type StopPlaceResolutionState,
@@ -19,13 +15,16 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import {
   resolveStopFormLocation,
   shouldResolveUpdatedStopPlace,
 } from "./stop-place-resolution-command";
 import { placeUpdatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
+import {
+  buildWorkspaceStopUpdatePatchRequest,
+  buildWorkspaceUpdatedStop,
+} from "./workspace-itinerary-stop-update-inputs";
 
 interface UseWorkspaceItineraryStopUpdateCommandParams {
   commitTrip: (
@@ -70,10 +69,10 @@ export function useWorkspaceItineraryStopUpdateCommand({
         day: editDay,
         effectivePlaceResolver,
         fallbackLocationFields: {
-            address: place.address ?? place.place,
-            coordinates: place.coordinates,
-            mapLink: place.mapLink,
-          },
+          address: place.address ?? place.place,
+          coordinates: place.coordinates,
+          mapLink: place.mapLink,
+        },
         nextClientMutationId,
         setStopPlaceResolution,
         shouldResolvePlace,
@@ -89,16 +88,13 @@ export function useWorkspaceItineraryStopUpdateCommand({
             trip.id,
             itemId,
             participantSession.sessionToken,
-            buildPatchItineraryItemRequest(
-              { ...values, day: editDay },
-              {
-                address: locationFields.address,
-                clientMutationId: nextClientMutationId("itinerary-patch"),
-                coordinates: locationFields.coordinates,
-                expectedVersion: place.version,
-                mapLink: locationFields.mapLink,
-              },
-            ),
+            buildWorkspaceStopUpdatePatchRequest({
+              clientMutationId: nextClientMutationId("itinerary-patch"),
+              editDay,
+              item: place,
+              locationFields,
+              values,
+            }),
           )
         : undefined;
 
@@ -134,16 +130,12 @@ export function useWorkspaceItineraryStopUpdateCommand({
 
       if (!isApiMode) {
         commitTrip((current) => {
-          const updatedItem = buildUpdatedItineraryItem(
-            place,
-            { ...values, day: editDay },
-            {
-              address: locationFields.address,
-              coordinates: locationFields.coordinates,
-              mapLink: locationFields.mapLink,
-              updatedAt: workspaceLocalMutationTimestamp,
-            },
-          );
+          const updatedItem = buildWorkspaceUpdatedStop({
+            editDay,
+            item: place,
+            locationFields,
+            values,
+          });
           return placeUpdatedWorkspaceStop(
             current,
             updatedItem,
