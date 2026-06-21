@@ -4,7 +4,7 @@ import {
   detailTypeFromActivityType,
   readStringDetail,
   stopDetailLabels,
-} from "./stop-dialog-details";
+} from "../stop-dialog-details";
 
 describe("stop dialog details model", () => {
   it("keeps detail field sets owned by detail type", () => {

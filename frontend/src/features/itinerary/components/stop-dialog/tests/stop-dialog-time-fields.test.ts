@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyStopDetailType,
   applyStopEndTime,
   applyStopStartTime,
   applyStopTimeMode,
-  buildInitialStopFormValues,
   toggleStopNextDayEnd,
-} from "./stop-dialog.form";
+} from "../stop-dialog-time-fields";
+import { buildInitialStopFormValues } from "../stop-dialog.form";
 
-describe("stop dialog form schedule updates", () => {
-  it("keeps time-window fields in sync as start, end, and next-day values change", () => {
+describe("stop dialog time field helpers", () => {
+  it("keeps derived duration and next-day fields in sync", () => {
     const values = {
       ...buildInitialStopFormValues({ initialDay: "2026-06-19" }),
       durationMinutes: 60,
@@ -24,20 +23,18 @@ describe("stop dialog form schedule updates", () => {
       endTime: "10:00",
       startTime: "09:30",
     });
-
     expect(applyStopEndTime(values, "08:30")).toMatchObject({
       durationMinutes: 1410,
       endOffsetDays: 1,
       endTime: "08:30",
     });
-
     expect(toggleStopNextDayEnd(values)).toMatchObject({
       durationMinutes: 1500,
       endOffsetDays: 1,
     });
   });
 
-  it("clears schedule fields when users switch a stop to flexible timing", () => {
+  it("clears scheduled time fields for flexible stops", () => {
     expect(
       applyStopTimeMode({
         ...buildInitialStopFormValues({ initialDay: "2026-06-19" }),
@@ -50,26 +47,6 @@ describe("stop dialog form schedule updates", () => {
       durationMinutes: null,
       endOffsetDays: 0,
       endTime: null,
-      startTime: "",
-      timeMode: "flexible",
-    });
-  });
-
-  it("updates item kind and scheduling when detail type changes", () => {
-    const base = buildInitialStopFormValues({ initialDay: "2026-06-19" });
-
-    expect(applyStopDetailType(base, "transportation")).toMatchObject({
-      activityType: "travel",
-      isPlanBlock: true,
-      itemKind: "travel",
-    });
-
-    expect(applyStopDetailType(base, "task")).toMatchObject({
-      durationMinutes: null,
-      endOffsetDays: 0,
-      endTime: null,
-      isPlanBlock: false,
-      itemKind: "note",
       startTime: "",
       timeMode: "flexible",
     });

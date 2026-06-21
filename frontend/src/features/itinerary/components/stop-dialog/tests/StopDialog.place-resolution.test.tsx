@@ -1,8 +1,8 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { StopDialog } from "./StopDialog";
-import { renderStopDialog as render, renderStopDialogEn as renderEn } from "./StopDialog.test-support";
+import { StopDialog } from "../StopDialog";
+import { renderStopDialog as render, renderStopDialogEn as renderEn } from "../testing/StopDialog.test-support";
 
 describe("StopDialog place resolution", () => {
   it("shows ambiguous place candidates and submits the selected candidate", async () => {

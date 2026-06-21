@@ -3,8 +3,8 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   buildInitialStopDetailValues,
   buildInitialStopFormValues,
-} from "./stop-dialog.form";
-import { emptyStopDetailValues } from "./stop-dialog.utils";
+} from "../stop-dialog.form";
+import { emptyStopDetailValues } from "../stop-dialog.utils";
 
 describe("stop dialog form defaults", () => {
   it("builds create defaults from trip context", () => {

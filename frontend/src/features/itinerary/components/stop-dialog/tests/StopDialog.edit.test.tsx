@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { pathIdMain, pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { StopDialog } from "./StopDialog";
-import { renderStopDialog as render } from "./StopDialog.test-support";
+import { StopDialog } from "../StopDialog";
+import { renderStopDialog as render } from "../testing/StopDialog.test-support";
 
 describe("StopDialog edit mode", () => {
   it("prefills edit mode from the selected itinerary item and closes from both controls", async () => {

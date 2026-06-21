@@ -7,7 +7,7 @@ import {
   endWindowFromDuration,
   parseRouteActivity,
   parseTimeRange,
-} from "./stop-dialog-time";
+} from "../stop-dialog-time";
 
 describe("stop dialog time helpers", () => {
   it("computes duration and end windows across day boundaries", () => {

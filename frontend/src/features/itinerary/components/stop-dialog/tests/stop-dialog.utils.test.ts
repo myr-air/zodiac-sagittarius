@@ -8,7 +8,7 @@ import {
   stopDialogDetailTypeOptions,
   stopDialogDetailTypeToActivityType,
   structuredStopDetailValues,
-} from "./stop-dialog.utils";
+} from "../stop-dialog.utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 
 describe("stop dialog utils", () => {
