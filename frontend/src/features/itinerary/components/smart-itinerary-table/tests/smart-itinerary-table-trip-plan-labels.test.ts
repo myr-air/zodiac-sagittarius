@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { PlanVariant } from "@/src/trip/types";
-import { formatTripPlanOptionLabel } from "../smart-itinerary-table-utils";
+import {
+  formatTripPlanOptionLabel,
+  selectedTripPlanIdForControl,
+} from "../smart-itinerary-table-utils";
 
 describe("smart itinerary table trip plan labels", () => {
   it("builds trip plan option labels from status", () => {
@@ -25,5 +28,24 @@ describe("smart itinerary table trip plan labels", () => {
       completed: "Completed",
     };
     expect(formatTripPlanOptionLabel(plans[0], labels)).toBe("Split - Proposal");
+  });
+
+  it("keeps selected trip plan ids stable when the plan exists", () => {
+    const plans = [
+      { id: "main", name: "Main" },
+      { id: "rain", name: "Rain" },
+    ] as PlanVariant[];
+
+    expect(selectedTripPlanIdForControl(plans, "rain")).toBe("rain");
+  });
+
+  it("falls back to the first available trip plan when selection is stale", () => {
+    const plans = [
+      { id: "main", name: "Main" },
+      { id: "rain", name: "Rain" },
+    ] as PlanVariant[];
+
+    expect(selectedTripPlanIdForControl(plans, "missing")).toBe("main");
+    expect(selectedTripPlanIdForControl([], "missing")).toBe("");
   });
 });

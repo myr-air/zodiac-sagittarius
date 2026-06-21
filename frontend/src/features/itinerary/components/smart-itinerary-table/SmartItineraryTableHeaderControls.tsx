@@ -16,6 +16,7 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
+import { selectedTripPlanIdForControl } from "./smart-itinerary-table-utils";
 
 interface TripPlanHeaderControlsProps {
   canEdit: boolean;
@@ -71,14 +72,13 @@ export function SmartItineraryTableHeaderControls({
   const headerControlsRef = useRef<HTMLDivElement>(null);
   const headerControlsButtonRef = useRef<HTMLButtonElement>(null);
 
-  const selectedTripPlanIdForControl = tripPlans.some(
-    (plan) => plan.id === selectedTripPlanId,
-  )
-    ? selectedTripPlanId
-    : (tripPlans[0]?.id ?? "");
+  const selectedTripPlanIdForControlValue = selectedTripPlanIdForControl(
+    tripPlans,
+    selectedTripPlanId,
+  );
 
   const selectedTripPlan =
-    tripPlans.find((plan) => plan.id === selectedTripPlanIdForControl) ?? null;
+    tripPlans.find((plan) => plan.id === selectedTripPlanIdForControlValue) ?? null;
 
   useEffect(() => {
     if (headerControlsExpanded || !renderHeaderControls) return;
@@ -169,7 +169,7 @@ export function SmartItineraryTableHeaderControls({
               onCreateTripPlan={onCreateTripPlan}
               onRenameTripPlan={onRenameTripPlan}
               onSetMainTripPlan={onSetMainTripPlan}
-              selectedTripPlanId={selectedTripPlanIdForControl}
+              selectedTripPlanId={selectedTripPlanIdForControlValue}
               tripPlans={tripPlans}
             />
             <SmartItineraryTablePathFilters
