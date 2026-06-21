@@ -9,7 +9,7 @@ import { Icon } from "@/src/ui/icons";
 import {
   TripJoinParticipantAuthForm,
   type TripJoinParticipantAuthFormCopy,
-} from "./TripJoinParticipantAuthForm";
+} from "./forms/TripJoinParticipantAuthForm";
 import { participantStatusLabel } from "./model/trip-join-participant-status";
 import {
   participantAvatarClassName,

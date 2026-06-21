@@ -10,7 +10,7 @@ import {
   tripAccessContentClassName,
   tripAccessFormClassName,
   tripAccessSubmitClassName,
-} from "./layout/trip-join-gate.styles";
+} from "../layout/trip-join-gate.styles";
 
 interface TripJoinRoomFormCopy {
   hideTripPassword: string;

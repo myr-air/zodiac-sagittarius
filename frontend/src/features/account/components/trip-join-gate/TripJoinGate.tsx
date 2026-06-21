@@ -8,7 +8,7 @@ import {
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { TripJoinGateChrome } from "./TripJoinGateChrome";
 import { TripJoinParticipantStep } from "./TripJoinParticipantStep";
-import { TripJoinRoomForm } from "./TripJoinRoomForm";
+import { TripJoinRoomForm } from "./forms/TripJoinRoomForm";
 import { useTripJoinGateState } from "./state/use-trip-join-gate-state";
 
 export { tripFromJoinResponse } from "./model/trip-join-response-mapper";

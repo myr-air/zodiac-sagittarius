@@ -2,8 +2,8 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { seedTrip } from "@/src/trip/seed";
-import { TripJoinParticipantAuthForm } from "./TripJoinParticipantAuthForm";
-import type { TripJoinParticipantAuthFormCopy } from "./TripJoinParticipantAuthForm";
+import { TripJoinParticipantAuthForm } from "../forms/TripJoinParticipantAuthForm";
+import type { TripJoinParticipantAuthFormCopy } from "../forms/TripJoinParticipantAuthForm";
 
 const authFormCopy: TripJoinParticipantAuthFormCopy = {
   confirm: "Confirm",
