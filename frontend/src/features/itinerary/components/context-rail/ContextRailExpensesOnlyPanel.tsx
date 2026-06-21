@@ -1,13 +1,7 @@
 import type { Expense, ExpenseSummary, Member } from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
+import { ContextRailPanelShell } from "./ContextRailPanelShell";
 import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
-import {
-  inspectorCloseButtonClassName,
-  inspectorTitleClassName,
-  inspectorTitleHeadingClassName,
-  railInspectorClassName,
-} from "./context-rail.styles";
 import type {
   ContextRailCreateExpenseInput,
   ContextRailUpdateExpenseInput,
@@ -44,18 +38,7 @@ export function ContextRailExpensesOnlyPanel({
   );
 
   return (
-    <div className={railInspectorClassName}>
-      <div className={inspectorTitleClassName}>
-        <h2 className={inspectorTitleHeadingClassName}>{title}</h2>
-        <button
-          className={inspectorCloseButtonClassName}
-          type="button"
-          aria-label={closeLabel}
-          onClick={onClose}
-        >
-          <Icon name="chevronRight" />
-        </button>
-      </div>
+    <ContextRailPanelShell title={title} closeLabel={closeLabel} onClose={onClose}>
       <ContextRailExpensesSection
         selectedItemId={undefined}
         expenses={expenses}
@@ -67,6 +50,6 @@ export function ContextRailExpensesOnlyPanel({
         onUpdateExpense={onUpdateExpense}
         onDeleteExpense={onDeleteExpense}
       />
-    </div>
+    </ContextRailPanelShell>
   );
 }

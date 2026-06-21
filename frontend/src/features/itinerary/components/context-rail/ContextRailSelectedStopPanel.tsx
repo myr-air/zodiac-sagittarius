@@ -1,4 +1,3 @@
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type {
   BookingDoc,
@@ -16,17 +15,12 @@ import { ContextRailBookingSection } from "./ContextRailBookingSection";
 import { ContextRailConflictSection } from "./ContextRailConflictSection";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailNotesSection } from "./ContextRailNotesSection";
+import { ContextRailPanelShell } from "./ContextRailPanelShell";
 import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
 import { ContextRailStopDetailSection } from "./ContextRailStopDetailSection";
 import { ContextRailTabs } from "./ContextRailTabs";
 import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
 import { ContextRailTab } from "./context-rail.utils";
-import {
-  inspectorCloseButtonClassName,
-  inspectorTitleClassName,
-  inspectorTitleHeadingClassName,
-  railInspectorClassName,
-} from "./context-rail.styles";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
   ContextRailBookingDocTypeChangeHandler,
@@ -111,21 +105,11 @@ export function ContextRailSelectedStopPanel({
   );
 
   return (
-    <div className={railInspectorClassName}>
-      <div className={inspectorTitleClassName}>
-        <h2 className={inspectorTitleHeadingClassName}>
-          {selectedItem.activity}
-        </h2>
-        <button
-          className={inspectorCloseButtonClassName}
-          type="button"
-          aria-label={t.contextRail.closeDetails}
-          onClick={onClose}
-        >
-          <Icon name="chevronRight" />
-        </button>
-      </div>
-
+    <ContextRailPanelShell
+      title={selectedItem.activity}
+      closeLabel={t.contextRail.closeDetails}
+      onClose={onClose}
+    >
       <ContextRailTabs activeTab={activeTab} onActiveTabChange={onActiveTabChange} />
 
       <ContextRailStopDetailSection
@@ -187,6 +171,6 @@ export function ContextRailSelectedStopPanel({
         onUpdateExpense={onUpdateExpense}
         onDeleteExpense={onDeleteExpense}
       />
-    </div>
+    </ContextRailPanelShell>
   );
 }
