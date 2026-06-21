@@ -1,8 +1,5 @@
-import { vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import type { Member, TripPhotoAlbumLink } from "@/src/trip/types";
-import { TripPhotosPage, type TripPhotoAlbumInput } from "../TripPhotosPage";
+import type { TripPhotoAlbumLink } from "@/src/trip/types";
 
 export const photoAlbumPageTestAlbums: TripPhotoAlbumLink[] = [
   {
@@ -57,40 +54,3 @@ export const photoAlbumPageTestAlbums: TripPhotoAlbumLink[] = [
     version: 1,
   },
 ];
-
-interface RenderTripPhotosPageOptions {
-  currentMember: Member;
-  onCreatePhotoAlbum: (input: TripPhotoAlbumInput) => void;
-  onDeletePhotoAlbum: (albumId: string) => void;
-  onUpdatePhotoAlbum: (albumId: string, input: TripPhotoAlbumInput) => void;
-  photoAlbumLinks: TripPhotoAlbumLink[];
-}
-
-export function renderTripPhotosPage(
-  overrides: Partial<RenderTripPhotosPageOptions> = {},
-) {
-  return renderWithI18n(renderTripPhotosPageElement(overrides), {
-    locale: "en",
-  });
-}
-
-export function renderTripPhotosPageElement(
-  overrides: Partial<RenderTripPhotosPageOptions> = {},
-) {
-  const currentMember = overrides.currentMember ?? seedTrip.members[0];
-  return (
-    <TripPhotosPage
-      trip={seedTrip}
-      currentMember={currentMember}
-      photoAlbumLinks={overrides.photoAlbumLinks ?? photoAlbumPageTestAlbums}
-      canEditPhotoAlbums={
-        currentMember.role === "owner" ||
-        currentMember.role === "organizer" ||
-        currentMember.role === "traveler"
-      }
-      onCreatePhotoAlbum={overrides.onCreatePhotoAlbum ?? vi.fn()}
-      onUpdatePhotoAlbum={overrides.onUpdatePhotoAlbum ?? vi.fn()}
-      onDeletePhotoAlbum={overrides.onDeletePhotoAlbum ?? vi.fn()}
-    />
-  );
-}

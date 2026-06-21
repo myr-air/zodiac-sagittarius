@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import type { TripPhotoAlbumInput } from "../TripPhotosPage";
-import { renderTripPhotosPage } from "./TripPhotosPage.test-support";
+import { renderTripPhotosPage } from "../testing/support/render-photos-page";
 
 describe("TripPhotosPage", () => {
   it("renders the album hub, summary, provider filters, safe links, and inspector", () => {
