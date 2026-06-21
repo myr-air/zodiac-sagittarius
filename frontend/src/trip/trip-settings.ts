@@ -1,6 +1,6 @@
 import type { PatchTripApiRequest } from "@/src/trip/api-client";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
-import { shiftItineraryItemsToStartDate } from "@/src/trip/itinerary-time";
+import { shiftItineraryItemsToStartDate } from "@/src/trip/itinerary-core";
 import { buildShiftItineraryItemDayRequest } from "@/src/trip/itinerary-items";
 import type { PatchItineraryItemApiRequest } from "@/src/trip/api-client";
 

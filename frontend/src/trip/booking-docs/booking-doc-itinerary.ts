@@ -1,4 +1,4 @@
-import { itineraryDateTime, shiftIsoDate } from "../itinerary-time";
+import { itineraryDateTime, shiftIsoDate } from "../itinerary-core";
 import type {
   BookingDocType,
   ItineraryItem,

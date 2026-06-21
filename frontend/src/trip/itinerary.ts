@@ -1,4 +1,4 @@
-export { parseTime } from "./itinerary-time";
+export { parseTime } from "./itinerary-core";
 export {
   buildItineraryCommitmentsByItemId,
   type ItineraryCommitmentSummary,

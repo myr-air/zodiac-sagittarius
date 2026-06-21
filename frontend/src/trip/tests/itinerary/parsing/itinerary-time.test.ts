@@ -6,7 +6,7 @@ import {
   normalizeInlineTimePatch,
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
-} from "@/src/trip/itinerary-time";
+} from "@/src/trip/itinerary-core";
 import { seedTrip } from "@/src/trip/seed";
 import type { ItineraryItem } from "@/src/trip/types";
 

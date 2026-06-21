@@ -11,7 +11,7 @@ import {
   validateHierarchyFields,
   validateItemFields,
 } from "./itinerary-validation";
-import { parseTime } from "./itinerary-time";
+import { parseTime } from "./itinerary-core";
 
 export interface ItineraryDayGroup {
   day: string;

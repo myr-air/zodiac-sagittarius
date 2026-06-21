@@ -1,4 +1,4 @@
-import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-time";
+import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-core";
 import type { Trip } from "@/src/trip/types";
 import type { TripSettingsFormValues } from "../TripSettingsPage.types";
 import { hasInvalidTripSettingsDateRange } from "./trip-settings-form-model";

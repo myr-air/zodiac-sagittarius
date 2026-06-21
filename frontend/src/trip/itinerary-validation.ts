@@ -1,5 +1,5 @@
 import type { ItineraryItem, ValidationWarning } from "./types";
-import { parseTime } from "./itinerary-time";
+import { parseTime } from "./itinerary-core";
 
 export function buildOverlapWarnings(dayItems: ItineraryItem[]): Map<string, ValidationWarning[]> {
   const warningsByItemId = new Map<string, ValidationWarning[]>();

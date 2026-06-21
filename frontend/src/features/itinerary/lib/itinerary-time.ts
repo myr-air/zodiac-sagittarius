@@ -1,4 +1,4 @@
-import { parseTime } from "@/src/trip/itinerary-time";
+import { parseTime } from "@/src/trip/itinerary-core";
 
 export function parseTimeToMinutes(value: string): number | null {
   const trimmed = value.trim();

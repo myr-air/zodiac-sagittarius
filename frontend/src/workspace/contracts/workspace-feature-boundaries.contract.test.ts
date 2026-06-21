@@ -42,7 +42,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(sagaCore).not.toContain("void createItineraryNote(itemId, body)");
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
-    expect(itineraryTimeLib).toContain("@/src/trip/itinerary-time");
+    expect(itineraryTimeLib).toContain("@/src/trip/itinerary-core");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
 
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");
@@ -68,7 +68,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(tripSettingsStateKey).toContain("export function tripSettingsStateKey");
     expect(tripSettingsFormModel).toContain("export function normalizeTripSettingsForm");
     expect(tripSettingsFormModel).toContain("export function canSubmitTripSettings");
-    expect(tripSettingsDateImpact).toContain("@/src/trip/itinerary-time");
+    expect(tripSettingsDateImpact).toContain("@/src/trip/itinerary-core");
     expect(tripSettingsDateImpact).toContain("export function countStopsOutsideSettingsRange");
     expect(tripSettingsFormState).toContain("useTripSettingsFormState");
     expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");

@@ -1,6 +1,6 @@
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
-import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
+import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-core";
 import { buildMapLink } from "@/src/trip/places";
 import type { ItineraryItem } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";

@@ -63,6 +63,7 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/itinerary-spreadsheet-parsing.test.ts",
   "src/trip/itinerary-suggestions.test.ts",
   "src/trip/itinerary-time.test.ts",
+  "src/trip/itinerary-time.ts",
   "src/trip/itinerary-validation.test.ts",
   "src/trip/itinerary-view.test.ts",
   "src/trip/itinerary-delimited-rows.ts",
