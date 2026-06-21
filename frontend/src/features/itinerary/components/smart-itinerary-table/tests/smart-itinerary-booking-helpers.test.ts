@@ -12,8 +12,8 @@ import {
   ticketNotesForItem,
   travelSubtypeForItem,
   fromDateTimeLocalValue,
-} from "../../domain";
-import { readItineraryDetailString, toggleId, uniqueIds } from "../../lib";
+} from "../../../domain";
+import { readItineraryDetailString, toggleId, uniqueIds } from "../../../lib";
 
 describe("smart itinerary booking helpers", () => {
   it("builds booking type helpers from itinerary data", () => {

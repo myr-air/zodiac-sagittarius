@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { messages } from "@/src/i18n/messages";
 import { mainPathOption, pathOptionPlanA, pathIdMain, pathIdPlanA } from "@/src/features/itinerary/testing";
-import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
+import { SmartItineraryTablePathFilters } from "../SmartItineraryTablePathFilters";
 
 describe("SmartItineraryTablePathFilters", () => {
   it("toggles a path filter option", async () => {

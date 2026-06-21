@@ -5,7 +5,7 @@ import {
   buildActivitySubtypePatch,
   buildActivityTypePatch,
   travelSubtypeOptions,
-} from "../../domain";
+} from "../../../domain";
 
 describe("smart itinerary subtype helpers", () => {
   it("builds inline picker options from localized activity and travel subtypes", () => {

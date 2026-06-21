@@ -7,7 +7,7 @@ import {
   findLinkedTicket,
   findTicketCandidates,
   ticketFormModeValues,
-} from "./booking-ticket-form";
+} from "../booking-ticket-form";
 
 const item: ItineraryItem = {
   id: "item-train",

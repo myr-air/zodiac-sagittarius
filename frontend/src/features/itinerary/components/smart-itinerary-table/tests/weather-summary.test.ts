@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TripDailyBriefing } from "@/src/trip/types";
-import { buildWeatherSummary } from "./weather-summary";
+import { buildWeatherSummary } from "../weather-summary";
 
 describe("weather summary", () => {
   it("builds weather summary details when available", () => {

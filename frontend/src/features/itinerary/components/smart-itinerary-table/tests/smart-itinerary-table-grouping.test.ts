@@ -5,7 +5,7 @@ import {
   groupChildItemsByParent,
   groupGraphItemsByDay,
   mergeTripDayGroups,
-} from "./smart-itinerary-table-utils";
+} from "../smart-itinerary-table-utils";
 
 describe("smart itinerary table grouping utilities", () => {
   it("fills missing day groups with ordered empty entries", () => {

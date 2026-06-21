@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
-import { SmartItineraryTableHead } from "./SmartItineraryTableHead";
+import { SmartItineraryTableHead } from "../SmartItineraryTableHead";
 
 describe("SmartItineraryTableHead", () => {
   it("renders itinerary column headers", () => {

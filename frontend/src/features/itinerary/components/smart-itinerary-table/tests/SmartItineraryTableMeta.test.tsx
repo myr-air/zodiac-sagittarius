@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
 import { formatDuration } from "@/src/features/itinerary/lib";
-import { SmartItineraryTableMeta } from "./SmartItineraryTableMeta";
+import { SmartItineraryTableMeta } from "../SmartItineraryTableMeta";
 
 describe("SmartItineraryTableMeta", () => {
   it("renders trip metadata strings from provided labels", () => {

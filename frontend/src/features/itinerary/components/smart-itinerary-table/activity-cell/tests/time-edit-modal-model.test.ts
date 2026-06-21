@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTimeEditModalModel } from "./time-edit-modal-model";
+import { buildTimeEditModalModel } from "../time-edit-modal-model";
 
 describe("buildTimeEditModalModel", () => {
   it("builds a cross-day preview and duration label", () => {

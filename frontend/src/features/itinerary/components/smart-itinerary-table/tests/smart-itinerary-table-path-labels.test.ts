@@ -7,7 +7,7 @@ import {
 import {
   dedupePathOptions,
   formatSelectedPlanLabel,
-} from "./smart-itinerary-table-utils";
+} from "../smart-itinerary-table-utils";
 
 const countLabel = ({ count }: { count: number }) => `${count} selected`;
 const namesLabel = ({ names }: { names: string }) => `Selected: ${names}`;

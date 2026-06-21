@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { mainPathOption, pathIdPlanA, pathOptionPlanA } from "@/src/features/itinerary/testing";
-import { DayPathControls } from "./day-path-controls";
+import { DayPathControls } from "../day-path-controls";
 
 describe("DayPathControls", () => {
   const pathOptions = [mainPathOption, pathOptionPlanA];

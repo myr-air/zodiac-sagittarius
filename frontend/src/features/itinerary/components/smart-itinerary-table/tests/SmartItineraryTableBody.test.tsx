@@ -5,7 +5,7 @@ import { renderWithI18n } from "@/src/i18n/test-utils";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { mainPathOption, pathRainOption } from "@/src/features/itinerary/testing";
-import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
+import { SmartItineraryTableBody } from "../SmartItineraryTableBody";
 
 describe("SmartItineraryTableBody", () => {
   const pathOptions = [mainPathOption, pathRainOption];

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
+import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
 
 describe("SmartItineraryTableTripPlanControls", () => {
   const tripPlans = tripFixture.trip.planVariants;

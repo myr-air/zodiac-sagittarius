@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PlanVariant } from "@/src/trip/types";
-import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
+import { formatTripPlanOptionLabel } from "../smart-itinerary-table-utils";
 
 describe("smart itinerary table trip plan labels", () => {
   it("builds trip plan option labels from status", () => {

@@ -4,7 +4,7 @@ import {
   formatTimeRangeLabel,
   formatTimeTooltip,
   parseTimeToMinutes,
-} from "../../domain";
+} from "../../../domain";
 
 describe("smart itinerary time helpers", () => {
   it("normalizes time ranges and midnight-overflow offsets", () => {
