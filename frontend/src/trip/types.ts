@@ -7,7 +7,7 @@ import type {
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
 import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
-import type { TripCity } from "./trip-place-types";
+import type { TripCity } from "./places/place-types";
 import type { TripTask } from "./trip-task-types";
 export type {
   BriefingCoordinates,
@@ -58,7 +58,7 @@ export type {
   PlaceResolutionResponse,
   PlaceResolutionStatus,
   TripCity,
-} from "./trip-place-types";
+} from "./places/place-types";
 export type {
   BookingDoc,
   BookingDocExternalLink,

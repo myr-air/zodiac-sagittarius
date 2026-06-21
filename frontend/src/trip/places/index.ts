@@ -1,3 +1,13 @@
+export type {
+  PlaceResolutionCandidate,
+  PlaceResolutionRequest,
+  PlaceResolutionResponse,
+  PlaceResolutionStatus,
+  TripCity,
+} from "./place-types";
+export {
+  placeResolutionStatusValues,
+} from "./place-types";
 export {
   buildMapLink,
   buildMapPlaceResolutionRequest,
