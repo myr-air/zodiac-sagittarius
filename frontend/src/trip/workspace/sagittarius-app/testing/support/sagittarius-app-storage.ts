@@ -4,7 +4,7 @@ export {
   installSessionStorageStub,
 } from "@/src/testing/browser-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
-import { tripStorageKey } from "@/src/trip/repository";
+import { tripStorageKey } from "@/src/trip/persistence";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip } from "@/src/trip/types";
 

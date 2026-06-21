@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import {
   loadPersistedParticipantSession,
 } from "@/src/trip/participant-session-storage";
-import { loadPersistedTripDraft } from "@/src/trip/repository";
+import { loadPersistedTripDraft } from "@/src/trip/persistence";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import {
   resolveWorkspaceSessionRestore,

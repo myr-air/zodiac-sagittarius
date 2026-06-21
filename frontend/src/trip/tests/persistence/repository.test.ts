@@ -4,7 +4,7 @@ import {
   loadPersistedTripDraft,
   persistTripDraft,
   tripStorageKey,
-} from "../../repository";
+} from "../../persistence";
 import { seedTrip } from "../../seed";
 import type { Trip } from "../../types";
 

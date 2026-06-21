@@ -1,5 +1,5 @@
-import { seedTrip } from "./seed";
-import type { Trip } from "./types";
+import { seedTrip } from "../seed";
+import type { Trip } from "../types";
 import { createBrowserStorageDriver, type TripStorageDriver } from "./storage";
 
 export interface TripRepository {

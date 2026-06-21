@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { persistTripDraft } from "@/src/trip/repository";
+import { persistTripDraft } from "@/src/trip/persistence";
 import { normalizeTripPlanAliases } from "@/src/trip/trip-plans";
 import type { Trip } from "@/src/trip/types";
 

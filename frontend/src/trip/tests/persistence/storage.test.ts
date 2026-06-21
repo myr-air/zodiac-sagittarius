@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
-import { createBrowserStorageDriver } from "../../storage";
+import { createBrowserStorageDriver } from "../../persistence";
 
 describe("browser trip storage driver", () => {
   it("uses localStorage when the browser window is available", () => {
