@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   installLocalStorageStub,
   renderTripBuilder,
-} from "./testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel trip builder submit", () => {
   beforeEach(() => {

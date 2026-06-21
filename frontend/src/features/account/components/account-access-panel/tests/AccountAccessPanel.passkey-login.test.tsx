@@ -8,7 +8,7 @@ import {
   installLocalStorageStub,
   renderAccountAccessPanel,
   stubCredentials,
-} from "./testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel passkey login", () => {
   beforeEach(() => {

@@ -6,7 +6,7 @@ import {
   optionalTrailingSlashPattern,
   portalRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
-import { AccountAccessPanel } from "./AccountAccessPanel";
+import { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   createAccountClient,
   createTrustedAccountSession,
@@ -14,7 +14,7 @@ import {
   render,
   renderAccountAccessPanel,
   switchToThai,
-} from "./testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel session", () => {
   beforeEach(() => {

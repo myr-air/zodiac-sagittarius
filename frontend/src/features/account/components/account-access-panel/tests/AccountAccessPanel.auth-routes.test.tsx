@@ -7,7 +7,7 @@ import {
   createTrustedAccountSession,
   installLocalStorageStub,
   renderAccountAccessPanel,
-} from "./testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel auth routes", () => {
   beforeEach(() => {

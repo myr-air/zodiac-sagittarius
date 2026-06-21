@@ -6,7 +6,7 @@ import {
   installLocalStorageStub,
   renderTripBuilder,
   selectDestinationCity,
-} from "./testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel trip builder share preview", () => {
   beforeEach(() => {
