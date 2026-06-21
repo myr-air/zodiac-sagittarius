@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { claimTripParticipant } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { TripJoinGate } from "./TripJoinGate";
+import { TripJoinGate } from "../TripJoinGate";
 import {
   enterTripRoom,
   installLocalStorageStub,

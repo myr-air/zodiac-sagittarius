@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const tripJoinGateDir = dirname(fileURLToPath(import.meta.url));
+const tripJoinGateDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function readTripJoinGateSource(fileName: string) {
   return readFileSync(join(tripJoinGateDir, fileName), "utf8");

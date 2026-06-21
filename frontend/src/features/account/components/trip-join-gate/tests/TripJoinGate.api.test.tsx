@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { TripJoinGate } from "./TripJoinGate";
+import { TripJoinGate } from "../TripJoinGate";
 import { installLocalStorageStub } from "./TripJoinGate.test-support";
 
 const render = renderWithI18n;

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { TripApiError } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
-import { TripJoinGate } from "./TripJoinGate";
+import { TripJoinGate } from "../TripJoinGate";
 import {
   createApiClient,
   createApiJoinResponse,
