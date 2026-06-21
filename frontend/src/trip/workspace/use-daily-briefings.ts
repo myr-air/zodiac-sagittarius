@@ -4,12 +4,12 @@ import {
   applyDailyBriefingOverrides,
   buildFallbackBriefings,
   buildPatchDailyBriefingRequest,
+  type DailyBriefingOverrides,
+  type TripDailyBriefing,
 } from "@/src/trip/weather";
 import { nextClientMutationId } from "@/src/trip/identity";
 import type {
-  DailyBriefingOverrides,
   Trip,
-  TripDailyBriefing,
   TripParticipantSession,
 } from "@/src/trip/types";
 

@@ -1,6 +1,10 @@
 import type { PatchDailyBriefingApiRequest } from "../api-client";
 import { getTripDates } from "../itinerary";
-import type { DailyBriefingOverrides, ItineraryItem, Trip, TripDailyBriefing } from "../types";
+import type { ItineraryItem, Trip } from "../types";
+import type {
+  DailyBriefingOverrides,
+  TripDailyBriefing,
+} from "./weather-briefing-types";
 export {
   briefingsForStrip,
   formatSolarTime,

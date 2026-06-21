@@ -1,5 +1,5 @@
 import type { IconName } from "@/src/ui/icons";
-import type { TripDailyBriefing } from "../types";
+import type { TripDailyBriefing } from "./weather-briefing-types";
 
 export interface ThaiWeekdayTone {
   name: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";

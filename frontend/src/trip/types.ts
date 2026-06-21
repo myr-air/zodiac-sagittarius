@@ -20,7 +20,7 @@ export type {
   TextBriefingBlock,
   TripDailyBriefing,
   WeatherBriefingBlock,
-} from "./trip-briefing-types";
+} from "./weather/weather-briefing-types";
 export type {
   ActivitySubtype,
   ActivityType,
