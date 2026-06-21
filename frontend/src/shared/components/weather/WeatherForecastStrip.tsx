@@ -1,5 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
+import { displayDateTimeLocaleCode } from "@/src/shared/date-time-display";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { briefingsForStrip, formatSolarTime, formatWeatherTemp, thaiWeekdayTone, weatherGraphicLabel, weatherIconForCondition } from "@/src/trip/weather";
 import { Icon } from "@/src/ui/icons";
@@ -82,7 +83,7 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
 function formatDayLabel(date: string, locale: Locale): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { weekday: "short", month: "short", day: "numeric" }).format(parsed);
+  return new Intl.DateTimeFormat(displayDateTimeLocaleCode(locale), { weekday: "short", month: "short", day: "numeric" }).format(parsed);
 }
 
 function weatherStripCopy(locale: Locale) {

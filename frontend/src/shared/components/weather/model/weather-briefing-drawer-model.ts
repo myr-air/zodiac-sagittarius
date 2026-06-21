@@ -1,10 +1,11 @@
 import type { Locale } from "@/src/i18n/types";
+import { displayDateTimeLocaleCode } from "@/src/shared/date-time-display";
 import type { TripDailyBriefing } from "@/src/trip/types";
 
 export function formatFullDate(date: string, locale: Locale): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", {
+  return new Intl.DateTimeFormat(displayDateTimeLocaleCode(locale), {
     dateStyle: "full",
   }).format(parsed);
 }

@@ -3,6 +3,7 @@ import type { TripDailyBriefing } from "@/src/trip/types";
 import {
   buildWeatherDetailLines,
   emptyText,
+  formatFullDate,
   formatWeatherSummary,
   weatherDrawerCopy,
 } from "./weather-briefing-drawer-model";
@@ -56,5 +57,11 @@ describe("weather briefing drawer model", () => {
     expect(weatherDrawerCopy("th").regionLabel).toBe("รายละเอียดพยากรณ์อากาศ");
     expect(emptyText("en")).toBe("No data yet");
     expect(emptyText("th")).toBe("ยังไม่มีข้อมูล");
+  });
+
+  it("formats full briefing dates through the shared locale mapper", () => {
+    expect(formatFullDate("2026-07-12", "en")).toContain("Sunday");
+    expect(formatFullDate("2026-07-12", "th")).toContain("วันอาทิตย์");
+    expect(formatFullDate("not-a-date", "en")).toBe("not-a-date");
   });
 });

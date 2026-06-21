@@ -1,5 +1,6 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
+import { displayDateTimeLocaleCode } from "@/src/shared/date-time-display";
 
 export function activityTypeLabel(type: ItineraryItem["activityType"], locale: Locale = "en"): string {
   const labels: Record<Locale, Record<ItineraryItem["activityType"], string>> = {
@@ -78,7 +79,7 @@ function toSuperscriptNumber(value: number): string {
 }
 
 export function formatThaiDate(value: string, locale: Locale = "en"): string {
-  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", {
+  return new Intl.DateTimeFormat(displayDateTimeLocaleCode(locale), {
     day: "numeric",
     month: "short",
   }).format(new Date(`${value}T00:00:00.000Z`));

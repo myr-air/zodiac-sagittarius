@@ -70,6 +70,12 @@ describe("WeatherForecastStrip", () => {
     expect(screen.getByText("Mon, Jul 13")).toHaveClass("text-amber-900");
   });
 
+  it("formats Thai day labels through the shared locale mapper", () => {
+    render(<WeatherForecastStrip briefings={[briefing("2026-07-13", 32, 27)]} locale="th" selectedDate={null} onSelect={() => {}} />);
+
+    expect(screen.getByText(/13 ก.ค./)).toHaveClass("text-amber-900");
+  });
+
   it("shows pending forecasts without emoji glyphs or repeated missing temperatures", () => {
     render(<WeatherForecastStrip briefings={[pendingBriefing("2026-07-14")]} locale="en" selectedDate={null} onSelect={() => {}} />);
 
