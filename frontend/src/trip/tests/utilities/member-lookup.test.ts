@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { findMemberById } from "./member-lookup";
+import { seedTrip } from "../../seed";
+import { findMemberById } from "../../member-lookup";
 
 describe("member lookup", () => {
   it("finds a trip member by id", () => {

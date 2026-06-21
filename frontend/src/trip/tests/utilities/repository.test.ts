@@ -4,9 +4,9 @@ import {
   loadPersistedTripDraft,
   persistTripDraft,
   tripStorageKey,
-} from "./repository";
-import { seedTrip } from "./seed";
-import type { Trip } from "./types";
+} from "../../repository";
+import { seedTrip } from "../../seed";
+import type { Trip } from "../../types";
 
 describe("trip draft repository helpers", () => {
   let restoreStorage: () => void;

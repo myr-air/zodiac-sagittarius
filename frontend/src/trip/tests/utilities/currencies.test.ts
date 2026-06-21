@@ -6,7 +6,7 @@ import {
   formatExchangeRateInput,
   majorCurrencyCodes,
   majorCurrencyOptions,
-} from "./currencies";
+} from "../../currencies";
 import { createMemoryStorage } from "@/src/testing/browser-storage";
 
 describe("major currency exchange rates", () => {

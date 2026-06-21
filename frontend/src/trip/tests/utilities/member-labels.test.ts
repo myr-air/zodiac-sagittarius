@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { memberInitial, roleLabel } from "./member-labels";
+import { memberInitial, roleLabel } from "../../member-labels";
 
 describe("member labels", () => {
   it("formats compact member initials with a readable fallback", () => {

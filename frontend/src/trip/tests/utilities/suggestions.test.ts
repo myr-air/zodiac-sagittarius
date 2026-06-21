@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildCreateEditSuggestionRequest,
   createLocalEditSuggestion,
-} from "./suggestions";
-import type { ItineraryItem, Suggestion } from "./types";
+} from "../../suggestions";
+import type { ItineraryItem, Suggestion } from "../../types";
 
 describe("suggestion helpers", () => {
   it("builds API create requests for edit suggestions", () => {

@@ -5,8 +5,8 @@ import {
   getTripFixtureMember,
   getTripFixtureMemberById,
   tripFixture,
-} from "./trip-fixtures";
-import { tripRoleValues } from "./trip-member-types";
+} from "../../trip-fixtures";
+import { tripRoleValues } from "../../trip-member-types";
 
 describe("trip fixtures", () => {
   it("exposes deterministic owner, traveler, and viewer members", () => {
