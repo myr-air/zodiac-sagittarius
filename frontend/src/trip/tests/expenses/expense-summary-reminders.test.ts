@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildExpenseSummary } from "./expenses";
-import type { Expense } from "./types";
+import { buildExpenseSummary } from "../../expenses";
+import type { Expense } from "../../types";
 
 describe("expense summary reminder history", () => {
   it("carries reminder history onto matching settle-up suggestions", () => {

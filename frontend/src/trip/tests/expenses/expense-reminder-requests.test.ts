@@ -3,8 +3,8 @@ import {
   buildExpenseReminderRequest,
   buildPaybackReminder,
   expenseReminderRequestForSuggestion,
-} from "./expenses";
-import type { Trip } from "./types";
+} from "../../expenses";
+import type { Trip } from "../../types";
 
 describe("expense reminder requests", () => {
   it("builds a direct payback reminder that can be pasted into chat", () => {

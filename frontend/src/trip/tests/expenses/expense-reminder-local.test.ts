@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { recordLocalExpenseReminderInTrip } from "./expenses";
-import type { Trip } from "./types";
+import { recordLocalExpenseReminderInTrip } from "../../expenses";
+import type { Trip } from "../../types";
 
 describe("expense reminder local mutations", () => {
   it("records local expense reminders with deterministic timestamps", () => {

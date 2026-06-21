@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCreateExpenseRequest,
   buildPatchExpenseRequest,
-} from "./expenses";
+} from "../../expenses";
 
 describe("expense API requests", () => {
   it("builds create expense API requests from expense drafts", () => {

@@ -5,7 +5,7 @@ import {
   expenseSplitModeValues,
   expenseSplitsToMinor,
   normalizeExpenseSplitsFromMinor,
-} from "./expense-splits";
+} from "../../expense-splits";
 
 describe("expense splits", () => {
   it("keeps split modes in canonical display order", () => {

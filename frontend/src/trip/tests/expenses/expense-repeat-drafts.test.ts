@@ -3,7 +3,7 @@ import {
   buildExpenseCreateDrafts,
   normalizeExpenseRepeatCount,
   repeatExpenseLineItems,
-} from "./expenses";
+} from "../../expenses";
 
 describe("expense repeat drafts", () => {
   it("normalizes repeated expense counts to the supported daily range", () => {

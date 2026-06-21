@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildExpenseSummary } from "./expenses";
-import { seedTrip } from "./seed";
-import type { Expense } from "./types";
+import { buildExpenseSummary } from "../../expenses";
+import { seedTrip } from "../../seed";
+import type { Expense } from "../../types";
 
 describe("expense summary", () => {
   it("summarizes owed, owing, and settled expense states", () => {

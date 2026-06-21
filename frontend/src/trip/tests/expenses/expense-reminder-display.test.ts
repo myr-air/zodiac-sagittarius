@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatReminderDate } from "./expense-reminder-display";
+import { formatReminderDate } from "../../expense-reminder-display";
 
 describe("expense reminder display", () => {
   it("keeps invalid reminder dates readable", () => {

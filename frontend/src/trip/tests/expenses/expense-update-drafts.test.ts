@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildExpenseUpdateDraft } from "./expenses";
-import type { Expense, Trip } from "./types";
+import { buildExpenseUpdateDraft } from "../../expenses";
+import type { Expense, Trip } from "../../types";
 
 describe("expense update drafts", () => {
   it("builds expense update drafts from form values and existing defaults", () => {

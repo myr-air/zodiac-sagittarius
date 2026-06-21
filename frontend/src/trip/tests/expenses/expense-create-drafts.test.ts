@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { resolveExpenseCreateDraftTripPlanId } from "./expenses";
-import type { Trip } from "./types";
+import { resolveExpenseCreateDraftTripPlanId } from "../../expenses";
+import type { Trip } from "../../types";
 
 describe("expense create drafts", () => {
   it("resolves create draft trip plan ids with linked item, explicit, and selected fallbacks", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildExpenseSplits,
   buildItemizedExpenseSplits,
-} from "./expenses";
+} from "../../expenses";
 import { expenseSplitMemberIds } from "./expense-splits.test-support";
 
 describe("expense split policies", () => {

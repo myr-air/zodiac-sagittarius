@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Expense } from "./types";
+import type { Expense } from "../../types";
 import {
   refundAmount,
   refundSplits,
   sumShares,
-} from "./expense-refunds";
+} from "../../expense-refunds";
 
 describe("expense refund helpers", () => {
   it("rounds split totals and builds refund-only splits", () => {

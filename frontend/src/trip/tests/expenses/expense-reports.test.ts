@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildExpenseSummary } from "./expenses";
-import * as expenseHelpers from "./expenses";
-import type { Trip } from "./types";
+import { buildExpenseSummary } from "../../expenses";
+import * as expenseHelpers from "../../expenses";
+import type { Trip } from "../../types";
 
 describe("expense report exports", () => {
   it("builds a shareable trip money statement with balances, paybacks, and ledger lines", () => {

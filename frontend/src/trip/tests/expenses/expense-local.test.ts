@@ -5,8 +5,8 @@ import {
   removeExpenseFromTrip,
   replaceExpenseInTrip,
   updateLocalExpenseInTrip,
-} from "./expenses";
-import type { Expense, Trip } from "./types";
+} from "../../expenses";
+import type { Expense, Trip } from "../../types";
 
 describe("expense local mutations", () => {
   it("appends local expenses with record defaults and resolved trip plan ids", () => {

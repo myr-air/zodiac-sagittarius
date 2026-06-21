@@ -3,7 +3,7 @@ import {
   expenseSplitsToMinor,
   formatMoney,
   normalizeExpenseSplitsFromMinor,
-} from "./expenses";
+} from "../../expenses";
 
 describe("expense money helpers", () => {
   it("formats common trip currencies with stable prefixes", () => {
