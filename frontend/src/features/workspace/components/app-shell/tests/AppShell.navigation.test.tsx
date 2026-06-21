@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { renderAppShell } from "./AppShell.test-support";
+import { renderAppShell } from "../testing/support/render-app-shell";
 
 describe("AppShell navigation", () => {
   it("links workspace navigation to the active trip route scope", async () => {

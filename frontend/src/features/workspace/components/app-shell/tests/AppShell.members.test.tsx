@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
-import { renderAppShell } from "./AppShell.test-support";
+import { renderAppShell } from "../testing/support/render-app-shell";
 
 describe("AppShell members", () => {
   it("labels traveler and viewer roles and exposes leave-session action", async () => {

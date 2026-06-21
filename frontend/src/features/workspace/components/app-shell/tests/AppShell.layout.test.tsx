@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { renderAppShell } from "./AppShell.test-support";
+import { renderAppShell } from "../testing/support/render-app-shell";
 
 describe("AppShell layout", () => {
   it("owns the workspace grid and side rail responsive classes", async () => {
