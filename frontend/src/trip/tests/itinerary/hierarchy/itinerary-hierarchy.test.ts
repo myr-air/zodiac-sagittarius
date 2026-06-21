@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortItemsForDay } from "../../../itinerary";
+import { sortItemsForDay } from "../../../itinerary-core";
 import { hierarchyItem } from "./itinerary-hierarchy.test-support";
 import { arrivalDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 

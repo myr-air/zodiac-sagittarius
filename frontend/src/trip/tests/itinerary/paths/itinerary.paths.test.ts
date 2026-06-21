@@ -3,8 +3,10 @@ import { seedTrip } from "../../../seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   groupItemsByDay,
+} from "../../../itinerary-core";
+import {
   resolveItineraryPathItems,
-} from "../../../itinerary";
+} from "../../../itinerary-paths";
 import {
   getTripDates,
 } from "../../../itinerary-core";

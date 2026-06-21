@@ -6,7 +6,7 @@ import {
   deleteItineraryItemFromTrip,
   replaceItineraryItem,
   replaceItineraryItems,
-} from "../../../itinerary";
+} from "../../../itinerary-items";
 
 describe("itinerary collection mutations", () => {
   it("appends itinerary items to trips without branch side effects", () => {

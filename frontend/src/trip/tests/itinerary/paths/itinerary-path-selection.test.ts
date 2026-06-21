@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   itineraryItemPathFieldsForTarget,
   mainItineraryPathId,
-  normalizeStopHierarchyValues,
   selectedItineraryPathIdForDay,
   updateItineraryPathSelection,
-} from "../../../itinerary";
+} from "../../../itinerary-paths";
+import {
+  normalizeStopHierarchyValues,
+} from "../../../itinerary-core";
 import {
   pathIdPlanA,
   pathIdRain,

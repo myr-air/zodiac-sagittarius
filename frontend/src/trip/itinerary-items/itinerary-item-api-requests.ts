@@ -2,7 +2,7 @@ import type {
   CreateItineraryItemApiRequest,
   PatchItineraryItemApiRequest,
 } from "../api-client";
-import type { BuildItineraryItemDraftInput } from "../itinerary";
+import type { BuildItineraryItemDraftInput } from "../itinerary-core";
 import type { InlineItineraryTimePatch } from "../itinerary-core";
 import { buildMapLink } from "../places";
 import type { ItineraryItem } from "../types";

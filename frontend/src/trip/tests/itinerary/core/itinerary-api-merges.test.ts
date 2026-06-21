@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   mergeCreatedItineraryItemIntoTrip,
   mergeUpdatedItineraryBranchIntoTrip,
-} from "../../../itinerary";
+} from "../../../itinerary-items";
 import { seedTrip } from "../../../seed";
 
 describe("itinerary API merge helpers", () => {

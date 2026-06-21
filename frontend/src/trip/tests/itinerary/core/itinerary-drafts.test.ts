@@ -3,8 +3,10 @@ import { seedTrip } from "../../../seed";
 import {
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,
+} from "../../../itinerary-core";
+import {
   mainItineraryPathId,
-} from "../../../itinerary";
+} from "../../../itinerary-paths";
 import {
   pathIdRainDay,
   pathNameRainDay,

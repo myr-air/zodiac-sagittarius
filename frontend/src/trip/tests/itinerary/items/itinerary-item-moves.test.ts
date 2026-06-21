@@ -7,7 +7,7 @@ import {
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
-} from "../../../itinerary";
+} from "../../../itinerary-items";
 
 describe("itinerary item moves", () => {
   it("moves an itinerary item before a target and reorders the target day", () => {

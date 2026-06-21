@@ -3,7 +3,7 @@ import { seedTrip } from "../../../seed";
 import {
   getNextChildSortOrder,
   getNextSortOrder,
-} from "../../../itinerary";
+} from "../../../itinerary-core";
 
 describe("itinerary sort order helpers", () => {
   it("derives next sort order for a trip day", () => {

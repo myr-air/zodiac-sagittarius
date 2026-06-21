@@ -7,7 +7,7 @@ import {
   parseTime,
   sortItemsForDay,
   validateItineraryItem,
-} from "../../../itinerary";
+} from "../../../itinerary-core";
 import {
   getTripDates,
 } from "../../../itinerary-core";
