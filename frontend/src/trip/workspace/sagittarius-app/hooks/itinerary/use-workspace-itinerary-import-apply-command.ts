@@ -1,14 +1,11 @@
 import { useCallback } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
-  applyImportedItemsToItineraryPath,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
 import {
-  emptyItineraryExportRecords,
   type PendingItineraryImport,
 } from "@/src/trip/workspace/itinerary-import-model";
-import { buildImportedPlanRecordsForTripPlan } from "@/src/trip/workspace/itinerary-import-record-mapping";
 import {
   mergeImportedRecordsIntoTripPlan,
   mergeImportedStopNotes,
@@ -22,6 +19,10 @@ import type {
   TripTask,
 } from "@/src/trip/types";
 import { applyApiItineraryImport } from "./apply-api-itinerary-import";
+import {
+  buildWorkspaceItineraryImportPreview,
+  buildWorkspaceLocalItineraryImportApplyInput,
+} from "./workspace-itinerary-import-apply-inputs";
 
 interface UseWorkspaceItineraryImportApplyCommandOptions {
   apiClient?: TripApiClient;
@@ -66,24 +67,16 @@ export function useWorkspaceItineraryImportApplyCommand({
   return useCallback(async (target: ItineraryImportApplyTarget) => {
     if (!pendingItineraryImport) return;
     try {
-      const previewTrip = applyImportedItemsToItineraryPath(
-        trip,
-        pendingItineraryImport.items,
+      const importPreview = buildWorkspaceItineraryImportPreview({
+        pendingItineraryImport,
         target,
-      );
-      const currentIds = new Set(trip.itineraryItems.map((item) => item.id));
-      const previewIds = new Set(
-        previewTrip.itineraryItems.map((item) => item.id),
-      );
-      const deletedItems = trip.itineraryItems.filter(
-        (item) => !previewIds.has(item.id),
-      );
-      const previewImportedItems = previewTrip.itineraryItems.filter(
-        (item) => !currentIds.has(item.id),
-      );
-      const appliedImportedItems = previewTrip.itineraryItems.slice(
-        -pendingItineraryImport.items.length,
-      );
+        trip,
+      });
+      const {
+        deletedItems,
+        previewImportedItems,
+        previewTrip,
+      } = importPreview;
 
       if (isApiMode && apiClient && participantSession) {
         await applyApiItineraryImport({
@@ -108,16 +101,14 @@ export function useWorkspaceItineraryImportApplyCommand({
         return;
       }
 
-      const nextSelectedItemId = appliedImportedItems[0]?.id ?? "";
-      const importedPlanRecords = buildImportedPlanRecordsForTripPlan({
-        appliedImportedItems,
-        importedItems: pendingItineraryImport.items,
-        records:
-          target.recordMode === "clone-linked"
-            ? pendingItineraryImport.records
-            : emptyItineraryExportRecords(),
-        targetTrip: previewTrip,
-        tripPlanId: target.tripPlanId || trip.activePlanVariantId,
+      const {
+        importedPlanRecords,
+        nextSelectedItemId,
+      } = buildWorkspaceLocalItineraryImportApplyInput({
+        pendingItineraryImport,
+        preview: importPreview,
+        target,
+        trip,
       });
       commitTrip(
         () =>
