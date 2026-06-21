@@ -27,6 +27,17 @@ export {
 export type {
   LocalEditSuggestionInput,
 } from "./itinerary-suggestions";
+export type {
+  EditableSuggestionPatch,
+  Suggestion,
+  SuggestionReviewDecision,
+  SuggestionStatus,
+  SuggestionType,
+} from "./itinerary-suggestion-types";
+export {
+  suggestionStatusValues,
+  suggestionTypeValues,
+} from "./itinerary-suggestion-types";
 export {
   buildItineraryView,
   formatDayLabel,

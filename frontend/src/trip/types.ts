@@ -84,6 +84,12 @@ export type {
 } from "./records/task-types";
 export type {
   EditableSuggestionPatch,
+  Suggestion,
+  SuggestionReviewDecision,
+  SuggestionStatus,
+  SuggestionType,
+} from "./itinerary-core/itinerary-suggestion-types";
+export type {
   LocalizedText,
   PlanCheck,
   PlanSuggestion,
@@ -91,11 +97,7 @@ export type {
   PlanSuggestionScope,
   PlanSuggestionSeverity,
   PlanSuggestionStatus,
-  Suggestion,
-  SuggestionReviewDecision,
-  SuggestionStatus,
-  SuggestionType,
-} from "./trip-suggestion-types";
+} from "./trip-plans/plan-suggestion-types";
 
 export interface Trip {
   id: string;

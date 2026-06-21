@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  suggestionStatusValues,
+  suggestionTypeValues,
+} from "../../itinerary-core";
+import {
   planSuggestionActionKindValues,
   planSuggestionScopeValues,
   planSuggestionSeverityValues,
   planSuggestionStatusValues,
-  suggestionStatusValues,
-  suggestionTypeValues,
-} from "../../trip-suggestion-types";
+} from "../../trip-plans";
 
 describe("trip suggestion type values", () => {
   it("keeps suggestion enum values in canonical order", () => {

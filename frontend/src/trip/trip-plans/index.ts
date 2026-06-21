@@ -1,3 +1,4 @@
+export * from "./plan-suggestion-types";
 export * from "./trip-plan-aliases";
 export * from "./trip-plan-api-requests";
 export * from "./trip-plan-display";
