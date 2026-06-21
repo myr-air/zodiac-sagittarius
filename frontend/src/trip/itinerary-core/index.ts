@@ -48,6 +48,9 @@ export type {
   BuildUpdatedItineraryItemOptions,
 } from "./itinerary-drafts";
 export {
+  getTripDates,
+} from "./itinerary-dates";
+export {
   approveSuggestion,
   buildCreateEditSuggestionRequest,
   createLocalEditSuggestion,

@@ -1,5 +1,5 @@
 import type { PatchDailyBriefingApiRequest } from "../api-client";
-import { getTripDates } from "../itinerary";
+import { getTripDates } from "../itinerary-core";
 import type { ItineraryItem, Trip } from "../types";
 import type {
   DailyBriefingOverrides,

@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
-  getTripDates,
   groupItemsByDay,
   resolveItineraryPathItems,
 } from "../../../itinerary";
+import {
+  getTripDates,
+} from "../../../itinerary-core";
 import { arrivalDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 import {
   pathIdRain,

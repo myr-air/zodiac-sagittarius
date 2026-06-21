@@ -259,6 +259,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/expenses/expense-update-drafts.ts",
   "src/trip/itinerary-core/index.ts",
   "src/trip/itinerary-core/itinerary-commitments.ts",
+  "src/trip/itinerary-core/itinerary-dates.ts",
   "src/trip/itinerary-core/itinerary-drafts.ts",
   "src/trip/itinerary-core/itinerary-suggestion-types.ts",
   "src/trip/itinerary-core/itinerary-suggestions.ts",

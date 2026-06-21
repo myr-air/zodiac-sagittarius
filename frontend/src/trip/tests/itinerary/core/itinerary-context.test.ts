@@ -4,11 +4,13 @@ import {
   buildItineraryView,
   formatDayLabel,
   getNowNext,
-  getTripDates,
   parseTime,
   sortItemsForDay,
   validateItineraryItem,
 } from "../../../itinerary";
+import {
+  getTripDates,
+} from "../../../itinerary-core";
 import { seedTrip } from "../../../seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 

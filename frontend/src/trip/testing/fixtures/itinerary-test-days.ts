@@ -1,4 +1,4 @@
-import { getTripDates } from "../../itinerary";
+import { getTripDates } from "../../itinerary-core";
 import { seedTrip } from "../../seed";
 
 const tripDates = getTripDates(seedTrip.startDate, seedTrip.endDate);
