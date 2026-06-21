@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
+import { buildPortalTripWizardDerivedState } from "../portal-trip-wizard-derived-state";
 
 describe("buildPortalTripWizardDerivedState", () => {
   it("derives destination, access, and preview state from the trip form", () => {

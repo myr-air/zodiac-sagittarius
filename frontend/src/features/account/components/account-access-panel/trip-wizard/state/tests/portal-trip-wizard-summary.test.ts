@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { enMessages } from "@/src/i18n/messages/en";
-import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
+import { buildPortalTripWizardSummary } from "../portal-trip-wizard-summary";
 
 const wizard = enMessages.access.dashboard.createTrip.wizard;
 

@@ -5,7 +5,7 @@ import {
   applyRegeneratedPortalTripWizardCredentials,
   buildPortalTripWizardSubmitForm,
   seedTripOwnerDisplayName,
-} from "./portal-trip-wizard-model-actions";
+} from "../portal-trip-wizard-model-actions";
 
 describe("portal trip wizard model actions", () => {
   it("applies generated credentials only when the form needs them", () => {

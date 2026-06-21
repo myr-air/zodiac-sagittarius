@@ -5,9 +5,9 @@ import type { TripCity } from "@/src/trip/types";
 import {
   applyTripDestinationCities,
   defaultTripForm,
-} from "../model/account-trip-form";
-import { tripCityOptions } from "../model/account-trip-destinations";
-import { usePortalTripWizardDestinationState } from "./use-portal-trip-wizard-destination-state";
+} from "../../model/account-trip-form";
+import { tripCityOptions } from "../../model/account-trip-destinations";
+import { usePortalTripWizardDestinationState } from "../use-portal-trip-wizard-destination-state";
 
 function useDestinationStateHarness(initialCities: TripCity[] = []) {
   const [form, setForm] = useState(() => applyTripDestinationCities(defaultTripForm(), initialCities));
