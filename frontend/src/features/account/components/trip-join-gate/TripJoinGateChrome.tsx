@@ -19,7 +19,7 @@ import {
   tripAccessJoinMarkClassName,
   tripAccessJoinShellClassName,
   tripAccessRightColumnClassName,
-} from "./trip-join-gate.styles";
+} from "./layout/trip-join-gate.styles";
 import { TripJoinGateVisual } from "./TripJoinGateVisual";
 
 interface TripJoinGateChromeProps {

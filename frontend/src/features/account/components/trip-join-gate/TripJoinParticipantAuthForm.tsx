@@ -10,7 +10,7 @@ import {
   passwordInputRowClassName,
   passwordVisibilityButtonClassName,
   tripAccessSubmitClassName,
-} from "./trip-join-gate.styles";
+} from "./layout/trip-join-gate.styles";
 
 export interface TripJoinParticipantAuthFormCopy {
   confirm: string;

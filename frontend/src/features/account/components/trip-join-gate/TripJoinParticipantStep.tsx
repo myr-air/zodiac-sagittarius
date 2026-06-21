@@ -18,7 +18,7 @@ import {
   participantStepClassName,
   tripAccessContentClassName,
   tripAccessParticipantStepClassName,
-} from "./trip-join-gate.styles";
+} from "./layout/trip-join-gate.styles";
 
 interface TripJoinParticipantStepCopy extends TripJoinParticipantAuthFormCopy {
   backToRoom: string;
