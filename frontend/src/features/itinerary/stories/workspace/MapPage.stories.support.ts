@@ -2,7 +2,7 @@ import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { RouteMapView } from "@/src/features/itinerary/components";
-import { planABAlternativeItemsBase, withStoryPrefix } from "../itinerary-story-fixtures";
+import { planABAlternativeItemsBase, withStoryPrefix } from "../support/itinerary-story-fixtures";
 
 type MapPageStoryArgs = Parameters<typeof RouteMapView>[0];
 

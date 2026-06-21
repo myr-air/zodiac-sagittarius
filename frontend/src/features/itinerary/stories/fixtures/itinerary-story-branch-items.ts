@@ -3,11 +3,11 @@ import {
   pathIdStoryRain,
 } from "@/src/features/itinerary/testing";
 import type { ItineraryItem } from "@/src/trip/types";
-import { buildItineraryStoryItem } from "../itinerary-story-item-builders";
+import { buildItineraryStoryItem } from "../support/itinerary-story-item-builders";
 import {
   pathNameMain,
   pathNamePlanA,
-} from "../itinerary-story-path-options";
+} from "../support/itinerary-story-path-options";
 
 export const branchGraphItemsBase: ItineraryItem[] = [
   buildItineraryStoryItem(0, {

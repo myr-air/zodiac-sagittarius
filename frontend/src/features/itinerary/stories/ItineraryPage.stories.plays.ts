@@ -8,14 +8,14 @@ import {
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 import {
   onStoryChangeDayPath,
   onStoryInlineQuickEdit,
   onStoryMoveItemToPath,
   onStoryToggleShowAllPaths,
 } from "./ItineraryPage.stories.support";
-import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
+import { expectItineraryResponsiveContract } from "./support/itinerary-story-assertions";
 
 type ItineraryPagePlay = NonNullable<StoryObj<typeof SmartItineraryTable>["play"]>;
 

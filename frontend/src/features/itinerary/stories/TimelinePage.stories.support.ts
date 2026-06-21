@@ -3,7 +3,7 @@ import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { TimelineView } from "@/src/features/itinerary/components";
-import { planABAlternativeItemsBase, withStoryPrefix } from "./itinerary-story-fixtures";
+import { planABAlternativeItemsBase, withStoryPrefix } from "./support/itinerary-story-fixtures";
 
 type TimelineStoryArgs = Parameters<typeof TimelineView>[0];
 

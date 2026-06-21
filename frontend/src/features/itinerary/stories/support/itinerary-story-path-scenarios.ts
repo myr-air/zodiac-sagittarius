@@ -16,4 +16,4 @@ export {
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
   windowOnlyDurationItemBase,
-} from "./fixtures/itinerary-story-path-items";
+} from "../fixtures/itinerary-story-path-items";

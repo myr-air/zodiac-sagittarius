@@ -6,7 +6,7 @@ import {
   planAPathOptions,
   planABPathOptions,
   stressPathOptions,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 import {
   branchGraphItems,
   buildTemplateOverflowItems,

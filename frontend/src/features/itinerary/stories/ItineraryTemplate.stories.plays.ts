@@ -6,8 +6,8 @@ import {
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
-} from "./itinerary-story-fixtures";
-import { expectItineraryResponsiveContract } from "./itinerary-story-assertions";
+} from "./support/itinerary-story-fixtures";
+import { expectItineraryResponsiveContract } from "./support/itinerary-story-assertions";
 
 type ItineraryTemplatePlay = NonNullable<StoryObj<typeof SmartItineraryTable>["play"]>;
 

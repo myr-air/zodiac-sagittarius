@@ -7,7 +7,7 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   denseTripFixture,
   emptyTripFixture,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 
 type OverviewStoryArgs = OverviewPageProps;
 

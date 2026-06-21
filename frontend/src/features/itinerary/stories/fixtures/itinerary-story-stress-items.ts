@@ -4,13 +4,13 @@ import {
   pathIdStoryPlanC,
 } from "@/src/features/itinerary/testing";
 import type { ItineraryItem } from "@/src/trip/types";
-import { buildItineraryStoryPathItems } from "../itinerary-story-item-builders";
+import { buildItineraryStoryPathItems } from "../support/itinerary-story-item-builders";
 import {
   pathNameMain,
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
-} from "../itinerary-story-path-options";
+} from "../support/itinerary-story-path-options";
 
 export const stressPathItemsBase: ItineraryItem[] = buildItineraryStoryPathItems(
   [

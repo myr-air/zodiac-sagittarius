@@ -9,7 +9,7 @@ import {
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
   withStoryPrefix,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 
 export const branchGraphItems: ItineraryItem[] = withStoryPrefix(
   branchGraphItemsBase,

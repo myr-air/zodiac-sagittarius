@@ -8,7 +8,7 @@ import {
   buildOwnerStoryArgs,
   denseTripFixture,
   emptyTripFixture,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 import {
   buildPageOverflowItems,
   onStoryChangeDayPath,

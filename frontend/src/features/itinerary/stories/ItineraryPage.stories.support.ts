@@ -11,7 +11,7 @@ import {
   stressPathItemsBase,
   windowOnlyDurationItemBase,
   withStoryPrefix,
-} from "./itinerary-story-fixtures";
+} from "./support/itinerary-story-fixtures";
 
 export const onStoryChangeDayPath = fn();
 export const onStoryMoveItemToPath = fn();
