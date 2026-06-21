@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAccountApiClient } from "./api-client";
-import { jsonResponse } from "./api-client.test-support";
+import { jsonResponse } from "./testing/support/api-client-test-utils";
 
 describe("Account API client email auth routes", () => {
   it("starts and finishes provider-free email login through stable v1 routes", async () => {

@@ -4,7 +4,7 @@ import {
   accountTripCreateRequest,
   accountTripCreateResponse,
   jsonResponse,
-} from "./api-client.test-support";
+} from "./testing/support/api-client-test-utils";
 
 describe("Account API client trip management routes", () => {
   it("creates account-owned trips, claims temp members, and transfers owner", async () => {

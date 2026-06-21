@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { TripApiError } from "@/src/trip/api-client";
 import { createAccountApiClient } from "./api-client";
-import { jsonResponse } from "./api-client.test-support";
+import { jsonResponse } from "./testing/support/api-client-test-utils";
 
 describe("Account API client session auth routes", () => {
   it("revokes trusted devices, logs out, and preserves backend error details", async () => {

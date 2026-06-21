@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAccountApiClient } from "./api-client";
-import { jsonResponse } from "./api-client.test-support";
+import { jsonResponse } from "./testing/support/api-client-test-utils";
 
 describe("Account API client passkey auth routes", () => {
   it("runs passkey registration and login routes without a provider", async () => {

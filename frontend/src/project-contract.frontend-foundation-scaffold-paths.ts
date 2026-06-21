@@ -134,5 +134,5 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/account/api-client-portal.test.ts",
   "src/account/api-client-settings.test.ts",
   "src/account/api-client-trips.test.ts",
-  "src/account/api-client.test-support.ts",
+  "src/account/testing/support/api-client-test-utils.ts",
 ] as const;

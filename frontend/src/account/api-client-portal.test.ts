@@ -6,7 +6,7 @@ import {
   accountTrip,
   accountVaultItem,
   jsonResponse,
-} from "./api-client.test-support";
+} from "./testing/support/api-client-test-utils";
 
 describe("Account API client portal routes", () => {
   it("loads trip history and stats with bearer auth", async () => {
