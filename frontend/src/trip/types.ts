@@ -6,7 +6,7 @@ import type {
 } from "./trip-record-types";
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
 import type { Member } from "./trip-member-types";
-import type { PlanVariant, TripPlan } from "./trip-plan-types";
+import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./trip-place-types";
 import type { TripTask } from "./trip-task-types";
 export type {
@@ -51,7 +51,7 @@ export type {
   PlanVariant,
   PlanVariantKind,
   TripPlan,
-} from "./trip-plan-types";
+} from "./trip-plans/trip-plan-types";
 export type {
   PlaceResolutionCandidate,
   PlaceResolutionRequest,

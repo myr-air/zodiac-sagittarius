@@ -4,7 +4,7 @@ import {
   buildPatchTripPlanStatusRequest,
   buildRenameTripPlanRequest,
   buildSetMainTripPlanRequest,
-} from "@/src/trip/trip-plan-api-requests";
+} from "@/src/trip/trip-plans";
 import { plan } from "./trip-plans.test-support";
 
 describe("trip plan API requests", () => {

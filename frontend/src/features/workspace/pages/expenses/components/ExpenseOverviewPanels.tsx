@@ -4,7 +4,7 @@ import { formatReminderDate } from "@/src/trip/expense-reminder-display";
 import { formatMoney } from "@/src/trip/expenses";
 import { memberInitial } from "@/src/trip/member-labels";
 import { findMemberById } from "@/src/trip/member-lookup";
-import { tripPlanName } from "@/src/trip/trip-plan-display";
+import { tripPlanName } from "@/src/trip/trip-plans";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";

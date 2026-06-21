@@ -15,7 +15,7 @@ import { DEFAULT_TRIP_TIMEZONE } from "./trip-defaults";
 import {
   legacyKindForPlanStatus,
   planStatusForLegacyKind,
-} from "./trip-plan-aliases";
+} from "./trip-plans/trip-plan-aliases";
 
 export function mapTripSummary(trip: TripSummaryResponse): Trip {
   return {

@@ -11,7 +11,7 @@ import {
 import {
   planStatusValues,
   planVariantKindValues,
-} from "./trip-plan-types";
+} from "./trip-plans/trip-plan-types";
 import { readEnum, readOptionalEnum } from "./itinerary-import-reader-utils";
 
 export function readActivityType(value: unknown): ItineraryItem["activityType"] {
