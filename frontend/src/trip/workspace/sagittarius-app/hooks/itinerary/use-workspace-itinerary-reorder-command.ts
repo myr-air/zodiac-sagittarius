@@ -5,12 +5,9 @@ import {
   replaceItineraryItem,
   replaceItineraryItems,
 } from "@/src/trip/itinerary";
-import {
-  buildMoveItineraryItemRequest,
-  buildReorderItineraryItemsRequest,
-} from "@/src/trip/itinerary-api-requests";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { buildWorkspaceReorderApiInput } from "./workspace-itinerary-move-inputs";
 
 interface UseWorkspaceItineraryReorderCommandParams {
   canEdit: boolean;
@@ -56,48 +53,34 @@ export function useWorkspaceItineraryReorderCommand({
       if (!nextTrip) return;
 
       if (isApiMode && resolvedApiClient && participantSession) {
-        const draggedItem = trip.itineraryItems.find(
-          (item) => item.id === draggedItemId,
-        );
-        const targetItem = nextTrip.itineraryItems.find(
-          (item) => item.id === targetItemId,
-        );
-        if (!draggedItem || !targetItem) return;
-        const movedItem = nextTrip.itineraryItems.find(
-          (item) => item.id === draggedItemId,
-        );
-        if (!movedItem) return;
-        const parentChanged =
-          (draggedItem.parentItemId ?? null) !==
-          (movedItem.parentItemId ?? null);
-        if (draggedItem.day !== movedItem.day || parentChanged) {
+        const reorderInput = buildWorkspaceReorderApiInput({
+          draggedItemId,
+          getMoveClientMutationId: () =>
+            nextClientMutationId("itinerary-day-move"),
+          getReorderClientMutationId: () =>
+            nextClientMutationId("itinerary-reorder"),
+          nextTrip,
+          targetItemId,
+          trip,
+        });
+        if (!reorderInput) return;
+
+        if (reorderInput.kind === "move") {
           const patchedItem = await resolvedApiClient.patchItineraryItem(
             trip.id,
             draggedItemId,
             participantSession.sessionToken,
-            buildMoveItineraryItemRequest(movedItem, {
-              clientMutationId: nextClientMutationId("itinerary-day-move"),
-              expectedVersion: draggedItem.version,
-            }),
+            reorderInput.request,
           );
           replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
           setSelectedItemId(draggedItemId);
           return;
         }
 
-        const reorderedDayItems = nextTrip.itineraryItems.filter(
-          (item) =>
-            item.planVariantId === targetItem.planVariantId &&
-            item.day === targetItem.day,
-        );
         const reorderedItems = await resolvedApiClient.reorderItineraryItems(
           trip.id,
           participantSession.sessionToken,
-          buildReorderItineraryItemsRequest(reorderedDayItems, {
-            clientMutationId: nextClientMutationId("itinerary-reorder"),
-            day: targetItem.day,
-            planVariantId: targetItem.planVariantId,
-          }),
+          reorderInput.request,
         );
         updateApiTrip((current) => replaceItineraryItems(current, reorderedItems));
         return;

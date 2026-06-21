@@ -5,14 +5,14 @@ import {
   moveTripItemToDay,
   replaceItineraryItem,
 } from "@/src/trip/itinerary";
-import {
-  buildMoveItineraryItemRequest,
-  buildMoveItineraryItemToDayRequest,
-} from "@/src/trip/itinerary-api-requests";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { useWorkspaceItineraryPathMoveCommand } from "./use-workspace-itinerary-path-move-command";
 import { useWorkspaceItineraryReorderCommand } from "./use-workspace-itinerary-reorder-command";
+import {
+  buildWorkspaceMoveItemPatchRequest,
+  buildWorkspaceMoveItemToDayPatchRequest,
+} from "./workspace-itinerary-move-inputs";
 
 interface UseWorkspaceItineraryMoveCommandsParams {
   canEdit: boolean;
@@ -71,23 +71,19 @@ export function useWorkspaceItineraryMoveCommands({
       );
       if (!nextTrip) return;
 
-      const draggedItem = trip.itineraryItems.find(
-        (item) => item.id === draggedItemId,
-      );
-      const movedItem = nextTrip.itineraryItems.find(
-        (item) => item.id === draggedItemId,
-      );
-      if (!draggedItem || !movedItem) return;
-
       if (isApiMode && resolvedApiClient && participantSession) {
+        const patchRequest = buildWorkspaceMoveItemPatchRequest({
+          clientMutationId: nextClientMutationId("itinerary-block-move"),
+          itemId: draggedItemId,
+          nextTrip,
+          trip,
+        });
+        if (!patchRequest) return;
         const patchedItem = await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
           participantSession.sessionToken,
-          buildMoveItineraryItemRequest(movedItem, {
-            clientMutationId: nextClientMutationId("itinerary-block-move"),
-            expectedVersion: draggedItem.version,
-          }),
+          patchRequest,
         );
         replaceApiTrip(replaceItineraryItem(nextTrip, patchedItem));
         setSelectedItemId(draggedItemId);
@@ -124,19 +120,18 @@ export function useWorkspaceItineraryMoveCommands({
       if (!nextTrip) return;
 
       if (isApiMode && resolvedApiClient && participantSession) {
-        const draggedItem = trip.itineraryItems.find(
-          (item) => item.id === draggedItemId,
-        );
-        if (!draggedItem) return;
+        const patchRequest = buildWorkspaceMoveItemToDayPatchRequest({
+          clientMutationId: nextClientMutationId("itinerary-day-move"),
+          itemId: draggedItemId,
+          targetDay,
+          trip,
+        });
+        if (!patchRequest) return;
         await resolvedApiClient.patchItineraryItem(
           trip.id,
           draggedItemId,
           participantSession.sessionToken,
-          buildMoveItineraryItemToDayRequest({
-            clientMutationId: nextClientMutationId("itinerary-day-move"),
-            expectedVersion: draggedItem.version,
-            targetDay,
-          }),
+          patchRequest,
         );
         replaceApiTrip(nextTrip);
         setSelectedItemId(draggedItemId);
