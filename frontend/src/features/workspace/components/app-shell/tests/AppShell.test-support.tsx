@@ -6,7 +6,7 @@ export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { Member, Trip } from "@/src/trip/types";
-import { AppShell } from "./AppShell";
+import { AppShell } from "../AppShell";
 
 interface RenderAppShellOptions {
   activeView?: PlanningView;

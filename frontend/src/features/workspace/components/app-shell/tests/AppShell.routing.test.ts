@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { appRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { resolveViewFromPath } from "./AppShell";
+import { resolveViewFromPath } from "../AppShell";
 
 describe("AppShell routing", () => {
   it("decodes short trip IDs in route path when resolving active view", () => {
