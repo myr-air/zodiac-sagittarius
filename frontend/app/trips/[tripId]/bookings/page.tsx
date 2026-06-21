@@ -1,5 +1,5 @@
 import { TripWorkspaceApp } from "@/src/trip/workspace/TripWorkspaceApp";
-import { decodeTripId } from "@/src/trip/ids";
+import { decodeTripId } from "@/src/trip/identity";
 
 export default async function TripBookingsPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params;

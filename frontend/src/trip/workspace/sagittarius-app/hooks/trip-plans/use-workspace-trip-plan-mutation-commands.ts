@@ -5,7 +5,7 @@ import {
   mergePublishedTripPlan,
   setLocalMainTripPlan,
 } from "@/src/trip/trip-plans";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
 import { useWorkspaceTripPlanCreateCommand } from "./use-workspace-trip-plan-create-command";

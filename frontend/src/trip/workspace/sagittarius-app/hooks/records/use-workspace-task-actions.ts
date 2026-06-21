@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { nextClientMutationId, nextLocalTaskId } from "@/src/trip/local-ids";
+import { nextClientMutationId, nextLocalTaskId } from "@/src/trip/identity";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import {
   appendTask,

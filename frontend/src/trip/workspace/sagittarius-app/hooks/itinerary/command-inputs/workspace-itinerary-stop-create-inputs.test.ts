@@ -3,7 +3,7 @@ import {
   buildItineraryItemDraft,
   selectedItineraryPathIdForDay,
 } from "@/src/trip/itinerary";
-import { nextLocalItemId } from "@/src/trip/local-ids";
+import { nextLocalItemId } from "@/src/trip/identity";
 import { seedTrip } from "@/src/trip/seed";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {

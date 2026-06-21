@@ -14,7 +14,7 @@ import {
   type ExpenseInputLike,
   type ExpenseUpdateInputLike,
 } from "@/src/trip/expenses";
-import { nextClientMutationId, nextLocalExpenseId } from "@/src/trip/local-ids";
+import { nextClientMutationId, nextLocalExpenseId } from "@/src/trip/identity";
 import type {
   Expense,
   ExpenseSummary,

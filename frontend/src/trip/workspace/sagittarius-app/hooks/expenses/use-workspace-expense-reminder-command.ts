@@ -4,7 +4,7 @@ import {
   buildExpenseReminderRequest,
   recordLocalExpenseReminderInTrip,
 } from "@/src/trip/expenses";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type {
   ExpenseSummary,
   SettlementSuggestion,

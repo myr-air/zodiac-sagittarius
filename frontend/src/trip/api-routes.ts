@@ -1,4 +1,4 @@
-import { decodeTripId } from "@/src/trip/ids";
+import { decodeTripId } from "@/src/trip/identity";
 
 function encodePathSegment(segment: string): string {
   return encodeURIComponent(segment);

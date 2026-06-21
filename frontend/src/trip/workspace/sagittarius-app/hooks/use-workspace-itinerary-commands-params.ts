@@ -11,7 +11,7 @@ import type {
   PlaceResolver,
   StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import type { nextClientMutationId as nextClientMutationIdFactory } from "@/src/trip/local-ids";
+import type { nextClientMutationId as nextClientMutationIdFactory } from "@/src/trip/identity";
 import type {
   ItineraryItem,
   Trip,

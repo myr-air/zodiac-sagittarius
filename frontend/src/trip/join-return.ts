@@ -1,5 +1,5 @@
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { decodeTripId } from "@/src/trip/ids";
+import { decodeTripId } from "@/src/trip/identity";
 
 export function resolveJoinPostAuthReturnTo(
   returnTo: string | null,

@@ -10,7 +10,7 @@ import {
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
-} from "@/src/trip/local-ids";
+} from "@/src/trip/identity";
 import type {
   Trip,
   TripParticipantSession,

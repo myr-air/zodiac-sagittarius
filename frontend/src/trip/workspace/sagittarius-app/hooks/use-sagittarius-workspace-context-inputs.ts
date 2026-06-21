@@ -1,4 +1,4 @@
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type { UseWorkspaceCommandsParams } from "./use-workspace-commands-params";
 import type { UseWorkspacePlanningContextParams } from "./use-workspace-planning-context-params";
 import type { useWorkspacePlanningContext } from "./use-workspace-planning-context";

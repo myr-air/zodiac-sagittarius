@@ -11,7 +11,7 @@ import {
   mergeImportedStopNotes,
   mergeImportedTasks,
 } from "@/src/trip/workspace/itinerary-import-record-merge";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type {
   ExpenseSummary,
   ItineraryItem,

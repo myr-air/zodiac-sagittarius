@@ -6,7 +6,7 @@ import {
   type ItineraryPathOption,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary";
-import { nextLocalItemId } from "@/src/trip/local-ids";
+import { nextLocalItemId } from "@/src/trip/identity";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 

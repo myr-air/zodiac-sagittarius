@@ -8,7 +8,7 @@ import {
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { isVersionConflict } from "@/src/trip/api-errors";
-import { nextLocalBookingDocId } from "@/src/trip/local-ids";
+import { nextLocalBookingDocId } from "@/src/trip/identity";
 import type {
   BookingDoc,
   Trip,

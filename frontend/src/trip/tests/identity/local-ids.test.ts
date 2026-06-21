@@ -11,7 +11,7 @@ import {
   nextLocalStopNoteId,
   nextLocalSuggestionId,
   nextLocalTaskId,
-} from "@/src/trip/local-ids";
+} from "@/src/trip/identity";
 import type {
   BookingDoc,
   Expense,

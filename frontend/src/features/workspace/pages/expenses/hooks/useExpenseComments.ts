@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { nextLocalExpenseCommentId } from "@/src/trip/local-ids";
+import { nextLocalExpenseCommentId } from "@/src/trip/identity";
 import type { Expense, ExpenseComment, Member } from "@/src/trip/types";
 
 interface UseExpenseCommentsInput {

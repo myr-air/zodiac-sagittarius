@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { nextLocalPhotoAlbumId } from "@/src/trip/local-ids";
+import { nextLocalPhotoAlbumId } from "@/src/trip/identity";
 import {
   appendPhotoAlbumToTrip,
   createLocalPhotoAlbum,

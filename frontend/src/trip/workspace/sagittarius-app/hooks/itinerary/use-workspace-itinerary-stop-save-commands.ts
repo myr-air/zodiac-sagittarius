@@ -10,7 +10,7 @@ import {
 } from "@/src/trip/place-resolution";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
-} from "@/src/trip/local-ids";
+} from "@/src/trip/identity";
 import type {
   ItineraryItem,
   Trip,

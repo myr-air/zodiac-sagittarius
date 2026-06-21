@@ -5,7 +5,7 @@ import {
   buildFallbackBriefings,
   buildPatchDailyBriefingRequest,
 } from "@/src/trip/weather";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type {
   DailyBriefingOverrides,
   Trip,

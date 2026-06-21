@@ -7,7 +7,7 @@ import {
   buildPatchTripSettingsRequest,
   mergePatchedTripSettings,
 } from "@/src/trip/trip-settings";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import type {
   Trip,
   TripParticipantSession,

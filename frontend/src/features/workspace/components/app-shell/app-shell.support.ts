@@ -1,4 +1,4 @@
-import { decodeTripId } from "@/src/trip/ids";
+import { decodeTripId } from "@/src/trip/identity";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 

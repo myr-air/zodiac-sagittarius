@@ -4,7 +4,7 @@ import {
   encodeTripId,
   shortIdModeValues,
   shortTripId,
-} from "@/src/trip/ids";
+} from "@/src/trip/identity";
 
 describe("shortTripId", () => {
   it("keeps short id modes in default preference order", () => {

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { nextClientMutationId, nextLocalSuggestionId } from "@/src/trip/local-ids";
+import { nextClientMutationId, nextLocalSuggestionId } from "@/src/trip/identity";
 import {
   approveSuggestion,
   buildCreateEditSuggestionRequest,

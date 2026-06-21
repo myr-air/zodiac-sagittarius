@@ -5,7 +5,7 @@ import {
   createLocalTripPlan,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
-import { nextClientMutationId, nextLocalPlanVariantId } from "@/src/trip/local-ids";
+import { nextClientMutationId, nextLocalPlanVariantId } from "@/src/trip/identity";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
 

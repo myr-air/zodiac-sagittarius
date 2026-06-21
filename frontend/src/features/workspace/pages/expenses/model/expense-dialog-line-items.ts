@@ -1,4 +1,4 @@
-import { nextLocalExpenseLineItemId } from "@/src/trip/local-ids";
+import { nextLocalExpenseLineItemId } from "@/src/trip/identity";
 import type { Expense, ExpenseLineItem, Member } from "@/src/trip/types";
 
 export interface EditableExpenseLineItem {

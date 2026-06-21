@@ -5,7 +5,7 @@ import {
   buildUpdatePresenceRequest,
   replaceTripParticipant,
 } from "@/src/trip/auth";
-import { nextClientMutationId } from "@/src/trip/local-ids";
+import { nextClientMutationId } from "@/src/trip/identity";
 import { clearParticipantSession } from "@/src/trip/participant-session-storage";
 import type {
   Trip,
