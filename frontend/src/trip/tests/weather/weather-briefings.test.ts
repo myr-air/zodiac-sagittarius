@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Trip, TripDailyBriefing } from "./types";
+import type { Trip, TripDailyBriefing } from "../../types";
 import {
   applyDailyBriefingOverrides,
   buildPatchDailyBriefingRequest,
-} from "./weather-briefings";
+} from "../../weather-briefings";
 
 const briefing = (date: string, high: number | null, low: number | null): TripDailyBriefing => ({
   tripId: "trip-1",

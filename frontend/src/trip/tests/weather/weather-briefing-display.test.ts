@@ -6,8 +6,8 @@ import {
   thaiWeekdayTone,
   weatherGraphicLabel,
   weatherIconForCondition,
-} from "./weather-briefing-display";
-import type { TripDailyBriefing } from "./types";
+} from "../../weather-briefing-display";
+import type { TripDailyBriefing } from "../../types";
 
 const briefing = (date: string): TripDailyBriefing => ({
   tripId: "trip-1",

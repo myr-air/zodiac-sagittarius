@@ -272,6 +272,8 @@ export const frontendScaffoldPathsAbsent = [
   "src/trip/safe-links.test.ts",
   "src/trip/storage.test.ts",
   "src/trip/suggestions.test.ts",
+  "src/trip/weather-briefing-display.test.ts",
+  "src/trip/weather-briefings.test.ts",
   "src/trip/booking-docs.test.ts",
   "src/trip/api-client.workspace-routes.test.ts",
   "src/trip/api-client.booking-photo.test.ts",
