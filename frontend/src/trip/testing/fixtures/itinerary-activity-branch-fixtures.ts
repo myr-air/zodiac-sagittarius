@@ -1,4 +1,4 @@
-import { tripFixture } from "./fixtures/trip-fixtures";
+import { tripFixture } from "./trip-fixtures";
 
 export function overlappingActivityItems() {
   const mainItem = {

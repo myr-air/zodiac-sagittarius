@@ -11,7 +11,7 @@ import {
   pathNamePlanA,
   pathNamePlanB,
   pathNamePlanC,
-} from "@/src/trip/testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 export { pathNameMain, pathNamePlanA, pathNamePlanB, pathNamePlanC };
 

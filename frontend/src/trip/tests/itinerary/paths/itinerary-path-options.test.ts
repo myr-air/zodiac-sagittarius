@@ -9,7 +9,7 @@ import {
   pathIdRain,
   pathNamePlanA,
   pathNameRain,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary path options", () => {
   it("derives main and named path options from metadata and item fields", () => {

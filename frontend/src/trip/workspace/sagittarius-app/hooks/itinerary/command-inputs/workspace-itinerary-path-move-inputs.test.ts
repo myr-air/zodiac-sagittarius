@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { applyManualActivityPath } from "@/src/trip/itinerary-paths";
-import { overlappingActivityItems } from "@/src/trip/testing/itinerary-activity-branch-fixtures";
+import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
 import {
   pathIdPlanA,
   pathIdPlanB,
-} from "@/src/trip/testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 import {
   buildWorkspacePathMovePlacement,
   buildWorkspacePathMoveReplacementItems,

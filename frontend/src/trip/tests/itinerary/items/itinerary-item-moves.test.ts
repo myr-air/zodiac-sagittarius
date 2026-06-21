@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
 import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { shenzhenDay } from "../../../testing/itinerary-test-days";
+import { shenzhenDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 import {
   hasDescendantItem,
   moveTripItem,

@@ -5,7 +5,7 @@ import type {
   StopNote,
   TripTask,
 } from "@/src/trip/types";
-import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
+import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 export const importedTask: TripTask = {
   assigneeId: "member-aom",

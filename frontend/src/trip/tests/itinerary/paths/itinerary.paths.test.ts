@@ -6,10 +6,10 @@ import {
   groupItemsByDay,
   resolveItineraryPathItems,
 } from "../../../itinerary";
-import { arrivalDay } from "../../../testing/itinerary-test-days";
+import { arrivalDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 import {
   pathIdRain,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary path domain", () => {
   it("resolves trip path items with time-slot fallback to main", () => {

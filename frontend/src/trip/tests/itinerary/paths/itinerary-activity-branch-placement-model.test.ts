@@ -3,12 +3,12 @@ import {
   buildActivityBranchPlacement,
   cascadePathFieldsToSubActivities,
 } from "../../../itinerary-activity-branch-placement";
-import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
+import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   pathIdPlanA,
   pathNamePlanA,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary activity branch placement model", () => {
   it("cascades parent path fields to sub-activities in the same branch", () => {

@@ -10,7 +10,7 @@ import {
   pathIdPlanA,
   pathIdRain,
   pathNamePlanA,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary path selection", () => {
   it("selects the effective itinerary path for a day", () => {

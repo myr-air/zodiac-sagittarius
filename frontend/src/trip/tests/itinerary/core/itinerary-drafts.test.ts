@@ -8,7 +8,7 @@ import {
 import {
   pathIdRainDay,
   pathNameRainDay,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary draft builders", () => {
   it("builds new itinerary item drafts with target path fields", () => {

@@ -9,7 +9,7 @@ import {
   pathNamePlanB,
   pathNamePlanC,
   pathNameRain,
-} from "@/src/trip/testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 export const itineraryFixtureDay = "2026-06-19" as const;
 

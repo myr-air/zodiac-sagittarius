@@ -5,13 +5,13 @@ import {
   applyManualActivityPath,
   deriveManualActivityPathOptions,
 } from "../../../itinerary-paths";
-import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
+import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
 import {
   pathIdPlanA,
   pathIdPlanB,
   pathNamePlanA,
   pathNamePlanB,
-} from "../../../testing/itinerary-path-fixtures";
+} from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("manual itinerary activity path assignment", () => {
   it("lets organizers explicitly assign overlapping activities to plan A or B", () => {
