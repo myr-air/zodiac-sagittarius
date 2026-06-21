@@ -4,13 +4,13 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   getMaplibreMock,
   resetMaplibreMock,
-} from "../testing/route-map-live-map-test-support";
-import { renderLiveRouteMap } from "../testing/route-map-live-map-view-test-support";
+} from "../testing/mocks/maplibre-gl.mock";
+import { renderLiveRouteMap } from "../testing/support/route-map-render";
 import {
   hongKongDay,
   routeMapDayCoordinateItems,
   routeMapItems,
-} from "../testing/route-map-test-support";
+} from "../testing/fixtures/route-map-fixtures";
 import { RouteMapView } from "../RouteMapView";
 
 const maplibreMock = getMaplibreMock();

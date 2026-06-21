@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { routeMapCoordinateItems } from "../testing/route-map-test-support";
+import { routeMapCoordinateItems } from "../testing/fixtures/route-map-fixtures";
 import { allDaysFilter, type RouteDayGroup, type RoutePoint } from "../route-map.types";
 import {
   type LiveRouteMarkerRegistry,

@@ -5,9 +5,9 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import { RouteMapView } from "../RouteMapView";
 import {
   hongKongDay,
-  renderWithThaiI18n,
   routeMapUnresolvedItems,
-} from "../testing/route-map-test-support";
+} from "../testing/fixtures/route-map-fixtures";
+import { renderWithThaiI18n } from "../testing/support/route-map-render";
 
 describe("RouteMapView unresolved coordinates", () => {
   const render = renderWithThaiI18n;

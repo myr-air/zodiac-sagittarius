@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeMapCoordinateItems } from "../testing/route-map-test-support";
+import { routeMapCoordinateItems } from "../testing/fixtures/route-map-fixtures";
 import {
   fallbackRouteViewport,
   getRouteCenter,

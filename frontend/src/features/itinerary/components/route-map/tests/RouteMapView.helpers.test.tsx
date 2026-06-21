@@ -12,9 +12,9 @@ import {
   RouteMapView,
 } from "../RouteMapView";
 import {
-  renderWithThaiI18n,
   routeMapItems,
-} from "../testing/route-map-test-support";
+} from "../testing/fixtures/route-map-fixtures";
+import { renderWithThaiI18n } from "../testing/support/route-map-render";
 
 describe("RouteMapView helpers", () => {
   const render = renderWithThaiI18n;

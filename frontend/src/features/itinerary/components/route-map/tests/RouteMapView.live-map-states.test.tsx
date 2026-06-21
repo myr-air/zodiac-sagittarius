@@ -6,8 +6,9 @@ import {
   getMaplibreMock,
   resetMaplibreMock,
   triggerLiveMapEvent,
-} from "../testing/route-map-live-map-test-support";
-import { renderWithThaiI18n, routeMapItems } from "../testing/route-map-test-support";
+} from "../testing/mocks/maplibre-gl.mock";
+import { routeMapItems } from "../testing/fixtures/route-map-fixtures";
+import { renderWithThaiI18n } from "../testing/support/route-map-render";
 import { RouteMapView } from "../RouteMapView";
 
 const maplibreMock = getMaplibreMock();
