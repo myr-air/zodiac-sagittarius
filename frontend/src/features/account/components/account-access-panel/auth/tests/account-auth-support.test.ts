@@ -7,7 +7,7 @@ import {
   isUnauthenticated,
   passwordLoginErrorMessage,
   rawErrorMessage,
-} from "./account-auth-support";
+} from "../account-auth-support";
 
 const labels = messages.en.access.messages;
 

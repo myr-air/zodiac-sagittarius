@@ -3,7 +3,7 @@ import {
   arrayBufferToBase64Url,
   base64UrlToArrayBuffer,
   buildPasskeyLoginFinishInput,
-} from "./account-passkey-support";
+} from "../account-passkey-support";
 
 describe("account passkey support", () => {
   it("round-trips ArrayBuffers with base64url formatting", () => {
