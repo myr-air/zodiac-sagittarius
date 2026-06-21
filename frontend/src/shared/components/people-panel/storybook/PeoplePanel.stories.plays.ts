@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { PeoplePanel } from "./PeoplePanel";
+import type { PeoplePanel } from "../PeoplePanel";
 
 type PeoplePanelPlay = NonNullable<StoryObj<typeof PeoplePanel>["play"]>;
 

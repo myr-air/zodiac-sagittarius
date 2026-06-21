@@ -1,6 +1,6 @@
 import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
-import type { PeoplePanel } from "./PeoplePanel";
+import type { PeoplePanel } from "../PeoplePanel";
 
 type PeoplePanelStoryArgs = Parameters<typeof PeoplePanel>[0];
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { PeoplePanel } from "./PeoplePanel";
+import { PeoplePanel } from "../PeoplePanel";
 import { emptyPlay, managerPlay, readOnlyPlay } from "./PeoplePanel.stories.plays";
 import {
   emptyPeoplePanelStoryArgs,
