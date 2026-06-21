@@ -10,6 +10,12 @@ import {
 } from "./support/itinerary-story-fixtures";
 
 type OverviewStoryArgs = OverviewPageProps;
+type OverviewStoryArgOverrides = Partial<OverviewStoryArgs>;
+
+const overviewPageOnlyStoryArgs = {
+  dailyBriefings: weatherBriefings,
+  onSaveDailyBriefingOverrides: noop,
+} satisfies OverviewStoryArgOverrides;
 
 export const overviewOwnerStoryArgs = {
   trip: tripFixture.trip,
@@ -22,67 +28,84 @@ export const overviewOwnerStoryArgs = {
   onToggleTaskStatus: noop,
 } satisfies OverviewStoryArgs;
 
-export const overviewTemplateOwnerStoryArgs = overviewOwnerStoryArgs;
+function buildOverviewTemplateStoryArgs(
+  overrides: OverviewStoryArgOverrides = {},
+): OverviewStoryArgs {
+  return {
+    ...overviewOwnerStoryArgs,
+    ...overrides,
+  };
+}
 
-export const overviewPageOwnerStoryArgs = {
-  ...overviewOwnerStoryArgs,
-  dailyBriefings: weatherBriefings,
-  onSaveDailyBriefingOverrides: noop,
-} satisfies OverviewStoryArgs;
+function buildOverviewPageStoryArgs(
+  overrides: OverviewStoryArgOverrides = {},
+): OverviewStoryArgs {
+  return {
+    ...overviewOwnerStoryArgs,
+    ...overviewPageOnlyStoryArgs,
+    ...overrides,
+  };
+}
 
-export const overviewTemplateTravelerStoryArgs = {
-  ...overviewTemplateOwnerStoryArgs,
+export const overviewTemplateOwnerStoryArgs = buildOverviewTemplateStoryArgs();
+
+export const overviewPageOwnerStoryArgs = buildOverviewPageStoryArgs();
+
+const travelerOverviewStoryOverrides = {
   currentMemberId: tripFixture.currentMembers.traveler.id,
   expenseSummary: tripFixture.expenseSummaries.traveler,
-} satisfies OverviewStoryArgs;
+} satisfies OverviewStoryArgOverrides;
 
-export const overviewPageTravelerStoryArgs = {
-  ...overviewPageOwnerStoryArgs,
-  currentMemberId: tripFixture.currentMembers.traveler.id,
-  expenseSummary: tripFixture.expenseSummaries.traveler,
-} satisfies OverviewStoryArgs;
+export const overviewTemplateTravelerStoryArgs = buildOverviewTemplateStoryArgs(
+  travelerOverviewStoryOverrides,
+);
 
-export const overviewTemplateViewerStoryArgs = {
-  ...overviewTemplateOwnerStoryArgs,
+export const overviewPageTravelerStoryArgs = buildOverviewPageStoryArgs(
+  travelerOverviewStoryOverrides,
+);
+
+const viewerOverviewStoryOverrides = {
   currentMemberId: tripFixture.currentMembers.viewer.id,
   expenseSummary: tripFixture.expenseSummaries.viewer,
-} satisfies OverviewStoryArgs;
+} satisfies OverviewStoryArgOverrides;
 
-export const overviewPageViewerStoryArgs = {
-  ...overviewPageOwnerStoryArgs,
-  currentMemberId: tripFixture.currentMembers.viewer.id,
-  expenseSummary: tripFixture.expenseSummaries.viewer,
-} satisfies OverviewStoryArgs;
+export const overviewTemplateViewerStoryArgs = buildOverviewTemplateStoryArgs(
+  viewerOverviewStoryOverrides,
+);
 
-export const overviewTemplateDenseStoryArgs = {
-  ...overviewTemplateOwnerStoryArgs,
+export const overviewPageViewerStoryArgs = buildOverviewPageStoryArgs(
+  viewerOverviewStoryOverrides,
+);
+
+const denseOverviewStoryOverrides = {
   trip: denseTripFixture,
   items: denseTripFixture.itineraryItems,
-} satisfies OverviewStoryArgs;
+} satisfies OverviewStoryArgOverrides;
 
-export const overviewPageDenseStoryArgs = {
-  ...overviewPageOwnerStoryArgs,
-  trip: denseTripFixture,
-  items: denseTripFixture.itineraryItems,
-} satisfies OverviewStoryArgs;
+export const overviewTemplateDenseStoryArgs = buildOverviewTemplateStoryArgs(
+  denseOverviewStoryOverrides,
+);
 
-export const overviewTemplateEmptyStoryArgs = {
-  ...overviewTemplateOwnerStoryArgs,
+export const overviewPageDenseStoryArgs = buildOverviewPageStoryArgs(
+  denseOverviewStoryOverrides,
+);
+
+const emptyOverviewStoryOverrides = {
   trip: emptyTripFixture,
   items: [],
   suggestions: [],
   tasks: [],
+} satisfies OverviewStoryArgOverrides;
+
+export const overviewTemplateEmptyStoryArgs = buildOverviewTemplateStoryArgs({
+  ...emptyOverviewStoryOverrides,
   expenseSummary: buildExpenseSummary([], tripFixture.currentMembers.owner.id),
-} satisfies OverviewStoryArgs;
+});
 
-export const overviewPageEmptyStoryArgs = {
-  ...overviewPageOwnerStoryArgs,
-  trip: emptyTripFixture,
-  items: [],
-  suggestions: [],
-  tasks: [],
+export const overviewPageEmptyStoryArgs = buildOverviewPageStoryArgs({
+  ...emptyOverviewStoryOverrides,
   dailyBriefings: [],
-} satisfies OverviewStoryArgs;
+});
 
 export async function expectOverviewStructure(canvasElement: HTMLElement) {
   await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
