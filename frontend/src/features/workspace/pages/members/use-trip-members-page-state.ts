@@ -9,11 +9,11 @@ import {
   filterTripMembers,
   memberSummaryCounts,
   visibleTripMembers,
-} from "./member-page-selectors";
+} from "./model/member-page-selectors";
 import type {
   MemberRoleFilter,
   MemberStatusFilter,
-} from "./member-page-options";
+} from "./model/member-page-options";
 import { useMemberInviteActions } from "./use-member-invite-actions";
 import { useMemberTaskDialogState } from "./use-member-task-dialog-state";
 

@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const membersPageDir = dirname(fileURLToPath(import.meta.url));
+const membersPageDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function readMembersPageSource(fileName: string) {
   return readFileSync(join(membersPageDir, fileName), "utf8");

@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { TripMembersPage } from "./TripMembersPage";
+import { TripMembersPage } from "../TripMembersPage";
 
 export function renderMembersPage(
   overrides: Partial<Parameters<typeof TripMembersPage>[0]> = {},

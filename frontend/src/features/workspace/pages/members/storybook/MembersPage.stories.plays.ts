@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { TripMembersPage } from "./TripMembersPage";
+import type { TripMembersPage } from "../TripMembersPage";
 import { expectMembersResponsiveContract } from "./MembersPage.stories.support";
 
 type MembersPagePlay = NonNullable<StoryObj<typeof TripMembersPage>["play"]>;

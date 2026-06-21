@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ownerArgsStory } from "@/src/shared/storybook/story-builders";
-import { TripMembersPage } from "./TripMembersPage";
+import { TripMembersPage } from "../TripMembersPage";
 import { templateOwnerPlay, templateOwnerThaiPlay } from "./MembersPage.stories.plays";
 import {
   membersDenseStoryArgs,

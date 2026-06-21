@@ -4,7 +4,7 @@ import {
   memberStatusFilterValues,
   type MemberRoleFilter,
   type MemberStatusFilter,
-} from "../member-page-options";
+} from "../model/member-page-options";
 import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberFilterControlProps } from "./member-management.types";
 

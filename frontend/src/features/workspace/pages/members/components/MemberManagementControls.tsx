@@ -1,5 +1,5 @@
 import { WorkspaceSurface } from "@/src/ui";
-import type { MemberRoleFilter, MemberStatusFilter } from "../member-page-options";
+import type { MemberRoleFilter, MemberStatusFilter } from "../model/member-page-options";
 import * as memberStyles from "../TripMembersPage.styles";
 import { MemberCreatePanel } from "./MemberCreatePanel";
 import { MemberFilterControls } from "./MemberFilterControls";
