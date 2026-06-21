@@ -3,7 +3,7 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { TripSettingsPage } from "./TripSettingsPage";
+import { TripSettingsPage } from "../TripSettingsPage";
 import {
   ownerPlay,
   planImpactWarningPlay,

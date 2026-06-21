@@ -1,5 +1,5 @@
 import type { Trip } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "./TripSettingsPage.types";
+import type { TripSettingsFormValues } from "../TripSettingsPage.types";
 
 export function tripToSettingsForm(trip: Trip): TripSettingsFormValues {
   return {

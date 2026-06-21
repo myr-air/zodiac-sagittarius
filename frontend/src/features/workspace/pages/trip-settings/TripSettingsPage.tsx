@@ -8,7 +8,7 @@ import { PageHeader } from "@/src/shared/components/page-header";
 import { TripSettingsForm } from "./components/TripSettingsForm";
 import { TripSettingsImpactCard } from "./components/TripSettingsImpactCard";
 import * as settingsStyles from "./TripSettingsPage.styles";
-import { tripSettingsStateKey } from "./trip-settings-state-key";
+import { tripSettingsStateKey } from "./model/trip-settings-state-key";
 import { useTripSettingsFormState } from "./use-trip-settings-form-state";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 

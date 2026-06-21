@@ -5,8 +5,8 @@ import {
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
   tripToSettingsForm,
-} from "./trip-settings-form-model";
-import { countStopsOutsideSettingsRange } from "./trip-settings-date-impact";
+} from "./model/trip-settings-form-model";
+import { countStopsOutsideSettingsRange } from "./model/trip-settings-date-impact";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
 interface TripSettingsFormStateInput {
