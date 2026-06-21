@@ -5,17 +5,17 @@ import type {
   TripCockpit,
 } from "@/src/trip/api-client";
 import { replaceItineraryItem } from "@/src/trip/itinerary";
-import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-time";
-import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-api-requests";
-import { buildMapLink } from "@/src/trip/place-resolution";
 import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
 import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { queueKeyedUpdate } from "../../support/queued-updates";
 import { runWorkspaceVersionConflictRetry } from "../../support/workspace-api-conflict-retry";
+import {
+  buildWorkspaceInlinePatchRequest,
+  buildWorkspaceInlineUpdatedItem,
+} from "./workspace-itinerary-inline-update-inputs";
 
 interface UseWorkspaceItineraryInlineUpdateCommandParams {
   canEdit: boolean;
@@ -69,18 +69,19 @@ export function useWorkspaceItineraryInlineUpdateCommand({
               (candidate) => candidate.id === itemId,
             );
             if (!item) return;
-            const nextPatch = buildInlineItineraryItemPatch(item, patch);
-            if (!nextPatch) return;
+            const patchRequest = buildWorkspaceInlinePatchRequest({
+              clientMutationId: nextClientMutationId(
+                "itinerary-inline-patch",
+              ),
+              item,
+              patch,
+            });
+            if (!patchRequest) return;
             const patchedItem = await resolvedApiClient.patchItineraryItem(
               currentTrip.id,
               itemId,
               participantSession.sessionToken,
-              buildInlineItineraryItemPatchRequest(nextPatch, {
-                clientMutationId: nextClientMutationId(
-                  "itinerary-inline-patch",
-                ),
-                expectedVersion: item.version,
-              }),
+              patchRequest,
             );
             const nextTrip = replaceItineraryItem(
               latestTripRef.current,
@@ -98,21 +99,8 @@ export function useWorkspaceItineraryInlineUpdateCommand({
           (candidate) => candidate.id === itemId,
         );
         if (!item) return current;
-        const nextPatch = buildInlineItineraryItemPatch(item, patch);
-        if (!nextPatch) return current;
-        const updatedItem = {
-          ...item,
-          ...nextPatch,
-          ...(nextPatch.place !== undefined
-            ? {
-                address: nextPatch.place,
-                coordinates: undefined,
-                mapLink: buildMapLink(nextPatch.place),
-              }
-            : {}),
-          updatedAt: workspaceLocalMutationTimestamp,
-          version: item.version + 1,
-        };
+        const updatedItem = buildWorkspaceInlineUpdatedItem(item, patch);
+        if (!updatedItem) return current;
         return {
           ...current,
           itineraryItems: current.itineraryItems.map((candidate) =>
