@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   renderContextRail,
   selectedContextRailItem,
-} from "./ContextRail.test-support";
+} from "../testing/ContextRail.test-support";
 
 describe("ContextRail shell", () => {
   it("closes the rail and uses read-only fallbacks when editing is unavailable", async () => {

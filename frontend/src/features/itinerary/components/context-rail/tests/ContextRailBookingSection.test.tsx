@@ -6,7 +6,7 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   renderContextRail,
   selectedContextRailItem,
-} from "./ContextRail.test-support";
+} from "../testing/ContextRail.test-support";
 
 describe("ContextRail booking section", () => {
   it("shows booking docs linked to the selected itinerary item", async () => {

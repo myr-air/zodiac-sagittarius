@@ -2,7 +2,7 @@ import type { FormEvent } from "react";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { StopNote } from "@/src/trip/types";
-import { useContextRailNoteForm } from "./use-context-rail-note-form";
+import { useContextRailNoteForm } from "../use-context-rail-note-form";
 
 function createHook(options: { itemId?: string } = {}) {
   const onCreateNote = vi.fn();

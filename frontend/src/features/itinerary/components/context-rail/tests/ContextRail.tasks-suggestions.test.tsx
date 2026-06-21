@@ -5,7 +5,7 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   renderContextRail,
   selectedContextRailItem,
-} from "./ContextRail.test-support";
+} from "../testing/ContextRail.test-support";
 
 describe("ContextRail tasks and suggestions", () => {
   it("switches booking tasks and reviews suggestions", () => {

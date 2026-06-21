@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ExpenseSummary } from "@/src/trip/types";
-import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
+import { formatContextRailExpenseTotals } from "../context-rail-expense-totals";
 
 function expenseSummary(
   groupSpend: number,

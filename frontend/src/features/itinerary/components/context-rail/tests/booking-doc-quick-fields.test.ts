@@ -5,7 +5,7 @@ import {
   bookingDocQuickFieldKeys,
   buildBookingDocQuickFieldPatch,
   getBookingDocQuickFieldValue,
-} from "./booking-doc-quick-fields";
+} from "../booking-doc-quick-fields";
 
 function buildQuickFieldBookingDoc(fields: Partial<BookingDoc>) {
   return buildBookingDoc({

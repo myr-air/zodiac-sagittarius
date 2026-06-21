@@ -5,7 +5,7 @@ import type { Expense } from "@/src/trip/types";
 import {
   contextRailExpenseCategoryOptions,
   useContextRailExpenseForm,
-} from "./use-context-rail-expense-form";
+} from "../use-context-rail-expense-form";
 
 function createHook(options: { selectedItemId?: string } = {}) {
   const onCreateExpense = vi.fn();

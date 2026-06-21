@@ -8,7 +8,7 @@ import {
   memberDisplayName,
   suggestionLabel,
   taskKindLabel,
-} from "./context-rail.utils";
+} from "../context-rail.utils";
 
 describe("context rail utils", () => {
   it("keeps context rail tabs in display order", () => {

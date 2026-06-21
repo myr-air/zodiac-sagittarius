@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
-import { selectedContextRailItem } from "./ContextRail.test-fixtures";
-import { buildContextRailSelection } from "./context-rail.state";
+import { selectedContextRailItem } from "../testing/ContextRail.test-fixtures";
+import { buildContextRailSelection } from "../context-rail.state";
 
 describe("buildContextRailSelection", () => {
   it("selects rail records linked to the active itinerary item", () => {

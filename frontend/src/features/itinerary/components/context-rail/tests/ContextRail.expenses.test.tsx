@@ -4,7 +4,7 @@ import { tripFixture } from "@/src/trip/trip-fixtures";
 import {
   renderContextRail,
   selectedContextRailItem,
-} from "./ContextRail.test-support";
+} from "../testing/ContextRail.test-support";
 
 describe("ContextRail expenses", () => {
   it("creates, updates, and deletes stop expenses", () => {

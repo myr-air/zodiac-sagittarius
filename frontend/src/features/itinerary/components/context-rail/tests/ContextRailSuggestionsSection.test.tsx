@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Suggestion, Trip } from "@/src/trip/types";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
+import { ContextRailSuggestionsSection } from "../ContextRailSuggestionsSection";
 
 function renderSection(
   props: Partial<{
