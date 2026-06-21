@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeTraceOutput } from "../scripts/run-local-api-trace-smoke";
+import { normalizeTraceOutput } from "../../../scripts/run-local-api-trace-smoke";
 
 describe("api trace smoke log matching", () => {
   it("normalizes ANSI-colored tracing fields from GitHub Actions logs", () => {

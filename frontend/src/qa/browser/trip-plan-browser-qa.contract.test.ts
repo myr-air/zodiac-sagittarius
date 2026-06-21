@@ -1,18 +1,17 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const testDir = dirname(fileURLToPath(import.meta.url));
-const frontendRoot = resolve(testDir, "..");
+import {
+  frontendPath,
+  readFrontendPackageJson,
+  readFrontendText,
+} from "../testing/frontend-root";
 
 describe("Trip Plan browser QA harness", () => {
   it("exposes a repeatable selector and set-main QA command", () => {
-    const packageJson = JSON.parse(readFileSync(join(frontendRoot, "package.json"), "utf8")) as {
-      scripts?: Record<string, string>;
-    };
-    const scriptPath = join(frontendRoot, "scripts/run-trip-plan-browser-qa.ts");
-    const script = readFileSync(scriptPath, "utf8");
+    const packageJson = readFrontendPackageJson();
+    const scriptPath = frontendPath("scripts/run-trip-plan-browser-qa.ts");
+    const script = readFrontendText("scripts/run-trip-plan-browser-qa.ts");
 
     expect(packageJson.scripts?.["test:trip-plan-browser-qa"]).toBe(
       "bun run scripts/run-trip-plan-browser-qa.ts",
