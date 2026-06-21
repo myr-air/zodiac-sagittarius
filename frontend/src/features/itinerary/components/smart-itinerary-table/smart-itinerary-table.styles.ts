@@ -124,6 +124,10 @@ export {
   ticketLinkedItemsClassName,
   ticketLinkedOptionClassName,
   ticketModalFooterClassName,
+  ticketModalUnlinkButtonClassName,
+  ticketModalCancelButtonClassName,
+  ticketModalSaveButtonClassName,
+  noteModalSaveButtonClassName,
 } from "./activity-cell/activity-cell.styles";
 
 export {

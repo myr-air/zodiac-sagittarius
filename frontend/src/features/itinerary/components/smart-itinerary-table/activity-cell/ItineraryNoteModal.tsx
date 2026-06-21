@@ -6,6 +6,8 @@ import { useEscapeToClose } from "./use-escape-close";
 import { cn } from "@/src/lib/cn";
 import { subActivityModalCloseClassName } from "../smart-itinerary-table.styles";
 import {
+  noteModalSaveButtonClassName,
+  ticketModalCancelButtonClassName,
   ticketFieldClassName,
   ticketModalBackdropClassName,
   ticketModalBodyClassName,
@@ -93,14 +95,14 @@ export function ItineraryNoteModal({
           <footer className={ticketModalFooterClassName}>
             <button
               type="button"
-              className="inline-flex min-h-9 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+              className={ticketModalCancelButtonClassName}
               onClick={onClose}
             >
               {locale === "th" ? "ยกเลิก" : "Cancel"}
             </button>
             <button
               type="submit"
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) px-3 text-xs font-extrabold text-white hover:bg-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+              className={noteModalSaveButtonClassName}
               disabled={saving || !body.trim()}
             >
               <Icon name="note" />
