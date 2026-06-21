@@ -1,5 +1,5 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatDayLabel } from "@/src/trip/itinerary";
+import { formatDayLabel } from "@/src/trip/itinerary-core";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export function formatOverviewStopSchedule(

@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { cn } from "@/src/lib/cn";
-import { getTripDates } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { DestinationVisual } from "@/src/features/itinerary/domain";

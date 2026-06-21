@@ -5,7 +5,7 @@ import type {
   Suggestion,
   Trip,
 } from "@/src/trip/types";
-import type { ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary-core";
 import { formatMoney } from "@/src/trip/expenses";
 import {
   buildDestinationVisual,

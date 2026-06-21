@@ -1,6 +1,6 @@
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import { getTripDates } from "@/src/trip/itinerary";
+import { getTripDates } from "@/src/trip/itinerary-core";
 import { CockpitCard } from "./OverviewCockpitCard";
 import {
   overviewCockpitClassName,

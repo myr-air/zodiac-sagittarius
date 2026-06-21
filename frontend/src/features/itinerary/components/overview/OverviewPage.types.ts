@@ -7,7 +7,7 @@ import type {
   TripDailyBriefing,
   TripTask,
 } from "@/src/trip/types";
-import type { ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary-core";
 
 export interface OverviewPageProps {
   trip: Trip;
