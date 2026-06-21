@@ -10,6 +10,7 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessChrome,
       accountAccessShellClasses,
       accountAccessPortalHandlers,
+      accountAccessPortalContent,
       accountAccessModes,
       accountPortalNavItems,
       accountPortalDataCache,
@@ -72,8 +73,11 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
-    expect(accountAccessPanelContent).toContain("AccountAccessPanelPortalContent");
+    expect(accountAccessPanelContent).toContain("./portal/account-access-panel-portal-content");
     expect(accountAccessPanelContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
+    expect(accountAccessPortalContent).toContain("AccountPortalDashboard");
+    expect(accountAccessPortalContent).toContain("buildAccountPortalDashboardHandlers");
+    expect(accountAccessPortalContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessPortalHandlers).toContain("export function buildAccountPortalDashboardHandlers");
     expect(accountAccessPortalHandlers).toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessChrome).toContain("export function AccountAccessChrome");

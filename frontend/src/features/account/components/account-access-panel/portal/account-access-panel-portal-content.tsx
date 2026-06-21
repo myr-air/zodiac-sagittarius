@@ -7,12 +7,10 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
-import {
-  AccountPortalDashboard,
-  accountPortalDashboardClassNames,
-} from "./portal";
+import { AccountPortalDashboard } from "./account-portal-dashboard";
+import { accountPortalDashboardClassNames } from "./account-portal-dashboard-classnames";
 import { buildAccountPortalDashboardHandlers } from "./account-access-panel-portal-handlers";
-import type { UseAccountAccessPanelState } from "./use-account-access-panel-state";
+import type { UseAccountAccessPanelState } from "../use-account-access-panel-state";
 
 interface AccountAccessPanelPortalContentProps {
   accountClient: AccountApiClient;
