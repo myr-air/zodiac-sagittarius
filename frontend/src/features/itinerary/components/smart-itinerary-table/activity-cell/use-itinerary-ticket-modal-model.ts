@@ -13,13 +13,14 @@ import {
   findTicketCandidates,
   type TicketFormMode,
 } from "./booking-ticket-form";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 interface UseItineraryTicketModalModelOptions {
   bookingDocs: BookingDoc[];
   item: ItineraryItem;
   locale: Locale;
-  onSave: (input: ItineraryBookingTicketInput) => void | Promise<void>;
-  onUnlink?: (bookingDocId: string) => void | Promise<void>;
+  onSave: (input: ItineraryBookingTicketInput) => ItineraryAsyncVoidResult;
+  onUnlink?: (bookingDocId: string) => ItineraryAsyncVoidResult;
 }
 
 export function useItineraryTicketModalModel({

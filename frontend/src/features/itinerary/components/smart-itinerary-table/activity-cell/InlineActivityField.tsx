@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 export function InlineActivityField({
   ariaLabel,
@@ -17,7 +18,7 @@ export function InlineActivityField({
   disabled: boolean;
   inputMode?: "numeric" | "text";
   maxLength: number;
-  onCommit: (value: string) => void | Promise<void>;
+  onCommit: (value: string) => ItineraryAsyncVoidResult;
   placeholder: string;
   value: string;
 }) {

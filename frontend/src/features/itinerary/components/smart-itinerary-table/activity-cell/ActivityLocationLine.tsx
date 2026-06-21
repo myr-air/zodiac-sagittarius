@@ -4,6 +4,7 @@ import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-ite
 import type { ItineraryItem } from "@/src/trip/types";
 import { InlineActivityField } from "./InlineActivityField";
 import { readItineraryDetailString } from "../../../lib/itinerary-item-helpers";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
   activityMobilePlaceInputClassName,
   activityPlaceInputClassName,
@@ -24,7 +25,7 @@ export function ActivityLocationLine({
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
 }) {
   if (item.activityType === "travel") {
     const from = readItineraryDetailString(item.details, "from");

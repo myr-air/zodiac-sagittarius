@@ -2,13 +2,14 @@ import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 export interface ActivityTimeButtonProps {
   editable: boolean;
   item: ItineraryItem;
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
-  onSave: (patch: InlineItineraryItemPatch) => void | Promise<void>;
+  onSave: (patch: InlineItineraryItemPatch) => ItineraryAsyncVoidResult;
 }
 
 export interface TimeEditModalProps {
@@ -16,5 +17,5 @@ export interface TimeEditModalProps {
   itineraryLabels: Messages["itinerary"];
   locale: Locale;
   onClose: () => void;
-  onSave: (patch: InlineItineraryItemPatch) => void | Promise<void>;
+  onSave: (patch: InlineItineraryItemPatch) => ItineraryAsyncVoidResult;
 }

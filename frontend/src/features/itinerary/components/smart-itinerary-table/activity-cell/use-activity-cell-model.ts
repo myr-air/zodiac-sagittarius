@@ -3,20 +3,21 @@ import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
 import { itemStatusLabel } from "../smart-itinerary-table-utils";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 interface UseActivityCellModelOptions {
   canEdit: boolean;
   item: ItineraryItem;
   locale: Locale;
   subItems: ItineraryItem[];
-  onAddSubActivity?: (parentItemId: string) => void | Promise<void>;
+  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
   onUpdateItemInline?: ActivityInlineUpdateHandler;
 }
 
 type ActivityInlineUpdateHandler = (
   itemId: string,
   patch: InlineItineraryItemPatch,
-) => void | Promise<void>;
+) => ItineraryAsyncVoidResult;
 
 export function useActivityCellModel({
   canEdit,

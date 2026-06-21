@@ -10,6 +10,7 @@ import {
   travelSubtypeForItem,
   travelSubtypeOptions,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 export function ActivityTypePicker({
   buttonClassName,
@@ -27,7 +28,7 @@ export function ActivityTypePicker({
   onUpdateItemInline?: (
     itemId: string,
     patch: InlineItineraryItemPatch,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
 }) {
   const subtype = travelSubtypeForItem(item);
   return (

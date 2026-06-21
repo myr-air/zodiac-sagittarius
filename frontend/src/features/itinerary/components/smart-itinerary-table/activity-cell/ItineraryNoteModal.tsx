@@ -17,6 +17,7 @@ import {
   ticketModalTitleClassName,
 } from "../smart-itinerary-table.styles";
 import type { ItineraryItem } from "@/src/trip/types";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 export function ItineraryNoteModal({
   item,
@@ -27,7 +28,7 @@ export function ItineraryNoteModal({
   item: ItineraryItem;
   locale: Locale;
   onClose: () => void;
-  onSave: (body: string) => void | Promise<void>;
+  onSave: (body: string) => ItineraryAsyncVoidResult;
 }) {
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);

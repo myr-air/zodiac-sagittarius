@@ -24,6 +24,7 @@ import {
   TicketFieldGrid,
   TicketModeToggle,
 } from "./ItineraryTicketModalSections";
+import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import { useItineraryTicketModalModel } from "./use-itinerary-ticket-modal-model";
 
 export function ItineraryTicketModal({
@@ -40,8 +41,8 @@ export function ItineraryTicketModal({
   item: ItineraryItem;
   locale: Locale;
   onClose: () => void;
-  onSave: (input: ItineraryBookingTicketInput) => void | Promise<void>;
-  onUnlink?: (bookingDocId: string) => void | Promise<void>;
+  onSave: (input: ItineraryBookingTicketInput) => ItineraryAsyncVoidResult;
+  onUnlink?: (bookingDocId: string) => ItineraryAsyncVoidResult;
 }) {
   const {
     confirmationCode,

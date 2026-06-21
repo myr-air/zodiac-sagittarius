@@ -4,6 +4,7 @@ import {
   dayTitleMaxLength,
   dayTitleMinWidthCh,
 } from "./smart-itinerary-table.styles";
+import type { ItineraryAsyncVoidResult } from "./itinerary-action.types";
 
 interface DayTitleEditorProps {
   canEdit: boolean;
@@ -14,7 +15,7 @@ interface DayTitleEditorProps {
     date: string,
     version: number,
     title: string | null,
-  ) => void | Promise<void>;
+  ) => ItineraryAsyncVoidResult;
   title: string;
   version: number;
 }
