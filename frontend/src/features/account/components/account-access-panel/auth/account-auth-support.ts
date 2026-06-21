@@ -3,6 +3,10 @@ import type {
   AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
+import {
+  displayDateTimeLocaleCode,
+  formatDisplayDateTime,
+} from "@/src/shared/date-time-display";
 import { ACCESS_ERROR_CODES } from "./account-access-error-codes";
 
 export { ACCESS_ERROR_CODES } from "./account-access-error-codes";
@@ -92,7 +96,10 @@ export function isUnauthenticated(value: unknown): boolean {
 }
 
 export function formatDateTime(value: string, locale: "en" | "th"): string {
-  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return formatDisplayDateTime(value, displayDateTimeLocaleCode(locale), {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 export function profileToForm(settings: AccountSettings): AccountSettingsUpdateRequest {

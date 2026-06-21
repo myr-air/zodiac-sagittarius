@@ -1,11 +1,15 @@
 import type { IconName } from "@/src/ui/icons";
 import type { BookingDocStatus, BookingDocType } from "@/src/trip/types";
+import { formatOptionalDisplayDateTime } from "@/src/shared/date-time-display";
 
 export function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value.slice(0, 10);
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
+  return formatOptionalDisplayDateTime({
+    emptyValue: "-",
+    invalidValue: (input) => input.slice(0, 10),
+    locale: "en-US",
+    options: { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" },
+    value,
+  });
 }
 
 export function bookingTypeIcon(type: BookingDocType): IconName {
