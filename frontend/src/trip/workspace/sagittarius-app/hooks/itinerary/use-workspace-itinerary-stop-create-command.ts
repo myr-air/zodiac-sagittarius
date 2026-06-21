@@ -3,10 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
-  appendItineraryItemPlacement,
-  appendItineraryItemToTrip,
   buildItineraryItemDraft,
-  mainItineraryPathId,
   mergeCreatedItineraryItemIntoTrip,
   selectedItineraryPathIdForDay,
   type ItineraryPathOption,
@@ -17,7 +14,6 @@ import {
   type PlaceResolver,
   type StopPlaceResolutionState,
 } from "@/src/trip/place-resolution";
-import { applyItemToActivityBranch } from "@/src/trip/itinerary-paths";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths-api";
 import {
   nextClientMutationId as nextClientMutationIdFactory,
@@ -31,6 +27,7 @@ import type {
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import { resolveStopFormLocation } from "./stop-place-resolution-command";
+import { placeCreatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
 
 interface UseWorkspaceItineraryStopCreateCommandParams {
   commitTrip: (
@@ -114,12 +111,10 @@ export function useWorkspaceItineraryStopCreateCommand({
           updatedAt: workspaceLocalMutationTimestamp,
         },
       );
-      const branchPlacement =
-        parentItem
-          ? appendItineraryItemPlacement(trip, draftItem)
-          : targetPathId === mainItineraryPathId
-            ? applyItemToActivityBranch(trip, draftItem)
-            : appendItineraryItemPlacement(trip, draftItem);
+      const branchPlacement = placeCreatedWorkspaceStop(trip, draftItem, {
+        hasParentItem: Boolean(parentItem),
+        targetPathId,
+      });
 
       if (isApiMode && resolvedApiClient && participantSession) {
         const patchedBranchItems = await patchApiItineraryBranchItems({
@@ -153,11 +148,10 @@ export function useWorkspaceItineraryStopCreateCommand({
 
       commitTrip(
         (current) =>
-          parentItem
-            ? appendItineraryItemToTrip(current, draftItem)
-            : targetPathId === mainItineraryPathId
-              ? applyItemToActivityBranch(current, draftItem).trip
-              : appendItineraryItemToTrip(current, draftItem),
+          placeCreatedWorkspaceStop(current, draftItem, {
+            hasParentItem: Boolean(parentItem),
+            targetPathId,
+          }).trip,
         draftItem.id,
       );
       setContextRailVisibility(false);
