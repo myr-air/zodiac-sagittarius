@@ -7,6 +7,7 @@ import {
   workspaceDialogGridClassName,
   workspaceDialogHeaderClassName,
   workspaceDialogPanelClassName,
+  workspacePaddedDialogBackdropClassName,
 } from "../workspace-dialog.styles";
 
 describe("workspace dialog styles", () => {
@@ -19,5 +20,10 @@ describe("workspace dialog styles", () => {
     expect(workspaceDialogGridClassName).toContain("max-[767px]:grid-cols-1");
     expect(workspaceDialogActionsClassName).toContain("justify-end");
     expect(workspaceDeleteDialogClassName).toContain("delete-confirm-dialog");
+  });
+
+  it("keeps padded modal backdrops available for compact dialogs", () => {
+    expect(workspacePaddedDialogBackdropClassName).toContain("modal-backdrop");
+    expect(workspacePaddedDialogBackdropClassName).toContain("p-5");
   });
 });

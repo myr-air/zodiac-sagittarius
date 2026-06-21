@@ -6,4 +6,5 @@ export {
   workspaceDialogGridClassName,
   workspaceDialogHeaderClassName,
   workspaceDialogPanelClassName,
+  workspacePaddedDialogBackdropClassName,
 } from "./workspace-dialog.styles";

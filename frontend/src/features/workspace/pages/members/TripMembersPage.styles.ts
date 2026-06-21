@@ -1,5 +1,6 @@
 import { cn } from "@/src/lib/cn";
 import { workspaceCompactFieldGroupClassName } from "@/src/shared/components/workspace-form-field";
+import { workspacePaddedDialogBackdropClassName } from "@/src/shared/components/workspace-dialog";
 
 export const membersPageClassName = "members-page";
 export const memberStatGridClassName = "member-stat-grid grid w-full grid-cols-5 gap-3 max-[1199px]:grid-cols-3 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
@@ -14,7 +15,7 @@ export const memberCreateButtonClassName = "member-create-button border-(--color
 export const copyFeedbackClassName = "copy-feedback inline-flex min-h-8 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-3 text-xs font-extrabold leading-4 text-(--color-text-muted) data-[state=copied]:text-(--color-success) data-[state=error]:text-(--color-danger)";
 export const memberCreatePanelClassName = "member-create-panel grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-primary-border) bg-[linear-gradient(135deg,var(--color-primary-soft)_0%,rgb(255_255_255)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-1 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:p-3 max-[1199px]:shadow-none";
 export const memberCreateFormClassName = cn("member-create-form grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto] items-end gap-3 max-[1199px]:grid-cols-1", workspaceCompactFieldGroupClassName);
-export const memberDialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+export const memberDialogBackdropClassName = workspacePaddedDialogBackdropClassName;
 export const memberDialogClassName = cn("member-task-dialog grid w-[min(460px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]", workspaceCompactFieldGroupClassName);
 export const memberDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
 export const memberDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";

@@ -1,6 +1,9 @@
 export const workspaceDialogBackdropClassName =
   "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
 
+export const workspacePaddedDialogBackdropClassName =
+  "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
+
 export const workspaceDialogPanelClassName =
   "grid w-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface)";
 
