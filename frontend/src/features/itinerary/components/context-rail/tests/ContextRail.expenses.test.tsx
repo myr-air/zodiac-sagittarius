@@ -31,6 +31,7 @@ describe("ContextRail expenses", () => {
         "ใช้เฉพาะเงินที่จ่ายแล้วหรือผูกพันต้องจ่าย ประมาณการให้เก็บใน booking draft หรือโน้ต",
       ),
     ).toBeInTheDocument();
+    expect(screen.getByText("HK$240.00")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Taxi" },

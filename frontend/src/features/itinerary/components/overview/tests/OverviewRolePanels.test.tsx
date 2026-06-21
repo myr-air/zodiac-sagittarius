@@ -77,12 +77,13 @@ describe("OverviewRolePanels", () => {
         viewerHighlights={items.slice(0, 3)}
         nextStop={nextStop}
         openExpenses={vi.fn()}
-        expenseGroupSpend={tripFixture.expenseSummaries.viewer.groupSpend}
+        groupSpendLabel="HK$1,234.50"
       />,
     );
 
     expect(screen.getByRole("region", { name: /read-only trip snapshot/i })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: /next important stop/i })).toBeInTheDocument();
+    expect(screen.getByText("HK$1,234.50")).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.queryByRole("button", { name: /add checklist item/i })).toBeNull();
   });

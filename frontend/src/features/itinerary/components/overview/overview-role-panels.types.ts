@@ -42,7 +42,7 @@ export interface ViewerOverviewPanelsProps {
   trip: Trip;
   locale: Locale;
   viewerHighlights: ItineraryItem[];
-  expenseGroupSpend: number;
+  groupSpendLabel: string;
   nextStop: ItineraryItem | undefined;
   openExpenses: () => void;
 }

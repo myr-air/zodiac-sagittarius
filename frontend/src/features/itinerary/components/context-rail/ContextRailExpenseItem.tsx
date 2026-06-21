@@ -1,4 +1,5 @@
 import { Icon } from "@/src/ui/icons";
+import { formatMoney } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
 import {
   expenseItemClassName,
@@ -24,7 +25,7 @@ export function ContextRailExpenseItem({
       <span>
         <strong>{expense.title}</strong>
         <br />
-        HK${expense.amount.toLocaleString("en-HK")}
+        {formatMoney(expense.amount, expense.currency ?? "HKD")}
       </span>
       <span className={noteActionsClassName}>
         <button

@@ -8,7 +8,7 @@ export function ViewerOverviewPanels({
   locale,
   nextStop,
   viewerHighlights,
-  expenseGroupSpend,
+  groupSpendLabel,
   openExpenses,
 }: ViewerOverviewPanelsProps) {
   const { t } = useI18n();
@@ -37,7 +37,7 @@ export function ViewerOverviewPanels({
       <OverviewExpenseShortcut
         icon="wallet"
         title={t.overview.headings.overallBudget}
-        value={`HK$${expenseGroupSpend.toLocaleString("en-HK")}`}
+        value={groupSpendLabel}
         detail={t.overview.money.overallSummary}
         titleId="overview-viewer-budget-title"
         onClick={openExpenses}

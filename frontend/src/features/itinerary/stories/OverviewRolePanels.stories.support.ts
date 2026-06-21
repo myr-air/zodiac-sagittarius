@@ -71,7 +71,7 @@ export const viewerOverviewPanelStoryProps = {
   trip: tripFixture.trip,
   locale: "en",
   viewerHighlights: tripFixture.planItems.slice(0, 3),
-  expenseGroupSpend: tripFixture.expenseSummaries.viewer.groupSpend,
+  groupSpendLabel: "HK$2,300",
   nextStop,
   openExpenses: noop,
 } satisfies ViewerOverviewPanelsProps;

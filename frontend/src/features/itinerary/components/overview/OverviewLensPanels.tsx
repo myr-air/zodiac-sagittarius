@@ -121,7 +121,7 @@ export function OverviewLensPanels({
           nextStop={nextStop}
           openExpenses={onOpenExpenses}
           viewerHighlights={viewerHighlights}
-          expenseGroupSpend={expenseSummary.groupSpend}
+          groupSpendLabel={groupSpendLabel}
         />
       ) : null}
 
