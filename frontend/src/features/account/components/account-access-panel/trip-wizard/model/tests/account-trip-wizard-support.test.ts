@@ -3,7 +3,7 @@ import {
   buildInviteEmailHref,
   buildInviteLink,
   generateJoinIdForTrip,
-} from "./account-trip-wizard-support";
+} from "../account-trip-wizard-support";
 
 describe("account trip wizard support", () => {
   it("generates route-aware join codes from destination cities", () => {

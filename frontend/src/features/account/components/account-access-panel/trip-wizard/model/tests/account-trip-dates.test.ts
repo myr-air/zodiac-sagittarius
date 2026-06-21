@@ -9,7 +9,7 @@ import {
   routeCalendarDays,
   tripNightCount,
   tripWizardDateSelectionStepValues,
-} from "./account-trip-dates";
+} from "../account-trip-dates";
 
 describe("account trip date helpers", () => {
   it("re-exports trip date helpers for account trip wizard callers", () => {

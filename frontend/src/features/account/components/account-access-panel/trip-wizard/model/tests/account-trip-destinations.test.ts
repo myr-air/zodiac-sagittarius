@@ -5,7 +5,7 @@ import {
   destinationRouteCode,
   tripContinentValues,
   tripDestinationCards,
-} from "./account-trip-destinations";
+} from "../account-trip-destinations";
 
 describe("account trip destination helpers", () => {
   it("re-exports trip destination helpers for account trip wizard callers", () => {

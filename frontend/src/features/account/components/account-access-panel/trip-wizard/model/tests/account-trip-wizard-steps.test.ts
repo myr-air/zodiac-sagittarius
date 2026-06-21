@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripStepComplete, tripWizardSteps } from "./account-trip-wizard-steps";
+import { tripStepComplete, tripWizardSteps } from "../account-trip-wizard-steps";
 
 describe("account trip wizard steps", () => {
   it("keeps trip wizard steps in canonical flow order", () => {

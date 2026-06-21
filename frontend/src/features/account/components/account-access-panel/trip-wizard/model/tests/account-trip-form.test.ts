@@ -3,7 +3,7 @@ import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import {
   applyTripDestinationCities,
   normalizedTripForm,
-} from "./account-trip-form";
+} from "../account-trip-form";
 
 describe("account trip form helpers", () => {
   it("normalizes create-trip forms around city destinations", () => {

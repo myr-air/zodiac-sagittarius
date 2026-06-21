@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateJoinIdForTrip, generateJoinPassword, randomToken } from "./account-trip-credentials";
+import { generateJoinIdForTrip, generateJoinPassword, randomToken } from "../account-trip-credentials";
 
 describe("account trip credential helpers", () => {
   it("generates route-aware join ids", () => {

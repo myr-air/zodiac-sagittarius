@@ -3,11 +3,11 @@ import { frontendItineraryScaffoldPathsPresent } from "./project-contract.fronte
 export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/trip-wizard/index.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.ts",
-  "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/model/tests/account-trip-wizard-steps.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-destinations.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-dates.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-form.ts",
-  "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-form.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/model/tests/account-trip-form.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/map/index.ts",
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map-fallback.tsx",
