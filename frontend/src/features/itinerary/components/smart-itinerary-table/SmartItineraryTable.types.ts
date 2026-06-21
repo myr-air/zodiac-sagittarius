@@ -3,6 +3,7 @@ import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/sr
 import type { ItineraryView } from "@/src/trip/itinerary-core";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 export interface SmartItineraryTableProps {
   canRestructure?: boolean;
@@ -47,14 +48,14 @@ export interface SmartItineraryTableProps {
   ) => void | Promise<void>;
   onEditItem?: (itemId: string) => void;
   onDeleteItem?: (itemId: string) => void;
-  onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onChangeTripPlanStatus: (
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
-  ) => boolean | void | Promise<boolean | void>;
-  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
-  onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
-  onRenameTripPlan: (tripPlanId: string, name: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
+  onRenameTripPlan: (tripPlanId: string, name: string) => TripPlanMutationResult;
   onSaveDayTitle?: (date: string, version: number, title: string | null) => void | Promise<void>;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;

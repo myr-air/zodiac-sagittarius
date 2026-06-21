@@ -3,6 +3,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { PageHeader } from "@/src/shared/components/page-header";
 import { SmartItineraryTableHeaderControls } from "./SmartItineraryTableHeaderControls";
 import { SmartItineraryTableMeta } from "./SmartItineraryTableMeta";
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface SmartItineraryTablePageHeaderProps {
   canEdit: boolean;
@@ -14,14 +15,14 @@ interface SmartItineraryTablePageHeaderProps {
   itemsCount: number;
   mainTripPlanId: string;
   onChangeShowAllPaths?: (showAll: boolean) => void;
-  onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onChangeTripPlanStatus: (
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
-  ) => boolean | void | Promise<boolean | void>;
-  onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
-  onRenameTripPlan: (tripPlanId: string, name: string) => boolean | void | Promise<boolean | void>;
-  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
+  onRenameTripPlan: (tripPlanId: string, name: string) => TripPlanMutationResult;
+  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onTogglePathFilter: (pathId: string) => void;
   selectedFilterLabel: string;
   selectedPathIds: string[];

@@ -2,10 +2,7 @@ import { useState, type FormEvent } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import { tripPlanStatus } from "./smart-itinerary-table-utils";
-
-type SubmitTripPlanResult = boolean | void | Promise<boolean | void>;
-
-type RenameTripPlanResult = boolean | void | Promise<boolean | void>;
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface TripPlanControlsStateInput {
   canManageTripPlans: boolean;
@@ -13,11 +10,11 @@ interface TripPlanControlsStateInput {
   isTripPlanBusy: boolean;
   mainTripPlanId: string;
   onChangeTripPlan: (tripPlanId: string) => void;
-  onCreateTripPlan: (name: string) => SubmitTripPlanResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
   onRenameTripPlan: (
     tripPlanId: string,
     name: string,
-  ) => RenameTripPlanResult;
+  ) => TripPlanMutationResult;
   selectedTripPlanId: string;
   tripPlans: PlanVariant[];
 }

@@ -8,6 +8,7 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
 import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface SmartItineraryTableHeaderControlsPanelProps {
   canManageTripPlans: boolean;
@@ -16,17 +17,17 @@ interface SmartItineraryTableHeaderControlsPanelProps {
   isTripPlanBusy: boolean;
   mainTripPlanId: string;
   onChangeShowAllPaths?: (showAll: boolean) => void;
-  onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onChangeTripPlanStatus: (
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
-  ) => boolean | void | Promise<boolean | void>;
-  onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
   onRenameTripPlan: (
     tripPlanId: string,
     name: string,
-  ) => boolean | void | Promise<boolean | void>;
-  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onTogglePathFilter: (pathId: string) => void;
   selectedFilterLabel: string;
   selectedPathIds: Set<string>;

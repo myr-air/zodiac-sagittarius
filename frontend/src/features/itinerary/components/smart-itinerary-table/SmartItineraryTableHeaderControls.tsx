@@ -12,6 +12,7 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
 import { selectedTripPlanIdForControl } from "./smart-itinerary-table-utils";
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface TripPlanHeaderControlsProps {
   canEdit: boolean;
@@ -21,17 +22,17 @@ interface TripPlanHeaderControlsProps {
   isTripPlanBusy: boolean;
   mainTripPlanId: string;
   onChangeShowAllPaths?: (showAll: boolean) => void;
-  onChangeTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onChangeTripPlanStatus: (
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
-  ) => boolean | void | Promise<boolean | void>;
-  onCreateTripPlan: (name: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
   onRenameTripPlan: (
     tripPlanId: string,
     name: string,
-  ) => boolean | void | Promise<boolean | void>;
-  onSetMainTripPlan: (tripPlanId: string) => boolean | void | Promise<boolean | void>;
+  ) => TripPlanMutationResult;
+  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   selectedFilterLabel: string;
   selectedPathIds: Set<string>;
   selectedTripPlanId: string;

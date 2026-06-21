@@ -11,11 +11,8 @@ import {
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableTripPlanCreateControls } from "./SmartItineraryTableTripPlanCreateControls";
 import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
+import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
-
-type SubmitTripPlanResult = boolean | void | Promise<boolean | void>;
-
-type RenameTripPlanResult = boolean | void | Promise<boolean | void>;
 
 interface SmartItineraryTableTripPlanControlsProps {
   canManageTripPlans: boolean;
@@ -26,13 +23,13 @@ interface SmartItineraryTableTripPlanControlsProps {
   onChangeTripPlanStatus: (
     tripPlanId: string,
     status: Exclude<PlanStatus, "main">,
-  ) => SubmitTripPlanResult;
-  onCreateTripPlan: (name: string) => SubmitTripPlanResult;
+  ) => TripPlanMutationResult;
+  onCreateTripPlan: (name: string) => TripPlanMutationResult;
   onRenameTripPlan: (
     tripPlanId: string,
     name: string,
-  ) => RenameTripPlanResult;
-  onSetMainTripPlan: (tripPlanId: string) => SubmitTripPlanResult;
+  ) => TripPlanMutationResult;
+  onSetMainTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   selectedTripPlanId: string;
   tripPlans: PlanVariant[];
 }
