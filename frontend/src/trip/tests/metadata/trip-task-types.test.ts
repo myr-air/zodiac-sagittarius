@@ -3,7 +3,7 @@ import {
   tripTaskKindValues,
   tripTaskStatusValues,
   tripTaskVisibilityValues,
-} from "../../trip-task-types";
+} from "../../records";
 
 describe("trip task type values", () => {
   it("keeps task enum values in canonical display order", () => {

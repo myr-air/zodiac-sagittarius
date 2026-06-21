@@ -1,7 +1,7 @@
 import type { FormEvent } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
-import { tripTaskStatusValues } from "@/src/trip/trip-task-types";
+import { tripTaskStatusValues } from "@/src/trip/records";
 import type { OverviewTaskListLabels } from "./OverviewTaskList";
 
 export const taskScopeFilterValues = ["mine", "trip", "all"] as const;

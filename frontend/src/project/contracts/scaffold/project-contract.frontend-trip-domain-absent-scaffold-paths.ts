@@ -155,6 +155,7 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/trip-settings.test.ts",
   "src/trip/trip-suggestion-types.test.ts",
   "src/trip/trip-task-types.test.ts",
+  "src/trip/trip-task-types.ts",
   "src/trip/currencies.test.ts",
   "src/trip/currencies.ts",
   "src/trip/currency-catalog.ts",

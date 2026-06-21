@@ -8,7 +8,7 @@ import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-ty
 import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./places/place-types";
-import type { TripTask } from "./trip-task-types";
+import type { TripTask } from "./records/task-types";
 export type {
   BriefingCoordinates,
   BriefingSourceMeta,
@@ -81,7 +81,7 @@ export type {
   TripTaskKind,
   TripTaskStatus,
   TripTaskVisibility,
-} from "./trip-task-types";
+} from "./records/task-types";
 export type {
   EditableSuggestionPatch,
   LocalizedText,
