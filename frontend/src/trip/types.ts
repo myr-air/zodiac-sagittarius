@@ -7,7 +7,7 @@ import type {
 } from "./booking-docs/booking-doc-types";
 import type {
   TripPhotoAlbumLink,
-} from "./trip-record-types";
+} from "./photo-albums/photo-album-types";
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
 import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
@@ -83,7 +83,7 @@ export type {
   TripPhotoAlbumAccess,
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,
-} from "./trip-record-types";
+} from "./photo-albums/photo-album-types";
 export type {
   TripTask,
   TripTaskKind,

@@ -1,7 +1,7 @@
 import {
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
-} from "@/src/trip/trip-record-types";
+} from "@/src/trip/photo-albums";
 import type { TripPhotoAlbumAccess } from "@/src/trip/types";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 

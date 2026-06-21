@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
-} from "../../trip-record-types";
+} from "../../photo-albums";
 import { expenseCategoryValues } from "../../expenses";
 import {
   bookingDocStatusValues,

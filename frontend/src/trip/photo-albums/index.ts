@@ -33,3 +33,12 @@ export type {
   PhotoAlbumRelations,
   PhotoAlbumSummary,
 } from "./photo-album-query";
+export {
+  tripPhotoAlbumAccessValues,
+  tripPhotoAlbumProviderValues,
+} from "./photo-album-types";
+export type {
+  TripPhotoAlbumAccess,
+  TripPhotoAlbumLink,
+  TripPhotoAlbumProvider,
+} from "./photo-album-types";
