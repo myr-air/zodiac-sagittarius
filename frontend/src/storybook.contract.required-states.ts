@@ -125,7 +125,7 @@ export const requiredTemplateStates: Array<[string, string[]]> = [
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"],
   ],
   [
-    "features/workspace/pages/members/MembersTemplate.stories.tsx",
+    "features/workspace/pages/members/storybook/MembersTemplate.stories.tsx",
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"],
   ],
 ];

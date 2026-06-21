@@ -32,7 +32,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/photos/TripPhotosPage.stories.tsx",
+    "features/workspace/pages/photos/storybook/TripPhotosPage.stories.tsx",
     [
       "Owner",
       "OwnerThai",

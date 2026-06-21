@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { SmartItineraryTableTripPlanControls } from "./SmartItineraryTableTripPlanControls";
+import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
 
 const tripPlans = tripFixture.trip.planVariants;
 

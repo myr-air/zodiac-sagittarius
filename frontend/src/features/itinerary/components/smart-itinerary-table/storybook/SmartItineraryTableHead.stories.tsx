@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { messages } from "@/src/i18n/messages";
-import { SmartItineraryTableHead } from "./SmartItineraryTableHead";
+import { SmartItineraryTableHead } from "../SmartItineraryTableHead";
 
 const meta = {
   title: "Features/Itinerary/SmartItineraryTableHead",

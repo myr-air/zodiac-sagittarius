@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { mainPathOption, pathOptionPlanA } from "@/src/features/itinerary/testing";
-import { DayPathControls } from "./day-path-controls";
+import { DayPathControls } from "../day-path-controls";
 
 const meta = {
   title: "Features/Itinerary/DayPathControls",

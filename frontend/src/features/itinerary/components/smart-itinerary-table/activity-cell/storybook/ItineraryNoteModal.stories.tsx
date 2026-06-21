@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-import { ItineraryNoteModal } from "./ItineraryNoteModal";
+import { ItineraryNoteModal } from "../ItineraryNoteModal";
 
 const meta = {
   title: "Features/Itinerary/ItineraryNoteModal",

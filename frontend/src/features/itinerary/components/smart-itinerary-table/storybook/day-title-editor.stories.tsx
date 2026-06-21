@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { DayTitleEditor } from "./day-title-editor";
+import { DayTitleEditor } from "../day-title-editor";
 
 const meta = {
   title: "Features/Itinerary/DayTitleEditor",

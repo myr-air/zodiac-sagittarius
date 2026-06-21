@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
-import { SmartItineraryTablePathFilters } from "./SmartItineraryTablePathFilters";
+import { SmartItineraryTablePathFilters } from "../SmartItineraryTablePathFilters";
 import type { ComponentProps } from "react";
 import {
   mainPathOption,
