@@ -1,5 +1,5 @@
 export const frontendTripDomainScaffoldPathsPresent = [
-  "src/trip/testing/api-client-test-utils.ts",
+  "src/trip/testing/support/api-client-test-utils.ts",
   "src/trip/real-api-e2e/real-api.e2e.test.ts",
   "src/trip/real-api-e2e/index.ts",
   "src/trip/real-api-e2e/context.ts",
@@ -243,7 +243,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/tests/itinerary/paths/itinerary-path-import-placement.test.ts",
   "src/trip/tests/itinerary/paths/itinerary-path-import-targets.test.ts",
   "src/trip/tests/itinerary/paths/itinerary-path-imports.test-support.ts",
-  "src/trip/testing/api-cockpit-response.ts",
+  "src/trip/testing/fixtures/api-cockpit-response.ts",
   "src/trip/itinerary-activity-branch-detection.ts",
   "src/trip/itinerary-activity-branch-paths.ts",
   "src/trip/itinerary-activity-branches.ts",

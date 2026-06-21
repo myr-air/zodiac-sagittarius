@@ -1,5 +1,5 @@
-import type { TripCockpitResponse } from "../api-client";
-import { pathIdRain } from "./fixtures/itinerary-path-fixtures";
+import type { TripCockpitResponse } from "../../api-client";
+import { pathIdRain } from "./itinerary-path-fixtures";
 
 export const cockpitResponse: TripCockpitResponse = {
   trip: {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTripApiClient } from "../../api-client";
-import { cockpitResponse, jsonResponse } from "../../testing/api-client-test-utils";
+import { cockpitResponse, jsonResponse } from "../../testing/support/api-client-test-utils";
 
 describe("Trip API client booking and photo routes", () => {
   it("creates, patches, and deletes booking docs through trip-scoped routes", async () => {

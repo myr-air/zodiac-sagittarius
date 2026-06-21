@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mapCockpitResponse, type TripCockpitResponse } from "../../api-client";
-import { cockpitResponse } from "../../testing/api-client-test-utils";
+import { cockpitResponse } from "../../testing/support/api-client-test-utils";
 
 describe("Trip API cockpit source validation", () => {
   it("rejects cockpit payloads that omit the bookingDocs source of truth", () => {
