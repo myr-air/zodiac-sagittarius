@@ -9,8 +9,8 @@ import { Icon } from "@/src/ui/icons";
 import {
   TripJoinParticipantAuthForm,
   type TripJoinParticipantAuthFormCopy,
-} from "./forms/TripJoinParticipantAuthForm";
-import { participantStatusLabel } from "./model/trip-join-participant-status";
+} from "../forms/TripJoinParticipantAuthForm";
+import { participantStatusLabel } from "../model/trip-join-participant-status";
 import {
   participantAvatarClassName,
   participantCardClassName,
@@ -18,7 +18,7 @@ import {
   participantStepClassName,
   tripAccessContentClassName,
   tripAccessParticipantStepClassName,
-} from "./layout/trip-join-gate.styles";
+} from "../layout/trip-join-gate.styles";
 
 interface TripJoinParticipantStepCopy extends TripJoinParticipantAuthFormCopy {
   backToRoom: string;

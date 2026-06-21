@@ -6,8 +6,8 @@ import {
   type TripCockpit,
 } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
-import { TripJoinGateChrome } from "./TripJoinGateChrome";
-import { TripJoinParticipantStep } from "./TripJoinParticipantStep";
+import { TripJoinGateChrome } from "./composition/TripJoinGateChrome";
+import { TripJoinParticipantStep } from "./composition/TripJoinParticipantStep";
 import { TripJoinRoomForm } from "./forms/TripJoinRoomForm";
 import { useTripJoinGateState } from "./state/use-trip-join-gate-state";
 

@@ -12,7 +12,7 @@ import {
   tripAccessRouteStopClassName,
   tripAccessVisualClassName,
   tripAccessVisualWashClassName,
-} from "./layout/trip-join-gate.styles";
+} from "../layout/trip-join-gate.styles";
 
 interface TripJoinVisualNote {
   detail: string;

@@ -253,10 +253,10 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
 
     expect(tripJoinGate).toContain("./model/trip-join-response-mapper");
-    expect(tripJoinGate).toContain("TripJoinGateChrome");
+    expect(tripJoinGate).toContain("composition/TripJoinGateChrome");
     expect(tripJoinGate).not.toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
-    expect(tripJoinGate).toContain("TripJoinParticipantStep");
+    expect(tripJoinGate).toContain("composition/TripJoinParticipantStep");
     expect(tripJoinGate).not.toContain("joinFormClassName");
     expect(tripJoinGate).not.toContain("participantGridClassName");
     expect(tripJoinGate).not.toContain("joinHeroClassName");
@@ -269,7 +269,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinRoomForm).toContain("joinFormClassName");
     expect(tripJoinParticipantStep).toContain("export function TripJoinParticipantStep");
     expect(tripJoinParticipantStep).toContain("TripJoinParticipantAuthForm");
-    expect(tripJoinParticipantStep).toContain("./model/trip-join-participant-status");
+    expect(tripJoinParticipantStep).toContain("../model/trip-join-participant-status");
     expect(tripJoinParticipantStep).toContain("participantGridClassName");
     expect(tripJoinParticipantStep).not.toContain("passwordInputRowClassName");
     expect(tripJoinParticipantAuthForm).toContain(
