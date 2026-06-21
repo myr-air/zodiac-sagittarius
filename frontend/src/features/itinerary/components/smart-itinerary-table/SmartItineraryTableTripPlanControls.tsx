@@ -5,13 +5,11 @@ import {
   headerControlsSectionClassName,
   tripPlanActionsClassName,
   tripPlanButtonClassName,
-  tripPlanCreateFormClassName,
   tripPlanFieldClassName,
-  tripPlanNameFieldClassName,
   tripPlanNameInputClassName,
-  tripPlanSecondaryButtonClassName,
   tripPlanSelectClassName,
 } from "./smart-itinerary-table.styles";
+import { SmartItineraryTableTripPlanCreateControls } from "./SmartItineraryTableTripPlanCreateControls";
 import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
 import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
 
@@ -130,44 +128,16 @@ export function SmartItineraryTableTripPlanControls({
           >
             {itineraryLabels.tripPlans.setMain}
           </Button>
-          {state.isCreatingTripPlan ? (
-            <form className={tripPlanCreateFormClassName} onSubmit={state.submitNewTripPlan}>
-              <label className={tripPlanNameFieldClassName}>
-                <span>{itineraryLabels.tripPlans.nameLabel}</span>
-                <input
-                  className={tripPlanNameInputClassName}
-                  value={state.newTripPlanName}
-                  disabled={isTripPlanBusy}
-                  placeholder={itineraryLabels.tripPlans.namePlaceholder}
-                  onChange={(event) => state.changeNewTripPlanName(event.target.value)}
-                />
-              </label>
-              <Button
-                type="submit"
-                disabled={isTripPlanBusy}
-                className={tripPlanButtonClassName}
-              >
-                {itineraryLabels.tripPlans.createConfirm}
-              </Button>
-              <button
-                type="button"
-                className={tripPlanSecondaryButtonClassName}
-                disabled={isTripPlanBusy}
-                onClick={state.closeCreateMode}
-              >
-                {itineraryLabels.tripPlans.createCancel}
-              </button>
-            </form>
-          ) : (
-            <Button
-              type="button"
-              disabled={isTripPlanBusy}
-              className={tripPlanButtonClassName}
-              onClick={() => state.setIsCreatingTripPlan(true)}
-            >
-              {itineraryLabels.tripPlans.create}
-            </Button>
-          )}
+          <SmartItineraryTableTripPlanCreateControls
+            isCreatingTripPlan={state.isCreatingTripPlan}
+            isTripPlanBusy={isTripPlanBusy}
+            labels={itineraryLabels.tripPlans}
+            newTripPlanName={state.newTripPlanName}
+            onCancel={state.closeCreateMode}
+            onChangeName={state.changeNewTripPlanName}
+            onOpen={() => state.setIsCreatingTripPlan(true)}
+            onSubmit={state.submitNewTripPlan}
+          />
         </div>
       ) : null}
       {state.newTripPlanError ? <p>{state.newTripPlanError}</p> : null}
