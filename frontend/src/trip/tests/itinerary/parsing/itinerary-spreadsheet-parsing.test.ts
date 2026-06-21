@@ -5,7 +5,7 @@ import {
   parseDurationMinutes,
   parseSpreadsheetDate,
   parseTimeWindow,
-} from "./itinerary-spreadsheet-parsing";
+} from "../../../itinerary-spreadsheet-parsing";
 
 describe("itinerary spreadsheet parsing", () => {
   it("detects tab-delimited spreadsheets and parses quoted CSV cells", () => {

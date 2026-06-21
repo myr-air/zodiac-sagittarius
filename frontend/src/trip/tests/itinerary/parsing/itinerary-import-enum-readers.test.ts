@@ -9,7 +9,7 @@ import {
   readOptionalStatus,
   readOptionalTimeMode,
   readPlanVariantKind,
-} from "./itinerary-import-enum-readers";
+} from "../../../itinerary-import-enum-readers";
 
 describe("itinerary import enum readers", () => {
   it("reads itinerary item enum values from the canonical itinerary type values", () => {
