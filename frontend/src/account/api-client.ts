@@ -1,6 +1,6 @@
 import type { TripParticipantSession } from "@/src/trip/types";
 import { createJsonApiRequester } from "@/src/shared/api/json-api-requester";
-import { TripApiError } from "@/src/trip/api-error";
+import { TripApiError } from "@/src/trip/api-client";
 import { createAccountAuthApiClient } from "./api-client-auth";
 import { accountApiRoutes } from "./api-routes";
 import type {

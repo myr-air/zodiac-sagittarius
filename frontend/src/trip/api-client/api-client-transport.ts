@@ -3,7 +3,7 @@ import {
   type JsonApiRequester,
 } from "@/src/shared/api/json-api-requester";
 import type { ItineraryCoordinates } from "../types";
-import { TripApiError } from "../api-error";
+import { TripApiError } from "./trip-api-error";
 
 export type TripApiRequester = JsonApiRequester;
 

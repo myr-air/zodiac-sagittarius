@@ -1,4 +1,4 @@
-import { TripApiError } from "../api-error";
+import { TripApiError } from "./trip-api-error";
 import { mapItineraryItem } from "./api-response-itinerary-mappers";
 import { mapMember } from "./api-response-member-mappers";
 import {

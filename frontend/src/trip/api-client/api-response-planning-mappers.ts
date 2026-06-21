@@ -1,4 +1,4 @@
-import { TripApiError } from "../api-error";
+import { TripApiError } from "./trip-api-error";
 import type {
   PlanVariant,
   Trip,

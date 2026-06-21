@@ -121,6 +121,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/tests/api/api-response-mappers.contract.test.ts",
   "src/trip/api-errors.ts",
   "src/trip/api-client/index.ts",
+  "src/trip/api-client/trip-api-error.ts",
   "src/trip/api-client/api-client-itinerary.ts",
   "src/trip/api-client/api-client-itinerary-types.ts",
   "src/trip/api-client/api-client-members.ts",

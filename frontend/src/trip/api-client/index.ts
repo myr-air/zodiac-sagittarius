@@ -19,7 +19,7 @@ import type {
   TripCockpitResponse,
   TripSummaryResponse,
 } from "./api-response-types";
-export { TripApiError } from "../api-error";
+export { TripApiError } from "./trip-api-error";
 export {
   assertMainPlanPointerAliasesMatch,
 } from "./api-response-planning-mappers";

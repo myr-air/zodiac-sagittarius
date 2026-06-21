@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { TripApiError } from "@/src/trip/api-error";
+import { TripApiError } from "@/src/trip/api-client";
 import { runWorkspaceApiCommand } from "./workspace-api-command";
 
 describe("runWorkspaceApiCommand", () => {
