@@ -5,9 +5,9 @@ import {
   createLocalStopNoteInList,
   removeStopNote,
   replaceStopNote,
-} from "./stop-notes";
+} from "../../stop-notes";
 import { stopNote } from "./stop-notes.test-support";
-import type { Trip } from "./types";
+import type { Trip } from "../../types";
 
 const trip = { id: "trip-1" } as Pick<Trip, "id">;
 

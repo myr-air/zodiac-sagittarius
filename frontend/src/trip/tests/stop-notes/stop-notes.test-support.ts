@@ -1,4 +1,4 @@
-import type { StopNote } from "./types";
+import type { StopNote } from "../../types";
 
 export function stopNote(input: Partial<StopNote> & Pick<StopNote, "id">): StopNote {
   return {
