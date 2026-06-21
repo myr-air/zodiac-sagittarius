@@ -1,1 +1,4 @@
-export { workspaceFieldClassName } from "./workspace-form-field.styles";
+export {
+  workspaceCompactFieldGroupClassName,
+  workspaceFieldClassName,
+} from "./workspace-form-field.styles";
