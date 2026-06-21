@@ -103,7 +103,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/components/workspace-empty-state/storybook/WorkspaceEmptyState.stories.tsx",
   "src/shared/components/workspace-empty-state/tests/WorkspaceEmptyState.test.tsx",
   "src/shared/hooks/use-copy-feedback-state.ts",
-  "src/shared/hooks/use-copy-feedback-state.test.ts",
+  "src/shared/hooks/tests/use-copy-feedback-state.test.ts",
   "src/shared/storybook/story-builders.ts",
   "src/workspace-feature-boundaries.contract.test.ts",
   "src/workspace-app-test-boundaries.contract.test.ts",

@@ -53,4 +53,8 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/shared/components/weather/WeatherForecastStrip.stories.plays.ts",
   "src/shared/components/weather/weather-briefing-drawer-model.ts",
   "src/shared/components/weather/weather-briefing-drawer-model.test.ts",
+  "src/shared/api/json-api-requester.test.ts",
+  "src/shared/storage/browser-session-json.test.ts",
+  "src/shared/hooks/use-copy-feedback-state.test.ts",
+  "src/shared/map-load-state.test.ts",
 ] as const;

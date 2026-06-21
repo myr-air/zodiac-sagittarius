@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   copyFeedbackStateValues,
   useCopyFeedbackState,
-} from "./use-copy-feedback-state";
+} from "../use-copy-feedback-state";
 
 describe("useCopyFeedbackState", () => {
   afterEach(() => {

@@ -4,7 +4,7 @@ import {
   clearBrowserSessionStorageValue,
   loadBrowserSessionJson,
   persistBrowserSessionJson,
-} from "./browser-session-json";
+} from "../browser-session-json";
 
 describe("browser-session-json", () => {
   let restoreStorage: () => void;

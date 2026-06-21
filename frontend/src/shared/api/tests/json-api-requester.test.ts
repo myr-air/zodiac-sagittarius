@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createJsonApiRequester,
   type JsonApiErrorInput,
-} from "./json-api-requester";
+} from "../json-api-requester";
 
 class TestApiError extends Error {
   readonly code: string;
