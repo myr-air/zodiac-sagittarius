@@ -132,7 +132,7 @@ export function TripPhotosPage({
         <div className={photoStyles.dialogBackdropClassName}>
           <div className={photoStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-label={copy.deleteAlbum}>
             <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{copy.deleteAlbum}</h2>
-            <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{copy.deletePrompt(deleteAlbum.title)}</p>
+            <p className={photoStyles.deleteDialogBodyClassName}>{copy.deletePrompt(deleteAlbum.title)}</p>
             <div className={photoStyles.dialogActionsClassName}>
               <Button type="button" variant="ghost" onClick={() => setDeleteAlbum(null)}>{copy.cancel}</Button>
               <Button type="button" variant="danger" onClick={() => void confirmDelete()}>{copy.deleteAlbum}</Button>

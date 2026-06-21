@@ -1,4 +1,9 @@
-import { workspacePaddedDialogBackdropClassName } from "@/src/shared/components/workspace-dialog";
+import {
+  workspaceCompactDialogActionsClassName,
+  workspaceCompactDialogBodyClassName,
+  workspaceCompactDialogTitleClassName,
+  workspacePaddedDialogBackdropClassName,
+} from "@/src/shared/components/workspace-dialog";
 
 export const brandRowClassName = "brand-row inline-flex min-h-[70px] w-full box-border items-center justify-between px-4 pl-5 data-[collapsed=true]:min-h-[84px] data-[collapsed=true]:flex-col data-[collapsed=true]:justify-center data-[collapsed=true]:gap-2 data-[collapsed=true]:px-0 data-[collapsed=true]:pl-0 max-[1199px]:min-h-[70px] max-[1199px]:justify-center max-[1199px]:px-0 max-[1199px]:pl-0 max-[767px]:grid max-[767px]:min-h-12 max-[767px]:grid-cols-[minmax(64px,auto)_minmax(0,1fr)_44px] max-[767px]:gap-2 max-[767px]:border-b max-[767px]:border-(--color-border) max-[767px]:px-3 max-[767px]:pl-3";
 export const brandBlockClassName = "brand-block inline-flex min-w-0 items-center gap-[11px]";
@@ -27,8 +32,8 @@ export const memberSwitchButtonClassName = "member-switch-button min-h-8 whitesp
 export const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const identityDialogBackdropClassName = workspacePaddedDialogBackdropClassName;
 export const identityDialogClassName = "identity-switch-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
-export const identityDialogTitleClassName = "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
-export const identityDialogBodyClassName = "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
-export const identityDialogActionsClassName = "mt-1 flex justify-end gap-2";
+export const identityDialogTitleClassName = workspaceCompactDialogTitleClassName;
+export const identityDialogBodyClassName = workspaceCompactDialogBodyClassName;
+export const identityDialogActionsClassName = workspaceCompactDialogActionsClassName;
 export const identityDialogButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-sm font-extrabold text-(--color-primary-strong)";
 export const identityDialogPrimaryButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-(--radius-sm) border border-(--color-primary) bg-(--color-primary) px-3 text-sm font-extrabold text-white";

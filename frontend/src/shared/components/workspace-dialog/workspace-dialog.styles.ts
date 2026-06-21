@@ -17,5 +17,13 @@ export const workspaceDialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:
 export const workspaceDialogActionsClassName =
   "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
 
+export const workspaceCompactDialogTitleClassName =
+  "m-0 text-base font-extrabold leading-[22px] text-(--color-text)";
+
+export const workspaceCompactDialogBodyClassName =
+  "m-0 text-sm font-medium leading-6 text-(--color-text-muted)";
+
+export const workspaceCompactDialogActionsClassName = "mt-1 flex justify-end gap-2";
+
 export const workspaceDeleteDialogClassName =
   "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";

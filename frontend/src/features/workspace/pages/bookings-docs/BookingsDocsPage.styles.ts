@@ -1,6 +1,7 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
 import {
   workspaceDeleteDialogClassName,
+  workspaceCompactDialogBodyClassName,
   workspaceDialogActionsClassName,
   workspaceDialogBackdropClassName,
   workspaceDialogFormClassName,
@@ -46,3 +47,4 @@ export const dialogFormClassName = workspaceDialogFormClassName;
 export const dialogGridClassName = workspaceDialogGridClassName;
 export const dialogActionsClassName = workspaceDialogActionsClassName;
 export const deleteDialogClassName = workspaceDeleteDialogClassName;
+export const deleteDialogBodyClassName = workspaceCompactDialogBodyClassName;

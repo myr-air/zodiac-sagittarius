@@ -1,4 +1,7 @@
 export {
+  workspaceCompactDialogActionsClassName,
+  workspaceCompactDialogBodyClassName,
+  workspaceCompactDialogTitleClassName,
   workspaceDeleteDialogClassName,
   workspaceDialogActionsClassName,
   workspaceDialogBackdropClassName,
