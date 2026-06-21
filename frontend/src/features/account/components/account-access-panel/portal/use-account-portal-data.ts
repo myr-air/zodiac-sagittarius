@@ -13,7 +13,7 @@ import {
   cacheAccountPortalData,
   clearAccountPortalDataCache,
   getAccountPortalDataCache,
-} from "../account-portal-data-cache";
+} from "./account-portal-data-cache";
 import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "../auth";
 
 interface UseAccountPortalDataOptions {

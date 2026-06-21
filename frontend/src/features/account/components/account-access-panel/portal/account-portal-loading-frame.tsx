@@ -2,7 +2,7 @@
 
 import type { PortalSection } from "@/src/shared/portal";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { getLatestAccountPortalDataCache } from "../account-portal-data-cache";
+import { getLatestAccountPortalDataCache } from "./account-portal-data-cache";
 import { AccountPortalNav } from "./account-portal-nav";
 import {
   portalSkeletonBlockClassName,
