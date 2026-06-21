@@ -1,4 +1,5 @@
 import type { TripPhotoAlbumAccess, TripPhotoAlbumProvider } from "@/src/trip/types";
+import type { WorkspaceMutationResult } from "../../model/workspace-action-types";
 
 export interface TripPhotoAlbumInput {
   title: string;
@@ -13,7 +14,7 @@ export interface TripPhotoAlbumInput {
   coverUrl?: string | null;
 }
 
-export type TripPhotoAlbumMutationResult = void | Promise<void>;
+export type TripPhotoAlbumMutationResult = WorkspaceMutationResult;
 
 export type CreatePhotoAlbumHandler = (
   input: TripPhotoAlbumInput,

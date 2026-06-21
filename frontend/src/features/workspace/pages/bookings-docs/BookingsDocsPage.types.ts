@@ -1,4 +1,5 @@
 import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/src/trip/types";
+import type { WorkspaceMutationResult } from "../../model/workspace-action-types";
 
 export interface BookingDocInput {
   tripPlanId?: string | null;
@@ -23,7 +24,7 @@ export interface BookingDocInput {
   notes?: string | null;
 }
 
-export type BookingDocMutationResult = void | Promise<void>;
+export type BookingDocMutationResult = WorkspaceMutationResult;
 
 export type CreateBookingDocHandler = (
   input: BookingDocInput,

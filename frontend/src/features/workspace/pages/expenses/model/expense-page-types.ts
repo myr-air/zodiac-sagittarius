@@ -6,6 +6,7 @@ import type {
   ExpenseLineItem,
   SettlementSuggestion,
 } from "@/src/trip/types";
+import type { WorkspaceMutationResult } from "../../../model/workspace-action-types";
 
 export type { ExpenseCategoryFilter } from "./expense-page-options";
 export type ExpenseCopyState = CopyFeedbackState;
@@ -33,7 +34,7 @@ export interface ExpenseUpdateInput extends ExpenseInput {
   expenseId: string;
 }
 
-export type ExpenseMutationResult = void | Promise<void>;
+export type ExpenseMutationResult = WorkspaceMutationResult;
 
 export type CreateExpenseHandler = (
   input: ExpenseInput,
