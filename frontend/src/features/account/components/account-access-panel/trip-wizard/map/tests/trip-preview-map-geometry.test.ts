@@ -4,7 +4,7 @@ import {
   previewMapBounds,
   previewMapCenter,
   type PreviewMapCoordinate,
-} from "./trip-preview-map-geometry";
+} from "../trip-preview-map-geometry";
 
 describe("trip preview map geometry", () => {
   it("centers the preview map around the average route coordinate", () => {

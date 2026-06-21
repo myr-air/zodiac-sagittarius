@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { TripCity } from "@/src/trip/types";
-import { TripPreviewMapFallback, TripPreviewMapSourceBadge } from "./trip-preview-map-fallback";
+import { TripPreviewMapFallback, TripPreviewMapSourceBadge } from "../trip-preview-map-fallback";
 
 const bangkok: TripCity = {
   city: "Bangkok",
