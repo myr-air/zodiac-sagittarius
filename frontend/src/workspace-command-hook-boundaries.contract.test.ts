@@ -10,6 +10,7 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       workspaceCommandsHook,
       workspaceCommandsParams,
       itineraryBookingCommands,
+      bookingDocCommands,
       bookingCommandInputs,
       taskActionsHook,
       stopNoteActionsHook,
@@ -55,6 +56,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryBookingCommands).not.toContain(
       "buildItineraryBookingTicketDocInput",
     );
+    expect(bookingDocCommands).toContain("buildWorkspaceBookingDocCreateInput");
+    expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
+    expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
+    expect(bookingCommandInputs).toContain("buildWorkspaceBookingDocCreateInput");
     expect(bookingCommandInputs).toContain("findDuplicateBookingDoc");
     expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
     expect(taskActionsHook).not.toContain("tripPlanIdForRecord");

@@ -4,9 +4,7 @@ import {
   type BookingDocInputLike,
   buildCreateBookingDocRequest,
   createLocalBookingDoc,
-  normalizeBookingDocTitle,
   removeBookingDocFromTrip,
-  resolveBookingDocCreateTripPlanId,
 } from "@/src/trip/booking-docs";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { isVersionConflict } from "@/src/trip/api-errors";
@@ -16,8 +14,8 @@ import type {
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { tripPlanIdForBookingRecord } from "@/src/trip/workspace/trip-plan-records";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
+import { buildWorkspaceBookingDocCreateInput } from "./booking-command-inputs";
 import { useWorkspaceBookingDocUpdateCommands } from "./use-workspace-booking-doc-update-commands";
 
 interface UseWorkspaceBookingDocCommandsOptions {
@@ -68,12 +66,11 @@ export function useWorkspaceBookingDocCommands({
   const createBookingDoc = useCallback(
     async (input: BookingDocInputLike): Promise<BookingDoc | null> => {
       if (!canEditBookings) return null;
-      const title = normalizeBookingDocTitle(input);
-      if (!title) return null;
-      const tripPlanId = resolveBookingDocCreateTripPlanId(trip, input, {
-        resolveTripPlanId: tripPlanIdForBookingRecord,
+      const createInput = buildWorkspaceBookingDocCreateInput(input, {
         selectedTripPlanId,
+        trip,
       });
+      if (!createInput) return null;
       if (isApiMode && apiClient && participantSession) {
         const clientMutationId = nextClientMutationId("booking-doc-create");
         try {
@@ -83,8 +80,8 @@ export function useWorkspaceBookingDocCommands({
             buildCreateBookingDocRequest(
               {
                 ...input,
-                title,
-                tripPlanId,
+                title: createInput.title,
+                tripPlanId: createInput.tripPlanId,
               },
               { clientMutationId },
             ),
@@ -112,8 +109,8 @@ export function useWorkspaceBookingDocCommands({
       }
 
       const bookingDoc = createLocalBookingDoc(trip, input, {
-        title,
-        tripPlanId,
+        title: createInput.title,
+        tripPlanId: createInput.tripPlanId,
         createdBy: currentMemberId,
         updatedAt: workspaceLocalMutationTimestamp,
         nextBookingDocId: nextLocalBookingDocId,
