@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   ManagerOverviewPanels,
@@ -19,35 +20,39 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function OverviewRolePanelStoryFrame({ children }: { children: ReactNode }) {
+  return <div className="p-4 bg-(--color-page)">{children}</div>;
+}
+
 export const Traveler: Story = {
   render: () => (
-    <div className="p-4 bg-(--color-page)">
+    <OverviewRolePanelStoryFrame>
       <TravelerOverviewPanels
         {...travelerOverviewPanelStoryProps}
       />
-    </div>
+    </OverviewRolePanelStoryFrame>
   ),
   play: travelerPlay,
 };
 
 export const Viewer: Story = {
   render: () => (
-    <div className="p-4 bg-(--color-page)">
+    <OverviewRolePanelStoryFrame>
       <ViewerOverviewPanels
         {...viewerOverviewPanelStoryProps}
       />
-    </div>
+    </OverviewRolePanelStoryFrame>
   ),
   play: viewerPlay,
 };
 
 export const Manager: Story = {
   render: () => (
-    <div className="p-4 bg-(--color-page)">
+    <OverviewRolePanelStoryFrame>
       <ManagerOverviewPanels
         {...managerOverviewPanelStoryProps}
       />
-    </div>
+    </OverviewRolePanelStoryFrame>
   ),
   play: managerPlay,
 };
