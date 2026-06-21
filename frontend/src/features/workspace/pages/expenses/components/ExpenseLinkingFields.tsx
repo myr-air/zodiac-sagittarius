@@ -2,7 +2,7 @@ import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, ItineraryItem, Trip, TripPlan } from "@/src/trip/types";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseCategories, expenseSplitModes } from "../expense-page-options";
+import { expenseCategories, expenseSplitModes } from "../model/expense-page-options";
 
 interface ExpenseLinkingFieldsProps {
   category: Expense["category"];

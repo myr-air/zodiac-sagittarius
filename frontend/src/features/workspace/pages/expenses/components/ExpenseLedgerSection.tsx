@@ -5,11 +5,11 @@ import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone } from "../expense-page-options";
+import { categoryTone } from "../model/expense-page-options";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
-} from "../expense-page-types";
+} from "../model/expense-page-types";
 import { ExpenseLedgerControls } from "./ExpenseLedgerControls";
 
 interface ExpenseLedgerSectionProps {

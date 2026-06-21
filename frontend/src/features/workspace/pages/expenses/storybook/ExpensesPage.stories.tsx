@@ -3,7 +3,7 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { TripExpensesPage } from "./TripExpensesPage";
+import { TripExpensesPage } from "../TripExpensesPage";
 import {
   addExpenseDialogOpenPlay,
   filteredLedgerPlay,

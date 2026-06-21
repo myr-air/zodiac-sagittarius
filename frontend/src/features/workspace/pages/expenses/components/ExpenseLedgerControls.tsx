@@ -2,12 +2,12 @@ import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseCategoryFilterValues } from "../expense-page-options";
+import { expenseCategoryFilterValues } from "../model/expense-page-options";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
   ExpensePageLabels,
-} from "../expense-page-types";
+} from "../model/expense-page-types";
 
 interface ExpenseLedgerControlsProps {
   canEditExpenses: boolean;

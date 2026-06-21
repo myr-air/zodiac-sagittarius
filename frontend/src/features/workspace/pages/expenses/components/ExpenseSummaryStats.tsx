@@ -2,7 +2,7 @@ import { formatMoney } from "@/src/trip/expenses";
 import type { ExpenseSummary } from "@/src/trip/types";
 import { WorkspaceSummaryStat } from "@/src/features/workspace/components/summary-stat";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import type { ExpensePageLabels } from "../expense-page-types";
+import type { ExpensePageLabels } from "../model/expense-page-types";
 
 interface ExpenseSummaryStatsProps {
   currentNet: number;

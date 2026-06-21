@@ -8,10 +8,10 @@ import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
-import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
+import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./use-trip-expenses-page-state";
 
-export type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
+export type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
 
 interface TripExpensesPageProps {
   trip: Trip;

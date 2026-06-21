@@ -4,17 +4,17 @@ import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from
 import {
   buildRefundExpenseInput,
   buildSettlementExpenseInput,
-} from "./expense-page-actions";
-import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
+} from "./model/expense-page-actions";
+import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
 import {
   expenseCategorySpend,
   filterExpenses,
   inferredScopeExpenses as filterInferredScopeExpenses,
-} from "./expense-page-filters";
+} from "./model/expense-page-filters";
 import type {
   ExpenseCategoryFilter,
   ExpenseDialogTarget,
-} from "./expense-page-types";
+} from "./model/expense-page-types";
 import { useExpenseLedgerActions } from "./hooks/useExpenseLedgerActions";
 
 interface UseTripExpensesPageStateArgs {

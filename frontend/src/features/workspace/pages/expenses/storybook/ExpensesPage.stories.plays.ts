@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { TripExpensesPage } from "./TripExpensesPage";
+import type { TripExpensesPage } from "../TripExpensesPage";
 import {
   expectExpensesResponsiveContract,
   onStoryUpdateExpense,

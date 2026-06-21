@@ -2,7 +2,7 @@ import { expect, fn, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import type { TripExpensesPage } from "./TripExpensesPage";
+import type { TripExpensesPage } from "../TripExpensesPage";
 
 type TripExpensesPageStoryArgs = Parameters<typeof TripExpensesPage>[0];
 

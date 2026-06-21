@@ -2,7 +2,7 @@ import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Member } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import type { EditableExpenseLineItem } from "../expense-dialog-line-items";
+import type { EditableExpenseLineItem } from "../model/expense-dialog-line-items";
 
 interface ExpenseSplitFieldsProps {
   splitMode: ExpenseSplitMode;

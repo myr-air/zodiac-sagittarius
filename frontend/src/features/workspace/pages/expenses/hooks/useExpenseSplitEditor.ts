@@ -4,12 +4,12 @@ import type { Expense, Member } from "@/src/trip/types";
 import {
   expenseSplitValuesForMode,
   initialExpenseSplitValues,
-} from "../expense-dialog-initial-state";
+} from "../model/expense-dialog-initial-state";
 import {
   emptyExpenseLineItem,
   initialExpenseLineItems,
   type EditableExpenseLineItem,
-} from "../expense-dialog-line-items";
+} from "../model/expense-dialog-line-items";
 
 interface UseExpenseSplitEditorInput {
   expense: Expense | null;

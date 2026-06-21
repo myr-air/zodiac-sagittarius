@@ -3,11 +3,11 @@ import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
-} from "../expense-dialog-calculation";
-import { canSubmitExpenseDialog } from "../expense-dialog-submit-guard";
-import { initialExpenseTripPlanId } from "../expense-dialog-initial-state";
-import { buildExpenseDialogSubmitInput } from "../expense-dialog-submit-input";
-import type { ExpenseInput, ExpenseUpdateInput } from "../expense-page-types";
+} from "../model/expense-dialog-calculation";
+import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
+import { initialExpenseTripPlanId } from "../model/expense-dialog-initial-state";
+import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
+import type { ExpenseInput, ExpenseUpdateInput } from "../model/expense-page-types";
 import { useExpenseComments } from "./useExpenseComments";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
 import { useExpenseSplitEditor } from "./useExpenseSplitEditor";

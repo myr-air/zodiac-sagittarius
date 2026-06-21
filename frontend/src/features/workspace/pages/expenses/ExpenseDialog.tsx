@@ -8,7 +8,7 @@ import { ExpenseDialogSummary } from "./components/ExpenseDialogSummary";
 import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
 import { useExpenseDialogState } from "./hooks/useExpenseDialogState";
 import * as expenseStyles from "./TripExpensesPage.styles";
-import type { ExpenseInput, ExpenseUpdateInput } from "./expense-page-types";
+import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
 
 interface ExpenseDialogProps {
   expense: Expense | null;

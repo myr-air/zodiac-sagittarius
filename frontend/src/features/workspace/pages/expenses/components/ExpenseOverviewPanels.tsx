@@ -9,7 +9,7 @@ import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { categoryTone } from "../expense-page-options";
+import { categoryTone } from "../model/expense-page-options";
 
 interface ExpenseOverviewPanelsProps {
   trip: Trip;

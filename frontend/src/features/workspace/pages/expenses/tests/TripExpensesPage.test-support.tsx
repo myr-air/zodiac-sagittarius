@@ -2,7 +2,7 @@ import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import { TripExpensesPage } from "./TripExpensesPage";
+import { TripExpensesPage } from "../TripExpensesPage";
 
 export function renderExpenses(overrides: Partial<Parameters<typeof TripExpensesPage>[0]> = {}) {
   const props: Parameters<typeof TripExpensesPage>[0] = {
