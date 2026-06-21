@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   getMaplibreMock,
   resetMaplibreMock,

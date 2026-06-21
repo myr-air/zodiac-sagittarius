@@ -1,4 +1,4 @@
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export const stopDialogStoryItem = tripFixture.planItems[0];

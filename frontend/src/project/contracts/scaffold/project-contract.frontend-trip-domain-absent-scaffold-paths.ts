@@ -76,6 +76,7 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/trip-task-types.test.ts",
   "src/trip/currencies.test.ts",
   "src/trip/fixtures.test.ts",
+  "src/trip/trip-fixtures.ts",
   "src/trip/ids.test.ts",
   "src/trip/join-return.test.ts",
   "src/trip/local-ids.test.ts",

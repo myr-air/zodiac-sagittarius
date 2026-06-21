@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { Expense, ItineraryItem } from "@/src/trip/types";
 import { mergeApiImportedPlanRecordsIntoTrip } from "../itinerary-import-record-merge";
 

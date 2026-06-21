@@ -2,7 +2,7 @@ import { useState, type ComponentProps } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
 import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 

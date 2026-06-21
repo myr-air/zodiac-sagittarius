@@ -1,6 +1,6 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripMembersPage } from "../TripMembersPage";
 
 type MembersPageStoryArgs = Parameters<typeof TripMembersPage>[0];

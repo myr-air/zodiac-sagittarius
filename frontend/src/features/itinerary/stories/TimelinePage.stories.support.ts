@@ -1,6 +1,6 @@
 import { expect } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { TimelineView } from "@/src/features/itinerary/components";
 import { planABAlternativeItemsBase, withStoryPrefix } from "./support/itinerary-story-fixtures";

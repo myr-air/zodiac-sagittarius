@@ -1,6 +1,6 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import type { TripPhotosPage } from "../TripPhotosPage";
 

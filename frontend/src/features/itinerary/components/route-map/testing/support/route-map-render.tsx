@@ -1,6 +1,6 @@
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { RouteMapView } from "../../RouteMapView";
 import { routeMapItems } from "../fixtures/route-map-fixtures";

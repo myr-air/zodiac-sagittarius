@@ -5,7 +5,7 @@ import {
   buildBookingDoc,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 const renderTable = renderSmartItineraryTable;
 

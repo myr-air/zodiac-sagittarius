@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildItineraryExport, parseItineraryImportDocument } from "../../itinerary-import-export";
-import { tripFixture } from "../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export Trip Plans", () => {
   it("preserves Trip Plan metadata in export and import documents", () => {

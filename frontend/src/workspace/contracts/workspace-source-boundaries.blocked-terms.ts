@@ -10,7 +10,7 @@ export const sagittariusAppBlockedBoundaryTerms = [
       "buildFallbackBriefings",
       "buildPatchDailyBriefingRequest",
       "useState<{ tripPlanId: string; summary: ExpenseSummary } | null>",
-      "@/src/trip/trip-fixtures",
+      "@/src/trip/testing/fixtures/trip-fixtures",
       "tripFixtureSuggestions",
       "tripFixtureTasks",
       "tripFixtureStopNotes",

@@ -4,7 +4,7 @@ import {
   parseItineraryImport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary import/export JSON", () => {

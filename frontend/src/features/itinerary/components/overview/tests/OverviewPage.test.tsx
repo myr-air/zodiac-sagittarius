@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { tripFixtureTasks } from "@/src/trip/trip-fixtures";
+import { tripFixtureTasks } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";

@@ -3,7 +3,7 @@ import {
   buildDenseTripFixture,
   buildEmptyTripFixture,
   tripFixture,
-} from "@/src/trip/trip-fixtures";
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 
 export const storyTripId = "trip-1";
 export const travelerMemberId = tripFixture.currentMembers.traveler.id;

@@ -1,5 +1,5 @@
 import { fn } from "storybook/test";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { pathIdMain } from "@/src/features/itinerary/testing";
 import {

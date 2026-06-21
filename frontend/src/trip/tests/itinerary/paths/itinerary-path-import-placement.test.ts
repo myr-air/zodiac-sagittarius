@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyImportedItemsToItineraryPath } from "../../../itinerary-paths";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { importItem } from "./itinerary-path-imports.test-support";
 import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 

@@ -1,4 +1,4 @@
-import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src/trip/trip-fixtures";
+import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import { buildOverflowStoryItems, withStoryPrefix } from "./itinerary-story-item-builders";

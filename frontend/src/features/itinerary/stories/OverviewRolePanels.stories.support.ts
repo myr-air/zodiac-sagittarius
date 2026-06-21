@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { noop } from "@/src/testing/storybook-actions";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type {
   ManagerOverviewPanelsProps,
   TravelerOverviewPanelsProps,

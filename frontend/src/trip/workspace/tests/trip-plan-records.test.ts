@@ -4,7 +4,7 @@ import {
   tripPlanIdForBookingRecord,
   tripPlanIdForRecord,
 } from "../trip-plan-records";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { BookingDoc, Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
 
 function tripWithRecordFixtures(): {

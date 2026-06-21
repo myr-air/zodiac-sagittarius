@@ -11,7 +11,7 @@ import {
 } from "@/src/trip/workspace/testing/fixtures/selected-trip-plan-fixtures";
 import { selectedTripPlanStorageKey } from "@/src/trip/workspace/selected-trip-plan";
 import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("useWorkspaceSelectedTripPlan", () => {
   beforeEach(() => {

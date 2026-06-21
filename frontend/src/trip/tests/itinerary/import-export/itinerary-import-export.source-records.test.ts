@@ -3,7 +3,7 @@ import {
   buildItineraryExport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export source records", () => {
   it("preserves actual expense and paid booking records as source references without remapping ids", () => {

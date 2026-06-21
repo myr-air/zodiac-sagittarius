@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { applyItemToActivityBranch } from "../../../itinerary-paths";
 import { overlappingActivityItems } from "../../../testing/itinerary-activity-branch-fixtures";
 

@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 
 describe("SmartItineraryTable locale shell", () => {

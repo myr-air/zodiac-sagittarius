@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { messages } from "@/src/i18n/messages";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { mainPathOption, storyRainDisplayPathOption } from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "../SmartItineraryTableBody";
 import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";

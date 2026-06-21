@@ -7,7 +7,7 @@ import {
   tripHasPlan,
 } from "../selected-trip-plan";
 import { tripWithPlans } from "../testing/fixtures/selected-trip-plan-fixtures";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 
 describe("selected trip plan workspace state", () => {

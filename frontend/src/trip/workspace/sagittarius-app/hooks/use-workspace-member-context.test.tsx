@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useWorkspaceMemberContext } from "./use-workspace-member-context";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 
 const trip: Trip = {

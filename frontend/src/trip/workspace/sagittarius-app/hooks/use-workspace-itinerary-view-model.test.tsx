@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useWorkspaceItineraryViewModel } from "./use-workspace-itinerary-view-model";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 function item(id: string, day: string): ItineraryItem {

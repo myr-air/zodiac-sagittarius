@@ -7,7 +7,7 @@ import {
   rejectSuggestionById,
   replaceSuggestionById,
 } from "../../../suggestions";
-import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { Suggestion } from "../../../types";
 
 describe("itinerary suggestions", () => {

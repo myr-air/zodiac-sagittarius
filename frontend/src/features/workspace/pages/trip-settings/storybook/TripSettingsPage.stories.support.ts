@@ -1,7 +1,7 @@
 import { expect } from "storybook/test";
 import { asyncNoop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripSettingsPage } from "../TripSettingsPage";
 
 type TripSettingsPageStoryArgs = Parameters<typeof TripSettingsPage>[0];

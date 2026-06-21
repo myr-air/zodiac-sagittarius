@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { ContextRail } from "@/src/features/itinerary/components";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { selectedContextRailItem } from "../fixtures/context-rail-fixtures";
 
 export { selectedContextRailItem };

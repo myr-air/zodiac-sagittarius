@@ -1,11 +1,11 @@
-import { buildExpenseSummary } from "./expenses";
-import { seedTrip } from "./seed";
+import { buildExpenseSummary } from "../../expenses";
+import { seedTrip } from "../../seed";
 import {
   mainItineraryPathId,
   mainItineraryPathName,
-} from "./itinerary-path-identifiers";
-import { expenseCategoryValues } from "./trip-record-types";
-import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "./types";
+} from "../../itinerary-path-identifiers";
+import { expenseCategoryValues } from "../../trip-record-types";
+import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "../../types";
 
 export type TripFixtureRole = TripRole;
 

@@ -5,7 +5,7 @@ import {
   getTripFixtureMember,
   getTripFixtureMemberById,
   tripFixture,
-} from "../../trip-fixtures";
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { tripRoleValues } from "../../trip-member-types";
 
 describe("trip fixtures", () => {

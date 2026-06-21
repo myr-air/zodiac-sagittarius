@@ -3,7 +3,7 @@ import {
   buildItineraryExport,
   parseItineraryImport,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export hierarchy", () => {
   it("preserves V1 hierarchy and flexible item fields in export and import", () => {

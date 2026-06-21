@@ -9,7 +9,7 @@ import {
   stopDialogDetailTypeToActivityType,
   structuredStopDetailValues,
 } from "../stop-dialog.utils";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("stop dialog utils", () => {
   it("supports shared detail type options", () => {

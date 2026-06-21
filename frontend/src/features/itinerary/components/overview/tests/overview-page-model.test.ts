@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import { getTripFixtureItineraryItem } from "@/src/trip/trip-fixtures";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { buildOverviewPageModel } from "../overview-page-model";
 
 describe("overview page model", () => {

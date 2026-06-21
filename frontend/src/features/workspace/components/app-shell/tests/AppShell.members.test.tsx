@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
+import { getTripFixtureMember } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderAppShell } from "../testing/support/render-app-shell";
 
 describe("AppShell members", () => {

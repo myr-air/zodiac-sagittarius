@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../seed";
-import { getTripFixtureMemberById } from "../../trip-fixtures";
+import { getTripFixtureMemberById } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   appendTripParticipant,
   claimTripParticipant,

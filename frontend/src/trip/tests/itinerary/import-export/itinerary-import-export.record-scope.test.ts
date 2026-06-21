@@ -4,7 +4,7 @@ import {
   parseItineraryImport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "../../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export record scoping", () => {
   it("preserves plan-scoped records in export and import documents", () => {

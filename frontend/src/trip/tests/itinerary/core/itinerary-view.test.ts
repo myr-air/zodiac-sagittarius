@@ -5,7 +5,7 @@ import {
   getNowNext,
   sortItemsForDay,
 } from "../../../itinerary-view";
-import { getTripFixtureItineraryItem, tripFixture } from "../../../trip-fixtures";
+import { getTripFixtureItineraryItem, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { hongKongDay, shenzhenDay } from "../../../testing/itinerary-test-days";
 
 describe("itinerary view helpers", () => {

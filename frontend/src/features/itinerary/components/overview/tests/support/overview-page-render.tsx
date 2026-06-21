@@ -2,7 +2,7 @@ import { vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { tripFixtureTasks } from "@/src/trip/trip-fixtures";
+import { tripFixtureTasks } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { OverviewPage } from "../../OverviewPage";
 
 export const renderOverviewElement = (ui: Parameters<typeof renderWithI18n>[0]) =>

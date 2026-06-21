@@ -1,7 +1,7 @@
 import { noop } from "@/src/testing/storybook-actions";
 import type { ContextRail } from "@/src/features/itinerary/components";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 type ContextRailStoryArgs = Parameters<typeof ContextRail>[0];
 

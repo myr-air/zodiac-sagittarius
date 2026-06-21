@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { SuggestionPanel } from "../SuggestionPanel";
 

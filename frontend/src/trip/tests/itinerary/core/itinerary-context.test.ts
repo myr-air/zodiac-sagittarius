@@ -10,7 +10,7 @@ import {
   validateItineraryItem,
 } from "../../../itinerary";
 import { seedTrip } from "../../../seed";
-import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary warnings, dates, and on-trip context", () => {
   it("keeps invalid field warning totals stable in shared derive", () => {

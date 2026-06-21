@@ -1,7 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Suggestion, Trip } from "@/src/trip/types";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { ContextRailSuggestionsSection } from "../ContextRailSuggestionsSection";
 

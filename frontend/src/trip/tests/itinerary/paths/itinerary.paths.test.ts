@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
-import { getTripFixtureItineraryItem } from "../../../trip-fixtures";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   getTripDates,
   groupItemsByDay,

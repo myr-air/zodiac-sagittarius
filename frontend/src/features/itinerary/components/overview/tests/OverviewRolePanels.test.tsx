@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { FormEvent, ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture, tripFixtureTasks } from "@/src/trip/trip-fixtures";
+import { tripFixture, tripFixtureTasks } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import type { Locale } from "@/src/i18n/types";
 import { ManagerOverviewPanels } from "../ManagerOverviewPanels";

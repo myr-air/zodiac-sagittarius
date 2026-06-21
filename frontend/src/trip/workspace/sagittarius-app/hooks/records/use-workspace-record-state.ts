@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/trip-fixtures";
+import { tripFixtureStopNotes, tripFixtureSuggestions, tripFixtureTasks } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripCockpit } from "@/src/trip/api-client";
 import type { StopNote, Suggestion, TripTask } from "@/src/trip/types";
 

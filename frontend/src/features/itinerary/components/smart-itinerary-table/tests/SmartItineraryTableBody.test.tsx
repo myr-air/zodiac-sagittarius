@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { describe, expect, it } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { messages } from "@/src/i18n/messages";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { mainPathOption, pathRainOption } from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "../SmartItineraryTableBody";
 

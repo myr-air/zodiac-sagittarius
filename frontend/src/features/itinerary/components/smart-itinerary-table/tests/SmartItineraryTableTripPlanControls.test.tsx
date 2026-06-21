@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { messages } from "@/src/i18n/messages";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
 
 describe("SmartItineraryTableTripPlanControls", () => {

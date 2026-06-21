@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { useWorkspaceItineraryExportCommand } from "./use-workspace-itinerary-export-command";
 
 describe("useWorkspaceItineraryExportCommand", () => {

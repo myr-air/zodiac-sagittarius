@@ -236,6 +236,7 @@ export const frontendTripDomainScaffoldPathsPresent = [
   "src/trip/itinerary-activity-branch-placement.ts",
   "src/trip/tests/itinerary/paths/itinerary-activity-branch-placement.test.ts",
   "src/trip/testing/itinerary-activity-branch-fixtures.ts",
+  "src/trip/testing/fixtures/trip-fixtures.ts",
   "src/trip/itinerary-path-options.ts",
   "src/trip/itinerary-paths.ts",
   "src/trip/tests/itinerary/paths/itinerary-path-import-placement.test.ts",

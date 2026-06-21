@@ -7,7 +7,7 @@ import {
   loadPersistedParticipantSession,
   persistParticipantSession,
 } from "../../participant-session-storage";
-import { tripFixture } from "../../trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripParticipantSession } from "../../types";
 
 const session: TripParticipantSession = {
