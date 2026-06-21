@@ -1,3 +1,4 @@
+export * from "./expense-types";
 export {
   expenseAmountInSettlementCurrency,
   formatMoney,

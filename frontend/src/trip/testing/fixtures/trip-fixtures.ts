@@ -4,7 +4,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "../../itinerary-paths";
-import { expenseCategoryValues } from "../../trip-record-types";
+import { expenseCategoryValues } from "../../expenses";
 import type { Expense, ItineraryItem, ItineraryPath, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "../../types";
 
 export type TripFixtureRole = TripRole;

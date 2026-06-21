@@ -3,10 +3,10 @@ import {
   bookingDocStatusValues,
   bookingDocTypeValues,
   bookingDocVisibilityValues,
-  expenseCategoryValues,
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
 } from "../../trip-record-types";
+import { expenseCategoryValues } from "../../expenses";
 
 describe("trip record type values", () => {
   it("keeps expense and booking record enums in canonical display order", () => {

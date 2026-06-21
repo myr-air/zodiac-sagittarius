@@ -1,5 +1,5 @@
 import { expenseSplitModeValues } from "@/src/trip/expenses";
-import { expenseCategoryValues } from "@/src/trip/trip-record-types";
+import { expenseCategoryValues } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
 
 export type CategoryTone = {

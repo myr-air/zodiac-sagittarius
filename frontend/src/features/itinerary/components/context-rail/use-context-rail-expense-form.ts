@@ -1,6 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
-import { expenseCategoryValues } from "@/src/trip/trip-record-types";
+import { expenseCategoryValues } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
 import type {
   ContextRailCreateExpenseInput,

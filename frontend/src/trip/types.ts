@@ -1,7 +1,9 @@
 import type {
-  BookingDoc,
   Expense,
   ExpenseReminder,
+} from "./expenses/expense-types";
+import type {
+  BookingDoc,
   TripPhotoAlbumLink,
 } from "./trip-record-types";
 import type { ItineraryItem, ItineraryPath, StopNote } from "./trip-itinerary-types";
@@ -60,11 +62,6 @@ export type {
   TripCity,
 } from "./places/place-types";
 export type {
-  BookingDoc,
-  BookingDocExternalLink,
-  BookingDocStatus,
-  BookingDocType,
-  BookingDocVisibility,
   Expense,
   ExpenseCategory,
   ExpenseComment,
@@ -72,6 +69,13 @@ export type {
   ExpenseReminder,
   ExpenseSummary,
   SettlementSuggestion,
+} from "./expenses/expense-types";
+export type {
+  BookingDoc,
+  BookingDocExternalLink,
+  BookingDocStatus,
+  BookingDocType,
+  BookingDocVisibility,
   TripPhotoAlbumAccess,
   TripPhotoAlbumLink,
   TripPhotoAlbumProvider,
