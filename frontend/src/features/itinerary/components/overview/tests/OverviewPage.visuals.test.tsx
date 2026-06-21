@@ -8,7 +8,7 @@ import {
   installOverviewPageClock,
   renderOverview,
   renderOverviewElement as render,
-} from "./OverviewPage.test-support";
+} from "./support/overview-page-render";
 
 beforeEach(() => {
   installOverviewPageClock();

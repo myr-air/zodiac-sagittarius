@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   installOverviewPageClock,
   renderOverview,
-} from "./OverviewPage.test-support";
+} from "./support/overview-page-render";
 
 beforeEach(() => {
   installOverviewPageClock();
