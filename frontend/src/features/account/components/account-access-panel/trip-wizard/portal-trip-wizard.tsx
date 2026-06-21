@@ -9,7 +9,7 @@ import { PortalTripWizardMainPanel } from "./portal-trip-wizard-main-panel";
 import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
 import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
 import * as wizardStyles from "./portal-trip-wizard-styles";
-import { usePortalTripWizardModel } from "./use-portal-trip-wizard-model";
+import { usePortalTripWizardModel } from "./state/use-portal-trip-wizard-model";
 
 export function PortalTripWizard({
   defaultOwnerDisplayName,

@@ -7,11 +7,11 @@ describe("Sagittarius account architecture contracts", () => {
   it("keeps portal trip wizard model logic out of the render component", () => {
     const portalTripWizard = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"), "utf8");
     const portalTripWizardMainPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx"), "utf8");
-    const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts"), "utf8");
-    const portalTripWizardMobileState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-mobile-state.ts"), "utf8");
-    const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-summary.ts"), "utf8");
+    const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-model.ts"), "utf8");
+    const portalTripWizardMobileState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-mobile-state.ts"), "utf8");
+    const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-summary.ts"), "utf8");
 
-    expect(portalTripWizard).toContain("./use-portal-trip-wizard-model");
+    expect(portalTripWizard).toContain("./state/use-portal-trip-wizard-model");
     expect(portalTripWizard).toContain("./portal-trip-wizard-main-panel");
     expect(portalTripWizard).not.toContain("TripWizardDestinationStep");
     expect(portalTripWizard).not.toContain("const [countryQuery");

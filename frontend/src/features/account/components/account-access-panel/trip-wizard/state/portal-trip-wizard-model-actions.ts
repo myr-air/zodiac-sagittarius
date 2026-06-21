@@ -1,5 +1,5 @@
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { buildPortalTripWizardCredentials } from "./portal-trip-wizard-credentials";
+import { buildPortalTripWizardCredentials } from "../portal-trip-wizard-credentials";
 
 interface ApplyPortalTripWizardCredentialsOptions {
   accessSalt: string;

@@ -164,19 +164,23 @@ export const workspaceBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.ts",
   portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
   portalTripWizardMainPanel: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx",
-  portalTripWizardModel: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-model.ts",
-  portalTripWizardModelActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-model-actions.ts",
+  portalTripWizardModel:
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-model.ts",
+  portalTripWizardModelActions:
+    "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-model-actions.ts",
   portalTripWizardDestinationState:
-    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-destination-state.ts",
-  portalTripWizardMobileState: "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-mobile-state.ts",
-  portalTripWizardDerivedState: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-derived-state.ts",
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-destination-state.ts",
+  portalTripWizardMobileState:
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-mobile-state.ts",
+  portalTripWizardDerivedState:
+    "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-derived-state.ts",
   portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx",
   portalTripWizardDateActions:
-    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-date-actions.ts",
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-date-actions.ts",
   portalTripWizardAccessActions:
-    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-access-actions.ts",
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-access-actions.ts",
   portalTripWizardCredentialSync:
-    "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-credential-sync.ts",
+    "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-credential-sync.ts",
   accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
   emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
   dateTimePickers: "src/shared/components/date-time-pickers/DateTimePickers.tsx",

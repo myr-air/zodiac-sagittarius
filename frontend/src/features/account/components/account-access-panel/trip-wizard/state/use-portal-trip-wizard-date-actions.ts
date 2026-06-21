@@ -6,7 +6,7 @@ import {
   applyTripStartDate,
   nextTripWizardDateSelectionStep,
   type TripWizardDateSelectionStep,
-} from "./model/account-trip-dates";
+} from "../model/account-trip-dates";
 
 export function usePortalTripWizardDateActions({
   onChange,

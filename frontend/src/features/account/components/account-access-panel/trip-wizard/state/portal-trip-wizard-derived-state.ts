@@ -4,19 +4,19 @@ import {
   formatPreviewTravelDate,
   routeCalendarDays,
   tripNightCount,
-} from "./model/account-trip-dates";
+} from "../model/account-trip-dates";
 import {
   destinationRouteCode,
   tripDestinationCards,
-} from "./model/account-trip-destinations";
+} from "../model/account-trip-destinations";
 import {
   uniqueList,
-} from "./model/account-trip-form";
-import { tripStepComplete, type TripWizardStepId } from "./model/account-trip-wizard-steps";
+} from "../model/account-trip-form";
+import { tripStepComplete, type TripWizardStepId } from "../model/account-trip-wizard-steps";
 import {
   buildPortalTripWizardCredentials,
   isValidPortalTripWizardJoinPassword,
-} from "./portal-trip-wizard-credentials";
+} from "../portal-trip-wizard-credentials";
 
 interface BuildPortalTripWizardDerivedStateInput {
   accessSalt: string;
