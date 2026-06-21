@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canTripRole } from "./auth";
+import { canTripRole } from "../../auth";
 
 describe("trip participant capabilities", () => {
   it("maps roles to trip capabilities", () => {

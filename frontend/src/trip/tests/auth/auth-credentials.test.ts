@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../seed";
 import {
   claimTripParticipant,
   createTripParticipantSession,
   verifyTripCredentials,
   verifyTripParticipantPassword,
-} from "./auth";
+} from "../../auth";
 
 describe("trip participant credentials", () => {
   it("accepts the seed trip credentials before participant selection", () => {

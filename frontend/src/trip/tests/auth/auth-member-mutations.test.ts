@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
-import { getTripFixtureMemberById } from "./trip-fixtures";
+import { seedTrip } from "../../seed";
+import { getTripFixtureMemberById } from "../../trip-fixtures";
 import {
   appendTripParticipant,
   claimTripParticipant,
@@ -13,7 +13,7 @@ import {
   setTripParticipantPassword,
   updateTripParticipantRole,
   verifyTripParticipantPassword,
-} from "./auth";
+} from "../../auth";
 
 describe("trip participant member mutations", () => {
   it("ignores weak, duplicate, owner, and disabled participant mutations", () => {

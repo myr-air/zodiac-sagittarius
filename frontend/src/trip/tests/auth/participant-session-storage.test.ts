@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installBrowserStorage } from "@/src/testing/browser-storage";
-import { tripParticipantSessionStorageKey } from "./auth";
+import { tripParticipantSessionStorageKey } from "../../auth";
 import {
   clearParticipantSession,
   isLocalParticipantSession,
   loadPersistedParticipantSession,
   persistParticipantSession,
-} from "./participant-session-storage";
-import { tripFixture } from "./trip-fixtures";
-import type { TripParticipantSession } from "./types";
+} from "../../participant-session-storage";
+import { tripFixture } from "../../trip-fixtures";
+import type { TripParticipantSession } from "../../types";
 
 const session: TripParticipantSession = {
   createdAt: "2026-06-16T00:00:00.000Z",

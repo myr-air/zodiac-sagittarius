@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "./seed";
+import { seedTrip } from "../../seed";
 import {
   createTripParticipantSession,
   findSessionMember,
   setTripParticipantAccessStatus,
-} from "./auth";
+} from "../../auth";
 
 describe("trip participant sessions", () => {
   it("rejects expired participant sessions", () => {

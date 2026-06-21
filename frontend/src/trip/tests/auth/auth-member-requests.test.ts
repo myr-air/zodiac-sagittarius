@@ -5,7 +5,7 @@ import {
   buildPatchMemberPasswordRequest,
   buildPatchMemberRoleRequest,
   buildUpdatePresenceRequest,
-} from "./auth";
+} from "../../auth";
 
 describe("trip participant member API requests", () => {
   it("builds member API create and patch requests", () => {
