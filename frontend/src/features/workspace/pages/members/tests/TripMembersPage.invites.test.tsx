@@ -2,7 +2,7 @@ import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { renderMembersPage } from "./TripMembersPage.test-support";
+import { renderMembersPage } from "../testing/support/render-members-page";
 
 describe("TripMembersPage invites", () => {
   afterEach(() => {

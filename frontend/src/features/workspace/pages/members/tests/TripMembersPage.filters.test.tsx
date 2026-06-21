@@ -1,7 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { renderMembersPage } from "./TripMembersPage.test-support";
+import { renderMembersPage } from "../testing/support/render-members-page";
 
 describe("TripMembersPage filters", () => {
   it("resets filters and ignores empty member submissions", async () => {

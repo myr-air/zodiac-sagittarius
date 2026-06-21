@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { renderMembersPage } from "./TripMembersPage.test-support";
+import { renderMembersPage } from "../testing/support/render-members-page";
 
 describe("TripMembersPage ownership", () => {
   it("lets owners transfer ownership only to active account-linked members", async () => {
