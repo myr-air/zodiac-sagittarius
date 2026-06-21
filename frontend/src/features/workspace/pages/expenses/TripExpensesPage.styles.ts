@@ -1,4 +1,12 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
+import {
+  workspaceDialogActionsClassName,
+  workspaceDialogBackdropClassName,
+  workspaceDialogFormClassName,
+  workspaceDialogGridClassName,
+  workspaceDialogHeaderClassName,
+  workspaceDialogPanelClassName,
+} from "@/src/shared/components/workspace-dialog";
 
 export const expensesPageClassName = "expenses-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
 export const expensesSummaryClassName = "expenses-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
@@ -31,11 +39,11 @@ export const avatarClassName = "inline-grid size-[34px] place-items-center round
 export const categoryBadgeClassName = "inline-flex min-h-6 w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
 export const categoryDotClassName = "inline-block size-2 rounded-full";
 export const ledgerAmountClassName = "inline-flex min-h-8 items-center rounded-(--radius-sm) bg-(--color-primary-soft) px-2.5 text-[13px] font-black tabular-nums text-(--color-primary-strong)";
-export const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-export const dialogClassName = "expense-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
-export const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-export const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-export const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
+export const dialogBackdropClassName = workspaceDialogBackdropClassName;
+export const dialogClassName = `expense-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[760px] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)] ${workspaceDialogPanelClassName}`;
+export const dialogHeaderClassName = workspaceDialogHeaderClassName;
+export const dialogFormClassName = workspaceDialogFormClassName;
+export const dialogGridClassName = workspaceDialogGridClassName;
 export const splitGridClassName = "grid grid-cols-2 gap-2 max-[767px]:grid-cols-1";
 export const itemizedListClassName = "grid gap-2";
 export const itemizedLineClassName = "grid gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
@@ -43,6 +51,6 @@ export const participantChecksClassName = "grid grid-cols-3 gap-2 max-[767px]:gr
 export const commentsClassName = "grid gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2.5";
 export const commentRowClassName = "grid gap-0.5 rounded-(--radius-sm) bg-(--color-surface) px-2.5 py-2 text-xs [&_strong]:text-(--color-text) [&_span]:text-(--color-text-muted)";
 export const warningClassName = "rounded-(--radius-sm) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs font-bold text-(--color-warning-strong)";
-export const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
+export const dialogActionsClassName = workspaceDialogActionsClassName;
 export const scopeAuditListClassName = "grid gap-2";
 export const scopeAuditRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";

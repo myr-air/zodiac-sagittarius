@@ -1,4 +1,13 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
+import {
+  workspaceDeleteDialogClassName,
+  workspaceDialogActionsClassName,
+  workspaceDialogBackdropClassName,
+  workspaceDialogFormClassName,
+  workspaceDialogGridClassName,
+  workspaceDialogHeaderClassName,
+  workspaceDialogPanelClassName,
+} from "@/src/shared/components/workspace-dialog";
 
 export const pageClassName = "trip-photos-page grid grid-rows-[auto_auto_minmax(0,1fr)] gap-3 max-[1199px]:gap-0";
 export const summaryClassName = "photos-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
@@ -14,11 +23,11 @@ export const selectedAlbumClassName = "border-(--color-primary-border) bg-(--col
 export const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) bg-cover bg-center";
 export const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:static max-[1199px]:max-h-none";
 export const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
-export const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-export const dialogClassName = "photos-dialog grid max-h-[min(720px,calc(100vh_-_32px))] w-full max-w-[720px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
-export const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-export const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-export const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
+export const dialogBackdropClassName = workspaceDialogBackdropClassName;
+export const dialogClassName = `photos-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[720px] shadow-[0_14px_34px_rgb(15_23_42_/_0.16)] ${workspaceDialogPanelClassName}`;
+export const dialogHeaderClassName = workspaceDialogHeaderClassName;
+export const dialogFormClassName = workspaceDialogFormClassName;
+export const dialogGridClassName = workspaceDialogGridClassName;
 export const fieldClassName = workspaceFieldClassName;
-export const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
-export const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
+export const dialogActionsClassName = workspaceDialogActionsClassName;
+export const deleteDialogClassName = workspaceDeleteDialogClassName;

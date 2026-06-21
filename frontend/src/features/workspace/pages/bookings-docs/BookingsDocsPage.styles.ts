@@ -1,4 +1,13 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
+import {
+  workspaceDeleteDialogClassName,
+  workspaceDialogActionsClassName,
+  workspaceDialogBackdropClassName,
+  workspaceDialogFormClassName,
+  workspaceDialogGridClassName,
+  workspaceDialogHeaderClassName,
+  workspaceDialogPanelClassName,
+} from "@/src/shared/components/workspace-dialog";
 
 export const pageClassName = "bookings-docs-page max-[767px]:h-[calc(100dvh-48px)] max-[767px]:min-h-[calc(100dvh-48px)] max-[767px]:grid-rows-[minmax(0,1fr)] max-[767px]:overflow-hidden";
 export const headerAsideClassName = "booking-docs-header-actions flex min-w-0 items-center justify-end gap-2";
@@ -30,10 +39,10 @@ export const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[ca
 export const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
 export const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
 export const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
-export const dialogBackdropClassName = "modal-backdrop fixed inset-0 z-20 grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-4";
-export const dialogClassName = "booking-dialog grid max-h-[min(760px,calc(100vh_-_32px))] w-full max-w-[760px] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
-export const dialogHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-(--color-border) px-4 py-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-extrabold";
-export const dialogFormClassName = "grid min-h-0 gap-3 overflow-y-auto p-4";
-export const dialogGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
-export const dialogActionsClassName = "flex flex-wrap items-center justify-end gap-2 border-t border-(--color-border) pt-3";
-export const deleteDialogClassName = "delete-confirm-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-danger-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.14)]";
+export const dialogBackdropClassName = workspaceDialogBackdropClassName;
+export const dialogClassName = `booking-dialog max-h-[min(760px,calc(100vh_-_32px))] max-w-[760px] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)] ${workspaceDialogPanelClassName}`;
+export const dialogHeaderClassName = workspaceDialogHeaderClassName;
+export const dialogFormClassName = workspaceDialogFormClassName;
+export const dialogGridClassName = workspaceDialogGridClassName;
+export const dialogActionsClassName = workspaceDialogActionsClassName;
+export const deleteDialogClassName = workspaceDeleteDialogClassName;
