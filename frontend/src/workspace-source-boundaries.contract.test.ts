@@ -11,6 +11,7 @@ describe("Sagittarius workspace source boundaries", () => {
     const {
       sagaCore,
       workspaceContextsHook,
+      workspaceContextsInputs,
       sagittariusAccessGate,
       workspaceAppFrame,
       workspaceMainShell,
@@ -41,6 +42,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceContextsHook).toContain("useWorkspaceSetupContext");
     expect(workspaceContextsHook).toContain("useWorkspacePlanningContext");
     expect(workspaceContextsHook).toContain("useWorkspaceCommands");
+    expect(workspaceContextsHook).toContain("buildWorkspacePlanningContextParams");
+    expect(workspaceContextsHook).toContain("buildWorkspaceCommandsParams");
+    expect(workspaceContextsHook).not.toContain("nextClientMutationId");
+    expect(workspaceContextsInputs).toContain("nextClientMutationId");
+    expect(workspaceContextsInputs).toContain("buildWorkspacePlanningContextParams");
+    expect(workspaceContextsInputs).toContain("buildWorkspaceCommandsParams");
     expect(workspaceContextsHook).not.toContain("WorkspaceAppFrame");
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
