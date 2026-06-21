@@ -3,7 +3,7 @@ import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
 import { Icon, type IconName } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { InlineOptionPickerMenu } from "./InlineOptionPickerMenu";
-import { inlineOptionPickerMenuPosition } from "./inline-option-picker-position";
+import { inlineOptionPickerMenuPosition } from "./model/inline-option-picker-position";
 
 export interface InlineOptionPickerOption {
   icon?: IconName;

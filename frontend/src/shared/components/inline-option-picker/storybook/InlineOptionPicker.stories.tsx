@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import type { InlineOptionPickerOption } from "./InlineOptionPicker";
-import { InlineOptionPicker } from "./InlineOptionPicker";
+import type { InlineOptionPickerOption } from "../InlineOptionPicker";
+import { InlineOptionPicker } from "../InlineOptionPicker";
 import type { ComponentProps } from "react";
 
 const sampleOptions: InlineOptionPickerOption[] = [

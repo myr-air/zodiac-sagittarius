@@ -33,16 +33,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps inline option picker menu rendering split from trigger state", () => {
     const picker = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPicker.tsx");
     const pickerMenu = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx");
-    const pickerPosition = readItineraryArchitectureSource("src/shared/components/inline-option-picker/inline-option-picker-position.ts");
+    const pickerPosition = readItineraryArchitectureSource("src/shared/components/inline-option-picker/model/inline-option-picker-position.ts");
 
     expect(picker).toContain("./InlineOptionPickerMenu");
-    expect(picker).toContain("./inline-option-picker-position");
+    expect(picker).toContain("./model/inline-option-picker-position");
     expect(picker).not.toContain("createPortal");
     expect(picker).not.toContain("floatingOptionMenuClassName");
     expect(picker).not.toContain("window.innerHeight - rect.bottom");
     expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
     expect(pickerMenu).toContain("createPortal");
-    expect(pickerMenu).toContain("./inline-option-picker-position");
+    expect(pickerMenu).toContain("./model/inline-option-picker-position");
     expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
     expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
     expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");

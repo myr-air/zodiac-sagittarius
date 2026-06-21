@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import type { InlineOptionPickerOption } from "./InlineOptionPicker";
-import { inlineOptionPickerSideMenuPosition } from "./inline-option-picker-position";
+import { inlineOptionPickerSideMenuPosition } from "./model/inline-option-picker-position";
 
 const floatingOptionMenuClassName =
   "inline-option-picker-menu fixed z-[15] grid max-h-[min(260px,calc(100vh_-_24px))] overflow-auto rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-1 shadow-[0_10px_22px_rgb(15_23_42_/_0.12)]";
