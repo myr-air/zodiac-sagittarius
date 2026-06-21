@@ -4,7 +4,7 @@ import { getTripFixtureMember } from "@/src/trip/trip-fixtures";
 import {
   renderContextRail,
   selectedContextRailItem,
-} from "../testing/ContextRail.test-support";
+} from "../testing/support/context-rail-render";
 
 describe("ContextRail notes", () => {
   it("creates notes and ignores empty submissions", () => {

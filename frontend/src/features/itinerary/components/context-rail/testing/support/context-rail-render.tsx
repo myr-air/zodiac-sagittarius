@@ -2,8 +2,9 @@ import { vi } from "vitest";
 import { ContextRail } from "@/src/features/itinerary/components";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/trip-fixtures";
-export { selectedContextRailItem } from "./ContextRail.test-fixtures";
-import { selectedContextRailItem } from "./ContextRail.test-fixtures";
+import { selectedContextRailItem } from "../fixtures/context-rail-fixtures";
+
+export { selectedContextRailItem };
 
 export function renderContextRail(
   overrides: Partial<Parameters<typeof ContextRail>[0]> = {},

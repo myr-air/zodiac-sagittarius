@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/trip-fixtures";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
-import { selectedContextRailItem } from "../testing/ContextRail.test-fixtures";
+import { selectedContextRailItem } from "../testing/fixtures/context-rail-fixtures";
 import { buildContextRailSelection } from "../context-rail.state";
 
 describe("buildContextRailSelection", () => {
