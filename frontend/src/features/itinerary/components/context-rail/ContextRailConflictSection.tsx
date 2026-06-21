@@ -4,9 +4,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   conflictRowClassName,
   conflictSummaryClassName,
-  detailHeadingClassName,
-  detailSectionClassName,
 } from "./context-rail.styles";
+import { ContextRailDetailSection } from "./ContextRailDetailSection";
 
 interface ContextRailConflictSectionProps {
   canReviewSuggestions: boolean;
@@ -18,13 +17,11 @@ export function ContextRailConflictSection({
   const { t } = useI18n();
 
   return (
-    <section
-      className={`${detailSectionClassName} conflict-section`}
-      aria-label={t.contextRail.conflicts.label}
+    <ContextRailDetailSection
+      className="conflict-section"
+      ariaLabel={t.contextRail.conflicts.label}
+      title={t.contextRail.conflicts.title}
     >
-      <h3 className={detailHeadingClassName}>
-        {t.contextRail.conflicts.title}
-      </h3>
       <div className={conflictRowClassName}>
         <span className={conflictSummaryClassName}>
           <Icon name="alertCircle" /> {t.contextRail.conflicts.peakWarning}
@@ -38,6 +35,6 @@ export function ContextRailConflictSection({
           {t.contextRail.conflicts.autoFix}
         </Button>
       </div>
-    </section>
+    </ContextRailDetailSection>
   );
 }

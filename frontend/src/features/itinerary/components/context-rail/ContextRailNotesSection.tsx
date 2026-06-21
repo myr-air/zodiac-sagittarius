@@ -1,4 +1,11 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
+import type {
+  ItineraryItem,
+  Member,
+  StopNote,
+  Trip,
+} from "@/src/trip/types";
+import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { ContextRailNoteComposer } from "./ContextRailNoteComposer";
 import { ContextRailNoteItem } from "./ContextRailNoteItem";
 import { useContextRailNoteForm } from "./use-context-rail-note-form";
@@ -6,15 +13,7 @@ import type {
   ContextRailCreateNoteInput,
   ContextRailUpdateNoteInput,
 } from "./context-rail.types";
-import type {
-  ItineraryItem,
-  Member,
-  StopNote,
-  Trip,
-} from "@/src/trip/types";
 import {
-  detailHeadingClassName,
-  detailSectionClassName,
   emptyWarningClassName,
   moduleListClassName,
 } from "./context-rail.styles";
@@ -60,11 +59,11 @@ export function ContextRailNotesSection({
   });
 
   return (
-    <section
-      className={`${detailSectionClassName} stop-notes-module`}
-      aria-label={t.contextRail.notes.label}
+    <ContextRailDetailSection
+      className="stop-notes-module"
+      ariaLabel={t.contextRail.notes.label}
+      title={t.contextRail.notes.title}
     >
-      <h3 className={detailHeadingClassName}>{t.contextRail.notes.title}</h3>
       <div className={`stop-note-list ${moduleListClassName}`}>
         {notes.map((note) => {
           const author = tripMembers.find((member) => member.id === note.authorId);
@@ -96,6 +95,6 @@ export function ContextRailNotesSection({
         onNoteBodyChange={setNoteBody}
         onSubmitNote={submitNote}
       />
-    </section>
+    </ContextRailDetailSection>
   );
 }

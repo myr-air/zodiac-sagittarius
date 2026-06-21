@@ -10,12 +10,11 @@ import {
   bookingTaskClassName,
   bookingTaskLabelClassName,
   bookingTaskMetaClassName,
-  detailHeadingClassName,
-  detailSectionClassName,
   emptyWarningClassName,
   moduleListClassName,
 } from "./context-rail.styles";
 import { ContextRailBookingDocItem } from "./ContextRailBookingDocItem";
+import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { taskKindLabel } from "./context-rail.utils";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
@@ -44,11 +43,11 @@ export function ContextRailBookingSection({
   const { t } = useI18n();
 
   return (
-    <section
-      className={`${detailSectionClassName} stop-booking-module`}
-      aria-label={t.contextRail.booking.label}
+    <ContextRailDetailSection
+      className="stop-booking-module"
+      ariaLabel={t.contextRail.booking.label}
+      title={t.contextRail.booking.title}
     >
-      <h3 className={detailHeadingClassName}>{t.contextRail.booking.title}</h3>
       <div className={`booking-advisory-list ${moduleListClassName}`}>
         {advisories.map((advisory) => (
           <span
@@ -104,6 +103,6 @@ export function ContextRailBookingSection({
           </li>
         ) : null}
       </ul>
-    </section>
+    </ContextRailDetailSection>
   );
 }

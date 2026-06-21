@@ -5,10 +5,9 @@ import {
   expenseFormClassName,
   expenseGridClassName,
   detailButtonClassName,
-  detailHeadingClassName,
-  detailSectionClassName,
   moduleListClassName,
 } from "./context-rail.styles";
+import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { ContextRailExpenseItem } from "./ContextRailExpenseItem";
 import {
   contextRailExpenseCategoryOptions,
@@ -63,11 +62,11 @@ export function ContextRailExpensesSection({
   });
 
   return (
-    <section
-      className={`${detailSectionClassName} expense-module`}
-      aria-label={t.contextRail.expenses.label}
+    <ContextRailDetailSection
+      className="expense-module"
+      ariaLabel={t.contextRail.expenses.label}
+      title={t.contextRail.expenses.title}
     >
-      <h3 className={detailHeadingClassName}>{t.contextRail.expenses.title}</h3>
       <div className={expenseGridClassName}>
         <span>{t.contextRail.expenses.perPerson}</span>
         <strong>{perPerson}</strong>
@@ -151,6 +150,6 @@ export function ContextRailExpensesSection({
           {editingExpenseId ? t.common.actions.save : t.contextRail.expenses.edit}
         </Button>
       </form>
-    </section>
+    </ContextRailDetailSection>
   );
 }
