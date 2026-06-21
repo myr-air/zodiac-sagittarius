@@ -6,17 +6,17 @@ import type {
 import type { Messages } from "@/src/i18n/messages";
 import {
   clearAccountPortalDataCache,
-} from "./portal/account-portal-data-cache";
+} from "../portal/account-portal-data-cache";
 import {
   isAccountEntryMode,
   type AccountAccessMode,
   type AccountPanelMode,
-} from "./account-access-modes";
+} from "../model/account-access-modes";
 import {
   localizeAccessError,
   type AuthFlow,
-} from "./auth";
-import { useAccountPortalData } from "./portal";
+} from "../auth";
+import { useAccountPortalData } from "../portal";
 
 interface UseAccountAccessPanelStateArgs {
   accessMessages: Messages["access"]["messages"];

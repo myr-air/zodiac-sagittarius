@@ -54,9 +54,9 @@ describe("Sagittarius account architecture contracts", () => {
   it("keeps account access panel state split from render composition", () => {
     const accountPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"), "utf8");
     const accountPanelContent = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx"), "utf8");
-    const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/use-account-access-panel-state.ts"), "utf8");
+    const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/state/use-account-access-panel-state.ts"), "utf8");
 
-    expect(accountPanel).toContain("./use-account-access-panel-state");
+    expect(accountPanel).toContain("./state/use-account-access-panel-state");
     expect(accountPanel).toContain("./composition/account-access-panel-content");
     expect(accountPanel).not.toContain("useState");
     expect(accountPanel).not.toContain("useEffect");

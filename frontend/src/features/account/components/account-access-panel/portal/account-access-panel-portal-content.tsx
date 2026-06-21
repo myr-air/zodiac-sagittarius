@@ -10,7 +10,7 @@ import type { PortalSection } from "@/src/shared/portal";
 import { AccountPortalDashboard } from "./account-portal-dashboard";
 import { accountPortalDashboardClassNames } from "./account-portal-dashboard-classnames";
 import { buildAccountPortalDashboardHandlers } from "./account-access-panel-portal-handlers";
-import type { UseAccountAccessPanelState } from "../use-account-access-panel-state";
+import type { UseAccountAccessPanelState } from "../state/use-account-access-panel-state";
 
 interface AccountAccessPanelPortalContentProps {
   accountClient: AccountApiClient;

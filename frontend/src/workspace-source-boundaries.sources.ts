@@ -151,7 +151,7 @@ export const workspaceBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/portal/account-access-panel-portal-handlers.ts",
   accountAccessPortalContent:
     "src/features/account/components/account-access-panel/portal/account-access-panel-portal-content.tsx",
-  accountAccessModes: "src/features/account/components/account-access-panel/account-access-modes.ts",
+  accountAccessModes: "src/features/account/components/account-access-panel/model/account-access-modes.ts",
   accountPortalNavItems: "src/features/account/components/account-access-panel/portal/account-portal-nav-items.ts",
   accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
   accountPortalDashboardClassNames:

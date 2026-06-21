@@ -11,7 +11,7 @@ import type { PortalSection } from "@/src/shared/portal";
 import {
   mainLabel,
   type AccountAccessMode,
-} from "./account-access-modes";
+} from "./model/account-access-modes";
 import { AccountAccessChrome } from "./composition/account-access-panel-chrome";
 import {
   StatusMessage,
@@ -24,7 +24,7 @@ import {
   accountAccessPanelPageClassName,
   accountAccessPanelShellClassName,
 } from "./layout/account-access-panel-shell-classes";
-import { useAccountAccessPanelState } from "./use-account-access-panel-state";
+import { useAccountAccessPanelState } from "./state/use-account-access-panel-state";
 
 interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
