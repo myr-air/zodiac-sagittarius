@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
 import {
+  completeItineraryPathOptions,
   deriveItineraryPathOptions,
   itineraryPathOptionsForDay,
 } from "../../../itinerary-paths";
@@ -50,6 +51,27 @@ describe("itinerary path options", () => {
     expect(deriveItineraryPathOptions([planAItem])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
       { id: pathIdPlanA, name: pathNamePlanA, scope: "day", day: "2026-06-19" },
+    ]);
+  });
+
+  it("completes existing path options from item paths without rebuilding labels in UI code", () => {
+    const customItem = {
+      ...seedTrip.itineraryItems[0],
+      day: "2026-06-20",
+      pathId: "path-custom",
+      pathName: "Custom",
+      pathRole: "alternative" as const,
+    };
+
+    expect(
+      completeItineraryPathOptions(
+        [{ id: "path-a", name: "Plan A", scope: "trip" }],
+        [customItem],
+      ),
+    ).toEqual([
+      { id: "main", name: "Main", scope: "trip" },
+      { id: "path-a", name: "Plan A", scope: "trip" },
+      { id: "path-custom", name: "Custom", scope: "trip" },
     ]);
   });
 

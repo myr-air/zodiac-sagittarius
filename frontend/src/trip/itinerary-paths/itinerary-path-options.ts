@@ -1,5 +1,6 @@
 import {
   humanizePathId,
+  itineraryItemPathId,
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
@@ -16,6 +17,21 @@ export function deriveItineraryPathOptions(
   items: ItineraryItem[],
   paths: ItineraryPath[] = [],
 ): ItineraryPathOption[] {
+  return completeItineraryPathOptions(
+    paths.map((path) => ({
+      id: path.id,
+      name: path.name,
+      scope: path.scope,
+      day: path.day,
+    })),
+    items,
+  );
+}
+
+export function completeItineraryPathOptions(
+  pathOptions: ItineraryPathOption[],
+  items: ItineraryItem[],
+): ItineraryPathOption[] {
   const options = new Map<string, ItineraryPathOption>();
   options.set(mainItineraryPathId, {
     id: mainItineraryPathId,
@@ -23,26 +39,17 @@ export function deriveItineraryPathOptions(
     scope: "trip",
   });
 
-  for (const path of paths) {
-    options.set(path.id, {
-      id: path.id,
-      name: path.name,
-      scope: path.scope,
-      day: path.day,
-    });
+  for (const option of pathOptions) {
+    options.set(option.id, option);
   }
 
   for (const item of items) {
-    if (
-      item.pathRole !== "alternative" ||
-      !item.pathId ||
-      options.has(item.pathId)
-    )
-      continue;
-    const generatedDay = generatedDayFromPathId(item.pathId);
-    options.set(item.pathId, {
-      id: item.pathId,
-      name: item.pathName || humanizePathId(item.pathId),
+    const pathId = itineraryItemPathId(item);
+    if (options.has(pathId)) continue;
+    const generatedDay = generatedDayFromPathId(pathId);
+    options.set(pathId, {
+      id: pathId,
+      name: item.pathName || (pathId === mainItineraryPathId ? mainItineraryPathName : humanizePathId(pathId)),
       scope: generatedDay ? "day" : "trip",
       day: generatedDay || undefined,
     });

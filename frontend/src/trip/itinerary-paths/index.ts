@@ -17,6 +17,7 @@ export {
 } from "./itinerary-path-identifiers";
 export {
   type ItineraryPathOption,
+  completeItineraryPathOptions,
   deriveItineraryPathOptions,
   itineraryPathOptionsForDay,
 } from "./itinerary-path-options";

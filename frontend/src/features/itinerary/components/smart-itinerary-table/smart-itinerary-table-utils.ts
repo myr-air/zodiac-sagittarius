@@ -5,10 +5,10 @@ import type {
   PlanStatus,
 } from "@/src/trip/types";
 import type { ItineraryDayGroup } from "@/src/trip/itinerary-core";
-import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import {
+  completeItineraryPathOptions,
   mainItineraryPathId,
-  mainItineraryPathName,
+  type ItineraryPathOption,
 } from "@/src/trip/itinerary-paths";
 
 export function mergeTripDayGroups(
@@ -128,25 +128,10 @@ export function dedupePathOptions(
   pathOptions: ItineraryPathOption[],
   items: ItineraryItem[],
 ): { id: string; name: string }[] {
-  const optionsById = new Map<string, { id: string; name: string }>();
-  pathOptions.forEach((option) => {
-    optionsById.set(option.id, { id: option.id, name: option.name });
-  });
-  items.forEach((item) => {
-    const pathId = item.pathRole === "main"
-      ? item.pathId ?? mainItineraryPathId
-      : item.pathId ?? item.id;
-    if (!optionsById.has(pathId)) {
-      optionsById.set(pathId, {
-        id: pathId,
-        name: item.pathName ?? (pathId === mainItineraryPathId ? mainItineraryPathName : pathId),
-      });
-    }
-  });
-  if (!optionsById.has(mainItineraryPathId)) {
-    optionsById.set(mainItineraryPathId, { id: mainItineraryPathId, name: mainItineraryPathName });
-  }
-  return Array.from(optionsById.values());
+  return completeItineraryPathOptions(pathOptions, items).map(({ id, name }) => ({
+    id,
+    name,
+  }));
 }
 
 export function formatSelectedPlanLabel(
