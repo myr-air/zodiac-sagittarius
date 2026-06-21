@@ -8,6 +8,7 @@ import {
   planABAlternativeItemsBase,
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
+  buildOverflowStoryItems,
   withStoryPrefix,
 } from "./support/itinerary-story-fixtures";
 
@@ -132,11 +133,9 @@ export const hierarchyWarningItems: ItineraryItem[] = [
 ];
 
 export function buildTemplateOverflowItems(): ItineraryItem[] {
-  return stressPathItems.map((item, index) => ({
-    ...item,
-    id: `overflow-${item.id}`,
-    activity: `${item.activity} with long operational copy for table overflow validation ${index + 1}`,
-    place: `${item.place} · gate notes, booking reference, and meet-up details`,
-    transport: "Airport Express transfer with luggage coordination",
-  }));
+  return buildOverflowStoryItems(stressPathItems, {
+    activityDetail: "with long operational copy for table overflow validation",
+    idPrefix: "overflow",
+    placeDetail: " · gate notes, booking reference, and meet-up details",
+  });
 }

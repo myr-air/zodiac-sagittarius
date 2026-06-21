@@ -10,6 +10,7 @@ import {
   requestedPlanExampleItemsBase,
   stressPathItemsBase,
   windowOnlyDurationItemBase,
+  buildOverflowStoryItems,
   withStoryPrefix,
 } from "./support/itinerary-story-fixtures";
 
@@ -69,11 +70,9 @@ export const pageOverlapConflictItems: ItineraryItem[] = [
 ];
 
 export function buildPageOverflowItems(): ItineraryItem[] {
-  return pageStressPathItems.map((item, index) => ({
-    ...item,
-    id: `page-overflow-${item.id}`,
-    activity: `${item.activity} with long operational copy for page-level overflow validation ${index + 1}`,
-    place: `${item.place} - gate notes, booking reference, and meet-up details`,
-    transport: "Airport Express transfer with luggage coordination",
-  }));
+  return buildOverflowStoryItems(pageStressPathItems, {
+    activityDetail: "with long operational copy for page-level overflow validation",
+    idPrefix: "page-overflow",
+    placeDetail: " - gate notes, booking reference, and meet-up details",
+  });
 }

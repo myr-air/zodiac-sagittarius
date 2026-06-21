@@ -75,3 +75,20 @@ export function withStoryPrefix<T extends { id: string; pathGroupId?: string }>(
     pathGroupId: item.pathGroupId ? `${prefix}-${item.pathGroupId}` : item.pathGroupId,
   }));
 }
+
+export function buildOverflowStoryItems(
+  items: ItineraryItem[],
+  options: {
+    activityDetail: string;
+    idPrefix: string;
+    placeDetail: string;
+  },
+): ItineraryItem[] {
+  return items.map((item, index) => ({
+    ...item,
+    id: `${options.idPrefix}-${item.id}`,
+    activity: `${item.activity} ${options.activityDetail} ${index + 1}`,
+    place: `${item.place}${options.placeDetail}`,
+    transport: "Airport Express transfer with luggage coordination",
+  }));
+}

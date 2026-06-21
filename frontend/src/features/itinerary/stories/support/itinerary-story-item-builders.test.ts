@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildOverflowStoryItems,
   buildItineraryStoryItem,
   buildItineraryStoryPathItems,
   withStoryPrefix,
@@ -52,5 +53,35 @@ describe("itinerary story item builders", () => {
       { id: "story-item", pathGroupId: "story-group" },
     ]);
     expect(source).toEqual([{ id: "item", pathGroupId: "group" }]);
+  });
+
+  it("builds overflow copies without mutating source items", () => {
+    const source = [
+      buildItineraryStoryItem(0, {
+        id: "source-item",
+        activity: "Boarding",
+        place: "Airport",
+      }),
+    ];
+
+    expect(
+      buildOverflowStoryItems(source, {
+        activityDetail: "with extended copy",
+        idPrefix: "overflow",
+        placeDetail: " - details",
+      }),
+    ).toEqual([
+      expect.objectContaining({
+        id: "overflow-source-item",
+        activity: "Boarding with extended copy 1",
+        place: "Airport - details",
+        transport: "Airport Express transfer with luggage coordination",
+      }),
+    ]);
+    expect(source[0]).toMatchObject({
+      id: "source-item",
+      activity: "Boarding",
+      place: "Airport",
+    });
   });
 });
