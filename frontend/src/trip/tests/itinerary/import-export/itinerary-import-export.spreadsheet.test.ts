@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseItineraryImportDocument } from "./itinerary-import-export";
+import { parseItineraryImportDocument } from "../../../itinerary-import-export";
 
 describe("itinerary import/export spreadsheet rows", () => {
   it("imports real organizer CSV rows with dates, maps, open times, and booking hints", () => {

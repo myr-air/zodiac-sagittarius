@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildItineraryExport,
   parseItineraryImportDocument,
-} from "./itinerary-import-export";
-import { tripFixture } from "./trip-fixtures";
+} from "../../../itinerary-import-export";
+import { tripFixture } from "../../../trip-fixtures";
 
 describe("itinerary import/export source records", () => {
   it("preserves actual expense and paid booking records as source references without remapping ids", () => {

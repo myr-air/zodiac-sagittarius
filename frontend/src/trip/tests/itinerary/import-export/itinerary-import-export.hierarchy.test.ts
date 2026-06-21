@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildItineraryExport,
   parseItineraryImport,
-} from "./itinerary-import-export";
-import { tripFixture } from "./trip-fixtures";
+} from "../../../itinerary-import-export";
+import { tripFixture } from "../../../trip-fixtures";
 
 describe("itinerary import/export hierarchy", () => {
   it("preserves V1 hierarchy and flexible item fields in export and import", () => {

@@ -3,9 +3,9 @@ import {
   buildItineraryExport,
   parseItineraryImport,
   parseItineraryImportDocument,
-} from "./itinerary-import-export";
-import { tripFixture } from "./trip-fixtures";
-import { pathIdRain } from "./testing/itinerary-path-fixtures";
+} from "../../../itinerary-import-export";
+import { tripFixture } from "../../../trip-fixtures";
+import { pathIdRain } from "../../../testing/itinerary-path-fixtures";
 
 describe("itinerary import/export JSON", () => {
   it("preserves activity branch group fields in export and import", () => {

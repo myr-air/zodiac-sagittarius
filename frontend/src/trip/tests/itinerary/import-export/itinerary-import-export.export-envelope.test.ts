@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildItineraryExport } from "./itinerary-import-export";
-import { tripFixture } from "./trip-fixtures";
+import { buildItineraryExport } from "../../../itinerary-import-export";
+import { tripFixture } from "../../../trip-fixtures";
 
 describe("itinerary import/export envelope", () => {
   it("exports active itinerary items in a stable JSON v1 envelope", () => {
