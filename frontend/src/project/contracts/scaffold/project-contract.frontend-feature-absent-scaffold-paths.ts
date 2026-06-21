@@ -86,6 +86,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/activity-path-graph/activity-path-graph.graph.test.ts",
   "src/features/itinerary/components/activity-path-graph/activity-path-graph.layout.test.ts",
   "src/features/itinerary/components/activity-path-graph/activity-path-graph.test-fixtures.ts",
+  "src/features/itinerary/components/activity-path-graph/index.ts",
   "src/features/itinerary/components/activity-path-graph/testing/activity-path-graph.test-fixtures.ts",
   "src/features/workspace/pages/members/MembersPage.stories.tsx",
   "src/features/workspace/pages/members/MembersTemplate.stories.tsx",

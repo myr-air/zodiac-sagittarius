@@ -1,6 +1,6 @@
 import { formatDayLabel } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
-import { ActivityPathGraphDay } from "../activity-path-graph";
+import { ActivityPathGraphDay } from "../activity-path-graph/ActivityPathGraphDay";
 import { groupChildItemsByParent, groupTopLevelItems } from "./smart-itinerary-table-utils";
 import {
   addStopInlineButtonClassName,

@@ -178,7 +178,6 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/activity-path-graph/tests/activity-path-graph.edge-routing.test.ts",
   "src/features/itinerary/components/activity-path-graph/tests/activity-path-graph.graph.test.ts",
   "src/features/itinerary/components/activity-path-graph/tests/activity-path-graph.layout.test.ts",
-  "src/features/itinerary/components/activity-path-graph/index.ts",
   "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialogFormFields.tsx",
   "src/features/itinerary/components/stop-dialog/StopDialogPrimaryFields.tsx",
