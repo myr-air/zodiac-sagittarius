@@ -11,6 +11,7 @@ describe("Sagittarius workspace hook source boundaries", () => {
       uiStateHook,
       apiClientsHook,
       setupContextHook,
+      setupContextParams,
       dataContextHook,
       backendExpenseSummaryHook,
       memberContextHook,
@@ -20,7 +21,12 @@ describe("Sagittarius workspace hook source boundaries", () => {
     expect(sagaCore).toContain("useSagittariusWorkspaceContexts");
     expect(sagaCore).not.toContain("useWorkspaceSetupContext");
     expect(workspaceContextsHook).toContain("useWorkspaceSetupContext");
+    expect(workspaceContextsHook).toContain("UseWorkspaceSetupContextParams");
+    expect(workspaceContextsHook).not.toContain("type UseSagittariusWorkspaceContextsParams");
     expect(setupContextHook).toContain("useWorkspaceUiState");
+    expect(setupContextHook).toContain("UseWorkspaceSetupContextParams");
+    expect(setupContextHook).not.toContain("type UseWorkspaceSetupContextParams");
+    expect(setupContextParams).toContain("export type UseWorkspaceSetupContextParams");
     expect(sagaCore).not.toContain("useState");
     expect(uiStateHook).toContain("export function useWorkspaceUiState");
     expect(uiStateHook).toContain("useState");

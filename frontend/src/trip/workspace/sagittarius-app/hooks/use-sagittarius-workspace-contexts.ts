@@ -1,28 +1,9 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { nextClientMutationId } from "@/src/trip/local-ids";
-import type { SagittariusAppProps } from "../types";
 import { useWorkspaceCommands } from "./use-workspace-commands";
 import { useWorkspacePlanningContext } from "./use-workspace-planning-context";
 import { useWorkspaceSetupContext } from "./use-workspace-setup-context";
-
-type UseSagittariusWorkspaceContextsParams = Required<
-  Pick<
-    SagittariusAppProps,
-    | "accessMode"
-    | "dataSource"
-    | "initialTrip"
-    | "initialView"
-    | "requireJoin"
-  >
-> &
-  Pick<
-    SagittariusAppProps,
-    | "apiClient"
-    | "initialJoinToken"
-    | "initialMemberId"
-    | "placeResolver"
-    | "routeTripId"
-  >;
+import type { UseWorkspaceSetupContextParams } from "./use-workspace-setup-context-params";
 
 export function useSagittariusWorkspaceContexts({
   accessMode,
@@ -35,7 +16,7 @@ export function useSagittariusWorkspaceContexts({
   placeResolver,
   requireJoin,
   routeTripId,
-}: UseSagittariusWorkspaceContextsParams) {
+}: UseWorkspaceSetupContextParams) {
   const { t } = useI18n();
   const setup = useWorkspaceSetupContext({
     accessMode,

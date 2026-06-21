@@ -1,7 +1,6 @@
 import { useItineraryPathWorkspace } from "@/src/trip/workspace/use-itinerary-path-workspace";
 import { useTripWorkspaceState } from "@/src/trip/workspace/use-trip-workspace-state";
 import { useWorkspaceChrome } from "@/src/trip/workspace/use-workspace-chrome";
-import type { SagittariusAppProps } from "../types";
 import { useEffectivePlaceResolver } from "./use-effective-place-resolver";
 import { useWorkspaceAccessContext } from "./use-workspace-access-context";
 import { useWorkspaceApiClients } from "./use-workspace-api-clients";
@@ -11,26 +10,8 @@ import {
   useWorkspaceSelectedTripPlanState,
 } from "./use-workspace-selected-trip-plan";
 import { useWorkspaceSession } from "./use-workspace-session";
+import type { UseWorkspaceSetupContextParams } from "./use-workspace-setup-context-params";
 import { useWorkspaceUiState } from "./use-workspace-ui-state";
-
-type UseWorkspaceSetupContextParams = Required<
-  Pick<
-    SagittariusAppProps,
-    | "accessMode"
-    | "dataSource"
-    | "initialTrip"
-    | "initialView"
-    | "requireJoin"
-  >
-> &
-  Pick<
-    SagittariusAppProps,
-    | "apiClient"
-    | "initialJoinToken"
-    | "initialMemberId"
-    | "placeResolver"
-    | "routeTripId"
-  >;
 
 export function useWorkspaceSetupContext({
   accessMode,
