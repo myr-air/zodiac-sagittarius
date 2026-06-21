@@ -3,8 +3,8 @@ import { Button } from "@/src/ui";
 import {
   mainItineraryPathName,
   type ItineraryPathOption,
-} from "@/src/trip/itinerary";
-import type { ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
+  type ItineraryImportApplyTarget,
+} from "@/src/trip/itinerary-paths";
 import type {
   ItineraryExportItem,
   ItineraryExportRecords,

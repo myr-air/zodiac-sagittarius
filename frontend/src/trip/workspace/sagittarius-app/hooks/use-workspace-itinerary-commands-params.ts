@@ -6,7 +6,7 @@ import type {
 import type {
   ItineraryPathOption,
   ItineraryPathSelection,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-paths";
 import type {
   PlaceResolver,
   StopPlaceResolutionState,

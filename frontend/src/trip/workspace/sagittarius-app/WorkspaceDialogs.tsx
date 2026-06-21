@@ -2,9 +2,9 @@ import { StopDialog } from "@/src/features/itinerary/components";
 import { deriveManualActivityPathOptions } from "@/src/trip/itinerary-paths";
 import type {
   ItineraryImportApplyTarget,
+  ItineraryPathOption,
   ManualActivityPathOption,
 } from "@/src/trip/itinerary-paths";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
 import type {
   ItineraryItem,
   PlanVariant,
