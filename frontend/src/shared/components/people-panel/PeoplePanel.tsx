@@ -1,4 +1,3 @@
-import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   peopleHeadingClassName,
@@ -8,6 +7,7 @@ import {
 import { peoplePanelCopy } from "./people-panel.copy";
 import { PeoplePanelEmptyState } from "./PeoplePanelEmptyState";
 import { PeoplePanelRow } from "./PeoplePanelRow";
+import type { PeoplePanelProps } from "./people-panel.types";
 
 export function PeoplePanel({
   members,
@@ -20,18 +20,7 @@ export function PeoplePanel({
   onResetFilters,
   onResetMemberClaim,
   onTransferOwnership,
-}: {
-  members: Member[];
-  currentMemberId: string;
-  canManagePeople?: boolean;
-  emptyMessage?: string;
-  onChangeMemberAccessStatus?: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
-  onChangeCurrentMemberPassword?: (memberId: string) => void;
-  onChangeMemberRole?: (memberId: string, role: Exclude<TripRole, "owner">) => void;
-  onResetFilters?: () => void;
-  onResetMemberClaim?: (memberId: string) => void;
-  onTransferOwnership?: (targetMemberId: string) => void;
-}) {
+}: PeoplePanelProps) {
   const { locale } = useI18n();
   const copy = peoplePanelCopy(locale);
   return (

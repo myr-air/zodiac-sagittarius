@@ -1,6 +1,5 @@
 import { cn } from "@/src/lib/cn";
 import { memberInitial } from "@/src/trip/members";
-import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { Select } from "@/src/ui";
 import {
   memberControlsClassName,
@@ -16,18 +15,11 @@ import {
   resetClaimButtonClassName,
 } from "./people-panel.styles";
 import { peoplePanelCopy, presenceLabel, roleLabel } from "./people-panel.copy";
-
-interface PeoplePanelRowProps {
-  canManagePeople: boolean;
-  currentMemberId: string;
-  locale: string;
-  member: Member;
-  onChangeCurrentMemberPassword?: (memberId: string) => void;
-  onChangeMemberAccessStatus?: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
-  onChangeMemberRole?: (memberId: string, role: Exclude<TripRole, "owner">) => void;
-  onResetMemberClaim?: (memberId: string) => void;
-  onTransferOwnership?: (targetMemberId: string) => void;
-}
+import type {
+  PeoplePanelManagementHandlers,
+  PeoplePanelManagedRole,
+  PeoplePanelRowProps,
+} from "./people-panel.types";
 
 export function PeoplePanelRow({
   canManagePeople,
@@ -93,18 +85,13 @@ export function PeoplePanelRow({
 
 type PeoplePanelCopy = ReturnType<typeof peoplePanelCopy>;
 
-interface PeoplePanelRowControlsProps {
+interface PeoplePanelRowControlsProps extends PeoplePanelManagementHandlers {
   canChangePassword: boolean;
   canTransferOwner: boolean;
   copy: PeoplePanelCopy;
   currentMemberId: string;
   locale: string;
-  member: Member;
-  onChangeCurrentMemberPassword?: (memberId: string) => void;
-  onChangeMemberAccessStatus?: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
-  onChangeMemberRole?: (memberId: string, role: Exclude<TripRole, "owner">) => void;
-  onResetMemberClaim?: (memberId: string) => void;
-  onTransferOwnership?: (targetMemberId: string) => void;
+  member: PeoplePanelRowProps["member"];
 }
 
 function PeoplePanelRowControls({
@@ -127,7 +114,7 @@ function PeoplePanelRowControls({
           aria-label={`Role for ${member.displayName}`}
           className={memberRoleSelectClassName}
           value={member.role}
-          onChange={(event) => onChangeMemberRole?.(member.id, event.target.value as Exclude<TripRole, "owner">)}
+          onChange={(event) => onChangeMemberRole?.(member.id, event.target.value as PeoplePanelManagedRole)}
         >
           <option value="organizer">{locale === "th" ? "ผู้จัดทริป" : "Organizer"}</option>
           <option value="traveler">{locale === "th" ? "ผู้ร่วมเดินทาง" : "Traveler"}</option>
