@@ -433,6 +433,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/route-map/RouteMapView.live-map.test.tsx",
   "src/features/itinerary/components/route-map/RouteMapView.summary.test.tsx",
   "src/features/itinerary/components/route-map/RouteMapView.unresolved.test.tsx",
+  "src/features/itinerary/components/route-map/index.ts",
   "src/features/itinerary/components/route-map/route-map-live-map-test-support.ts",
   "src/features/itinerary/components/route-map/route-map-live-map-view-test-support.tsx",
   "src/features/itinerary/components/route-map/route-map-test-support.tsx",
