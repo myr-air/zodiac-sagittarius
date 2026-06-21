@@ -1,4 +1,5 @@
-import { formatDayLabel, itineraryPathOptionsForDay, mainItineraryPathId } from "@/src/trip/itinerary";
+import { formatDayLabel } from "@/src/trip/itinerary-core";
+import { itineraryPathOptionsForDay, mainItineraryPathId } from "@/src/trip/itinerary-paths";
 import { Icon } from "@/src/ui/icons";
 import { formatThaiDate, dayRouteLabel } from "@/src/features/itinerary/lib";
 import type { ReactNode } from "react";

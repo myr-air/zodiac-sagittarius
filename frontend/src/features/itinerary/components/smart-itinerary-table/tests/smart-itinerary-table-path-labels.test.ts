@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import {
   buildItineraryItem,
   mainPathOption,

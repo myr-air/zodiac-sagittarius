@@ -1,5 +1,6 @@
 import type { BookingDoc, ItineraryItem, TripDailyBriefing } from "@/src/trip/types";
-import { type ItineraryDayGroup, type ItineraryPathOption } from "@/src/trip/itinerary";
+import type { ItineraryDayGroup } from "@/src/trip/itinerary-core";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import type { InlineItineraryItemPatch } from "../../lib";

@@ -5,7 +5,7 @@ import type {
   ItineraryItem,
   TripDailyBriefing,
 } from "@/src/trip/types";
-import type { ItineraryPathOption } from "@/src/trip/itinerary";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,

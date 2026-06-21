@@ -1,6 +1,7 @@
 import type { BookingDoc, ItineraryItem, PlanStatus, PlanVariant, TripDailyBriefing, TripRole } from "@/src/trip/types";
 import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
-import type { ItineraryPathOption, ItineraryView } from "@/src/trip/itinerary";
+import type { ItineraryView } from "@/src/trip/itinerary-core";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type { InlineItineraryItemPatch } from "../../lib";
 
 export interface SmartItineraryTableProps {

@@ -7,9 +7,9 @@ import type {
 import {
   getTripDates,
   groupItemsByDay,
-  type ItineraryPathOption,
   type ItineraryView,
-} from "@/src/trip/itinerary";
+} from "@/src/trip/itinerary-core";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import { canTripRole } from "@/src/trip/auth";
 import {
   buildGraphColumnWidth,

@@ -4,7 +4,8 @@ import type {
   PlanVariant,
   PlanStatus,
 } from "@/src/trip/types";
-import type { ItineraryDayGroup, ItineraryPathOption } from "@/src/trip/itinerary";
+import type { ItineraryDayGroup } from "@/src/trip/itinerary-core";
+import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import {
   mainItineraryPathId,
   mainItineraryPathName,
