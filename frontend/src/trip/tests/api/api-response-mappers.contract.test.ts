@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const tripRoot = dirname(fileURLToPath(import.meta.url));
+const tripRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 describe("trip API response mapper structure", () => {
   it("keeps response mapping split by trip domain responsibility", () => {

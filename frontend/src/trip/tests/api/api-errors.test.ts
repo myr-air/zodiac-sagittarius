@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { TripApiError } from "./api-client";
+import { TripApiError } from "../../api-client";
 import {
   isAuthFailure,
   isForbidden,
   isUnauthenticated,
   isVersionConflict,
-} from "./api-errors";
+} from "../../api-errors";
 
 describe("trip API error helpers", () => {
   it("classifies unauthenticated and forbidden API errors", () => {

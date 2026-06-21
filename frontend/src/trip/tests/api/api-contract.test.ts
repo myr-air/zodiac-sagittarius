@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripApiRoutes, tripAuthApiRoutes } from "./api-contract";
+import { tripApiRoutes, tripAuthApiRoutes } from "../../api-contract";
 
 describe("trip auth API contract", () => {
   it("builds stable auth endpoint paths for the backend", () => {
