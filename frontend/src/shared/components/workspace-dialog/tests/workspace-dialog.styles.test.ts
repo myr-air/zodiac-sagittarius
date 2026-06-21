@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   workspaceCompactDialogActionsClassName,
   workspaceCompactDialogBodyClassName,
+  workspaceCompactDialogPanelClassName,
   workspaceCompactDialogTitleClassName,
   workspaceDeleteDialogClassName,
   workspaceDialogActionsClassName,
@@ -31,6 +32,8 @@ describe("workspace dialog styles", () => {
   });
 
   it("keeps compact dialog typography and actions centralized", () => {
+    expect(workspaceCompactDialogPanelClassName).toContain("rounded-(--radius-lg)");
+    expect(workspaceCompactDialogPanelClassName).toContain("shadow-[0_14px_34px");
     expect(workspaceCompactDialogTitleClassName).toContain("text-base");
     expect(workspaceCompactDialogBodyClassName).toContain("text-(--color-text-muted)");
     expect(workspaceCompactDialogActionsClassName).toContain("justify-end");

@@ -1,6 +1,7 @@
 import {
   workspaceCompactDialogActionsClassName,
   workspaceCompactDialogBodyClassName,
+  workspaceCompactDialogPanelClassName,
   workspaceCompactDialogTitleClassName,
   workspaceDeleteDialogClassName,
 } from "@/src/shared/components/workspace-dialog";
@@ -8,7 +9,7 @@ import {
 export const workspaceDialogBackdropClassName =
   "modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-[rgb(15_23_42_/_0.28)] p-5";
 export const importDialogClassName =
-  "import-options-dialog grid w-[min(520px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+  `import-options-dialog w-[min(520px,100%)] ${workspaceCompactDialogPanelClassName}`;
 export const deleteDialogClassName = workspaceDeleteDialogClassName;
 export const importDialogTitleClassName = workspaceCompactDialogTitleClassName;
 export const deleteDialogTitleClassName =

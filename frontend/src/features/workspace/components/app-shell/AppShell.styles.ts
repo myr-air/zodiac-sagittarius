@@ -1,6 +1,7 @@
 import {
   workspaceCompactDialogActionsClassName,
   workspaceCompactDialogBodyClassName,
+  workspaceCompactDialogPanelClassName,
   workspaceCompactDialogTitleClassName,
   workspacePaddedDialogBackdropClassName,
 } from "@/src/shared/components/workspace-dialog";
@@ -31,7 +32,7 @@ export const memberCardRoleClassName = "text-(--color-text-muted)";
 export const memberSwitchButtonClassName = "member-switch-button min-h-8 whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong) data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const identityDialogBackdropClassName = workspacePaddedDialogBackdropClassName;
-export const identityDialogClassName = "identity-switch-dialog grid w-[min(420px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
+export const identityDialogClassName = `identity-switch-dialog w-[min(420px,100%)] ${workspaceCompactDialogPanelClassName}`;
 export const identityDialogTitleClassName = workspaceCompactDialogTitleClassName;
 export const identityDialogBodyClassName = workspaceCompactDialogBodyClassName;
 export const identityDialogActionsClassName = workspaceCompactDialogActionsClassName;
