@@ -1,5 +1,5 @@
 import { findSessionMember } from "@/src/trip/auth";
-import { isLocalParticipantSession } from "@/src/trip/participant-session-storage";
+import { isLocalParticipantSession } from "@/src/trip/auth";
 import type {
   Member,
   Trip,

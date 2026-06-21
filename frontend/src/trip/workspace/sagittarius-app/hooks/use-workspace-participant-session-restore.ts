@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   loadPersistedParticipantSession,
-} from "@/src/trip/participant-session-storage";
+} from "@/src/trip/auth";
 import { loadPersistedTripDraft } from "@/src/trip/persistence";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import {

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import {
   clearParticipantSession,
   persistParticipantSession,
-} from "@/src/trip/participant-session-storage";
+} from "@/src/trip/auth";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { resolveParticipantPostAuthHref } from "./participant-post-auth-navigation";
 

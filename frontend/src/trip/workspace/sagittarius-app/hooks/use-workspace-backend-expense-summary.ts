@@ -1,6 +1,6 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { clearParticipantSession } from "@/src/trip/participant-session-storage";
+import { clearParticipantSession } from "@/src/trip/auth";
 import {
   type PlanningView,
   workspaceViewShouldSyncBackendExpenseSummary,

@@ -6,7 +6,7 @@ import {
   isLocalParticipantSession,
   loadPersistedParticipantSession,
   persistParticipantSession,
-} from "../../participant-session-storage";
+} from "../../auth";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripParticipantSession } from "../../types";
 

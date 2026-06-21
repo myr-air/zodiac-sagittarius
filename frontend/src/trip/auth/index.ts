@@ -27,3 +27,9 @@ export {
   createTripParticipantSession,
   findSessionMember,
 } from "./auth-sessions";
+export {
+  clearParticipantSession,
+  isLocalParticipantSession,
+  loadPersistedParticipantSession,
+  persistParticipantSession,
+} from "./auth-participant-session-storage";

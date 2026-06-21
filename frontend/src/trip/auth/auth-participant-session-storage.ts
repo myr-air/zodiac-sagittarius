@@ -3,11 +3,9 @@ import {
   loadBrowserSessionJson,
   persistBrowserSessionJson,
 } from "@/src/shared/storage/browser-session-json";
-import {
-  findSessionMember,
-  tripParticipantSessionStorageKey,
-} from "./auth";
-import type { Trip, TripParticipantSession } from "./types";
+import { tripParticipantSessionStorageKey } from "./auth-constants";
+import { findSessionMember } from "./auth-sessions";
+import type { Trip, TripParticipantSession } from "../types";
 
 export function persistParticipantSession(session: TripParticipantSession) {
   persistBrowserSessionJson(tripParticipantSessionStorageKey, session);

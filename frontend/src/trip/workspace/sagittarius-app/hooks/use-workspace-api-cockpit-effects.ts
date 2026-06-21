@@ -6,7 +6,7 @@ import {
   replaceTripParticipant,
 } from "@/src/trip/auth";
 import { nextClientMutationId } from "@/src/trip/identity";
-import { clearParticipantSession } from "@/src/trip/participant-session-storage";
+import { clearParticipantSession } from "@/src/trip/auth";
 import type {
   Trip,
   TripDailyBriefing,

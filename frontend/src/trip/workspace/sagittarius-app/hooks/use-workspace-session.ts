@@ -8,7 +8,7 @@ import type { AccountApiClient } from "@/src/account/api-client";
 import {
   clearParticipantSession,
   persistParticipantSession,
-} from "@/src/trip/participant-session-storage";
+} from "@/src/trip/auth";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { useWorkspaceAccountSession } from "./use-workspace-account-session";
 import { useWorkspaceParticipantSessionRestore } from "./use-workspace-participant-session-restore";

@@ -260,6 +260,7 @@ export const frontendTripDomainScaffoldPathsAbsent = [
   "src/trip/auth-sessions.test.ts",
   "src/trip/auth-sessions.ts",
   "src/trip/participant-session-storage.test.ts",
+  "src/trip/participant-session-storage.ts",
   "src/trip/expense-create-drafts.test.ts",
   "src/trip/expense-local.test.ts",
   "src/trip/expense-money.test.ts",

@@ -14,7 +14,7 @@ import {
   createConfiguredAccountApiClient,
   createConfiguredTripApiClient,
 } from "@/src/api/sagittarius-api-clients";
-import { persistParticipantSession } from "@/src/trip/participant-session-storage";
+import { persistParticipantSession } from "@/src/trip/auth";
 import type { TripParticipantSession } from "@/src/trip/types";
 import {
   loadPersistedAccountSession,
