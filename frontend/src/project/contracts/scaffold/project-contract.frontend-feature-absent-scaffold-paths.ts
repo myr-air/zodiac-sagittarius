@@ -363,6 +363,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/context-rail/ContextRail.test-support.tsx",
   "src/features/itinerary/components/context-rail/ContextRailBookingSection.test.tsx",
   "src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.test.tsx",
+  "src/features/itinerary/components/context-rail/index.ts",
   "src/features/itinerary/components/context-rail/use-context-rail-expense-form.test.ts",
   "src/features/itinerary/components/context-rail/use-context-rail-note-form.test.ts",
   "src/features/itinerary/components/SmartItineraryTable.tsx",

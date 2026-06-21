@@ -1,8 +1,8 @@
 export { ActivityPathGraphDay } from "./activity-path-graph/ActivityPathGraphDay";
 export { OverviewPage } from "./overview";
 export type { OverviewPageProps } from "./overview";
-export { ContextRail } from "./context-rail";
-export type { ContextRailTab } from "./context-rail";
+export { ContextRail } from "./context-rail/ContextRail";
+export type { ContextRailTab } from "./context-rail/context-rail.utils";
 export { RouteMapView } from "./route-map/RouteMapView";
 export { SmartItineraryTable } from "./smart-itinerary-table";
 export { TimelineView } from "./TimelineView";
