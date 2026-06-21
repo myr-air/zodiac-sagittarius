@@ -7,12 +7,11 @@ import type {
   SettlementSuggestion,
   Trip,
 } from "@/src/trip/types";
+import type { RecordPaybackReminderHandler } from "../model/expense-page-types";
 
 interface UseExpenseLedgerActionsInput {
   expenseSummary: ExpenseSummary;
-  onRecordPaybackReminder?: (
-    suggestion: SettlementSuggestion,
-  ) => void | Promise<void>;
+  onRecordPaybackReminder?: RecordPaybackReminderHandler;
   statement: string;
   trip: Trip;
 }

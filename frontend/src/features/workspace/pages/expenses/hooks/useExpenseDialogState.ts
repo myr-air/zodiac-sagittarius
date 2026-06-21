@@ -7,7 +7,10 @@ import {
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
 import { initialExpenseTripPlanId } from "../model/expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
-import type { ExpenseInput, ExpenseUpdateInput } from "../model/expense-page-types";
+import type {
+  CreateExpenseHandler,
+  UpdateExpenseHandler,
+} from "../model/expense-page-types";
 import { useExpenseComments } from "./useExpenseComments";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
 import { useExpenseSplitEditor } from "./useExpenseSplitEditor";
@@ -19,8 +22,8 @@ interface ExpenseDialogStateInput {
   selectedTripPlanId?: string | null;
   settlementCurrency: string;
   trip: Trip;
-  onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
-  onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
+  onCreateExpense: CreateExpenseHandler;
+  onUpdateExpense: UpdateExpenseHandler;
 }
 
 export function useExpenseDialogState({

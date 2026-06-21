@@ -8,7 +8,10 @@ import { ExpenseDialogSummary } from "./components/ExpenseDialogSummary";
 import { ExpenseSplitFields } from "./components/ExpenseSplitFields";
 import { useExpenseDialogState } from "./hooks/useExpenseDialogState";
 import * as expenseStyles from "./TripExpensesPage.styles";
-import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
+import type {
+  CreateExpenseHandler,
+  UpdateExpenseHandler,
+} from "./model/expense-page-types";
 
 interface ExpenseDialogProps {
   expense: Expense | null;
@@ -18,8 +21,8 @@ interface ExpenseDialogProps {
   selectedTripPlanId?: string | null;
   apiBaseUrl: string;
   onClose: () => void;
-  onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
-  onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
+  onCreateExpense: CreateExpenseHandler;
+  onUpdateExpense: UpdateExpenseHandler;
 }
 
 export function ExpenseDialog({

@@ -1,11 +1,23 @@
 import { useMemo, useState } from "react";
 import { buildExpenseStatement } from "@/src/trip/expenses";
-import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
+import type {
+  Expense,
+  ExpenseSummary,
+  Member,
+  SettlementSuggestion,
+  Trip,
+} from "@/src/trip/types";
 import {
   buildRefundExpenseInput,
   buildSettlementExpenseInput,
 } from "./model/expense-page-actions";
-import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
+import type {
+  CreateExpenseHandler,
+  ExpenseInput,
+  ExpenseUpdateInput,
+  RecordPaybackReminderHandler,
+  UpdateExpenseHandler,
+} from "./model/expense-page-types";
 import {
   expenseCategorySpend,
   filterExpenses,
@@ -20,9 +32,9 @@ import { useExpenseLedgerActions } from "./hooks/useExpenseLedgerActions";
 interface UseTripExpensesPageStateArgs {
   currentMember: Member;
   expenseSummary: ExpenseSummary;
-  onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
-  onRecordPaybackReminder?: (suggestion: SettlementSuggestion) => void | Promise<void>;
-  onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
+  onCreateExpense: CreateExpenseHandler;
+  onRecordPaybackReminder?: RecordPaybackReminderHandler;
+  onUpdateExpense: UpdateExpenseHandler;
   selectedTripPlanId?: string | null;
   trip: Trip;
 }

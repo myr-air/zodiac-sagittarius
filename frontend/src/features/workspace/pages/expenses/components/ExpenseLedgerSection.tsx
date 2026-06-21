@@ -6,6 +6,7 @@ import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { categoryTone } from "../model/expense-page-options";
 import type {
+  DuplicateExpenseAsEstimateHandler,
   ExpenseCategoryFilter,
   ExpenseCopyState,
 } from "../model/expense-page-types";
@@ -23,7 +24,7 @@ interface ExpenseLedgerSectionProps {
   onCopyStatement: () => void;
   onDeleteExpense: (expenseId: string) => void;
   onDownloadCsv: () => void;
-  onDuplicateExpenseAsEstimate?: (expense: Expense) => void | Promise<void>;
+  onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
   onEditExpense: (expense: Expense) => void;
   onPayerFilterChange: (memberId: string) => void;
   onQueryChange: (query: string) => void;

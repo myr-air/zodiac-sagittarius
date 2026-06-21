@@ -1,5 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Expense, ExpenseSummary, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
+import type { ExpenseSummary, Member, Trip } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
@@ -8,10 +8,24 @@ import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
-import type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
+import type {
+  CreateExpenseHandler,
+  DeleteExpenseHandler,
+  DuplicateExpenseAsEstimateHandler,
+  RecordPaybackReminderHandler,
+  UpdateExpenseHandler,
+} from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./use-trip-expenses-page-state";
 
-export type { ExpenseInput, ExpenseUpdateInput } from "./model/expense-page-types";
+export type {
+  CreateExpenseHandler,
+  DeleteExpenseHandler,
+  DuplicateExpenseAsEstimateHandler,
+  ExpenseInput,
+  ExpenseUpdateInput,
+  RecordPaybackReminderHandler,
+  UpdateExpenseHandler,
+} from "./model/expense-page-types";
 
 interface TripExpensesPageProps {
   trip: Trip;
@@ -20,11 +34,11 @@ interface TripExpensesPageProps {
   canEditExpenses: boolean;
   selectedTripPlanId?: string | null;
   apiBaseUrl?: string;
-  onCreateExpense: (input: ExpenseInput) => void | Promise<void>;
-  onUpdateExpense: (input: ExpenseUpdateInput) => void | Promise<void>;
-  onDeleteExpense: (expenseId: string) => void;
-  onDuplicateExpenseAsEstimate?: (expense: Expense) => void | Promise<void>;
-  onRecordPaybackReminder?: (suggestion: SettlementSuggestion) => void | Promise<void>;
+  onCreateExpense: CreateExpenseHandler;
+  onUpdateExpense: UpdateExpenseHandler;
+  onDeleteExpense: DeleteExpenseHandler;
+  onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
+  onRecordPaybackReminder?: RecordPaybackReminderHandler;
 }
 
 export function TripExpensesPage({
