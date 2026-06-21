@@ -10,7 +10,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import type { InlineItineraryItemPatch } from "../../lib";
+import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
 
 export interface DayGroupProps {
   graphColumnWidth: number;

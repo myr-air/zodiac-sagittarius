@@ -1,6 +1,6 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import { formatDuration } from "@/src/features/itinerary/lib";
+import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 import {
   fromDateTimeLocalValue,
   itineraryDateTimeValue,

@@ -3,7 +3,7 @@ import type { ItineraryDayGroup } from "@/src/trip/itinerary-core";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import type { InlineItineraryItemPatch } from "../../lib";
+import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,

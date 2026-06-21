@@ -2,7 +2,7 @@ import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange } from "@/src/shared/components/page-header";
-import { formatDuration } from "@/src/features/itinerary/lib";
+import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 
 interface SmartItineraryTableMetaProps {
   groupsCount: number;

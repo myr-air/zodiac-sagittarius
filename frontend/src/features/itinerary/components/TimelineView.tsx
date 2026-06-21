@@ -12,7 +12,7 @@ import {
   formatDuration,
   formatEndTime,
   formatThaiDate,
-} from "@/src/features/itinerary/lib";
+} from "@/src/features/itinerary/lib/itinerary-display";
 import {
   detailsToggleButtonClassName,
   pageHeaderActionsClassName,

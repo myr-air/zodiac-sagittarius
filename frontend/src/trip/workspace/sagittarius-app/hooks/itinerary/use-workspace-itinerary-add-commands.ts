@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
+import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
 import type { StopPlaceResolutionState } from "@/src/trip/places";
 import type { Trip } from "@/src/trip/types";
 import type { ItineraryDialogState } from "./itinerary-dialog-state";

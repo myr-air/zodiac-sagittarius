@@ -2,7 +2,7 @@ import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
-import type { InlineItineraryItemPatch } from "../../../lib";
+import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
 
 export interface ActivityCellProps {
   canEdit: boolean;

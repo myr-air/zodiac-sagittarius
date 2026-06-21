@@ -338,6 +338,7 @@ export const frontendFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/domain/overview-visuals.test.ts",
   "src/features/itinerary/domain/overview.test.ts",
   "src/features/itinerary/domain/overview.test-support.ts",
+  "src/features/itinerary/lib/index.ts",
   "src/features/itinerary/lib/itinerary-display.test.ts",
   "src/features/itinerary/lib/itinerary-time.test.ts",
   "src/features/itinerary/components/overview/OverviewPage.budget.test.tsx",

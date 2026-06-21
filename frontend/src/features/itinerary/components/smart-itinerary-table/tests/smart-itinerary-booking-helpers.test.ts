@@ -13,7 +13,7 @@ import {
   travelSubtypeForItem,
   fromDateTimeLocalValue,
 } from "../../../domain";
-import { readItineraryDetailString, toggleId, uniqueIds } from "../../../lib";
+import { readItineraryDetailString, toggleId, uniqueIds } from "../../../lib/itinerary-item-helpers";
 
 describe("smart itinerary booking helpers", () => {
   it("builds booking type helpers from itinerary data", () => {

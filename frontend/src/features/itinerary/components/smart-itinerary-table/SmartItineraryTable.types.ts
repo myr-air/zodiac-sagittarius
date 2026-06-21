@@ -2,7 +2,7 @@ import type { BookingDoc, ItineraryItem, PlanStatus, PlanVariant, TripDailyBrief
 import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
-import type { InlineItineraryItemPatch } from "../../lib";
+import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
 
 export interface SmartItineraryTableProps {
   canRestructure?: boolean;

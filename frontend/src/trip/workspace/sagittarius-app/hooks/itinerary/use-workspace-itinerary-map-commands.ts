@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { MapCoordinateResolutionResult } from "@/src/features/itinerary/components";
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib";
+import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
 import {
   buildMapPlaceResolutionRequest,
   mapResolutionPlaceHint,

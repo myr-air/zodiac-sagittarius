@@ -1,5 +1,5 @@
 import type { ItineraryItem } from "@/src/trip/types";
-import { toggleId } from "@/src/features/itinerary/lib";
+import { toggleId } from "@/src/features/itinerary/lib/itinerary-item-helpers";
 import {
   ticketLinkedItemsClassName,
   ticketLinkedOptionClassName,

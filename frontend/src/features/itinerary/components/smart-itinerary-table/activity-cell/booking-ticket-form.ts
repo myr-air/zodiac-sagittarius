@@ -13,7 +13,7 @@ import {
 import {
   readItineraryDetailString,
   uniqueIds,
-} from "@/src/features/itinerary/lib";
+} from "@/src/features/itinerary/lib/itinerary-item-helpers";
 import type { Locale } from "@/src/i18n/types";
 
 export const ticketFormModeValues = ["existing", "new"] as const;

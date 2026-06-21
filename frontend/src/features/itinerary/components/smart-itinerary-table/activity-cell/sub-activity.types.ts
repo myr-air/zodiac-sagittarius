@@ -5,7 +5,7 @@ import type {
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
-import type { InlineItineraryItemPatch } from "../../../lib";
+import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
 
 export interface SubActivitySharedProps {
   canEdit: boolean;
