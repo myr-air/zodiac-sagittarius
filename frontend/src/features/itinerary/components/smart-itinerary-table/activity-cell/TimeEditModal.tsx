@@ -10,6 +10,7 @@ import {
   timeEditFieldClassName,
   timeEditHelperClassName,
   timeEditInputClassName,
+  timeEditCancelButtonClassName,
   timeEditModalBackdropClassName,
   timeEditModalBodyClassName,
   timeEditModalClassName,
@@ -19,6 +20,7 @@ import {
   timeEditNextDayClassName,
   timeEditPreviewClassName,
   timeEditPreviewValueClassName,
+  timeEditSaveButtonClassName,
 } from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
 import type { TimeEditModalProps } from "./time-components.types";
@@ -166,14 +168,14 @@ export function TimeEditModal({
         <footer className={timeEditModalFooterClassName}>
           <button
             type="button"
-            className="inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)"
+            className={timeEditCancelButtonClassName}
             onClick={onClose}
           >
             {itineraryLabels.row.durationCancel}
           </button>
           <button
             type="submit"
-            className="inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50"
+            className={timeEditSaveButtonClassName}
             disabled={saving || Boolean(model.errorMessage)}
           >
             {itineraryLabels.row.durationSave}

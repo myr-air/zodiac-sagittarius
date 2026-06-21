@@ -108,6 +108,8 @@ export {
   timeEditPreviewValueClassName,
   timeEditNextDayClassName,
   timeEditModalFooterClassName,
+  timeEditCancelButtonClassName,
+  timeEditSaveButtonClassName,
   ticketModalBackdropClassName,
   ticketModalClassName,
   ticketModalHeaderClassName,

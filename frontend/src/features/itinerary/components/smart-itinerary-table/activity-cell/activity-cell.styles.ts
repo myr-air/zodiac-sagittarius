@@ -110,6 +110,10 @@ export const timeEditNextDayClassName =
   "inline-flex min-h-7 w-fit items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[pressed=true]:border-(--color-route-border) aria-[pressed=true]:bg-(--color-route-soft) aria-[pressed=true]:text-(--color-route) disabled:cursor-not-allowed disabled:opacity-50";
 export const timeEditModalFooterClassName =
   "flex items-center justify-end gap-2 border-t border-(--color-border) px-3 py-2.5";
+export const timeEditCancelButtonClassName =
+  "inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) hover:bg-(--color-surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus)";
+export const timeEditSaveButtonClassName =
+  "inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route) px-3 text-xs font-extrabold text-white hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50";
 export const ticketModalBackdropClassName =
   "fixed inset-0 z-[74] grid place-items-end bg-[rgb(15_23_42_/_0.32)] p-3 sm:place-items-center";
 export const ticketModalClassName =
