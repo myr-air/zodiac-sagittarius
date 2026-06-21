@@ -3,7 +3,7 @@ import type {
   ExpenseCreateDraft,
   ExpenseInputLike,
 } from "./expense-draft-inputs";
-import type { Trip } from "./types";
+import type { Trip } from "../types";
 
 export interface ResolveExpenseCreateDraftTripPlanIdOptions<
   T extends Pick<

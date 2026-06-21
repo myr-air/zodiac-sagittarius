@@ -15,6 +15,7 @@ export {
   refundSplits,
   sumShares,
 } from "./expense-refunds";
+export { formatReminderDate } from "./expense-reminder-display";
 export {
   buildExpenseCsv,
   buildExpenseStatement,

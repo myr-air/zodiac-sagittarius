@@ -4,7 +4,7 @@ import {
   refundAmount,
   refundSplits,
   sumShares,
-} from "../../expense-refunds";
+} from "../../expenses/expense-refunds";
 
 describe("expense refund helpers", () => {
   it("rounds split totals and builds refund-only splits", () => {

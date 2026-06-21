@@ -1,7 +1,7 @@
 import type {
   CreateExpenseApiRequest,
   PatchExpenseApiRequest,
-} from "./api-client";
+} from "../api-client";
 import { expenseSplitsToMinor } from "./expense-splits";
 import type {
   ExpenseCreateDraft,

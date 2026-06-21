@@ -2,7 +2,7 @@ import type {
   ExpenseCreateDraft,
   ExpenseUpdateDraft,
 } from "./expense-draft-inputs";
-import type { Expense, Trip } from "./types";
+import type { Expense, Trip } from "../types";
 
 export interface AppendLocalExpensesOptions<
   T extends Pick<

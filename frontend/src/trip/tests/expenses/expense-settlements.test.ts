@@ -4,7 +4,7 @@ import {
   buildSettlementSuggestions,
   filterExpenseRemindersForTripPlan,
   upsertExpenseReminder,
-} from "../../expense-settlements";
+} from "../../expenses/expense-settlements";
 
 describe("expense settlement helpers", () => {
   it("balances debtors and creditors with cent-safe settlement suggestions", () => {

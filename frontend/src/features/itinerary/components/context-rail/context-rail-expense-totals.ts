@@ -1,5 +1,5 @@
 import type { ExpenseSummary } from "@/src/trip/types";
-import { formatMoney } from "@/src/trip/expense-money";
+import { formatMoney } from "@/src/trip/expenses";
 
 export interface ContextRailExpenseTotals {
   groupSpend: string;

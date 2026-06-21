@@ -1,4 +1,4 @@
-import type { RecordExpenseReminderApiRequest } from "./api-client";
+import type { RecordExpenseReminderApiRequest } from "../api-client";
 import {
   convertToSettlementCurrency,
   expenseExchangeRate,
@@ -12,7 +12,7 @@ import type {
   ExpenseSummary,
   SettlementSuggestion,
   Trip,
-} from "./types";
+} from "../types";
 import {
   attachReminderHistory,
   buildSettlementSuggestions,

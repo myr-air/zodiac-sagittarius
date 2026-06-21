@@ -6,7 +6,7 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import type { ItineraryView } from "@/src/trip/itinerary";
-import { formatMoney } from "@/src/trip/expense-money";
+import { formatMoney } from "@/src/trip/expenses";
 import {
   buildDestinationVisual,
   buildHighlightItems,

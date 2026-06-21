@@ -1,7 +1,6 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatReminderDate } from "@/src/trip/expense-reminder-display";
-import { formatMoney } from "@/src/trip/expenses";
+import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import { memberInitial } from "@/src/trip/member-labels";
 import { findMemberById } from "@/src/trip/member-lookup";
 import { tripPlanName } from "@/src/trip/trip-plans";

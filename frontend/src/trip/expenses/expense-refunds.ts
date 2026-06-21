@@ -1,4 +1,4 @@
-import type { Expense } from "./types";
+import type { Expense } from "../types";
 
 export function sumShares(splits: Record<string, number>): number {
   return Math.round(Object.values(splits).reduce((sum, share) => sum + share, 0) * 100) / 100;

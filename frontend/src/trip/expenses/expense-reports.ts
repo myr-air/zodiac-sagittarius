@@ -10,7 +10,7 @@ import type {
   Member,
   SettlementSuggestion,
   Trip,
-} from "./types";
+} from "../types";
 
 interface BuildExpenseStatementInput {
   trip: Pick<Trip, "name" | "members" | "itineraryItems" | "expenses">;

@@ -2,7 +2,7 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
-} from "./types";
+} from "../types";
 
 export interface ExpenseInputLike {
   itemId: string | null;

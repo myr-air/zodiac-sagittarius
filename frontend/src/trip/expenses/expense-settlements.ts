@@ -1,4 +1,4 @@
-import type { ExpenseReminder, SettlementSuggestion } from "./types";
+import type { ExpenseReminder, SettlementSuggestion } from "../types";
 
 export function buildSettlementSuggestions(
   netByMember: Record<string, number>,

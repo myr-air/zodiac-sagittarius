@@ -1,5 +1,5 @@
 import { roundMoney } from "./expense-money";
-import type { ExpenseLineItem } from "./types";
+import type { ExpenseLineItem } from "../types";
 
 export const expenseSplitModeValues = [
   "equal",
