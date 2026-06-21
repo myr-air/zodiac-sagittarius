@@ -5,17 +5,13 @@ import Link from "next/link";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
+import { PortalSkeleton, portalSkeletonClassName } from "@/src/shared/components/portal-skeleton";
 
 export const accountStatClassName =
   "account-stat grid min-h-[66px] content-center gap-0.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-(--color-text-muted) [&_strong]:text-2xl [&_strong]:leading-7 [&_strong]:text-(--color-text)";
-const portalSkeletonBaseClassName =
-  "portal-skeleton block overflow-hidden rounded-(--radius-md) bg-[linear-gradient(90deg,var(--color-surface-subtle),rgb(226_232_240_/_0.72),var(--color-surface-subtle))] bg-[length:220%_100%] animate-[portal-skeleton-pulse_1.2s_ease-in-out_infinite] motion-reduce:animate-none";
-export const portalSkeletonTitleClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--title h-7 w-[min(220px,48%)]");
-export const portalSkeletonLineClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--line h-4 w-[min(520px,72%)]");
-export const portalSkeletonBlockClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--block h-[132px] w-full");
-const portalSkeletonNumberClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--number h-[26px] w-[34px]");
-const portalSkeletonShortClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--short h-3.5 w-24");
-const portalSkeletonIconClassName = cn(portalSkeletonBaseClassName, "portal-skeleton--icon size-9");
+export const portalSkeletonTitleClassName = portalSkeletonClassName("title");
+export const portalSkeletonLineClassName = portalSkeletonClassName("line");
+export const portalSkeletonBlockClassName = portalSkeletonClassName("block");
 const portalSkeletonCardClassName = cn(accountStatClassName, "portal-skeleton-card");
 const portalListSkeletonClassName = "portal-list-skeleton grid gap-2";
 const portalListSkeletonCompactClassName = cn(portalListSkeletonClassName, "portal-list-skeleton--compact grid-cols-2 max-[520px]:grid-cols-1");
@@ -70,8 +66,8 @@ export function PortalStatSkeleton() {
     <>
       {Array.from({ length: 4 }, (_, index) => (
         <div className={portalSkeletonCardClassName} key={index}>
-          <span className={portalSkeletonNumberClassName} />
-          <span className={portalSkeletonShortClassName} />
+          <PortalSkeleton variant="number" />
+          <PortalSkeleton variant="short" />
         </div>
       ))}
     </>
@@ -83,9 +79,9 @@ export function PortalListSkeleton({ compact = false, rows }: { compact?: boolea
     <div className={compact ? portalListSkeletonCompactClassName : portalListSkeletonClassName} aria-hidden="true">
       {Array.from({ length: rows }, (_, index) => (
         <div className={portalSkeletonRowClassName} key={index}>
-          <span className={portalSkeletonIconClassName} />
-          <span className={portalSkeletonLineClassName} />
-          <span className={portalSkeletonShortClassName} />
+          <PortalSkeleton variant="icon" />
+          <PortalSkeleton variant="line" />
+          <PortalSkeleton variant="short" />
         </div>
       ))}
     </div>
