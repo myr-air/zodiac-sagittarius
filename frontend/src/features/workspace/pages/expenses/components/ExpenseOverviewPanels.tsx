@@ -7,6 +7,10 @@ import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import {
+  expenseMemberBalanceDisplay,
+  settlementSuggestionLabel,
+} from "../model/expense-overview-display";
 import { categoryTone } from "../model/expense-page-options";
 
 interface ExpenseOverviewPanelsProps {
@@ -41,6 +45,12 @@ export function ExpenseOverviewPanels({
         <div className={expenseStyles.balanceListClassName}>
           {trip.members.map((member) => {
             const net = expenseSummary.netByMember[member.id] ?? 0;
+            const balance = expenseMemberBalanceDisplay({
+              balanceCopy: t.expenses.balance,
+              memberName: member.displayName,
+              net,
+              settlementCurrency,
+            });
             return (
               <div className={expenseStyles.balanceRowClassName} key={member.id}>
                 <span className={expenseStyles.memberLineClassName}>
@@ -49,15 +59,19 @@ export function ExpenseOverviewPanels({
                     <span className={expenseStyles.balanceNameClassName}>{member.displayName}</span>
                     <br />
                     <span className={expenseStyles.balanceMetaClassName}>
-                      {net > 0
-                        ? t.expenses.balance.owed({ name: member.displayName, amount: formatMoney(net, settlementCurrency) })
-                        : net < 0
-                          ? t.expenses.balance.owes({ name: member.displayName, amount: formatMoney(Math.abs(net), settlementCurrency) })
-                          : t.expenses.balance.settled({ name: member.displayName })}
+                      {balance.description}
                     </span>
                   </span>
                 </span>
-                <strong className={cn(expenseStyles.amountClassName, net > 0 && expenseStyles.positiveClassName, net < 0 && expenseStyles.negativeClassName)}>{formatMoney(net, settlementCurrency)}</strong>
+                <strong
+                  className={cn(
+                    expenseStyles.amountClassName,
+                    balance.tone === "positive" && expenseStyles.positiveClassName,
+                    balance.tone === "negative" && expenseStyles.negativeClassName,
+                  )}
+                >
+                  {balance.amountLabel}
+                </strong>
               </div>
             );
           })}
@@ -71,13 +85,17 @@ export function ExpenseOverviewPanels({
             {expenseSummary.settlementSuggestions.map((suggestion) => {
               const from = findMemberById(trip.members, suggestion.from);
               const to = findMemberById(trip.members, suggestion.to);
+              const fromName = from?.displayName ?? suggestion.from;
+              const toName = to?.displayName ?? suggestion.to;
               return (
                 <div className={expenseStyles.settlementRowClassName} key={`${suggestion.from}-${suggestion.to}-${suggestion.amount}`}>
                   <span className={expenseStyles.balanceMetaClassName}>
-                    {t.expenses.balance.payback({
-                      from: from?.displayName ?? suggestion.from,
-                      to: to?.displayName ?? suggestion.to,
-                      amount: formatMoney(suggestion.amount, suggestion.currency ?? settlementCurrency),
+                    {settlementSuggestionLabel({
+                      balanceCopy: t.expenses.balance,
+                      fromName,
+                      settlementCurrency,
+                      suggestion,
+                      toName,
                     })}
                   </span>
                   {suggestion.lastRemindedAt ? (

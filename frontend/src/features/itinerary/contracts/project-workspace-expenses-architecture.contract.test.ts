@@ -8,6 +8,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
+    const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
+    const expenseOverviewDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-display.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
@@ -38,6 +40,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseFilters).toContain("export function filterExpenses");
     expect(expenseFilters).toContain("export function expenseCategorySpend");
     expect(expenseFilters).toContain("export function inferredScopeExpenses");
+    expect(expenseOverviewPanels).toContain("../model/expense-overview-display");
+    expect(expenseOverviewPanels).not.toContain("t.expenses.balance.owed");
+    expect(expenseOverviewPanels).not.toContain("t.expenses.balance.payback");
+    expect(expenseOverviewDisplay).toContain("export function expenseMemberBalanceDisplay");
+    expect(expenseOverviewDisplay).toContain("export function settlementSuggestionLabel");
     expect(expenseFilterState).toContain("export interface ExpensePageFilterState");
     expect(expenseFilterState).toContain("initialExpensePageFilterState");
     expect(expenseFilterState).toContain("clearedExpensePageFilterState");
