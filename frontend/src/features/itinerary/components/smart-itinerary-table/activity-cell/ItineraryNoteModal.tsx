@@ -1,4 +1,3 @@
-import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
@@ -17,6 +16,7 @@ import {
 import type { ItineraryItem } from "@/src/trip/types";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
+import { useItineraryNoteModalModel } from "./use-itinerary-note-modal-model";
 
 export function ItineraryNoteModal({
   item,
@@ -29,29 +29,11 @@ export function ItineraryNoteModal({
   onClose: () => void;
   onSave: (body: string) => ItineraryAsyncVoidResult;
 }) {
-  const [body, setBody] = useState("");
-  const [saving, setSaving] = useState(false);
-  const title = locale === "th" ? `โน้ตสำหรับ ${item.activity}` : `Note for ${item.activity}`;
-  const subtitle =
-    locale === "th"
-      ? "เก็บรายละเอียดสั้น ๆ ที่เกี่ยวกับ activity นี้"
-      : "Capture a short note tied to this activity.";
-  const placeholder =
-    locale === "th"
-      ? "เช่น นัดเจอกันที่ทางออก A, เตรียมพาสปอร์ต"
-      : "Example: Meet at exit A, keep passports ready";
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = body.trim();
-    if (!trimmed || saving) return;
-    setSaving(true);
-    try {
-      await onSave(trimmed);
-    } finally {
-      setSaving(false);
-    }
-  }
+  const { body, copy, saving, setBody, submit } = useItineraryNoteModalModel({
+    item,
+    locale,
+    onSave,
+  });
 
   return (
     <ActivityCellModalPortal
@@ -62,19 +44,19 @@ export function ItineraryNoteModal({
         className={cn(ticketModalClassName, "max-w-[480px]")}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={copy.title}
         onClick={(event) => event.stopPropagation()}
       >
         <form className="contents" onSubmit={(event) => void submit(event)}>
           <header className={ticketModalHeaderClassName}>
             <strong className={ticketModalTitleClassName}>
-              <span>{title}</span>
-              <small>{subtitle}</small>
+              <span>{copy.title}</span>
+              <small>{copy.subtitle}</small>
             </strong>
             <button
               type="button"
               className={subActivityModalCloseClassName}
-              aria-label={locale === "th" ? "ปิด modal โน้ต" : "Close note modal"}
+              aria-label={copy.close}
               onClick={onClose}
             >
               <Icon name="x" />
@@ -82,12 +64,12 @@ export function ItineraryNoteModal({
           </header>
           <div className={ticketModalBodyClassName}>
             <label className={cn(ticketFieldClassName, "col-span-full")}>
-              <span>{locale === "th" ? "โน้ต" : "Note"}</span>
+              <span>{copy.label}</span>
               <textarea
                 autoFocus
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
-                placeholder={placeholder}
+                placeholder={copy.placeholder}
               />
             </label>
           </div>
@@ -97,7 +79,7 @@ export function ItineraryNoteModal({
               className={ticketModalCancelButtonClassName}
               onClick={onClose}
             >
-              {locale === "th" ? "ยกเลิก" : "Cancel"}
+              {copy.cancel}
             </button>
             <button
               type="submit"
@@ -105,7 +87,7 @@ export function ItineraryNoteModal({
               disabled={saving || !body.trim()}
             >
               <Icon name="note" />
-              {locale === "th" ? "บันทึกโน้ต" : "Save note"}
+              {copy.save}
             </button>
           </footer>
         </form>

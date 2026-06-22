@@ -136,6 +136,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
+    const noteModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryNoteModal.tsx");
+    const noteModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-model.ts");
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
     const modalPortal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx");
     const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");
@@ -148,6 +150,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
     const ticketForm = readItineraryArchitectureSource("src/features/itinerary/domain/booking-ticket-form.ts");
 
+    expect(noteModal).toContain("./use-itinerary-note-modal-model");
+    expect(noteModal).not.toContain("useState");
+    expect(noteModel).toContain("export function useItineraryNoteModalModel");
+    expect(noteModel).toContain("const [body, setBody]");
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(bookingButton).toContain("export function ItineraryBookingButton");
     expect(bookingButton).toContain("./ItineraryTicketModal");
