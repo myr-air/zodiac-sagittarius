@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { toggleId } from "@/src/shared/collection";
+import {
+  toggleIdFieldState,
+  updateFieldState,
+} from "@/src/shared/form-state";
 import type {
   BookingDoc,
   Trip,
@@ -33,7 +36,7 @@ export function useBookingDialogState({
     field: Field,
     value: BookingDialogFields[Field],
   ) {
-    setFormFields((current) => ({ ...current, [field]: value }));
+    setFormFields((current) => updateFieldState(current, field, value));
   }
 
   function toggleFormFieldId<Field extends keyof Pick<
@@ -44,10 +47,7 @@ export function useBookingDialogState({
     | "relatedTaskIds"
     | "travelerIds"
   >>(field: Field, id: string) {
-    setFormFields((current) => ({
-      ...current,
-      [field]: toggleId(current[field], id),
-    }));
+    setFormFields((current) => toggleIdFieldState(current, field, id));
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {

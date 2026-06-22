@@ -16,6 +16,7 @@ describe("photo album dialog state structure", () => {
     );
 
     expect(dialogStateSource).toContain("type PhotoAlbumDialogFields");
+    expect(dialogStateSource).toContain("@/src/shared/form-state");
     expect(dialogStateSource).toContain("const [formFields, setFormFields]");
     expect(dialogStateSource).toContain("function updateFormField");
     expect(dialogStateSource).not.toContain("const [title, setTitle]");

@@ -1,4 +1,8 @@
 import { useCallback, useState } from "react";
+import {
+  updateFieldsState,
+  updateFieldState,
+} from "@/src/shared/form-state";
 import type { Expense } from "@/src/trip/types";
 import {
   expenseDialogCurrencyChangeFields,
@@ -30,19 +34,19 @@ export function useExpenseDialogFormValues({
       field: Field,
       value: ExpenseDialogInitialFields[Field],
     ) => {
-      setFormValues((current) => ({ ...current, [field]: value }));
+      setFormValues((current) => updateFieldState(current, field, value));
     },
     [],
   );
 
   const changeCurrency = useCallback((nextCurrency: string) => {
     const nextFields = expenseDialogCurrencyChangeFields(nextCurrency);
-    setFormValues((current) => ({ ...current, ...nextFields }));
+    setFormValues((current) => updateFieldsState(current, nextFields));
   }, []);
 
   const changeExchangeRate = useCallback((nextExchangeRate: string) => {
     const nextFields = expenseDialogManualExchangeRateFields(nextExchangeRate);
-    setFormValues((current) => ({ ...current, ...nextFields }));
+    setFormValues((current) => updateFieldsState(current, nextFields));
   }, []);
 
   const setExchangeRate = useCallback((exchangeRate: string) => {

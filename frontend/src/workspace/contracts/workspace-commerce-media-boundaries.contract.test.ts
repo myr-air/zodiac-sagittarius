@@ -58,7 +58,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingDialogState).toContain("export type BookingDialogState");
     expect(bookingDialogState).not.toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).not.toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
-    expect(bookingDialogState).toContain("@/src/shared/collection");
+    expect(bookingDialogState).toContain("@/src/shared/form-state");
     expect(bookingDialogState).toContain("function submit");
     expect(bookingDialogFields).toContain("export function initialBookingDialogFields");
     expect(bookingDialogFields).toContain("export function buildBookingDialogSubmitInput");
@@ -78,7 +78,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(photoAlbumDialogRelatedItems).not.toContain("<input type=\"checkbox\"");
     expect(photoAlbumDialogState).toContain("export function usePhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
-    expect(photoAlbumDialogState).toContain("@/src/shared/collection");
+    expect(photoAlbumDialogState).toContain("@/src/shared/form-state");
     expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
     expect(photoAlbumDialogState).toContain("async function submit");
     expect(photoPageOptions).toContain("export const photoProviderOptions");

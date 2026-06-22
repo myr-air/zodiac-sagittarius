@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { toggleId } from "@/src/shared/collection";
+import {
+  toggleIdFieldState,
+  updateFieldState,
+} from "@/src/shared/form-state";
 import type {
   Member,
   Trip,
@@ -35,14 +38,13 @@ export function usePhotoAlbumDialogState({
     field: Field,
     value: PhotoAlbumDialogFields[Field],
   ) {
-    setFormFields((current) => ({ ...current, [field]: value }));
+    setFormFields((current) => updateFieldState(current, field, value));
   }
 
   function toggleRelatedItem(itemId: string) {
-    setFormFields((current) => ({
-      ...current,
-      relatedItineraryItemIds: toggleId(current.relatedItineraryItemIds, itemId),
-    }));
+    setFormFields((current) =>
+      toggleIdFieldState(current, "relatedItineraryItemIds", itemId),
+    );
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {

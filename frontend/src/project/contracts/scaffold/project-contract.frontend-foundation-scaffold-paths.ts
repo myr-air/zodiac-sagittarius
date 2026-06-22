@@ -13,6 +13,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/api/sagittarius-api-clients.ts",
   "src/api/tests/sagittarius-api-clients.test.ts",
   "src/shared/storage/browser-session-json.ts",
+  "src/shared/form-state.ts",
+  "src/shared/tests/form-state.test.ts",
   "src/shared/hooks/use-escape-to-close.ts",
   "src/shared/hooks/tests/use-escape-to-close.test.ts",
   "src/testing/browser-storage.test.ts",
