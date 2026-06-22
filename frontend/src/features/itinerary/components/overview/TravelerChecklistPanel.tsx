@@ -1,19 +1,16 @@
 import type { FormEvent } from "react";
 import { Icon } from "@/src/ui/icons";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
-import { SegmentedControl } from "@/src/ui";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
+import { OverviewTaskStatusFilterControl } from "./OverviewTaskStatusFilterControl";
 import {
   overviewPanelClassName,
   overviewPanelTitleClassName,
-  overviewTaskFilterActiveClassName,
-  overviewTaskFiltersClassName,
   overviewTaskPanelClassName,
   overviewTaskToolbarClassName,
   personalTaskFormClassName,
 } from "./overview-page.styles";
 import {
-  taskStatusFilterValues,
   type TaskStatusFilter,
 } from "./overview-role-panels.types";
 
@@ -60,12 +57,6 @@ export function TravelerChecklistPanel({
   visibleTasks: TripTask[];
   onTaskStatusFilterChange: (filter: TaskStatusFilter) => void;
 }) {
-  const statusFilterLabels: Record<TaskStatusFilter, string> = {
-    all: allLabel,
-    done: doneLabel,
-    open: openLabel,
-  };
-
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
       <div className={overviewPanelTitleClassName}>
@@ -73,15 +64,12 @@ export function TravelerChecklistPanel({
         <h2>{title}</h2>
       </div>
       <div className={overviewTaskToolbarClassName}>
-        <SegmentedControl
-          aria-label={statusFilterLabel}
-          className={overviewTaskFiltersClassName}
-          selectedItemClassName={overviewTaskFilterActiveClassName}
+        <OverviewTaskStatusFilterControl
+          allLabel={allLabel}
+          doneLabel={doneLabel}
+          label={statusFilterLabel}
+          openLabel={openLabel}
           value={taskStatusFilter}
-          options={taskStatusFilterValues.map((value) => ({
-            label: statusFilterLabels[value],
-            value,
-          }))}
           onChange={onTaskStatusFilterChange}
         />
       </div>

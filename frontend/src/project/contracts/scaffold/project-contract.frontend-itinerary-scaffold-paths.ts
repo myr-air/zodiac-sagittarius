@@ -69,6 +69,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/overview/TravelerOverviewPanels.tsx",
   "src/features/itinerary/components/overview/ViewerOverviewPanels.tsx",
   "src/features/itinerary/components/overview/ManagerChecklistPanel.tsx",
+  "src/features/itinerary/components/overview/OverviewTaskStatusFilterControl.tsx",
   "src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx",
   "src/features/itinerary/components/overview/OverviewTaskDialog.tsx",
   "src/features/itinerary/components/overview/OverviewTaskLayer.tsx",

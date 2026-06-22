@@ -2,6 +2,7 @@ import { Icon } from "@/src/ui/icons";
 import { SegmentedControl } from "@/src/ui";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
+import { OverviewTaskStatusFilterControl } from "./OverviewTaskStatusFilterControl";
 import {
   overviewHealthGridClassName,
   overviewPanelClassName,
@@ -15,7 +16,6 @@ import {
 } from "./overview-page.styles";
 import {
   taskScopeFilterValues,
-  taskStatusFilterValues,
   type TaskScopeFilter,
   type TaskStatusFilter,
 } from "./overview-role-panels.types";
@@ -114,11 +114,6 @@ export function ManagerTaskChecklistPanel({
     mine: mineLabel,
     trip: tripLabel,
   };
-  const statusFilterLabels: Record<TaskStatusFilter, string> = {
-    all: allStatusesLabel,
-    done: doneLabel,
-    open: openLabel,
-  };
 
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
@@ -138,15 +133,12 @@ export function ManagerTaskChecklistPanel({
           }))}
           onChange={onScopeFilterChange}
         />
-        <SegmentedControl
-          aria-label={statusFilterLabel}
-          className={overviewTaskFiltersClassName}
-          selectedItemClassName={overviewTaskFilterActiveClassName}
+        <OverviewTaskStatusFilterControl
+          allLabel={allStatusesLabel}
+          doneLabel={doneLabel}
+          label={statusFilterLabel}
+          openLabel={openLabel}
           value={statusFilter}
-          options={taskStatusFilterValues.map((value) => ({
-            label: statusFilterLabels[value],
-            value,
-          }))}
           onChange={onStatusFilterChange}
         />
         <button className={overviewTaskAddButtonClassName} type="button" aria-label={addChecklistLabel} title={addChecklistLabel} onClick={onAddTask}>
