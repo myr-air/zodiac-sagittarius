@@ -1,10 +1,10 @@
 import { expect } from "storybook/test";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
-import type { RouteMapView } from "@/src/features/itinerary/components";
+import type { RouteMapViewProps } from "@/src/features/itinerary/components";
 import { planABAlternativeItemsBase, withStoryPrefix } from "../support/itinerary-story-fixtures";
 
-type MapPageStoryArgs = Parameters<typeof RouteMapView>[0];
+type MapPageStoryArgs = RouteMapViewProps;
 
 export const mapOwnerStoryArgs = {
   endDate: tripFixture.trip.endDate,

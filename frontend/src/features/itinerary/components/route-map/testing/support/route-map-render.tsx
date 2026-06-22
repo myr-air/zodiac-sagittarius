@@ -2,10 +2,9 @@ import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
+import type { RouteMapViewProps } from "@/src/features/itinerary/components";
 import { RouteMapView } from "../../RouteMapView";
 import { routeMapItems } from "../fixtures/route-map-fixtures";
-
-type RouteMapViewProps = Parameters<typeof RouteMapView>[0];
 
 export const renderWithThaiI18n = (ui: Parameters<typeof renderWithI18n>[0]) => {
   const result = renderWithI18n(ui, { locale: "th" });

@@ -11,4 +11,4 @@ export { StopDialog } from "./stop-dialog/StopDialog";
 
 export type { InlineItineraryItemPatch } from "../lib/inline-itinerary-item-patch";
 export type { StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
-export type { MapCoordinateResolutionResult } from "./route-map/route-map.types";
+export type { MapCoordinateResolutionResult, RouteMapViewProps } from "./route-map/route-map.types";

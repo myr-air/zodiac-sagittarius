@@ -1,4 +1,3 @@
-import type { ItineraryItem } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import {
   unresolvedPanelActionsClassName,
@@ -10,28 +9,7 @@ import {
   unresolvedPanelListClassName,
   unresolvedPanelStatusClassName,
 } from "./route-map.config";
-import { allDaysFilter, type DayFilter, type MapCoordinateResolutionResult } from "./route-map.types";
-
-interface RouteMapUnresolvedPanelCopy {
-  label: string;
-  resolveBatchHint: (params: { count: number; total: number }) => string;
-  resolveMissing: (params: { count: number }) => string;
-  resolveProgress: (params: { count: number; total: number }) => string;
-  resolveResult: (result: MapCoordinateResolutionResult) => string;
-  resolveUnavailable: string;
-  resolvingMissing: (params: { count: number }) => string;
-  title: (params: { count: number }) => string;
-}
-
-interface RouteMapUnresolvedPanelProps {
-  activeDay: DayFilter;
-  coordinateResolutionBatch: ItineraryItem[];
-  copy: RouteMapUnresolvedPanelCopy;
-  onResolveMissingCoordinates?: () => void;
-  resolutionResult: MapCoordinateResolutionResult | null;
-  resolvingMissing: boolean;
-  visibleUnresolvedItems: ItineraryItem[];
-}
+import { allDaysFilter, type RouteMapUnresolvedPanelProps } from "./route-map.types";
 
 export function RouteMapUnresolvedPanel({
   activeDay,

@@ -1,6 +1,3 @@
-import type { RefObject } from "react";
-import type { Messages } from "@/src/i18n/messages";
-import type { ItineraryItem } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import {
@@ -13,36 +10,11 @@ import {
 } from "./route-map.config";
 import { liveMapStatusText } from "./route-map.live-status";
 import type {
-  DayFilter,
-  MapCoordinateResolutionResult,
-  RouteDayGroup,
-  RouteLiveMapState,
-  RoutePoint,
+  RouteMapCanvasProps,
 } from "./route-map.types";
 import { RouteMapDayFilter } from "./RouteMapDayFilter";
 import { RouteMapUnresolvedPanel } from "./RouteMapUnresolvedPanel";
 import { StaticRouteFallback } from "./StaticRouteFallback";
-
-type RouteMapCanvasCopy = Messages["map"];
-
-interface RouteMapCanvasProps {
-  activeDay: DayFilter;
-  coordinateResolutionBatch: ItineraryItem[];
-  copy: RouteMapCanvasCopy;
-  liveMapAvailability: "auto" | "loading" | "error";
-  liveMapEnabled: boolean;
-  liveMapState: RouteLiveMapState;
-  mapContainerRef: RefObject<HTMLDivElement | null>;
-  onActiveDayChange: (day: DayFilter) => void;
-  onResolveMissingCoordinates?: () => Promise<void>;
-  onRetryLiveMap: () => void;
-  resolutionResult: MapCoordinateResolutionResult | null;
-  resolvingMissing: boolean;
-  routeDayGroups: RouteDayGroup[];
-  visibleRouteDayGroups: RouteDayGroup[];
-  visibleRoutePoints: RoutePoint[];
-  visibleUnresolvedItems: ItineraryItem[];
-}
 
 export function RouteMapCanvas({
   activeDay,

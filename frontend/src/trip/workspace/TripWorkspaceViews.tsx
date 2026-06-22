@@ -2,6 +2,7 @@
 
 import type { ComponentProps } from "react";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
+import type { RouteMapViewProps } from "@/src/features/itinerary/components";
 import { BookingsDocsPage } from "@/src/features/workspace/pages/bookings-docs/BookingsDocsPage";
 import { TripExpensesPage } from "@/src/features/workspace/pages/expenses/TripExpensesPage";
 import { TripMembersPage } from "@/src/features/workspace/pages/members/TripMembersPage";
@@ -14,7 +15,7 @@ interface TripWorkspaceViewsProps {
   bookingsProps: ComponentProps<typeof BookingsDocsPage>;
   expensesProps: ComponentProps<typeof TripExpensesPage>;
   itineraryProps: ComponentProps<typeof SmartItineraryTable>;
-  mapProps: ComponentProps<typeof RouteMapView>;
+  mapProps: RouteMapViewProps;
   membersProps: ComponentProps<typeof TripMembersPage>;
   overviewProps: ComponentProps<typeof OverviewPage>;
   photosProps: ComponentProps<typeof TripPhotosPage>;

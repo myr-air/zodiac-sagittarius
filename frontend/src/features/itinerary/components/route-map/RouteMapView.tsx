@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { ItineraryView } from "@/src/trip/itinerary-core";
 import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
@@ -13,23 +11,10 @@ import {
   activeDayLabel,
 } from "./route-map.utils";
 import { fallbackRouteViewport } from "./route-map.viewport";
-import type { MapCoordinateResolutionResult } from "./route-map.types";
+import type { RouteMapViewProps } from "./route-map.types";
 import { RouteMapCanvas } from "./RouteMapCanvas";
 import { useRouteMapViewState } from "./use-route-map-view-state";
 import { useRouteLiveMap } from "./use-route-live-map";
-
-interface RouteMapViewProps {
-  countries?: string[];
-  destinationLabel?: string;
-  endDate: string;
-  items: ItineraryItem[];
-  itineraryView?: ItineraryView;
-  liveMapAvailability?: "auto" | "loading" | "error";
-  liveMapEnabled?: boolean;
-  onResolveMissingCoordinates?: (items: ItineraryItem[]) => Promise<MapCoordinateResolutionResult | void> | MapCoordinateResolutionResult | void;
-  startDate: string;
-  tripName: string;
-}
 
 export function RouteMapView({
   countries = [],
