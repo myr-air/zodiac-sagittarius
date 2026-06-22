@@ -149,6 +149,24 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
   });
 
+  it("keeps itinerary page header metadata centralized", () => {
+    const itineraryHeaderMeta = readItineraryArchitectureSource("src/features/itinerary/components/ItineraryHeaderMeta.tsx");
+    const itineraryHeaderMetaStory = readItineraryArchitectureSource("src/features/itinerary/components/storybook/ItineraryHeaderMeta.stories.tsx");
+    const timelineView = readItineraryArchitectureSource("src/features/itinerary/components/TimelineView.tsx");
+    const tableMeta = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableMeta.tsx");
+
+    expect(itineraryHeaderMeta).toContain("export function ItineraryHeaderMeta");
+    expect(itineraryHeaderMeta).toContain("formatTripRange");
+    expect(itineraryHeaderMeta).toContain("formatDuration");
+    expect(itineraryHeaderMetaStory).toContain("ItineraryHeaderMeta");
+    expect(itineraryHeaderMetaStory).toContain("Thai");
+    [timelineView, tableMeta].forEach((source) => {
+      expect(source).toContain("ItineraryHeaderMeta");
+      expect(source).not.toContain("formatTripRange");
+      expect(source).not.toContain("warningCount({ count:");
+    });
+  });
+
   it("keeps context rail booking display labels in the itinerary booking domain", () => {
     const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
     const bookingDocItemModel = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-booking-doc-item-model.ts");

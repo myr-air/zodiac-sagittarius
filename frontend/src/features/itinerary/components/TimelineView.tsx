@@ -4,7 +4,7 @@ import { formatDayLabel } from "@/src/trip/itinerary-core";
 import { Badge, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { TimelineMotif } from "@/src/shared/components/travel-motifs";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import { PageHeader } from "@/src/shared/components/page-header";
 import {
   activityTypeLabel,
   dayRouteLabel,
@@ -12,6 +12,7 @@ import {
   formatEndTime,
   formatThaiDate,
 } from "@/src/features/itinerary/lib/itinerary-display";
+import { ItineraryHeaderMeta } from "./ItineraryHeaderMeta";
 import {
   buildTimelineViewModel,
   timelineStartTime,
@@ -65,12 +66,17 @@ export function TimelineView({
         subtitle={tripName}
         description={primaryRoute}
         meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
-            <span><Icon name="route" /> {t.timeline.dayItems({ days: groups.length, stops: items.length })}</span>
-            <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
-            <span><Icon name="clock" /> {formatDuration(totalMinutes, locale)} {t.dates.planned}</span>
-          </>
+          <ItineraryHeaderMeta
+            daysCount={groups.length}
+            endDate={endDate}
+            itemsCount={items.length}
+            locale={locale}
+            startDate={startDate}
+            tDates={t.dates}
+            tItinerary={t.timeline}
+            totalMinutes={totalMinutes}
+            warningCount={warningCount}
+          />
         )}
         motif={<TimelineMotif />}
         aside={(

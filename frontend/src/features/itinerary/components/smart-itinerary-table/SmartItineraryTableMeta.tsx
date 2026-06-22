@@ -1,8 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
-import { Icon } from "@/src/ui/icons";
-import { formatTripRange } from "@/src/shared/components/page-header";
-import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
+import { ItineraryHeaderMeta } from "../ItineraryHeaderMeta";
 
 interface SmartItineraryTableMetaProps {
   groupsCount: number;
@@ -28,19 +26,16 @@ export function SmartItineraryTableMeta({
   warningCount,
 }: SmartItineraryTableMetaProps) {
   return (
-    <>
-      <span>
-        <Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}
-      </span>
-      <span>
-        <Icon name="route" /> {tItinerary.dayItems({ days: groupsCount, stops: itemsCount })}
-      </span>
-      <span>
-        <Icon name="warning" /> {tDates.warningCount({ count: warningCount })}
-      </span>
-      <span>
-        <Icon name="clock" /> {formatDuration(totalMinutes, locale)} {tDates.planned}
-      </span>
-    </>
+    <ItineraryHeaderMeta
+      daysCount={groupsCount}
+      endDate={endDate}
+      itemsCount={itemsCount}
+      locale={locale}
+      startDate={startDate}
+      tDates={tDates}
+      tItinerary={tItinerary}
+      totalMinutes={totalMinutes}
+      warningCount={warningCount}
+    />
   );
 }
