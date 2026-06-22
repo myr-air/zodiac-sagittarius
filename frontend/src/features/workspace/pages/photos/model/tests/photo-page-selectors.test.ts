@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
-import { countPhotoProviders, photoAlbumLinkHost } from "../photo-page-selectors";
+import {
+  countPhotoProviders,
+  photoAlbumLinkHost,
+  selectedPhotoAlbum,
+  visiblePhotoAlbumsForProvider,
+} from "../photo-page-selectors";
+import { photoAlbumPageTestAlbums } from "../../testing/fixtures/photo-album-page-fixtures";
 
 const albumBase: Omit<TripPhotoAlbumLink, "id" | "provider"> = {
   tripId: "trip-1",
@@ -33,6 +39,29 @@ describe("photo page selectors", () => {
       onedrive: 0,
       custom: 1,
     });
+  });
+
+  it("filters visible albums by provider", () => {
+    expect(
+      visiblePhotoAlbumsForProvider(photoAlbumPageTestAlbums, "dropbox").map(
+        (album) => album.id,
+      ),
+    ).toEqual(["album-dropbox"]);
+    expect(
+      visiblePhotoAlbumsForProvider(photoAlbumPageTestAlbums, "all").map(
+        (album) => album.id,
+      ),
+    ).toEqual(["album-google", "album-dropbox", "album-unsafe"]);
+  });
+
+  it("selects the requested album or falls back to the first visible album", () => {
+    expect(selectedPhotoAlbum(photoAlbumPageTestAlbums, "album-dropbox")?.id).toBe(
+      "album-dropbox",
+    );
+    expect(selectedPhotoAlbum(photoAlbumPageTestAlbums, "missing-album")?.id).toBe(
+      "album-google",
+    );
+    expect(selectedPhotoAlbum([], "missing-album")).toBeNull();
   });
 
   it("returns a host only for safe absolute album links", () => {

@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import {
   buildPhotoAlbumSummary,
-  filterPhotoAlbumLinks,
   findPhotoAlbumRelations,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoProviderFilter } from "./model/photo-page-options";
-import { countPhotoProviders } from "./model/photo-page-selectors";
+import {
+  countPhotoProviders,
+  selectedPhotoAlbum,
+  visiblePhotoAlbumsForProvider,
+} from "./model/photo-page-selectors";
 import type {
   CreatePhotoAlbumHandler,
   DeletePhotoAlbumHandler,
@@ -36,10 +39,10 @@ export function useTripPhotosPageState({
   const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
   const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
   const visibleAlbums = useMemo(
-    () => filterPhotoAlbumLinks(photoAlbumLinks, { provider: activeProvider }),
+    () => visiblePhotoAlbumsForProvider(photoAlbumLinks, activeProvider),
     [activeProvider, photoAlbumLinks],
   );
-  const selectedAlbum = visibleAlbums.find((album) => album.id === selectedAlbumId) ?? visibleAlbums[0] ?? null;
+  const selectedAlbum = selectedPhotoAlbum(visibleAlbums, selectedAlbumId);
   const selectedRelations = selectedAlbum ? findPhotoAlbumRelations(selectedAlbum, trip) : null;
 
   async function submitAlbum(input: TripPhotoAlbumInput) {
