@@ -1,4 +1,4 @@
-import { countMatchingOptions } from "@/src/shared/collection/count-matching-options";
+import { countMatchingOptions } from "@/src/shared/collection";
 import type { BookingDoc, BookingDocStatus, BookingDocType } from "@/src/trip/types";
 import type { IconName } from "@/src/ui/icons";
 

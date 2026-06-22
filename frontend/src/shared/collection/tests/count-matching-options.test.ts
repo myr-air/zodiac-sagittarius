@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { countMatchingOptions } from "../count-matching-options";
+import { countMatchingOptions } from "..";
 
 describe("countMatchingOptions", () => {
   it("counts items for every option and keeps zero-count options", () => {

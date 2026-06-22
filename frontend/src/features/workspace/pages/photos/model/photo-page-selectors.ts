@@ -1,4 +1,4 @@
-import { countMatchingOptions } from "@/src/shared/collection/count-matching-options";
+import { countMatchingOptions } from "@/src/shared/collection";
 import {
   filterPhotoAlbumLinks,
   findPhotoAlbumById,

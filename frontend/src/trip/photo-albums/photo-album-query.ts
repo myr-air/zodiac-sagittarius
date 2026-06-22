@@ -2,7 +2,7 @@ import {
   normalizeSearchQuery,
   valuesMatchSearchQuery,
 } from "@/src/shared/text-search";
-import { findById } from "@/src/shared/collection/find-by-id";
+import { findById } from "@/src/shared/collection";
 import { findMemberById } from "../members";
 import { safeExternalHref } from "../places";
 import type {

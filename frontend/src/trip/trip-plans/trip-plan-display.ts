@@ -1,4 +1,4 @@
-import { findById } from "@/src/shared/collection/find-by-id";
+import { findById } from "@/src/shared/collection";
 import type { PlanVariant, Trip } from "../types";
 
 type TripPlanDisplaySource = Pick<

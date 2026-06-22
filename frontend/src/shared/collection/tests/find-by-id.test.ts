@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { findById } from "../find-by-id";
+import { findById } from "..";
 
 describe("findById", () => {
   const items = [

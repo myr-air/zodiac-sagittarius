@@ -1,4 +1,4 @@
-import { findById } from "@/src/shared/collection/find-by-id";
+import { findById } from "@/src/shared/collection";
 import type { BookingDoc } from "../types";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 

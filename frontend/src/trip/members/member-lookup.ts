@@ -1,4 +1,4 @@
-import { findById } from "@/src/shared/collection/find-by-id";
+import { findById } from "@/src/shared/collection";
 import type { Member } from "../types";
 
 type MemberDisplayNameSource = Pick<Member, "displayName" | "id">;

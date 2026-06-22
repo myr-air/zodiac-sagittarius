@@ -1,4 +1,4 @@
-import { findById } from "@/src/shared/collection/find-by-id";
+import { findById } from "@/src/shared/collection";
 import type { ItineraryItem } from "../types";
 
 type ItineraryActivitySource = Pick<ItineraryItem, "activity" | "id">;
