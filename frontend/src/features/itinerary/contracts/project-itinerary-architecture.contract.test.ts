@@ -180,7 +180,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const tableGraph = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-graph.ts");
     const tableLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-labels.ts");
     const tableTripPlanLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-trip-plan-labels.ts");
-    const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/weather-summary.ts");
+    const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/domain/weather-summary.ts");
     const weatherChip = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx");
 
     expect(tableUtils).not.toContain("TripDailyBriefing");
@@ -201,7 +201,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(tableTripPlanLabels).toContain("export function tripPlanStatus");
     expect(weatherSummary).toContain("export function buildWeatherSummary");
     expect(weatherSummary).toContain("export function buildWeatherTooltip");
-    expect(weatherChip).toContain("./weather-summary");
+    expect(weatherChip).toContain("@/src/features/itinerary/domain/weather-summary");
   });
 
   it("keeps smart itinerary path filter state split from table derived state", () => {

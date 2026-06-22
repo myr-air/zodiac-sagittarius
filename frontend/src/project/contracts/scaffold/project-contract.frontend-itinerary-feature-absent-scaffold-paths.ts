@@ -98,6 +98,8 @@ export const frontendItineraryFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-helpers.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-time-helpers.test.ts",
+  "src/features/itinerary/components/smart-itinerary-table/tests/weather-summary.test.ts",
+  "src/features/itinerary/components/smart-itinerary-table/weather-summary.ts",
   "src/features/itinerary/components/smart-itinerary-table/weather-summary.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/index.ts",
   "src/features/itinerary/components/TimelineView.test.tsx",
