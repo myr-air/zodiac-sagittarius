@@ -33,8 +33,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   stopDialogStoryItems: "src/features/itinerary/stories/StopDialog.stories.items.ts",
   stopDialogTypes: "src/features/itinerary/components/stop-dialog/stop-dialog.types.ts",
   stopDialogModel: "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts",
-  stopDialogForm: "src/features/itinerary/components/stop-dialog/stop-dialog.form.ts",
-  stopDialogTimeFields: "src/features/itinerary/components/stop-dialog/stop-dialog-time-fields.ts",
+  stopFormModel: "src/features/itinerary/domain/stop-form-model.ts",
+  stopFormTimeFields: "src/features/itinerary/domain/stop-form-time-fields.ts",
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsTypesSource:
     "src/features/workspace/pages/trip-settings/model/trip-settings-form-model.ts",

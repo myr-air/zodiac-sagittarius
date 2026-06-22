@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildInitialStopFormValues,
   buildStopSubmitValues,
-} from "../stop-dialog.form";
-import { emptyStopDetailValues } from "../stop-dialog.utils";
+} from "../stop-form-model";
+import { emptyStopDetailValues } from "../stop-details";
 
 describe("stop dialog form submit values", () => {
   it("normalizes submit payloads and preserves selected place candidates", () => {

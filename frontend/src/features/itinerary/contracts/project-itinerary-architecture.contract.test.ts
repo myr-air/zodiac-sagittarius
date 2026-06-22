@@ -264,8 +264,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(stopDialogFormFields).toContain("StopDialogPrimaryFields");
     expect(stopDialogFormFields).toContain("StopDialogPlaceResolution");
     expect(stopDialogModel).toContain("export function useStopDialogModel");
+    expect(stopDialogModel).toContain("@/src/features/itinerary/domain/stop-form-model");
     expect(stopDialogModel).toContain("buildStopSubmitValues");
     expect(stopDialogModel).toContain("applyStopActivityInput");
+    expect(stopDialogModel).not.toContain("./stop-dialog.form");
     expect(stopDialogTypes).toContain("export interface StopDialogProps");
   });
 

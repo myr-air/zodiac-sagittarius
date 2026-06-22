@@ -14,12 +14,13 @@ import {
   buildInitialStopFormValues,
   buildStopSubmitValues,
   toggleStopNextDayEnd,
-} from "./stop-dialog.form";
-import type { StopFormValues } from "./stop-dialog.types";
+} from "@/src/features/itinerary/domain/stop-form-model";
+import type { StopFormValues } from "@/src/features/itinerary/domain/stop-form-values";
 import {
+  type StopDetailType,
+  type StopDetailValues,
   detailTypeFromItem,
-} from "./stop-dialog.utils";
-import type { StopDetailType, StopDetailValues } from "@/src/features/itinerary/domain/stop-details";
+} from "@/src/features/itinerary/domain/stop-details";
 
 interface UseStopDialogModelArgs {
   initialDay?: string;

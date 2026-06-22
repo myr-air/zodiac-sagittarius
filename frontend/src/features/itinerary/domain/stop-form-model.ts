@@ -1,6 +1,6 @@
 import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
 import { normalizeDurationMinutes } from "@/src/trip/itinerary-core";
-import type { StopFormValues } from "./stop-dialog.types";
+import type { StopFormValues } from "./stop-form-values";
 import {
   type StopDetailType,
   type StopDetailValues,
@@ -10,18 +10,18 @@ import {
   readStringDetail,
   resolveStopActivityType,
   structuredStopDetailValues,
-} from "./stop-dialog.utils";
+} from "./stop-details";
 import {
   addMinutesToTime,
   endWindowFromDuration,
   parseRouteActivity,
-} from "@/src/features/itinerary/domain/stop-time";
+} from "./stop-time";
 export {
   applyStopEndTime,
   applyStopStartTime,
   applyStopTimeMode,
   toggleStopNextDayEnd,
-} from "./stop-dialog-time-fields";
+} from "./stop-form-time-fields";
 
 export function buildInitialStopFormValues({
   initialDay,
@@ -69,7 +69,10 @@ export function buildInitialStopDetailValues(
   return {
     ...emptyStopDetailValues,
     ...structuredStopDetailValues(initialItem?.details),
-    mode: readStringDetail(initialItem?.details?.mode) || initialItem?.transportation || "",
+    mode:
+      readStringDetail(initialItem?.details?.mode) ||
+      initialItem?.transportation ||
+      "",
   };
 }
 
@@ -87,9 +90,12 @@ export function buildStopSubmitValues({
   values: StopFormValues;
 }): StopFormValues {
   const details = buildStructuredStopDetails(detailType, detailValues);
-  const nextPlace = detailType === "transportation"
-    ? values.place || readStringDetail(details.destination) || readStringDetail(details.origin)
-    : values.place;
+  const nextPlace =
+    detailType === "transportation"
+      ? values.place ||
+        readStringDetail(details.destination) ||
+        readStringDetail(details.origin)
+      : values.place;
 
   return {
     ...values,
@@ -116,8 +122,14 @@ export function buildStopSubmitValues({
   };
 }
 
-export function applyStopDetailType(values: StopFormValues, nextDetailType: StopDetailType): StopFormValues {
-  const nextActivityType = resolveStopActivityType(nextDetailType, values.activityType);
+export function applyStopDetailType(
+  values: StopFormValues,
+  nextDetailType: StopDetailType,
+): StopFormValues {
+  const nextActivityType = resolveStopActivityType(
+    nextDetailType,
+    values.activityType,
+  );
   return {
     ...values,
     activityType: nextActivityType,

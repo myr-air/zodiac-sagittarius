@@ -31,8 +31,8 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       stopDialogStoryItems,
       stopDialogTypes,
       stopDialogModel,
-      stopDialogForm,
-      stopDialogTimeFields,
+      stopFormModel,
+      stopFormTimeFields,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(overviewPage).toContain("OverviewSummaryBand");
@@ -109,11 +109,12 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(stopFormValues).toContain("export interface StopFormValues");
     expect(stopDialogTypes).toContain("../../domain/stop-form-values");
     expect(stopDialogTypes).not.toContain("export interface StopFormValues");
-    expect(stopDialogForm).toContain("./stop-dialog-time-fields");
-    expect(stopDialogForm).not.toContain("durationBetweenTimes");
-    expect(stopDialogForm).toContain("export function applyStopActivityInput");
-    expect(stopDialogTimeFields).toContain("export function applyStopStartTime");
-    expect(stopDialogTimeFields).toContain("export function applyStopEndTime");
-    expect(stopDialogTimeFields).toContain("export function applyStopTimeMode");
+    expect(stopDialogModel).toContain("@/src/features/itinerary/domain/stop-form-model");
+    expect(stopFormModel).toContain("./stop-form-time-fields");
+    expect(stopFormModel).not.toContain("durationBetweenTimes");
+    expect(stopFormModel).toContain("export function applyStopActivityInput");
+    expect(stopFormTimeFields).toContain("export function applyStopStartTime");
+    expect(stopFormTimeFields).toContain("export function applyStopEndTime");
+    expect(stopFormTimeFields).toContain("export function applyStopTimeMode");
   });
 });

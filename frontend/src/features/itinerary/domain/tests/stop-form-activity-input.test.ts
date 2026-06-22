@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   applyStopActivityInput,
   buildInitialStopFormValues,
-} from "../stop-dialog.form";
-import { emptyStopDetailValues } from "../stop-dialog.utils";
+} from "../stop-form-model";
+import { emptyStopDetailValues } from "../stop-details";
 
 describe("stop dialog form activity input", () => {
   it("parses route-style activity input into transportation details and timing", () => {
