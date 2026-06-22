@@ -29,6 +29,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       expenseDrafts,
       planningCommandsHook,
       planningCommandsParams,
+      itineraryBookingCommandTypes,
+      createItineraryBookingDraftCommand,
+      saveItineraryBookingTicketCommand,
+      unlinkItineraryBookingCommand,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
@@ -53,12 +57,24 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(planningCommandsParams).toContain("type BookingParams");
     expect(sagaCore).not.toContain("useWorkspaceRecordState");
     expect(sagaCore).not.toContain("useWorkspaceRecordActions");
-    expect(itineraryBookingCommands).toContain(
-      "resolveItineraryBookingTicketCommandInput",
-    );
+    expect(itineraryBookingCommands).toContain("useCreateItineraryBookingDraftCommand");
+    expect(itineraryBookingCommands).toContain("useSaveItineraryBookingTicketCommand");
+    expect(itineraryBookingCommands).toContain("useUnlinkItineraryBookingCommand");
+    expect(itineraryBookingCommands).not.toContain("resolveItineraryBookingTicketCommandInput");
+    expect(itineraryBookingCommands).not.toContain("syncItineraryDetailsWithBookingTicket");
+    expect(itineraryBookingCommands).not.toContain("bookingDocInputFromRecord");
     expect(itineraryBookingCommands).not.toContain(
       "buildItineraryBookingTicketDocInput",
     );
+    expect(itineraryBookingCommandTypes).toContain("UseWorkspaceItineraryBookingCommandsOptions");
+    expect(createItineraryBookingDraftCommand).toContain("buildItineraryBookingDraftInput");
+    expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
+    expect(saveItineraryBookingTicketCommand).toContain(
+      "resolveItineraryBookingTicketCommandInput",
+    );
+    expect(saveItineraryBookingTicketCommand).toContain("syncItineraryDetailsWithBookingTicket");
+    expect(unlinkItineraryBookingCommand).toContain("bookingDocInputFromRecord");
+    expect(unlinkItineraryBookingCommand).toContain("clearItineraryBookingTicketDetails");
     expect(bookingDocCommands).toContain("buildWorkspaceBookingDocCreateInput");
     expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
     expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");

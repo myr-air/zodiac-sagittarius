@@ -76,6 +76,14 @@ export const workspaceBoundarySourcePaths = {
   workspaceCommandsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-commands.ts",
   workspaceCommandsParams: "src/trip/workspace/sagittarius-app/hooks/use-workspace-commands-params.ts",
   itineraryBookingCommands: "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-itinerary-booking-commands.ts",
+  itineraryBookingCommandTypes:
+    "src/trip/workspace/sagittarius-app/hooks/bookings/workspace-itinerary-booking-command-types.ts",
+  createItineraryBookingDraftCommand:
+    "src/trip/workspace/sagittarius-app/hooks/bookings/use-create-itinerary-booking-draft-command.ts",
+  saveItineraryBookingTicketCommand:
+    "src/trip/workspace/sagittarius-app/hooks/bookings/use-save-itinerary-booking-ticket-command.ts",
+  unlinkItineraryBookingCommand:
+    "src/trip/workspace/sagittarius-app/hooks/bookings/use-unlink-itinerary-booking-command.ts",
   bookingDocCommands: "src/trip/workspace/sagittarius-app/hooks/bookings/use-workspace-booking-doc-commands.ts",
   bookingCommandInputs: "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts",
   bookingCommandCreateInputs:
