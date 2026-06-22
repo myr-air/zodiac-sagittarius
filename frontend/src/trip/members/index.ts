@@ -17,6 +17,7 @@ export {
   roleLabel,
 } from "./member-labels";
 export {
+  buildMemberDisplayNameResolver,
   findMemberById,
 } from "./member-lookup";
 export {

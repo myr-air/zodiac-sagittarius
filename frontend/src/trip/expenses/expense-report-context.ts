@@ -1,4 +1,5 @@
 import type { ExpenseComment, ItineraryItem, Member } from "../types";
+import { buildMemberDisplayNameResolver } from "../members/member-lookup";
 
 interface ExpenseReportContextInput {
   itineraryItems: readonly Pick<ItineraryItem, "activity" | "id">[];
@@ -22,12 +23,8 @@ export function buildExpenseReportContext(
 export function buildMemberNameContext(
   members: readonly Pick<Member, "displayName" | "id">[],
 ): Pick<ExpenseReportContext, "memberName"> {
-  const memberNames = new Map(
-    members.map((member) => [member.id, member.displayName]),
-  );
-
   return {
-    memberName: (memberId) => memberNames.get(memberId) ?? memberId,
+    memberName: buildMemberDisplayNameResolver(members),
   };
 }
 

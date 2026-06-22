@@ -1,6 +1,18 @@
 import type { Member } from "../types";
 
-export function findMemberById(members: Member[], memberId: string | null | undefined): Member | undefined {
+type MemberDisplayNameSource = Pick<Member, "displayName" | "id">;
+
+export function findMemberById(members: readonly Member[], memberId: string | null | undefined): Member | undefined {
   if (!memberId) return undefined;
   return members.find((member) => member.id === memberId);
+}
+
+export function buildMemberDisplayNameResolver(
+  members: readonly MemberDisplayNameSource[],
+): (memberId: string) => string {
+  const memberNames = new Map(
+    members.map((member) => [member.id, member.displayName]),
+  );
+
+  return (memberId) => memberNames.get(memberId) ?? memberId;
 }
