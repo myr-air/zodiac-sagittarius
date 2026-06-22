@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type { TripApiClient } from "@/src/trip/api-client";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type {
   StopNote,
   Trip,
@@ -52,7 +53,7 @@ export function useWorkspaceStopNoteActions({
 
   const createItineraryNote = useCallback(async (itemId: string, body: string) => {
     if (!canCreateStopNote) return;
-    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    const item = findItineraryItemById(trip.itineraryItems, itemId);
     if (!item) return;
     await createStopNote({ itemId: item.id, body });
     setContextRailPreferredTab("notes");

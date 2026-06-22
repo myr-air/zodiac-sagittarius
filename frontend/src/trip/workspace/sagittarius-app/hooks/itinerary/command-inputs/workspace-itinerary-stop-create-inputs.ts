@@ -3,6 +3,7 @@ import {
   buildItineraryItemDraft,
   type BuildItineraryItemDraftOptions,
 } from "@/src/trip/itinerary-core";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import {
   selectedItineraryPathIdForDay,
   type ItineraryPathOption,
@@ -46,9 +47,10 @@ export function buildWorkspaceCreatedStop({
   trip,
   values,
 }: WorkspaceStopCreateInputContext): WorkspaceCreatedStopInput {
-  const parentItem = values.parentItemId
-    ? trip.itineraryItems.find((item) => item.id === values.parentItemId)
-    : undefined;
+  const parentItem = findItineraryItemById(
+    trip.itineraryItems,
+    values.parentItemId,
+  );
   const targetPathId = selectedItineraryPathIdForDay(day, pathSelection);
   const targetPathName = pathOptions.find(
     (option) => option.id === targetPathId,

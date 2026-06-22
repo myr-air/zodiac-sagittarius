@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type { TripApiClient } from "@/src/trip/api-client";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type {
   Trip,
   TripParticipantSession,
@@ -48,7 +49,7 @@ export function useWorkspaceTaskActions({
 
   const createItineraryTask = useCallback(async (itemId: string) => {
     if (!canEdit) return;
-    const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+    const item = findItineraryItemById(trip.itineraryItems, itemId);
     if (!item) return;
     await createTask({
       title: `Plan: ${item.activity}`,

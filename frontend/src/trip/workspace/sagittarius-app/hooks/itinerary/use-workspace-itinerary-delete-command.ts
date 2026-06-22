@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { TripApiClient } from "@/src/trip/api-client";
-import { deleteItineraryItemFromTrip } from "@/src/trip/itinerary-items";
+import {
+  deleteItineraryItemFromTrip,
+  findItineraryItemById,
+} from "@/src/trip/itinerary-items";
 import type {
   Trip,
   TripParticipantSession,
@@ -41,7 +44,7 @@ export function useWorkspaceItineraryDeleteCommand({
   const deleteStop = useCallback(
     async (itemId: string) => {
       if (!canEdit) return;
-      const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+      const item = findItineraryItemById(trip.itineraryItems, itemId);
       if (!item) return;
       const remainingItems = trip.itineraryItems.filter(
         (candidate) => candidate.id !== itemId,

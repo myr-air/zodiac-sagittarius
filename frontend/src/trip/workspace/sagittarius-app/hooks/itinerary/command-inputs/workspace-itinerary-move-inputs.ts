@@ -2,6 +2,7 @@ import {
   buildMoveItineraryItemRequest,
   buildMoveItineraryItemToDayRequest,
   buildReorderItineraryItemsRequest,
+  findItineraryItemById,
 } from "@/src/trip/itinerary-items";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
@@ -32,7 +33,7 @@ export function findWorkspaceItineraryItem(
   trip: Pick<Trip, "itineraryItems">,
   itemId: string,
 ): ItineraryItem | null {
-  return trip.itineraryItems.find((item) => item.id === itemId) ?? null;
+  return findItineraryItemById(trip.itineraryItems, itemId);
 }
 
 export function buildWorkspaceMoveItemPatchRequest({
