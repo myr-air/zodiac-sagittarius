@@ -8,6 +8,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
+    const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
+    const expenseLedgerDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-ledger-display.ts");
     const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
     const expenseOverviewDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-display.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
@@ -52,6 +54,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseActions).toContain("export function buildRefundExpenseInput");
     expect(expenseActions).toContain("refundSplits");
     expect(expenseActions).toContain("sumShares");
+    expect(expenseLedgerSection).toContain("../model/expense-ledger-display");
+    expect(expenseLedgerSection).not.toContain("refundAmount");
+    expect(expenseLedgerSection).not.toContain("sumShares");
+    expect(expenseLedgerSection).not.toContain("formatMoney");
+    expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
     expect(expenseLedgerActions).toContain("export function useExpenseLedgerActions");
     expect(expenseLedgerActions).toContain("buildExpenseCsv");
     expect(expenseLedgerActions).toContain("buildPaybackReminder");

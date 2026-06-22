@@ -1,10 +1,10 @@
-import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById, memberInitial } from "@/src/trip/members";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import { expenseLedgerRowDisplay } from "../model/expense-ledger-display";
 import { categoryTone } from "../model/expense-page-options";
 import type {
   DuplicateExpenseAsEstimateHandler,
@@ -98,6 +98,10 @@ export function ExpenseLedgerSection({
                 trip.itineraryItems,
                 expense.itineraryItemId,
               );
+              const display = expenseLedgerRowDisplay(
+                expense,
+                settlementCurrency,
+              );
               const tone = categoryTone(expense.category);
               return (
                 <tr key={expense.id}>
@@ -108,7 +112,7 @@ export function ExpenseLedgerSection({
                       {expense.category}
                     </span>
                   </td>
-                  <td><span className={expenseStyles.ledgerAmountClassName}>{formatMoney(expense.amount, expense.currency ?? settlementCurrency)}</span></td>
+                  <td><span className={expenseStyles.ledgerAmountClassName}>{display.amountLabel}</span></td>
                   <td>
                     {payer ? (
                       <span className={expenseStyles.memberLineClassName}>
@@ -117,7 +121,7 @@ export function ExpenseLedgerSection({
                       </span>
                     ) : expense.paidBy}
                   </td>
-                  <td>{formatMoney(sumShares(expense.splits), expense.currency ?? settlementCurrency)}</td>
+                  <td>{display.splitTotalLabel}</td>
                   <td>{linkedItem?.activity ?? t.expenses.uncategorizedStop}</td>
                   <td>
                     <span className={expenseStyles.actionCellClassName}>
@@ -135,7 +139,7 @@ export function ExpenseLedgerSection({
                       <IconButton
                         type="button"
                         aria-label={t.expenses.actions.recordRefund({ title: expense.title })}
-                        disabled={!canEditExpenses || expense.category === "settlement" || refundAmount(expense) <= 0}
+                        disabled={!canEditExpenses || !display.canRecordRefund}
                         onClick={() => onRecordRefund(expense)}
                       >
                         <Icon name="wallet" />
