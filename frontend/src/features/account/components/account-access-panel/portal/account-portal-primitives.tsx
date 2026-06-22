@@ -6,7 +6,7 @@ import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
-import { PortalSkeleton, portalSkeletonClassName } from "@/src/shared/components/portal-skeleton";
+import { PortalSkeleton } from "@/src/shared/components/portal-skeleton";
 
 const accountMetricLineClassName =
   "grid min-h-[66px] content-center gap-0.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 [&_span]:text-xs [&_span]:font-extrabold [&_span]:text-(--color-text-muted) [&_strong]:text-(--color-text)";
@@ -15,9 +15,6 @@ export const accountStatClassName = cn(
   accountMetricLineClassName,
   "[&_strong]:text-2xl [&_strong]:leading-7",
 );
-export const portalSkeletonTitleClassName = portalSkeletonClassName("title");
-export const portalSkeletonLineClassName = portalSkeletonClassName("line");
-export const portalSkeletonBlockClassName = portalSkeletonClassName("block");
 const portalSkeletonCardClassName = cn(accountStatClassName, "portal-skeleton-card");
 const portalListSkeletonClassName = "portal-list-skeleton grid gap-2";
 const portalListSkeletonCompactClassName = cn(portalListSkeletonClassName, "portal-list-skeleton--compact grid-cols-2 max-[520px]:grid-cols-1");

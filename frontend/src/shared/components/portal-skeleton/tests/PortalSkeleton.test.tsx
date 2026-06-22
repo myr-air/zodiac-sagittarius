@@ -2,7 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   PortalSkeleton,
+  portalSkeletonBlockClassName,
   portalSkeletonClassName,
+  portalSkeletonLineClassName,
+  portalSkeletonTitleClassName,
   portalSkeletonVariantValues,
 } from "../PortalSkeleton";
 
@@ -22,5 +25,11 @@ describe("PortalSkeleton", () => {
       "portal-skeleton--line h-4",
     );
     expect(portalSkeletonClassName("line", "extra-class")).toContain("extra-class");
+  });
+
+  it("exports shared loading-frame skeleton class names from the shared module", () => {
+    expect(portalSkeletonTitleClassName).toContain("portal-skeleton--title");
+    expect(portalSkeletonLineClassName).toContain("portal-skeleton--line");
+    expect(portalSkeletonBlockClassName).toContain("portal-skeleton--block");
   });
 });

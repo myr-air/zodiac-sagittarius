@@ -31,6 +31,10 @@ export function portalSkeletonClassName(
   return cn(portalSkeletonBaseClassName, portalSkeletonVariantClassNames[variant], className);
 }
 
+export const portalSkeletonTitleClassName = portalSkeletonClassName("title");
+export const portalSkeletonLineClassName = portalSkeletonClassName("line");
+export const portalSkeletonBlockClassName = portalSkeletonClassName("block");
+
 interface PortalSkeletonProps extends Omit<ComponentPropsWithoutRef<"span">, "children"> {
   variant: PortalSkeletonVariant;
 }

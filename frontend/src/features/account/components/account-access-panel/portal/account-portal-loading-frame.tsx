@@ -2,13 +2,13 @@
 
 import type { PortalSection } from "@/src/shared/portal";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { getLatestAccountPortalDataCache } from "./account-portal-data-cache";
-import { AccountPortalNav } from "./account-portal-nav";
 import {
   portalSkeletonBlockClassName,
   portalSkeletonLineClassName,
   portalSkeletonTitleClassName,
-} from "./account-portal-primitives";
+} from "@/src/shared/components/portal-skeleton";
+import { getLatestAccountPortalDataCache } from "./account-portal-data-cache";
+import { AccountPortalNav } from "./account-portal-nav";
 
 export interface AccountPortalLoadingFrameClassNames {
   dashboard: string;
