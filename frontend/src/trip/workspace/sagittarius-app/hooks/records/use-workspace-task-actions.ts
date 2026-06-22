@@ -1,21 +1,13 @@
 import { useCallback } from "react";
-import { nextClientMutationId, nextLocalTaskId } from "@/src/trip/identity";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
-import {
-  appendTask,
-  buildCreateTaskRequest,
-  buildToggleTaskStatusRequest,
-  createLocalTaskInList,
-  replaceTask,
-  toggleLocalTaskStatus,
-} from "@/src/trip/records";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   Trip,
   TripParticipantSession,
   TripTask,
 } from "@/src/trip/types";
-import { buildWorkspaceTaskCreateDraft } from "../../support/workspace-record-command-inputs";
+import { useCreateWorkspaceTaskCommand } from "./use-create-workspace-task-command";
+import { useToggleWorkspaceTaskStatusCommand } from "./use-toggle-workspace-task-status-command";
 
 interface UseWorkspaceTaskActionsParams {
   canEdit: boolean;
@@ -44,35 +36,7 @@ export function useWorkspaceTaskActions({
   tasks,
   trip,
 }: UseWorkspaceTaskActionsParams) {
-  const createTask = useCallback(async (input: {
-    title: string;
-    visibility: TripTask["visibility"];
-    assigneeId?: string | null;
-    relatedItemId?: string | null;
-  }) => {
-    const taskDraft = buildWorkspaceTaskCreateDraft(input, {
-      currentMemberId,
-      selectedTripPlanId,
-      trip,
-    });
-    if (!taskDraft) return;
-    if (isApiMode && resolveApiClient && participantSession) {
-      const task = await resolveApiClient.createTask(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreateTaskRequest(taskDraft, {
-          clientMutationId: nextClientMutationId("task-create"),
-        }),
-      );
-      setTasks((current) => appendTask(current, task));
-      return;
-    }
-    setTasks((current) =>
-      createLocalTaskInList(current, taskDraft, {
-        nextTaskId: nextLocalTaskId,
-      }),
-    );
-  }, [
+  const createTask = useCreateWorkspaceTaskCommand({
     currentMemberId,
     isApiMode,
     participantSession,
@@ -80,7 +44,7 @@ export function useWorkspaceTaskActions({
     selectedTripPlanId,
     setTasks,
     trip,
-  ]);
+  });
 
   const createItineraryTask = useCallback(async (itemId: string) => {
     if (!canEdit) return;
@@ -102,30 +66,14 @@ export function useWorkspaceTaskActions({
     trip.itineraryItems,
   ]);
 
-  const toggleTaskStatus = useCallback(async (taskId: string) => {
-    if (isApiMode && resolveApiClient && participantSession) {
-      const task = tasks.find((candidate) => candidate.id === taskId);
-      if (!task) return;
-      const nextTask = await resolveApiClient.patchTask(
-        trip.id,
-        taskId,
-        participantSession.sessionToken,
-        buildToggleTaskStatusRequest(task, {
-          clientMutationId: nextClientMutationId("task-patch"),
-        }),
-      );
-      setTasks((current) => replaceTask(current, nextTask));
-      return;
-    }
-    setTasks((current) => toggleLocalTaskStatus(current, taskId));
-  }, [
+  const toggleTaskStatus = useToggleWorkspaceTaskStatusCommand({
     isApiMode,
     participantSession,
     resolveApiClient,
     setTasks,
     tasks,
-    trip.id,
-  ]);
+    trip,
+  });
 
   return {
     createItineraryTask,

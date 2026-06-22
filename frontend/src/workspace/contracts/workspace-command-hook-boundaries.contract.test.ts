@@ -22,6 +22,9 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       bookingCommandDraftInputs,
       bookingCommandTicketInputs,
       taskActionsHook,
+      taskCommandTypes,
+      createTaskCommand,
+      toggleTaskStatusCommand,
       stopNoteActionsHook,
       stopNoteCommandTypes,
       createStopNoteCommand,
@@ -168,7 +171,14 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(bookingCommandTicketInputs).toContain("buildItineraryBookingTicketDocInput");
     expect(bookingCommandTicketInputs).toContain("resolveItineraryBookingTicketCommandInput");
     expect(bookingCommandTicketInputs).toContain("findDuplicateBookingDoc");
-    expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
+    expect(taskActionsHook).toContain("useCreateWorkspaceTaskCommand");
+    expect(taskActionsHook).toContain("useToggleWorkspaceTaskStatusCommand");
+    expect(taskActionsHook).not.toContain("buildWorkspaceTaskCreateDraft");
+    expect(taskActionsHook).not.toContain("buildToggleTaskStatusRequest");
+    expect(taskCommandTypes).toContain("WorkspaceTaskCommandBaseParams");
+    expect(createTaskCommand).toContain("buildWorkspaceTaskCreateDraft");
+    expect(createTaskCommand).toContain("buildCreateTaskRequest");
+    expect(toggleTaskStatusCommand).toContain("buildToggleTaskStatusRequest");
     expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
     expect(stopNoteActionsHook).toContain("useCreateWorkspaceStopNoteCommand");
     expect(stopNoteActionsHook).toContain("useUpdateWorkspaceStopNoteCommand");
