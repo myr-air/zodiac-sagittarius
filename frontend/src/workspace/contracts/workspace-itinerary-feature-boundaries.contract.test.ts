@@ -32,6 +32,7 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       stopDialogStoryItems,
       stopDialogTypes,
       stopDialogModel,
+      stopDialogDraftHook,
       stopDialogDraftState,
       stopFormModel,
       stopFormTimeFields,
@@ -99,8 +100,10 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(routeMapViewport).toContain("export function fallbackRouteViewport");
     expect(routeMapViewport).toContain("export function getRouteCenter");
 
-    expect(stopDialogModel).toContain("./stop-dialog-draft-state");
+    expect(stopDialogModel).toContain("./use-stop-dialog-draft-state");
     expect(stopDialogModel).not.toContain("applyStopActivityInput");
+    expect(stopDialogDraftHook).toContain("./stop-dialog-draft-state");
+    expect(stopDialogDraftHook).toContain("export function useStopDialogDraftState");
     expect(stopDialogDraftState).toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("parseRouteActivity");
     expect(stopDialog).not.toContain("endOffsetDaysBetweenTimes");
