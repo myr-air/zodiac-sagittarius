@@ -1,21 +1,6 @@
 import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
-import type { StopFormValues } from "@/src/features/itinerary/components";
 import { mergeUpdatedItineraryBranchIntoTrip } from "@/src/trip/itinerary-items";
-import {
-  type PlaceResolver,
-  type StopPlaceResolutionState,
-} from "@/src/trip/places";
 import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
-import {
-  nextClientMutationId as nextClientMutationIdFactory,
-} from "@/src/trip/identity";
-import type {
-  Trip,
-  TripParticipantSession,
-} from "@/src/trip/types";
-import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import {
   resolveStopFormLocation,
   shouldResolveUpdatedStopPlace,
@@ -25,24 +10,10 @@ import {
   buildWorkspaceStopUpdatePatchRequest,
   buildWorkspaceUpdatedStop,
 } from "./command-inputs/workspace-itinerary-stop-update-inputs";
-
-interface UseWorkspaceItineraryStopUpdateCommandParams {
-  commitTrip: (
-    updater: (current: Trip) => Trip,
-    nextSelectedItemId?: string,
-  ) => void;
-  dialogState: ItineraryDialogState;
-  effectivePlaceResolver: PlaceResolver | null;
-  isApiMode: boolean;
-  nextClientMutationId: typeof nextClientMutationIdFactory;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  setDialogState: Dispatch<SetStateAction<ItineraryDialogState>>;
-  setSelectedItemId: (itemId: string) => void;
-  setStopPlaceResolution: Dispatch<SetStateAction<StopPlaceResolutionState>>;
-  trip: Trip;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type {
+  UpdateWorkspaceItineraryStopCommand,
+  UseWorkspaceItineraryStopUpdateCommandParams,
+} from "./workspace-itinerary-stop-command-types";
 
 export function useWorkspaceItineraryStopUpdateCommand({
   commitTrip,
@@ -58,8 +29,8 @@ export function useWorkspaceItineraryStopUpdateCommand({
   trip,
   updateApiTrip,
 }: UseWorkspaceItineraryStopUpdateCommandParams) {
-  return useCallback(
-    async (values: StopFormValues) => {
+  const updateSelectedStop: UpdateWorkspaceItineraryStopCommand = useCallback(
+    async (values) => {
       if (dialogState?.mode !== "edit") return;
       const place = dialogState.item;
       const itemId = place.id;
@@ -161,4 +132,5 @@ export function useWorkspaceItineraryStopUpdateCommand({
       commitTrip,
     ],
   );
+  return updateSelectedStop;
 }

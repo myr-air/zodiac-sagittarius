@@ -111,6 +111,14 @@ export const workspaceBoundarySourcePaths = {
     "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-path-move-command.ts",
   itineraryReorderCommand:
     "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-reorder-command.ts",
+  itineraryStopSaveCommands:
+    "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-stop-save-commands.ts",
+  itineraryStopCommandTypes:
+    "src/trip/workspace/sagittarius-app/hooks/itinerary/workspace-itinerary-stop-command-types.ts",
+  itineraryStopCreateCommand:
+    "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-stop-create-command.ts",
+  itineraryStopUpdateCommand:
+    "src/trip/workspace/sagittarius-app/hooks/itinerary/use-workspace-itinerary-stop-update-command.ts",
   createItineraryBookingDraftCommand:
     "src/trip/workspace/sagittarius-app/hooks/bookings/use-create-itinerary-booking-draft-command.ts",
   saveItineraryBookingTicketCommand:

@@ -1,56 +1,18 @@
 import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
-import type { StopFormValues } from "@/src/features/itinerary/components";
 import {
+  buildCreateItineraryItemRequest,
   mergeCreatedItineraryItemIntoTrip,
 } from "@/src/trip/itinerary-items";
 import {
-  type ItineraryPathOption,
-  type ItineraryPathSelection,
+  patchApiItineraryBranchItems,
 } from "@/src/trip/itinerary-paths";
-import { buildCreateItineraryItemRequest } from "@/src/trip/itinerary-items";
-import {
-  type PlaceResolver,
-  type StopPlaceResolutionState,
-} from "@/src/trip/places";
-import { patchApiItineraryBranchItems } from "@/src/trip/itinerary-paths";
-import {
-  nextClientMutationId as nextClientMutationIdFactory,
-} from "@/src/trip/identity";
-import type {
-  ItineraryItem,
-  Trip,
-  TripParticipantSession,
-} from "@/src/trip/types";
-import type { ItineraryDialogState } from "./itinerary-dialog-state";
 import { resolveStopFormLocation } from "./stop-place-resolution-command";
 import { buildWorkspaceCreatedStop } from "./command-inputs/workspace-itinerary-stop-create-inputs";
 import { placeCreatedWorkspaceStop } from "./workspace-itinerary-stop-placement";
-
-interface UseWorkspaceItineraryStopCreateCommandParams {
-  commitTrip: (
-    updater: (current: Trip) => Trip,
-    nextSelectedItemId?: string,
-  ) => void;
-  currentMemberId: string;
-  effectivePlaceResolver: PlaceResolver | null;
-  isApiMode: boolean;
-  nextClientMutationId: typeof nextClientMutationIdFactory;
-  participantSession: TripParticipantSession | null;
-  pathOptions: ItineraryPathOption[];
-  pathSelection: ItineraryPathSelection;
-  planItems: ItineraryItem[];
-  resolvedApiClient?: TripApiClient;
-  selectedDay: string;
-  selectedTripPlanId: string;
-  setContextRailVisibility: (open: boolean) => void;
-  setDialogState: Dispatch<SetStateAction<ItineraryDialogState>>;
-  setSelectedItemId: (itemId: string) => void;
-  setStopPlaceResolution: Dispatch<SetStateAction<StopPlaceResolutionState>>;
-  trip: Trip;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type {
+  CreateWorkspaceItineraryStopCommand,
+  UseWorkspaceItineraryStopCreateCommandParams,
+} from "./workspace-itinerary-stop-command-types";
 
 export function useWorkspaceItineraryStopCreateCommand({
   commitTrip,
@@ -72,8 +34,8 @@ export function useWorkspaceItineraryStopCreateCommand({
   trip,
   updateApiTrip,
 }: UseWorkspaceItineraryStopCreateCommandParams) {
-  return useCallback(
-    async (values: StopFormValues) => {
+  const createStop: CreateWorkspaceItineraryStopCommand = useCallback(
+    async (values) => {
       const day = values.day || selectedDay;
       const resolvedLocation = await resolveStopFormLocation({
         day,
@@ -165,4 +127,5 @@ export function useWorkspaceItineraryStopCreateCommand({
       updateApiTrip,
     ],
   );
+  return createStop;
 }

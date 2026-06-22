@@ -22,6 +22,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       itineraryDayMoveCommand,
       itineraryPathMoveCommand,
       itineraryReorderCommand,
+      itineraryStopSaveCommands,
+      itineraryStopCommandTypes,
+      itineraryStopCreateCommand,
+      itineraryStopUpdateCommand,
       bookingDocCommands,
       bookingCommandInputs,
       bookingCommandCreateInputs,
@@ -162,6 +166,31 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryReorderCommand).toContain("buildWorkspaceReorderApiInput");
     expect(itineraryReorderCommand).not.toContain(
       "interface UseWorkspaceItineraryReorderCommandParams",
+    );
+    expect(itineraryStopSaveCommands).toContain(
+      "useWorkspaceItineraryStopCreateCommand",
+    );
+    expect(itineraryStopSaveCommands).toContain(
+      "useWorkspaceItineraryStopUpdateCommand",
+    );
+    expect(itineraryStopSaveCommands).not.toContain(
+      "interface UseWorkspaceItineraryStopSaveCommandsParams",
+    );
+    expect(itineraryStopCommandTypes).toContain(
+      "WorkspaceItineraryStopCommandBaseParams",
+    );
+    expect(itineraryStopCommandTypes).toContain(
+      "UseWorkspaceItineraryStopSaveCommandsParams",
+    );
+    expect(itineraryStopCreateCommand).toContain("buildWorkspaceCreatedStop");
+    expect(itineraryStopCreateCommand).toContain("placeCreatedWorkspaceStop");
+    expect(itineraryStopCreateCommand).not.toContain(
+      "interface UseWorkspaceItineraryStopCreateCommandParams",
+    );
+    expect(itineraryStopUpdateCommand).toContain("buildWorkspaceUpdatedStop");
+    expect(itineraryStopUpdateCommand).toContain("placeUpdatedWorkspaceStop");
+    expect(itineraryStopUpdateCommand).not.toContain(
+      "interface UseWorkspaceItineraryStopUpdateCommandParams",
     );
     expect(createItineraryBookingDraftCommand).toContain("buildItineraryBookingDraftInput");
     expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
