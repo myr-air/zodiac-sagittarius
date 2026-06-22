@@ -343,6 +343,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
+    const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
 
     expect(expensesPage).toContain("./use-trip-expenses-page-state");
     expect(expensesPage).not.toContain("useState");
@@ -376,5 +377,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseDialogState).toContain("export function useExpenseDialogState");
     expect(expenseDialogState).toContain("useExpenseSplitEditor");
     expect(expenseDialogState).toContain("function submitExpense");
+    expect(contextRailExpenseForm).toContain("ContextRailExpenseFormValues");
+    expect(contextRailExpenseForm).toContain("const [formValues, setFormValues]");
+    expect(contextRailExpenseForm).toContain("function updateFormValue");
+    expect(contextRailExpenseForm).not.toContain("const [expenseTitle, setExpenseTitle]");
+    expect(contextRailExpenseForm).not.toContain("const [expenseAmount, setExpenseAmount]");
   });
 });

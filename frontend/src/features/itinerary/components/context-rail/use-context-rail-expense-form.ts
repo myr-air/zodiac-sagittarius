@@ -14,6 +14,13 @@ interface UseContextRailExpenseFormOptions {
   onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
 }
 
+interface ContextRailExpenseFormValues {
+  amount: string;
+  category: Expense["category"];
+  paidBy: string;
+  title: string;
+}
+
 export const contextRailExpenseCategoryOptions = expenseCategoryValues;
 
 export function useContextRailExpenseForm({
@@ -23,61 +30,71 @@ export function useContextRailExpenseForm({
   onUpdateExpense,
 }: UseContextRailExpenseFormOptions) {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const [expenseTitle, setExpenseTitle] = useState("");
-  const [expenseAmount, setExpenseAmount] = useState("");
-  const [expensePaidBy, setExpensePaidBy] = useState(defaultPaidBy);
-  const [expenseCategory, setExpenseCategory] =
-    useState<Expense["category"]>("food");
+  const [formValues, setFormValues] = useState<ContextRailExpenseFormValues>({
+    amount: "",
+    category: "food",
+    paidBy: defaultPaidBy,
+    title: "",
+  });
+
+  function updateFormValue<Field extends keyof ContextRailExpenseFormValues>(
+    field: Field,
+    value: ContextRailExpenseFormValues[Field],
+  ) {
+    setFormValues((current) => ({ ...current, [field]: value }));
+  }
 
   function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const title = expenseTitle.trim();
-    const amount = Number(expenseAmount);
+    const title = formValues.title.trim();
+    const amount = Number(formValues.amount);
     if (!title || !Number.isFinite(amount) || amount < 0) return;
     if (editingExpenseId) {
       onUpdateExpense({
         expenseId: editingExpenseId,
         title,
         amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
+        paidBy: formValues.paidBy,
+        category: formValues.category,
       });
     } else {
       onCreateExpense({
         itemId: selectedItemId ?? null,
         title,
         amount,
-        paidBy: expensePaidBy,
-        category: expenseCategory,
+        paidBy: formValues.paidBy,
+        category: formValues.category,
       });
     }
     setEditingExpenseId(null);
-    setExpenseTitle("");
-    setExpenseAmount("");
+    setFormValues((current) => ({ ...current, amount: "", title: "" }));
   }
 
   function startEditingExpense(expense: Expense) {
     setEditingExpenseId(expense.id);
-    setExpenseTitle(expense.title);
-    setExpenseAmount(String(expense.amount));
-    setExpensePaidBy(expense.paidBy);
-    setExpenseCategory(expense.category);
+    setFormValues({
+      amount: String(expense.amount),
+      category: expense.category,
+      paidBy: expense.paidBy,
+      title: expense.title,
+    });
   }
 
   function onAmountChange(event: ChangeEvent<HTMLInputElement>) {
-    setExpenseAmount(event.target.value);
+    updateFormValue("amount", event.target.value);
   }
 
   return {
     editingExpenseId,
-    expenseAmount,
-    expenseCategory,
-    expensePaidBy,
-    expenseTitle,
+    expenseAmount: formValues.amount,
+    expenseCategory: formValues.category,
+    expensePaidBy: formValues.paidBy,
+    expenseTitle: formValues.title,
     onAmountChange,
-    setExpenseCategory,
-    setExpensePaidBy,
-    setExpenseTitle,
+    setExpenseCategory: (category: Expense["category"]) =>
+      updateFormValue("category", category),
+    setExpensePaidBy: (paidBy: string) => updateFormValue("paidBy", paidBy),
+    setExpenseTitle: (title: string) => updateFormValue("title", title),
     startEditingExpense,
     submitExpense,
   };
