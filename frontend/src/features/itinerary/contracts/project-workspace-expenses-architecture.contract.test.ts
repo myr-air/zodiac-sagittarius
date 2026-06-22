@@ -19,6 +19,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseOverviewSettlementDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-settlement-display.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
+    const expenseDialogFormContent = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseDialogFormContent.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
     const expenseDialogFormValues = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogFormValues.ts");
     const expenseDialogLinkingState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogLinkingState.ts");
@@ -109,9 +110,18 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerActions).toContain("buildPaybackReminder");
     expect(expensesState).toContain("function recordRefund");
     expect(expenseDialog).toContain("./hooks/useExpenseDialogState");
+    expect(expenseDialog).toContain("./components/ExpenseDialogFormContent");
     expect(expenseDialog).not.toContain("useState");
     expect(expenseDialog).not.toContain("calculateExpenseDialogState");
     expect(expenseDialog).not.toContain("function submitExpense");
+    expect(expenseDialog).not.toContain("ExpenseDetailsFields");
+    expect(expenseDialog).not.toContain("ExpenseSplitFields");
+    expect(expenseDialog).not.toContain("ExpenseCommentsSection");
+    expect(expenseDialog).not.toContain("ExpenseDialogSummary");
+    expect(expenseDialogFormContent).toContain("ExpenseDetailsFields");
+    expect(expenseDialogFormContent).toContain("ExpenseSplitFields");
+    expect(expenseDialogFormContent).toContain("ExpenseCommentsSection");
+    expect(expenseDialogFormContent).toContain("ExpenseDialogSummary");
     expect(expenseDialogState).toContain("export function useExpenseDialogState");
     expect(expenseDialogState).toContain("useExpenseDialogFormValues");
     expect(expenseDialogState).toContain("useExpenseDialogLinkingState");
