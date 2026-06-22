@@ -3,6 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
+import { normalizeTripPartySize, tripPartySizeRange } from "@/src/trip/settings";
 import type { TripCity } from "@/src/trip/types";
 import { defaultTripOriginCity } from "../model/account-trip-destinations";
 import * as wizardStyles from "../layout/portal-trip-wizard-styles";
@@ -42,6 +43,10 @@ export function tripWizardDefaultTimezone(
   return tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || defaultTripOriginCity.timezone;
 }
 
+export function tripWizardPartySizeFromInput(value: string): number {
+  return normalizeTripPartySize(Number(value));
+}
+
 export function TripWizardDateFields({
   onChange,
   onUpdateEndDate,
@@ -68,10 +73,10 @@ export function TripWizardDateFields({
           <span>{wizard.fields.partySize}</span>
           <input
             type="number"
-            min={1}
+            min={tripPartySizeRange.min}
             max={99}
-            value={tripForm.partySize ?? 1}
-            onChange={(event) => onChange((current) => ({ ...current, partySize: Math.max(1, Number(event.target.value) || 1) }))}
+            value={tripForm.partySize ?? tripPartySizeRange.min}
+            onChange={(event) => onChange((current) => ({ ...current, partySize: tripWizardPartySizeFromInput(event.target.value) }))}
           />
         </label>
         <label>

@@ -1,5 +1,6 @@
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import type { Locale } from "@/src/i18n/types";
+import { uniqueIds } from "@/src/shared/collection";
 import {
   formatPreviewTravelDate,
   routeCalendarDays,
@@ -9,9 +10,6 @@ import {
   destinationRouteCode,
   tripDestinationCards,
 } from "../model/account-trip-destinations";
-import {
-  uniqueList,
-} from "../model/account-trip-form";
 import { tripStepComplete, type TripWizardStepId } from "../model/account-trip-wizard-steps";
 import {
   buildPortalTripWizardCredentials,
@@ -38,7 +36,7 @@ export function buildPortalTripWizardDerivedState({
   const ownerDisplayName = tripForm.ownerDisplayName;
   const effectiveOwnerDisplayName = hasEditedOwnerDisplayName ? ownerDisplayName : ownerDisplayName || defaultOwnerDisplayName;
   const selectedDestinationCities = tripForm.destinationCities;
-  const selectedCountryNames = uniqueList(selectedDestinationCities.map((city) => city.country));
+  const selectedCountryNames = uniqueIds(selectedDestinationCities.map((city) => city.country));
   const selectedCityNames = selectedDestinationCities.map((city) => city.city);
   const selectedDestinationNames = selectedCityNames;
   const selectedDestinationKey = selectedDestinationNames.join("|");

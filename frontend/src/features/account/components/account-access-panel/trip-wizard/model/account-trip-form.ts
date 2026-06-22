@@ -2,6 +2,8 @@ import type {
   AccountSettings,
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
+import { uniqueIds } from "@/src/shared/collection";
+import { normalizeTripPartySize, tripPartySizeRange } from "@/src/trip/settings";
 import type { TripCity } from "@/src/trip/types";
 import {
   defaultTripOriginCity,
@@ -21,7 +23,7 @@ export const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings
     destinationLabel: "",
     destinationCities: [],
     countries: [],
-    partySize: 1,
+    partySize: tripPartySizeRange.min,
     defaultTimezone: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
@@ -40,7 +42,7 @@ export function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerD
     countryCode: city.countryCode.trim().toUpperCase(),
     timezone: city.timezone.trim(),
   })).filter((city) => city.city && city.country && city.countryCode);
-  const countryNames = uniqueList(destinationCities.map((city) => city.country));
+  const countryNames = uniqueIds(destinationCities.map((city) => city.country));
   return {
     ...form,
     name,
@@ -49,7 +51,7 @@ export function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerD
     originCountry: form.originCountry.trim() || defaultTripOriginCity.country,
     originCountryCode: form.originCountryCode.trim().toUpperCase() || defaultTripOriginCity.countryCode,
     countries: countryNames,
-    partySize: Math.max(1, Math.trunc(form.partySize ?? 1)),
+    partySize: normalizeTripPartySize(form.partySize),
     defaultTimezone: (form.defaultTimezone?.trim() || destinationCities[0]?.timezone || defaultTripOriginCity.timezone).slice(0, 64),
     destinationCities,
     destinationLabel: destinationCities.length ? destinationCities.map((city) => city.city).join(", ") : form.destinationLabel.trim() || name,
@@ -74,15 +76,11 @@ function originCityFromProfile(profile?: AccountSettings["profile"] | null): Tri
 }
 
 export function applyTripDestinationCities(form: AccountTripCreateRequest, nextCities: TripCity[]): AccountTripCreateRequest {
-  const nextCountries = uniqueList(nextCities.map((city) => city.country));
+  const nextCountries = uniqueIds(nextCities.map((city) => city.country));
   return {
     ...form,
     countries: nextCountries,
     destinationCities: nextCities,
     destinationLabel: nextCities.map((city) => city.city).join(", "),
   };
-}
-
-export function uniqueList(values: string[]): string[] {
-  return Array.from(new Set(values));
 }
