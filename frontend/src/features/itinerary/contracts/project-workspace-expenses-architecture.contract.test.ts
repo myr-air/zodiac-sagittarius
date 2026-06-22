@@ -17,6 +17,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
     const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
     const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
+    const expenseSummaryStats = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseSummaryStats.tsx");
+    const expenseSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-summary-display.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
 
@@ -59,6 +61,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerSection).not.toContain("sumShares");
     expect(expenseLedgerSection).not.toContain("formatMoney");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
+    expect(expenseSummaryStats).toContain("../model/expense-summary-display");
+    expect(expenseSummaryStats).not.toContain("formatMoney");
+    expect(expenseSummaryDisplay).toContain("export function expenseSummaryDisplay");
     expect(expenseLedgerActions).toContain("export function useExpenseLedgerActions");
     expect(expenseLedgerActions).toContain("buildExpenseCsv");
     expect(expenseLedgerActions).toContain("buildPaybackReminder");

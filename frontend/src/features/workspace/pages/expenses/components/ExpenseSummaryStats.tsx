@@ -1,7 +1,7 @@
-import { formatMoney } from "@/src/trip/expenses";
 import type { ExpenseSummary } from "@/src/trip/types";
 import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import { expenseSummaryDisplay } from "../model/expense-summary-display";
 import type { ExpensePageLabels } from "../model/expense-page-types";
 
 interface ExpenseSummaryStatsProps {
@@ -26,19 +26,27 @@ export function ExpenseSummaryStats({
   t,
   youOwe,
 }: ExpenseSummaryStatsProps) {
+  const display = expenseSummaryDisplay({
+    currentNet,
+    expenseSummary,
+    owedToYou,
+    settlementCurrency,
+    youOwe,
+  });
+
   return (
     <div className={expenseStyles.expensesSummaryClassName} aria-label={t.expenses.summaryLabel} role="region">
       <WorkspaceSummaryStat
         className={expenseStyles.statClassName}
         icon="wallet"
         label={t.expenses.stats.tripSpend}
-        value={formatMoney(expenseSummary.groupSpend, settlementCurrency)}
+        value={display.groupSpendLabel}
       />
       <WorkspaceSummaryStat
         className={expenseStyles.statClassName}
         icon="check"
         label={t.expenses.stats.yourBalance}
-        tone={currentNet < 0 ? "negative" : currentNet > 0 ? "positive" : "neutral"}
+        tone={display.currentNetTone}
         value={expenseSummary.currentUserNetLabel}
         valueToneClassNames={summaryValueToneClassNames}
       />
@@ -47,7 +55,7 @@ export function ExpenseSummaryStats({
         icon="users"
         label={t.expenses.stats.owedToYou}
         tone="positive"
-        value={formatMoney(owedToYou, settlementCurrency)}
+        value={display.owedToYouLabel}
         valueToneClassNames={summaryValueToneClassNames}
       />
       <WorkspaceSummaryStat
@@ -55,7 +63,7 @@ export function ExpenseSummaryStats({
         icon="warning"
         label={t.expenses.stats.youOwe}
         tone="negative"
-        value={formatMoney(youOwe, settlementCurrency)}
+        value={display.youOweLabel}
         valueToneClassNames={summaryValueToneClassNames}
       />
     </div>
