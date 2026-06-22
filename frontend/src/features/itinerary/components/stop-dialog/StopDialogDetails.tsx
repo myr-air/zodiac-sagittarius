@@ -1,4 +1,4 @@
-import { stopDialogFieldIds } from "./stop-dialog.utils";
+import { stopDialogFieldIds } from "./stop-dialog-field-ids";
 import type { StopDetailFieldsProps } from "./stop-dialog.types";
 
 export function StopDialogDetails({ detailLabels, detailType, detailValues, updateDetail }: StopDetailFieldsProps) {

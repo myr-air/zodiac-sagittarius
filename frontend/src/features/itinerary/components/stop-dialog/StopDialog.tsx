@@ -11,9 +11,7 @@ import {
 } from "./stop-dialog.styles";
 import type { StopDialogProps } from "./stop-dialog.types";
 import { useStopDialogModel } from "./use-stop-dialog-model";
-import {
-  stopDetailLabels,
-} from "./stop-dialog.utils";
+import { stopDetailLabels } from "@/src/features/itinerary/domain/stop-details";
 
 export function StopDialog({
   mode,

@@ -6,9 +6,7 @@ import { StopDialogPrimaryFields } from "./StopDialogPrimaryFields";
 import { StopDialogTimeWindow } from "./StopDialogTimeWindow";
 import { dialogErrorClassName, dialogGridClassName } from "./stop-dialog.styles";
 import type { StopDialogFormFieldsProps } from "./stop-dialog.types";
-import {
-  stopDialogDetailTypeOptions,
-} from "./stop-dialog.utils";
+import { stopDialogDetailTypeOptions } from "@/src/features/itinerary/domain/stop-details";
 
 export function StopDialogFormFields({
   dayOptions,

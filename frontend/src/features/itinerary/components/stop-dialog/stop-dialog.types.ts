@@ -8,8 +8,8 @@ import type { StopFormValues } from "../../domain/stop-form-values";
 import type {
   StopDetailType,
   StopDetailValues,
+  stopDetailLabels,
 } from "@/src/features/itinerary/domain/stop-details";
-import { stopDetailLabels } from "./stop-dialog.utils";
 import type { StopDialogModel } from "./use-stop-dialog-model";
 
 export type { StopFormValues };

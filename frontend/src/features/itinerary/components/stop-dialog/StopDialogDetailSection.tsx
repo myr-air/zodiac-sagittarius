@@ -1,13 +1,14 @@
-import type { StopDetailType, StopDetailValues } from "@/src/features/itinerary/domain/stop-details";
+import {
+  type StopDetailType,
+  type StopDetailValues,
+  stopDetailLabels,
+} from "@/src/features/itinerary/domain/stop-details";
 import {
   advancedDetailsClassName,
   advancedDetailsGridClassName,
   dialogFieldWideClassName,
 } from "./stop-dialog.styles";
-import {
-  stopDialogFieldIds,
-  stopDetailLabels,
-} from "./stop-dialog.utils";
+import { stopDialogFieldIds } from "./stop-dialog-field-ids";
 import { StopDialogDetails } from "./StopDialogDetails";
 
 export function StopDialogDetailSection({

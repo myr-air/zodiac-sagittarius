@@ -8,7 +8,7 @@ import {
   nextDayToggleLabelClassName,
   timeWindowGroupClassName,
 } from "./stop-dialog.styles";
-import { stopDialogFieldIds } from "./stop-dialog.utils";
+import { stopDialogFieldIds } from "./stop-dialog-field-ids";
 
 export function StopDialogTimeWindow({
   activity,

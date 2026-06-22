@@ -2,15 +2,15 @@ import { formatDayLabel } from "@/src/trip/itinerary-core";
 import { Select } from "@/src/ui";
 import { formatThaiDate } from "@/src/features/itinerary/lib/itinerary-display";
 import type { Locale } from "@/src/i18n/types";
-import type { StopDetailType } from "@/src/features/itinerary/domain/stop-details";
+import {
+  type StopDetailType,
+  stopDetailLabels,
+} from "@/src/features/itinerary/domain/stop-details";
 import {
   dialogFieldWideClassName,
 } from "./stop-dialog.styles";
 import type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
-import {
-  stopDialogFieldIds,
-  stopDetailLabels,
-} from "./stop-dialog.utils";
+import { stopDialogFieldIds } from "./stop-dialog-field-ids";
 
 export function StopDialogContextFields({
   dayLabel,

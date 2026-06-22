@@ -34,34 +34,3 @@ export const stopDialogFieldIds = {
   status: "stop-status",
   priority: "stop-priority",
 };
-
-export {
-  buildStructuredStopDetails,
-  detailKeysForType,
-  detailTypeFromActivityType,
-  detailTypeFromItem,
-  emptyStopDetailValues,
-  itemKindForStopDetailType,
-  readStringDetail,
-  resolveStopActivityType,
-  stopDetailLabels,
-  stopDetailTypeFromItem,
-  stopDialogDetailTypeOptions,
-  stopDialogDetailTypeToActivityType,
-  structuredStopDetailValues,
-} from "@/src/features/itinerary/domain/stop-details";
-
-export type {
-  StopDetailType,
-  StopDetailValues,
-} from "@/src/features/itinerary/domain/stop-details";
-
-export {
-  addMinutesToTime,
-  durationBetweenTimes,
-  endOffsetDaysBetweenTimes,
-  endWindowFromDuration,
-  parseRouteActivity,
-  parseTimeRange,
-  timeToMinutes,
-} from "@/src/features/itinerary/domain/stop-time";

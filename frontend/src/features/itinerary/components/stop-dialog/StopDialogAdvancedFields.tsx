@@ -17,7 +17,7 @@ import {
   dialogFieldWideClassName,
 } from "./stop-dialog.styles";
 import type { StopFormValues } from "./stop-dialog.types";
-import { stopDialogFieldIds } from "./stop-dialog.utils";
+import { stopDialogFieldIds } from "./stop-dialog-field-ids";
 
 export function StopDialogAdvancedFields({
   advancedLabel,

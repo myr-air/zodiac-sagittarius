@@ -272,14 +272,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps stop dialog detail serialization split from utility ids", () => {
-    const stopDialogUtils = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts");
+    const stopDialogFieldIds = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-field-ids.ts");
+    const stopDialog = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialog.tsx");
+    const stopDialogFormFields = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialogFormFields.tsx");
     const stopDetails = readItineraryArchitectureSource("src/features/itinerary/domain/stop-details.ts");
     const stopDetailDefinitions = readItineraryArchitectureSource("src/features/itinerary/domain/stop-detail-definitions.ts");
 
-    expect(stopDialogUtils).toContain("@/src/features/itinerary/domain/stop-details");
-    expect(stopDialogUtils).toContain("export const stopDialogFieldIds");
-    expect(stopDialogUtils).not.toContain("export function buildStructuredStopDetails");
-    expect(stopDialogUtils).not.toContain("function trimmedStopDetailValues");
+    expect(stopDialogFieldIds).toContain("export const stopDialogFieldIds");
+    expect(stopDialogFieldIds).not.toContain("@/src/features/itinerary/domain/stop-details");
+    expect(stopDialogFieldIds).not.toContain("buildStructuredStopDetails");
+    expect(stopDialog).toContain("@/src/features/itinerary/domain/stop-details");
+    expect(stopDialogFormFields).toContain("@/src/features/itinerary/domain/stop-details");
     expect(stopDetails).toContain("./stop-detail-definitions");
     expect(stopDetails).toContain("export function buildStructuredStopDetails");
     expect(stopDetails).toContain("function trimmedStopDetailValues");
