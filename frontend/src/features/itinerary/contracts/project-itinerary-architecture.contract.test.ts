@@ -28,8 +28,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controls).not.toContain("function submitNewTripPlan");
     expect(controls).not.toContain("tripPlanStatus(");
     expect(controlsState).toContain("export function useTripPlanControlsState");
+    expect(controlsState).toContain("TripPlanControlDraftState");
+    expect(controlsState).toContain("const [draftState, setDraftState]");
     expect(controlsState).toContain("function submitNewTripPlan");
     expect(controlsState).toContain("tripPlanStatus(");
+    expect(controlsState).not.toContain("const [isCreatingTripPlan, setIsCreatingTripPlan]");
+    expect(controlsState).not.toContain("const [newTripPlanName, setNewTripPlanName]");
     expect(tripPlanControlsStory).toContain("SmartItineraryTableTripPlanControlsProps");
     expect(tripPlanControlsStory).not.toContain("ComponentProps<typeof SmartItineraryTableTripPlanControls>");
     expect(pathFiltersStory).toContain("SmartItineraryTablePathFiltersProps");

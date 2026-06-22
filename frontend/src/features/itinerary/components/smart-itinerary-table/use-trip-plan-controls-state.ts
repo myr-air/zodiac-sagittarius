@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type SetStateAction } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import { findTripPlanOptionById } from "@/src/trip/trip-plans";
@@ -20,6 +20,18 @@ interface TripPlanControlsStateInput {
   tripPlans: PlanVariant[];
 }
 
+interface TripPlanNameDraft {
+  name: string;
+  planId: string;
+}
+
+interface TripPlanControlDraftState {
+  createError: string | null;
+  editedNameDraft: TripPlanNameDraft | null;
+  isCreating: boolean;
+  newName: string;
+}
+
 export function useTripPlanControlsState({
   canManageTripPlans,
   emptyNameMessage,
@@ -31,13 +43,12 @@ export function useTripPlanControlsState({
   selectedTripPlanId,
   tripPlans,
 }: TripPlanControlsStateInput) {
-  const [isCreatingTripPlan, setIsCreatingTripPlan] = useState(false);
-  const [newTripPlanName, setNewTripPlanName] = useState("");
-  const [editedTripPlanNameDraft, setEditedTripPlanNameDraft] = useState<{
-    name: string;
-    planId: string;
-  } | null>(null);
-  const [newTripPlanError, setNewTripPlanError] = useState<string | null>(null);
+  const [draftState, setDraftState] = useState<TripPlanControlDraftState>({
+    createError: null,
+    editedNameDraft: null,
+    isCreating: false,
+    newName: "",
+  });
 
   const selectedTripPlan = findTripPlanOptionById(
     tripPlans,
@@ -47,10 +58,10 @@ export function useTripPlanControlsState({
     ? tripPlanStatus(selectedTripPlan)
     : "draft";
   const editedTripPlanName =
-    editedTripPlanNameDraft &&
+    draftState.editedNameDraft &&
     selectedTripPlan &&
-    editedTripPlanNameDraft.planId === selectedTripPlan.id
-      ? editedTripPlanNameDraft.name
+    draftState.editedNameDraft.planId === selectedTripPlan.id
+      ? draftState.editedNameDraft.name
       : (selectedTripPlan?.name ?? "");
   const selectedTripPlanIsMain =
     Boolean(selectedTripPlanId) && selectedTripPlanId === mainTripPlanId;
@@ -69,40 +80,65 @@ export function useTripPlanControlsState({
     editedTripPlanName.trim() === selectedTripPlan.name;
 
   function closeCreateMode() {
-    setIsCreatingTripPlan(false);
-    setNewTripPlanName("");
-    setNewTripPlanError(null);
+    setDraftState((current) => ({
+      ...current,
+      createError: null,
+      isCreating: false,
+      newName: "",
+    }));
   }
 
   function changeTripPlan(nextTripPlanId: string) {
-    setNewTripPlanError(null);
-    setEditedTripPlanNameDraft(null);
+    setDraftState((current) => ({
+      ...current,
+      createError: null,
+      editedNameDraft: null,
+    }));
     onChangeTripPlan(nextTripPlanId);
   }
 
   function changeEditedTripPlanName(nextName: string) {
     if (!selectedTripPlan) return;
-    setEditedTripPlanNameDraft({
-      name: nextName,
-      planId: selectedTripPlan.id,
-    });
-    setNewTripPlanError(null);
+    setDraftState((current) => ({
+      ...current,
+      createError: null,
+      editedNameDraft: {
+        name: nextName,
+        planId: selectedTripPlan.id,
+      },
+    }));
   }
 
   function changeNewTripPlanName(nextName: string) {
-    setNewTripPlanName(nextName);
-    setNewTripPlanError(null);
+    setDraftState((current) => ({
+      ...current,
+      createError: null,
+      newName: nextName,
+    }));
+  }
+
+  function setIsCreatingTripPlan(nextIsCreating: SetStateAction<boolean>) {
+    setDraftState((current) => ({
+      ...current,
+      isCreating:
+        typeof nextIsCreating === "function"
+          ? nextIsCreating(current.isCreating)
+          : nextIsCreating,
+    }));
   }
 
   async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isTripPlanBusy || !canManageTripPlans) return;
-    const name = newTripPlanName.trim();
+    const name = draftState.newName.trim();
     if (!name) {
-      setNewTripPlanError(emptyNameMessage);
+      setDraftState((current) => ({
+        ...current,
+        createError: emptyNameMessage,
+      }));
       return;
     }
-    setNewTripPlanError(null);
+    setDraftState((current) => ({ ...current, createError: null }));
     const created = await onCreateTripPlan(name);
     if (created === false) return;
     closeCreateMode();
@@ -113,14 +149,20 @@ export function useTripPlanControlsState({
     if (isTripPlanBusy || !canManageTripPlans || !selectedTripPlan) return;
     const name = editedTripPlanName.trim();
     if (!name) {
-      setNewTripPlanError(emptyNameMessage);
+      setDraftState((current) => ({
+        ...current,
+        createError: emptyNameMessage,
+      }));
       return;
     }
     if (name === selectedTripPlan.name) return;
-    setNewTripPlanError(null);
+    setDraftState((current) => ({ ...current, createError: null }));
     const renamed = await onRenameTripPlan(selectedTripPlan.id, name);
     if (renamed === false) return;
-    setEditedTripPlanNameDraft({ name, planId: selectedTripPlan.id });
+    setDraftState((current) => ({
+      ...current,
+      editedNameDraft: { name, planId: selectedTripPlan.id },
+    }));
   }
 
   return {
@@ -129,9 +171,9 @@ export function useTripPlanControlsState({
     changeTripPlan,
     closeCreateMode,
     editedTripPlanName,
-    isCreatingTripPlan,
-    newTripPlanError,
-    newTripPlanName,
+    isCreatingTripPlan: draftState.isCreating,
+    newTripPlanError: draftState.createError,
+    newTripPlanName: draftState.newName,
     renameTripPlanDisabled,
     selectedTripPlan,
     selectedTripPlanIsMain,
