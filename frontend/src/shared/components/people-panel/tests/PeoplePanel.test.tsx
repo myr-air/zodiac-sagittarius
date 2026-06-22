@@ -1,12 +1,12 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { renderWithI18n } from "@/src/i18n/test-utils";
+import { renderWithI18n, type RenderWithI18nUi } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { PeoplePanel } from "../PeoplePanel";
 
-const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
-const renderEn = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "en" });
+const render = (ui: RenderWithI18nUi) => renderWithI18n(ui, { locale: "th" });
+const renderEn = (ui: RenderWithI18nUi) => renderWithI18n(ui, { locale: "en" });
 
 describe("PeoplePanel", () => {
   it("localizes standalone panel copy for English", () => {

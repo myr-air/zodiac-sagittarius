@@ -1,7 +1,7 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import type { Member, Suggestion } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
+import type { SuggestionPanelProps } from "./suggestion-panel.types";
 
 const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
 const titleRowClassName = "module-title-row flex items-center justify-between gap-2.5";
@@ -10,7 +10,7 @@ const listClassName = "suggestion-list grid gap-1.5";
 const itemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-(--color-text-muted)";
 const copyClassName = "grid gap-0.5";
 
-export function SuggestionPanel({ suggestions, members }: { suggestions: Suggestion[]; members: Member[] }) {
+export function SuggestionPanel({ suggestions, members }: SuggestionPanelProps) {
   const { t } = useI18n();
   const openSuggestions = suggestions.filter((suggestion) => suggestion.status === "pending" || suggestion.status === "conflicted");
 

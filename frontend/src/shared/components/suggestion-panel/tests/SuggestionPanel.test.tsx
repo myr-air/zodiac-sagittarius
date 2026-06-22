@@ -1,10 +1,10 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { renderWithI18n } from "@/src/i18n/test-utils";
+import { renderWithI18n, type RenderWithI18nUi } from "@/src/i18n/test-utils";
 import { SuggestionPanel } from "../SuggestionPanel";
 
-const render = (ui: Parameters<typeof renderWithI18n>[0]) => renderWithI18n(ui, { locale: "th" });
+const render = (ui: RenderWithI18nUi) => renderWithI18n(ui, { locale: "th" });
 
 describe("SuggestionPanel", () => {
   it("shows pending and conflicted suggestions with proposer fallbacks", () => {

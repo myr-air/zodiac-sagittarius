@@ -1,11 +1,11 @@
 import { vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { renderWithI18n } from "@/src/i18n/test-utils";
+import { renderWithI18n, type RenderWithI18nUi } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixtureTasks } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { OverviewPage } from "../../OverviewPage";
 
-export const renderOverviewElement = (ui: Parameters<typeof renderWithI18n>[0]) =>
+export const renderOverviewElement = (ui: RenderWithI18nUi) =>
   renderWithI18n(ui, { locale: "th" });
 
 export function installOverviewPageClock() {

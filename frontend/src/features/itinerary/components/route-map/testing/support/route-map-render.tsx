@@ -1,18 +1,18 @@
 import { I18nProvider } from "@/src/i18n/I18nProvider";
-import { renderWithI18n } from "@/src/i18n/test-utils";
+import { renderWithI18n, type RenderWithI18nUi } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { RouteMapViewProps } from "@/src/features/itinerary/components";
 import { RouteMapView } from "../../RouteMapView";
 import { routeMapItems } from "../fixtures/route-map-fixtures";
 
-export const renderWithThaiI18n = (ui: Parameters<typeof renderWithI18n>[0]) => {
+export const renderWithThaiI18n = (ui: RenderWithI18nUi) => {
   const result = renderWithI18n(ui, { locale: "th" });
   const originalRerender = result.rerender;
 
   return {
     ...result,
-    rerender: (nextUi: Parameters<typeof renderWithI18n>[0]) =>
+    rerender: (nextUi: RenderWithI18nUi) =>
       originalRerender(<I18nProvider initialLocale="th">{nextUi}</I18nProvider>),
   };
 };

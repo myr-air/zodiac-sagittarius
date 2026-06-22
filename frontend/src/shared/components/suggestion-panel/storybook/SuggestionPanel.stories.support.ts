@@ -1,7 +1,7 @@
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { SuggestionPanel } from "../SuggestionPanel";
+import type { SuggestionPanelProps } from "../suggestion-panel.types";
 
-type SuggestionPanelStoryArgs = Parameters<typeof SuggestionPanel>[0];
+type SuggestionPanelStoryArgs = SuggestionPanelProps;
 
 export const suggestionPanelStoryArgs = {
   members: tripFixture.trip.members,

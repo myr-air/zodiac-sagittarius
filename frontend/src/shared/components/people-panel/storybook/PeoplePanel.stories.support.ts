@@ -1,8 +1,8 @@
 import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
-import type { PeoplePanel } from "../PeoplePanel";
+import type { PeoplePanelProps } from "../people-panel.types";
 
-type PeoplePanelStoryArgs = Parameters<typeof PeoplePanel>[0];
+type PeoplePanelStoryArgs = PeoplePanelProps;
 
 export const managerPeoplePanelStoryArgs = {
   members: seedTrip.members.filter((member) => member.id !== "member-viewer"),
