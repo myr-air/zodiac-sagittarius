@@ -23,12 +23,14 @@ describe("expense dialog initial state helpers", () => {
       }),
     ).toEqual({
       amount: "",
+      category: "transport",
       currency: "HKD",
       exchangeRate: "1",
       exchangeRateTouched: false,
       itemId: "",
       notes: "",
       paidBy: members[0].id,
+      repeatCount: "1",
       receiptUrl: "",
       title: "",
     });
@@ -40,6 +42,7 @@ describe("expense dialog initial state helpers", () => {
         currentMemberId: members[0].id,
         expense: {
           amount: 42.5,
+          category: "food",
           currency: " usd ",
           exchangeRateToSettlementCurrency: 7.82,
           id: "expense-edit",
@@ -52,12 +55,14 @@ describe("expense dialog initial state helpers", () => {
       }),
     ).toMatchObject({
       amount: "42.5",
+      category: "food",
       currency: "USD",
       exchangeRate: "7.82",
       exchangeRateTouched: true,
       itemId: "item-dinner",
       notes: "Bring receipt",
       paidBy: members[1].id,
+      repeatCount: "1",
       receiptUrl: "https://receipts.example/test",
       title: "Dinner",
     });

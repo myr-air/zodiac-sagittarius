@@ -65,10 +65,10 @@ export function useExpenseDialogState({
     setCommentDraft,
   } = useExpenseComments({ currentMember, expense });
   const [isSaving, setIsSaving] = useState(false);
-  const [repeatCount, setRepeatCount] = useState("1");
+  const [repeatCount, setRepeatCount] = useState(initialFields.repeatCount);
   const [paidBy, setPaidBy] = useState(initialFields.paidBy);
   const [category, setCategory] = useState<Expense["category"]>(
-    expense?.category ?? "transport",
+    initialFields.category,
   );
   const [itemId, setItemId] = useState(initialFields.itemId);
   const [tripPlanId, setTripPlanId] = useState(

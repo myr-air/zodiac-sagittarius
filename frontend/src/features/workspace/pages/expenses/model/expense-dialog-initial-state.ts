@@ -4,12 +4,14 @@ import { normalizeCurrencyCode } from "@/src/trip/currencies";
 
 export interface ExpenseDialogInitialFields {
   amount: string;
+  category: Expense["category"];
   currency: string;
   exchangeRate: string;
   exchangeRateTouched: boolean;
   itemId: string;
   notes: string;
   paidBy: string;
+  repeatCount: string;
   receiptUrl: string;
   title: string;
 }
@@ -23,6 +25,7 @@ export function initialExpenseDialogFields({
 }): ExpenseDialogInitialFields {
   return {
     amount: expense ? String(expense.amount) : "",
+    category: expense?.category ?? "transport",
     currency: normalizeCurrencyCode(expense?.currency ?? "HKD"),
     exchangeRate: expense?.exchangeRateToSettlementCurrency
       ? String(expense.exchangeRateToSettlementCurrency)
@@ -31,6 +34,7 @@ export function initialExpenseDialogFields({
     itemId: expense?.itineraryItemId ?? "",
     notes: expense?.notes ?? "",
     paidBy: expense?.paidBy ?? currentMemberId,
+    repeatCount: "1",
     receiptUrl: expense?.receiptUrl ?? "",
     title: expense?.title ?? "",
   };
