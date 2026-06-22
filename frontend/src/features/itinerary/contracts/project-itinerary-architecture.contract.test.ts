@@ -176,7 +176,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
     const tableUtils = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts");
-    const tableGrouping = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-grouping.ts");
+    const tableGrouping = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-table-grouping.ts");
     const tableGraph = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-graph.ts");
     const tableLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-labels.ts");
     const tableTripPlanLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-trip-plan-labels.ts");
@@ -187,7 +187,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(tableUtils).not.toContain("weather-briefings");
     expect(tableUtils).not.toContain("buildWeatherSummary");
     expect(tableUtils).not.toContain("buildWeatherTooltip");
-    expect(tableUtils).toContain("./smart-itinerary-table-grouping");
+    expect(tableUtils).toContain("@/src/features/itinerary/domain/itinerary-table-grouping");
     expect(tableUtils).toContain("./smart-itinerary-table-graph");
     expect(tableUtils).toContain("./smart-itinerary-table-labels");
     expect(tableUtils).toContain("./smart-itinerary-table-trip-plan-labels");

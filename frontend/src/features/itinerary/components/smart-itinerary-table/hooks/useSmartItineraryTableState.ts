@@ -15,7 +15,7 @@ import {
   buildGraphColumnWidth,
   groupGraphItemsByDay,
 } from "../smart-itinerary-table-graph";
-import { mergeTripDayGroups } from "../smart-itinerary-table-grouping";
+import { mergeTripDayGroups } from "@/src/features/itinerary/domain/itinerary-table-grouping";
 import {
   graphColumnLaneGap,
   graphColumnMinWidth,

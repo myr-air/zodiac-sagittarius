@@ -3,7 +3,7 @@ export {
   groupChildItemsByParent,
   groupTopLevelItems,
   mergeTripDayGroups,
-} from "./smart-itinerary-table-grouping";
+} from "@/src/features/itinerary/domain/itinerary-table-grouping";
 export {
   buildGraphColumnWidth,
   groupGraphItemsByDay,

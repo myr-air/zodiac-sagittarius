@@ -4,7 +4,7 @@ import { ActivityPathGraphDay } from "../activity-path-graph/ActivityPathGraphDa
 import {
   groupChildItemsByParent,
   groupTopLevelItems,
-} from "./smart-itinerary-table-grouping";
+} from "@/src/features/itinerary/domain/itinerary-table-grouping";
 import {
   addStopInlineButtonClassName,
   addStopRowClassName,
