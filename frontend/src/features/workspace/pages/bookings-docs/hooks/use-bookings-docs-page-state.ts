@@ -1,16 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type {
-  BookingDocInput,
   CreateBookingDocHandler,
   DeleteBookingDocHandler,
   UpdateBookingDocHandler,
 } from "../BookingsDocsPage.types";
-import {
-  initialBookingModalState,
-  updateBookingModalState,
-  type BookingModalState,
-} from "../model/booking-page-state";
 import { countBookingFolders, findBookingFolder } from "../model/booking-folders";
 import {
   filterBookingPageDocs,
@@ -20,6 +14,7 @@ import {
   visibleBookingDocsForMember,
 } from "../model/booking-page-selectors";
 import { useBookingBrowserState } from "./useBookingBrowserState";
+import { useBookingModalState } from "./useBookingModalState";
 
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];
@@ -54,9 +49,18 @@ export function useBookingsDocsPageState({
     statusFilter,
     statusMenuOpen,
   } = useBookingBrowserState({ bookingDocs });
-  const [modalState, setModalState] = useState<BookingModalState>(
-    initialBookingModalState,
-  );
+  const {
+    confirmDelete,
+    deleteBooking,
+    dialogBooking,
+    setDeleteBooking,
+    setDialogBooking,
+    submitBooking,
+  } = useBookingModalState({
+    onCreateBookingDoc,
+    onDeleteBookingDoc,
+    onUpdateBookingDoc,
+  });
   const visibleDocs = useMemo(
     () => visibleBookingDocsForMember(bookingDocs, currentMember),
     [bookingDocs, currentMember],
@@ -84,36 +88,14 @@ export function useBookingsDocsPageState({
   });
   const activeFolder = findBookingFolder(activeFolderId);
 
-  function updateModalState<Field extends keyof BookingModalState>(
-    field: Field,
-    value: BookingModalState[Field],
-  ) {
-    setModalState((current) => updateBookingModalState(current, field, value));
-  }
-
-  async function submitBooking(input: BookingDocInput) {
-    if (modalState.dialogBooking === "new") {
-      await onCreateBookingDoc(input);
-    } else if (modalState.dialogBooking) {
-      await onUpdateBookingDoc(modalState.dialogBooking.id, input);
-    }
-    updateModalState("dialogBooking", null);
-  }
-
-  async function confirmDelete() {
-    if (!modalState.deleteBooking) return;
-    await onDeleteBookingDoc(modalState.deleteBooking.id);
-    updateModalState("deleteBooking", null);
-  }
-
   return {
     activeFolder,
     activeFolderId,
     changeQuery,
     changeStatusFilter,
     confirmDelete,
-    deleteBooking: modalState.deleteBooking,
-    dialogBooking: modalState.dialogBooking,
+    deleteBooking,
+    dialogBooking,
     folderCounts,
     folderDocs,
     lockedDocs,
@@ -123,10 +105,8 @@ export function useBookingsDocsPageState({
     selectedRelations,
     selectBooking,
     selectFolder,
-    setDeleteBooking: (deleteBooking: BookingDoc | null) =>
-      updateModalState("deleteBooking", deleteBooking),
-    setDialogBooking: (dialogBooking: BookingDoc | "new" | null) =>
-      updateModalState("dialogBooking", dialogBooking),
+    setDeleteBooking,
+    setDialogBooking,
     setMobilePreviewOpen,
     setStatusMenuOpen,
     statusFilter,
