@@ -37,6 +37,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const subActivityList = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx",
     );
+    const subActivityItem = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityItem.tsx",
+    );
     const exports = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/components.tsx",
     );
@@ -55,7 +58,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
 
     expect(activityCell).toContain("./ActivityTimeButton");
     expect(activityCell).not.toContain("TimeComponents");
-    expect(subActivityList).toContain("./ActivityTimeButton");
+    expect(subActivityList).toContain("./SubActivityItem");
+    expect(subActivityList).not.toContain("./ActivityTimeButton");
+    expect(subActivityItem).toContain("./ActivityTimeButton");
     expect(subActivityList).not.toContain("TimeComponents");
     expect(exports).toContain("./activity-cell/ActivityTimeButton");
     expect(exports).toContain("./activity-cell/TimeEditModal");
@@ -111,6 +116,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const list = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx",
     );
+    const item = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityItem.tsx",
+    );
     const modal = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx",
     );
@@ -128,6 +136,12 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(exports).toContain("./activity-cell/SubActivityModal");
     expect(exports).not.toContain("SubActivityComponents");
     expect(list).toContain("export function SubActivityList");
+    expect(list).toContain("./SubActivityItem");
+    expect(list).not.toContain("InlineActivityField");
+    expect(list).not.toContain("ItineraryBookingButton");
+    expect(item).toContain("export function SubActivityItem");
+    expect(item).toContain("InlineActivityField");
+    expect(item).toContain("ItineraryBookingButton");
     expect(modal).toContain("export function SubActivityModal");
     expect(modal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(types).toContain("export interface SubActivitySharedProps");

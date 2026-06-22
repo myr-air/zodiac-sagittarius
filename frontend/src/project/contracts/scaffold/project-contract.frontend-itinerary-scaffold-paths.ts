@@ -171,6 +171,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/tests/ItineraryNoteModal.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts",
+  "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityItem.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityModal.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts",
