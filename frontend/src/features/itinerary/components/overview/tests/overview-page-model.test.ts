@@ -14,11 +14,9 @@ describe("overview page model", () => {
     vi.setSystemTime(new Date("2026-06-18T12:00:00.000Z"));
 
     const model = buildOverviewPageModel({
-      completedFocusHeading: "Memories",
       currentMemberId: "member-beam",
       expenseSummary: buildExpenseSummary(seedTrip.expenses, "member-beam"),
       focusTodayLabel: "Focus today",
-      incomingFocusHeading: "First stop",
       items: [...seedTrip.itineraryItems].reverse(),
       locale: "en",
       suggestions: [
@@ -42,6 +40,7 @@ describe("overview page model", () => {
     expect(model.pendingSuggestions).toBe(1);
     expect(model.activeMembers).toBeGreaterThan(0);
     expect(model.nextStop?.day).toBe(seedTrip.startDate);
+    expect(model.focusTodayHeading).toBe("Focus today");
     expect(model.groupSpendLabel).toBe("HK$1,672.00");
     expect(model.highlightItems.length).toBeGreaterThan(0);
   });
@@ -50,11 +49,9 @@ describe("overview page model", () => {
     const item = getTripFixtureItineraryItem("item-dimdim");
 
     const model = buildOverviewPageModel({
-      completedFocusHeading: "Memories",
       currentMemberId: "member-nam",
       expenseSummary: buildExpenseSummary(seedTrip.expenses, "member-nam"),
       focusTodayLabel: "Focus today",
-      incomingFocusHeading: "First stop",
       items: seedTrip.itineraryItems,
       itineraryView: {
         dayGroups: [{ day: item.day, items: [item], warningCount: 42 }],

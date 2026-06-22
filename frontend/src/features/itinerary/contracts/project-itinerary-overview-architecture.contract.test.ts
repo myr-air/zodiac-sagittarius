@@ -58,6 +58,8 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const overviewPage = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.tsx");
     const overviewLensPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewLensPanels.tsx");
     const overviewPageDerived = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-derived.tsx");
+    const overviewPageModel = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-model.ts");
+    const overviewFocusHeading = readItineraryArchitectureSource("src/features/itinerary/domain/overview-focus-heading.ts");
     const overviewPageTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.types.ts");
     const overviewTaskState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-task-state.ts");
     const overviewTaskStateModel = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-task-state.ts");
@@ -74,6 +76,11 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(overviewPage).not.toContain("interface OverviewPageProps");
     expect(overviewPage).not.toContain("function submitTask");
     expect(overviewPage).not.toContain("isMyTask");
+    expect(overviewPage).not.toContain('locale === "th"');
+    expect(overviewPageModel).toContain("overviewFocusHeading");
+    expect(overviewPageModel).not.toContain("completedFocusHeading");
+    expect(overviewPageModel).not.toContain("incomingFocusHeading");
+    expect(overviewFocusHeading).toContain("export function overviewFocusHeading");
     expect(overviewLensPanels).toContain("export function OverviewLensPanels");
     expect(overviewLensPanels).toContain("./ManagerOverviewPanels");
     expect(overviewLensPanels).toContain("./TravelerOverviewPanels");

@@ -79,11 +79,9 @@ export function OverviewPage({
     viewerHighlights,
     warningCount,
   } = buildOverviewPageModel({
-    completedFocusHeading: locale === "th" ? "ย้อนรอยความทรงจำ" : "Memories of the Journey",
     currentMemberId,
     expenseSummary,
     focusTodayLabel: t.overview.focusToday,
-    incomingFocusHeading: locale === "th" ? "จุดสตาร์ทแรกของทริป" : "First Stop Preview",
     items,
     itineraryView,
     locale,

@@ -18,15 +18,14 @@ import {
   buildDestinationVisual,
   buildHighlightItems,
   getCountdownBadge,
+  overviewFocusHeading,
   overviewRoleLens,
 } from "@/src/features/itinerary/domain/overview";
 
 interface OverviewPageModelInput {
-  completedFocusHeading: string;
   currentMemberId: string;
   expenseSummary: ExpenseSummary;
   focusTodayLabel: string;
-  incomingFocusHeading: string;
   items: ItineraryItem[];
   itineraryView?: ItineraryView;
   locale: Locale;
@@ -35,11 +34,9 @@ interface OverviewPageModelInput {
 }
 
 export function buildOverviewPageModel({
-  completedFocusHeading,
   currentMemberId,
   expenseSummary,
   focusTodayLabel,
-  incomingFocusHeading,
   items,
   itineraryView,
   locale,
@@ -48,11 +45,11 @@ export function buildOverviewPageModel({
 }: OverviewPageModelInput) {
   const countdown = getCountdownBadge(trip.startDate, trip.endDate, locale);
   const isCompleted = countdown.type === "completed";
-  const focusTodayHeading = isCompleted
-    ? completedFocusHeading
-    : countdown.type === "incoming"
-      ? incomingFocusHeading
-      : focusTodayLabel;
+  const focusTodayHeading = overviewFocusHeading({
+    countdownType: countdown.type,
+    focusTodayLabel,
+    locale,
+  });
   const sortedItems =
     itineraryView?.sortedItems ??
     items
