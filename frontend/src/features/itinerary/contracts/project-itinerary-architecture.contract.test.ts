@@ -190,13 +190,18 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps activity cell title editing and actions split from shell layout", () => {
     const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx");
+    const activityCellBody = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellBody.tsx");
     const titleLine = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellTitleLine.tsx");
     const actionGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx");
     const actionButtons = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButtons.tsx");
     const actionButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx");
 
-    expect(activityCell).toContain("./ActivityCellTitleLine");
-    expect(activityCell).toContain("./ActivityCellActionGroup");
+    expect(activityCell).toContain("./ActivityCellBody");
+    expect(activityCell).not.toContain("./ActivityCellTitleLine");
+    expect(activityCell).not.toContain("./ActivityCellActionGroup");
+    expect(activityCellBody).toContain("./ActivityCellTitleLine");
+    expect(activityCellBody).toContain("./ActivityCellActionGroup");
+    expect(activityCellBody).toContain("./ActivityCellMeta");
     expect(activityCell).not.toContain("./InlineActivityField");
     expect(activityCell).not.toContain("./ActivityActionButtons");
     expect(titleLine).toContain("export function ActivityCellTitleLine");

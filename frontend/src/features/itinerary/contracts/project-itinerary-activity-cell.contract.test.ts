@@ -12,6 +12,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const activityCellMeta = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx",
     );
+    const activityCellBody = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellBody.tsx",
+    );
     const activityCellModel = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts",
     );
@@ -21,10 +24,16 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
 
     expect(activityCellBarrel).toContain("./activity-cell/ActivityCell");
     expect(activityCell).toContain("./use-activity-cell-model");
-    expect(activityCell).toContain("./ActivityCellMeta");
+    expect(activityCell).toContain("./ActivityCellBody");
+    expect(activityCell).not.toContain("./ActivityCellMeta");
+    expect(activityCell).not.toContain("./ActivityCellTitleLine");
     expect(activityCell).toContain("ActivityCellProps");
     expect(activityCell).not.toContain("useState");
     expect(activityCell).not.toContain("itemStatusLabel");
+    expect(activityCellBody).toContain("export function ActivityCellBody");
+    expect(activityCellBody).toContain("./ActivityCellMeta");
+    expect(activityCellBody).toContain("./ActivityCellTitleLine");
+    expect(activityCellBody).toContain("./ActivityCellActionGroup");
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
     expect(activityCellTypes).toContain("export interface ActivityCellProps");
