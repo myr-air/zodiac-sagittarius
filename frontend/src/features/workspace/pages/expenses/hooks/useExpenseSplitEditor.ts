@@ -2,60 +2,69 @@ import { useState } from "react";
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, Member } from "@/src/trip/types";
 import {
-  initialExpenseSplitValues,
-} from "../model/expense-dialog-initial-state";
-import {
-  appendEmptyExpenseLineItem,
-  expenseSplitModeTransitionFields,
-  initialExpenseLineItems,
-  toggleExpenseLineParticipant,
-  updateEditableExpenseLineItem,
+  appendExpenseSplitEditorLineItem,
+  changeExpenseSplitEditorMode,
+  initialExpenseSplitEditorState,
+  toggleExpenseSplitEditorLineParticipant,
+  updateExpenseSplitEditorLineItem,
+  updateExpenseSplitEditorValue,
   type EditableExpenseLineItem,
-} from "../model/expense-dialog-line-items";
+} from "../model/expense-split-editor";
 
 interface UseExpenseSplitEditorInput {
   expense: Expense | null;
   members: Member[];
 }
 
-export function useExpenseSplitEditor({ expense, members }: UseExpenseSplitEditorInput) {
-  const [splitMode, setSplitMode] = useState<ExpenseSplitMode>(expense?.lineItems?.length ? "itemized" : expense ? "exact" : "equal");
-  const [splitValues, setSplitValues] = useState<Record<string, string>>(initialExpenseSplitValues(members, expense));
-  const [lineItems, setLineItems] = useState<EditableExpenseLineItem[]>(initialExpenseLineItems(expense, members));
+export function useExpenseSplitEditor({
+  expense,
+  members,
+}: UseExpenseSplitEditorInput) {
+  const [state, setState] = useState(() =>
+    initialExpenseSplitEditorState({ expense, members }),
+  );
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {
-    setSplitMode(nextMode);
-    const nextFields = expenseSplitModeTransitionFields({
-      lineItems,
-      members,
-      nextMode,
-    });
-    if (nextFields.splitValues) setSplitValues(nextFields.splitValues);
-    if (nextFields.lineItems) setLineItems(nextFields.lineItems);
+    setState((current) =>
+      changeExpenseSplitEditorMode({
+        members,
+        nextMode,
+        state: current,
+      }),
+    );
   }
 
-  function updateLineItem(index: number, patch: Partial<EditableExpenseLineItem>) {
-    setLineItems((current) => updateEditableExpenseLineItem(current, index, patch));
+  function updateLineItem(
+    index: number,
+    patch: Partial<EditableExpenseLineItem>,
+  ) {
+    setState((current) =>
+      updateExpenseSplitEditorLineItem(current, index, patch),
+    );
   }
 
   function toggleLineParticipant(index: number, memberId: string) {
-    setLineItems((current) => toggleExpenseLineParticipant(current, index, memberId));
+    setState((current) =>
+      toggleExpenseSplitEditorLineParticipant(current, index, memberId),
+    );
   }
 
   function addLineItem() {
-    setLineItems((current) => appendEmptyExpenseLineItem(current, members));
+    setState((current) => appendExpenseSplitEditorLineItem(current, members));
   }
 
   function updateSplitValue(memberId: string, value: string) {
-    setSplitValues((current) => ({ ...current, [memberId]: value }));
+    setState((current) =>
+      updateExpenseSplitEditorValue(current, memberId, value),
+    );
   }
 
   return {
     addLineItem,
     changeSplitMode,
-    lineItems,
-    splitMode,
-    splitValues,
+    lineItems: state.lineItems,
+    splitMode: state.splitMode,
+    splitValues: state.splitValues,
     toggleLineParticipant,
     updateLineItem,
     updateSplitValue,

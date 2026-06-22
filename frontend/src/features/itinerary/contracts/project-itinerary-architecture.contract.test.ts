@@ -347,6 +347,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
+    const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
+    const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
 
     expect(expensesPage).toContain("./use-trip-expenses-page-state");
@@ -386,6 +388,13 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseDialogState).not.toContain("const [title, setTitle]");
     expect(expenseDialogState).not.toContain("const [amount, setAmount]");
     expect(expenseDialogState).not.toContain("const [currency, setCurrency]");
+    expect(expenseSplitEditor).toContain("initialExpenseSplitEditorState");
+    expect(expenseSplitEditor).toContain("const [state, setState]");
+    expect(expenseSplitEditor).not.toContain("const [splitMode, setSplitMode]");
+    expect(expenseSplitEditor).not.toContain("const [splitValues, setSplitValues]");
+    expect(expenseSplitEditor).not.toContain("const [lineItems, setLineItems]");
+    expect(expenseSplitEditorModel).toContain("export interface ExpenseSplitEditorState");
+    expect(expenseSplitEditorModel).toContain("export function changeExpenseSplitEditorMode");
     expect(contextRailExpenseForm).toContain("ContextRailExpenseFormValues");
     expect(contextRailExpenseForm).toContain("const [formValues, setFormValues]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");
