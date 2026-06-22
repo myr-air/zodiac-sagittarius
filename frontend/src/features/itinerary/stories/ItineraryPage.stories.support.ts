@@ -3,15 +3,9 @@ import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { pathIdMain } from "@/src/features/itinerary/testing";
 import {
-  branchGraphItemsBase,
+  buildPrefixedPathScenarioItems,
   pathNameMain,
-  planAExampleItemsBase,
-  planABAlternativeItemsBase,
-  requestedPlanExampleItemsBase,
-  stressPathItemsBase,
-  windowOnlyDurationItemBase,
   buildOverflowStoryItems,
-  withStoryPrefix,
 } from "./support/itinerary-story-fixtures";
 
 export const onStoryChangeDayPath = fn();
@@ -20,30 +14,20 @@ export const onStoryToggleShowAllPaths = fn();
 export const onStoryUpdateItemInline = fn();
 export const onStoryInlineQuickEdit = fn();
 
-export const pageBranchGraphItems: ItineraryItem[] = withStoryPrefix(
-  branchGraphItemsBase,
-  "page",
-);
-export const pagePlanAExampleItems: ItineraryItem[] = withStoryPrefix(
-  planAExampleItemsBase,
-  "page",
-);
-export const pageWindowOnlyDurationItems: ItineraryItem[] = withStoryPrefix(
-  windowOnlyDurationItemBase,
-  "page",
-);
-export const pagePlanABAlternativeItems: ItineraryItem[] = withStoryPrefix(
-  planABAlternativeItemsBase,
-  "page",
-);
-export const pageRequestedPlanExampleItems: ItineraryItem[] = withStoryPrefix(
-  requestedPlanExampleItemsBase,
-  "page",
-);
-export const pageStressPathItems: ItineraryItem[] = withStoryPrefix(
-  stressPathItemsBase,
-  "page",
-);
+const pagePathScenarioItems = buildPrefixedPathScenarioItems("page");
+
+export const pageBranchGraphItems: ItineraryItem[] =
+  pagePathScenarioItems.branchGraphItems;
+export const pagePlanAExampleItems: ItineraryItem[] =
+  pagePathScenarioItems.planAExampleItems;
+export const pageWindowOnlyDurationItems: ItineraryItem[] =
+  pagePathScenarioItems.windowOnlyDurationItems;
+export const pagePlanABAlternativeItems: ItineraryItem[] =
+  pagePathScenarioItems.planABAlternativeItems;
+export const pageRequestedPlanExampleItems: ItineraryItem[] =
+  pagePathScenarioItems.requestedPlanExampleItems;
+export const pageStressPathItems: ItineraryItem[] =
+  pagePathScenarioItems.stressPathItems;
 export const pageOverlapConflictItems: ItineraryItem[] = [
   {
     ...tripFixture.planItems[0],

@@ -13,6 +13,7 @@ export { buildOverflowStoryItems, withStoryPrefix };
 export {
   branchGraphItemsBase,
   branchGraphPathOptions,
+  buildPrefixedPathScenarioItems,
   pathNameMain,
   pathNamePlanA,
   pathNamePlanB,

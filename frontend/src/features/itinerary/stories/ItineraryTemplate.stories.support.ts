@@ -1,37 +1,24 @@
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
-  branchGraphItemsBase,
+  buildPrefixedPathScenarioItems,
   denseTripFixture,
   itineraryStoryDay,
-  planAExampleItemsBase,
-  planABAlternativeItemsBase,
-  requestedPlanExampleItemsBase,
-  stressPathItemsBase,
   buildOverflowStoryItems,
-  withStoryPrefix,
 } from "./support/itinerary-story-fixtures";
 
-export const branchGraphItems: ItineraryItem[] = withStoryPrefix(
-  branchGraphItemsBase,
-  "story",
-);
-export const planAExampleItems: ItineraryItem[] = withStoryPrefix(
-  planAExampleItemsBase,
-  "story",
-);
-export const planABAlternativeItems: ItineraryItem[] = withStoryPrefix(
-  planABAlternativeItemsBase,
-  "story",
-);
-export const requestedPlanExampleItems: ItineraryItem[] = withStoryPrefix(
-  requestedPlanExampleItemsBase,
-  "story",
-);
-export const stressPathItems: ItineraryItem[] = withStoryPrefix(
-  stressPathItemsBase,
-  "story",
-);
+const templatePathScenarioItems = buildPrefixedPathScenarioItems("story");
+
+export const branchGraphItems: ItineraryItem[] =
+  templatePathScenarioItems.branchGraphItems;
+export const planAExampleItems: ItineraryItem[] =
+  templatePathScenarioItems.planAExampleItems;
+export const planABAlternativeItems: ItineraryItem[] =
+  templatePathScenarioItems.planABAlternativeItems;
+export const requestedPlanExampleItems: ItineraryItem[] =
+  templatePathScenarioItems.requestedPlanExampleItems;
+export const stressPathItems: ItineraryItem[] =
+  templatePathScenarioItems.stressPathItems;
 export const denseTemplateItems = denseTripFixture.itineraryItems;
 
 export const hierarchyBlockItems: ItineraryItem[] = [
