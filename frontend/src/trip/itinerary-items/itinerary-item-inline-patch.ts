@@ -1,4 +1,4 @@
-import type { ItineraryItem } from "@/src/trip/types";
+import type { ItineraryItem } from "../types";
 
 export type InlineItineraryItemPatch = Partial<
   Pick<

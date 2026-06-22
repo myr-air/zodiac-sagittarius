@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
-import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { itemStatusLabel } from "../smart-itinerary-table-labels";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 

@@ -1,5 +1,5 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import type {
   BookingDocInputLike,
   ItineraryBookingTemplate,

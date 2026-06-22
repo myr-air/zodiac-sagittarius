@@ -21,6 +21,8 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       itineraryBlockMoveCommand,
       itineraryDayMoveCommand,
       itineraryPathMoveCommand,
+      itineraryInlineUpdateCommand,
+      itineraryInlineUpdateInputs,
       itineraryReorderCommand,
       itineraryStopSaveCommands,
       itineraryStopCommandTypes,
@@ -162,6 +164,14 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     );
     expect(itineraryPathMoveCommand).not.toContain(
       "interface UseWorkspaceItineraryPathMoveCommandParams",
+    );
+    expect(itineraryInlineUpdateCommand).toContain("@/src/trip/itinerary-items");
+    expect(itineraryInlineUpdateCommand).not.toContain(
+      "@/src/features/itinerary/lib/inline-itinerary-item-patch",
+    );
+    expect(itineraryInlineUpdateInputs).toContain("@/src/trip/itinerary-items");
+    expect(itineraryInlineUpdateInputs).not.toContain(
+      "@/src/features/itinerary/lib/inline-itinerary-item-patch",
     );
     expect(itineraryReorderCommand).toContain("buildWorkspaceReorderApiInput");
     expect(itineraryReorderCommand).not.toContain(

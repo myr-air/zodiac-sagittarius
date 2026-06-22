@@ -1,5 +1,5 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
 import type {

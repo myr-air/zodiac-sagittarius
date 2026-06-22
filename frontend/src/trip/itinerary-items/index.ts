@@ -37,6 +37,7 @@ export type {
 } from "./itinerary-api-requests";
 export { itemKindFromActivityType } from "./itinerary-item-kind";
 export { readItineraryDetailString } from "./itinerary-item-details";
+export type { InlineItineraryItemPatch } from "./itinerary-item-inline-patch";
 export {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,

@@ -11,6 +11,6 @@ export { TimelineView } from "./TimelineView";
 export type { TimelineViewProps } from "./TimelineView.types";
 export { StopDialog } from "./stop-dialog/StopDialog";
 
-export type { InlineItineraryItemPatch } from "../lib/inline-itinerary-item-patch";
+export type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 export type { StopDialogProps, StopFormValues, StopManualPathOption } from "./stop-dialog/stop-dialog.types";
 export type { MapCoordinateResolutionResult, RouteMapViewProps } from "./route-map/route-map.types";

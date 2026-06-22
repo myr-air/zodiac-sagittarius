@@ -2,7 +2,7 @@ import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { activityTypeLabel } from "@/src/features/itinerary/lib/itinerary-display";
 import { type IconName } from "@/src/ui/icons";
-import type { InlineItineraryItemPatch } from "../lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { withoutTravelSubtypeDetails } from "./itinerary-travel-subtypes";
 
 export {

@@ -2,7 +2,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
-import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 
 export type ItineraryAsyncVoidResult = void | Promise<void>;
 export type ItineraryBookingMutationResult = string | void | Promise<string | void>;

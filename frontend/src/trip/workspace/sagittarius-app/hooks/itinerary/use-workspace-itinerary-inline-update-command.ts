@@ -5,7 +5,7 @@ import type {
   TripCockpit,
 } from "@/src/trip/api-client";
 import { replaceItineraryItem } from "@/src/trip/itinerary-items";
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import type {
   Trip,
   TripParticipantSession,

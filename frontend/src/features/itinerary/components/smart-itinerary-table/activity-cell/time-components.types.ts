@@ -1,7 +1,7 @@
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
-import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 export interface ActivityTimeButtonProps {

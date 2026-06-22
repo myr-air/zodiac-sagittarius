@@ -1,4 +1,4 @@
-import type { InlineItineraryItemPatch } from "@/src/features/itinerary/lib/inline-itinerary-item-patch";
+import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-core";
 import { buildMapLink } from "@/src/trip/places";
