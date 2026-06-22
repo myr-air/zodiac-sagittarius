@@ -1,4 +1,4 @@
-import type { StopFormValues } from "@/src/features/itinerary/components";
+import type { StopFormValues } from "@/src/features/itinerary/domain/stop-form-values";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export function buildPromotedFoodRecommendationStop(item: ItineraryItem): StopFormValues | null {

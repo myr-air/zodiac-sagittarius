@@ -1,14 +1,10 @@
 import type {
-  ActivityType,
   ItineraryItem,
-  ItineraryItemKind,
-  ItineraryItemPriority,
-  ItineraryItemStatus,
-  ItineraryTimeMode,
   PlaceResolutionCandidate,
 } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
+import type { StopFormValues } from "../../domain/stop-form-values";
 import type {
   StopDetailType,
   StopDetailValues,
@@ -16,29 +12,7 @@ import type {
 import { stopDetailLabels } from "./stop-dialog.utils";
 import type { StopDialogModel } from "./use-stop-dialog-model";
 
-export interface StopFormValues {
-  day: string;
-  pathId?: string;
-  parentItemId?: string | null;
-  itemKind: ItineraryItemKind;
-  timeMode: ItineraryTimeMode;
-  isPlanBlock: boolean;
-  status: ItineraryItemStatus;
-  priority: ItineraryItemPriority;
-  startTime: string;
-  endTime: string | null;
-  endOffsetDays: number;
-  activity: string;
-  activityType: ActivityType;
-  place: string;
-  mapLink?: string;
-  durationMinutes: number | null;
-  transportation: string;
-  details: Record<string, unknown>;
-  note: string;
-  resolvedPlace?: PlaceResolutionCandidate;
-  saveUnresolved?: boolean;
-}
+export type { StopFormValues };
 
 export interface StopManualPathOption {
   id: string;

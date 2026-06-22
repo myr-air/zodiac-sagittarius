@@ -192,6 +192,12 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryStopCommandTypes).toContain(
       "UseWorkspaceItineraryStopSaveCommandsParams",
     );
+    expect(itineraryStopCommandTypes).toContain(
+      "@/src/features/itinerary/domain/stop-form-values",
+    );
+    expect(itineraryStopCommandTypes).not.toContain(
+      "@/src/features/itinerary/components",
+    );
     expect(itineraryStopCreateCommand).toContain("buildWorkspaceCreatedStop");
     expect(itineraryStopCreateCommand).toContain("placeCreatedWorkspaceStop");
     expect(itineraryStopCreateCommand).not.toContain(

@@ -23,10 +23,12 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       routeMapViewport,
       routeMapUtils,
       stopDialog,
+      stopFormValues,
       routeMapCanvas,
       stopDialogStory,
       stopDialogStorySupport,
       stopDialogStoryItems,
+      stopDialogTypes,
       stopDialogModel,
       stopDialogForm,
       stopDialogTimeFields,
@@ -99,6 +101,9 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(stopDialogStorySupport).not.toContain("export const transportationStoryItem");
     expect(stopDialogStoryItems).toContain("export function stopDialogCategoryItem");
     expect(stopDialogStoryItems).toContain("export const transportationStoryItem");
+    expect(stopFormValues).toContain("export interface StopFormValues");
+    expect(stopDialogTypes).toContain("../../domain/stop-form-values");
+    expect(stopDialogTypes).not.toContain("export interface StopFormValues");
     expect(stopDialogForm).toContain("./stop-dialog-time-fields");
     expect(stopDialogForm).not.toContain("durationBetweenTimes");
     expect(stopDialogForm).toContain("export function applyStopActivityInput");

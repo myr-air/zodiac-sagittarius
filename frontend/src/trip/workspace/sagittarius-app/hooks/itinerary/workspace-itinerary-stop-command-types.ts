@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { StopFormValues } from "@/src/features/itinerary/components";
+import type { StopFormValues } from "@/src/features/itinerary/domain/stop-form-values";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   nextClientMutationId as nextClientMutationIdFactory,
