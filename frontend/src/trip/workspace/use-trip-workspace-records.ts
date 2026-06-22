@@ -4,6 +4,7 @@ import {
   buildExpenseSummary,
   filterExpenseRemindersForTripPlan,
 } from "@/src/trip/expenses";
+import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import { selectTripPlanRecords } from "@/src/trip/workspace/trip-plan-records";
 import type {
   ExpenseSummary,
@@ -43,6 +44,7 @@ export function useTripWorkspaceRecords({
       }),
     [selectedTripPlanId, stopNotes, tasks, trip],
   );
+  const mainTripPlanId = defaultTripPlanId(trip);
   const expenseSummary = useMemo(
     () => {
       if (backendExpenseSummary?.tripPlanId === selectedTripPlanId) {
@@ -55,7 +57,7 @@ export function useTripWorkspaceRecords({
         filterExpenseRemindersForTripPlan(
           trip.expenseReminders ?? [],
           selectedTripPlanId,
-          trip.mainTripPlanId || trip.activePlanVariantId,
+          mainTripPlanId,
         ),
       );
     },
@@ -64,8 +66,7 @@ export function useTripWorkspaceRecords({
       currentMemberId,
       selectedTripPlanId,
       trip.expenseReminders,
-      trip.mainTripPlanId,
-      trip.activePlanVariantId,
+      mainTripPlanId,
       scopedTripPlanRecords.expenses,
     ],
   );

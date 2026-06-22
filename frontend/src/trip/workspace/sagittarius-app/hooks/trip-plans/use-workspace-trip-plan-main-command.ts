@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import {
   buildSetMainTripPlanRequest,
+  defaultTripPlanId,
   mergePublishedTripPlan,
   setLocalMainTripPlan,
 } from "@/src/trip/trip-plans";
@@ -28,7 +29,7 @@ export function useWorkspaceTripPlanMainCommand({
 }: UseWorkspaceTripPlanMainCommandParams): SetMainTripPlanCommand {
   return useCallback(
     async (tripPlanId) => {
-      const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
+      const mainTripPlanId = defaultTripPlanId(trip);
       if (!canManageTripPlans || !tripPlanId || tripPlanId === mainTripPlanId)
         return false;
       setTripPlanError(null);

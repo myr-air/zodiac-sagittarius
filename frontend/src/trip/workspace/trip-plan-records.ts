@@ -1,3 +1,4 @@
+import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import type {
   BookingDoc,
   Expense,
@@ -24,9 +25,7 @@ export function tripPlanIdForRecord(
     );
     if (item?.planVariantId) return item.planVariantId;
   }
-  return (
-    fallbackTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId || null
-  );
+  return fallbackTripPlanId || defaultTripPlanId(trip) || null;
 }
 
 export function tripPlanIdForBookingRecord(
@@ -49,8 +48,7 @@ export function selectTripPlanRecords(
     tasks: TripTask[];
   },
 ): TripPlanRecordSet {
-  const fallbackTripPlanId =
-    selectedTripPlanId || trip.mainTripPlanId || trip.activePlanVariantId;
+  const fallbackTripPlanId = selectedTripPlanId || defaultTripPlanId(trip);
   const itemPlanById = new Map(
     trip.itineraryItems.map((item) => [item.id, item.planVariantId]),
   );
@@ -66,9 +64,7 @@ export function selectTripPlanRecords(
       if (itemTripPlanId) return itemTripPlanId === fallbackTripPlanId;
     }
 
-    return (
-      fallbackTripPlanId === (trip.mainTripPlanId || trip.activePlanVariantId)
-    );
+    return fallbackTripPlanId === defaultTripPlanId(trip);
   };
 
   return {

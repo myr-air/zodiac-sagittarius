@@ -136,6 +136,28 @@ describe("trip plan records", () => {
     ).toBe("plan-backup");
   });
 
+  it("uses canonical Trip Plan defaults for unlinked records", () => {
+    const { records, trip } = tripWithRecordFixtures();
+    const canonicalPlan = {
+      ...trip.planVariants[0],
+      id: "plan-canonical-main",
+    };
+    const canonicalTrip = {
+      ...trip,
+      activePlanVariantId: "",
+      mainTripPlanId: "",
+      planVariants: [],
+      tripPlans: [canonicalPlan],
+    };
+
+    expect(tripPlanIdForRecord(canonicalTrip, null)).toBe(canonicalPlan.id);
+    expect(
+      selectTripPlanRecords(canonicalTrip, "", records).expenses.map(
+        (expense) => expense.id,
+      ),
+    ).toContain("expense-unlinked-main");
+  });
+
   it("selects records for the active Trip Plan using explicit and linked plan ids", () => {
     const { records, trip } = tripWithRecordFixtures();
 

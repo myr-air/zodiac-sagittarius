@@ -6,12 +6,18 @@ import {
   updateItineraryPathSelection,
   type ItineraryPathSelection,
 } from "@/src/trip/itinerary-paths";
+import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import type { Trip } from "@/src/trip/types";
 
 export function useItineraryPathWorkspace(
   trip: Pick<
     Trip,
-    "activePlanVariantId" | "itineraryItems" | "itineraryPaths" | "mainTripPlanId"
+    | "activePlanVariantId"
+    | "itineraryItems"
+    | "itineraryPaths"
+    | "mainTripPlanId"
+    | "planVariants"
+    | "tripPlans"
   >,
   selectedTripPlanId: string,
 ) {
@@ -35,17 +41,16 @@ export function useItineraryPathWorkspace(
     () => resolveItineraryPathItems(activePlanItems, pathSelection),
     [activePlanItems, pathSelection],
   );
+  const mainTripPlanId = defaultTripPlanId(trip);
   const mainPlanItems = useMemo(() => {
-    const mainTripPlanId = trip.mainTripPlanId || trip.activePlanVariantId;
     const items = trip.itineraryItems.filter(
       (item) => item.planVariantId === mainTripPlanId,
     );
     return resolveItineraryPathItems(items, pathSelection);
   }, [
     pathSelection,
-    trip.activePlanVariantId,
     trip.itineraryItems,
-    trip.mainTripPlanId,
+    mainTripPlanId,
   ]);
 
   const changeTripPath = useCallback((pathId: string) => {
