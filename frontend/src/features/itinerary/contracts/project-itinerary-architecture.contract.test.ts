@@ -29,6 +29,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps trip plan controls state split from control rendering", () => {
     const controls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx");
     const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
+    const controlsDraftState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/trip-plan-controls-draft-state.ts");
     const headerControls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableHeaderControls.tsx");
     const headerControlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-header-controls-state.ts");
     const tripPlanControlsStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTableTripPlanControls.stories.tsx");
@@ -39,12 +40,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controls).not.toContain("function submitNewTripPlan");
     expect(controls).not.toContain("tripPlanStatus(");
     expect(controlsState).toContain("export function useTripPlanControlsState");
-    expect(controlsState).toContain("TripPlanControlDraftState");
+    expect(controlsState).toContain("./trip-plan-controls-draft-state");
     expect(controlsState).toContain("const [draftState, setDraftState]");
     expect(controlsState).toContain("function submitNewTripPlan");
     expect(controlsState).toContain("tripPlanStatus(");
+    expect(controlsState).not.toContain("interface TripPlanControlDraftState");
     expect(controlsState).not.toContain("const [isCreatingTripPlan, setIsCreatingTripPlan]");
     expect(controlsState).not.toContain("const [newTripPlanName, setNewTripPlanName]");
+    expect(controlsDraftState).toContain("export interface TripPlanControlDraftState");
+    expect(controlsDraftState).toContain("initialTripPlanControlDraftState");
+    expect(controlsDraftState).toContain("resolveEditedTripPlanName");
     expect(headerControls).toContain("./smart-itinerary-header-controls-state");
     expect(headerControls).toContain("const [headerControlsState, setHeaderControlsState]");
     expect(headerControls).not.toContain("const [headerControlsExpanded, setHeaderControlsExpanded]");
