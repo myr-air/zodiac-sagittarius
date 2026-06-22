@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
+import { findTripPlanOptionById } from "@/src/trip/trip-plans";
 import { tripPlanStatus } from "./smart-itinerary-table-trip-plan-labels";
 import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
@@ -38,8 +39,10 @@ export function useTripPlanControlsState({
   } | null>(null);
   const [newTripPlanError, setNewTripPlanError] = useState<string | null>(null);
 
-  const selectedTripPlan =
-    tripPlans.find((plan) => plan.id === selectedTripPlanId) ?? null;
+  const selectedTripPlan = findTripPlanOptionById(
+    tripPlans,
+    selectedTripPlanId,
+  );
   const selectedTripPlanStatus = selectedTripPlan
     ? tripPlanStatus(selectedTripPlan)
     : "draft";

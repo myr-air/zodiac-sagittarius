@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
+import { findTripPlanOptionById } from "@/src/trip/trip-plans";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import {
@@ -43,8 +44,10 @@ export function SmartItineraryTableHeaderControls({
     selectedTripPlanId,
   );
 
-  const selectedTripPlan =
-    tripPlans.find((plan) => plan.id === selectedTripPlanIdForControlValue) ?? null;
+  const selectedTripPlan = findTripPlanOptionById(
+    tripPlans,
+    selectedTripPlanIdForControlValue,
+  );
 
   useEffect(() => {
     if (headerControlsExpanded || !renderHeaderControls) return;

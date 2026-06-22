@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import {
   buildPatchTripPlanStatusRequest,
   buildRenameTripPlanRequest,
+  findTripPlanById,
   legacyKindForPlanStatus,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
@@ -31,7 +32,7 @@ export function useWorkspaceTripPlanPatchCommands({
     status,
   ) => {
     if (!canManageTripPlans || !tripPlanId) return false;
-    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
+    const currentPlan = findTripPlanById(trip, tripPlanId);
     if (!currentPlan || currentPlan.status === "main") return false;
     setTripPlanError(null);
 
@@ -90,7 +91,7 @@ export function useWorkspaceTripPlanPatchCommands({
     if (!canManageTripPlans || !tripPlanId) return false;
     const trimmedName = name.trim();
     if (!trimmedName) return false;
-    const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
+    const currentPlan = findTripPlanById(trip, tripPlanId);
     if (!currentPlan || currentPlan.name === trimmedName) return false;
     setTripPlanError(null);
 

@@ -11,6 +11,21 @@ export function tripPlanOptions(
   return trip.tripPlans ?? trip.planVariants;
 }
 
+export function findTripPlanOptionById(
+  tripPlans: readonly PlanVariant[],
+  tripPlanId: string | null | undefined,
+): PlanVariant | null {
+  if (!tripPlanId) return null;
+  return tripPlans.find((plan) => plan.id === tripPlanId) ?? null;
+}
+
+export function findTripPlanById(
+  trip: Pick<Trip, "planVariants" | "tripPlans">,
+  tripPlanId: string | null | undefined,
+): PlanVariant | null {
+  return findTripPlanOptionById(tripPlanOptions(trip), tripPlanId);
+}
+
 export function defaultTripPlanId(trip: TripPlanDisplaySource): string {
   return (
     trip.mainTripPlanId ||
@@ -24,9 +39,9 @@ export function tripHasPlan(
   trip: Pick<Trip, "planVariants" | "tripPlans">,
   tripPlanId: string,
 ): boolean {
-  return tripPlanOptions(trip).some((plan) => plan.id === tripPlanId);
+  return Boolean(findTripPlanById(trip, tripPlanId));
 }
 
 export function tripPlanName(trip: Trip, tripPlanId: string | null | undefined, fallback = "Unassigned"): string {
-  return tripPlanOptions(trip).find((plan) => plan.id === tripPlanId)?.name ?? tripPlanId ?? fallback;
+  return findTripPlanById(trip, tripPlanId)?.name ?? tripPlanId ?? fallback;
 }
