@@ -7,6 +7,11 @@ import {
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
+  beginRouteMapCoordinateResolution,
+  completeRouteMapCoordinateResolution,
+  initialRouteMapResolutionState,
+} from "./route-map-resolution-state";
+import {
   buildRouteDayGroups,
   buildRoutePoints,
   buildVisibleRouteMapState,
@@ -51,18 +56,22 @@ export function useRouteMapViewState({
     unresolvedItems,
   }), [activeDay, coordinateRoutePoints, liveRoutePoints, routeDayGroups, unresolvedItems]);
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const [resolvingMissing, setResolvingMissing] = useState(false);
-  const [resolutionResult, setResolutionResult] = useState<MapCoordinateResolutionResult | null>(null);
+  const [resolutionState, setResolutionState] = useState(
+    initialRouteMapResolutionState,
+  );
 
   async function handleResolveMissingCoordinates() {
     if (!onResolveMissingCoordinates || coordinateResolutionBatch.length === 0) return;
-    setResolvingMissing(true);
-    setResolutionResult(null);
+    setResolutionState(beginRouteMapCoordinateResolution());
     try {
       const result = await onResolveMissingCoordinates(coordinateResolutionBatch);
-      setResolutionResult(result ?? null);
+      setResolutionState(completeRouteMapCoordinateResolution(result));
     } finally {
-      setResolvingMissing(false);
+      setResolutionState((current) =>
+        current.resolvingMissing
+          ? completeRouteMapCoordinateResolution(current.resolutionResult ?? undefined)
+          : current,
+      );
     }
   }
 
@@ -71,8 +80,8 @@ export function useRouteMapViewState({
     coordinateResolutionBatch,
     handleResolveMissingCoordinates,
     liveRoutePoints,
-    resolutionResult,
-    resolvingMissing,
+    resolutionResult: resolutionState.resolutionResult,
+    resolvingMissing: resolutionState.resolvingMissing,
     routeDayGroups,
     setActiveDay,
     visibleLiveRoutePoints,
