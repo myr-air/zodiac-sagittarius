@@ -1,6 +1,6 @@
+import { WorkspaceDialog } from "@/src/shared/components/workspace-dialog";
 import type { BookingDoc, Trip, TripTask } from "@/src/trip/types";
-import { Button, IconButton } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
+import { Button } from "@/src/ui";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
@@ -19,23 +19,24 @@ interface BookingDialogProps {
 
 export function BookingDialog({ booking, copy, trip, tasks, onCancel, onSubmit }: BookingDialogProps) {
   const state = useBookingDialogState({ booking, copy, trip, onSubmit });
+  const title = booking ? copy.editBookingDialog : copy.addBookingDialog;
 
   return (
-    <div className={bookingStyles.dialogBackdropClassName} role="presentation">
-      <section className={bookingStyles.dialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-dialog-title">
-        <div className={bookingStyles.dialogHeaderClassName}>
-          <h2 id="booking-dialog-title">{booking ? copy.editBookingDialog : copy.addBookingDialog}</h2>
-          <IconButton type="button" aria-label={copy.closeBookingDialog} onClick={onCancel}><Icon name="x" /></IconButton>
-        </div>
-        <form className={bookingStyles.dialogFormClassName} onSubmit={state.submit}>
-          <BookingDialogFields copy={copy} state={state} />
-          <BookingDialogLinks copy={copy} state={state} tasks={tasks} trip={trip} />
-          <div className={bookingStyles.dialogActionsClassName}>
-            <Button type="button" variant="secondary" onClick={onCancel}>{copy.cancel}</Button>
-            <Button type="submit">{copy.saveBooking}</Button>
-          </div>
-        </form>
-      </section>
-    </div>
+    <WorkspaceDialog
+      className={bookingStyles.dialogClassName}
+      closeAriaLabel={copy.closeBookingDialog}
+      formClassName={bookingStyles.dialogFormClassName}
+      onClose={onCancel}
+      onSubmit={state.submit}
+      title={title}
+      titleId="booking-dialog-title"
+    >
+      <BookingDialogFields copy={copy} state={state} />
+      <BookingDialogLinks copy={copy} state={state} tasks={tasks} trip={trip} />
+      <div className={bookingStyles.dialogActionsClassName}>
+        <Button type="button" variant="secondary" onClick={onCancel}>{copy.cancel}</Button>
+        <Button type="submit">{copy.saveBooking}</Button>
+      </div>
+    </WorkspaceDialog>
   );
 }

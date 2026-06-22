@@ -121,6 +121,8 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/shared/components/workspace-empty-state/WorkspaceEmptyState.test.tsx",
   "src/shared/components/workspace-empty-state/WorkspaceEmptyState.stories.tsx",
   "src/shared/components/workspace-form-field/workspace-form-field.styles.test.ts",
+  "src/shared/components/workspace-dialog/WorkspaceDialog.test.tsx",
+  "src/shared/components/workspace-dialog/WorkspaceDialog.stories.tsx",
   "src/shared/components/workspace-dialog/workspace-dialog.styles.test.ts",
   "src/shared/components/workspace-summary-stat/WorkspaceSummaryStat.test.tsx",
   "src/shared/components/workspace-summary-stat/WorkspaceSummaryStat.stories.tsx",

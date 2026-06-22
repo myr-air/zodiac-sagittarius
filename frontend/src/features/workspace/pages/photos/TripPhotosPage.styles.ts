@@ -11,8 +11,6 @@ import {
   workspaceDialogBackdropClassName,
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
-  workspaceDialogHeaderClassName,
-  workspaceDialogPanelClassName,
 } from "@/src/shared/components/workspace-dialog";
 
 export const pageClassName = "trip-photos-page grid grid-rows-[auto_auto_minmax(0,1fr)] gap-3 max-[1199px]:gap-0";
@@ -31,8 +29,7 @@ export const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[cal
 export const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 export const copyFeedbackClassName = `photo-copy-feedback min-h-8 rounded-(--radius-sm) bg-(--color-surface) px-2 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackStatusClassName}`;
 export const dialogBackdropClassName = workspaceDialogBackdropClassName;
-export const dialogClassName = `photos-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[720px] shadow-[0_14px_34px_rgb(15_23_42_/_0.16)] ${workspaceDialogPanelClassName}`;
-export const dialogHeaderClassName = workspaceDialogHeaderClassName;
+export const dialogClassName = "photos-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[720px] shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 export const dialogFormClassName = workspaceDialogFormClassName;
 export const dialogGridClassName = workspaceDialogGridClassName;
 export const fieldClassName = workspaceFieldClassName;

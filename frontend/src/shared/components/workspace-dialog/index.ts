@@ -1,3 +1,5 @@
+export { WorkspaceDialog } from "./WorkspaceDialog";
+
 export {
   workspaceCompactDialogActionsClassName,
   workspaceCompactDialogBodyClassName,

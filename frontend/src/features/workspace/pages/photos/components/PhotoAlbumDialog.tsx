@@ -1,6 +1,6 @@
+import { WorkspaceDialog } from "@/src/shared/components/workspace-dialog";
 import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
-import { Button, IconButton } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
+import { Button } from "@/src/ui";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
@@ -31,23 +31,24 @@ export function PhotoAlbumDialog({
     trip,
     onSubmit,
   });
+  const title = album ? copy.editAlbumDialog : copy.addAlbumDialog;
 
   return (
-    <div className={photoStyles.dialogBackdropClassName}>
-      <div className={photoStyles.dialogClassName} role="dialog" aria-modal="true" aria-label={album ? copy.editAlbumDialog : copy.addAlbumDialog}>
-        <div className={photoStyles.dialogHeaderClassName}>
-          <h2>{album ? copy.editAlbumDialog : copy.addAlbumDialog}</h2>
-          <IconButton type="button" aria-label={copy.close} onClick={onCancel}><Icon name="x" /></IconButton>
-        </div>
-        <form className={photoStyles.dialogFormClassName} onSubmit={(event) => void state.submit(event)}>
-          <PhotoAlbumDialogFields copy={copy} state={state} trip={trip} />
-          <PhotoAlbumDialogRelatedItems copy={copy} state={state} trip={trip} />
-          <div className={photoStyles.dialogActionsClassName}>
-            <Button type="button" variant="ghost" onClick={onCancel}>{copy.cancel}</Button>
-            <Button type="submit">{copy.saveAlbum}</Button>
-          </div>
-        </form>
+    <WorkspaceDialog
+      ariaLabel={title}
+      className={photoStyles.dialogClassName}
+      closeAriaLabel={copy.close}
+      formClassName={photoStyles.dialogFormClassName}
+      onClose={onCancel}
+      onSubmit={(event) => void state.submit(event)}
+      title={title}
+    >
+      <PhotoAlbumDialogFields copy={copy} state={state} trip={trip} />
+      <PhotoAlbumDialogRelatedItems copy={copy} state={state} trip={trip} />
+      <div className={photoStyles.dialogActionsClassName}>
+        <Button type="button" variant="ghost" onClick={onCancel}>{copy.cancel}</Button>
+        <Button type="submit">{copy.saveAlbum}</Button>
       </div>
-    </div>
+    </WorkspaceDialog>
   );
 }
