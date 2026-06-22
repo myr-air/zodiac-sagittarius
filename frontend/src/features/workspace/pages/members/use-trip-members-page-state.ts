@@ -10,6 +10,10 @@ import {
   memberSummaryCounts,
   visibleTripMembers,
 } from "./model/member-page-selectors";
+import {
+  buildCreateMemberInput,
+  defaultCreatedMemberRole,
+} from "./model/member-create-input";
 import type {
   MemberRoleFilter,
   MemberStatusFilter,
@@ -62,7 +66,7 @@ export function useTripMembersPageState({
   const [createPanelOpen, setCreatePanelOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] =
-    useState<Exclude<TripRole, "owner">>("traveler");
+    useState<Exclude<TripRole, "owner">>(defaultCreatedMemberRole);
   const {
     copyInviteLink,
     copyState,
@@ -121,11 +125,15 @@ export function useTripMembersPageState({
 
   function submitNewMember(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const displayName = newMemberName.trim();
-    if (!canManagePeople || !displayName) return;
-    onCreateMember({ displayName, role: newMemberRole });
+    const input = buildCreateMemberInput({
+      canManagePeople,
+      displayName: newMemberName,
+      role: newMemberRole,
+    });
+    if (!input) return;
+    onCreateMember(input);
     setNewMemberName("");
-    setNewMemberRole("traveler");
+    setNewMemberRole(defaultCreatedMemberRole);
     setCreatePanelOpen(false);
   }
 
