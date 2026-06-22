@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
+  activityTypeLabel,
   buildActivitySubtypePatch,
   buildActivityTypePatch,
 } from "../itinerary-activity-types";
 
 describe("itinerary-activity-types", () => {
+  it("owns localized activity type labels", () => {
+    expect(activityTypeLabel("food")).toBe("Food");
+    expect(activityTypeLabel("food", "th")).toBe("อาหาร");
+    expect(activityTypeLabel("default")).toBe("Default");
+    expect(activityTypeLabel("default", "th")).toBe("ทั่วไป");
+  });
+
   it("removes travel subtype details when switching away from travel", () => {
     const item = buildItineraryItem({
       activity: "Dinner",

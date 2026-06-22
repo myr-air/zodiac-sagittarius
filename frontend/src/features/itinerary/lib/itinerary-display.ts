@@ -1,30 +1,7 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { displayDateTimeLocaleCode } from "@/src/shared/date-time-display";
-
-export function activityTypeLabel(type: ItineraryItem["activityType"], locale: Locale = "en"): string {
-  const labels: Record<Locale, Record<ItineraryItem["activityType"], string>> = {
-    en: {
-      travel: "Travel",
-      food: "Food",
-      shopping: "Shopping",
-      attraction: "Attraction",
-      experience: "Experience",
-      stay: "Stay",
-      default: "Default",
-    },
-    th: {
-      travel: "เดินทาง",
-      food: "อาหาร",
-      shopping: "ช้อปปิ้ง",
-      attraction: "สถานที่",
-      experience: "กิจกรรม",
-      stay: "ที่พัก",
-      default: "ทั่วไป",
-    },
-  };
-  return labels[locale][type];
-}
+export { activityTypeLabel } from "../domain/itinerary-activity-types";
 
 export function dayRouteLabel(day: string, locale: Locale = "en"): string {
   if (day === "2026-06-18") return "Bangkok -> Hong Kong";

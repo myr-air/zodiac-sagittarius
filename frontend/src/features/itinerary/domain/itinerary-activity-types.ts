@@ -1,6 +1,5 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import { activityTypeLabel } from "@/src/features/itinerary/lib/itinerary-display";
 import { type IconName } from "@/src/ui/icons";
 import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { withoutTravelSubtypeDetails } from "./itinerary-travel-subtypes";
@@ -24,6 +23,31 @@ const activityTypeIcons: Record<ItineraryItem["activityType"], IconName> = {
   stay: "home",
   travel: "route",
 };
+
+const activityTypeLabels: Record<Locale, Record<ItineraryItem["activityType"], string>> = {
+  en: {
+    travel: "Travel",
+    food: "Food",
+    shopping: "Shopping",
+    attraction: "Attraction",
+    experience: "Experience",
+    stay: "Stay",
+    default: "Default",
+  },
+  th: {
+    travel: "เดินทาง",
+    food: "อาหาร",
+    shopping: "ช้อปปิ้ง",
+    attraction: "สถานที่",
+    experience: "กิจกรรม",
+    stay: "ที่พัก",
+    default: "ทั่วไป",
+  },
+};
+
+export function activityTypeLabel(type: ItineraryItem["activityType"], locale: Locale = "en"): string {
+  return activityTypeLabels[locale][type];
+}
 
 export function buildActivityTypePatch(
   item: ItineraryItem,
