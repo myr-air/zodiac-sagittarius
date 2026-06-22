@@ -3,14 +3,14 @@ import type {
   useWorkspacePlanningContext,
   useWorkspaceSetupContext,
 } from "../hooks";
-import type { buildWorkspaceFrameProps } from "./workspace-frame-props";
+import type { BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
 
 type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;
 type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
 type WorkspaceCommands = ReturnType<typeof useWorkspaceCommands>;
 
 type WorkspaceCoreCommandProps = Pick<
-  Parameters<typeof buildWorkspaceFrameProps>[0],
+  BuildWorkspaceFramePropsInput,
   | "applyPendingItineraryImport"
   | "authenticateParticipant"
   | "changeBookingDocQuickFields"

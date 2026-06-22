@@ -1,16 +1,17 @@
 import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
-import { buildWorkspaceAccessProps } from "./workspace-access-props";
-import { buildWorkspaceFrameActionProps } from "./workspace-frame-action-props";
-import { buildWorkspaceShellProps } from "./workspace-shell-props";
+import { buildWorkspaceAccessProps, type BuildWorkspaceAccessPropsInput } from "./workspace-access-props";
+import { buildWorkspaceFrameActionProps, type BuildWorkspaceFrameActionPropsInput } from "./workspace-frame-action-props";
+import { buildWorkspaceShellProps, type BuildWorkspaceShellPropsInput } from "./workspace-shell-props";
 import { buildWorkspaceViewsProps } from "./workspace-view-props";
+import type { BuildWorkspaceViewsPropsInput } from "./workspace-view-props.types";
 
 type WorkspaceFrameProps = WorkspaceAppFrameProps;
-type ActionInput = Parameters<typeof buildWorkspaceFrameActionProps>[0];
-type AccessInput = Parameters<typeof buildWorkspaceAccessProps>[0];
-type ViewsInput = Parameters<typeof buildWorkspaceViewsProps>[0];
-type ShellInput = Parameters<typeof buildWorkspaceShellProps>[0];
+type ActionInput = BuildWorkspaceFrameActionPropsInput;
+type AccessInput = BuildWorkspaceAccessPropsInput;
+type ViewsInput = BuildWorkspaceViewsPropsInput;
+type ShellInput = BuildWorkspaceShellPropsInput;
 
-type BuildWorkspaceFramePropsInput = ActionInput &
+export type BuildWorkspaceFramePropsInput = ActionInput &
   Omit<
     ViewsInput,
     | "onAddNoteForItem"

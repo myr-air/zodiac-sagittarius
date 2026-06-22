@@ -4,7 +4,7 @@ import type {
   useWorkspaceSetupContext,
 } from "../hooks";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "../types";
-import { buildWorkspaceFrameProps } from "./workspace-frame-props";
+import { buildWorkspaceFrameProps, type BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
 import { buildWorkspaceCoreCommandProps } from "./workspace-core-command-props";
 import { buildWorkspaceCoreRecordProps } from "./workspace-core-record-props";
 
@@ -23,7 +23,7 @@ interface BuildWorkspaceCoreFramePropsInput {
   requireJoin: boolean;
   routeTripId?: string;
   setup: WorkspaceSetupContext;
-  t: Parameters<typeof buildWorkspaceFrameProps>[0]["t"];
+  t: BuildWorkspaceFramePropsInput["t"];
 }
 
 export function buildWorkspaceCoreFrameProps({

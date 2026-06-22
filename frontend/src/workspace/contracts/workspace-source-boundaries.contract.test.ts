@@ -83,6 +83,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceAccessProps).toContain("export function buildWorkspaceAccessProps");
     expect(workspaceAccessProps).toContain("sessionRestored");
     expect(workspaceAccessProps).toContain("../WorkspaceAppFrame");
+    expect(workspaceAccessProps).toContain("export type BuildWorkspaceAccessPropsInput");
     expect(workspaceShellProps).toContain("export function buildWorkspaceShellProps");
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
@@ -109,6 +110,9 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceFrameActionProps).toContain(
       "export function buildWorkspaceFrameActionProps",
     );
+    expect(workspaceFrameActionProps).toContain(
+      "export interface BuildWorkspaceFrameActionPropsInput",
+    );
     expect(workspaceFrameActionProps).toContain("onSaveDayTitle:");
     expect(workspaceFrameActionProps).toContain("canClaimMember:");
     expect(workspaceViewProps).toContain("export function buildWorkspaceViewsProps");
@@ -134,6 +138,11 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(workspaceMainShell).toContain("export function WorkspaceMainShell");
     expect(workspaceMainShell).not.toContain("ComponentProps<typeof");
+    expect(workspaceFrameProps).toContain("export type BuildWorkspaceFramePropsInput");
+    expect(workspaceFrameProps).not.toContain("Parameters<typeof buildWorkspace");
+    expect(workspaceCoreFrameProps).not.toContain("Parameters<typeof buildWorkspace");
+    expect(workspaceCoreCommandProps).not.toContain("Parameters<typeof buildWorkspace");
+    expect(workspaceCoreRecordProps).not.toContain("Parameters<typeof buildWorkspace");
     expect(tripWorkspaceFrame).toContain("export interface TripWorkspaceFrameProps");
     expect(tripWorkspaceRail).toContain("export interface TripWorkspaceRailProps");
     expect(workspaceDialogs).toContain("export interface WorkspaceDialogsProps");

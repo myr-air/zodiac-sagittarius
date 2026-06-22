@@ -1,10 +1,10 @@
 import type { useWorkspacePlanningContext } from "../hooks";
-import type { buildWorkspaceFrameProps } from "./workspace-frame-props";
+import type { BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
 
 type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
 
 type WorkspaceCoreRecordProps = Pick<
-  Parameters<typeof buildWorkspaceFrameProps>[0],
+  BuildWorkspaceFramePropsInput,
   | "bookingDocs"
   | "expenseSummary"
   | "itineraryView"

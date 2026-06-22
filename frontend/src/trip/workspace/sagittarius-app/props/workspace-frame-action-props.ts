@@ -13,7 +13,7 @@ type SaveDailyBriefingOverrides = NonNullable<
   WorkspaceViewsProps["overviewProps"]["onSaveDailyBriefingOverrides"]
 >;
 
-interface BuildWorkspaceFrameActionPropsInput {
+export interface BuildWorkspaceFrameActionPropsInput {
   accountSession: AccountSession | null;
   canEdit: boolean;
   claimCurrentMemberToAccount: () => unknown;

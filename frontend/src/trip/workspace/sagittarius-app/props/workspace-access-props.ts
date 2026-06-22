@@ -2,7 +2,7 @@ import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
 
 type WorkspaceAccessProps = WorkspaceAppFrameProps["accessProps"];
 
-type BuildWorkspaceAccessPropsInput = WorkspaceAccessProps;
+export type BuildWorkspaceAccessPropsInput = WorkspaceAccessProps;
 
 export function buildWorkspaceAccessProps({
   accessMode,
