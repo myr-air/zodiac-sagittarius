@@ -1,3 +1,4 @@
+import { uniqueStrings } from "@/src/shared/collection";
 import type {
   Member,
   Trip,
@@ -40,7 +41,7 @@ export function initialPhotoAlbumDialogFields({
 }
 
 export function photoAlbumDialogDayOptions(trip: Trip): string[] {
-  return Array.from(new Set(trip.itineraryItems.map((item) => item.day))).sort();
+  return uniqueStrings(trip.itineraryItems.map((item) => item.day)).sort();
 }
 
 export function buildPhotoAlbumDialogSubmitInput({

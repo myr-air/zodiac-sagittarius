@@ -2,7 +2,7 @@ import type {
   AccountSettings,
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
-import { uniqueIds } from "@/src/shared/collection";
+import { uniqueStrings } from "@/src/shared/collection";
 import { normalizeTripPartySize, tripPartySizeRange } from "@/src/trip/settings";
 import type { TripCity } from "@/src/trip/types";
 import {
@@ -42,7 +42,7 @@ export function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerD
     countryCode: city.countryCode.trim().toUpperCase(),
     timezone: city.timezone.trim(),
   })).filter((city) => city.city && city.country && city.countryCode);
-  const countryNames = uniqueIds(destinationCities.map((city) => city.country));
+  const countryNames = uniqueStrings(destinationCities.map((city) => city.country));
   return {
     ...form,
     name,
@@ -76,7 +76,7 @@ function originCityFromProfile(profile?: AccountSettings["profile"] | null): Tri
 }
 
 export function applyTripDestinationCities(form: AccountTripCreateRequest, nextCities: TripCity[]): AccountTripCreateRequest {
-  const nextCountries = uniqueIds(nextCities.map((city) => city.country));
+  const nextCountries = uniqueStrings(nextCities.map((city) => city.country));
   return {
     ...form,
     countries: nextCountries,

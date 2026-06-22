@@ -8,4 +8,5 @@ export {
 export {
   toggleId,
   uniqueIds,
+  uniqueStrings,
 } from "./id-list";

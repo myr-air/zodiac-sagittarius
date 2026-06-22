@@ -1,5 +1,5 @@
 import type { Messages } from "@/src/i18n/messages";
-import { uniqueIds } from "@/src/shared/collection";
+import { uniqueStrings } from "@/src/shared/collection";
 import { tripCountryOptions } from "../model/account-trip-destinations";
 
 interface BuildPortalTripWizardSummaryInput {
@@ -27,7 +27,7 @@ export function buildPortalTripWizardSummary({
     ? selectedDestinationNames.join(", ")
     : wizard.empty.destinationSummary;
   const currencySummary = selectedCountryNames.length
-    ? uniqueIds(
+    ? uniqueStrings(
         selectedCountryNames
           .map((countryName) =>
             tripCountryOptions.find((country) => country.name === countryName)?.currency ?? "",

@@ -34,6 +34,7 @@ describe("photo album dialog fields", () => {
         { ...seedTrip.itineraryItems[0]!, day: "2026-06-20" },
         { ...seedTrip.itineraryItems[1]!, day: "2026-06-18" },
         { ...seedTrip.itineraryItems[2]!, day: "2026-06-20" },
+        { ...seedTrip.itineraryItems[0]!, day: "" },
       ],
     })).toEqual(["2026-06-18", "2026-06-20"]);
   });

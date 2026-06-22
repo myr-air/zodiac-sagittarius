@@ -1,3 +1,5 @@
+import { uniqueStrings } from "@/src/shared/collection";
+
 const knownDestinationCountries: Array<[string, string[]]> = [
   ["hong kong", ["Hong Kong", "China"]],
   ["shenzhen", ["Hong Kong", "China"]],
@@ -27,6 +29,6 @@ export function deriveTripCountriesFromDestination(
   const countries = knownDestinationCountries.flatMap(([keyword, countries]) =>
     destination.includes(keyword) ? countries : [],
   );
-  const uniqueCountries = Array.from(new Set(countries));
+  const uniqueCountries = uniqueStrings(countries);
   return uniqueCountries.length ? uniqueCountries : fallbackCountries;
 }
