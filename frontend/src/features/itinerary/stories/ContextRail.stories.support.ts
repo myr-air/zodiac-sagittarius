@@ -1,9 +1,9 @@
 import { noop } from "@/src/testing/storybook-actions";
-import type { ContextRail } from "@/src/features/itinerary/components";
+import type { ContextRailProps } from "@/src/features/itinerary/components";
 import { buildBookingDoc } from "@/src/features/itinerary/testing";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
-type ContextRailStoryArgs = Parameters<typeof ContextRail>[0];
+type ContextRailStoryArgs = ContextRailProps;
 
 export const contextRailSelectedItem =
   tripFixture.planItems.find((item) => item.id === "item-dimdim") ??

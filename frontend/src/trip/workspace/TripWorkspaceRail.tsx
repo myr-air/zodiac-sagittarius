@@ -1,9 +1,7 @@
 "use client";
 
-import type { ComponentProps } from "react";
 import { ContextRail } from "@/src/features/itinerary/components";
-
-type ContextRailProps = ComponentProps<typeof ContextRail>;
+import type { ContextRailProps } from "@/src/features/itinerary/components";
 
 interface TripWorkspaceRailProps {
   enabled: boolean;

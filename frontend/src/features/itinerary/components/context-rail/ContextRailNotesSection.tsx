@@ -1,34 +1,13 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type {
-  ItineraryItem,
-  Member,
-  StopNote,
-  Trip,
-} from "@/src/trip/types";
 import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { ContextRailNoteComposer } from "./ContextRailNoteComposer";
 import { ContextRailNoteItem } from "./ContextRailNoteItem";
 import { useContextRailNoteForm } from "./use-context-rail-note-form";
-import type {
-  ContextRailCreateNoteInput,
-  ContextRailUpdateNoteInput,
-} from "./context-rail.types";
+import type { ContextRailNotesSectionProps } from "./context-rail.types";
 import {
   emptyWarningClassName,
   moduleListClassName,
 } from "./context-rail.styles";
-
-interface ContextRailNotesSectionProps {
-  itemId: ItineraryItem["id"] | undefined;
-  notes: StopNote[];
-  tripMembers: Trip["members"];
-  currentMember: Member;
-  canCreateNote: boolean;
-  canEdit: boolean;
-  onCreateNote: (input: ContextRailCreateNoteInput) => void;
-  onDeleteNote: (noteId: string) => void;
-  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
-}
 
 export function ContextRailNotesSection({
   itemId,

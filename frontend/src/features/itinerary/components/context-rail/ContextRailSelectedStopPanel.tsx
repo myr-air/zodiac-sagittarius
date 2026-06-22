@@ -1,16 +1,4 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type {
-  BookingDoc,
-  Expense,
-  ExpenseSummary,
-  ItineraryItem,
-  Member,
-  StopNote,
-  Suggestion,
-  SuggestionReviewDecision,
-  Trip,
-  TripTask,
-} from "@/src/trip/types";
 import { ContextRailBookingSection } from "./ContextRailBookingSection";
 import { ContextRailConflictSection } from "./ContextRailConflictSection";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
@@ -20,51 +8,7 @@ import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
 import { ContextRailStopDetailSection } from "./ContextRailStopDetailSection";
 import { ContextRailTabs } from "./ContextRailTabs";
 import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
-import { ContextRailTab } from "./context-rail.utils";
-import type {
-  ContextRailBookingDocQuickFieldsChangeHandler,
-  ContextRailBookingDocTypeChangeHandler,
-  ContextRailCreateExpenseInput,
-  ContextRailCreateNoteInput,
-  ContextRailUpdateExpenseInput,
-  ContextRailUpdateNoteInput,
-} from "./context-rail.types";
-
-interface ContextRailSelectedStopPanelProps {
-  selectedItem: ItineraryItem;
-  currentMember: Member;
-  trip: Trip;
-  selectedAdvisories: NonNullable<ItineraryItem["advisories"]>;
-  selectedNotes: StopNote[];
-  selectedExpenses: Expense[];
-  selectedTasks: TripTask[];
-  selectedBookingDocs: BookingDoc[];
-  selectedSuggestions: Suggestion[];
-  expenseSummary: ExpenseSummary;
-  canEdit: boolean;
-  canCreateNote: boolean;
-  canCreateSuggestion: boolean;
-  canReviewSuggestions: boolean;
-  canEditExpenses: boolean;
-  activeTab: ContextRailTab;
-  onActiveTabChange: (tab: ContextRailTab) => void;
-  onClose: () => void;
-  onEditSelected: () => void;
-  onSuggestSelected: () => void;
-  onToggleTaskStatus: (taskId: string) => void;
-  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
-  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
-  onCreateNote: (input: ContextRailCreateNoteInput) => void;
-  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
-  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
-  onDeleteExpense: (expenseId: string) => void;
-  onDeleteNote: (noteId: string) => void;
-  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
-  onReviewSuggestion: (
-    suggestionId: string,
-    decision: SuggestionReviewDecision,
-  ) => void;
-}
+import type { ContextRailSelectedStopPanelProps } from "./context-rail.types";
 
 export function ContextRailSelectedStopPanel({
   selectedItem,

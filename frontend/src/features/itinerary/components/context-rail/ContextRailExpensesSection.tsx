@@ -1,6 +1,6 @@
 import { Button, Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Expense, Trip } from "@/src/trip/types";
+import type { Expense } from "@/src/trip/types";
 import {
   expenseFormClassName,
   expenseGridClassName,
@@ -13,22 +13,7 @@ import {
   contextRailExpenseCategoryOptions,
   useContextRailExpenseForm,
 } from "./use-context-rail-expense-form";
-import type {
-  ContextRailCreateExpenseInput,
-  ContextRailUpdateExpenseInput,
-} from "./context-rail.types";
-
-interface ContextRailExpensesSectionProps {
-  selectedItemId?: string;
-  expenses: Expense[];
-  members: Trip["members"];
-  perPerson: string;
-  groupSpend: string;
-  canEditExpenses: boolean;
-  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
-  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
-  onDeleteExpense: (expenseId: string) => void;
-}
+import type { ContextRailExpensesSectionProps } from "./context-rail.types";
 
 export function ContextRailExpensesSection({
   selectedItemId,

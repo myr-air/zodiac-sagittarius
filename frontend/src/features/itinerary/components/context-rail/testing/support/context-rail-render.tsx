@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { ContextRail } from "@/src/features/itinerary/components";
+import type { ContextRailProps } from "@/src/features/itinerary/components";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { selectedContextRailItem } from "../fixtures/context-rail-fixtures";
@@ -7,9 +8,9 @@ import { selectedContextRailItem } from "../fixtures/context-rail-fixtures";
 export { selectedContextRailItem };
 
 export function renderContextRail(
-  overrides: Partial<Parameters<typeof ContextRail>[0]> = {},
+  overrides: Partial<ContextRailProps> = {},
 ) {
-  const props: Parameters<typeof ContextRail>[0] = {
+  const props: ContextRailProps = {
     trip: tripFixture.trip,
     selectedItem: selectedContextRailItem,
     suggestions: tripFixture.suggestions,

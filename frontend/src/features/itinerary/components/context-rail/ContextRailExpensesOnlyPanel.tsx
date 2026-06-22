@@ -1,24 +1,7 @@
-import type { Expense, ExpenseSummary, Member } from "@/src/trip/types";
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailPanelShell } from "./ContextRailPanelShell";
 import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
-import type {
-  ContextRailCreateExpenseInput,
-  ContextRailUpdateExpenseInput,
-} from "./context-rail.types";
-
-interface ContextRailExpensesOnlyPanelProps {
-  canEditExpenses: boolean;
-  closeLabel: string;
-  expenseSummary: ExpenseSummary;
-  expenses: Expense[];
-  members: Member[];
-  title: string;
-  onClose: () => void;
-  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
-  onDeleteExpense: (expenseId: string) => void;
-  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
-}
+import type { ContextRailExpensesOnlyPanelProps } from "./context-rail.types";
 
 export function ContextRailExpensesOnlyPanel({
   canEditExpenses,

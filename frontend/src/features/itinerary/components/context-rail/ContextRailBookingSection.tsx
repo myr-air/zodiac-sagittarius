@@ -1,10 +1,5 @@
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type {
-  BookingDoc,
-  ItineraryItem,
-  TripTask,
-} from "@/src/trip/types";
 import {
   bookingAdvisoryClassName,
   bookingTaskClassName,
@@ -16,20 +11,7 @@ import {
 import { ContextRailBookingDocItem } from "./ContextRailBookingDocItem";
 import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { taskKindLabel } from "./context-rail.utils";
-import type {
-  ContextRailBookingDocQuickFieldsChangeHandler,
-  ContextRailBookingDocTypeChangeHandler,
-} from "./context-rail.types";
-
-interface ContextRailBookingSectionProps {
-  advisories: NonNullable<ItineraryItem["advisories"]>;
-  bookingDocs: BookingDoc[];
-  tasks: TripTask[];
-  canEdit: boolean;
-  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
-  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
-  onToggleTaskStatus: (taskId: string) => void;
-}
+import type { ContextRailBookingSectionProps } from "./context-rail.types";
 
 export function ContextRailBookingSection({
   advisories,

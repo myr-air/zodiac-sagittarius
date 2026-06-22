@@ -1,66 +1,13 @@
-import type {
-  BookingDoc,
-  ExpenseSummary,
-  ItineraryItem,
-  Member,
-  StopNote,
-  Suggestion,
-  SuggestionReviewDecision,
-  Trip,
-  TripTask,
-} from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { ContextRailExpensesOnlyPanel } from "./ContextRailExpensesOnlyPanel";
 import { ContextRailSelectedStopPanel } from "./ContextRailSelectedStopPanel";
 import { useContextRailState } from "./context-rail.state";
-import { ContextRailTab } from "./context-rail.utils";
 import {
   contextRailClassName,
   contextRailClosedClassName,
   contextRailOpenClassName,
 } from "./context-rail.styles";
-import type {
-  ContextRailBookingDocQuickFieldsChangeHandler,
-  ContextRailBookingDocTypeChangeHandler,
-  ContextRailCreateExpenseInput,
-  ContextRailCreateNoteInput,
-  ContextRailUpdateExpenseInput,
-  ContextRailUpdateNoteInput,
-} from "./context-rail.types";
-
-interface ContextRailProps {
-  trip: Trip;
-  selectedItem?: ItineraryItem;
-  suggestions: Suggestion[];
-  stopNotes: StopNote[];
-  tasks: TripTask[];
-  bookingDocs: BookingDoc[];
-  currentMember: Member;
-  expenseSummary: ExpenseSummary;
-  canEdit: boolean;
-  canCreateNote: boolean;
-  canCreateSuggestion: boolean;
-  canReviewSuggestions: boolean;
-  canEditExpenses: boolean;
-  open: boolean;
-  preferredTab?: ContextRailTab;
-  onChangeBookingDocType?: ContextRailBookingDocTypeChangeHandler;
-  onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
-  onCreateNote: (input: ContextRailCreateNoteInput) => void;
-  onCreateExpense: (input: ContextRailCreateExpenseInput) => void;
-  onUpdateExpense: (input: ContextRailUpdateExpenseInput) => void;
-  onDeleteExpense: (expenseId: string) => void;
-  onDeleteNote: (noteId: string) => void;
-  onEditSelected: () => void;
-  onReviewSuggestion: (
-    suggestionId: string,
-    decision: SuggestionReviewDecision,
-  ) => void;
-  onSuggestSelected: () => void;
-  onToggleTaskStatus: (taskId: string) => void;
-  onUpdateNote: (input: ContextRailUpdateNoteInput) => void;
-  onClose: () => void;
-}
+import type { ContextRailProps } from "./context-rail.types";
 
 export function ContextRail({
   trip,
