@@ -3,6 +3,7 @@ export type {
   PlaceResolutionRequest,
   PlaceResolutionResponse,
   PlaceResolutionStatus,
+  MapCoordinateResolutionResult,
   TripCity,
 } from "./place-types";
 export {

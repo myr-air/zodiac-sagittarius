@@ -16,6 +16,13 @@ export const placeResolutionStatusValues = [
 ] as const;
 export type PlaceResolutionStatus = (typeof placeResolutionStatusValues)[number];
 
+export interface MapCoordinateResolutionResult {
+  attempted: number;
+  failed: number;
+  resolved: number;
+  skipped: number;
+}
+
 export interface PlaceResolutionCandidate {
   name: string;
   address: string;

@@ -2,6 +2,7 @@ import type { CSSProperties, RefObject } from "react";
 import type { Messages } from "@/src/i18n/messages";
 import type { MapLoadState } from "@/src/shared/map-load-state";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
+import type { MapCoordinateResolutionResult } from "@/src/trip/places";
 import type { ItineraryItem } from "@/src/trip/types";
 
 export const allDaysFilter = "all" as const;
@@ -20,13 +21,6 @@ export interface RouteDayGroup {
   day: string;
   label: string;
   points: RoutePoint[];
-}
-
-export interface MapCoordinateResolutionResult {
-  attempted: number;
-  failed: number;
-  resolved: number;
-  skipped: number;
 }
 
 export type MapCoordinateResolutionHandler = (

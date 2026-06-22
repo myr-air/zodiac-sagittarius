@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
 import { groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary-core";
+import type { MapCoordinateResolutionResult } from "@/src/trip/places";
 import {
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
@@ -10,7 +11,7 @@ import {
   buildRoutePoints,
   hasCoordinates,
 } from "./route-map.utils";
-import { allDaysFilter, type DayFilter, type MapCoordinateResolutionResult } from "./route-map.types";
+import { allDaysFilter, type DayFilter } from "./route-map.types";
 
 interface UseRouteMapViewStateInput {
   items: ItineraryItem[];

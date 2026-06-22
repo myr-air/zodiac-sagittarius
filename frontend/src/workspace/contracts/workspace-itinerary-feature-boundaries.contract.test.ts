@@ -16,6 +16,7 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       smartItineraryTableTypes,
       smartItineraryTablePageHeader,
       routeMapView,
+      placeTypes,
       routeMapUnresolvedPanel,
       routeLiveMapHook,
       routeLiveMapMarkers,
@@ -60,7 +61,9 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(smartItineraryTablePageHeader).toContain("PageHeader");
     expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableHeaderControls");
     expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableMeta");
-    expect(routeMapTypes).toContain("export interface MapCoordinateResolutionResult");
+    expect(placeTypes).toContain("export interface MapCoordinateResolutionResult");
+    expect(routeMapTypes).toContain("@/src/trip/places");
+    expect(routeMapTypes).not.toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).not.toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapView).toContain("useRouteLiveMap");
     expect(routeMapView).not.toContain("maplibre-gl");

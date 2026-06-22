@@ -178,6 +178,7 @@ export const workspaceTripBoundarySourcePaths = {
   photoAlbumsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts",
   photoAlbumApiCommands: "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-api-photo-album-commands.ts",
   photoAlbumLocalCommands: "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-local-photo-album-commands.ts",
+  placeTypes: "src/trip/places/place-types.ts",
   photoAlbumsDomain: "src/trip/photo-albums/index.ts",
   photoAlbumApi: "src/trip/photo-albums/photo-album-api.ts",
   photoAlbumLocal: "src/trip/photo-albums/photo-album-local.ts",
