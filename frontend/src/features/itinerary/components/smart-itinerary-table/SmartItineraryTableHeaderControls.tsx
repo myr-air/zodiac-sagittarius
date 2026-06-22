@@ -10,6 +10,12 @@ import {
   pageHeaderNoteClassName,
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
+import {
+  closeSmartItineraryHeaderControls,
+  initialSmartItineraryHeaderControlsState,
+  toggleSmartItineraryHeaderControls,
+  unmountClosedSmartItineraryHeaderControls,
+} from "./smart-itinerary-header-controls-state";
 import { selectedTripPlanIdForControl } from "./smart-itinerary-table-trip-plan-labels";
 import type { TripPlanHeaderControlsProps } from "./trip-plan-controls.types";
 
@@ -34,8 +40,9 @@ export function SmartItineraryTableHeaderControls({
   tripPlanError,
   tripPlans,
 }: TripPlanHeaderControlsProps) {
-  const [headerControlsExpanded, setHeaderControlsExpanded] = useState(false);
-  const [renderHeaderControls, setRenderHeaderControls] = useState(false);
+  const [headerControlsState, setHeaderControlsState] = useState(
+    initialSmartItineraryHeaderControlsState,
+  );
   const headerControlsRef = useRef<HTMLDivElement>(null);
   const headerControlsButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -50,20 +57,25 @@ export function SmartItineraryTableHeaderControls({
   );
 
   useEffect(() => {
-    if (headerControlsExpanded || !renderHeaderControls) return;
+    if (headerControlsState.expanded || !headerControlsState.render) return;
 
     const timeoutId = window.setTimeout(() => {
-      setRenderHeaderControls(false);
+      setHeaderControlsState(unmountClosedSmartItineraryHeaderControls());
     }, 170);
     return () => window.clearTimeout(timeoutId);
-  }, [headerControlsExpanded, renderHeaderControls]);
+  }, [headerControlsState.expanded, headerControlsState.render]);
 
   useDismissOnOutside({
-    enabled: headerControlsExpanded,
-    onDismiss: () => setHeaderControlsExpanded(false),
+    enabled: headerControlsState.expanded,
+    onDismiss: () =>
+      setHeaderControlsState((current) =>
+        closeSmartItineraryHeaderControls(current),
+      ),
     triggerRefs: [headerControlsRef],
     onEscape: () => {
-      setHeaderControlsExpanded(false);
+      setHeaderControlsState((current) =>
+        closeSmartItineraryHeaderControls(current),
+      );
       headerControlsButtonRef.current?.focus();
     },
   });
@@ -81,10 +93,11 @@ export function SmartItineraryTableHeaderControls({
         className={headerControlsButtonClassName}
         aria-label={`${itineraryLabels.tripPlans.selectorLabel} controls`}
         aria-controls="itinerary-header-controls"
-        aria-expanded={headerControlsExpanded}
+        aria-expanded={headerControlsState.expanded}
         onClick={() => {
-          if (!headerControlsExpanded) setRenderHeaderControls(true);
-          setHeaderControlsExpanded((current) => !current);
+          setHeaderControlsState((current) =>
+            toggleSmartItineraryHeaderControls(current),
+          );
         }}
       >
         <Icon name="settings" />
@@ -95,7 +108,7 @@ export function SmartItineraryTableHeaderControls({
           name="chevronRight"
           className={cn(
             "transition-transform duration-150",
-            headerControlsExpanded && "rotate-90",
+            headerControlsState.expanded && "rotate-90",
           )}
         />
       </button>
@@ -104,13 +117,13 @@ export function SmartItineraryTableHeaderControls({
           {itineraryLabels.editRequiresOrganizer}
         </p>
       ) : null}
-      {renderHeaderControls ? (
+      {headerControlsState.render ? (
         <div
           className={headerControlsPanelClassName}
-          data-state={headerControlsExpanded ? "open" : "closed"}
+          data-state={headerControlsState.expanded ? "open" : "closed"}
           id="itinerary-header-controls"
-          aria-hidden={!headerControlsExpanded}
-          inert={headerControlsExpanded ? undefined : true}
+          aria-hidden={!headerControlsState.expanded}
+          inert={headerControlsState.expanded ? undefined : true}
         >
           <SmartItineraryTableHeaderControlsPanel
             canManageTripPlans={canManageTripPlans}

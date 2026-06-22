@@ -29,6 +29,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps trip plan controls state split from control rendering", () => {
     const controls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx");
     const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
+    const headerControls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableHeaderControls.tsx");
+    const headerControlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-header-controls-state.ts");
     const tripPlanControlsStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTableTripPlanControls.stories.tsx");
     const pathFiltersStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTablePathFilters.stories.tsx");
 
@@ -43,6 +45,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controlsState).toContain("tripPlanStatus(");
     expect(controlsState).not.toContain("const [isCreatingTripPlan, setIsCreatingTripPlan]");
     expect(controlsState).not.toContain("const [newTripPlanName, setNewTripPlanName]");
+    expect(headerControls).toContain("./smart-itinerary-header-controls-state");
+    expect(headerControls).toContain("const [headerControlsState, setHeaderControlsState]");
+    expect(headerControls).not.toContain("const [headerControlsExpanded, setHeaderControlsExpanded]");
+    expect(headerControls).not.toContain("const [renderHeaderControls, setRenderHeaderControls]");
+    expect(headerControlsState).toContain("export interface SmartItineraryHeaderControlsState");
+    expect(headerControlsState).toContain("toggleSmartItineraryHeaderControls");
     expect(tripPlanControlsStory).toContain("SmartItineraryTableTripPlanControlsProps");
     expect(tripPlanControlsStory).not.toContain("ComponentProps<typeof SmartItineraryTableTripPlanControls>");
     expect(pathFiltersStory).toContain("SmartItineraryTablePathFiltersProps");
