@@ -8,6 +8,7 @@ import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
 import {
   buildBookingDialogSubmitInput,
+  type BookingDialogFields,
   initialBookingDialogFields,
 } from "../model/booking-dialog-fields";
 
@@ -25,97 +26,86 @@ export function useBookingDialogState({
   onSubmit,
 }: BookingDialogStateInput) {
   const initialFields = initialBookingDialogFields({ booking, trip });
-  const [title, setTitle] = useState(initialFields.title);
-  const [type, setType] = useState(initialFields.type);
-  const [status, setStatus] = useState(initialFields.status);
-  const [visibility, setVisibility] = useState(initialFields.visibility);
-  const [providerName, setProviderName] = useState(initialFields.providerName);
-  const [confirmationCode, setConfirmationCode] = useState(initialFields.confirmationCode);
-  const [startsAt, setStartsAt] = useState(initialFields.startsAt);
-  const [endsAt, setEndsAt] = useState(initialFields.endsAt);
-  const [priceAmount, setPriceAmount] = useState(initialFields.priceAmount);
-  const [currency, setCurrency] = useState(initialFields.currency);
-  const [externalUrl, setExternalUrl] = useState(initialFields.externalUrl);
-  const [notes, setNotes] = useState(initialFields.notes);
-  const [travelerIds, setTravelerIds] = useState(() => initialFields.travelerIds);
-  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
-    () => initialFields.relatedItineraryItemIds,
-  );
-  const [relatedTaskIds, setRelatedTaskIds] = useState(() => initialFields.relatedTaskIds);
-  const [relatedExpenseIds, setRelatedExpenseIds] = useState(
-    () => initialFields.relatedExpenseIds,
-  );
-  const [noteIds, setNoteIds] = useState(() => initialFields.noteIds);
+  const [formFields, setFormFields] =
+    useState<BookingDialogFields>(initialFields);
+
+  function updateFormField<Field extends keyof BookingDialogFields>(
+    field: Field,
+    value: BookingDialogFields[Field],
+  ) {
+    setFormFields((current) => ({ ...current, [field]: value }));
+  }
+
+  function toggleFormFieldId<Field extends keyof Pick<
+    BookingDialogFields,
+    | "noteIds"
+    | "relatedExpenseIds"
+    | "relatedItineraryItemIds"
+    | "relatedTaskIds"
+    | "travelerIds"
+  >>(field: Field, id: string) {
+    setFormFields((current) => ({
+      ...current,
+      [field]: toggleId(current[field], id),
+    }));
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input = buildBookingDialogSubmitInput({
       booking,
       externalLinkLabel: copy.externalLinkLabel,
-      fields: {
-        confirmationCode,
-        currency,
-        endsAt,
-        externalUrl,
-        noteIds,
-        notes,
-        priceAmount,
-        providerName,
-        relatedExpenseIds,
-        relatedItineraryItemIds,
-        relatedTaskIds,
-        startsAt,
-        status,
-        title,
-        travelerIds,
-        type,
-        visibility,
-      },
+      fields: formFields,
     });
     if (input) onSubmit(input);
   }
 
   return {
-    confirmationCode,
-    currency,
-    endsAt,
-    externalUrl,
-    noteIds,
-    notes,
-    priceAmount,
-    providerName,
-    relatedExpenseIds,
-    relatedItineraryItemIds,
-    relatedTaskIds,
-    setConfirmationCode,
-    setCurrency,
-    setEndsAt,
-    setExternalUrl,
-    setNotes,
-    setPriceAmount,
-    setProviderName,
-    setStartsAt,
-    setStatus,
-    setTitle,
-    setType,
-    setVisibility,
-    startsAt,
-    status,
+    confirmationCode: formFields.confirmationCode,
+    currency: formFields.currency,
+    endsAt: formFields.endsAt,
+    externalUrl: formFields.externalUrl,
+    noteIds: formFields.noteIds,
+    notes: formFields.notes,
+    priceAmount: formFields.priceAmount,
+    providerName: formFields.providerName,
+    relatedExpenseIds: formFields.relatedExpenseIds,
+    relatedItineraryItemIds: formFields.relatedItineraryItemIds,
+    relatedTaskIds: formFields.relatedTaskIds,
+    setConfirmationCode: (confirmationCode: string) =>
+      updateFormField("confirmationCode", confirmationCode),
+    setCurrency: (currency: string) => updateFormField("currency", currency),
+    setEndsAt: (endsAt: string) => updateFormField("endsAt", endsAt),
+    setExternalUrl: (externalUrl: string) =>
+      updateFormField("externalUrl", externalUrl),
+    setNotes: (notes: string) => updateFormField("notes", notes),
+    setPriceAmount: (priceAmount: string) =>
+      updateFormField("priceAmount", priceAmount),
+    setProviderName: (providerName: string) =>
+      updateFormField("providerName", providerName),
+    setStartsAt: (startsAt: string) => updateFormField("startsAt", startsAt),
+    setStatus: (status: BookingDialogFields["status"]) =>
+      updateFormField("status", status),
+    setTitle: (title: string) => updateFormField("title", title),
+    setType: (type: BookingDialogFields["type"]) =>
+      updateFormField("type", type),
+    setVisibility: (visibility: BookingDialogFields["visibility"]) =>
+      updateFormField("visibility", visibility),
+    startsAt: formFields.startsAt,
+    status: formFields.status,
     submit,
-    title,
+    title: formFields.title,
     toggleExpense: (expenseId: string) =>
-      setRelatedExpenseIds((current) => toggleId(current, expenseId)),
+      toggleFormFieldId("relatedExpenseIds", expenseId),
     toggleItineraryItem: (itemId: string) =>
-      setRelatedItineraryItemIds((current) => toggleId(current, itemId)),
-    toggleNote: (noteId: string) =>
-      setNoteIds((current) => toggleId(current, noteId)),
-    toggleTask: (taskId: string) =>
-      setRelatedTaskIds((current) => toggleId(current, taskId)),
+      toggleFormFieldId("relatedItineraryItemIds", itemId),
+    toggleNote: (noteId: string) => toggleFormFieldId("noteIds", noteId),
+    toggleTask: (taskId: string) => toggleFormFieldId("relatedTaskIds", taskId),
     toggleTraveler: (memberId: string) =>
-      setTravelerIds((current) => toggleId(current, memberId)),
-    travelerIds,
-    type,
-    visibility,
+      toggleFormFieldId("travelerIds", memberId),
+    travelerIds: formFields.travelerIds,
+    type: formFields.type,
+    visibility: formFields.visibility,
   };
 }
 
