@@ -1,16 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RouteViewport } from "./route-map.config";
 import {
   applyRouteMapTheme,
-  cleanupLiveRouteMap,
   fitLiveRoute,
   removeMapChromeFromTabOrder,
   synchronizeRouteLayers,
 } from "./route-map.live";
-import {
-  type LiveRouteMarkerRegistry,
-  synchronizeLiveRouteMarkers,
-} from "./route-map.live-markers";
+import { synchronizeLiveRouteMarkers } from "./route-map.live-markers";
 import {
   initialRouteLiveMapLifecycleState,
   retryRouteLiveMap,
@@ -22,6 +18,7 @@ import type {
   RoutePoint,
 } from "./route-map.types";
 import { getRouteCenter } from "./route-map.viewport";
+import { useRouteLiveMapRefs } from "./use-route-live-map-refs";
 
 interface UseRouteLiveMapInput {
   activeDay: DayFilter;
@@ -45,12 +42,15 @@ export function useRouteLiveMap({
   const [liveMapLifecycleState, setLiveMapLifecycleState] = useState(
     initialRouteLiveMapLifecycleState,
   );
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<import("maplibre-gl").Map | null>(null);
-  const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
-  const markersRef = useRef<LiveRouteMarkerRegistry>(new Map());
-  const sourceIdsRef = useRef<string[]>([]);
-  const liveRoutePointsRef = useRef(liveRoutePoints);
+  const {
+    cleanupLiveMap,
+    liveRoutePointsRef,
+    mapContainerRef,
+    maplibreModuleRef,
+    mapRef,
+    markersRef,
+    sourceIdsRef,
+  } = useRouteLiveMapRefs(liveRoutePoints);
   const liveMapState =
     liveMapAvailability === "auto"
       ? liveMapLifecycleState.state
@@ -59,15 +59,10 @@ export function useRouteLiveMap({
   const markerItems = useMemo(() => new Set(liveRoutePoints.map((point) => point.item.id)), [liveRoutePoints]);
 
   useEffect(() => {
-    liveRoutePointsRef.current = liveRoutePoints;
-  }, [liveRoutePoints]);
-
-  useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !liveMapEnabled || liveMapAvailability !== "auto") return undefined;
 
     let disposed = false;
     const liveMapContainer = mapContainerRef.current;
-    const mountedMarkers = markersRef.current;
 
     async function mountLiveMap() {
       setLiveMapLifecycleState((current) =>
@@ -123,21 +118,19 @@ export function useRouteLiveMap({
 
     return () => {
       disposed = true;
-      const cleaned = cleanupLiveRouteMap({
-        container: liveMapContainer,
-        map: mapRef.current,
-        markers: mountedMarkers,
-        sourceIds: sourceIdsRef.current,
-      });
-      sourceIdsRef.current = cleaned.sourceIds;
-      mapRef.current = cleaned.map;
+      cleanupLiveMap(liveMapContainer);
     };
   }, [
+    cleanupLiveMap,
     fallbackViewport.center,
     fallbackViewport.zoom,
     liveMapAvailability,
     liveMapEnabled,
     liveMapLifecycleState.retryKey,
+    liveRoutePointsRef,
+    mapContainerRef,
+    maplibreModuleRef,
+    mapRef,
   ]);
 
   useEffect(() => {
@@ -158,19 +151,24 @@ export function useRouteLiveMap({
 
     sourceIdsRef.current = synchronizeRouteLayers(map, sourceIdsRef.current, routeDayGroups, activeDay);
     fitLiveRoute(map, visibleLiveRoutePoints, fallbackViewport);
-  }, [activeDay, fallbackViewport, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
+  }, [
+    activeDay,
+    fallbackViewport,
+    liveMapState,
+    liveRoutePoints,
+    maplibreModuleRef,
+    mapRef,
+    markerItems,
+    markersRef,
+    routeDayGroups,
+    sourceIdsRef,
+    visibleLiveRoutePoints,
+  ]);
 
   const retryLiveMap = useCallback(() => {
-    const cleaned = cleanupLiveRouteMap({
-      container: mapContainerRef.current,
-      map: mapRef.current,
-      markers: markersRef.current,
-      sourceIds: sourceIdsRef.current,
-    });
-    sourceIdsRef.current = cleaned.sourceIds;
-    mapRef.current = cleaned.map;
+    cleanupLiveMap();
     setLiveMapLifecycleState((current) => retryRouteLiveMap(current));
-  }, []);
+  }, [cleanupLiveMap]);
 
   return {
     liveMapState,

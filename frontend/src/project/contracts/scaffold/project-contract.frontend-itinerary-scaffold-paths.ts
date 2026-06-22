@@ -240,6 +240,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/route-map/tests/route-map.live.test.ts",
   "src/features/itinerary/components/route-map/tests/route-map.viewport.test.ts",
   "src/features/itinerary/components/route-map/use-route-map-view-state.ts",
+  "src/features/itinerary/components/route-map/use-route-live-map-refs.ts",
   "src/features/itinerary/components/route-map/use-route-live-map.ts",
   "src/features/itinerary/components/route-map/route-map.live-status.ts",
 ] as const;

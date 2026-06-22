@@ -23,6 +23,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   routeMapCanvas: "src/features/itinerary/components/route-map/RouteMapCanvas.tsx",
   routeMapUnresolvedPanel: "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx",
   routeLiveMapHook: "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  routeLiveMapRefs: "src/features/itinerary/components/route-map/use-route-live-map-refs.ts",
   routeLiveMapMarkers: "src/features/itinerary/components/route-map/route-map.live-markers.ts",
   routeMapViewport: "src/features/itinerary/components/route-map/route-map.viewport.ts",
   routeMapUtils: "src/features/itinerary/components/route-map/route-map.utils.ts",
