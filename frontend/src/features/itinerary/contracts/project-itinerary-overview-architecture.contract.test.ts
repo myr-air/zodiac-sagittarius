@@ -57,6 +57,7 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
   it("keeps overview task state split from page composition", () => {
     const overviewPage = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.tsx");
     const overviewLensPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewLensPanels.tsx");
+    const overviewPageState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-page-state.ts");
     const overviewPageDerived = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-derived.tsx");
     const overviewPageModel = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-model.ts");
     const overviewFocusHeading = readItineraryArchitectureSource("src/features/itinerary/domain/overview-focus-heading.ts");
@@ -65,10 +66,12 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const overviewTaskStateModel = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-task-state.ts");
     const overviewTaskDerivation = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-task-derivation.ts");
 
-    expect(overviewPage).toContain("./use-overview-task-state");
+    expect(overviewPage).toContain("./use-overview-page-state");
     expect(overviewPage).toContain("./OverviewPage.types");
     expect(overviewPage).toContain("./OverviewLensPanels");
-    expect(overviewPage).toContain("./overview-page-derived");
+    expect(overviewPage).not.toContain("./overview-page-derived");
+    expect(overviewPage).not.toContain("./overview-page-model");
+    expect(overviewPage).not.toContain("./use-overview-task-state");
     expect(overviewPage).not.toContain("./ManagerOverviewPanels");
     expect(overviewPage).not.toContain("./TravelerOverviewPanels");
     expect(overviewPage).not.toContain("./ViewerOverviewPanels");
@@ -76,8 +79,14 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(overviewPage).not.toContain("useMemo");
     expect(overviewPage).not.toContain("interface OverviewPageProps");
     expect(overviewPage).not.toContain("function submitTask");
+    expect(overviewPage).not.toContain("function openExpenses");
     expect(overviewPage).not.toContain("isMyTask");
     expect(overviewPage).not.toContain('locale === "th"');
+    expect(overviewPageState).toContain("export function useOverviewPageState");
+    expect(overviewPageState).toContain("./use-overview-task-state");
+    expect(overviewPageState).toContain("./overview-page-derived");
+    expect(overviewPageState).toContain("./overview-page-model");
+    expect(overviewPageState).toContain("function openExpenses");
     expect(overviewPageModel).toContain("overviewFocusHeading");
     expect(overviewPageModel).not.toContain("completedFocusHeading");
     expect(overviewPageModel).not.toContain("incomingFocusHeading");
