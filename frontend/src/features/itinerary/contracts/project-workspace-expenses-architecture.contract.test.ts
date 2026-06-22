@@ -49,8 +49,12 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseOverviewPanels).toContain("../model/expense-overview-display");
     expect(expenseOverviewPanels).not.toContain("t.expenses.balance.owed");
     expect(expenseOverviewPanels).not.toContain("t.expenses.balance.payback");
+    expect(expenseOverviewPanels).not.toContain("formatMoney");
+    expect(expenseOverviewPanels).not.toContain("formatReminderDate");
     expect(expenseOverviewDisplay).toContain("export function expenseMemberBalanceDisplay");
     expect(expenseOverviewDisplay).toContain("export function settlementSuggestionLabel");
+    expect(expenseOverviewDisplay).toContain("export function categorySpendAmountLabel");
+    expect(expenseOverviewDisplay).toContain("export function settlementReminderLabel");
     expect(expenseFilterState).toContain("export interface ExpensePageFilterState");
     expect(expenseFilterState).toContain("initialExpensePageFilterState");
     expect(expenseFilterState).toContain("clearedExpensePageFilterState");

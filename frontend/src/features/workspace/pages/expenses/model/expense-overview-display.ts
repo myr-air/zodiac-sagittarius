@@ -1,4 +1,5 @@
-import { formatMoney } from "@/src/trip/expenses";
+import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
+import type { DisplayDateTimeLocale } from "@/src/shared/date-time-display";
 import type { SettlementSuggestion } from "@/src/trip/types";
 
 export interface ExpenseBalanceCopy {
@@ -6,6 +7,10 @@ export interface ExpenseBalanceCopy {
   owes(input: { name: string; amount: string }): string;
   payback(input: { from: string; to: string; amount: string }): string;
   settled(input: { name: string }): string;
+}
+
+export interface ExpenseReminderCopy {
+  lastSent(input: { date: string }): string;
 }
 
 export interface ExpenseMemberBalanceDisplay {
@@ -73,5 +78,29 @@ export function settlementSuggestionLabel({
     ),
     from: fromName,
     to: toName,
+  });
+}
+
+export function categorySpendAmountLabel({
+  amount,
+  settlementCurrency,
+}: {
+  amount: number;
+  settlementCurrency: string;
+}): string {
+  return formatMoney(amount, settlementCurrency);
+}
+
+export function settlementReminderLabel({
+  locale,
+  reminderCopy,
+  remindedAt,
+}: {
+  locale: DisplayDateTimeLocale;
+  reminderCopy: ExpenseReminderCopy;
+  remindedAt: string;
+}): string {
+  return reminderCopy.lastSent({
+    date: formatReminderDate(remindedAt, locale),
   });
 }

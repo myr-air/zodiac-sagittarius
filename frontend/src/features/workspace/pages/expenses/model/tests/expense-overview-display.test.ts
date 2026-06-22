@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  categorySpendAmountLabel,
   type ExpenseBalanceCopy,
+  type ExpenseReminderCopy,
   expenseMemberBalanceDisplay,
+  settlementReminderLabel,
   settlementSuggestionLabel,
 } from "../expense-overview-display";
 
@@ -10,6 +13,9 @@ const balanceCopy: ExpenseBalanceCopy = {
   owes: ({ amount, name }) => `${name} owes ${amount}`,
   payback: ({ amount, from, to }) => `${from} pays ${to} ${amount}`,
   settled: ({ name }) => `${name} is settled`,
+};
+const reminderCopy: ExpenseReminderCopy = {
+  lastSent: ({ date }) => `Last sent ${date}`,
 };
 
 describe("expense overview display", () => {
@@ -71,5 +77,17 @@ describe("expense overview display", () => {
         toName: "Aom",
       }),
     ).toBe("Beam pays Aom HK$20.00");
+  });
+
+  it("formats category spend and reminder labels", () => {
+    expect(categorySpendAmountLabel({
+      amount: 48,
+      settlementCurrency: "HKD",
+    })).toBe("HK$48.00");
+    expect(settlementReminderLabel({
+      locale: "en",
+      remindedAt: "2025-06-01T00:00:00.000Z",
+      reminderCopy,
+    })).toBe("Last sent Jun 1, 2025, 07:00 AM");
   });
 });

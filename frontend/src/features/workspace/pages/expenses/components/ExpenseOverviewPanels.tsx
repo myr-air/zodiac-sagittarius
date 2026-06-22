@@ -1,6 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import { findMemberById, memberInitial } from "@/src/trip/members";
 import { tripPlanName } from "@/src/trip/trip-plans";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
@@ -8,7 +7,9 @@ import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
+  categorySpendAmountLabel,
   expenseMemberBalanceDisplay,
+  settlementReminderLabel,
   settlementSuggestionLabel,
 } from "../model/expense-overview-display";
 import { categoryTone } from "../model/expense-page-options";
@@ -100,7 +101,11 @@ export function ExpenseOverviewPanels({
                   </span>
                   {suggestion.lastRemindedAt ? (
                     <span className={expenseStyles.balanceMetaClassName}>
-                      {t.expenses.reminders.lastSent({ date: formatReminderDate(suggestion.lastRemindedAt, locale) })}
+                      {settlementReminderLabel({
+                        locale,
+                        remindedAt: suggestion.lastRemindedAt,
+                        reminderCopy: t.expenses.reminders,
+                      })}
                     </span>
                   ) : null}
                   <span className={expenseStyles.balanceActionsClassName}>
@@ -131,7 +136,9 @@ export function ExpenseOverviewPanels({
                   <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
                   {category}
                 </span>
-                <strong className={expenseStyles.amountClassName}>{formatMoney(amount, settlementCurrency)}</strong>
+                <strong className={expenseStyles.amountClassName}>
+                  {categorySpendAmountLabel({ amount, settlementCurrency })}
+                </strong>
               </div>
             );
           })}
