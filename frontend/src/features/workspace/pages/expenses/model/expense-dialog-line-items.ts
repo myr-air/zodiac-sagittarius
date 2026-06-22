@@ -22,6 +22,13 @@ export function emptyExpenseLineItem(
   };
 }
 
+export function appendEmptyExpenseLineItem(
+  lineItems: EditableExpenseLineItem[],
+  members: Member[],
+): EditableExpenseLineItem[] {
+  return [...lineItems, emptyExpenseLineItem(members, lineItems)];
+}
+
 export function initialExpenseLineItems(
   expense: Expense | null,
   members: Member[],
@@ -37,6 +44,30 @@ export function initialExpenseLineItems(
       members.some((member) => member.id === memberId),
     ),
   }));
+}
+
+export function updateEditableExpenseLineItem(
+  lineItems: EditableExpenseLineItem[],
+  index: number,
+  patch: Partial<EditableExpenseLineItem>,
+): EditableExpenseLineItem[] {
+  return lineItems.map((lineItem, candidateIndex) =>
+    candidateIndex === index ? { ...lineItem, ...patch } : lineItem,
+  );
+}
+
+export function toggleExpenseLineParticipant(
+  lineItems: EditableExpenseLineItem[],
+  index: number,
+  memberId: string,
+): EditableExpenseLineItem[] {
+  return lineItems.map((lineItem, candidateIndex) => {
+    if (candidateIndex !== index) return lineItem;
+    const participantIds = lineItem.participantIds.includes(memberId)
+      ? lineItem.participantIds.filter((participantId) => participantId !== memberId)
+      : [...lineItem.participantIds, memberId];
+    return { ...lineItem, participantIds };
+  });
 }
 
 export function parseExpenseLineItems(

@@ -5,9 +5,11 @@ import {
   initialExpenseSplitValues,
 } from "../model/expense-dialog-initial-state";
 import {
-  emptyExpenseLineItem,
+  appendEmptyExpenseLineItem,
   expenseSplitModeTransitionFields,
   initialExpenseLineItems,
+  toggleExpenseLineParticipant,
+  updateEditableExpenseLineItem,
   type EditableExpenseLineItem,
 } from "../model/expense-dialog-line-items";
 
@@ -33,21 +35,15 @@ export function useExpenseSplitEditor({ expense, members }: UseExpenseSplitEdito
   }
 
   function updateLineItem(index: number, patch: Partial<EditableExpenseLineItem>) {
-    setLineItems((current) => current.map((lineItem, candidateIndex) => (candidateIndex === index ? { ...lineItem, ...patch } : lineItem)));
+    setLineItems((current) => updateEditableExpenseLineItem(current, index, patch));
   }
 
   function toggleLineParticipant(index: number, memberId: string) {
-    setLineItems((current) => current.map((lineItem, candidateIndex) => {
-      if (candidateIndex !== index) return lineItem;
-      const participantIds = lineItem.participantIds.includes(memberId)
-        ? lineItem.participantIds.filter((participantId) => participantId !== memberId)
-        : [...lineItem.participantIds, memberId];
-      return { ...lineItem, participantIds };
-    }));
+    setLineItems((current) => toggleExpenseLineParticipant(current, index, memberId));
   }
 
   function addLineItem() {
-    setLineItems((current) => [...current, emptyExpenseLineItem(members, current)]);
+    setLineItems((current) => appendEmptyExpenseLineItem(current, members));
   }
 
   function updateSplitValue(memberId: string, value: string) {
