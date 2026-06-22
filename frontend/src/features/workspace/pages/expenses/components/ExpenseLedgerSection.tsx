@@ -1,10 +1,12 @@
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
-import { findMemberById, memberInitial } from "@/src/trip/members";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseLedgerRowDisplay } from "../model/expense-ledger-display";
+import {
+  expenseLedgerPayerDisplay,
+  expenseLedgerRowDisplay,
+} from "../model/expense-ledger-display";
 import { categoryTone } from "../model/expense-page-options";
 import type {
   DuplicateExpenseAsEstimateHandler,
@@ -93,7 +95,10 @@ export function ExpenseLedgerSection({
           </thead>
           <tbody className={expenseStyles.tableBodyClassName}>
             {filteredExpenses.map((expense) => {
-              const payer = findMemberById(members, expense.paidBy);
+              const payer = expenseLedgerPayerDisplay({
+                members,
+                paidBy: expense.paidBy,
+              });
               const linkedItem = findItineraryItemById(
                 trip.itineraryItems,
                 expense.itineraryItemId,
@@ -116,8 +121,8 @@ export function ExpenseLedgerSection({
                   <td>
                     {payer ? (
                       <span className={expenseStyles.memberLineClassName}>
-                        <span className={expenseStyles.avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{memberInitial(payer.displayName)}</span>
-                        <span className={expenseStyles.balanceNameClassName}>{payer.displayName}</span>
+                        <span className={expenseStyles.avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{payer.initial}</span>
+                        <span className={expenseStyles.balanceNameClassName}>{payer.name}</span>
                       </span>
                     ) : expense.paidBy}
                   </td>

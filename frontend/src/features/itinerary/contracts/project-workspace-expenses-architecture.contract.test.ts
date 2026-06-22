@@ -66,7 +66,10 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerSection).not.toContain("refundAmount");
     expect(expenseLedgerSection).not.toContain("sumShares");
     expect(expenseLedgerSection).not.toContain("formatMoney");
+    expect(expenseLedgerSection).not.toContain("findMemberById");
+    expect(expenseLedgerSection).not.toContain("memberInitial");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
+    expect(expenseLedgerDisplay).toContain("export function expenseLedgerPayerDisplay");
     expect(expenseSummaryStats).toContain("../model/expense-summary-display");
     expect(expenseSummaryStats).not.toContain("formatMoney");
     expect(expenseSummaryDisplay).toContain("export function expenseSummaryDisplay");

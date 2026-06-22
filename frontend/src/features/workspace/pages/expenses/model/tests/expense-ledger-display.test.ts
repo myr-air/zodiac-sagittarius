@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Expense } from "@/src/trip/types";
-import { expenseLedgerRowDisplay } from "../expense-ledger-display";
+import type { Expense, Member } from "@/src/trip/types";
+import {
+  expenseLedgerPayerDisplay,
+  expenseLedgerRowDisplay,
+} from "../expense-ledger-display";
 
 function buildExpense(overrides: Partial<Expense> = {}): Expense {
   return {
@@ -20,6 +23,16 @@ function buildExpense(overrides: Partial<Expense> = {}): Expense {
     ...overrides,
   };
 }
+
+const members: Member[] = [
+  {
+    color: "#2563eb",
+    displayName: "Aom",
+    id: "member-aom",
+    presence: "online",
+    role: "owner",
+  },
+];
 
 describe("expense ledger display", () => {
   it("formats row amount and split total with expense currency", () => {
@@ -67,5 +80,20 @@ describe("expense ledger display", () => {
         "HKD",
       ).canRecordRefund,
     ).toBe(false);
+  });
+
+  it("builds payer display details from trip members", () => {
+    expect(expenseLedgerPayerDisplay({
+      members,
+      paidBy: "member-aom",
+    })).toEqual({
+      color: "#2563eb",
+      initial: "A",
+      name: "Aom",
+    });
+    expect(expenseLedgerPayerDisplay({
+      members,
+      paidBy: "member-missing",
+    })).toBeNull();
   });
 });
