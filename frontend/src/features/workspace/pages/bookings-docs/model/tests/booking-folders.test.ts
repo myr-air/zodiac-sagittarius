@@ -8,6 +8,7 @@ import {
   bookingDocMatchesFolder,
   bookingFolders,
   countBookingFolders,
+  findBookingFolder,
 } from "../booking-folders";
 
 describe("booking folder rules", () => {
@@ -21,6 +22,7 @@ describe("booking folder rules", () => {
       "travel_docs",
       "external_links",
     ]);
+    expect(findBookingFolder("transport")).toMatchObject({ id: "transport" });
   });
 
   it("counts and matches booking docs by friendly folders", () => {

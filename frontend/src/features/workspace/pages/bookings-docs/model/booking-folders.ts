@@ -25,9 +25,13 @@ export function countBookingFolders(docs: BookingDoc[]): Record<BookingFolderId,
   }, {} as Record<BookingFolderId, number>);
 }
 
+export function findBookingFolder(folderId: BookingFolderId) {
+  return bookingFolders.find((folder) => folder.id === folderId) ?? bookingFolders[0];
+}
+
 export function bookingDocMatchesFolder(doc: BookingDoc, folderId: BookingFolderId): boolean {
-  const folder = bookingFolders.find((candidate) => candidate.id === folderId);
-  if (!folder || folder.id === "all") return true;
+  const folder = findBookingFolder(folderId);
+  if (folder.id === "all") return true;
   if (folder.id === "external_links") return doc.externalLinks.length > 0;
   if ("status" in folder) return doc.status === folder.status;
   return "types" in folder ? (folder.types as readonly BookingDocType[]).includes(doc.type) : true;

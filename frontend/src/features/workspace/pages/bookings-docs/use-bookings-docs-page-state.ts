@@ -1,9 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  canViewBookingDoc,
-  findBookingDocById,
-  findBookingDocRelations,
-} from "@/src/trip/booking-docs";
+import { findBookingDocRelations } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type {
   BookingDocInput,
@@ -13,15 +9,16 @@ import type {
 } from "./BookingsDocsPage.types";
 import type { BookingStatusFilter } from "./model/booking-options";
 import {
-  bookingDocMatchesFolder,
-  bookingFolders,
   countBookingFolders,
+  findBookingFolder,
   type BookingFolderId,
 } from "./model/booking-folders";
 import {
-  bookingDocMatchesQuery,
-  compareBookingStartWithUndated,
-} from "./model/booking-list";
+  filterBookingPageDocs,
+  lockedBookingDocsForMember,
+  selectedBookingPageDoc,
+  visibleBookingDocsForMember,
+} from "./model/booking-page-selectors";
 
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];
@@ -50,17 +47,25 @@ export function useBookingsDocsPageState({
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dialogBooking, setDialogBooking] = useState<BookingDoc | "new" | null>(null);
   const [deleteBooking, setDeleteBooking] = useState<BookingDoc | null>(null);
-  const visibleDocs = useMemo(() => bookingDocs.filter((doc) => canViewBookingDoc(doc, currentMember)), [bookingDocs, currentMember]);
-  const folderDocs = useMemo(() => visibleDocs
-    .filter((doc) => bookingDocMatchesFolder(doc, activeFolderId))
-    .filter((doc) => statusFilter === "all" || doc.status === statusFilter)
-    .filter((doc) => bookingDocMatchesQuery(doc, trip, query))
-    .sort(compareBookingStartWithUndated), [activeFolderId, query, statusFilter, trip, visibleDocs]);
+  const visibleDocs = useMemo(
+    () => visibleBookingDocsForMember(bookingDocs, currentMember),
+    [bookingDocs, currentMember],
+  );
+  const folderDocs = useMemo(
+    () => filterBookingPageDocs({
+      activeFolderId,
+      docs: visibleDocs,
+      query,
+      statusFilter,
+      trip,
+    }),
+    [activeFolderId, query, statusFilter, trip, visibleDocs],
+  );
   const folderCounts = useMemo(() => countBookingFolders(visibleDocs), [visibleDocs]);
-  const lockedDocs = bookingDocs.filter((doc) => !canViewBookingDoc(doc, currentMember));
-  const selectedBooking = findBookingDocById(folderDocs, selectedBookingId) ?? folderDocs[0] ?? null;
+  const lockedDocs = lockedBookingDocsForMember(bookingDocs, currentMember);
+  const selectedBooking = selectedBookingPageDoc(folderDocs, selectedBookingId);
   const selectedRelations = selectedBooking ? findBookingDocRelations(selectedBooking, trip, tasks) : null;
-  const activeFolder = bookingFolders.find((folder) => folder.id === activeFolderId) ?? bookingFolders[0];
+  const activeFolder = findBookingFolder(activeFolderId);
 
   async function submitBooking(input: BookingDocInput) {
     if (dialogBooking === "new") {
