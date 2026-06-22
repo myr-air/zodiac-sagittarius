@@ -1,6 +1,7 @@
 import { majorCurrencyOptions } from "@/src/trip/currencies";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import { expenseDialogRepeatCountRange } from "../model/expense-dialog-constraints";
 
 interface ExpenseCoreFieldsProps {
   amount: string;
@@ -84,7 +85,7 @@ export function ExpenseCoreFields({
       {!isEditing ? (
         <label className={expenseStyles.fieldClassName}>
           <span>{copy.fields.repeatCount}</span>
-          <input inputMode="numeric" min={1} max={31} type="number" value={repeatCount} onChange={(event) => onRepeatCountChange(event.target.value)} />
+          <input inputMode="numeric" min={expenseDialogRepeatCountRange.min} max={expenseDialogRepeatCountRange.max} type="number" value={repeatCount} onChange={(event) => onRepeatCountChange(event.target.value)} />
         </label>
       ) : null}
       {needsExchangeRate ? (

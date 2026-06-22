@@ -14,6 +14,7 @@ import {
   type EditableExpenseLineItem,
   validExpenseLineItems,
 } from "./expense-dialog-line-items";
+import { validExpenseDialogRepeatCount } from "./expense-dialog-constraints";
 
 interface ExpenseDialogStateInput {
   amount: string;
@@ -61,7 +62,7 @@ export function calculateExpenseDialogState({
   const normalizedCurrency = normalizeCurrencyCode(currency);
   const needsExchangeRate = normalizedCurrency !== normalizeCurrencyCode(settlementCurrency);
   const hasValidExchangeRate = !needsExchangeRate || (Number.isFinite(exchangeRateNumber) && exchangeRateNumber > 0);
-  const hasValidRepeatCount = Boolean(expense) || (Number.isInteger(repeatCountNumber) && repeatCountNumber >= 1 && repeatCountNumber <= 31);
+  const hasValidRepeatCount = Boolean(expense) || validExpenseDialogRepeatCount(repeatCountNumber);
   const memberIds = members.map((member) => member.id);
   const parsedSplitValues = Object.fromEntries(members.map((member) => [member.id, Number(splitValues[member.id] || 0)]));
   const parsedLineItems = parseExpenseLineItems(lineItems);

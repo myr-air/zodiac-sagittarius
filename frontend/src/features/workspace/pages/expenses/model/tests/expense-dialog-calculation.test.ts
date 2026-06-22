@@ -6,6 +6,7 @@ import {
 import {
   canSubmitExpenseDialog,
 } from "../expense-dialog-submit-guard";
+import { expenseDialogRepeatCountRange } from "../expense-dialog-constraints";
 
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 
@@ -44,7 +45,7 @@ describe("expense dialog calculated state", () => {
       expense: null,
       lineItems: [],
       members,
-      repeatCount: "32",
+      repeatCount: String(expenseDialogRepeatCountRange.max + 1),
       settlementCurrency: "HKD",
       splitMode: "equal",
       splitValues: {},
@@ -53,6 +54,29 @@ describe("expense dialog calculated state", () => {
     expect(calculated.needsExchangeRate).toBe(true);
     expect(calculated.hasValidExchangeRate).toBe(false);
     expect(calculated.hasValidRepeatCount).toBe(false);
+  });
+
+  it("accepts repeat counts at the configured bounds for new expenses", () => {
+    const baseInput = {
+      amount: "10",
+      currency: "HKD",
+      exchangeRate: "1",
+      expense: null,
+      lineItems: [],
+      members,
+      settlementCurrency: "HKD",
+      splitMode: "equal" as const,
+      splitValues: {},
+    };
+
+    expect(calculateExpenseDialogState({
+      ...baseInput,
+      repeatCount: String(expenseDialogRepeatCountRange.min),
+    }).hasValidRepeatCount).toBe(true);
+    expect(calculateExpenseDialogState({
+      ...baseInput,
+      repeatCount: String(expenseDialogRepeatCountRange.max),
+    }).hasValidRepeatCount).toBe(true);
   });
 
   it("flags invalid itemized lines while keeping valid line-item splits", () => {
