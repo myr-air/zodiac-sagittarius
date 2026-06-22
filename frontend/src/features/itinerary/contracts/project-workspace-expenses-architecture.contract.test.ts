@@ -21,6 +21,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
     const expenseDialogFormValues = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogFormValues.ts");
+    const expenseDialogLinkingState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogLinkingState.ts");
     const expenseDialogSubmitAction = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-submit-action.ts");
     const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
     const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
@@ -113,8 +114,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialog).not.toContain("function submitExpense");
     expect(expenseDialogState).toContain("export function useExpenseDialogState");
     expect(expenseDialogState).toContain("useExpenseDialogFormValues");
+    expect(expenseDialogState).toContain("useExpenseDialogLinkingState");
     expect(expenseDialogState).toContain("useExpenseSplitEditor");
-    expect(expenseDialogState).toContain("const [uiState, setUiState]");
+    expect(expenseDialogState).not.toContain("const [uiState, setUiState]");
+    expect(expenseDialogState).not.toContain("expenseDialogLinkedItem");
+    expect(expenseDialogState).not.toContain("expenseDialogItemSelectionFields");
     expect(expenseDialogState).not.toContain("const [formValues, setFormValues]");
     expect(expenseDialogState).not.toContain("function updateFormValue");
     expect(expenseDialogState).toContain("function submitExpense");
@@ -133,6 +137,10 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialogFormValues).toContain("const updateFormValue");
     expect(expenseDialogFormValues).toContain("expenseDialogCurrencyChangeFields");
     expect(expenseDialogFormValues).toContain("expenseDialogManualExchangeRateFields");
+    expect(expenseDialogLinkingState).toContain("const [uiState, setUiState]");
+    expect(expenseDialogLinkingState).toContain("expenseDialogLinkedItem");
+    expect(expenseDialogLinkingState).toContain("expenseDialogItemSelectionFields");
+    expect(expenseDialogLinkingState).toContain("setExpenseDialogSaving");
     expect(expenseSplitEditor).toContain("initialExpenseSplitEditorState");
     expect(expenseSplitEditor).toContain("const [state, setState]");
     expect(expenseSplitEditor).not.toContain("const [splitMode, setSplitMode]");
