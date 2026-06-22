@@ -28,6 +28,9 @@ describe("members page state structure", () => {
     const pageFiltersSource = readMembersPageSource(
       "hooks/useMemberPageFilters.ts",
     );
+    const derivedStateSource = readMembersPageSource(
+      "hooks/useMemberPageDerivedState.ts",
+    );
     const taskDialogStateSource = readMembersPageSource(
       "model/member-task-dialog-state.ts",
     );
@@ -35,8 +38,12 @@ describe("members page state structure", () => {
     expect(pageStateSource).toContain("useMemberTaskDialogState");
     expect(pageStateSource).toContain("useMemberCreateFormState");
     expect(pageStateSource).toContain("useMemberPageFilters");
+    expect(pageStateSource).toContain("useMemberPageDerivedState");
     expect(pageStateSource).not.toContain("initialMemberFilterState");
     expect(pageStateSource).not.toContain("updateMemberFilterState");
+    expect(pageStateSource).not.toContain("filterTripMembers");
+    expect(pageStateSource).not.toContain("memberSummaryCounts");
+    expect(pageStateSource).not.toContain("visibleTripMembers");
     expect(pageStateSource).not.toContain("const [filterState, setFilterState]");
     expect(pageStateSource).not.toContain("const [createFormState, setCreateFormState]");
     expect(pageStateSource).not.toContain("const [query, setQuery]");
@@ -62,8 +69,13 @@ describe("members page state structure", () => {
     expect(pageFiltersSource).toContain("export function useMemberPageFilters");
     expect(pageStateSource).toContain("./useMemberInviteActions");
     expect(pageStateSource).toContain("./useMemberCreateFormState");
+    expect(pageStateSource).toContain("./useMemberPageDerivedState");
     expect(pageStateSource).toContain("./useMemberPageFilters");
     expect(pageStateSource).toContain("./useMemberTaskDialogState");
+    expect(derivedStateSource).toContain("export function useMemberPageDerivedState");
+    expect(derivedStateSource).toContain("filterTripMembers");
+    expect(derivedStateSource).toContain("memberSummaryCounts");
+    expect(derivedStateSource).toContain("visibleTripMembers");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
     expect(taskDialogSource).toContain("../model/member-task-dialog-state");

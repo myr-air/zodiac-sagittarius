@@ -1,17 +1,12 @@
-import { useMemo } from "react";
 import type {
   Member,
   Trip,
   TripMemberAccessStatus,
   TripRole,
 } from "@/src/trip/types";
-import {
-  filterTripMembers,
-  memberSummaryCounts,
-  visibleTripMembers,
-} from "../model/member-page-selectors";
 import { useMemberCreateFormState } from "./useMemberCreateFormState";
 import { useMemberInviteActions } from "./useMemberInviteActions";
+import { useMemberPageDerivedState } from "./useMemberPageDerivedState";
 import { useMemberPageFilters } from "./useMemberPageFilters";
 import { useMemberTaskDialogState } from "./useMemberTaskDialogState";
 
@@ -87,9 +82,17 @@ export function useTripMembersPageState({
     joinInviteToken,
     onRotateJoinInviteToken,
   });
-  const visibleMembers = useMemo(() => visibleTripMembers(trip.members), [
-    trip.members,
-  ]);
+  const {
+    filteredMembers,
+    summaryStats,
+    visibleMembers,
+  } = useMemberPageDerivedState({
+    currentMemberId: currentMember.id,
+    members: trip.members,
+    query,
+    roleFilter,
+    statusFilter,
+  });
   const {
     closeMemberDialog,
     confirmChangeAccessStatus,
@@ -109,27 +112,6 @@ export function useTripMembersPageState({
     onTransferOwnership,
     visibleMembers,
   });
-  const summaryStats = useMemo(
-    () => memberSummaryCounts(visibleMembers, currentMember.id),
-    [currentMember.id, visibleMembers],
-  );
-  const filteredMembers = useMemo(
-    () =>
-      filterTripMembers({
-        currentMemberId: currentMember.id,
-        members: visibleMembers,
-        query,
-        roleFilter,
-        statusFilter,
-      }),
-    [
-      currentMember.id,
-      query,
-      roleFilter,
-      statusFilter,
-      visibleMembers,
-    ],
-  );
 
   return {
     confirmChangeAccessStatus,

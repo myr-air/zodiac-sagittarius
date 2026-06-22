@@ -106,6 +106,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/members/hooks/tests/use-member-task-dialog-state.test.ts",
   "src/features/workspace/pages/members/hooks/useMemberCreateFormState.ts",
   "src/features/workspace/pages/members/hooks/useMemberInviteActions.ts",
+  "src/features/workspace/pages/members/hooks/useMemberPageDerivedState.ts",
   "src/features/workspace/pages/members/hooks/useMemberPageFilters.ts",
   "src/features/workspace/pages/members/hooks/useMemberTaskDialogState.ts",
   "src/features/workspace/pages/members/model/member-task-dialog-state.ts",
