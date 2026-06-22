@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { SmartItineraryTable } from "@/src/features/itinerary/components";
+import { SmartItineraryTable, type SmartItineraryTableProps } from "@/src/features/itinerary/components";
 import {
   buildBookingDoc,
   defaultSmartItineraryPathOptions,
@@ -10,9 +10,9 @@ import {
 } from "../fixtures/itinerary-items";
 
 export function renderSmartItineraryTable(
-  overrides: Partial<Parameters<typeof SmartItineraryTable>[0]> = {},
+  overrides: Partial<SmartItineraryTableProps> = {},
 ) {
-  const props: Parameters<typeof SmartItineraryTable>[0] = {
+  const props: SmartItineraryTableProps = {
     canRestructure: true,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
