@@ -24,17 +24,12 @@ import {
   inferredScopeExpenses as filterInferredScopeExpenses,
 } from "../model/expense-page-filters";
 import {
-  clearedExpensePageFilterState,
-  expensePageFilterFieldState,
-  initialExpensePageFilterState,
-  type ExpensePageFilterState,
-} from "../model/expense-page-filter-state";
-import {
   currentMemberExpenseBalance,
   expensePageSettlementCurrency,
 } from "../model/expense-page-selectors";
 import type { ExpenseDialogTarget } from "../model/expense-page-types";
 import { useExpenseLedgerActions } from "./useExpenseLedgerActions";
+import { useExpensePageFilters } from "./useExpensePageFilters";
 
 interface UseTripExpensesPageStateArgs {
   currentMember: Member;
@@ -55,8 +50,16 @@ export function useTripExpensesPageState({
   selectedTripPlanId,
   trip,
 }: UseTripExpensesPageStateArgs) {
-  const [filterState, setFilterState] = useState(initialExpensePageFilterState);
   const [dialogExpense, setDialogExpense] = useState<ExpenseDialogTarget>(null);
+  const {
+    categoryFilter,
+    clearFilters,
+    payerFilter,
+    query,
+    setCategoryFilter,
+    setPayerFilter,
+    setQuery,
+  } = useExpensePageFilters();
 
   const settlementCurrency = expensePageSettlementCurrency(expenseSummary);
   const {
@@ -89,35 +92,22 @@ export function useTripExpensesPageState({
   );
   const filteredExpenses = useMemo(
     () => filterExpenses({
-      categoryFilter: filterState.categoryFilter,
+      categoryFilter,
       expenses: trip.expenses,
       itineraryItems: trip.itineraryItems,
       members: trip.members,
-      payerFilter: filterState.payerFilter,
-      query: filterState.query,
+      payerFilter,
+      query,
     }),
     [
-      filterState.categoryFilter,
-      filterState.payerFilter,
-      filterState.query,
+      categoryFilter,
+      payerFilter,
+      query,
       trip.expenses,
       trip.itineraryItems,
       trip.members,
     ],
   );
-
-  function clearFilters() {
-    setFilterState(clearedExpensePageFilterState());
-  }
-
-  function updateFilterField<Field extends keyof ExpensePageFilterState>(
-    field: Field,
-    value: ExpensePageFilterState[Field],
-  ) {
-    setFilterState((current) =>
-      expensePageFilterFieldState(current, field, value),
-    );
-  }
 
   function recordSettlement(suggestion: SettlementSuggestion) {
     onCreateExpense(buildSettlementExpenseInput({
@@ -147,7 +137,7 @@ export function useTripExpensesPageState({
   }
 
   return {
-    categoryFilter: filterState.categoryFilter,
+    categoryFilter,
     categorySpend,
     clearFilters,
     copyPaybackReminder,
@@ -160,18 +150,14 @@ export function useTripExpensesPageState({
     filteredExpenses,
     inferredScopeExpenses,
     owedToYou,
-    payerFilter: filterState.payerFilter,
-    query: filterState.query,
+    payerFilter,
+    query,
     recordRefund,
     recordSettlement,
-    setCategoryFilter: (
-      categoryFilter: ExpensePageFilterState["categoryFilter"],
-    ) =>
-      updateFilterField("categoryFilter", categoryFilter),
+    setCategoryFilter,
     setDialogExpense,
-    setPayerFilter: (payerFilter: string) =>
-      updateFilterField("payerFilter", payerFilter),
-    setQuery: (query: string) => updateFilterField("query", query),
+    setPayerFilter,
+    setQuery,
     settlementCurrency,
     updateDialogExpense,
     youOwe,
