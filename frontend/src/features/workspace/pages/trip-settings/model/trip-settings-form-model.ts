@@ -3,7 +3,15 @@ import {
   isValidTripPartySize,
   normalizeTripPartySize,
 } from "@/src/trip/settings";
-import type { TripSettingsFormValues } from "../TripSettingsPage.types";
+
+export interface TripSettingsFormValues {
+  name: string;
+  destinationLabel: string;
+  startDate: string;
+  endDate: string;
+  partySize: number;
+  defaultTimezone: string;
+}
 
 export function tripToSettingsForm(trip: Trip): TripSettingsFormValues {
   return {

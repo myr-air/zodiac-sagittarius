@@ -7,7 +7,7 @@ import type {
   TripParticipantSession,
   TripRole,
 } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage.types";
+import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/model/trip-settings-form-model";
 
 export interface WorkspaceAdministrationCommandBaseParams {
   canManagePeople: boolean;

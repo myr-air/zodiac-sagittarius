@@ -1,13 +1,7 @@
 import type { Member, Trip } from "@/src/trip/types";
+import type { TripSettingsFormValues } from "./model/trip-settings-form-model";
 
-export interface TripSettingsFormValues {
-  name: string;
-  destinationLabel: string;
-  startDate: string;
-  endDate: string;
-  partySize: number;
-  defaultTimezone: string;
-}
+export type { TripSettingsFormValues };
 
 export interface TripSettingsPageProps {
   canEdit: boolean;

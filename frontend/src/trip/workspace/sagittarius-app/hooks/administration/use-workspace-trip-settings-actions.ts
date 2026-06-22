@@ -7,7 +7,7 @@ import {
   mergePatchedTripSettings,
 } from "@/src/trip/settings";
 import { nextClientMutationId } from "@/src/trip/identity";
-import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage.types";
+import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/model/trip-settings-form-model";
 import type { UseWorkspaceTripSettingsActionsOptions } from "./workspace-administration-command-types";
 
 export function useWorkspaceTripSettingsActions({

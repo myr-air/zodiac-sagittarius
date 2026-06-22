@@ -1,6 +1,6 @@
 import { daysBetweenIsoDates, shiftIsoDate } from "@/src/trip/itinerary-core";
 import type { Trip } from "@/src/trip/types";
-import type { TripSettingsFormValues } from "../TripSettingsPage.types";
+import type { TripSettingsFormValues } from "./trip-settings-form-model";
 import { hasInvalidTripSettingsDateRange } from "./trip-settings-form-model";
 
 export function countStopsOutsideSettingsRange(trip: Trip, form: TripSettingsFormValues): number {
