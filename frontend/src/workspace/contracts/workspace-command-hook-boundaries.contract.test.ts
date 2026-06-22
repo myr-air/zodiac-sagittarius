@@ -12,6 +12,9 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       itineraryBookingCommands,
       bookingDocCommands,
       bookingCommandInputs,
+      bookingCommandCreateInputs,
+      bookingCommandDraftInputs,
+      bookingCommandTicketInputs,
       taskActionsHook,
       stopNoteActionsHook,
       recordCommandInputs,
@@ -59,8 +62,18 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(bookingDocCommands).toContain("buildWorkspaceBookingDocCreateInput");
     expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
     expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
-    expect(bookingCommandInputs).toContain("buildWorkspaceBookingDocCreateInput");
-    expect(bookingCommandInputs).toContain("findDuplicateBookingDoc");
+    expect(bookingCommandInputs).toContain("./booking-command-create-inputs");
+    expect(bookingCommandInputs).toContain("./booking-command-draft-inputs");
+    expect(bookingCommandInputs).toContain("./booking-command-ticket-inputs");
+    expect(bookingCommandInputs).not.toContain("findDuplicateBookingDoc");
+    expect(bookingCommandCreateInputs).toContain("buildWorkspaceBookingDocCreateInput");
+    expect(bookingCommandCreateInputs).toContain("normalizeBookingDocTitle");
+    expect(bookingCommandCreateInputs).toContain("resolveBookingDocCreateTripPlanId");
+    expect(bookingCommandDraftInputs).toContain("buildItineraryBookingDraftInput");
+    expect(bookingCommandDraftInputs).toContain("bookingDraftTitleForItineraryItem");
+    expect(bookingCommandTicketInputs).toContain("buildItineraryBookingTicketDocInput");
+    expect(bookingCommandTicketInputs).toContain("resolveItineraryBookingTicketCommandInput");
+    expect(bookingCommandTicketInputs).toContain("findDuplicateBookingDoc");
     expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
     expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
     expect(stopNoteActionsHook).toContain("buildWorkspaceStopNoteCreateInput");
