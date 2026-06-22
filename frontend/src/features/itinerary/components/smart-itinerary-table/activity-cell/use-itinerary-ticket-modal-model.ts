@@ -1,6 +1,5 @@
 import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
-import { updateFieldState } from "@/src/shared/form-state";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import {
@@ -8,11 +7,9 @@ import {
   bookingTemplateForItem,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
-  buildTicketFormValues,
   buildTicketSubmitInput,
   findLinkedTicket,
   findTicketCandidates,
-  type TicketFormValues,
 } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
@@ -25,6 +22,7 @@ import {
   selectExistingItineraryTicketMode,
   selectNewItineraryTicketMode,
 } from "./itinerary-ticket-modal-view-state";
+import { useItineraryTicketFormValues } from "./use-itinerary-ticket-form-values";
 
 interface UseItineraryTicketModalModelOptions {
   bookingDocs: BookingDoc[];
@@ -57,26 +55,22 @@ export function useItineraryTicketModalModel({
       (booking) => booking.id === viewState.selectedBookingId,
     ) ??
     null;
-  const initialFormValues = buildTicketFormValues({
+  const {
+    formValues,
+    hydrateTicketFields,
+    setConfirmationCode,
+    setEndsAt,
+    setNotes,
+    setProviderName,
+    setRelatedItineraryItemIds,
+    setStartsAt,
+    setTitle,
+  } = useItineraryTicketFormValues({
     booking: viewState.mode === "existing" ? selectedBooking : null,
     item,
     locale,
     type,
   });
-  const [formValues, setFormValues] = useState<TicketFormValues>(
-    initialFormValues,
-  );
-
-  function hydrateTicketFields(booking: BookingDoc | null) {
-    setFormValues(buildTicketFormValues({ booking, item, locale, type }));
-  }
-
-  function updateTicketField<Field extends keyof TicketFormValues>(
-    field: Field,
-    value: TicketFormValues[Field],
-  ) {
-    setFormValues((current) => updateFieldState(current, field, value));
-  }
 
   function selectNewTicketMode() {
     setViewState((current) => selectNewItineraryTicketMode(current));
@@ -151,22 +145,13 @@ export function useItineraryTicketModalModel({
     selectExistingTicketMode,
     selectNewTicketMode,
     selectedBookingId: viewState.selectedBookingId,
-    setConfirmationCode: (confirmationCode: string) =>
-      updateTicketField("confirmationCode", confirmationCode),
-    setEndsAt: (endsAt: string) => updateTicketField("endsAt", endsAt),
-    setNotes: (notes: string) => updateTicketField("notes", notes),
-    setProviderName: (providerName: string) =>
-      updateTicketField("providerName", providerName),
-    setRelatedItineraryItemIds: (updater: (current: string[]) => string[]) =>
-      setFormValues((current) =>
-        updateFieldState(
-          current,
-          "relatedItineraryItemIds",
-          updater(current.relatedItineraryItemIds),
-        ),
-      ),
-    setStartsAt: (startsAt: string) => updateTicketField("startsAt", startsAt),
-    setTitle: (title: string) => updateTicketField("title", title),
+    setConfirmationCode,
+    setEndsAt,
+    setNotes,
+    setProviderName,
+    setRelatedItineraryItemIds,
+    setStartsAt,
+    setTitle,
     startsAt: formValues.startsAt,
     submit,
     title: formValues.title,
