@@ -1,10 +1,10 @@
-import type { BookingDoc } from "@/src/trip/types";
-import type { ContextRailBookingDocQuickFieldsPatch } from "./context-rail.types";
+import type { BookingDoc } from "../types";
+import type { BookingDocQuickFieldsPatch } from "./booking-doc-record-inputs";
 
 export const bookingDocQuickFieldKeys = [
   "providerName",
   "confirmationCode",
-] as const;
+] as const satisfies readonly (keyof BookingDocQuickFieldsPatch)[];
 export type BookingDocQuickFieldKey = (typeof bookingDocQuickFieldKeys)[number];
 
 export function getBookingDocQuickFieldValue(
@@ -18,7 +18,7 @@ export function buildBookingDocQuickFieldPatch(
   bookingDoc: BookingDoc,
   key: BookingDocQuickFieldKey,
   draftValue: string,
-): ContextRailBookingDocQuickFieldsPatch | null {
+): BookingDocQuickFieldsPatch | null {
   const value = draftValue.trim();
   if (value === getBookingDocQuickFieldValue(bookingDoc, key)) return null;
   return { [key]: value || null };

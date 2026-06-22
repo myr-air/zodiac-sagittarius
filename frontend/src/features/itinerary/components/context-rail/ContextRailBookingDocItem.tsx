@@ -13,7 +13,7 @@ import {
   buildBookingDocQuickFieldPatch,
   getBookingDocQuickFieldValue,
   type BookingDocQuickFieldKey,
-} from "./booking-doc-quick-fields";
+} from "@/src/trip/booking-docs";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
   ContextRailBookingDocTypeChangeHandler,

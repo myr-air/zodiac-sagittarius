@@ -28,6 +28,12 @@ export {
   bookingDocQuickFieldsInputFromRecord,
 } from "./booking-doc-record-inputs";
 export {
+  bookingDocQuickFieldKeys,
+  buildBookingDocQuickFieldPatch,
+  getBookingDocQuickFieldValue,
+} from "./booking-doc-quick-fields";
+export type { BookingDocQuickFieldKey } from "./booking-doc-quick-fields";
+export {
   findBookingDocById,
   findDuplicateBookingDoc,
 } from "./booking-doc-matching";

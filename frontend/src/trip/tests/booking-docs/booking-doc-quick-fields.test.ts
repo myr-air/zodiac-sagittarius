@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { buildBookingDoc } from "@/src/features/itinerary/testing";
-import type { BookingDoc } from "@/src/trip/types";
+import type { BookingDoc } from "../../types";
 import {
   bookingDocQuickFieldKeys,
   buildBookingDocQuickFieldPatch,
   getBookingDocQuickFieldValue,
-} from "../booking-doc-quick-fields";
+} from "../../booking-docs";
+import { createBookingDocFixture as bookingDoc } from "./booking-docs.test-support";
 
 function buildQuickFieldBookingDoc(fields: Partial<BookingDoc>) {
-  return buildBookingDoc({
+  return bookingDoc({
     ...fields,
     id: fields.id ?? "booking-dimdim-1",
     title: fields.title ?? "Dim Dim Sum reservation",
@@ -25,53 +25,49 @@ describe("booking doc quick fields", () => {
   });
 
   it("reads nullable quick-field values as stable form strings", () => {
-    const bookingDoc = buildQuickFieldBookingDoc({
+    const doc = buildQuickFieldBookingDoc({
       providerName: null,
       confirmationCode: "DDS-42",
     });
 
-    expect(getBookingDocQuickFieldValue(bookingDoc, "providerName")).toBe("");
-    expect(getBookingDocQuickFieldValue(bookingDoc, "confirmationCode")).toBe(
+    expect(getBookingDocQuickFieldValue(doc, "providerName")).toBe("");
+    expect(getBookingDocQuickFieldValue(doc, "confirmationCode")).toBe(
       "DDS-42",
     );
   });
 
   it("builds trimmed patches for changed quick fields", () => {
-    const bookingDoc = buildQuickFieldBookingDoc({
+    const doc = buildQuickFieldBookingDoc({
       providerName: "Dim Dim Sum",
       confirmationCode: "DDS-42",
     });
 
     expect(
       buildBookingDocQuickFieldPatch(
-        bookingDoc,
+        doc,
         "providerName",
         "  Updated supplier  ",
       ),
     ).toEqual({ providerName: "Updated supplier" });
     expect(
-      buildBookingDocQuickFieldPatch(
-        bookingDoc,
-        "confirmationCode",
-        "  DDS-99  ",
-      ),
+      buildBookingDocQuickFieldPatch(doc, "confirmationCode", "  DDS-99  "),
     ).toEqual({ confirmationCode: "DDS-99" });
   });
 
   it("uses null to clear fields and skips unchanged drafts", () => {
-    const bookingDoc = buildQuickFieldBookingDoc({
+    const doc = buildQuickFieldBookingDoc({
       providerName: "Dim Dim Sum",
       confirmationCode: "",
     });
 
+    expect(buildBookingDocQuickFieldPatch(doc, "providerName", "   ")).toEqual(
+      { providerName: null },
+    );
     expect(
-      buildBookingDocQuickFieldPatch(bookingDoc, "providerName", "   "),
-    ).toEqual({ providerName: null });
-    expect(
-      buildBookingDocQuickFieldPatch(bookingDoc, "providerName", "Dim Dim Sum"),
+      buildBookingDocQuickFieldPatch(doc, "providerName", "Dim Dim Sum"),
     ).toBeNull();
     expect(
-      buildBookingDocQuickFieldPatch(bookingDoc, "confirmationCode", "   "),
+      buildBookingDocQuickFieldPatch(doc, "confirmationCode", "   "),
     ).toBeNull();
   });
 });
