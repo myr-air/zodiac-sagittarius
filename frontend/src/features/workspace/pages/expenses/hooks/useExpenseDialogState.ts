@@ -1,5 +1,4 @@
 import { useCallback, useState, type FormEvent } from "react";
-import { normalizeCurrencyCode } from "@/src/trip/currencies";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
@@ -10,6 +9,10 @@ import {
   expenseDialogTripPlanIdForItemSelection,
   expenseDialogTripPlanOptions,
 } from "../model/expense-dialog-linking";
+import {
+  expenseDialogCurrencyChangeFields,
+  expenseDialogManualExchangeRateFields,
+} from "../model/expense-dialog-currency";
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
 import {
   initialExpenseDialogFields,
@@ -112,14 +115,16 @@ export function useExpenseDialogState({
   });
 
   function changeCurrency(nextCurrency: string) {
-    setCurrency(normalizeCurrencyCode(nextCurrency));
-    setExchangeRateTouched(false);
-    setExchangeRate("1");
+    const nextFields = expenseDialogCurrencyChangeFields(nextCurrency);
+    setCurrency(nextFields.currency);
+    setExchangeRateTouched(nextFields.exchangeRateTouched);
+    setExchangeRate(nextFields.exchangeRate);
   }
 
   function changeExchangeRate(nextExchangeRate: string) {
-    setExchangeRateTouched(true);
-    setExchangeRate(nextExchangeRate);
+    const nextFields = expenseDialogManualExchangeRateFields(nextExchangeRate);
+    setExchangeRateTouched(nextFields.exchangeRateTouched);
+    setExchangeRate(nextFields.exchangeRate);
   }
 
   function changeItemId(nextItemId: string) {
