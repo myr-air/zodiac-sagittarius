@@ -54,9 +54,14 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseOverviewPanels).not.toContain("formatMoney");
     expect(expenseOverviewPanels).not.toContain("formatReminderDate");
     expect(expenseOverviewPanels).not.toContain("findMemberById");
+    expect(expenseOverviewPanels).not.toContain("categoryTone");
+    expect(expenseOverviewPanels).not.toContain("@/src/trip/trip-plans");
+    expect(expenseOverviewPanels).not.toContain("tripPlanName(trip");
     expect(expenseOverviewDisplay).toContain("export function expenseMemberBalanceDisplay");
     expect(expenseOverviewDisplay).toContain("export function settlementSuggestionLabel");
     expect(expenseOverviewDisplay).toContain("export function settlementSuggestionDisplay");
+    expect(expenseOverviewDisplay).toContain("export function categorySpendDisplay");
+    expect(expenseOverviewDisplay).toContain("export function scopeAuditExpenseDisplay");
     expect(expenseOverviewDisplay).toContain("export function categorySpendAmountLabel");
     expect(expenseOverviewDisplay).toContain("export function settlementReminderLabel");
     expect(expenseFilterState).toContain("export interface ExpensePageFilterState");

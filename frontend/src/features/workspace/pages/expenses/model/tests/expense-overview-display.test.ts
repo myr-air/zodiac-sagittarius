@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  categorySpendDisplay,
   categorySpendAmountLabel,
   type ExpenseBalanceCopy,
   type ExpenseReminderCopy,
@@ -7,6 +8,7 @@ import {
   settlementReminderLabel,
   settlementSuggestionDisplay,
   settlementSuggestionLabel,
+  scopeAuditExpenseDisplay,
 } from "../expense-overview-display";
 
 const balanceCopy: ExpenseBalanceCopy = {
@@ -112,5 +114,61 @@ describe("expense overview display", () => {
       remindedAt: "2025-06-01T00:00:00.000Z",
       reminderCopy,
     })).toBe("Last sent Jun 1, 2025, 07:00 AM");
+  });
+
+  it("builds category spend row display with the shared category tone", () => {
+    expect(categorySpendDisplay({
+      amount: 48,
+      category: "food",
+      settlementCurrency: "HKD",
+    })).toEqual({
+      amountLabel: "HK$48.00",
+      category: "food",
+      tone: {
+        background: "#fff7ed",
+        border: "#fed7aa",
+        dot: "#f97316",
+        text: "#9a3412",
+      },
+    });
+  });
+
+  it("builds scope audit row display from the linked trip plan", () => {
+    expect(scopeAuditExpenseDisplay({
+      expense: {
+        amount: 10,
+        category: "transport",
+        id: "expense-taxi",
+        itineraryItemId: null,
+        paidBy: "member-aom",
+        splits: {},
+        title: "Taxi",
+        tripId: "trip-demo",
+        tripPlanId: "plan-b",
+      },
+      trip: {
+        activePlanVariantId: "plan-b",
+        destinationLabel: "Hong Kong",
+        endDate: "2026-06-21",
+        expenses: [],
+        id: "trip-demo",
+        itineraryItems: [],
+        joinId: "TRIP",
+        joinPasswordHash: "hash",
+        members: [],
+        name: "Demo trip",
+        planVariants: [
+          { description: "Backup route", id: "plan-b", kind: "backup", name: "Plan B", tripId: "trip-demo" },
+        ],
+        startDate: "2026-06-20",
+        tripPlans: [
+          { description: "Backup route", id: "plan-b", kind: "backup", name: "Plan B", tripId: "trip-demo" },
+        ],
+      },
+    })).toEqual({
+      id: "expense-taxi",
+      title: "Taxi",
+      tripPlanName: "Plan B",
+    });
   });
 });

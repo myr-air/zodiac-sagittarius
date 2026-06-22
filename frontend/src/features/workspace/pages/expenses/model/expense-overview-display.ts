@@ -1,7 +1,9 @@
 import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import type { DisplayDateTimeLocale } from "@/src/shared/date-time-display";
 import { findMemberById } from "@/src/trip/members";
-import type { Member, SettlementSuggestion } from "@/src/trip/types";
+import { tripPlanName } from "@/src/trip/trip-plans";
+import type { Expense, Member, SettlementSuggestion, Trip } from "@/src/trip/types";
+import { categoryTone, type CategoryTone } from "./expense-page-options";
 
 export interface ExpenseBalanceCopy {
   owed(input: { name: string; amount: string }): string;
@@ -23,6 +25,18 @@ export interface ExpenseMemberBalanceDisplay {
 export interface SettlementSuggestionDisplay {
   label: string;
   lastReminderLabel: string | null;
+}
+
+export interface CategorySpendDisplay {
+  amountLabel: string;
+  category: Expense["category"];
+  tone: CategoryTone;
+}
+
+export interface ScopeAuditExpenseDisplay {
+  id: string;
+  title: string;
+  tripPlanName: string;
 }
 
 export function expenseMemberBalanceDisplay({
@@ -131,6 +145,36 @@ export function categorySpendAmountLabel({
   settlementCurrency: string;
 }): string {
   return formatMoney(amount, settlementCurrency);
+}
+
+export function categorySpendDisplay({
+  amount,
+  category,
+  settlementCurrency,
+}: {
+  amount: number;
+  category: Expense["category"];
+  settlementCurrency: string;
+}): CategorySpendDisplay {
+  return {
+    amountLabel: categorySpendAmountLabel({ amount, settlementCurrency }),
+    category,
+    tone: categoryTone(category),
+  };
+}
+
+export function scopeAuditExpenseDisplay({
+  expense,
+  trip,
+}: {
+  expense: Expense;
+  trip: Trip;
+}): ScopeAuditExpenseDisplay {
+  return {
+    id: expense.id,
+    title: expense.title,
+    tripPlanName: tripPlanName(trip, expense.tripPlanId),
+  };
 }
 
 export function settlementReminderLabel({

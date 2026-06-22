@@ -1,17 +1,16 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { memberInitial } from "@/src/trip/members";
-import { tripPlanName } from "@/src/trip/trip-plans";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
-  categorySpendAmountLabel,
+  categorySpendDisplay,
   expenseMemberBalanceDisplay,
   settlementSuggestionDisplay,
+  scopeAuditExpenseDisplay,
 } from "../model/expense-overview-display";
-import { categoryTone } from "../model/expense-page-options";
 
 interface ExpenseOverviewPanelsProps {
   trip: Trip;
@@ -122,15 +121,19 @@ export function ExpenseOverviewPanels({
         <h2 className={expenseStyles.panelHeadingClassName}><Icon name="list" /> {t.expenses.panels.categories}</h2>
         <div className={expenseStyles.balanceListClassName}>
           {categorySpend.map(([category, amount]) => {
-            const tone = categoryTone(category);
+            const display = categorySpendDisplay({
+              amount,
+              category,
+              settlementCurrency,
+            });
             return (
               <div className={expenseStyles.balanceRowClassName} key={category}>
-                <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
-                  <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
-                  {category}
+                <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: display.tone.background, borderColor: display.tone.border, color: display.tone.text }}>
+                  <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: display.tone.dot }} aria-hidden="true" />
+                  {display.category}
                 </span>
                 <strong className={expenseStyles.amountClassName}>
-                  {categorySpendAmountLabel({ amount, settlementCurrency })}
+                  {display.amountLabel}
                 </strong>
               </div>
             );
@@ -143,26 +146,29 @@ export function ExpenseOverviewPanels({
           <h2 className={expenseStyles.panelHeadingClassName}><Icon name="warning" /> {t.expenses.scopeAudit.title}</h2>
           <p className={expenseStyles.balanceMetaClassName}>{t.expenses.scopeAudit.summary({ count: inferredScopeExpenses.length })}</p>
           <div className={expenseStyles.scopeAuditListClassName}>
-            {inferredScopeExpenses.map((expense) => (
-              <div className={expenseStyles.scopeAuditRowClassName} key={expense.id}>
-                <span className="min-w-0">
-                  <strong className={expenseStyles.balanceNameClassName}>{expense.title}</strong>
-                  <br />
-                  <span className={expenseStyles.balanceMetaClassName}>
-                    {t.expenses.scopeAudit.inferred}: {tripPlanName(trip, expense.tripPlanId)}
+            {inferredScopeExpenses.map((expense) => {
+              const display = scopeAuditExpenseDisplay({ expense, trip });
+              return (
+                <div className={expenseStyles.scopeAuditRowClassName} key={display.id}>
+                  <span className="min-w-0">
+                    <strong className={expenseStyles.balanceNameClassName}>{display.title}</strong>
+                    <br />
+                    <span className={expenseStyles.balanceMetaClassName}>
+                      {t.expenses.scopeAudit.inferred}: {display.tripPlanName}
+                    </span>
                   </span>
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="min-h-8 px-2 py-1 text-xs"
-                  disabled={!canEditExpenses}
-                  onClick={() => onReviewExpense(expense)}
-                >
-                  {t.expenses.scopeAudit.review({ title: expense.title })}
-                </Button>
-              </div>
-            ))}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="min-h-8 px-2 py-1 text-xs"
+                    disabled={!canEditExpenses}
+                    onClick={() => onReviewExpense(expense)}
+                  >
+                    {t.expenses.scopeAudit.review({ title: display.title })}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </section>
       ) : null}
