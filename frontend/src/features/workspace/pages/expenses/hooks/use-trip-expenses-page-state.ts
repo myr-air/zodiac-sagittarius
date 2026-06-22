@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { buildExpenseStatement } from "@/src/trip/expenses";
 import type {
   Expense,
@@ -13,8 +13,6 @@ import {
 } from "../model/expense-page-actions";
 import type {
   CreateExpenseHandler,
-  ExpenseInput,
-  ExpenseUpdateInput,
   RecordPaybackReminderHandler,
   UpdateExpenseHandler,
 } from "../model/expense-page-types";
@@ -27,7 +25,7 @@ import {
   currentMemberExpenseBalance,
   expensePageSettlementCurrency,
 } from "../model/expense-page-selectors";
-import type { ExpenseDialogTarget } from "../model/expense-page-types";
+import { useExpenseDialogTargetState } from "./useExpenseDialogTargetState";
 import { useExpenseLedgerActions } from "./useExpenseLedgerActions";
 import { useExpensePageFilters } from "./useExpensePageFilters";
 
@@ -50,7 +48,6 @@ export function useTripExpensesPageState({
   selectedTripPlanId,
   trip,
 }: UseTripExpensesPageStateArgs) {
-  const [dialogExpense, setDialogExpense] = useState<ExpenseDialogTarget>(null);
   const {
     categoryFilter,
     clearFilters,
@@ -60,6 +57,15 @@ export function useTripExpensesPageState({
     setPayerFilter,
     setQuery,
   } = useExpensePageFilters();
+  const {
+    createDialogExpense,
+    dialogExpense,
+    setDialogExpense,
+    updateDialogExpense,
+  } = useExpenseDialogTargetState({
+    onCreateExpense,
+    onUpdateExpense,
+  });
 
   const settlementCurrency = expensePageSettlementCurrency(expenseSummary);
   const {
@@ -124,16 +130,6 @@ export function useTripExpensesPageState({
       settlementCurrency,
     });
     if (input) onCreateExpense(input);
-  }
-
-  async function createDialogExpense(input: ExpenseInput) {
-    await onCreateExpense(input);
-    setDialogExpense(null);
-  }
-
-  async function updateDialogExpense(input: ExpenseUpdateInput) {
-    await onUpdateExpense(input);
-    setDialogExpense(null);
   }
 
   return {
