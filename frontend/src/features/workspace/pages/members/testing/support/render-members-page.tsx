@@ -1,12 +1,12 @@
 import { vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { seedTrip } from "@/src/trip/seed";
-import { TripMembersPage } from "../../TripMembersPage";
+import { TripMembersPage, type TripMembersPageProps } from "../../TripMembersPage";
 
 export function renderMembersPage(
-  overrides: Partial<Parameters<typeof TripMembersPage>[0]> = {},
+  overrides: Partial<TripMembersPageProps> = {},
 ) {
-  const props: Parameters<typeof TripMembersPage>[0] = {
+  const props: TripMembersPageProps = {
     trip: seedTrip,
     currentMember: seedTrip.members[0],
     canManagePeople: true,

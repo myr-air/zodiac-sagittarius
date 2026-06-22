@@ -3,23 +3,23 @@
 import type { ComponentProps } from "react";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
 import type { RouteMapViewProps } from "@/src/features/itinerary/components";
-import { BookingsDocsPage } from "@/src/features/workspace/pages/bookings-docs/BookingsDocsPage";
-import { TripExpensesPage } from "@/src/features/workspace/pages/expenses/TripExpensesPage";
-import { TripMembersPage } from "@/src/features/workspace/pages/members/TripMembersPage";
-import { TripPhotosPage } from "@/src/features/workspace/pages/photos/TripPhotosPage";
-import { TripSettingsPage } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
+import { BookingsDocsPage, type BookingsDocsPageProps } from "@/src/features/workspace/pages/bookings-docs/BookingsDocsPage";
+import { TripExpensesPage, type TripExpensesPageProps } from "@/src/features/workspace/pages/expenses/TripExpensesPage";
+import { TripMembersPage, type TripMembersPageProps } from "@/src/features/workspace/pages/members/TripMembersPage";
+import { TripPhotosPage, type TripPhotosPageProps } from "@/src/features/workspace/pages/photos/TripPhotosPage";
+import { TripSettingsPage, type TripSettingsPageProps } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
 import type { PlanningView } from "./planning-view";
 
 interface TripWorkspaceViewsProps {
   currentView: PlanningView;
-  bookingsProps: ComponentProps<typeof BookingsDocsPage>;
-  expensesProps: ComponentProps<typeof TripExpensesPage>;
+  bookingsProps: BookingsDocsPageProps;
+  expensesProps: TripExpensesPageProps;
   itineraryProps: ComponentProps<typeof SmartItineraryTable>;
   mapProps: RouteMapViewProps;
-  membersProps: ComponentProps<typeof TripMembersPage>;
+  membersProps: TripMembersPageProps;
   overviewProps: ComponentProps<typeof OverviewPage>;
-  photosProps: ComponentProps<typeof TripPhotosPage>;
-  settingsProps: ComponentProps<typeof TripSettingsPage>;
+  photosProps: TripPhotosPageProps;
+  settingsProps: TripSettingsPageProps;
   timelineProps: ComponentProps<typeof TimelineView>;
 }
 

@@ -1,4 +1,3 @@
-import type { Member, Trip, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
@@ -9,21 +8,10 @@ import { MemberManagementControls } from "./components/MemberManagementControls"
 import { MemberSummaryStats } from "./components/MemberSummaryStats";
 import { MemberTaskDialog } from "./components/MemberTaskDialog";
 import * as memberStyles from "./TripMembersPage.styles";
+import type { TripMembersPageProps } from "./TripMembersPage.types";
 import { useTripMembersPageState } from "./use-trip-members-page-state";
 
-interface TripMembersPageProps {
-  trip: Trip;
-  currentMember: Member;
-  canManagePeople: boolean;
-  joinInviteToken?: string | null;
-  onChangeMemberAccessStatus: (memberId: string, accessStatus: TripMemberAccessStatus) => void;
-  onChangeMemberPassword: (memberId: string, password: string) => void;
-  onChangeMemberRole: (memberId: string, role: Exclude<TripRole, "owner">) => void;
-  onCreateMember: (input: { displayName: string; role: Exclude<TripRole, "owner"> }) => void;
-  onRotateJoinInviteToken?: () => Promise<void>;
-  onResetMemberClaim: (memberId: string) => void;
-  onTransferOwnership?: (targetMemberId: string) => void;
-}
+export type { TripMembersPageProps } from "./TripMembersPage.types";
 
 export function TripMembersPage({
   trip,

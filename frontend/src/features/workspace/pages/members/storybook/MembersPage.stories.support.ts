@@ -1,9 +1,9 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { TripMembersPage } from "../TripMembersPage";
+import type { TripMembersPageProps } from "../TripMembersPage";
 
-type MembersPageStoryArgs = Parameters<typeof TripMembersPage>[0];
+type MembersPageStoryArgs = TripMembersPageProps;
 
 const denseMembersTrip = buildDenseTripFixture();
 
