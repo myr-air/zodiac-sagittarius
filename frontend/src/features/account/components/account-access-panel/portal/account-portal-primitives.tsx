@@ -6,6 +6,7 @@ import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
+import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
 import { PortalSkeleton } from "@/src/shared/components/portal-skeleton";
 
 const accountMetricLineClassName =
@@ -61,10 +62,12 @@ export function PortalEmptyState({
 
 export function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className={accountStatClassName}>
-      <strong>{value}</strong>
-      <span>{label}</span>
-    </div>
+    <WorkspaceSummaryStat
+      className={accountStatClassName}
+      label={label}
+      value={String(value)}
+      valueFirst
+    />
   );
 }
 

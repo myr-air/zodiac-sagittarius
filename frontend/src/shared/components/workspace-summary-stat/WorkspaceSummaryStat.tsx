@@ -10,11 +10,12 @@ export type WorkspaceSummaryStatTone = (typeof workspaceSummaryStatToneValues)[n
 
 interface WorkspaceSummaryStatProps {
   className: string;
-  icon: IconName;
+  icon?: IconName;
   label: string;
   tone?: WorkspaceSummaryStatTone;
   value: string;
   valueClassName?: string;
+  valueFirst?: boolean;
   valueToneClassNames?: Partial<Record<WorkspaceSummaryStatTone, string>>;
 }
 
@@ -25,15 +26,21 @@ export function WorkspaceSummaryStat({
   tone = "neutral",
   value,
   valueClassName,
+  valueFirst = false,
   valueToneClassNames,
 }: WorkspaceSummaryStatProps) {
+  const valueNode = (
+    <strong className={cn(valueClassName, valueToneClassNames?.[tone])}>
+      {value}
+    </strong>
+  );
+  const labelNode = <span>{label}</span>;
+
   return (
     <div className={className}>
-      <Icon name={icon} />
-      <span>{label}</span>
-      <strong className={cn(valueClassName, valueToneClassNames?.[tone])}>
-        {value}
-      </strong>
+      {icon ? <Icon name={icon} /> : null}
+      {valueFirst ? valueNode : labelNode}
+      {valueFirst ? labelNode : valueNode}
     </div>
   );
 }

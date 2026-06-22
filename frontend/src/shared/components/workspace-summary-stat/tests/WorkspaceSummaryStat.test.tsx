@@ -42,4 +42,20 @@ describe("WorkspaceSummaryStat", () => {
 
     expect(screen.getByText("+$24")).toHaveClass("text-positive");
   });
+
+  it("supports iconless value-first metric rows", () => {
+    const { container } = render(
+      <WorkspaceSummaryStat
+        className="metric-card"
+        label="Owned"
+        value="3"
+        valueFirst
+      />,
+    );
+
+    const metric = container.querySelector(".metric-card");
+    expect(metric?.querySelector("svg")).toBeNull();
+    expect(metric?.firstElementChild).toHaveTextContent("3");
+    expect(metric?.lastElementChild).toHaveTextContent("Owned");
+  });
 });
