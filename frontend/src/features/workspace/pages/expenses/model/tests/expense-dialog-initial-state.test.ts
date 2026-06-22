@@ -7,6 +7,7 @@ import {
 } from "../expense-dialog-line-items";
 import {
   expenseSplitValuesForMode,
+  initialExpenseDialogFields,
   initialExpenseSplitValues,
   initialExpenseTripPlanId,
 } from "../expense-dialog-initial-state";
@@ -14,6 +15,54 @@ import {
 const members = seedTrip.members.filter((member) => member.id !== "member-viewer").slice(0, 2);
 
 describe("expense dialog initial state helpers", () => {
+  it("builds primitive form fields for a new expense", () => {
+    expect(
+      initialExpenseDialogFields({
+        currentMemberId: members[0].id,
+        expense: null,
+      }),
+    ).toEqual({
+      amount: "",
+      currency: "HKD",
+      exchangeRate: "1",
+      exchangeRateTouched: false,
+      itemId: "",
+      notes: "",
+      paidBy: members[0].id,
+      receiptUrl: "",
+      title: "",
+    });
+  });
+
+  it("builds primitive form fields from an existing expense", () => {
+    expect(
+      initialExpenseDialogFields({
+        currentMemberId: members[0].id,
+        expense: {
+          amount: 42.5,
+          currency: " usd ",
+          exchangeRateToSettlementCurrency: 7.82,
+          id: "expense-edit",
+          itineraryItemId: "item-dinner",
+          notes: "Bring receipt",
+          paidBy: members[1].id,
+          receiptUrl: "https://receipts.example/test",
+          title: "Dinner",
+        } as Expense,
+      }),
+    ).toMatchObject({
+      amount: "42.5",
+      currency: "USD",
+      exchangeRate: "7.82",
+      exchangeRateTouched: true,
+      itemId: "item-dinner",
+      notes: "Bring receipt",
+      paidBy: members[1].id,
+      receiptUrl: "https://receipts.example/test",
+      title: "Dinner",
+    });
+  });
+
   it("creates editable line items with current members only", () => {
     const expense = {
       id: "expense-line",

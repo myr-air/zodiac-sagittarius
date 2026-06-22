@@ -11,7 +11,10 @@ import {
   expenseDialogTripPlanOptions,
 } from "../model/expense-dialog-linking";
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
-import { initialExpenseTripPlanId } from "../model/expense-dialog-initial-state";
+import {
+  initialExpenseDialogFields,
+  initialExpenseTripPlanId,
+} from "../model/expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
 import type {
   CreateExpenseHandler,
@@ -42,21 +45,19 @@ export function useExpenseDialogState({
   onCreateExpense,
   onUpdateExpense,
 }: ExpenseDialogStateInput) {
-  const [title, setTitle] = useState(expense?.title ?? "");
-  const [amount, setAmount] = useState(expense ? String(expense.amount) : "");
-  const [currency, setCurrency] = useState(
-    normalizeCurrencyCode(expense?.currency ?? "HKD"),
-  );
-  const [exchangeRate, setExchangeRate] = useState(
-    expense?.exchangeRateToSettlementCurrency
-      ? String(expense.exchangeRateToSettlementCurrency)
-      : "1",
-  );
+  const initialFields = initialExpenseDialogFields({
+    currentMemberId: currentMember.id,
+    expense,
+  });
+  const [title, setTitle] = useState(initialFields.title);
+  const [amount, setAmount] = useState(initialFields.amount);
+  const [currency, setCurrency] = useState(initialFields.currency);
+  const [exchangeRate, setExchangeRate] = useState(initialFields.exchangeRate);
   const [exchangeRateTouched, setExchangeRateTouched] = useState(
-    Boolean(expense?.exchangeRateToSettlementCurrency),
+    initialFields.exchangeRateTouched,
   );
-  const [notes, setNotes] = useState(expense?.notes ?? "");
-  const [receiptUrl, setReceiptUrl] = useState(expense?.receiptUrl ?? "");
+  const [notes, setNotes] = useState(initialFields.notes);
+  const [receiptUrl, setReceiptUrl] = useState(initialFields.receiptUrl);
   const {
     addComment,
     commentDraft,
@@ -65,11 +66,11 @@ export function useExpenseDialogState({
   } = useExpenseComments({ currentMember, expense });
   const [isSaving, setIsSaving] = useState(false);
   const [repeatCount, setRepeatCount] = useState("1");
-  const [paidBy, setPaidBy] = useState(expense?.paidBy ?? currentMember.id);
+  const [paidBy, setPaidBy] = useState(initialFields.paidBy);
   const [category, setCategory] = useState<Expense["category"]>(
     expense?.category ?? "transport",
   );
-  const [itemId, setItemId] = useState(expense?.itineraryItemId ?? "");
+  const [itemId, setItemId] = useState(initialFields.itemId);
   const [tripPlanId, setTripPlanId] = useState(
     initialExpenseTripPlanId({ expense, selectedTripPlanId, trip }),
   );
