@@ -2,9 +2,9 @@ import { expect, fn, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import type { TripExpensesPage } from "../TripExpensesPage";
+import type { TripExpensesPageProps } from "../TripExpensesPage";
 
-type TripExpensesPageStoryArgs = Parameters<typeof TripExpensesPage>[0];
+type TripExpensesPageStoryArgs = TripExpensesPageProps;
 
 export const onStoryUpdateExpense = fn();
 export const denseTrip = buildDenseTripFixture();

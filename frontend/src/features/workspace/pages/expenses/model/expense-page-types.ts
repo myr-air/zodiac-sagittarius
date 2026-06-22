@@ -4,7 +4,10 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSummary,
+  Member,
   SettlementSuggestion,
+  Trip,
 } from "@/src/trip/types";
 import type { WorkspaceMutationResult } from "../../../model/workspace-action-types";
 
@@ -53,3 +56,17 @@ export type DuplicateExpenseAsEstimateHandler = (
 export type RecordPaybackReminderHandler = (
   suggestion: SettlementSuggestion,
 ) => ExpenseMutationResult;
+
+export interface TripExpensesPageProps {
+  trip: Trip;
+  currentMember: Member;
+  expenseSummary: ExpenseSummary;
+  canEditExpenses: boolean;
+  selectedTripPlanId?: string | null;
+  apiBaseUrl?: string;
+  onCreateExpense: CreateExpenseHandler;
+  onUpdateExpense: UpdateExpenseHandler;
+  onDeleteExpense: DeleteExpenseHandler;
+  onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
+  onRecordPaybackReminder?: RecordPaybackReminderHandler;
+}

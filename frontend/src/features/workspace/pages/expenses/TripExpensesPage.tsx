@@ -1,5 +1,4 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { ExpenseSummary, Member, Trip } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
@@ -8,13 +7,7 @@ import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
-import type {
-  CreateExpenseHandler,
-  DeleteExpenseHandler,
-  DuplicateExpenseAsEstimateHandler,
-  RecordPaybackReminderHandler,
-  UpdateExpenseHandler,
-} from "./model/expense-page-types";
+import type { TripExpensesPageProps } from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./use-trip-expenses-page-state";
 
 export type {
@@ -24,22 +17,9 @@ export type {
   ExpenseInput,
   ExpenseUpdateInput,
   RecordPaybackReminderHandler,
+  TripExpensesPageProps,
   UpdateExpenseHandler,
 } from "./model/expense-page-types";
-
-interface TripExpensesPageProps {
-  trip: Trip;
-  currentMember: Member;
-  expenseSummary: ExpenseSummary;
-  canEditExpenses: boolean;
-  selectedTripPlanId?: string | null;
-  apiBaseUrl?: string;
-  onCreateExpense: CreateExpenseHandler;
-  onUpdateExpense: UpdateExpenseHandler;
-  onDeleteExpense: DeleteExpenseHandler;
-  onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
-  onRecordPaybackReminder?: RecordPaybackReminderHandler;
-}
 
 export function TripExpensesPage({
   trip,
