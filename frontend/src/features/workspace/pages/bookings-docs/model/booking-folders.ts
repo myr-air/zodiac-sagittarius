@@ -1,3 +1,4 @@
+import { countMatchingOptions } from "@/src/shared/collection/count-matching-options";
 import type { BookingDoc, BookingDocStatus, BookingDocType } from "@/src/trip/types";
 import type { IconName } from "@/src/ui/icons";
 
@@ -17,12 +18,14 @@ export const bookingFolders = [
 }>;
 
 export type BookingFolderId = (typeof bookingFolders)[number]["id"];
+const bookingFolderIds = bookingFolders.map((folder) => folder.id) as BookingFolderId[];
 
 export function countBookingFolders(docs: BookingDoc[]): Record<BookingFolderId, number> {
-  return bookingFolders.reduce((counts, folder) => {
-    counts[folder.id] = docs.filter((doc) => bookingDocMatchesFolder(doc, folder.id)).length;
-    return counts;
-  }, {} as Record<BookingFolderId, number>);
+  return countMatchingOptions(
+    bookingFolderIds,
+    docs,
+    (doc, folderId) => bookingDocMatchesFolder(doc, folderId),
+  );
 }
 
 export function findBookingFolder(folderId: BookingFolderId) {
