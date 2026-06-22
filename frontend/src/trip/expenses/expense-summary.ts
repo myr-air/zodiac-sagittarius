@@ -35,6 +35,12 @@ export interface BuildExpenseReminderRequestOptions {
   clientMutationId: string;
 }
 
+export function expenseSummarySettlementCurrency(
+  expenseSummary: Pick<ExpenseSummary, "settlementCurrency">,
+): string {
+  return expenseSummary.settlementCurrency ?? "HKD";
+}
+
 export function buildExpenseSummary(
   expenses: Expense[],
   currentMemberId: string,

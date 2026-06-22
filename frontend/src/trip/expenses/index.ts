@@ -53,6 +53,7 @@ export type {
 export {
   buildExpenseReminderRequest,
   buildExpenseSummary,
+  expenseSummarySettlementCurrency,
   expenseReminderRequestForSuggestion,
   filterExpenseRemindersForTripPlan,
   recordLocalExpenseReminderInTrip,

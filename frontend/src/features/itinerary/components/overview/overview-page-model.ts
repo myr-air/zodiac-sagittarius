@@ -6,7 +6,10 @@ import type {
   Trip,
 } from "@/src/trip/types";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
-import { formatMoney } from "@/src/trip/expenses";
+import {
+  expenseSummarySettlementCurrency,
+  formatMoney,
+} from "@/src/trip/expenses";
 import { findMemberById } from "@/src/trip/members";
 import {
   buildDestinationVisual,
@@ -79,7 +82,7 @@ export function buildOverviewPageModel({
     foodStops: sortedItems.filter((item) => item.activityType === "food").slice(0, 3),
     groupSpendLabel: formatMoney(
       expenseSummary.groupSpend,
-      expenseSummary.settlementCurrency ?? "HKD",
+      expenseSummarySettlementCurrency(expenseSummary),
     ),
     heroVisual: buildDestinationVisual(trip.destinationLabel),
     highlightItems: buildHighlightItems(sortedItems),

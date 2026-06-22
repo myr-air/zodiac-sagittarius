@@ -1,3 +1,4 @@
+import { expenseSummarySettlementCurrency } from "@/src/trip/expenses";
 import type { ExpenseSummary } from "@/src/trip/types";
 
 export interface CurrentMemberExpenseBalance {
@@ -9,7 +10,7 @@ export interface CurrentMemberExpenseBalance {
 export function expensePageSettlementCurrency(
   expenseSummary: Pick<ExpenseSummary, "settlementCurrency">,
 ): string {
-  return expenseSummary.settlementCurrency ?? "HKD";
+  return expenseSummarySettlementCurrency(expenseSummary);
 }
 
 export function currentMemberExpenseBalance(

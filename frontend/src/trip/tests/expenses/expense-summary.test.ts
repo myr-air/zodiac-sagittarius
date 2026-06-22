@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { buildExpenseSummary } from "../../expenses";
+import {
+  buildExpenseSummary,
+  expenseSummarySettlementCurrency,
+} from "../../expenses";
 import { seedTrip } from "../../seed";
 import type { Expense } from "../../types";
 
 describe("expense summary", () => {
+  it("resolves summary settlement currency with the domain default", () => {
+    expect(expenseSummarySettlementCurrency({ settlementCurrency: "THB" })).toBe("THB");
+    expect(expenseSummarySettlementCurrency({ settlementCurrency: undefined })).toBe("HKD");
+  });
+
   it("summarizes owed, owing, and settled expense states", () => {
     expect(buildExpenseSummary([], "member-aom")).toMatchObject({
       groupSpend: 0,

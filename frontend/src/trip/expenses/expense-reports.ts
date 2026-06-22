@@ -4,6 +4,7 @@ import {
   normalizeCurrency,
   roundMoney,
 } from "./expense-money";
+import { expenseSummarySettlementCurrency } from "./expense-summary";
 import type {
   ExpenseComment,
   ExpenseSummary,
@@ -23,7 +24,7 @@ interface BuildPaybackReminderInput {
 }
 
 export function buildExpenseStatement({ trip, expenseSummary }: BuildExpenseStatementInput): string {
-  const settlementCurrency = expenseSummary.settlementCurrency ?? "HKD";
+  const settlementCurrency = expenseSummarySettlementCurrency(expenseSummary);
   const memberNames = new Map(trip.members.map((member) => [member.id, member.displayName]));
   const itineraryNames = new Map(trip.itineraryItems.map((item) => [item.id, item.activity]));
   const lines = [
@@ -76,7 +77,7 @@ export function buildPaybackReminder({ trip, suggestion }: BuildPaybackReminderI
 }
 
 export function buildExpenseCsv({ trip, expenseSummary }: BuildExpenseStatementInput): string {
-  const settlementCurrency = expenseSummary.settlementCurrency ?? "HKD";
+  const settlementCurrency = expenseSummarySettlementCurrency(expenseSummary);
   const memberNames = new Map(trip.members.map((member) => [member.id, member.displayName]));
   const itineraryNames = new Map(trip.itineraryItems.map((item) => [item.id, item.activity]));
   const rows = [
