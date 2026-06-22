@@ -21,4 +21,21 @@ describe("WorkspaceEmptyState", () => {
     );
     expect(container.firstElementChild).toHaveClass("grid", "place-items-center", "min-h-[180px]", "rounded-(--radius-md)");
   });
+
+  it("renders optional icon and action slots for richer empty states", () => {
+    render(
+      <WorkspaceEmptyState
+        title="No trips yet"
+        detail="Create a workspace before inviting travelers."
+        icon={<svg data-testid="empty-icon" />}
+        action={<button type="button">Create trip</button>}
+      />,
+    );
+
+    expect(screen.getByTestId("empty-icon").closest("span")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Create trip" })).toBeInTheDocument();
+  });
 });

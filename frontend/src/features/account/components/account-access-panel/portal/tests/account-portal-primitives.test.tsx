@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
+  PortalEmptyState,
   PortalListSkeleton,
   PortalStatSkeleton,
   SettingLine,
@@ -37,5 +38,26 @@ describe("account portal primitives", () => {
     expect(container.querySelectorAll(".portal-skeleton-row")).toHaveLength(2);
     expect(container.querySelector(".portal-skeleton--number")).not.toBeNull();
     expect(container.querySelector(".portal-skeleton--icon")).not.toBeNull();
+  });
+
+  it("renders portal empty states through the shared workspace empty-state shell", () => {
+    render(
+      <PortalEmptyState
+        actionHref="/portal/new-trip"
+        actionLabel="Create trip"
+        detail="Start a workspace before inviting travelers."
+        icon="plus"
+        title="No trips yet"
+      />,
+    );
+
+    expect(screen.getByText("No trips yet")).toHaveClass("text-(--color-text)");
+    expect(screen.getByRole("link", { name: /Create trip/i })).toHaveAttribute(
+      "href",
+      "/portal/new-trip",
+    );
+    expect(screen.getByText("No trips yet").closest(".portal-empty-state")).toHaveClass(
+      "grid",
+    );
   });
 });

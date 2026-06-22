@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
+import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { PortalSkeleton, portalSkeletonClassName } from "@/src/shared/components/portal-skeleton";
 
 const accountMetricLineClassName =
@@ -28,7 +29,7 @@ const accountSettingLineClassName = cn(
   "[&_strong]:text-sm",
 );
 const portalEmptyStateClassName =
-  "portal-empty-state grid min-h-[164px] content-center gap-3 rounded-(--radius-lg) border border-dashed border-(--color-border-strong) bg-[color-mix(in_srgb,var(--color-surface-subtle)_72%,var(--color-surface))] p-4 text-left [&_.button]:w-fit max-[767px]:[&_.button]:w-full [&>span[aria-hidden=true]]:grid [&>span[aria-hidden=true]]:size-10 [&>span[aria-hidden=true]]:place-items-center [&>span[aria-hidden=true]]:rounded-(--radius-md) [&>span[aria-hidden=true]]:bg-(--color-primary-soft) [&>span[aria-hidden=true]]:text-(--color-primary-strong) [&_p]:m-0 [&_p]:max-w-[560px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-base [&_strong]:leading-6 [&_strong]:text-(--color-text)";
+  "portal-empty-state grid min-h-[164px] content-center gap-3 rounded-(--radius-lg) border border-dashed border-(--color-border-strong) bg-[color-mix(in_srgb,var(--color-surface-subtle)_72%,var(--color-surface))] p-4 text-left [&_.button]:w-fit max-[767px]:[&_.button]:w-full [&>div]:max-w-[560px] [&>span[aria-hidden=true]]:grid [&>span[aria-hidden=true]]:size-10 [&>span[aria-hidden=true]]:place-items-center [&>span[aria-hidden=true]]:rounded-(--radius-md) [&>span[aria-hidden=true]]:bg-(--color-primary-soft) [&>span[aria-hidden=true]]:text-(--color-primary-strong) [&_p]:m-0 [&_p]:max-w-[560px] [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-(--color-text-muted) [&_strong]:block [&_strong]:text-base [&_strong]:leading-6 [&_strong]:text-(--color-text)";
 
 export function PortalEmptyState({
   actionHref,
@@ -44,19 +45,20 @@ export function PortalEmptyState({
   title: string;
 }) {
   return (
-    <div className={portalEmptyStateClassName}>
-      <span aria-hidden="true"><Icon name={icon} /></span>
-      <div>
-        <strong>{title}</strong>
-        <p>{detail}</p>
-      </div>
-      <Button asChild variant="secondary">
-        <Link href={actionHref}>
-          <Icon name="plus" />
-          {actionLabel}
-        </Link>
-      </Button>
-    </div>
+    <WorkspaceEmptyState
+      action={(
+        <Button asChild variant="secondary">
+          <Link href={actionHref}>
+            <Icon name="plus" />
+            {actionLabel}
+          </Link>
+        </Button>
+      )}
+      className={portalEmptyStateClassName}
+      detail={detail}
+      icon={<Icon name={icon} />}
+      title={title}
+    />
   );
 }
 
