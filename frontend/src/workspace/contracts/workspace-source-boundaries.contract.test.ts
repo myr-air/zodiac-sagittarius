@@ -36,6 +36,7 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceFacade,
       appFacade,
       workspaceDialogs,
+      appShellStorySupport,
     } = readWorkspaceBoundarySources(frontendRoot);
     expect(workspaceFacade).toContain("./sagittarius-app");
     expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
@@ -171,6 +172,8 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("import-options-dialog");
     expect(sagaCore).not.toContain("ItineraryImportOptionsDialog");
     expect(workspaceMainShell).toContain("WorkspaceRolePreview");
+    expect(appShellStorySupport).toContain("AppShellProps");
+    expect(appShellStorySupport).not.toContain("Parameters<typeof AppShell>");
   });
 
   it("keeps workspace dialog chrome styles shared", () => {

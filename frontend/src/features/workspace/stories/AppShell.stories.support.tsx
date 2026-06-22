@@ -1,9 +1,9 @@
 import { OverviewPage } from "@/src/features/itinerary/components";
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { AppShell } from "@/src/features/workspace/components/app-shell";
+import type { AppShellProps } from "@/src/features/workspace/components/app-shell";
 
-type AppShellStoryArgs = Parameters<typeof AppShell>[0];
+type AppShellStoryArgs = AppShellProps;
 
 const workspaceShellClassName = "workspace-shell min-w-0 bg-transparent";
 const workspaceGridClassName = "workspace-grid relative grid h-[calc(100vh-62px)] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden data-[command-bar=hidden]:h-screen max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
