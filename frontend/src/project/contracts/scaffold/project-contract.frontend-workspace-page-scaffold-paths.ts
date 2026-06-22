@@ -38,6 +38,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/bookings-docs/content/BookingsDocsPage.copy.th.ts",
   "src/features/workspace/pages/bookings-docs/model/booking-options.ts",
   "src/features/workspace/pages/bookings-docs/model/tests/booking-options.test.ts",
+  "src/features/workspace/pages/bookings-docs/model/booking-page-state.ts",
+  "src/features/workspace/pages/bookings-docs/model/tests/booking-page-state.test.ts",
   "src/features/workspace/pages/bookings-docs/testing/support/render-bookings-docs-page.tsx",
   "src/features/workspace/pages/bookings-docs/tests/BookingsDocsPage.filters.test.tsx",
   "src/features/workspace/pages/bookings-docs/tests/BookingsDocsPage.mutations.test.tsx",

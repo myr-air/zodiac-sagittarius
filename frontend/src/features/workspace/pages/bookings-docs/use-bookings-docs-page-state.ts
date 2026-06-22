@@ -8,6 +8,19 @@ import type {
 } from "./BookingsDocsPage.types";
 import type { BookingStatusFilter } from "./model/booking-options";
 import {
+  changeBookingQueryBrowserState,
+  changeBookingStatusFilterBrowserState,
+  initialBookingBrowserState,
+  initialBookingModalState,
+  selectBookingBrowserState,
+  selectBookingFolderBrowserState,
+  setBookingStatusMenuOpenBrowserState,
+  updateBookingBrowserState,
+  updateBookingModalState,
+  type BookingBrowserState,
+  type BookingModalState,
+} from "./model/booking-page-state";
+import {
   countBookingFolders,
   findBookingFolder,
   type BookingFolderId,
@@ -30,20 +43,6 @@ interface UseBookingsDocsPageStateInput {
   trip: Trip;
 }
 
-interface BookingBrowserState {
-  activeFolderId: BookingFolderId;
-  mobilePreviewOpen: boolean;
-  query: string;
-  selectedBookingId: string;
-  statusFilter: BookingStatusFilter;
-  statusMenuOpen: boolean;
-}
-
-interface BookingModalState {
-  deleteBooking: BookingDoc | null;
-  dialogBooking: BookingDoc | "new" | null;
-}
-
 export function useBookingsDocsPageState({
   bookingDocs,
   currentMember,
@@ -53,18 +52,12 @@ export function useBookingsDocsPageState({
   tasks,
   trip,
 }: UseBookingsDocsPageStateInput) {
-  const [browserState, setBrowserState] = useState<BookingBrowserState>({
-    activeFolderId: "all",
-    mobilePreviewOpen: false,
-    query: "",
-    selectedBookingId: bookingDocs[0]?.id ?? "",
-    statusFilter: "all",
-    statusMenuOpen: false,
-  });
-  const [modalState, setModalState] = useState<BookingModalState>({
-    deleteBooking: null,
-    dialogBooking: null,
-  });
+  const [browserState, setBrowserState] = useState<BookingBrowserState>(() =>
+    initialBookingBrowserState(bookingDocs),
+  );
+  const [modalState, setModalState] = useState<BookingModalState>(
+    initialBookingModalState,
+  );
   const visibleDocs = useMemo(
     () => visibleBookingDocsForMember(bookingDocs, currentMember),
     [bookingDocs, currentMember],
@@ -102,14 +95,14 @@ export function useBookingsDocsPageState({
     field: Field,
     value: BookingBrowserState[Field],
   ) {
-    setBrowserState((current) => ({ ...current, [field]: value }));
+    setBrowserState((current) => updateBookingBrowserState(current, field, value));
   }
 
   function updateModalState<Field extends keyof BookingModalState>(
     field: Field,
     value: BookingModalState[Field],
   ) {
-    setModalState((current) => ({ ...current, [field]: value }));
+    setModalState((current) => updateBookingModalState(current, field, value));
   }
 
   async function submitBooking(input: BookingDocInput) {
@@ -128,38 +121,27 @@ export function useBookingsDocsPageState({
   }
 
   function selectBooking(bookingDocId: string) {
-    setBrowserState((current) => ({
-      ...current,
-      mobilePreviewOpen: true,
-      selectedBookingId: bookingDocId,
-    }));
+    setBrowserState((current) =>
+      selectBookingBrowserState(current, bookingDocId),
+    );
   }
 
   function selectFolder(folderId: BookingFolderId) {
-    setBrowserState((current) => ({
-      ...current,
-      activeFolderId: folderId,
-      mobilePreviewOpen: false,
-      statusMenuOpen: false,
-    }));
+    setBrowserState((current) =>
+      selectBookingFolderBrowserState(current, folderId),
+    );
   }
 
   function changeQuery(nextQuery: string) {
-    setBrowserState((current) => ({
-      ...current,
-      mobilePreviewOpen: false,
-      query: nextQuery,
-      statusMenuOpen: false,
-    }));
+    setBrowserState((current) =>
+      changeBookingQueryBrowserState(current, nextQuery),
+    );
   }
 
   function changeStatusFilter(nextStatus: BookingStatusFilter) {
-    setBrowserState((current) => ({
-      ...current,
-      mobilePreviewOpen: false,
-      statusFilter: nextStatus,
-      statusMenuOpen: false,
-    }));
+    setBrowserState((current) =>
+      changeBookingStatusFilterBrowserState(current, nextStatus),
+    );
   }
 
   function setMobilePreviewOpen(nextOpen: boolean) {
@@ -167,13 +149,9 @@ export function useBookingsDocsPageState({
   }
 
   function setStatusMenuOpen(nextOpen: SetStateAction<boolean>) {
-    setBrowserState((current) => ({
-      ...current,
-      statusMenuOpen:
-        typeof nextOpen === "function"
-          ? nextOpen(current.statusMenuOpen)
-          : nextOpen,
-    }));
+    setBrowserState((current) =>
+      setBookingStatusMenuOpenBrowserState(current, nextOpen),
+    );
   }
 
   return {
