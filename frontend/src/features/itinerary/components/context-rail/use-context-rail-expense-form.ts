@@ -21,7 +21,70 @@ interface ContextRailExpenseFormValues {
   title: string;
 }
 
+interface ContextRailExpenseFormState {
+  editingExpenseId: string | null;
+  formValues: ContextRailExpenseFormValues;
+}
+
 export const contextRailExpenseCategoryOptions = expenseCategoryValues;
+
+export function initialContextRailExpenseFormState(
+  defaultPaidBy: string,
+): ContextRailExpenseFormState {
+  return {
+    editingExpenseId: null,
+    formValues: {
+      amount: "",
+      category: "food",
+      paidBy: defaultPaidBy,
+      title: "",
+    },
+  };
+}
+
+export function updateContextRailExpenseFormValue<
+  Field extends keyof ContextRailExpenseFormValues,
+>(
+  state: ContextRailExpenseFormState,
+  field: Field,
+  value: ContextRailExpenseFormValues[Field],
+): ContextRailExpenseFormState {
+  return {
+    ...state,
+    formValues: {
+      ...state.formValues,
+      [field]: value,
+    },
+  };
+}
+
+export function startContextRailExpenseEdit(
+  expense: Expense,
+): ContextRailExpenseFormState {
+  return {
+    editingExpenseId: expense.id,
+    formValues: {
+      amount: String(expense.amount),
+      category: expense.category,
+      paidBy: expense.paidBy,
+      title: expense.title,
+    },
+  };
+}
+
+export function resetContextRailExpenseFormAfterSubmit(
+  state: ContextRailExpenseFormState,
+): ContextRailExpenseFormState {
+  return {
+    ...state,
+    editingExpenseId: null,
+    formValues: {
+      ...state.formValues,
+      amount: "",
+      title: "",
+    },
+  };
+}
 
 export function useContextRailExpenseForm({
   selectedItemId,
@@ -29,55 +92,46 @@ export function useContextRailExpenseForm({
   onCreateExpense,
   onUpdateExpense,
 }: UseContextRailExpenseFormOptions) {
-  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState<ContextRailExpenseFormValues>({
-    amount: "",
-    category: "food",
-    paidBy: defaultPaidBy,
-    title: "",
-  });
+  const [state, setState] = useState(() =>
+    initialContextRailExpenseFormState(defaultPaidBy),
+  );
 
   function updateFormValue<Field extends keyof ContextRailExpenseFormValues>(
     field: Field,
     value: ContextRailExpenseFormValues[Field],
   ) {
-    setFormValues((current) => ({ ...current, [field]: value }));
+    setState((current) =>
+      updateContextRailExpenseFormValue(current, field, value),
+    );
   }
 
   function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const title = formValues.title.trim();
-    const amount = Number(formValues.amount);
+    const title = state.formValues.title.trim();
+    const amount = Number(state.formValues.amount);
     if (!title || !Number.isFinite(amount) || amount < 0) return;
-    if (editingExpenseId) {
+    if (state.editingExpenseId) {
       onUpdateExpense({
-        expenseId: editingExpenseId,
+        expenseId: state.editingExpenseId,
         title,
         amount,
-        paidBy: formValues.paidBy,
-        category: formValues.category,
+        paidBy: state.formValues.paidBy,
+        category: state.formValues.category,
       });
     } else {
       onCreateExpense({
         itemId: selectedItemId ?? null,
         title,
         amount,
-        paidBy: formValues.paidBy,
-        category: formValues.category,
+        paidBy: state.formValues.paidBy,
+        category: state.formValues.category,
       });
     }
-    setEditingExpenseId(null);
-    setFormValues((current) => ({ ...current, amount: "", title: "" }));
+    setState((current) => resetContextRailExpenseFormAfterSubmit(current));
   }
 
   function startEditingExpense(expense: Expense) {
-    setEditingExpenseId(expense.id);
-    setFormValues({
-      amount: String(expense.amount),
-      category: expense.category,
-      paidBy: expense.paidBy,
-      title: expense.title,
-    });
+    setState(startContextRailExpenseEdit(expense));
   }
 
   function onAmountChange(event: ChangeEvent<HTMLInputElement>) {
@@ -85,11 +139,11 @@ export function useContextRailExpenseForm({
   }
 
   return {
-    editingExpenseId,
-    expenseAmount: formValues.amount,
-    expenseCategory: formValues.category,
-    expensePaidBy: formValues.paidBy,
-    expenseTitle: formValues.title,
+    editingExpenseId: state.editingExpenseId,
+    expenseAmount: state.formValues.amount,
+    expenseCategory: state.formValues.category,
+    expensePaidBy: state.formValues.paidBy,
+    expenseTitle: state.formValues.title,
     onAmountChange,
     setExpenseCategory: (category: Expense["category"]) =>
       updateFormValue("category", category),

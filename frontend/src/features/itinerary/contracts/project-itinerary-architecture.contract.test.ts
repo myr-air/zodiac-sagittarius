@@ -452,8 +452,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseSplitEditorModel).toContain("export interface ExpenseSplitEditorState");
     expect(expenseSplitEditorModel).toContain("export function changeExpenseSplitEditorMode");
     expect(contextRailExpenseForm).toContain("ContextRailExpenseFormValues");
-    expect(contextRailExpenseForm).toContain("const [formValues, setFormValues]");
+    expect(contextRailExpenseForm).toContain("interface ContextRailExpenseFormState");
+    expect(contextRailExpenseForm).toContain("const [state, setState]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");
+    expect(contextRailExpenseForm).not.toContain("const [editingExpenseId, setEditingExpenseId]");
+    expect(contextRailExpenseForm).not.toContain("const [formValues, setFormValues]");
     expect(contextRailExpenseForm).not.toContain("const [expenseTitle, setExpenseTitle]");
     expect(contextRailExpenseForm).not.toContain("const [expenseAmount, setExpenseAmount]");
   });
