@@ -1,8 +1,9 @@
 import {
   canViewBookingDoc,
   findBookingDocById,
+  findBookingDocRelations,
 } from "@/src/trip/booking-docs";
-import type { BookingDoc, Member, Trip } from "@/src/trip/types";
+import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import {
   bookingDocMatchesFolder,
   type BookingFolderId,
@@ -49,4 +50,16 @@ export function selectedBookingPageDoc(
   selectedBookingId: string,
 ): BookingDoc | null {
   return findBookingDocById(docs, selectedBookingId) ?? docs[0] ?? null;
+}
+
+export function selectedBookingPageRelations({
+  booking,
+  tasks,
+  trip,
+}: {
+  booking: BookingDoc | null;
+  tasks: TripTask[];
+  trip: Trip;
+}) {
+  return booking ? findBookingDocRelations(booking, trip, tasks) : null;
 }

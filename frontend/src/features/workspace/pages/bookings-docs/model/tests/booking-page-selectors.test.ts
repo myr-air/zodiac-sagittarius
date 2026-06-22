@@ -4,12 +4,14 @@ import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureMember } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   bookingDocTestDocs,
+  bookingDocTestTasks,
   bookingFlightTestDoc,
 } from "../../testing/fixtures/bookings-docs-test-fixtures";
 import {
   filterBookingPageDocs,
   lockedBookingDocsForMember,
   selectedBookingPageDoc,
+  selectedBookingPageRelations,
   visibleBookingDocsForMember,
 } from "../booking-page-selectors";
 
@@ -49,5 +51,28 @@ describe("booking page selectors", () => {
       bookingDocTestDocs[0],
     );
     expect(selectedBookingPageDoc([], "missing-booking")).toBeNull();
+  });
+
+  it("resolves selected booking relations from the page selector layer", () => {
+    const relations = selectedBookingPageRelations({
+      booking: bookingFlightTestDoc,
+      tasks: bookingDocTestTasks,
+      trip: seedTrip,
+    });
+
+    expect(relations?.itineraryItems.map((item) => item.id)).toEqual([
+      "item-flight-bkk-hkg",
+      "item-arrive-hkg",
+    ]);
+    expect(relations?.travelers.map((member) => member.id)).toEqual([
+      "member-aom",
+      "member-beam",
+      "member-nam",
+    ]);
+    expect(selectedBookingPageRelations({
+      booking: null,
+      tasks: bookingDocTestTasks,
+      trip: seedTrip,
+    })).toBeNull();
   });
 });

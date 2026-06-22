@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { findBookingDocRelations } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type {
   BookingDocInput,
@@ -17,6 +16,7 @@ import {
   filterBookingPageDocs,
   lockedBookingDocsForMember,
   selectedBookingPageDoc,
+  selectedBookingPageRelations,
   visibleBookingDocsForMember,
 } from "./model/booking-page-selectors";
 
@@ -64,7 +64,11 @@ export function useBookingsDocsPageState({
   const folderCounts = useMemo(() => countBookingFolders(visibleDocs), [visibleDocs]);
   const lockedDocs = lockedBookingDocsForMember(bookingDocs, currentMember);
   const selectedBooking = selectedBookingPageDoc(folderDocs, selectedBookingId);
-  const selectedRelations = selectedBooking ? findBookingDocRelations(selectedBooking, trip, tasks) : null;
+  const selectedRelations = selectedBookingPageRelations({
+    booking: selectedBooking,
+    tasks,
+    trip,
+  });
   const activeFolder = findBookingFolder(activeFolderId);
 
   async function submitBooking(input: BookingDocInput) {
