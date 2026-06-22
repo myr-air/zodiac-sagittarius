@@ -2,6 +2,7 @@ import {
   normalizeSearchQuery,
   textMatchesSearchQuery,
 } from "@/src/shared/text-search";
+import { visibleTripMembers as domainVisibleTripMembers } from "@/src/trip/members";
 import type { Member } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "./member-page-options";
 
@@ -14,7 +15,7 @@ export interface MemberSummaryCounts {
 }
 
 export function visibleTripMembers(members: Member[]): Member[] {
-  return members.filter((member) => member.id !== "member-viewer");
+  return domainVisibleTripMembers(members);
 }
 
 export function isMemberJoined(member: Member, currentMemberId: string): boolean {

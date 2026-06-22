@@ -10,7 +10,10 @@ import {
   expenseSummarySettlementCurrency,
   formatMoney,
 } from "@/src/trip/expenses";
-import { findMemberById } from "@/src/trip/members";
+import {
+  assignableTripMembers,
+  findMemberById,
+} from "@/src/trip/members";
 import {
   buildDestinationVisual,
   buildHighlightItems,
@@ -67,9 +70,7 @@ export function buildOverviewPageModel({
   const pendingSuggestions = suggestions.filter(
     (suggestion) => suggestion.status === "pending",
   ).length;
-  const assignableMembers = trip.members.filter(
-    (member) => member.id !== "member-viewer" && member.accessStatus !== "disabled",
-  );
+  const assignableMembers = assignableTripMembers(trip.members);
   const currentMember = findMemberById(trip.members, currentMemberId);
   const roleLens = overviewRoleLens(currentMember);
 

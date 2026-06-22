@@ -19,3 +19,8 @@ export {
 export {
   findMemberById,
 } from "./member-lookup";
+export {
+  assignableTripMembers,
+  isSyntheticViewerMember,
+  visibleTripMembers,
+} from "./member-visibility";
