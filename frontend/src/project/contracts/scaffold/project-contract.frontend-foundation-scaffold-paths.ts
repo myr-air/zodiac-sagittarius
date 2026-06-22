@@ -68,6 +68,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/project/contracts/project-contract.helpers.ts",
   "src/project/contracts/scaffold/project-contract.frontend-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-feature-absent-scaffold-paths.ts",
+  "src/project/contracts/scaffold/project-contract.frontend-workspace-feature-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-foundation-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-trip-domain-absent-scaffold-paths.ts",
   "src/project/contracts/scaffold/project-contract.frontend-workspace-absent-scaffold-paths.ts",
