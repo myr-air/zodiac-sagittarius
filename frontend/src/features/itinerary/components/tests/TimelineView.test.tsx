@@ -3,10 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { TimelineView } from "@/src/features/itinerary/components";
+import { TimelineView, type TimelineViewProps } from "@/src/features/itinerary/components";
 
-function renderTimeline(overrides: Partial<Parameters<typeof TimelineView>[0]> = {}) {
-  const props: Parameters<typeof TimelineView>[0] = {
+function renderTimeline(overrides: Partial<TimelineViewProps> = {}) {
+  const props: TimelineViewProps = {
     contextRailOpen: false,
     endDate: tripFixture.trip.endDate,
     items: tripFixture.planItems,
