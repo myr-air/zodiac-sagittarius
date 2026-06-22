@@ -5,6 +5,14 @@ import {
   dayTitleMinWidthCh,
 } from "./smart-itinerary-table.styles";
 import type { ItineraryAsyncVoidResult } from "./itinerary-action.types";
+import {
+  beginDayTitleEditorSave,
+  completeDayTitleEditorSave,
+  endDayTitleEditorSave,
+  initialDayTitleEditorState,
+  revertDayTitleEditorDraft,
+  updateDayTitleEditorDraft,
+} from "./day-title-editor-state";
 
 interface DayTitleEditorProps {
   canEdit: boolean;
@@ -29,34 +37,35 @@ export function DayTitleEditor({
   title,
   version,
 }: DayTitleEditorProps) {
-  const [draft, setDraft] = useState(title.slice(0, dayTitleMaxLength));
-  const [sourceTitle, setSourceTitle] = useState(title.slice(0, dayTitleMaxLength));
-  const [saving, setSaving] = useState(false);
+  const [state, setState] = useState(() =>
+    initialDayTitleEditorState(title, dayTitleMaxLength),
+  );
   const suppressNextCommitRef = useRef(false);
   const dynamicWidthCh = Math.max(
     dayTitleMinWidthCh,
-    Math.min(dayTitleMaxLength, draft.length || defaultTitle.length) + 1,
+    Math.min(dayTitleMaxLength, state.draft.length || defaultTitle.length) + 1,
   );
 
   async function commit(nextValue: string) {
-    if (!canEdit || !onSaveDayTitle || saving) return;
+    if (!canEdit || !onSaveDayTitle || state.saving) return;
     if (suppressNextCommitRef.current) {
       suppressNextCommitRef.current = false;
       return;
     }
     const trimmed = nextValue.trim();
     const normalizedTitle = trimmed || defaultTitle;
-    if (normalizedTitle === sourceTitle) {
-      setDraft(sourceTitle);
+    if (normalizedTitle === state.sourceTitle) {
+      setState((current) => revertDayTitleEditorDraft(current));
       return;
     }
-    setSaving(true);
+    setState((current) => beginDayTitleEditorSave(current));
     try {
       await onSaveDayTitle(date, version, trimmed ? normalizedTitle : null);
-      setSourceTitle(normalizedTitle);
-      setDraft(normalizedTitle);
+      setState((current) =>
+        completeDayTitleEditorSave(current, normalizedTitle),
+      );
     } finally {
-      setSaving(false);
+      setState((current) => endDayTitleEditorSave(current));
     }
   }
 
@@ -65,20 +74,24 @@ export function DayTitleEditor({
       aria-label={`Trip day title for ${dayLabel}`}
       data-day-label={dayLabel}
       className={dayTitleInputClassName}
-      disabled={!canEdit || saving}
+      disabled={!canEdit || state.saving}
       maxLength={dayTitleMaxLength}
       style={{ width: `${dynamicWidthCh}ch` }}
-      title={`${draft.length}/${dayTitleMaxLength}`}
-      value={draft}
-      onBlur={() => void commit(draft)}
-      onChange={(event) => setDraft(event.target.value)}
+      title={`${state.draft.length}/${dayTitleMaxLength}`}
+      value={state.draft}
+      onBlur={() => void commit(state.draft)}
+      onChange={(event) =>
+        setState((current) =>
+          updateDayTitleEditorDraft(current, event.target.value),
+        )
+      }
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           event.currentTarget.blur();
         }
         if (event.key === "Escape") {
           suppressNextCommitRef.current = true;
-          setDraft(sourceTitle);
+          setState((current) => revertDayTitleEditorDraft(current));
           event.currentTarget.blur();
         }
       }}

@@ -5,6 +5,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps itinerary day group header split from row body rendering", () => {
     const dayGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.tsx");
     const dayGroupHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx");
+    const dayTitleEditor = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-title-editor.tsx");
+    const dayTitleEditorState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-title-editor-state.ts");
     const dayGroupTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.types.ts");
 
     expect(dayGroup).toContain("./DayGroupHeader");
@@ -14,6 +16,13 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(dayGroupHeader).toContain("export function DayGroupHeader");
     expect(dayGroupHeader).toContain("DayTitleEditor");
     expect(dayGroupHeader).toContain("DayPathControls");
+    expect(dayTitleEditor).toContain("./day-title-editor-state");
+    expect(dayTitleEditor).toContain("const [state, setState]");
+    expect(dayTitleEditor).not.toContain("const [draft, setDraft]");
+    expect(dayTitleEditor).not.toContain("const [sourceTitle, setSourceTitle]");
+    expect(dayTitleEditor).not.toContain("const [saving, setSaving]");
+    expect(dayTitleEditorState).toContain("export interface DayTitleEditorState");
+    expect(dayTitleEditorState).toContain("initialDayTitleEditorState");
     expect(dayGroupTypes).toContain("export interface DayGroupProps");
   });
 
