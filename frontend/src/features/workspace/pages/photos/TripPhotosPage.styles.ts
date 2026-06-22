@@ -25,6 +25,7 @@ export const selectedAlbumClassName = "border-(--color-primary-border) bg-(--col
 export const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) bg-cover bg-center";
 export const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:static max-[1199px]:max-h-none";
 export const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
+export const copyFeedbackClassName = "photo-copy-feedback inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-xs font-extrabold leading-4 text-(--color-text-muted) data-[state=copied]:border-(--color-success-border) data-[state=copied]:bg-(--color-success-soft) data-[state=copied]:text-(--color-success) data-[state=error]:border-(--color-danger-border) data-[state=error]:bg-(--color-danger-soft) data-[state=error]:text-(--color-danger)";
 export const dialogBackdropClassName = workspaceDialogBackdropClassName;
 export const dialogClassName = `photos-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[720px] shadow-[0_14px_34px_rgb(15_23_42_/_0.16)] ${workspaceDialogPanelClassName}`;
 export const dialogHeaderClassName = workspaceDialogHeaderClassName;

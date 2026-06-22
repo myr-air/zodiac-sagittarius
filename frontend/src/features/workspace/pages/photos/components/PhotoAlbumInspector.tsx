@@ -1,4 +1,5 @@
 import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-albums";
+import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -18,6 +19,8 @@ export function PhotoAlbumInspector({
   copy,
   relations,
 }: PhotoAlbumInspectorProps) {
+  const { copyState, copyText } = useCopyFeedbackState();
+
   if (!album) {
     return (
       <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
@@ -41,12 +44,22 @@ export function PhotoAlbumInspector({
             <button
               type="button"
               className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-xs font-extrabold text-(--color-primary-strong)"
-              onClick={() => void navigator.clipboard?.writeText(album.url)}
+              onClick={() => void copyText(album.url)}
             >
               <Icon name="copy" /> {copy.copy}
             </button>
           ) : null}
         </div>
+        {copyState !== "idle" ? (
+          <span
+            className={photoStyles.copyFeedbackClassName}
+            data-state={copyState}
+            role="status"
+            aria-label={copy.copyStatusLabel}
+          >
+            {copyState === "copied" ? copy.copied : copy.copyError}
+          </span>
+        ) : null}
         {href ? (
           <Button asChild className="w-full">
             <a href={href} target="_blank" rel="noreferrer">{copy.openAlbum}<Icon name="external" /></a>

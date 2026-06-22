@@ -45,6 +45,43 @@ describe("TripPhotosPage", () => {
     expect(screen.queryByRole("button", { name: /Select Google Photos group album/i })).not.toBeInTheDocument();
   });
 
+  it("copies selected album links with shared feedback", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderTripPhotosPage();
+
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+
+    expect(writeText).toHaveBeenCalledWith("https://photos.app.goo.gl/group");
+    const status = await screen.findByRole("status", {
+      name: "Album link copy status",
+    });
+    expect(status).toHaveTextContent("Copied");
+    expect(status).toHaveAttribute("data-state", "copied");
+    expect(status).toHaveClass("photo-copy-feedback");
+  });
+
+  it("reports album link copy failures", async () => {
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error("clipboard unavailable")) },
+    });
+    renderTripPhotosPage();
+
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+
+    const status = await screen.findByRole("status", {
+      name: "Album link copy status",
+    });
+    expect(status).toHaveTextContent("Copy failed");
+    expect(status).toHaveAttribute("data-state", "error");
+  });
+
   it("submits new albums and edits existing albums", async () => {
     const user = userEvent.setup();
     const onCreatePhotoAlbum = vi.fn();
