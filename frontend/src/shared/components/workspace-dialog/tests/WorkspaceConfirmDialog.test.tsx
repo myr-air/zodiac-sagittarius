@@ -47,4 +47,25 @@ describe("WorkspaceConfirmDialog", () => {
 
     expect(screen.getByRole("dialog", { name: "Delete album" })).toBeInTheDocument();
   });
+
+  it("supports non-destructive confirmation dialogs", () => {
+    render(
+      <WorkspaceConfirmDialog
+        body="Switch identity from Aom?"
+        cancelLabel="Cancel"
+        className="identity-switch-dialog w-[min(420px,100%)]"
+        confirmLabel="Switch identity"
+        confirmVariant="primary"
+        onCancel={() => undefined}
+        onConfirm={() => undefined}
+        title="Switch identity"
+        titleId="identity-switch-title"
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Switch identity" });
+    expect(dialog).toHaveClass("identity-switch-dialog");
+    expect(dialog).toHaveClass("grid");
+    expect(within(dialog).getByRole("button", { name: "Switch identity" })).toHaveClass("button--primary");
+  });
 });

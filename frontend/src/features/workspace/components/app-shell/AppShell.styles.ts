@@ -1,11 +1,3 @@
-import {
-  workspaceCompactDialogActionsClassName,
-  workspaceCompactDialogBodyClassName,
-  workspaceCompactDialogPanelClassName,
-  workspaceCompactDialogTitleClassName,
-  workspacePaddedDialogBackdropClassName,
-} from "@/src/shared/components/workspace-dialog";
-
 export const brandRowClassName = "brand-row inline-flex min-h-[70px] w-full box-border items-center justify-between px-4 pl-5 data-[collapsed=true]:min-h-[84px] data-[collapsed=true]:flex-col data-[collapsed=true]:justify-center data-[collapsed=true]:gap-2 data-[collapsed=true]:px-0 data-[collapsed=true]:pl-0 max-[1199px]:min-h-[70px] max-[1199px]:justify-center max-[1199px]:px-0 max-[1199px]:pl-0 max-[767px]:grid max-[767px]:min-h-12 max-[767px]:grid-cols-[minmax(64px,auto)_minmax(0,1fr)_44px] max-[767px]:gap-2 max-[767px]:border-b max-[767px]:border-(--color-border) max-[767px]:px-3 max-[767px]:pl-3";
 export const brandBlockClassName = "brand-block inline-flex min-w-0 items-center gap-[11px]";
 export const brandMarkClassName = "brand-mark grid size-[34px] place-items-center rounded-full bg-(--color-primary) text-white font-extrabold shadow-[0_10px_20px_rgb(194_79_22_/_0.2)] [&_.icon]:size-[19px] [&_.icon]:stroke-[2.4] max-[767px]:size-8 max-[767px]:shadow-none max-[767px]:[&_.icon]:size-[17px]";
@@ -31,10 +23,4 @@ export const memberCardNameClassName = "overflow-hidden text-ellipsis whitespace
 export const memberCardRoleClassName = "text-(--color-text-muted)";
 export const memberSwitchButtonClassName = "member-switch-button min-h-8 whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong) data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
-export const identityDialogBackdropClassName = workspacePaddedDialogBackdropClassName;
-export const identityDialogClassName = `identity-switch-dialog w-[min(420px,100%)] ${workspaceCompactDialogPanelClassName}`;
-export const identityDialogTitleClassName = workspaceCompactDialogTitleClassName;
-export const identityDialogBodyClassName = workspaceCompactDialogBodyClassName;
-export const identityDialogActionsClassName = workspaceCompactDialogActionsClassName;
-export const identityDialogButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-sm font-extrabold text-(--color-primary-strong)";
-export const identityDialogPrimaryButtonClassName = "inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-(--radius-sm) border border-(--color-primary) bg-(--color-primary) px-3 text-sm font-extrabold text-white";
+export const identityDialogClassName = "identity-switch-dialog w-[min(420px,100%)]";

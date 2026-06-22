@@ -3,17 +3,12 @@
 import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 import { memberInitial, roleLabel } from "@/src/trip/members";
 import { Icon } from "@/src/ui/icons";
 import type { AppShellMemberCardProps } from "./app-shell.types";
 import {
-  identityDialogActionsClassName,
-  identityDialogBackdropClassName,
-  identityDialogBodyClassName,
-  identityDialogButtonClassName,
   identityDialogClassName,
-  identityDialogPrimaryButtonClassName,
-  identityDialogTitleClassName,
   memberAvatarClassName,
   memberCardBaseClassName,
   memberCardColClassName,
@@ -78,20 +73,17 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
       </div>
 
       {identityDialogOpen ? (
-        <div className={identityDialogBackdropClassName} role="presentation">
-          <section className={identityDialogClassName} role="dialog" aria-modal="true" aria-labelledby="identity-switch-title">
-            <h2 className={identityDialogTitleClassName} id="identity-switch-title">{t.appShell.switchIdentity}</h2>
-            <p className={identityDialogBodyClassName}>{t.appShell.confirmSwitchIdentity({ name: currentMember.displayName })}</p>
-            <div className={identityDialogActionsClassName}>
-              <button className={identityDialogButtonClassName} type="button" onClick={() => setIdentityDialogOpen(false)}>
-                {t.common.actions.cancel}
-              </button>
-              <button className={identityDialogPrimaryButtonClassName} type="button" onClick={confirmLeaveParticipantSession}>
-                {t.appShell.switchIdentity}
-              </button>
-            </div>
-          </section>
-        </div>
+        <WorkspaceConfirmDialog
+          body={t.appShell.confirmSwitchIdentity({ name: currentMember.displayName })}
+          cancelLabel={t.common.actions.cancel}
+          className={identityDialogClassName}
+          confirmLabel={t.appShell.switchIdentity}
+          confirmVariant="primary"
+          onCancel={() => setIdentityDialogOpen(false)}
+          onConfirm={confirmLeaveParticipantSession}
+          title={t.appShell.switchIdentity}
+          titleId="identity-switch-title"
+        />
       ) : null}
     </>
   );

@@ -53,3 +53,19 @@ export const ConfirmDialog: StoryObj<typeof WorkspaceConfirmDialog> = {
     />
   ),
 };
+
+export const ConfirmPrimaryDialog: StoryObj<typeof WorkspaceConfirmDialog> = {
+  render: () => (
+    <WorkspaceConfirmDialog
+      body="Switch identity from Explorer Friend? You will need to verify again to return."
+      cancelLabel="Cancel"
+      className="identity-switch-dialog w-[min(420px,100%)]"
+      confirmLabel="Switch identity"
+      confirmVariant="primary"
+      onCancel={() => undefined}
+      onConfirm={() => undefined}
+      title="Switch identity"
+      titleId="storybook-switch-identity-title"
+    />
+  ),
+};
