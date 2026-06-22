@@ -257,6 +257,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinGate).not.toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
     expect(tripJoinGate).toContain("composition/TripJoinParticipantStep");
+    expect(tripJoinGate).toContain("export interface TripJoinGateProps");
     expect(tripJoinGate).not.toContain("joinFormClassName");
     expect(tripJoinGate).not.toContain("participantGridClassName");
     expect(tripJoinGate).not.toContain("joinHeroClassName");
@@ -274,6 +275,9 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinParticipantStep).not.toContain("passwordInputRowClassName");
     expect(tripJoinParticipantAuthForm).toContain(
       "export function TripJoinParticipantAuthForm",
+    );
+    expect(tripJoinParticipantAuthForm).toContain(
+      "export interface TripJoinParticipantAuthFormProps",
     );
     expect(tripJoinParticipantAuthForm).toContain("passwordInputRowClassName");
     expect(tripJoinGate).not.toContain("tripAccessPhotoKrabiClassName");

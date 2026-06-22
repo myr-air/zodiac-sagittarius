@@ -13,7 +13,7 @@ import { useTripJoinGateState } from "./state/use-trip-join-gate-state";
 
 export { tripFromJoinResponse } from "./model/trip-join-response-mapper";
 
-interface TripJoinGateProps {
+export interface TripJoinGateProps {
   trip?: Trip;
   apiClient?: TripApiClient;
   embedded?: boolean;

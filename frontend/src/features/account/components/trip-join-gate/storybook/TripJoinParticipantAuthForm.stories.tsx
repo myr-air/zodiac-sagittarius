@@ -3,7 +3,10 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinParticipantAuthForm } from "../forms/TripJoinParticipantAuthForm";
-import type { TripJoinParticipantAuthFormCopy } from "../forms/TripJoinParticipantAuthForm";
+import type {
+  TripJoinParticipantAuthFormCopy,
+  TripJoinParticipantAuthFormProps,
+} from "../forms/TripJoinParticipantAuthForm";
 
 const authFormCopy: TripJoinParticipantAuthFormCopy = {
   confirm: "Confirm",
@@ -15,7 +18,7 @@ const authFormCopy: TripJoinParticipantAuthFormCopy = {
   start: "Start",
 };
 
-type AuthFormStoryArgs = Parameters<typeof TripJoinParticipantAuthForm>[0];
+type AuthFormStoryArgs = TripJoinParticipantAuthFormProps;
 
 const StoryRenderer = (args: AuthFormStoryArgs) => {
   const [participantPassword, setParticipantPassword] = useState(

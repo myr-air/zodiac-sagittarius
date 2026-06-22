@@ -22,7 +22,7 @@ export interface TripJoinParticipantAuthFormCopy {
   start: string;
 }
 
-interface TripJoinParticipantAuthFormProps {
+export interface TripJoinParticipantAuthFormProps {
   copy: TripJoinParticipantAuthFormCopy;
   isSubmitting: boolean;
   isTripAccessVariant: boolean;
