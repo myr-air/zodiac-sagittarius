@@ -2,9 +2,9 @@ import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
-import type { TripPhotosPage } from "../TripPhotosPage";
+import type { TripPhotosPageProps } from "../TripPhotosPage";
 
-type TripPhotosPageStoryArgs = Parameters<typeof TripPhotosPage>[0];
+type TripPhotosPageStoryArgs = TripPhotosPageProps;
 
 const densePhotoAlbumLinks: TripPhotoAlbumLink[] = Array.from({ length: 18 }, (_, index) => {
   const base = tripFixture.trip.photoAlbumLinks?.[index % (tripFixture.trip.photoAlbumLinks?.length || 1)];

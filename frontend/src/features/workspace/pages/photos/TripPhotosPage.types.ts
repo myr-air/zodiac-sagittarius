@@ -1,4 +1,10 @@
-import type { TripPhotoAlbumAccess, TripPhotoAlbumProvider } from "@/src/trip/types";
+import type {
+  Member,
+  Trip,
+  TripPhotoAlbumAccess,
+  TripPhotoAlbumLink,
+  TripPhotoAlbumProvider,
+} from "@/src/trip/types";
 import type { WorkspaceMutationResult } from "../../model/workspace-action-types";
 
 export interface TripPhotoAlbumInput {
@@ -32,3 +38,13 @@ export type DeletePhotoAlbumHandler = (
 export type SubmitPhotoAlbumHandler = (
   input: TripPhotoAlbumInput,
 ) => TripPhotoAlbumMutationResult;
+
+export interface TripPhotosPageProps {
+  trip: Trip;
+  currentMember: Member;
+  photoAlbumLinks: TripPhotoAlbumLink[];
+  canEditPhotoAlbums: boolean;
+  onCreatePhotoAlbum: CreatePhotoAlbumHandler;
+  onUpdatePhotoAlbum: UpdatePhotoAlbumHandler;
+  onDeletePhotoAlbum: DeletePhotoAlbumHandler;
+}

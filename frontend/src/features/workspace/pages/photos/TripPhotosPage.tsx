@@ -1,4 +1,3 @@
-import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
@@ -9,29 +8,16 @@ import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy } from "./content/TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
-import type {
-  CreatePhotoAlbumHandler,
-  DeletePhotoAlbumHandler,
-  UpdatePhotoAlbumHandler,
-} from "./TripPhotosPage.types";
+import type { TripPhotosPageProps } from "./TripPhotosPage.types";
 import { useTripPhotosPageState } from "./use-trip-photos-page-state";
 
 export type {
   CreatePhotoAlbumHandler,
   DeletePhotoAlbumHandler,
   TripPhotoAlbumInput,
+  TripPhotosPageProps,
   UpdatePhotoAlbumHandler,
 } from "./TripPhotosPage.types";
-
-interface TripPhotosPageProps {
-  trip: Trip;
-  currentMember: Member;
-  photoAlbumLinks: TripPhotoAlbumLink[];
-  canEditPhotoAlbums: boolean;
-  onCreatePhotoAlbum: CreatePhotoAlbumHandler;
-  onUpdatePhotoAlbum: UpdatePhotoAlbumHandler;
-  onDeletePhotoAlbum: DeletePhotoAlbumHandler;
-}
 
 export function TripPhotosPage({
   trip,
