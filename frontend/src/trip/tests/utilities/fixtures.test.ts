@@ -6,6 +6,7 @@ import {
   getTripFixtureMemberById,
   tripFixture,
 } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildDenseTripFixture as buildDenseTripFixtureDirect } from "@/src/trip/testing/fixtures/dense-trip-fixture";
 import { tripRoleValues } from "../../members";
 
 describe("trip fixtures", () => {
@@ -36,6 +37,7 @@ describe("trip fixtures", () => {
     const empty = buildEmptyTripFixture();
     const dense = buildDenseTripFixture();
 
+    expect(buildDenseTripFixtureDirect).toBe(buildDenseTripFixture);
     expect(empty.itineraryItems).toEqual([]);
     expect(dense.itineraryItems.length).toBeGreaterThanOrEqual(100);
     expect(new Set(dense.itineraryItems.map((item) => item.day)).size).toBeGreaterThanOrEqual(10);
