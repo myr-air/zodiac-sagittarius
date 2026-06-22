@@ -11,6 +11,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
     const expenseLedgerDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-ledger-display.ts");
     const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
+    const expenseOverviewSections = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewSections.tsx");
     const expenseOverviewDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-display.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
@@ -57,6 +58,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseOverviewPanels).not.toContain("categoryTone");
     expect(expenseOverviewPanels).not.toContain("@/src/trip/trip-plans");
     expect(expenseOverviewPanels).not.toContain("tripPlanName(trip");
+    expect(expenseOverviewPanels).not.toContain("categorySpendDisplay");
+    expect(expenseOverviewPanels).not.toContain("scopeAuditExpenseDisplay");
+    expect(expenseOverviewSections).toContain("../model/expense-overview-display");
+    expect(expenseOverviewSections).toContain("categorySpendDisplay");
+    expect(expenseOverviewSections).toContain("scopeAuditExpenseDisplay");
     expect(expenseOverviewDisplay).toContain("export function expenseMemberBalanceDisplay");
     expect(expenseOverviewDisplay).toContain("export function settlementSuggestionLabel");
     expect(expenseOverviewDisplay).toContain("export function settlementSuggestionDisplay");
