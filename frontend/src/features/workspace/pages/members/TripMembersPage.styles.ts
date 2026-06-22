@@ -9,10 +9,7 @@ import {
   workspaceResponsivePanelResetClassName,
 } from "@/src/shared/components/workspace-surface";
 import {
-  workspaceCompactDialogActionsClassName,
   workspaceCompactDialogBodyClassName,
-  workspaceCompactDialogTitleClassName,
-  workspacePaddedDialogBackdropClassName,
 } from "@/src/shared/components/workspace-dialog";
 
 export const membersPageClassName = "members-page";
@@ -28,9 +25,6 @@ export const memberCreateButtonClassName = "member-create-button border-(--color
 export const copyFeedbackClassName = `copy-feedback min-h-8 rounded-full bg-(--color-surface-subtle) px-3 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackTextStatusClassName}`;
 export const memberCreatePanelClassName = `member-create-panel grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-primary-border) bg-[linear-gradient(135deg,var(--color-primary-soft)_0%,rgb(255_255_255)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-1 ${workspaceResponsiveInlinePanelResetClassName} max-[1199px]:p-3`;
 export const memberCreateFormClassName = cn("member-create-form grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto] items-end gap-3 max-[1199px]:grid-cols-1", workspaceCompactFieldGroupClassName);
-export const memberDialogBackdropClassName = workspacePaddedDialogBackdropClassName;
-export const memberDialogClassName = cn("member-task-dialog grid w-[min(460px,100%)] gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]", workspaceCompactFieldGroupClassName);
-export const memberDialogTitleClassName = workspaceCompactDialogTitleClassName;
+export const memberDialogClassName = cn("member-task-dialog w-[min(460px,100%)] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]", workspaceCompactFieldGroupClassName);
 export const memberDialogBodyClassName = workspaceCompactDialogBodyClassName;
-export const memberDialogActionsClassName = workspaceCompactDialogActionsClassName;
 export const memberDialogErrorClassName = "m-0 rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-xs font-bold text-(--color-danger)";

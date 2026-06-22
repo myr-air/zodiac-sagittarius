@@ -1,6 +1,7 @@
 import { type FormEvent } from "react";
 import { cn } from "@/src/lib/cn";
-import { ActionBar, Button, FieldLabel, TextInput } from "@/src/ui";
+import { WorkspaceCompactFormDialog } from "@/src/shared/components/workspace-dialog";
+import { Button, FieldLabel, TextInput } from "@/src/ui";
 import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberTaskDialogState } from "../member-task-dialog-state";
 import type { MemberConfirmLabels } from "./member-management.types";
@@ -25,29 +26,33 @@ export function MemberTaskDialog({
   onSubmit,
 }: MemberTaskDialogProps) {
   return (
-    <div className={memberStyles.memberDialogBackdropClassName} role="presentation">
-      <form className={memberStyles.memberDialogClassName} role="dialog" aria-modal="true" aria-labelledby="member-task-dialog-title" onSubmit={onSubmit}>
-        <h2 className={memberStyles.memberDialogTitleClassName} id="member-task-dialog-title">{memberDialogTitle(dialog)}</h2>
-        {dialog.kind === "password" ? (
-          <>
-            <p className={memberStyles.memberDialogBodyClassName}>{labels.passwordPrompt({ name: dialog.member.displayName })}</p>
-            <FieldLabel>
-              <span>รหัสผ่านใหม่</span>
-              <TextInput value={passwordValue} onChange={(event) => onPasswordChange(event.target.value)} type="password" autoComplete="new-password" />
-            </FieldLabel>
-            {passwordError ? <p className={memberStyles.memberDialogErrorClassName} role="alert">{passwordError}</p> : null}
-          </>
-        ) : (
-          <p className={memberStyles.memberDialogBodyClassName}>{memberDialogBody(dialog, labels)}</p>
-        )}
-        <ActionBar className={memberStyles.memberDialogActionsClassName}>
+    <WorkspaceCompactFormDialog
+      actions={(
+        <>
           <Button className={cn(memberStyles.memberResetButtonClassName, "w-auto")} variant="ghost" type="button" onClick={onCancel}>ยกเลิก</Button>
           <Button className={cn(memberStyles.memberCreateButtonClassName, "w-auto")} variant="ghost" type="submit">
             {memberDialogConfirmLabel(dialog)}
           </Button>
-        </ActionBar>
-      </form>
-    </div>
+        </>
+      )}
+      className={memberStyles.memberDialogClassName}
+      onSubmit={onSubmit}
+      title={memberDialogTitle(dialog)}
+      titleId="member-task-dialog-title"
+    >
+      {dialog.kind === "password" ? (
+        <>
+          <p className={memberStyles.memberDialogBodyClassName}>{labels.passwordPrompt({ name: dialog.member.displayName })}</p>
+          <FieldLabel>
+            <span>รหัสผ่านใหม่</span>
+            <TextInput value={passwordValue} onChange={(event) => onPasswordChange(event.target.value)} type="password" autoComplete="new-password" />
+          </FieldLabel>
+          {passwordError ? <p className={memberStyles.memberDialogErrorClassName} role="alert">{passwordError}</p> : null}
+        </>
+      ) : (
+        <p className={memberStyles.memberDialogBodyClassName}>{memberDialogBody(dialog, labels)}</p>
+      )}
+    </WorkspaceCompactFormDialog>
   );
 }
 

@@ -115,10 +115,10 @@ describe("TripMembersPage management", () => {
     });
     expect(passwordDialog).toHaveClass(
       "member-task-dialog",
+      "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
       "shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]",
     );
     expect(passwordDialog.className).not.toContain("0_24px_70px");
-    expect(passwordDialog.className).not.toContain("0_14px_34px");
     await user.type(within(passwordDialog).getByLabelText(/รหัสผ่านใหม่/i), "123");
     await user.click(within(passwordDialog).getByRole("button", { name: /บันทึกรหัสผ่าน/i }));
     expect(within(passwordDialog).getByRole("alert")).toHaveTextContent(

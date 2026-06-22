@@ -12,6 +12,8 @@ function readMembersPageSource(fileName: string) {
 describe("members page state structure", () => {
   it("keeps member task dialog workflow out of the page state hook", () => {
     const pageStateSource = readMembersPageSource("use-trip-members-page-state.ts");
+    const memberTaskDialogSource = readMembersPageSource("components/MemberTaskDialog.tsx");
+    const memberStylesSource = readMembersPageSource("TripMembersPage.styles.ts");
     const taskDialogSource = readMembersPageSource("use-member-task-dialog-state.ts");
     const taskDialogStateSource = readMembersPageSource("member-task-dialog-state.ts");
 
@@ -32,6 +34,11 @@ describe("members page state structure", () => {
     expect(taskDialogSource).not.toContain("const [memberDialog, setMemberDialog]");
     expect(taskDialogSource).not.toContain("const [passwordValue, setPasswordValue]");
     expect(taskDialogSource).not.toContain("const [passwordError, setPasswordError]");
+    expect(memberTaskDialogSource).toContain("WorkspaceCompactFormDialog");
+    expect(memberTaskDialogSource).not.toContain("memberDialogBackdropClassName");
+    expect(memberTaskDialogSource).not.toContain("memberDialogActionsClassName");
+    expect(memberStylesSource).not.toContain("workspacePaddedDialogBackdropClassName");
+    expect(memberStylesSource).not.toContain("workspaceCompactDialogActionsClassName");
     expect(taskDialogStateSource).toContain("export interface MemberTaskDialogFormState");
     expect(taskDialogStateSource).toContain("export function buildMemberTaskDialogSubmission");
   });
