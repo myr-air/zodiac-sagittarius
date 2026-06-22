@@ -33,6 +33,11 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       createItineraryBookingDraftCommand,
       saveItineraryBookingTicketCommand,
       unlinkItineraryBookingCommand,
+      bookingDocUpdateCommands,
+      bookingDocUpdateCommandTypes,
+      bookingDocUpdateRunner,
+      bookingDocTypeCommand,
+      bookingDocQuickFieldCommand,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
@@ -78,6 +83,18 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(bookingDocCommands).toContain("buildWorkspaceBookingDocCreateInput");
     expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
     expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
+    expect(bookingDocUpdateCommands).toContain("useBookingDocUpdateRunner");
+    expect(bookingDocUpdateCommands).toContain("useBookingDocTypeCommand");
+    expect(bookingDocUpdateCommands).toContain("useBookingDocQuickFieldCommand");
+    expect(bookingDocUpdateCommands).not.toContain("runWorkspaceVersionConflictRetry");
+    expect(bookingDocUpdateCommands).not.toContain("bookingDocInputFromRecord");
+    expect(bookingDocUpdateCommands).not.toContain("bookingDocQuickFieldsInputFromRecord");
+    expect(bookingDocUpdateCommandTypes).toContain("UseWorkspaceBookingDocUpdateCommandsOptions");
+    expect(bookingDocUpdateRunner).toContain("runWorkspaceVersionConflictRetry");
+    expect(bookingDocUpdateRunner).toContain("queueKeyedUpdate");
+    expect(bookingDocUpdateRunner).toContain("updateLocalBookingDocInTrip");
+    expect(bookingDocTypeCommand).toContain("bookingDocInputFromRecord");
+    expect(bookingDocQuickFieldCommand).toContain("bookingDocQuickFieldsInputFromRecord");
     expect(bookingCommandInputs).toContain("./booking-command-create-inputs");
     expect(bookingCommandInputs).toContain("./booking-command-draft-inputs");
     expect(bookingCommandInputs).toContain("./booking-command-ticket-inputs");
