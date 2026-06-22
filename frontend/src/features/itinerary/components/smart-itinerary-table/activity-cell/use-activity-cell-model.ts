@@ -4,6 +4,13 @@ import type { ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { itemStatusLabel } from "../smart-itinerary-table-labels";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import {
+  activityCellActionsExpandedState,
+  activityCellNoteTargetState,
+  activityCellSubActivitiesToggledState,
+  activityCellSubActivityModalState,
+  initialActivityCellUiState,
+} from "./activity-cell-ui-state";
 
 interface UseActivityCellModelOptions {
   canEdit: boolean;
@@ -29,10 +36,7 @@ export function useActivityCellModel({
 }: UseActivityCellModelOptions) {
   const editable = canEdit && Boolean(onUpdateItemInline);
   const status = item.status ? itemStatusLabel(item.status, locale) : null;
-  const [subActivityModalOpen, setSubActivityModalOpen] = useState(false);
-  const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
-  const [actionsExpanded, setActionsExpanded] = useState(false);
-  const [noteTarget, setNoteTarget] = useState<ItineraryItem | null>(null);
+  const [uiState, setUiState] = useState(initialActivityCellUiState);
   const showSubActivityToggle =
     Boolean(onAddSubActivity) || subItems.length > 0;
   const actionMenuLabel =
@@ -41,40 +45,49 @@ export function useActivityCellModel({
       : `Activity actions for ${item.activity}`;
 
   function openNoteModal(target: ItineraryItem, compact = false) {
-    if (compact) {
-      setActionsExpanded(false);
-    }
-    setNoteTarget(target);
+    setUiState((current) =>
+      activityCellNoteTargetState(current, target, compact),
+    );
   }
 
   function openSubActivityModal(compact = false) {
-    if (compact) {
-      setActionsExpanded(false);
-    }
-    setSubActivityModalOpen(true);
+    setUiState((current) =>
+      activityCellSubActivityModalState(current, true, compact),
+    );
   }
 
   function toggleSubActivities(compact = false) {
-    if (compact) {
-      setActionsExpanded(false);
-    }
-    setSubActivitiesExpanded((current) => !current);
+    setUiState((current) =>
+      activityCellSubActivitiesToggledState(current, compact),
+    );
   }
 
   return {
     actionMenuLabel,
-    actionsExpanded,
+    actionsExpanded: uiState.actionsExpanded,
     editable,
-    noteTarget,
+    noteTarget: uiState.noteTarget,
     openNoteModal,
     openSubActivityModal,
-    setActionsExpanded,
-    setNoteTarget,
-    setSubActivityModalOpen,
+    setActionsExpanded: (
+      actionsExpanded: boolean | ((current: boolean) => boolean),
+    ) => {
+      setUiState((current) =>
+        activityCellActionsExpandedState(current, actionsExpanded),
+      );
+    },
+    setNoteTarget: (noteTarget: ItineraryItem | null) => {
+      setUiState((current) => activityCellNoteTargetState(current, noteTarget));
+    },
+    setSubActivityModalOpen: (subActivityModalOpen: boolean) => {
+      setUiState((current) =>
+        activityCellSubActivityModalState(current, subActivityModalOpen),
+      );
+    },
     showSubActivityToggle,
     status,
-    subActivitiesExpanded,
-    subActivityModalOpen,
+    subActivitiesExpanded: uiState.subActivitiesExpanded,
+    subActivityModalOpen: uiState.subActivityModalOpen,
     toggleSubActivities,
   };
 }
