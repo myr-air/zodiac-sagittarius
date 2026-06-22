@@ -9,6 +9,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
     const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
+    const expenseLedgerRows = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerRows.tsx");
     const expenseLedgerDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-ledger-display.ts");
     const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
     const expenseOverviewSections = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewSections.tsx");
@@ -77,12 +78,18 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseActions).toContain("export function buildRefundExpenseInput");
     expect(expenseActions).toContain("refundSplits");
     expect(expenseActions).toContain("sumShares");
-    expect(expenseLedgerSection).toContain("../model/expense-ledger-display");
+    expect(expenseLedgerSection).toContain("./ExpenseLedgerRows");
+    expect(expenseLedgerSection).not.toContain("../model/expense-ledger-display");
+    expect(expenseLedgerSection).not.toContain("findItineraryItemById");
+    expect(expenseLedgerSection).not.toContain("categoryTone");
     expect(expenseLedgerSection).not.toContain("refundAmount");
     expect(expenseLedgerSection).not.toContain("sumShares");
     expect(expenseLedgerSection).not.toContain("formatMoney");
     expect(expenseLedgerSection).not.toContain("findMemberById");
     expect(expenseLedgerSection).not.toContain("memberInitial");
+    expect(expenseLedgerRows).toContain("../model/expense-ledger-display");
+    expect(expenseLedgerRows).toContain("findItineraryItemById");
+    expect(expenseLedgerRows).toContain("categoryTone");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerPayerDisplay");
     expect(expenseSummaryStats).toContain("../model/expense-summary-display");

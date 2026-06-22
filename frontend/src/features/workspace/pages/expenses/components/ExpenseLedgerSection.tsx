@@ -1,19 +1,12 @@
-import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { IconButton } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import {
-  expenseLedgerPayerDisplay,
-  expenseLedgerRowDisplay,
-} from "../model/expense-ledger-display";
-import { categoryTone } from "../model/expense-page-options";
 import type {
   DuplicateExpenseAsEstimateHandler,
   ExpenseCategoryFilter,
   ExpenseCopyState,
 } from "../model/expense-page-types";
 import { ExpenseLedgerControls } from "./ExpenseLedgerControls";
+import { ExpenseLedgerRows } from "./ExpenseLedgerRows";
 
 interface ExpenseLedgerSectionProps {
   canEditExpenses: boolean;
@@ -93,76 +86,22 @@ export function ExpenseLedgerSection({
               <th>{t.expenses.table.actions}</th>
             </tr>
           </thead>
-          <tbody className={expenseStyles.tableBodyClassName}>
-            {filteredExpenses.map((expense) => {
-              const payer = expenseLedgerPayerDisplay({
-                members,
-                paidBy: expense.paidBy,
-              });
-              const linkedItem = findItineraryItemById(
-                trip.itineraryItems,
-                expense.itineraryItemId,
-              );
-              const display = expenseLedgerRowDisplay(
-                expense,
-                settlementCurrency,
-              );
-              const tone = categoryTone(expense.category);
-              return (
-                <tr key={expense.id}>
-                  <td className={expenseStyles.tableTitleClassName}>
-                    <strong>{expense.title}</strong>
-                    <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
-                      <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
-                      {expense.category}
-                    </span>
-                  </td>
-                  <td><span className={expenseStyles.ledgerAmountClassName}>{display.amountLabel}</span></td>
-                  <td>
-                    {payer ? (
-                      <span className={expenseStyles.memberLineClassName}>
-                        <span className={expenseStyles.avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{payer.initial}</span>
-                        <span className={expenseStyles.balanceNameClassName}>{payer.name}</span>
-                      </span>
-                    ) : expense.paidBy}
-                  </td>
-                  <td>{display.splitTotalLabel}</td>
-                  <td>{linkedItem?.activity ?? t.expenses.uncategorizedStop}</td>
-                  <td>
-                    <span className={expenseStyles.actionCellClassName}>
-                      <IconButton type="button" aria-label={t.expenses.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onEditExpense(expense)}>
-                        <Icon name="edit" />
-                      </IconButton>
-                      <IconButton
-                        type="button"
-                        aria-label={t.expenses.actions.duplicateAsEstimate({ title: expense.title })}
-                        disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
-                        onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
-                      >
-                        <Icon name="copy" />
-                      </IconButton>
-                      <IconButton
-                        type="button"
-                        aria-label={t.expenses.actions.recordRefund({ title: expense.title })}
-                        disabled={!canEditExpenses || !display.canRecordRefund}
-                        onClick={() => onRecordRefund(expense)}
-                      >
-                        <Icon name="wallet" />
-                      </IconButton>
-                      <IconButton type="button" aria-label={t.expenses.actions.cancelExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
-                        <Icon name="trash" />
-                      </IconButton>
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-            {!filteredExpenses.length ? (
-              <tr>
-                <td colSpan={6}>{t.expenses.empty}</td>
-              </tr>
-            ) : null}
-          </tbody>
+          <ExpenseLedgerRows
+            canEditExpenses={canEditExpenses}
+            expenses={filteredExpenses}
+            members={members}
+            onDeleteExpense={onDeleteExpense}
+            onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
+            onEditExpense={onEditExpense}
+            onRecordRefund={onRecordRefund}
+            settlementCurrency={settlementCurrency}
+            tableCopy={{
+              actions: t.expenses.actions,
+              empty: t.expenses.empty,
+              uncategorizedStop: t.expenses.uncategorizedStop,
+            }}
+            trip={trip}
+          />
         </table>
       </div>
     </section>
