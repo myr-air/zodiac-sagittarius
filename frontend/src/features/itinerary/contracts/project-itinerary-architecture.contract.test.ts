@@ -286,6 +286,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModel).toContain("@/src/features/itinerary/domain/booking-ticket-form");
     expect(ticketModel).toContain("type TicketFormValues");
     expect(ticketModel).toContain("const [formValues, setFormValues]");
+    expect(ticketModel).toContain("@/src/shared/form-state");
     expect(ticketModel).toContain("./itinerary-ticket-modal-view-state");
     expect(ticketModel).toContain("const [viewState, setViewState]");
     expect(ticketModel).toContain("function updateTicketField");

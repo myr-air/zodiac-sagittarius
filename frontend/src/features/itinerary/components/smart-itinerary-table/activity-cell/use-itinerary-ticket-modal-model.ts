@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import type { Locale } from "@/src/i18n/types";
+import { updateFieldState } from "@/src/shared/form-state";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import {
@@ -74,7 +75,7 @@ export function useItineraryTicketModalModel({
     field: Field,
     value: TicketFormValues[Field],
   ) {
-    setFormValues((current) => ({ ...current, [field]: value }));
+    setFormValues((current) => updateFieldState(current, field, value));
   }
 
   function selectNewTicketMode() {
@@ -157,10 +158,13 @@ export function useItineraryTicketModalModel({
     setProviderName: (providerName: string) =>
       updateTicketField("providerName", providerName),
     setRelatedItineraryItemIds: (updater: (current: string[]) => string[]) =>
-      setFormValues((current) => ({
-        ...current,
-        relatedItineraryItemIds: updater(current.relatedItineraryItemIds),
-      })),
+      setFormValues((current) =>
+        updateFieldState(
+          current,
+          "relatedItineraryItemIds",
+          updater(current.relatedItineraryItemIds),
+        ),
+      ),
     setStartsAt: (startsAt: string) => updateTicketField("startsAt", startsAt),
     setTitle: (title: string) => updateTicketField("title", title),
     startsAt: formValues.startsAt,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { updateFieldState } from "@/src/shared/form-state";
 import {
   mainItineraryPathName,
   type ItineraryImportApplyTarget,
@@ -70,7 +71,7 @@ export function useTripWorkspaceImportDialogState({
     field: Field,
     value: TripWorkspaceImportDialogState[Field],
   ) {
-    setState((current) => ({ ...current, [field]: value }));
+    setState((current) => updateFieldState(current, field, value));
   }
 
   return {

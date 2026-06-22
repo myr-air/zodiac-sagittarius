@@ -206,6 +206,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(importDialog).not.toContain("useState");
     expect(importDialogState).toContain("export function useTripWorkspaceImportDialogState");
     expect(importDialogState).toContain("initialTripWorkspaceImportDialogState");
+    expect(importDialogState).toContain("@/src/shared/form-state");
     expect(deleteDialog).toContain("WorkspaceConfirmDialog");
     expect(importDialog).not.toContain("workspaceDialogBackdropClassName");
     expect(importDialog).not.toContain("importDialogTitleClassName");
