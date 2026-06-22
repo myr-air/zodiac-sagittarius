@@ -2,6 +2,7 @@ import {
   normalizeSearchQuery,
   valuesMatchSearchQuery,
 } from "@/src/shared/text-search";
+import { buildItineraryActivityResolver } from "../itinerary-items";
 import type { BookingDoc, Trip } from "../types";
 
 export function compareBookingStartWithUndated(left: BookingDoc, right: BookingDoc): number {
@@ -17,9 +18,9 @@ export function bookingDocMatchesQuery(doc: BookingDoc, trip: Trip, query: strin
 }
 
 export function bookingDocLinkedContext(doc: BookingDoc, trip: Trip): string {
-  const itemsById = new Map(trip.itineraryItems.map((item) => [item.id, item]));
+  const itineraryActivity = buildItineraryActivityResolver(trip.itineraryItems);
   return doc.relatedItineraryItemIds
-    .map((itemId) => itemsById.get(itemId)?.activity)
+    .map((itemId) => itineraryActivity(itemId))
     .filter(Boolean)
     .join(", ");
 }

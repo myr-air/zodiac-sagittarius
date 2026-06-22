@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { findItineraryItemById } from "@/src/trip/itinerary-items";
+import {
+  buildItineraryActivityResolver,
+  findItineraryItemById,
+} from "@/src/trip/itinerary-items";
 
 describe("itinerary item lookup", () => {
   const items = [
@@ -20,5 +23,12 @@ describe("itinerary item lookup", () => {
     expect(findItineraryItemById(items, null)).toBeNull();
     expect(findItineraryItemById(items, undefined)).toBeNull();
     expect(findItineraryItemById(items, "missing-item")).toBeNull();
+  });
+
+  it("builds an activity resolver with null fallbacks", () => {
+    const activityName = buildItineraryActivityResolver(items);
+
+    expect(activityName("item-dinner")).toBe("Dinner");
+    expect(activityName("missing-item")).toBeNull();
   });
 });
