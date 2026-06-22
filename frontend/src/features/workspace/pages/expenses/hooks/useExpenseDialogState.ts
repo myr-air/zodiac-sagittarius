@@ -17,6 +17,7 @@ import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
 import {
   initialExpenseDialogFields,
   initialExpenseTripPlanId,
+  type ExpenseDialogInitialFields,
 } from "../model/expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
 import type {
@@ -52,15 +53,8 @@ export function useExpenseDialogState({
     currentMemberId: currentMember.id,
     expense,
   });
-  const [title, setTitle] = useState(initialFields.title);
-  const [amount, setAmount] = useState(initialFields.amount);
-  const [currency, setCurrency] = useState(initialFields.currency);
-  const [exchangeRate, setExchangeRate] = useState(initialFields.exchangeRate);
-  const [exchangeRateTouched, setExchangeRateTouched] = useState(
-    initialFields.exchangeRateTouched,
-  );
-  const [notes, setNotes] = useState(initialFields.notes);
-  const [receiptUrl, setReceiptUrl] = useState(initialFields.receiptUrl);
+  const [formValues, setFormValues] =
+    useState<ExpenseDialogInitialFields>(initialFields);
   const {
     addComment,
     commentDraft,
@@ -68,24 +62,18 @@ export function useExpenseDialogState({
     setCommentDraft,
   } = useExpenseComments({ currentMember, expense });
   const [isSaving, setIsSaving] = useState(false);
-  const [repeatCount, setRepeatCount] = useState(initialFields.repeatCount);
-  const [paidBy, setPaidBy] = useState(initialFields.paidBy);
-  const [category, setCategory] = useState<Expense["category"]>(
-    initialFields.category,
-  );
-  const [itemId, setItemId] = useState(initialFields.itemId);
   const [tripPlanId, setTripPlanId] = useState(
     initialExpenseTripPlanId({ expense, selectedTripPlanId, trip }),
   );
   const splitEditor = useExpenseSplitEditor({ expense, members: trip.members });
   const calculatedState = calculateExpenseDialogState({
-    amount,
-    currency,
-    exchangeRate,
+    amount: formValues.amount,
+    currency: formValues.currency,
+    exchangeRate: formValues.exchangeRate,
     expense,
     lineItems: splitEditor.lineItems,
     members: trip.members,
-    repeatCount,
+    repeatCount: formValues.repeatCount,
     settlementCurrency,
     splitMode: splitEditor.splitMode,
     splitValues: splitEditor.splitValues,
@@ -93,9 +81,9 @@ export function useExpenseDialogState({
   const canSubmitExpense = canSubmitExpenseDialog({
     isSaving,
     state: calculatedState,
-    title,
+    title: formValues.title,
   });
-  const linkedItem = expenseDialogLinkedItem(trip, itemId);
+  const linkedItem = expenseDialogLinkedItem(trip, formValues.itemId);
   const effectiveTripPlanId = expenseDialogEffectiveTripPlanId({
     linkedItem,
     tripPlanId,
@@ -103,28 +91,35 @@ export function useExpenseDialogState({
   const tripPlanOptions = expenseDialogTripPlanOptions(trip);
 
   const autofillExchangeRate = useCallback((nextExchangeRate: string) => {
-    setExchangeRate(nextExchangeRate);
+    setFormValues((current) => ({
+      ...current,
+      exchangeRate: nextExchangeRate,
+    }));
   }, []);
   useExpenseExchangeRateAutofill({
     apiBaseUrl,
-    exchangeRateTouched,
+    exchangeRateTouched: formValues.exchangeRateTouched,
     needsExchangeRate: calculatedState.needsExchangeRate,
     normalizedCurrency: calculatedState.normalizedCurrency,
     settlementCurrency,
     onExchangeRateChange: autofillExchangeRate,
   });
 
+  function updateFormValue<Field extends keyof ExpenseDialogInitialFields>(
+    field: Field,
+    value: ExpenseDialogInitialFields[Field],
+  ) {
+    setFormValues((current) => ({ ...current, [field]: value }));
+  }
+
   function changeCurrency(nextCurrency: string) {
     const nextFields = expenseDialogCurrencyChangeFields(nextCurrency);
-    setCurrency(nextFields.currency);
-    setExchangeRateTouched(nextFields.exchangeRateTouched);
-    setExchangeRate(nextFields.exchangeRate);
+    setFormValues((current) => ({ ...current, ...nextFields }));
   }
 
   function changeExchangeRate(nextExchangeRate: string) {
     const nextFields = expenseDialogManualExchangeRateFields(nextExchangeRate);
-    setExchangeRateTouched(nextFields.exchangeRateTouched);
-    setExchangeRate(nextFields.exchangeRate);
+    setFormValues((current) => ({ ...current, ...nextFields }));
   }
 
   function changeItemId(nextItemId: string) {
@@ -133,7 +128,7 @@ export function useExpenseDialogState({
       itemId: nextItemId,
       trip,
     });
-    setItemId(nextFields.itemId);
+    updateFormValue("itemId", nextFields.itemId);
     setTripPlanId(nextFields.tripPlanId);
   }
 
@@ -142,16 +137,16 @@ export function useExpenseDialogState({
     if (!canSubmitExpense) return;
     const input = buildExpenseDialogSubmitInput({
       calculatedState,
-      category,
+      category: formValues.category,
       comments,
       effectiveTripPlanId,
       expense,
-      itemId,
-      notes,
-      paidBy,
-      receiptUrl,
+      itemId: formValues.itemId,
+      notes: formValues.notes,
+      paidBy: formValues.paidBy,
+      receiptUrl: formValues.receiptUrl,
       splitMode: splitEditor.splitMode,
-      title,
+      title: formValues.title,
     });
     setIsSaving(true);
     try {
@@ -166,36 +161,39 @@ export function useExpenseDialogState({
   }
 
   return {
-    amount,
+    amount: formValues.amount,
     calculatedState,
     canSubmitExpense,
-    category,
+    category: formValues.category,
     changeCurrency,
     changeExchangeRate,
     changeItemId,
     commentDraft,
     comments,
-    currency,
+    currency: formValues.currency,
     effectiveTripPlanId,
-    exchangeRate,
-    itemId,
+    exchangeRate: formValues.exchangeRate,
+    itemId: formValues.itemId,
     linkedItem,
-    notes,
-    paidBy,
-    receiptUrl,
-    repeatCount,
-    setAmount,
-    setCategory,
+    notes: formValues.notes,
+    paidBy: formValues.paidBy,
+    receiptUrl: formValues.receiptUrl,
+    repeatCount: formValues.repeatCount,
+    setAmount: (amount: string) => updateFormValue("amount", amount),
+    setCategory: (category: Expense["category"]) =>
+      updateFormValue("category", category),
     setCommentDraft,
-    setNotes,
-    setPaidBy,
-    setReceiptUrl,
-    setRepeatCount,
-    setTitle,
+    setNotes: (notes: string) => updateFormValue("notes", notes),
+    setPaidBy: (paidBy: string) => updateFormValue("paidBy", paidBy),
+    setReceiptUrl: (receiptUrl: string) =>
+      updateFormValue("receiptUrl", receiptUrl),
+    setRepeatCount: (repeatCount: string) =>
+      updateFormValue("repeatCount", repeatCount),
+    setTitle: (title: string) => updateFormValue("title", title),
     setTripPlanId,
     splitEditor,
     submitExpense,
-    title,
+    title: formValues.title,
     tripPlanOptions,
     addComment,
   };

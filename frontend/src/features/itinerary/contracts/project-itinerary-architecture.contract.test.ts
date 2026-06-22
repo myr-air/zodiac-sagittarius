@@ -376,7 +376,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseDialog).not.toContain("function submitExpense");
     expect(expenseDialogState).toContain("export function useExpenseDialogState");
     expect(expenseDialogState).toContain("useExpenseSplitEditor");
+    expect(expenseDialogState).toContain("const [formValues, setFormValues]");
+    expect(expenseDialogState).toContain("function updateFormValue");
     expect(expenseDialogState).toContain("function submitExpense");
+    expect(expenseDialogState).not.toContain("const [title, setTitle]");
+    expect(expenseDialogState).not.toContain("const [amount, setAmount]");
+    expect(expenseDialogState).not.toContain("const [currency, setCurrency]");
     expect(contextRailExpenseForm).toContain("ContextRailExpenseFormValues");
     expect(contextRailExpenseForm).toContain("const [formValues, setFormValues]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");
