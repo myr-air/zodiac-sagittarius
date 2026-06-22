@@ -16,9 +16,9 @@ export function StopDialogFormFields({
   manualPathOptions,
   mode,
   model,
-  moreDetailsLabel,
   placeResolution,
   startDate,
+  stopDialogCopy,
   stopDialogMessages,
 }: StopDialogFormFieldsProps) {
   const {
@@ -77,11 +77,10 @@ export function StopDialogFormFields({
         endOffsetDays={values.endOffsetDays}
         endTime={values.endTime}
         locale={locale}
-        nextDayLabel={locale === "th" ? "ข้ามวัน" : "Next day"}
-        notSetLabel={locale === "th" ? "ไม่ระบุ" : "Not set"}
         startLabel={stopDialogMessages.fields.startTime}
         startTime={values.startTime}
         timeMode={values.timeMode}
+        timeWindowCopy={stopDialogCopy.timeWindow}
         onEndTimeChange={updateEndTime}
         onStartTimeChange={updateStartTime}
         onToggleNextDayEnd={toggleNextDayEnd}
@@ -104,7 +103,7 @@ export function StopDialogFormFields({
         isFocusedEdit={isFocusedEdit}
         mapLink={values.mapLink}
         mapLinkLabel={stopDialogMessages.fields.mapLink}
-        moreDetailsLabel={moreDetailsLabel}
+        moreDetailsLabel={stopDialogCopy.moreDetailsLabel}
         onMapLinkChange={(mapLink) => update("mapLink", mapLink)}
         updateDetail={updateDetail}
       />

@@ -403,6 +403,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const stopDialogModel = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts");
     const stopDialogDraftState = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft-state.ts");
     const stopDialogTypes = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.types.ts");
+    const stopDialogCopy = readItineraryArchitectureSource("src/features/itinerary/domain/stop-dialog-copy.ts");
+    const stopDialogTimeWindow = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialogTimeWindow.tsx");
 
     expect(stopDialog).toContain("./use-stop-dialog-model");
     expect(stopDialog).toContain("./StopDialogFormFields");
@@ -411,6 +413,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(stopDialog).not.toContain("buildStopSubmitValues");
     expect(stopDialog).not.toContain("applyStopActivityInput");
     expect(stopDialog).not.toContain("StopDialogPrimaryFields");
+    expect(stopDialog).not.toContain('locale === "th"');
+    expect(stopDialogFormFields).not.toContain('locale === "th"');
+    expect(stopDialogTimeWindow).not.toContain('locale === "th"');
+    expect(stopDialog).toContain("@/src/features/itinerary/domain/stop-dialog-copy");
+    expect(stopDialogFormFields).toContain("stopDialogCopy");
+    expect(stopDialogTimeWindow).toContain("timeWindowCopy");
     expect(stopDialogFormFields).toContain("export function StopDialogFormFields");
     expect(stopDialogFormFields).toContain("StopDialogPrimaryFields");
     expect(stopDialogFormFields).toContain("StopDialogPlaceResolution");
@@ -431,6 +439,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(stopDialogModel).not.toContain("const [isSubmitting, setIsSubmitting]");
     expect(stopDialogModel).not.toContain("const [submitError, setSubmitError]");
     expect(stopDialogTypes).toContain("export interface StopDialogProps");
+    expect(stopDialogTypes).toContain("StopDialogCopy");
+    expect(stopDialogCopy).toContain("export function stopDialogCopy");
+    expect(stopDialogCopy).toContain("export interface StopDialogCopy");
   });
 
   it("keeps stop dialog detail serialization split from utility ids", () => {

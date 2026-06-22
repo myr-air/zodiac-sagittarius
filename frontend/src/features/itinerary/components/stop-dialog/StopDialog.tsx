@@ -12,6 +12,7 @@ import {
 import type { StopDialogProps } from "./stop-dialog.types";
 import { useStopDialogModel } from "./use-stop-dialog-model";
 import { stopDetailLabels } from "@/src/features/itinerary/domain/stop-details";
+import { stopDialogCopy } from "@/src/features/itinerary/domain/stop-dialog-copy";
 
 export function StopDialog({
   mode,
@@ -45,16 +46,13 @@ export function StopDialog({
   } = model;
 
   const detailLabels = stopDetailLabels(locale);
+  const copy = stopDialogCopy(locale);
   const title =
     mode === "create"
       ? t.stopDialog.titles.create
       : isSubActivity
-        ? locale === "th"
-          ? "แก้ไข sub-activity"
-          : "Edit sub-activity"
+        ? copy.editSubActivityTitle
         : t.stopDialog.titles.edit;
-  const moreDetailsLabel =
-    locale === "th" ? "รายละเอียดเพิ่มเติม" : "More details";
 
   return (
     <div className={modalBackdropClassName} role="presentation">
@@ -75,9 +73,9 @@ export function StopDialog({
             manualPathOptions={manualPathOptions}
             mode={mode}
             model={model}
-            moreDetailsLabel={moreDetailsLabel}
             placeResolution={placeResolution}
             startDate={startDate}
+            stopDialogCopy={copy}
             stopDialogMessages={t.stopDialog}
           />
 

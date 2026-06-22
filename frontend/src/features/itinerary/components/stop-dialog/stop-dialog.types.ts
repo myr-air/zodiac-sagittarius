@@ -10,6 +10,7 @@ import type {
   StopDetailValues,
   stopDetailLabels,
 } from "@/src/features/itinerary/domain/stop-details";
+import type { StopDialogCopy } from "@/src/features/itinerary/domain/stop-dialog-copy";
 import type { StopDialogModel } from "./use-stop-dialog-model";
 
 export type { StopFormValues };
@@ -56,9 +57,9 @@ export interface StopDialogFormFieldsProps {
   manualPathOptions: StopManualPathOption[];
   mode: StopDialogProps["mode"];
   model: StopDialogModel;
-  moreDetailsLabel: string;
   placeResolution: StopDialogProps["placeResolution"];
   startDate?: string;
+  stopDialogCopy: StopDialogCopy;
   stopDialogMessages: Messages["stopDialog"];
   itineraryHeaders: Messages["itinerary"]["headers"];
 }

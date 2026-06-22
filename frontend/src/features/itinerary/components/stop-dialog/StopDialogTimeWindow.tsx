@@ -1,5 +1,6 @@
 import { TimePickerField } from "@/src/shared/components/date-time-pickers";
 import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
+import type { StopDialogCopy } from "@/src/features/itinerary/domain/stop-dialog-copy";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryTimeMode } from "@/src/trip/types";
 import {
@@ -18,11 +19,10 @@ export function StopDialogTimeWindow({
   endOffsetDays,
   endTime,
   locale,
-  nextDayLabel,
-  notSetLabel,
   startLabel,
   startTime,
   timeMode,
+  timeWindowCopy,
   onEndTimeChange,
   onStartTimeChange,
   onToggleNextDayEnd,
@@ -34,11 +34,10 @@ export function StopDialogTimeWindow({
   endOffsetDays: number;
   endTime: string | null;
   locale: Locale;
-  nextDayLabel: string;
-  notSetLabel: string;
   startLabel: string;
   startTime: string;
   timeMode: ItineraryTimeMode;
+  timeWindowCopy: StopDialogCopy["timeWindow"];
   onEndTimeChange: (endTime: string) => void;
   onStartTimeChange: (startTime: string) => void;
   onToggleNextDayEnd: () => void;
@@ -47,7 +46,7 @@ export function StopDialogTimeWindow({
     <div
       className={timeWindowGroupClassName}
       role="group"
-      aria-label={locale === "th" ? "ช่วงเวลา" : "Time window"}
+      aria-label={timeWindowCopy.groupLabel}
     >
       <label htmlFor={stopDialogFieldIds.startTime}>
         <span>{startLabel}</span>
@@ -70,12 +69,12 @@ export function StopDialogTimeWindow({
         className={nextDayToggleLabelClassName}
         htmlFor={stopDialogFieldIds.endOffsetDays}
       >
-        <span>{nextDayLabel}</span>
+        <span>{timeWindowCopy.nextDayLabel}</span>
         <button
           id={stopDialogFieldIds.endOffsetDays}
           className={nextDayToggleButtonClassName}
           type="button"
-          aria-label={`Toggle next-day end ${activity || "activity"}`}
+          aria-label={timeWindowCopy.toggleNextDayLabel({ activity })}
           aria-pressed={endOffsetDays > 0}
           disabled={timeMode === "flexible" || !endTime}
           onClick={onToggleNextDayEnd}
@@ -91,7 +90,7 @@ export function StopDialogTimeWindow({
         {derivedDuration ? (
           <strong>{formatDuration(derivedDuration, locale)}</strong>
         ) : (
-          <strong>{notSetLabel}</strong>
+          <strong>{timeWindowCopy.notSetLabel}</strong>
         )}
       </div>
     </div>
