@@ -5,6 +5,17 @@ import type {
   ContextRailCreateNoteInput,
   ContextRailUpdateNoteInput,
 } from "./context-rail.types";
+import {
+  buildContextRailNoteCreateSubmission,
+  buildContextRailNoteEditSubmission,
+  cancelContextRailEditingNote,
+  clearContextRailEditingNote,
+  clearContextRailNoteBody,
+  initialContextRailNoteFormState,
+  startContextRailEditingNote,
+  updateContextRailEditingNoteBody,
+  updateContextRailNoteBody,
+} from "./context-rail-note-form-state";
 
 interface UseContextRailNoteFormOptions {
   itemId: ItineraryItem["id"] | undefined;
@@ -17,43 +28,43 @@ export function useContextRailNoteForm({
   onCreateNote,
   onUpdateNote,
 }: UseContextRailNoteFormOptions) {
-  const [noteBody, setNoteBody] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editingNoteBody, setEditingNoteBody] = useState("");
+  const [state, setState] = useState(initialContextRailNoteFormState);
 
   function submitNote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const body = noteBody.trim();
-    if (!body || !itemId) return;
-    onCreateNote({ itemId, body });
-    setNoteBody("");
+    const submission = buildContextRailNoteCreateSubmission(state);
+    if (!submission || !itemId) return;
+    onCreateNote({ itemId, body: submission.body });
+    setState((current) => clearContextRailNoteBody(current));
   }
 
   function startEditingNote(note: StopNote) {
-    setEditingNoteId(note.id);
-    setEditingNoteBody(note.body);
+    setState((current) => startContextRailEditingNote(current, note));
   }
 
   function cancelEditingNote() {
-    setEditingNoteId(null);
+    setState((current) => cancelContextRailEditingNote(current));
   }
 
   function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const body = editingNoteBody.trim();
-    if (!editingNoteId || !body) return;
-    onUpdateNote({ noteId: editingNoteId, body });
-    setEditingNoteId(null);
-    setEditingNoteBody("");
+    const submission = buildContextRailNoteEditSubmission(state);
+    if (!submission) return;
+    onUpdateNote(submission);
+    setState((current) => clearContextRailEditingNote(current));
   }
 
   return {
     cancelEditingNote,
-    editingNoteBody,
-    editingNoteId,
-    noteBody,
-    setEditingNoteBody,
-    setNoteBody,
+    editingNoteBody: state.editingNoteBody,
+    editingNoteId: state.editingNoteId,
+    noteBody: state.noteBody,
+    setEditingNoteBody: (editingNoteBody: string) =>
+      setState((current) =>
+        updateContextRailEditingNoteBody(current, editingNoteBody),
+      ),
+    setNoteBody: (noteBody: string) =>
+      setState((current) => updateContextRailNoteBody(current, noteBody)),
     startEditingNote,
     submitNote,
     submitNoteEdit,
