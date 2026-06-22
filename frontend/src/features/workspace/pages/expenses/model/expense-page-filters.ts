@@ -1,3 +1,7 @@
+import {
+  normalizeSearchQuery,
+  valuesMatchSearchQuery,
+} from "@/src/shared/text-search";
 import { expenseAmountInSettlementCurrency } from "@/src/trip/expenses";
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById } from "@/src/trip/members";
@@ -47,18 +51,17 @@ export function filterExpenses({
   payerFilter,
   query,
 }: ExpenseFilterInput): Expense[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const normalizedQuery = normalizeSearchQuery(query);
   return expenses.filter((expense) => {
     const payer = findMemberById(members, expense.paidBy);
     const linkedItem = findItineraryItemById(
       itineraryItems,
       expense.itineraryItemId,
     );
-    const matchesQuery =
-      !normalizedQuery ||
-      expense.title.toLocaleLowerCase().includes(normalizedQuery) ||
-      payer?.displayName.toLocaleLowerCase().includes(normalizedQuery) ||
-      linkedItem?.activity.toLocaleLowerCase().includes(normalizedQuery);
+    const matchesQuery = valuesMatchSearchQuery(
+      [expense.title, payer?.displayName, linkedItem?.activity],
+      normalizedQuery,
+    );
     const matchesCategory =
       categoryFilter === "all" || expense.category === categoryFilter;
     const matchesPayer =

@@ -21,7 +21,7 @@ describe("expense page filters", () => {
       itineraryItems: seedTrip.itineraryItems,
       members: seedTrip.members,
       payerFilter: expense.paidBy,
-      query: linkedItem?.activity.slice(0, 6) ?? expense.title,
+      query: `  ${(linkedItem?.activity.slice(0, 6) ?? expense.title).toLocaleUpperCase()}  `,
     }).map((item) => item.id)).toContain(expense.id);
 
     expect(filterExpenses({
