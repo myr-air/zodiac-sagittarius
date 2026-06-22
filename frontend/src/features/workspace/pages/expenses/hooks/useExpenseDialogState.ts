@@ -16,9 +16,13 @@ import {
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
 import {
   initialExpenseDialogFields,
-  initialExpenseTripPlanId,
   type ExpenseDialogInitialFields,
 } from "../model/expense-dialog-initial-state";
+import {
+  initialExpenseDialogUiState,
+  setExpenseDialogSaving,
+  updateExpenseDialogTripPlanId,
+} from "../model/expense-dialog-ui-state";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
 import type {
   CreateExpenseHandler,
@@ -61,9 +65,8 @@ export function useExpenseDialogState({
     comments,
     setCommentDraft,
   } = useExpenseComments({ currentMember, expense });
-  const [isSaving, setIsSaving] = useState(false);
-  const [tripPlanId, setTripPlanId] = useState(
-    initialExpenseTripPlanId({ expense, selectedTripPlanId, trip }),
+  const [uiState, setUiState] = useState(() =>
+    initialExpenseDialogUiState({ expense, selectedTripPlanId, trip }),
   );
   const splitEditor = useExpenseSplitEditor({ expense, members: trip.members });
   const calculatedState = calculateExpenseDialogState({
@@ -79,14 +82,14 @@ export function useExpenseDialogState({
     splitValues: splitEditor.splitValues,
   });
   const canSubmitExpense = canSubmitExpenseDialog({
-    isSaving,
+    isSaving: uiState.isSaving,
     state: calculatedState,
     title: formValues.title,
   });
   const linkedItem = expenseDialogLinkedItem(trip, formValues.itemId);
   const effectiveTripPlanId = expenseDialogEffectiveTripPlanId({
     linkedItem,
-    tripPlanId,
+    tripPlanId: uiState.tripPlanId,
   });
   const tripPlanOptions = expenseDialogTripPlanOptions(trip);
 
@@ -124,12 +127,14 @@ export function useExpenseDialogState({
 
   function changeItemId(nextItemId: string) {
     const nextFields = expenseDialogItemSelectionFields({
-      currentTripPlanId: tripPlanId,
+      currentTripPlanId: uiState.tripPlanId,
       itemId: nextItemId,
       trip,
     });
     updateFormValue("itemId", nextFields.itemId);
-    setTripPlanId(nextFields.tripPlanId);
+    setUiState((current) =>
+      updateExpenseDialogTripPlanId(current, nextFields.tripPlanId),
+    );
   }
 
   async function submitExpense(event: FormEvent<HTMLFormElement>) {
@@ -148,7 +153,7 @@ export function useExpenseDialogState({
       splitMode: splitEditor.splitMode,
       title: formValues.title,
     });
-    setIsSaving(true);
+    setUiState((current) => setExpenseDialogSaving(current, true));
     try {
       if (expense) {
         await onUpdateExpense({ ...input, expenseId: expense.id });
@@ -156,7 +161,7 @@ export function useExpenseDialogState({
       }
       await onCreateExpense(input);
     } finally {
-      setIsSaving(false);
+      setUiState((current) => setExpenseDialogSaving(current, false));
     }
   }
 
@@ -190,7 +195,10 @@ export function useExpenseDialogState({
     setRepeatCount: (repeatCount: string) =>
       updateFormValue("repeatCount", repeatCount),
     setTitle: (title: string) => updateFormValue("title", title),
-    setTripPlanId,
+    setTripPlanId: (tripPlanId: string) =>
+      setUiState((current) =>
+        updateExpenseDialogTripPlanId(current, tripPlanId),
+      ),
     splitEditor,
     submitExpense,
     title: formValues.title,
