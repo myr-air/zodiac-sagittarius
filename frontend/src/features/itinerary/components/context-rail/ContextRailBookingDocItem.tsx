@@ -1,13 +1,13 @@
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { Select } from "@/src/ui";
 import { formatBookingDocTypeLabel } from "@/src/features/itinerary/domain/itinerary-booking-display";
+import { bookingDocTypeOptions } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 import type { BookingDoc, BookingDocType } from "@/src/trip/types";
 import {
   bookingDocClassName,
   bookingDocQuickFieldClassName,
   bookingDocTypeSelectClassName,
 } from "./context-rail.styles";
-import { bookingDocTypeOptions } from "./context-rail.utils";
 import {
   bookingDocQuickFieldKeys,
   buildBookingDocQuickFieldPatch,

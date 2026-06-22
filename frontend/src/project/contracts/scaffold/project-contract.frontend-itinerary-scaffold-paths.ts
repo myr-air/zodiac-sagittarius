@@ -32,6 +32,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/domain/tests/booking-ticket-form.test.ts",
   "src/features/itinerary/domain/itinerary-booking-display.ts",
   "src/features/itinerary/domain/tests/itinerary-booking-display.test.ts",
+  "src/features/itinerary/domain/itinerary-context-rail-display.ts",
+  "src/features/itinerary/domain/tests/itinerary-context-rail-display.test.ts",
   "src/features/itinerary/domain/itinerary-ticket-display.ts",
   "src/features/itinerary/domain/tests/itinerary-ticket-display.test.ts",
   "src/features/itinerary/domain/time-edit-modal-model.ts",

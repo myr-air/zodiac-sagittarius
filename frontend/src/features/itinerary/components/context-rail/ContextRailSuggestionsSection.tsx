@@ -1,6 +1,11 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Suggestion, SuggestionReviewDecision, Trip } from "@/src/trip/types";
 import {
+  memberDisplayName,
+  suggestionLabel,
+} from "@/src/features/itinerary/domain/itinerary-context-rail-display";
+import { Icon } from "@/src/ui/icons";
+import {
   detailHeadingClassName,
   detailSectionClassName,
   emptyWarningClassName,
@@ -10,8 +15,6 @@ import {
   suggestionItemToneClassNames,
   suggestionListClassName,
 } from "./context-rail.styles";
-import { memberDisplayName, suggestionLabel } from "./context-rail.utils";
-import { Icon } from "@/src/ui/icons";
 
 interface ContextRailSuggestionsSectionProps {
   suggestions: Suggestion[];

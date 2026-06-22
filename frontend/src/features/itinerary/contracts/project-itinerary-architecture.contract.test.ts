@@ -109,12 +109,30 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps context rail booking display labels in the itinerary booking domain", () => {
     const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
+    const bookingSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingSection.tsx");
+    const noteItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx");
+    const suggestionsSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.tsx");
     const contextRailUtils = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail.utils.ts");
     const bookingDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-booking-display.ts");
+    const contextRailDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-context-rail-display.ts");
 
     expect(bookingDocItem).toContain("@/src/features/itinerary/domain/itinerary-booking-display");
+    [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
+      (source) =>
+        expect(source).toContain(
+          "@/src/features/itinerary/domain/itinerary-context-rail-display",
+        ),
+    );
     expect(contextRailUtils).not.toContain("function formatBookingDocTypeLabel");
+    expect(contextRailUtils).not.toContain("function suggestionLabel");
+    expect(contextRailUtils).not.toContain("function memberDisplayName");
+    expect(contextRailUtils).not.toContain("bookingDocTypeOptions");
+    expect(contextRailUtils).not.toContain("taskKindLabel");
     expect(bookingDisplay).toContain("export function formatBookingDocTypeLabel");
+    expect(contextRailDisplay).toContain("export const bookingDocTypeOptions");
+    expect(contextRailDisplay).toContain("export function suggestionLabel");
+    expect(contextRailDisplay).toContain("export function memberDisplayName");
+    expect(contextRailDisplay).toContain("export { taskKindLabel }");
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {

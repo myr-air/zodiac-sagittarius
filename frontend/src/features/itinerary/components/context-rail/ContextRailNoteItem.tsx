@@ -14,7 +14,7 @@ import {
   noteHeaderClassName,
   noteItemClassName,
 } from "./context-rail.styles";
-import { memberDisplayName } from "./context-rail.utils";
+import { memberDisplayName } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 
 interface ContextRailNoteItemProps {
   author: Member | undefined;

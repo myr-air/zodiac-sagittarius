@@ -10,7 +10,7 @@ import {
 } from "./context-rail.styles";
 import { ContextRailBookingDocItem } from "./ContextRailBookingDocItem";
 import { ContextRailDetailSection } from "./ContextRailDetailSection";
-import { taskKindLabel } from "./context-rail.utils";
+import { taskKindLabel } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 import type { ContextRailBookingSectionProps } from "./context-rail.types";
 
 export function ContextRailBookingSection({
