@@ -187,6 +187,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const ticketFieldGrid = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TicketFieldGrid.tsx");
     const linkedActivitiesPicker = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/LinkedActivitiesPicker.tsx");
     const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
+    const ticketViewState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/itinerary-ticket-modal-view-state.ts");
     const ticketForm = readItineraryArchitectureSource("src/features/itinerary/domain/booking-ticket-form.ts");
 
     expect(noteModal).toContain("./use-itinerary-note-modal-model");
@@ -227,14 +228,20 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModel).toContain("@/src/features/itinerary/domain/booking-ticket-form");
     expect(ticketModel).toContain("type TicketFormValues");
     expect(ticketModel).toContain("const [formValues, setFormValues]");
-    expect(ticketModel).toContain("./itinerary-ticket-modal-submit-state");
-    expect(ticketModel).toContain("const [submitState, setSubmitState]");
+    expect(ticketModel).toContain("./itinerary-ticket-modal-view-state");
+    expect(ticketModel).toContain("const [viewState, setViewState]");
     expect(ticketModel).toContain("function updateTicketField");
     expect(ticketModel).not.toContain("function buildTicketSubmitInput");
+    expect(ticketModel).not.toContain("const [mode, setMode]");
+    expect(ticketModel).not.toContain("const [selectedBookingId, setSelectedBookingId]");
+    expect(ticketModel).not.toContain("const [submitState, setSubmitState]");
     expect(ticketModel).not.toContain("const [title, setTitle]");
     expect(ticketModel).not.toContain("const [providerName, setProviderName]");
     expect(ticketModel).not.toContain("const [saving, setSaving]");
     expect(ticketModel).not.toContain("const [unlinking, setUnlinking]");
+    expect(ticketViewState).toContain("export interface ItineraryTicketModalViewState");
+    expect(ticketViewState).toContain("./itinerary-ticket-modal-submit-state");
+    expect(ticketViewState).toContain("buildInitialItineraryTicketModalViewState");
     expect(ticketForm).toContain("export function buildTicketSubmitInput");
     expect(ticketForm).toContain("export interface TicketFormValues");
     expect(modalPortal).toContain("export function ActivityCellModalPortal");

@@ -12,16 +12,18 @@ import {
   findLinkedTicket,
   findTicketCandidates,
   type TicketFormValues,
-  type TicketFormMode,
 } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
-  beginItineraryTicketModalSave,
-  beginItineraryTicketModalUnlink,
-  completeItineraryTicketModalSubmit,
-  initialItineraryTicketModalSubmitState,
-  isItineraryTicketModalSubmitting,
-} from "./itinerary-ticket-modal-submit-state";
+  beginItineraryTicketModalViewSave,
+  beginItineraryTicketModalViewUnlink,
+  buildInitialItineraryTicketModalViewState,
+  completeItineraryTicketModalViewSubmit,
+  isItineraryTicketModalViewSubmitting,
+  selectExistingItineraryTicket,
+  selectExistingItineraryTicketMode,
+  selectNewItineraryTicketMode,
+} from "./itinerary-ticket-modal-view-state";
 
 interface UseItineraryTicketModalModelOptions {
   bookingDocs: BookingDoc[];
@@ -43,26 +45,25 @@ export function useItineraryTicketModalModel({
   const existingCandidates = findTicketCandidates(bookingDocs, item, type);
   const initiallyLinked = findLinkedTicket(existingCandidates, item.id);
   const currentLinkedBooking = findLinkedTicket(bookingDocs, item.id);
-  const [mode, setMode] = useState<TicketFormMode>(
-    initiallyLinked ? "existing" : "new",
-  );
-  const [selectedBookingId, setSelectedBookingId] = useState(
-    initiallyLinked?.id ?? existingCandidates[0]?.id ?? "",
+  const [viewState, setViewState] = useState(() =>
+    buildInitialItineraryTicketModalViewState({
+      firstCandidateId: existingCandidates[0]?.id,
+      initiallyLinkedId: initiallyLinked?.id,
+    }),
   );
   const selectedBooking =
-    existingCandidates.find((booking) => booking.id === selectedBookingId) ??
+    existingCandidates.find(
+      (booking) => booking.id === viewState.selectedBookingId,
+    ) ??
     null;
   const initialFormValues = buildTicketFormValues({
-    booking: mode === "existing" ? selectedBooking : null,
+    booking: viewState.mode === "existing" ? selectedBooking : null,
     item,
     locale,
     type,
   });
   const [formValues, setFormValues] = useState<TicketFormValues>(
     initialFormValues,
-  );
-  const [submitState, setSubmitState] = useState(
-    initialItineraryTicketModalSubmitState,
   );
 
   function hydrateTicketFields(booking: BookingDoc | null) {
@@ -77,34 +78,35 @@ export function useItineraryTicketModalModel({
   }
 
   function selectNewTicketMode() {
-    setMode("new");
+    setViewState((current) => selectNewItineraryTicketMode(current));
     hydrateTicketFields(null);
   }
 
   function selectExistingTicketMode() {
     const booking = selectedBooking ?? existingCandidates[0] ?? null;
-    setMode("existing");
-    setSelectedBookingId(booking?.id ?? "");
+    setViewState((current) =>
+      selectExistingItineraryTicketMode(current, booking?.id ?? ""),
+    );
     hydrateTicketFields(booking);
   }
 
   function selectExistingTicket(booking: BookingDoc) {
-    setSelectedBookingId(booking.id);
+    setViewState((current) => selectExistingItineraryTicket(current, booking.id));
     hydrateTicketFields(booking);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = formValues.title.trim();
-    if (isItineraryTicketModalSubmitting(submitState) || !trimmedTitle) return;
-    setSubmitState(beginItineraryTicketModalSave());
+    if (isItineraryTicketModalViewSubmitting(viewState) || !trimmedTitle) return;
+    setViewState((current) => beginItineraryTicketModalViewSave(current));
     try {
       await onSave(
         buildTicketSubmitInput({
           item,
-          mode,
+          mode: viewState.mode,
           selectedBooking,
-          selectedBookingId,
+          selectedBookingId: viewState.selectedBookingId,
           template,
           type,
           values: {
@@ -114,7 +116,7 @@ export function useItineraryTicketModalModel({
         }),
       );
     } finally {
-      setSubmitState(completeItineraryTicketModalSubmit());
+      setViewState((current) => completeItineraryTicketModalViewSubmit(current));
     }
   }
 
@@ -122,15 +124,15 @@ export function useItineraryTicketModalModel({
     if (
       !currentLinkedBooking ||
       !onUnlink ||
-      isItineraryTicketModalSubmitting(submitState)
+      isItineraryTicketModalViewSubmitting(viewState)
     ) {
       return;
     }
-    setSubmitState(beginItineraryTicketModalUnlink());
+    setViewState((current) => beginItineraryTicketModalViewUnlink(current));
     try {
       await onUnlink(currentLinkedBooking.id);
     } finally {
-      setSubmitState(completeItineraryTicketModalSubmit());
+      setViewState((current) => completeItineraryTicketModalViewSubmit(current));
     }
   }
 
@@ -139,15 +141,15 @@ export function useItineraryTicketModalModel({
     currentLinkedBooking,
     endsAt: formValues.endsAt,
     existingCandidates,
-    mode,
+    mode: viewState.mode,
     notes: formValues.notes,
     providerName: formValues.providerName,
     relatedItineraryItemIds: formValues.relatedItineraryItemIds,
-    saving: submitState.saving,
+    saving: viewState.submitState.saving,
     selectExistingTicket,
     selectExistingTicketMode,
     selectNewTicketMode,
-    selectedBookingId,
+    selectedBookingId: viewState.selectedBookingId,
     setConfirmationCode: (confirmationCode: string) =>
       updateTicketField("confirmationCode", confirmationCode),
     setEndsAt: (endsAt: string) => updateTicketField("endsAt", endsAt),
@@ -165,6 +167,6 @@ export function useItineraryTicketModalModel({
     submit,
     title: formValues.title,
     unlinkCurrentBooking,
-    unlinking: submitState.unlinking,
+    unlinking: viewState.submitState.unlinking,
   };
 }
