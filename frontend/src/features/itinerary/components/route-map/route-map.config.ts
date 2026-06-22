@@ -5,15 +5,6 @@ export type RouteViewport = {
 
 export const maxAllDaysCoordinateResolutionBatch = 8;
 
-export const routeDayColors = [
-  "#c24f16",
-  "#2563eb",
-  "#b45309",
-  "#15803d",
-  "#be123c",
-  "#0369a1",
-];
-
 export const thailandRouteViewport: RouteViewport = { center: [100.9925, 15.8700], zoom: 5 };
 
 export const hongKongShenzhenRouteViewport: RouteViewport = { center: [114.1800, 22.3900], zoom: 9.8 };

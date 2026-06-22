@@ -22,6 +22,7 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       routeLiveMapMarkers,
       routeMapViewport,
       routeMapUtils,
+      routeMapModel,
       stopDialog,
       stopFormValues,
       routeMapCanvas,
@@ -86,6 +87,10 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(routeMapUtils).not.toContain("export type { DayColorStyle");
     expect(routeMapUtils).not.toContain("fallbackRouteViewport");
     expect(routeMapUtils).not.toContain("getRouteCenter");
+    expect(routeMapUtils).not.toContain("export function buildRoutePoints");
+    expect(routeMapModel).toContain("export function buildRoutePoints");
+    expect(routeMapModel).toContain("export function buildRouteDayGroups");
+    expect(routeMapModel).toContain("export function hasCoordinates");
     expect(routeMapViewport).toContain("export function fallbackRouteViewport");
     expect(routeMapViewport).toContain("export function getRouteCenter");
 

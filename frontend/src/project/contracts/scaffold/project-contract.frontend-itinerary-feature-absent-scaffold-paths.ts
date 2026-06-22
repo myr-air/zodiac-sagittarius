@@ -24,6 +24,7 @@ export const frontendItineraryFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/domain/overview-countdown.test.ts",
   "src/features/itinerary/domain/overview-highlights.test.ts",
   "src/features/itinerary/domain/overview-roles.test.ts",
+  "src/features/itinerary/domain/route-map-model.test.ts",
   "src/features/itinerary/domain/overview-stop-labels.test.ts",
   "src/features/itinerary/domain/stop-details.test.ts",
   "src/features/itinerary/domain/stop-time.test.ts",
@@ -150,6 +151,7 @@ export const frontendItineraryFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/route-map/route-map.live-markers.test.ts",
   "src/features/itinerary/components/route-map/route-map.live-status.test.ts",
   "src/features/itinerary/components/route-map/route-map.live.test.ts",
+  "src/features/itinerary/components/route-map/tests/route-map.utils.test.ts",
   "src/features/itinerary/components/route-map/route-map.utils.test.ts",
   "src/features/itinerary/components/route-map/route-map.viewport.test.ts",
 ] as const;

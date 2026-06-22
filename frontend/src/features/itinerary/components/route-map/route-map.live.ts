@@ -1,5 +1,5 @@
 import { routeMapThemeRules, thailandRouteViewport } from "./route-map.config";
-import { hasCoordinates } from "./route-map.utils";
+import { hasCoordinates } from "@/src/features/itinerary/domain/route-map-model";
 import { allDaysFilter, type DayFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
 
 export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[], fallbackViewport = thailandRouteViewport) {

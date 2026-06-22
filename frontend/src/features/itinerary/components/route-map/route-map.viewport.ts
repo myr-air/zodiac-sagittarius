@@ -5,7 +5,7 @@ import {
   type RouteViewport,
 } from "./route-map.config";
 import type { RoutePoint } from "./route-map.types";
-import { hasCoordinates } from "./route-map.utils";
+import { hasCoordinates } from "@/src/features/itinerary/domain/route-map-model";
 
 export function getRouteCenter(
   points: RoutePoint[],

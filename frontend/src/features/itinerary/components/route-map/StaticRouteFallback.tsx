@@ -15,10 +15,10 @@ import {
   routeStopListItemClassName,
 } from "./route-map.config";
 import {
-  dayColorFor,
   markerStyle,
   routeLineStyle,
 } from "./route-map.utils";
+import { dayColorFor } from "@/src/features/itinerary/domain/route-map-model";
 import type { RouteDayGroup, RoutePoint } from "./route-map.types";
 
 export function StaticRouteFallback({

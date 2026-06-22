@@ -26,6 +26,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   routeLiveMapMarkers: "src/features/itinerary/components/route-map/route-map.live-markers.ts",
   routeMapViewport: "src/features/itinerary/components/route-map/route-map.viewport.ts",
   routeMapUtils: "src/features/itinerary/components/route-map/route-map.utils.ts",
+  routeMapModel: "src/features/itinerary/domain/route-map-model.ts",
   stopDialog: "src/features/itinerary/components/stop-dialog/StopDialog.tsx",
   stopFormValues: "src/features/itinerary/domain/stop-form-values.ts",
   stopDialogStorySupport: "src/features/itinerary/stories/StopDialog.stories.support.ts",

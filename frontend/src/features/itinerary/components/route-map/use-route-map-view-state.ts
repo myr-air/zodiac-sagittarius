@@ -10,7 +10,7 @@ import {
   buildRouteDayGroups,
   buildRoutePoints,
   hasCoordinates,
-} from "./route-map.utils";
+} from "@/src/features/itinerary/domain/route-map-model";
 import { allDaysFilter, type DayFilter } from "./route-map.types";
 
 interface UseRouteMapViewStateInput {

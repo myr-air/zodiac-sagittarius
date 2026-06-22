@@ -4,24 +4,19 @@ import type { MapLoadState } from "@/src/shared/map-load-state";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
 import type { MapCoordinateResolutionResult } from "@/src/trip/places";
 import type { ItineraryItem } from "@/src/trip/types";
-
-export const allDaysFilter = "all" as const;
-export type AllDaysFilter = typeof allDaysFilter;
-export type DayFilter = AllDaysFilter | string;
+import type {
+  DayFilter,
+  RouteDayGroup,
+  RoutePoint,
+} from "@/src/features/itinerary/domain/route-map-model";
+export { allDaysFilter } from "@/src/features/itinerary/domain/route-map-model";
+export type {
+  AllDaysFilter,
+  DayFilter,
+  RouteDayGroup,
+  RoutePoint,
+} from "@/src/features/itinerary/domain/route-map-model";
 export type RouteLiveMapState = MapLoadState;
-
-export interface RoutePoint {
-  item: ItineraryItem;
-  x: number;
-  y: number;
-}
-
-export interface RouteDayGroup {
-  color: string;
-  day: string;
-  label: string;
-  points: RoutePoint[];
-}
 
 export type MapCoordinateResolutionHandler = (
   items: ItineraryItem[],

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { allDaysFilter } from "../route-map.types";
 import {
   activeDayLabel,
+  allDaysFilter,
   buildRoutePoints,
   dayColorFor,
-} from "../route-map.utils";
-import { routeMapItems } from "../testing/fixtures/route-map-fixtures";
+} from "../route-map-model";
+import { routeMapItems } from "@/src/features/itinerary/components/route-map/testing/fixtures/route-map-fixtures";
 
-describe("route map utilities", () => {
+describe("route map model", () => {
   it("builds route labels", () => {
     expect(activeDayLabel(allDaysFilter, [{ day: "2026-06-01", color: "#000", label: "วันที่ 1", points: [] }], "ทุกวัน", "เลือกวัน")).toBe("ทุกวัน");
     expect(activeDayLabel("missing-day", [{ day: "2026-06-01", color: "#000", label: "วันที่ 1", points: [] }], "ทุกวัน", "เลือกวัน")).toBe("เลือกวัน");

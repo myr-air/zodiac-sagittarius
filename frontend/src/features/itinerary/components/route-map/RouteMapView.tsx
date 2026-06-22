@@ -9,7 +9,7 @@ import {
 } from "./route-map.config";
 import {
   activeDayLabel,
-} from "./route-map.utils";
+} from "@/src/features/itinerary/domain/route-map-model";
 import { fallbackRouteViewport } from "./route-map.viewport";
 import type { RouteMapViewProps } from "./route-map.types";
 import { RouteMapCanvas } from "./RouteMapCanvas";
@@ -110,7 +110,7 @@ export { liveMapStatusText } from "./route-map.live-status";
 export {
   activeDayLabel,
   dayColorFor,
-} from "./route-map.utils";
+} from "@/src/features/itinerary/domain/route-map-model";
 export {
   fallbackRouteViewport,
   getRouteCenter,

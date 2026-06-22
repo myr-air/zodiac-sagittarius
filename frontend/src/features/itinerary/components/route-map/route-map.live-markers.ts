@@ -1,5 +1,5 @@
 import { allDaysFilter, type DayFilter, type RouteDayGroup, type RoutePoint } from "./route-map.types";
-import { dayColorFor } from "./route-map.utils";
+import { dayColorFor } from "@/src/features/itinerary/domain/route-map-model";
 
 export type LiveRouteMarkerRegistry = Map<
   string,
