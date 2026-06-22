@@ -76,6 +76,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const modalHeader = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalHeader.tsx",
     );
+    const modalActions = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalActions.tsx",
+    );
     const modalModel = readItineraryArchitectureSource(
       "src/features/itinerary/domain/time-edit-modal-model.ts",
     );
@@ -97,6 +100,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
+    expect(modal).toContain("./ActivityCellModalActions");
     expect(modal).toContain("./ActivityCellModalHeader");
     expect(modal).toContain("./use-time-edit-modal-model");
     expect(modal).toContain("./ActivityCellModalPortal");
@@ -118,6 +122,8 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modalPortal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(modalHeader).toContain("export function ActivityCellModalHeader");
     expect(modalHeader).toContain("subActivityModalCloseClassName");
+    expect(modalActions).toContain("export function ActivityCellModalActions");
+    expect(modalActions).toContain("saveIconName");
   });
 
   it("keeps smart itinerary styles split by table, header, and activity cell responsibility", () => {

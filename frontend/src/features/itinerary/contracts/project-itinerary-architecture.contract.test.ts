@@ -139,6 +139,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const noteModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryNoteModal.tsx");
     const noteModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-model.ts");
     const modalHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalHeader.tsx");
+    const modalActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalActions.tsx");
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
     const modalPortal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx");
     const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");
@@ -197,6 +198,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(modalPortal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(modalHeader).toContain("export function ActivityCellModalHeader");
     expect(modalHeader).toContain("subActivityModalCloseClassName");
+    expect(modalActions).toContain("export function ActivityCellModalActions");
+    expect(modalActions).toContain("saveIconName");
+    expect(ticketFooter).toContain("./ActivityCellModalActions");
   });
 
   it("keeps activity cell title editing and actions split from shell layout", () => {

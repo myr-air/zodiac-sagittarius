@@ -8,6 +8,7 @@ import {
   ticketModalUnlinkButtonClassName,
 } from "../smart-itinerary-table.styles";
 import type { TicketFormMode } from "@/src/features/itinerary/domain/booking-ticket-form";
+import { ActivityCellModalActions } from "./ActivityCellModalActions";
 
 interface ItineraryTicketModalFooterProps {
   copy: ReturnType<typeof ticketModalCopy>;
@@ -48,22 +49,21 @@ export function ItineraryTicketModalFooter({
         ) : null}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <button
-          type="button"
-          className={ticketModalCancelButtonClassName}
-          disabled={unlinking}
-          onClick={onClose}
-        >
-          {copy.cancel}
-        </button>
-        <button
-          type="submit"
-          className={ticketModalSaveButtonClassName}
-          disabled={saving || unlinking || !title.trim() || (mode === "existing" && !selectedBookingId)}
-        >
-          <Icon name="ticket" />
-          {copy.save}
-        </button>
+        <ActivityCellModalActions
+          cancelClassName={ticketModalCancelButtonClassName}
+          cancelDisabled={unlinking}
+          cancelLabel={copy.cancel}
+          onCancel={onClose}
+          saveClassName={ticketModalSaveButtonClassName}
+          saveDisabled={
+            saving ||
+            unlinking ||
+            !title.trim() ||
+            (mode === "existing" && !selectedBookingId)
+          }
+          saveIconName="ticket"
+          saveLabel={copy.save}
+        />
       </div>
     </footer>
   );

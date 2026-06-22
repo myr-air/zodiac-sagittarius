@@ -16,6 +16,7 @@ import {
   timeEditPreviewValueClassName,
   timeEditSaveButtonClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalActions } from "./ActivityCellModalActions";
 import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import type { TimeEditModalProps } from "./time-components.types";
@@ -108,20 +109,14 @@ export function TimeEditModal({
           ) : null}
         </div>
         <footer className={timeEditModalFooterClassName}>
-          <button
-            type="button"
-            className={timeEditCancelButtonClassName}
-            onClick={onClose}
-          >
-            {itineraryLabels.row.durationCancel}
-          </button>
-          <button
-            type="submit"
-            className={timeEditSaveButtonClassName}
-            disabled={saving || Boolean(model.errorMessage)}
-          >
-            {itineraryLabels.row.durationSave}
-          </button>
+          <ActivityCellModalActions
+            cancelClassName={timeEditCancelButtonClassName}
+            cancelLabel={itineraryLabels.row.durationCancel}
+            onCancel={onClose}
+            saveClassName={timeEditSaveButtonClassName}
+            saveDisabled={saving || Boolean(model.errorMessage)}
+            saveLabel={itineraryLabels.row.durationSave}
+          />
         </footer>
       </form>
     </ActivityCellModalPortal>

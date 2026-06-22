@@ -1,5 +1,4 @@
 import type { Locale } from "@/src/i18n/types";
-import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import {
   noteModalSaveButtonClassName,
@@ -14,6 +13,7 @@ import {
 } from "../smart-itinerary-table.styles";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import { ActivityCellModalActions } from "./ActivityCellModalActions";
 import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { useItineraryNoteModalModel } from "./use-itinerary-note-modal-model";
@@ -68,21 +68,15 @@ export function ItineraryNoteModal({
             </label>
           </div>
           <footer className={ticketModalFooterClassName}>
-            <button
-              type="button"
-              className={ticketModalCancelButtonClassName}
-              onClick={onClose}
-            >
-              {copy.cancel}
-            </button>
-            <button
-              type="submit"
-              className={noteModalSaveButtonClassName}
-              disabled={saving || !body.trim()}
-            >
-              <Icon name="note" />
-              {copy.save}
-            </button>
+            <ActivityCellModalActions
+              cancelClassName={ticketModalCancelButtonClassName}
+              cancelLabel={copy.cancel}
+              onCancel={onClose}
+              saveClassName={noteModalSaveButtonClassName}
+              saveDisabled={saving || !body.trim()}
+              saveIconName="note"
+              saveLabel={copy.save}
+            />
           </footer>
         </form>
       </div>
