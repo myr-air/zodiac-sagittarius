@@ -1,6 +1,8 @@
+import { itineraryStoryPaths } from "./storybook.contract.story-paths";
+
 export const requiredItineraryPageStates: Array<[string, string[]]> = [
   [
-    "features/itinerary/stories/OverviewPage.stories.tsx",
+    itineraryStoryPaths.overviewPage,
     [
       "Owner",
       "OwnerThai",
@@ -16,7 +18,7 @@ export const requiredItineraryPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/ItineraryPage.stories.tsx",
+    itineraryStoryPaths.itineraryPage,
     [
       "Owner",
       "OwnerThai",
@@ -39,7 +41,7 @@ export const requiredItineraryPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/TimelinePage.stories.tsx",
+    itineraryStoryPaths.timelinePage,
     [
       "Owner",
       "OwnerThai",
@@ -54,7 +56,7 @@ export const requiredItineraryPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/workspace/MapPage.stories.tsx",
+    itineraryStoryPaths.mapPage,
     [
       "Owner",
       "OwnerThai",
@@ -71,7 +73,7 @@ export const requiredItineraryPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/StopDialog.stories.tsx",
+    itineraryStoryPaths.stopDialog,
     [
       "Create",
       "Edit",
@@ -90,7 +92,7 @@ export const requiredItineraryPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/ContextRail.stories.tsx",
+    itineraryStoryPaths.contextRail,
     [
       "NotesOpen",
       "BookingTab",

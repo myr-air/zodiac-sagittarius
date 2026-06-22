@@ -1,3 +1,8 @@
+import {
+  itineraryStoryPaths,
+  workspaceStoryPaths,
+} from "./storybook.contract.story-paths";
+
 export const requiredStoryCategories = [
   "Design System/Buttons",
   "Design System/Badges",
@@ -91,15 +96,15 @@ export const requiredAppResponsiveStates = [
 
 export const requiredTemplateStates: Array<[string, string[]]> = [
   [
-    "features/workspace/stories/AppShell.stories.tsx",
+    workspaceStoryPaths.appShell,
     ["Owner", "Traveler", "Viewer", "Mobile", "Tablet", "OwnerThai"],
   ],
   [
-    "features/itinerary/stories/workspace/OverviewTemplate.stories.tsx",
+    itineraryStoryPaths.overviewTemplate,
     ["Owner", "Traveler", "OwnerThai", "Viewer", "Empty", "Dense"],
   ],
   [
-    "features/itinerary/stories/ItineraryTemplate.stories.tsx",
+    itineraryStoryPaths.itineraryTemplate,
     [
       "Owner",
       "OwnerThai",
@@ -117,15 +122,15 @@ export const requiredTemplateStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/itinerary/stories/TimelineTemplate.stories.tsx",
+    itineraryStoryPaths.timelineTemplate,
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"],
   ],
   [
-    "features/itinerary/stories/workspace/MapTemplate.stories.tsx",
+    itineraryStoryPaths.mapTemplate,
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"],
   ],
   [
-    "features/workspace/pages/members/storybook/MembersTemplate.stories.tsx",
+    workspaceStoryPaths.membersTemplate,
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"],
   ],
 ];

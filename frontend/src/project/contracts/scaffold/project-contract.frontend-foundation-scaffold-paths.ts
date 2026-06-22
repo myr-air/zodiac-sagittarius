@@ -108,6 +108,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/storybook/contracts/storybook.contract.itinerary-fixtures.test.ts",
   "src/storybook/contracts/storybook.contract.qa.test.ts",
   "src/storybook/contracts/storybook.contract.required-states.ts",
+  "src/storybook/contracts/storybook.contract.story-paths.ts",
   "src/storybook/contracts/storybook.contract.supporting-page-states.ts",
   "src/storybook/contracts/storybook.contract.test-support.ts",
   "src/storybook/contracts/storybook.contract.workspace-page-states.ts",

@@ -1,6 +1,8 @@
+import { workspaceStoryPaths } from "./storybook.contract.story-paths";
+
 export const requiredWorkspacePageStates: Array<[string, string[]]> = [
   [
-    "features/workspace/pages/members/storybook/MembersPage.stories.tsx",
+    workspaceStoryPaths.membersPage,
     [
       "Owner",
       "OwnerThai",
@@ -15,7 +17,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/expenses/storybook/ExpensesPage.stories.tsx",
+    workspaceStoryPaths.expensesPage,
     [
       "Owner",
       "OwnerThai",
@@ -32,7 +34,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/photos/storybook/TripPhotosPage.stories.tsx",
+    workspaceStoryPaths.photosPage,
     [
       "Owner",
       "OwnerThai",
@@ -49,7 +51,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.tsx",
+    workspaceStoryPaths.bookingsDocsPage,
     [
       "Owner",
       "OwnerThai",
@@ -65,7 +67,7 @@ export const requiredWorkspacePageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.tsx",
+    workspaceStoryPaths.tripSettingsPage,
     [
       "Owner",
       "Traveler",
