@@ -9,15 +9,7 @@ import {
   expenseDialogLinkedItem,
   expenseDialogTripPlanOptions,
 } from "../model/expense-dialog-linking";
-import {
-  expenseDialogCurrencyChangeFields,
-  expenseDialogManualExchangeRateFields,
-} from "../model/expense-dialog-currency";
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
-import {
-  initialExpenseDialogFields,
-  type ExpenseDialogInitialFields,
-} from "../model/expense-dialog-initial-state";
 import {
   initialExpenseDialogUiState,
   setExpenseDialogSaving,
@@ -30,6 +22,7 @@ import type {
   UpdateExpenseHandler,
 } from "../model/expense-page-types";
 import { useExpenseComments } from "./useExpenseComments";
+import { useExpenseDialogFormValues } from "./useExpenseDialogFormValues";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
 import { useExpenseSplitEditor } from "./useExpenseSplitEditor";
 
@@ -54,12 +47,23 @@ export function useExpenseDialogState({
   onCreateExpense,
   onUpdateExpense,
 }: ExpenseDialogStateInput) {
-  const initialFields = initialExpenseDialogFields({
+  const {
+    changeCurrency,
+    changeExchangeRate,
+    formValues,
+    setAmount,
+    setCategory,
+    setExchangeRate,
+    setFormValue,
+    setNotes,
+    setPaidBy,
+    setReceiptUrl,
+    setRepeatCount,
+    setTitle,
+  } = useExpenseDialogFormValues({
     currentMemberId: currentMember.id,
     expense,
   });
-  const [formValues, setFormValues] =
-    useState<ExpenseDialogInitialFields>(initialFields);
   const {
     addComment,
     commentDraft,
@@ -95,11 +99,8 @@ export function useExpenseDialogState({
   const tripPlanOptions = expenseDialogTripPlanOptions(trip);
 
   const autofillExchangeRate = useCallback((nextExchangeRate: string) => {
-    setFormValues((current) => ({
-      ...current,
-      exchangeRate: nextExchangeRate,
-    }));
-  }, []);
+    setExchangeRate(nextExchangeRate);
+  }, [setExchangeRate]);
   useExpenseExchangeRateAutofill({
     apiBaseUrl,
     exchangeRateTouched: formValues.exchangeRateTouched,
@@ -109,30 +110,13 @@ export function useExpenseDialogState({
     onExchangeRateChange: autofillExchangeRate,
   });
 
-  function updateFormValue<Field extends keyof ExpenseDialogInitialFields>(
-    field: Field,
-    value: ExpenseDialogInitialFields[Field],
-  ) {
-    setFormValues((current) => ({ ...current, [field]: value }));
-  }
-
-  function changeCurrency(nextCurrency: string) {
-    const nextFields = expenseDialogCurrencyChangeFields(nextCurrency);
-    setFormValues((current) => ({ ...current, ...nextFields }));
-  }
-
-  function changeExchangeRate(nextExchangeRate: string) {
-    const nextFields = expenseDialogManualExchangeRateFields(nextExchangeRate);
-    setFormValues((current) => ({ ...current, ...nextFields }));
-  }
-
   function changeItemId(nextItemId: string) {
     const nextFields = expenseDialogItemSelectionFields({
       currentTripPlanId: uiState.tripPlanId,
       itemId: nextItemId,
       trip,
     });
-    updateFormValue("itemId", nextFields.itemId);
+    setFormValue("itemId", nextFields.itemId);
     setUiState((current) =>
       updateExpenseDialogTripPlanId(current, nextFields.tripPlanId),
     );
@@ -184,17 +168,14 @@ export function useExpenseDialogState({
     paidBy: formValues.paidBy,
     receiptUrl: formValues.receiptUrl,
     repeatCount: formValues.repeatCount,
-    setAmount: (amount: string) => updateFormValue("amount", amount),
-    setCategory: (category: Expense["category"]) =>
-      updateFormValue("category", category),
+    setAmount,
+    setCategory,
     setCommentDraft,
-    setNotes: (notes: string) => updateFormValue("notes", notes),
-    setPaidBy: (paidBy: string) => updateFormValue("paidBy", paidBy),
-    setReceiptUrl: (receiptUrl: string) =>
-      updateFormValue("receiptUrl", receiptUrl),
-    setRepeatCount: (repeatCount: string) =>
-      updateFormValue("repeatCount", repeatCount),
-    setTitle: (title: string) => updateFormValue("title", title),
+    setNotes,
+    setPaidBy,
+    setReceiptUrl,
+    setRepeatCount,
+    setTitle,
     setTripPlanId: (tripPlanId: string) =>
       setUiState((current) =>
         updateExpenseDialogTripPlanId(current, tripPlanId),

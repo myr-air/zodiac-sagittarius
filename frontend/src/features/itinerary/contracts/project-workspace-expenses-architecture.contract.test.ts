@@ -20,6 +20,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
+    const expenseDialogFormValues = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogFormValues.ts");
     const expenseDialogSubmitAction = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-submit-action.ts");
     const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
     const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
@@ -111,10 +112,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialog).not.toContain("calculateExpenseDialogState");
     expect(expenseDialog).not.toContain("function submitExpense");
     expect(expenseDialogState).toContain("export function useExpenseDialogState");
+    expect(expenseDialogState).toContain("useExpenseDialogFormValues");
     expect(expenseDialogState).toContain("useExpenseSplitEditor");
-    expect(expenseDialogState).toContain("const [formValues, setFormValues]");
     expect(expenseDialogState).toContain("const [uiState, setUiState]");
-    expect(expenseDialogState).toContain("function updateFormValue");
+    expect(expenseDialogState).not.toContain("const [formValues, setFormValues]");
+    expect(expenseDialogState).not.toContain("function updateFormValue");
     expect(expenseDialogState).toContain("function submitExpense");
     expect(expenseDialogState).toContain("submitExpenseDialog");
     expect(expenseDialogState).not.toContain("await onUpdateExpense");
@@ -127,6 +129,10 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialogState).not.toContain("const [currency, setCurrency]");
     expect(expenseDialogState).not.toContain("const [isSaving, setIsSaving]");
     expect(expenseDialogState).not.toContain("const [tripPlanId, setTripPlanId]");
+    expect(expenseDialogFormValues).toContain("const [formValues, setFormValues]");
+    expect(expenseDialogFormValues).toContain("const updateFormValue");
+    expect(expenseDialogFormValues).toContain("expenseDialogCurrencyChangeFields");
+    expect(expenseDialogFormValues).toContain("expenseDialogManualExchangeRateFields");
     expect(expenseSplitEditor).toContain("initialExpenseSplitEditorState");
     expect(expenseSplitEditor).toContain("const [state, setState]");
     expect(expenseSplitEditor).not.toContain("const [splitMode, setSplitMode]");
