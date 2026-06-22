@@ -27,7 +27,10 @@ export {
   bookingDocInputFromRecord,
   bookingDocQuickFieldsInputFromRecord,
 } from "./booking-doc-record-inputs";
-export { findDuplicateBookingDoc } from "./booking-doc-matching";
+export {
+  findBookingDocById,
+  findDuplicateBookingDoc,
+} from "./booking-doc-matching";
 export type {
   LocalBookingDocOptions,
   LocalBookingDocUpdateOptions,

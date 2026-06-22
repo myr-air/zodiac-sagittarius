@@ -1,6 +1,14 @@
 import type { BookingDoc } from "../types";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 
+export function findBookingDocById<TDoc extends Pick<BookingDoc, "id">>(
+  bookingDocs: readonly TDoc[],
+  bookingDocId: string | null | undefined,
+): TDoc | null {
+  if (!bookingDocId) return null;
+  return bookingDocs.find((bookingDoc) => bookingDoc.id === bookingDocId) ?? null;
+}
+
 export function findDuplicateBookingDoc(
   bookingDocs: BookingDoc[],
   input: BookingDocInputLike,

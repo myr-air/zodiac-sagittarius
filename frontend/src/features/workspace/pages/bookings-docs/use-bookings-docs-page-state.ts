@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   canViewBookingDoc,
+  findBookingDocById,
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
@@ -57,7 +58,7 @@ export function useBookingsDocsPageState({
     .sort(compareBookingStartWithUndated), [activeFolderId, query, statusFilter, trip, visibleDocs]);
   const folderCounts = useMemo(() => countBookingFolders(visibleDocs), [visibleDocs]);
   const lockedDocs = bookingDocs.filter((doc) => !canViewBookingDoc(doc, currentMember));
-  const selectedBooking = folderDocs.find((doc) => doc.id === selectedBookingId) ?? folderDocs[0] ?? null;
+  const selectedBooking = findBookingDocById(folderDocs, selectedBookingId) ?? folderDocs[0] ?? null;
   const selectedRelations = selectedBooking ? findBookingDocRelations(selectedBooking, trip, tasks) : null;
   const activeFolder = bookingFolders.find((folder) => folder.id === activeFolderId) ?? bookingFolders[0];
 

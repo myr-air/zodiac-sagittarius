@@ -1,6 +1,7 @@
 import {
   type BookingDocInputLike,
   type ItineraryBookingTicketInputLike,
+  findBookingDocById,
   findDuplicateBookingDoc,
   uniqueStringIds,
 } from "@/src/trip/booking-docs";
@@ -75,10 +76,10 @@ export function resolveItineraryBookingTicketCommandInput(
     members,
   }: ResolveItineraryBookingTicketCommandInputContext,
 ): ItineraryBookingTicketCommandInput {
-  const explicitBookingDoc = input.bookingDocId
-    ? bookingDocs.find((candidate) => candidate.id === input.bookingDocId) ??
-      null
-    : null;
+  const explicitBookingDoc = findBookingDocById(
+    bookingDocs,
+    input.bookingDocId,
+  );
   const bookingDocInput = buildItineraryBookingTicketDocInput(input, {
     currentMemberId,
     defaultTimezone,
