@@ -2,6 +2,7 @@ import {
   durationBetweenTimes as coreDurationBetweenTimes,
   endOffsetDaysBetweenTimes as coreEndOffsetDaysBetweenTimes,
   minutesToTime as coreMinutesToTime,
+  normalizeDurationMinutes,
   parseTime,
 } from "@/src/trip/itinerary-core";
 export {
@@ -35,3 +36,5 @@ export function durationBetweenTimes(
 export function minutesToTime(value: number): string {
   return coreMinutesToTime(value);
 }
+
+export { normalizeDurationMinutes };

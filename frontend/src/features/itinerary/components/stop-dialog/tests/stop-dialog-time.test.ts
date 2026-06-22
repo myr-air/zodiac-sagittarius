@@ -14,6 +14,7 @@ describe("stop dialog time helpers", () => {
     expect(durationBetweenTimes("23:00", "01:00", 1)).toBe(120);
     expect(endOffsetDaysBetweenTimes("23:00", "01:00")).toBe(1);
     expect(endWindowFromDuration("23:30", 90)).toEqual({ endOffsetDays: 1, endTime: "01:00" });
+    expect(endWindowFromDuration("23:30", 90.6)).toEqual({ endOffsetDays: 1, endTime: "01:01" });
   });
 
   it("adds minutes to valid clock times", () => {

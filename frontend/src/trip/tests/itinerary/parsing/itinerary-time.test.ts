@@ -3,6 +3,7 @@ import {
   buildInlineItineraryItemPatch,
   daysBetweenIsoDates,
   itineraryDateTime,
+  normalizeDurationMinutes,
   normalizeInlineTimePatch,
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
@@ -105,6 +106,14 @@ describe("itinerary time helpers", () => {
       transportation: "Taxi",
       durationMinutes: 1,
     });
+  });
+
+  it("normalizes duration input to positive whole minutes", () => {
+    expect(normalizeDurationMinutes(0.4)).toBe(1);
+    expect(normalizeDurationMinutes(15.6)).toBe(16);
+    expect(normalizeDurationMinutes(null)).toBe(1);
+    expect(normalizeDurationMinutes(undefined)).toBe(1);
+    expect(normalizeDurationMinutes("bad")).toBe(1);
   });
 
   it("rejects empty required inline activity and place edits", () => {

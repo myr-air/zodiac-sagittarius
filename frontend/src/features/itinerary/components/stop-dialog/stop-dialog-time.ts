@@ -2,6 +2,7 @@ import {
   durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   minutesToTime,
+  normalizeDurationMinutes,
   parseTimeToMinutes,
 } from "@/src/features/itinerary/lib/itinerary-time";
 
@@ -15,7 +16,7 @@ export function addMinutesToTime(stopStartTime: string, durationMinutes: number)
 export function endWindowFromDuration(stopStartTime: string, durationMinutes: number): { endOffsetDays: number; endTime: string } | null {
   const start = parseTimeToMinutes(stopStartTime);
   if (start === null) return null;
-  const total = start + Math.max(1, durationMinutes);
+  const total = start + normalizeDurationMinutes(durationMinutes);
   return {
     endTime: minutesToTime(total % (24 * 60)),
     endOffsetDays: Math.floor(total / (24 * 60)),

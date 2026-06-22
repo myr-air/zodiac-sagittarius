@@ -1,4 +1,5 @@
 import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
+import { normalizeDurationMinutes } from "@/src/trip/itinerary-core";
 import type { StopFormValues } from "./stop-dialog.types";
 import {
   type StopDetailType,
@@ -47,7 +48,7 @@ export function buildInitialStopFormValues({
       ? (initialItem.endTime ??
         addMinutesToTime(
           initialItem.startTime,
-          Math.max(1, Number(initialItem.durationMinutes ?? 45) || 1),
+          normalizeDurationMinutes(initialItem.durationMinutes ?? 45),
         ))
       : null,
     endOffsetDays: initialItem?.endOffsetDays ?? 0,
@@ -104,7 +105,7 @@ export function buildStopSubmitValues({
     durationMinutes:
       values.timeMode === "flexible" || !values.endTime
         ? null
-        : Math.max(1, Number(values.durationMinutes) || 1),
+        : normalizeDurationMinutes(values.durationMinutes),
     details,
     place: nextPlace.trim(),
     mapLink: values.mapLink?.trim() ?? "",

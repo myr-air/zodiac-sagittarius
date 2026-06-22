@@ -98,6 +98,7 @@ export {
   endOffsetDaysBetweenTimes,
   itineraryDateTime,
   minutesToTime,
+  normalizeDurationMinutes,
   normalizeInlineTimePatch,
   parseTime,
   shiftIsoDate,

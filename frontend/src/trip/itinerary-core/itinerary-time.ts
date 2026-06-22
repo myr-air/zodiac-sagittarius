@@ -50,6 +50,10 @@ export function durationBetweenTimes(
   return Math.max(1, duration);
 }
 
+export function normalizeDurationMinutes(value: unknown): number {
+  return Math.max(1, Math.round(Number(value) || 1));
+}
+
 export function minutesToTime(value: number): string {
   const hour = Math.floor(value / 60);
   const minute = value % 60;
@@ -139,10 +143,7 @@ export function buildInlineItineraryItemPatch(
     nextPatch.durationMinutes !== undefined &&
     nextPatch.durationMinutes !== null
   )
-    nextPatch.durationMinutes = Math.max(
-      1,
-      Math.round(Number(nextPatch.durationMinutes) || 1),
-    );
+    nextPatch.durationMinutes = normalizeDurationMinutes(nextPatch.durationMinutes);
   if (nextPatch.activity !== undefined && nextPatch.activity.length === 0)
     return null;
   if (nextPatch.place !== undefined && nextPatch.place.length === 0)
