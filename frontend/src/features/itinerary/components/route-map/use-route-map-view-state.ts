@@ -7,17 +7,19 @@ import {
   maxAllDaysCoordinateResolutionBatch,
 } from "./route-map.config";
 import {
-  beginRouteMapCoordinateResolution,
-  completeRouteMapCoordinateResolution,
-  initialRouteMapResolutionState,
-} from "./route-map-resolution-state";
+  beginRouteMapViewCoordinateResolution,
+  completeRouteMapViewCoordinateResolution,
+  initialRouteMapViewState,
+  setRouteMapActiveDay,
+  settleRouteMapViewCoordinateResolution,
+} from "./route-map-view-state";
 import {
   buildRouteDayGroups,
   buildRoutePoints,
   buildVisibleRouteMapState,
   hasCoordinates,
 } from "@/src/features/itinerary/domain/route-map-model";
-import { allDaysFilter, type DayFilter } from "./route-map.types";
+import type { DayFilter } from "./route-map.types";
 
 interface UseRouteMapViewStateInput {
   items: ItineraryItem[];
@@ -39,7 +41,7 @@ export function useRouteMapViewState({
   const coordinateRoutePoints = useMemo(() => routePoints.filter((point) => hasCoordinates(point.item.coordinates)), [routePoints]);
   const unresolvedItems = useMemo(() => items.filter((item) => !hasCoordinates(item.coordinates)), [items]);
   const routeDayGroups = useMemo(() => buildRouteDayGroups(groups, coordinateRoutePoints, startDate, locale), [coordinateRoutePoints, groups, locale, startDate]);
-  const [activeDay, setActiveDay] = useState<DayFilter>(allDaysFilter);
+  const [viewState, setViewState] = useState(initialRouteMapViewState);
   const liveRoutePoints = coordinateRoutePoints;
   const {
     coordinateResolutionBatch,
@@ -48,42 +50,38 @@ export function useRouteMapViewState({
     visibleRoutePoints,
     visibleUnresolvedItems,
   } = useMemo(() => buildVisibleRouteMapState({
-    activeDay,
+    activeDay: viewState.activeDay,
     coordinateRoutePoints,
     liveRoutePoints,
     maxAllDaysCoordinateResolutionBatch,
     routeDayGroups,
     unresolvedItems,
-  }), [activeDay, coordinateRoutePoints, liveRoutePoints, routeDayGroups, unresolvedItems]);
+  }), [viewState.activeDay, coordinateRoutePoints, liveRoutePoints, routeDayGroups, unresolvedItems]);
   const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const [resolutionState, setResolutionState] = useState(
-    initialRouteMapResolutionState,
-  );
 
   async function handleResolveMissingCoordinates() {
     if (!onResolveMissingCoordinates || coordinateResolutionBatch.length === 0) return;
-    setResolutionState(beginRouteMapCoordinateResolution());
+    setViewState((current) => beginRouteMapViewCoordinateResolution(current));
     try {
       const result = await onResolveMissingCoordinates(coordinateResolutionBatch);
-      setResolutionState(completeRouteMapCoordinateResolution(result));
-    } finally {
-      setResolutionState((current) =>
-        current.resolvingMissing
-          ? completeRouteMapCoordinateResolution(current.resolutionResult ?? undefined)
-          : current,
+      setViewState((current) =>
+        completeRouteMapViewCoordinateResolution(current, result),
       );
+    } finally {
+      setViewState((current) => settleRouteMapViewCoordinateResolution(current));
     }
   }
 
   return {
-    activeDay,
+    activeDay: viewState.activeDay,
     coordinateResolutionBatch,
     handleResolveMissingCoordinates,
     liveRoutePoints,
-    resolutionResult: resolutionState.resolutionResult,
-    resolvingMissing: resolutionState.resolvingMissing,
+    resolutionResult: viewState.resolutionState.resolutionResult,
+    resolvingMissing: viewState.resolutionState.resolvingMissing,
     routeDayGroups,
-    setActiveDay,
+    setActiveDay: (activeDay: DayFilter) =>
+      setViewState((current) => setRouteMapActiveDay(current, activeDay)),
     visibleLiveRoutePoints,
     visibleRouteDayGroups,
     visibleRoutePoints,

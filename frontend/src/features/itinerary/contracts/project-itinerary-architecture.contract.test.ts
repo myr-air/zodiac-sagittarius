@@ -116,6 +116,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps route map canvas rendering split from map page orchestration", () => {
     const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
     const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+    const routeMapViewState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-map-view-state.ts");
+    const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
     const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
     const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
@@ -127,6 +129,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(mapCanvas).toContain("StaticRouteFallback");
     expect(mapCanvas).toContain("./route-map.types");
     expect(mapCanvas).not.toContain('type RouteMapCanvasCopy = Messages["map"]');
+    expect(routeMapViewState).toContain("./route-map-view-state");
+    expect(routeMapViewState).toContain("const [viewState, setViewState]");
+    expect(routeMapViewState).not.toContain("const [activeDay, setActiveDay]");
+    expect(routeMapViewState).not.toContain("const [resolutionState, setResolutionState]");
+    expect(routeMapViewStateModel).toContain("export interface RouteMapViewState");
+    expect(routeMapViewStateModel).toContain("initialRouteMapViewState");
     expect(routeLiveMap).toContain("./route-live-map-state");
     expect(routeLiveMap).toContain("const [liveMapLifecycleState, setLiveMapLifecycleState]");
     expect(routeLiveMap).not.toContain("const [autoLiveMapState, setAutoLiveMapState]");
