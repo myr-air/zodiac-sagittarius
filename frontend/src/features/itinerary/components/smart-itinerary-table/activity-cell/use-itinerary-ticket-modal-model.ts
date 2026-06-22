@@ -15,6 +15,13 @@ import {
   type TicketFormMode,
 } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import {
+  beginItineraryTicketModalSave,
+  beginItineraryTicketModalUnlink,
+  completeItineraryTicketModalSubmit,
+  initialItineraryTicketModalSubmitState,
+  isItineraryTicketModalSubmitting,
+} from "./itinerary-ticket-modal-submit-state";
 
 interface UseItineraryTicketModalModelOptions {
   bookingDocs: BookingDoc[];
@@ -54,8 +61,9 @@ export function useItineraryTicketModalModel({
   const [formValues, setFormValues] = useState<TicketFormValues>(
     initialFormValues,
   );
-  const [saving, setSaving] = useState(false);
-  const [unlinking, setUnlinking] = useState(false);
+  const [submitState, setSubmitState] = useState(
+    initialItineraryTicketModalSubmitState,
+  );
 
   function hydrateTicketFields(booking: BookingDoc | null) {
     setFormValues(buildTicketFormValues({ booking, item, locale, type }));
@@ -88,8 +96,8 @@ export function useItineraryTicketModalModel({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedTitle = formValues.title.trim();
-    if (saving || unlinking || !trimmedTitle) return;
-    setSaving(true);
+    if (isItineraryTicketModalSubmitting(submitState) || !trimmedTitle) return;
+    setSubmitState(beginItineraryTicketModalSave());
     try {
       await onSave(
         buildTicketSubmitInput({
@@ -106,17 +114,23 @@ export function useItineraryTicketModalModel({
         }),
       );
     } finally {
-      setSaving(false);
+      setSubmitState(completeItineraryTicketModalSubmit());
     }
   }
 
   async function unlinkCurrentBooking() {
-    if (!currentLinkedBooking || !onUnlink || saving || unlinking) return;
-    setUnlinking(true);
+    if (
+      !currentLinkedBooking ||
+      !onUnlink ||
+      isItineraryTicketModalSubmitting(submitState)
+    ) {
+      return;
+    }
+    setSubmitState(beginItineraryTicketModalUnlink());
     try {
       await onUnlink(currentLinkedBooking.id);
     } finally {
-      setUnlinking(false);
+      setSubmitState(completeItineraryTicketModalSubmit());
     }
   }
 
@@ -129,7 +143,7 @@ export function useItineraryTicketModalModel({
     notes: formValues.notes,
     providerName: formValues.providerName,
     relatedItineraryItemIds: formValues.relatedItineraryItemIds,
-    saving,
+    saving: submitState.saving,
     selectExistingTicket,
     selectExistingTicketMode,
     selectNewTicketMode,
@@ -151,6 +165,6 @@ export function useItineraryTicketModalModel({
     submit,
     title: formValues.title,
     unlinkCurrentBooking,
-    unlinking,
+    unlinking: submitState.unlinking,
   };
 }
