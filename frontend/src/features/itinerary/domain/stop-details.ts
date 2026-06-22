@@ -1,21 +1,23 @@
 import type { ActivityType, ItineraryItem, ItineraryItemKind } from "@/src/trip/types";
 import {
   emptyStopDetailValues,
-  stopDialogDetailTypeToActivityType,
+  stopDetailTypeToActivityType,
   type StopDetailType,
   type StopDetailValues,
-} from "./stop-dialog-detail-definitions";
+} from "./stop-detail-definitions";
 
 export {
   emptyStopDetailValues,
   stopDetailLabels,
+  stopDetailTypeOptions,
+  stopDetailTypeToActivityType,
   stopDialogDetailTypeOptions,
   stopDialogDetailTypeToActivityType,
-} from "./stop-dialog-detail-definitions";
+} from "./stop-detail-definitions";
 export type {
   StopDetailType,
   StopDetailValues,
-} from "./stop-dialog-detail-definitions";
+} from "./stop-detail-definitions";
 
 export function buildStructuredStopDetails(detailType: StopDetailType, detailValues: StopDetailValues): Record<string, unknown> {
   const details = trimmedStopDetailValues(detailValues);
@@ -57,7 +59,7 @@ export function resolveStopActivityType(
   currentActivityType: ActivityType,
 ): ActivityType {
   if (detailType === "transportation" || detailType === "stay") {
-    return stopDialogDetailTypeToActivityType[detailType];
+    return stopDetailTypeToActivityType[detailType];
   }
   if (detailType === "experience") {
     return currentActivityType === "travel" || currentActivityType === "stay"

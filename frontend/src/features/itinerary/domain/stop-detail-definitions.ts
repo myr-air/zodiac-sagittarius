@@ -1,12 +1,13 @@
 import type { ActivityType } from "@/src/trip/types";
 
-export const stopDialogDetailTypeOptions = [
+export const stopDetailTypeOptions = [
   "transportation",
   "stay",
   "experience",
   "task",
 ] as const;
-export type StopDetailType = (typeof stopDialogDetailTypeOptions)[number];
+export const stopDialogDetailTypeOptions = stopDetailTypeOptions;
+export type StopDetailType = (typeof stopDetailTypeOptions)[number];
 
 export interface StopDetailValues {
   bookingRef: string;
@@ -28,7 +29,7 @@ export interface StopDetailValues {
   ticketRef: string;
 }
 
-export const stopDialogDetailTypeToActivityType: Record<
+export const stopDetailTypeToActivityType: Record<
   StopDetailType,
   ActivityType
 > = {
@@ -37,6 +38,7 @@ export const stopDialogDetailTypeToActivityType: Record<
   task: "experience",
   transportation: "travel",
 };
+export const stopDialogDetailTypeToActivityType = stopDetailTypeToActivityType;
 
 export const emptyStopDetailValues: StopDetailValues = {
   bookingRef: "",

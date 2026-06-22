@@ -49,12 +49,12 @@ export {
   stopDialogDetailTypeOptions,
   stopDialogDetailTypeToActivityType,
   structuredStopDetailValues,
-} from "./stop-dialog-details";
+} from "@/src/features/itinerary/domain/stop-details";
 
 export type {
   StopDetailType,
   StopDetailValues,
-} from "./stop-dialog-details";
+} from "@/src/features/itinerary/domain/stop-details";
 
 export {
   addMinutesToTime,

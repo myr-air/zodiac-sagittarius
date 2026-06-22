@@ -4,9 +4,9 @@ import {
   detailTypeFromActivityType,
   readStringDetail,
   stopDetailLabels,
-} from "../stop-dialog-details";
+} from "../stop-details";
 
-describe("stop dialog details model", () => {
+describe("stop details model", () => {
   it("keeps detail field sets owned by detail type", () => {
     expect(detailKeysForType("transportation")).toEqual([
       "origin",

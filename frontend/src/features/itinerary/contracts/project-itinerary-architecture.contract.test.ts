@@ -253,20 +253,20 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps stop dialog detail serialization split from utility ids", () => {
     const stopDialogUtils = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.utils.ts");
-    const stopDialogDetails = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-details.ts");
-    const stopDialogDetailDefinitions = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-detail-definitions.ts");
+    const stopDetails = readItineraryArchitectureSource("src/features/itinerary/domain/stop-details.ts");
+    const stopDetailDefinitions = readItineraryArchitectureSource("src/features/itinerary/domain/stop-detail-definitions.ts");
 
-    expect(stopDialogUtils).toContain("./stop-dialog-details");
+    expect(stopDialogUtils).toContain("@/src/features/itinerary/domain/stop-details");
     expect(stopDialogUtils).toContain("export const stopDialogFieldIds");
     expect(stopDialogUtils).not.toContain("export function buildStructuredStopDetails");
     expect(stopDialogUtils).not.toContain("function trimmedStopDetailValues");
-    expect(stopDialogDetails).toContain("./stop-dialog-detail-definitions");
-    expect(stopDialogDetails).toContain("export function buildStructuredStopDetails");
-    expect(stopDialogDetails).toContain("function trimmedStopDetailValues");
-    expect(stopDialogDetails).not.toContain("export function stopDetailLabels");
-    expect(stopDialogDetails).not.toContain("export const emptyStopDetailValues");
-    expect(stopDialogDetailDefinitions).toContain("export function stopDetailLabels");
-    expect(stopDialogDetailDefinitions).toContain("export const emptyStopDetailValues");
+    expect(stopDetails).toContain("./stop-detail-definitions");
+    expect(stopDetails).toContain("export function buildStructuredStopDetails");
+    expect(stopDetails).toContain("function trimmedStopDetailValues");
+    expect(stopDetails).not.toContain("export function stopDetailLabels");
+    expect(stopDetails).not.toContain("export const emptyStopDetailValues");
+    expect(stopDetailDefinitions).toContain("export function stopDetailLabels");
+    expect(stopDetailDefinitions).toContain("export const emptyStopDetailValues");
   });
 
   it("keeps expenses page state split from page composition", () => {
