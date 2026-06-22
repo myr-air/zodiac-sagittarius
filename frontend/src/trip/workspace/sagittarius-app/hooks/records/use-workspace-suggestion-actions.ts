@@ -1,20 +1,12 @@
-import { useCallback } from "react";
-import { nextClientMutationId, nextLocalSuggestionId } from "@/src/trip/identity";
-import {
-  approveSuggestion,
-  buildCreateEditSuggestionRequest,
-  createLocalEditSuggestion,
-  rejectSuggestionById,
-  replaceSuggestionById,
-} from "@/src/trip/itinerary-core";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   ItineraryItem,
   Suggestion,
-  SuggestionReviewDecision,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
+import { useReviewWorkspaceSuggestionCommand } from "./use-review-workspace-suggestion-command";
+import { useSuggestSelectedStopCommand } from "./use-suggest-selected-stop-command";
 
 interface UseWorkspaceSuggestionActionsParams {
   canCreateSuggestion: boolean;
@@ -43,30 +35,7 @@ export function useWorkspaceSuggestionActions({
   suggestions,
   trip,
 }: UseWorkspaceSuggestionActionsParams) {
-  const suggestSelectedStop = useCallback(async () => {
-    if (!canCreateSuggestion || !selectedItem) return;
-    if (isApiMode && resolveApiClient && participantSession) {
-      const suggestion = await resolveApiClient.createSuggestion(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreateEditSuggestionRequest(selectedItem, {
-          clientMutationId: nextClientMutationId("suggestion-create"),
-        }),
-      );
-      setSuggestions((current) => [...current, suggestion]);
-      return;
-    }
-    setSuggestions((current) => [
-      ...current,
-      createLocalEditSuggestion(current, {
-        tripId: trip.id,
-        proposerId: currentMemberId,
-        targetItem: selectedItem,
-        createdAt: new Date().toISOString(),
-        nextSuggestionId: nextLocalSuggestionId,
-      }),
-    ]);
-  }, [
+  const suggestSelectedStop = useSuggestSelectedStopCommand({
     canCreateSuggestion,
     currentMemberId,
     isApiMode,
@@ -75,51 +44,9 @@ export function useWorkspaceSuggestionActions({
     selectedItem,
     setSuggestions,
     trip,
-  ]);
+  });
 
-  const reviewSuggestion = useCallback(async (
-    suggestionId: string,
-    decision: SuggestionReviewDecision,
-  ) => {
-    if (!canReviewSuggestions) return;
-    if (isApiMode && resolveApiClient && participantSession) {
-      let suggestion: Suggestion;
-      if (decision === "approved") {
-        suggestion = await resolveApiClient.approveSuggestion(
-          trip.id,
-          suggestionId,
-          participantSession.sessionToken,
-        );
-      } else {
-        suggestion = await resolveApiClient.rejectSuggestion(
-          trip.id,
-          suggestionId,
-          participantSession.sessionToken,
-        );
-      }
-      setSuggestions((current) =>
-        replaceSuggestionById(current, suggestionId, suggestion),
-      );
-      return;
-    }
-    if (decision === "rejected") {
-      setSuggestions((current) => rejectSuggestionById(current, suggestionId));
-      return;
-    }
-    const suggestion = suggestions.find(
-      (candidate) => candidate.id === suggestionId,
-    );
-    if (!suggestion) return;
-    const result = approveSuggestion(trip.itineraryItems, suggestion);
-    if (result.status === "approved") {
-      commitTrip((current) => ({ ...current, itineraryItems: result.items }));
-    }
-    setSuggestions((current) =>
-      current.map((candidate) =>
-        candidate.id === suggestionId ? result.suggestion : candidate,
-      ),
-    );
-  }, [
+  const reviewSuggestion = useReviewWorkspaceSuggestionCommand({
     canReviewSuggestions,
     commitTrip,
     isApiMode,
@@ -127,9 +54,8 @@ export function useWorkspaceSuggestionActions({
     resolveApiClient,
     setSuggestions,
     suggestions,
-    trip.id,
-    trip.itineraryItems,
-  ]);
+    trip,
+  });
 
   return {
     reviewSuggestion,

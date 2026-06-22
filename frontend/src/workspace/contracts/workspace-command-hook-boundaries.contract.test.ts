@@ -25,6 +25,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       taskCommandTypes,
       createTaskCommand,
       toggleTaskStatusCommand,
+      suggestionActionsHook,
+      suggestionCommandTypes,
+      suggestSelectedStopCommand,
+      reviewSuggestionCommand,
       stopNoteActionsHook,
       stopNoteCommandTypes,
       createStopNoteCommand,
@@ -180,6 +184,17 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(createTaskCommand).toContain("buildCreateTaskRequest");
     expect(toggleTaskStatusCommand).toContain("buildToggleTaskStatusRequest");
     expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
+    expect(suggestionActionsHook).toContain("useSuggestSelectedStopCommand");
+    expect(suggestionActionsHook).toContain("useReviewWorkspaceSuggestionCommand");
+    expect(suggestionActionsHook).not.toContain("buildCreateEditSuggestionRequest");
+    expect(suggestionActionsHook).not.toContain("approveSuggestion");
+    expect(suggestionCommandTypes).toContain("WorkspaceSuggestionCommandBaseParams");
+    expect(suggestSelectedStopCommand).toContain(
+      "buildCreateEditSuggestionRequest",
+    );
+    expect(suggestSelectedStopCommand).toContain("createLocalEditSuggestion");
+    expect(reviewSuggestionCommand).toContain("approveSuggestion");
+    expect(reviewSuggestionCommand).toContain("rejectSuggestionById");
     expect(stopNoteActionsHook).toContain("useCreateWorkspaceStopNoteCommand");
     expect(stopNoteActionsHook).toContain("useUpdateWorkspaceStopNoteCommand");
     expect(stopNoteActionsHook).toContain("useDeleteWorkspaceStopNoteCommand");
