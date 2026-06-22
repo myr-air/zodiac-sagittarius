@@ -3,7 +3,7 @@
 import { ContextRail } from "@/src/features/itinerary/components";
 import type { ContextRailProps } from "@/src/features/itinerary/components";
 
-interface TripWorkspaceRailProps {
+export interface TripWorkspaceRailProps {
   enabled: boolean;
   mounted: boolean;
   railProps: ContextRailProps;

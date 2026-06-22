@@ -1,7 +1,6 @@
-import type { ComponentProps } from "react";
-import type { WorkspaceAppFrame } from "../WorkspaceAppFrame";
+import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
 
-type WorkspaceAccessProps = ComponentProps<typeof WorkspaceAppFrame>["accessProps"];
+type WorkspaceAccessProps = WorkspaceAppFrameProps["accessProps"];
 
 type BuildWorkspaceAccessPropsInput = WorkspaceAccessProps;
 

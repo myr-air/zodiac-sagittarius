@@ -17,7 +17,7 @@ import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImp
 import type { PendingItineraryImport } from "@/src/trip/workspace/itinerary-import-model";
 import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
 
-interface WorkspaceDialogsProps {
+export interface WorkspaceDialogsProps {
   applyPendingItineraryImport: (target: ItineraryImportApplyTarget) => Promise<void>;
   clearPendingItineraryImport: () => void;
   createStop: (values: StopFormValues) => void | Promise<void>;

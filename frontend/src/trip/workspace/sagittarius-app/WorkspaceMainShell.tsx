@@ -1,22 +1,21 @@
-import type { ComponentProps } from "react";
-import { AppShell } from "@/src/features/workspace/components/app-shell";
-import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
-import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
+import { AppShell, type AppShellProps } from "@/src/features/workspace/components/app-shell";
+import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
+import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
-import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
-import { WorkspaceDialogs } from "./WorkspaceDialogs";
-import { WorkspaceRolePreview } from "./WorkspaceRolePreview";
+import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
+import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
+import { WorkspaceRolePreview, type WorkspaceRolePreviewProps } from "./WorkspaceRolePreview";
 import { workspaceShellClassName } from "./sagittarius-app.styles";
 
 export interface WorkspaceMainShellProps {
-  appShellProps: Omit<ComponentProps<typeof AppShell>, "children">;
-  dialogsProps: ComponentProps<typeof WorkspaceDialogs>;
-  frameProps: Omit<ComponentProps<typeof TripWorkspaceFrame>, "children" | "rail">;
-  railProps: ComponentProps<typeof TripWorkspaceRail>;
-  rolePreviewProps: ComponentProps<typeof WorkspaceRolePreview>;
+  appShellProps: Omit<AppShellProps, "children">;
+  dialogsProps: WorkspaceDialogsProps;
+  frameProps: Omit<TripWorkspaceFrameProps, "children" | "rail">;
+  railProps: TripWorkspaceRailProps;
+  rolePreviewProps: WorkspaceRolePreviewProps;
   showRolePreview: boolean;
   showToast: boolean;
-  toastProps: ComponentProps<typeof WorkspaceToast>;
+  toastProps: WorkspaceToastProps;
   viewsProps: TripWorkspaceViewsProps;
 }
 

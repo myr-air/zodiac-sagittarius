@@ -15,6 +15,10 @@ describe("Sagittarius workspace source boundaries", () => {
       sagittariusAccessGate,
       workspaceAppFrame,
       workspaceMainShell,
+      tripWorkspaceFrame,
+      tripWorkspaceRail,
+      workspaceRolePreview,
+      workspaceToast,
       workspaceAccessProps,
       workspaceShellProps,
       workspaceDialogsProps,
@@ -83,6 +87,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceShellProps).toContain("dialogsProps:");
     expect(workspaceShellProps).toContain("toastProps:");
     expect(workspaceShellProps).toContain("../WorkspaceAppFrame");
+    expect(workspaceShellProps).not.toContain("ComponentProps<typeof WorkspaceAppFrame>");
     expect(workspaceShellProps).toContain("buildWorkspaceDialogsProps");
     expect(workspaceShellProps).toContain("buildWorkspaceRailProps");
     expect(workspaceShellProps).toContain("buildWorkspaceToastProps");
@@ -95,6 +100,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceFrameProps).toContain("buildWorkspaceViewsProps");
     expect(workspaceFrameProps).toContain("buildWorkspaceFrameActionProps");
     expect(workspaceFrameProps).toContain("export function buildWorkspaceFrameProps");
+    expect(workspaceFrameProps).not.toContain("ComponentProps<typeof WorkspaceAppFrame>");
     expect(workspaceCoreFrameProps).toContain("export function buildWorkspaceCoreFrameProps");
     expect(sagittariusApp).not.toContain("onAddNoteForItem: (itemId, body)");
     expect(sagittariusApp).not.toContain("onAddStop:");
@@ -117,6 +123,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceViewPropsTypes).toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(workspaceAppFrame).toContain("WorkspaceAccessBoundary");
     expect(workspaceAppFrame).toContain("WorkspaceMainShell");
+    expect(workspaceAppFrame).toContain("export interface WorkspaceAppFrameProps");
     expect(workspaceAppFrame).not.toContain("useWorkspaceApiClients");
     expectSourceNotToContain(sagittariusApp, sagittariusAppBlockedBoundaryTerms);
     expect(sagaCore).toContain("WorkspaceAppFrame");
@@ -126,6 +133,12 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(sagaCore).not.toContain("@/src/trip/workspace/TripWorkspaceViews");
     expect(workspaceMainShell).toContain("export function WorkspaceMainShell");
+    expect(workspaceMainShell).not.toContain("ComponentProps<typeof");
+    expect(tripWorkspaceFrame).toContain("export interface TripWorkspaceFrameProps");
+    expect(tripWorkspaceRail).toContain("export interface TripWorkspaceRailProps");
+    expect(workspaceDialogs).toContain("export interface WorkspaceDialogsProps");
+    expect(workspaceRolePreview).toContain("export interface WorkspaceRolePreviewProps");
+    expect(workspaceToast).toContain("export interface WorkspaceToastProps");
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceFrame");
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceRail");
     expect(workspaceMainShell).toContain("@/src/trip/workspace/TripWorkspaceViews");

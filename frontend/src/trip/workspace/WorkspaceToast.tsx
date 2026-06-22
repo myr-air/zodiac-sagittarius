@@ -12,7 +12,7 @@ const workspaceToastDismissClassName =
   "ml-1 grid size-9 shrink-0 place-items-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-text)";
 const accountClaimMessageClassName = "account-claim-message font-extrabold";
 
-interface WorkspaceToastProps {
+export interface WorkspaceToastProps {
   accountSession: AccountSession | null;
   memberUserId: string | null | undefined;
   claimState: { status: "idle" | "saving"; message: string | null };

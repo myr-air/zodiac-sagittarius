@@ -1,11 +1,10 @@
-import type { ComponentProps } from "react";
-import type { WorkspaceAppFrame } from "../WorkspaceAppFrame";
+import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
 import { buildWorkspaceAccessProps } from "./workspace-access-props";
 import { buildWorkspaceFrameActionProps } from "./workspace-frame-action-props";
 import { buildWorkspaceShellProps } from "./workspace-shell-props";
 import { buildWorkspaceViewsProps } from "./workspace-view-props";
 
-type WorkspaceFrameProps = ComponentProps<typeof WorkspaceAppFrame>;
+type WorkspaceFrameProps = WorkspaceAppFrameProps;
 type ActionInput = Parameters<typeof buildWorkspaceFrameActionProps>[0];
 type AccessInput = Parameters<typeof buildWorkspaceAccessProps>[0];
 type ViewsInput = Parameters<typeof buildWorkspaceViewsProps>[0];

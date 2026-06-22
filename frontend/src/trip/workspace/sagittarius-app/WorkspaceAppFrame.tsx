@@ -1,7 +1,7 @@
 import { WorkspaceAccessBoundary, type WorkspaceAccessBoundaryProps } from "./access-gate";
 import { WorkspaceMainShell, type WorkspaceMainShellProps } from "./WorkspaceMainShell";
 
-interface WorkspaceAppFrameProps {
+export interface WorkspaceAppFrameProps {
   accessProps: Omit<WorkspaceAccessBoundaryProps, "children">;
   shellProps: WorkspaceMainShellProps;
 }

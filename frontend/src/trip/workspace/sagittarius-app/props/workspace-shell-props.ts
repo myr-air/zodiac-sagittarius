@@ -1,10 +1,9 @@
-import type { ComponentProps } from "react";
-import type { WorkspaceAppFrame } from "../WorkspaceAppFrame";
+import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
 import { buildWorkspaceDialogsProps } from "./workspace-dialogs-props";
 import { buildWorkspaceRailProps } from "./workspace-rail-props";
 import { buildWorkspaceToastProps } from "./workspace-toast-props";
 
-export type WorkspaceShellProps = ComponentProps<typeof WorkspaceAppFrame>["shellProps"];
+export type WorkspaceShellProps = WorkspaceAppFrameProps["shellProps"];
 
 export interface BuildWorkspaceShellPropsInput {
   accountClaimState: WorkspaceShellProps["toastProps"]["claimState"];

@@ -1,7 +1,7 @@
 import { Select } from "@/src/ui";
 import type { Trip } from "@/src/trip/types";
 
-interface WorkspaceRolePreviewProps {
+export interface WorkspaceRolePreviewProps {
   currentMemberId: string;
   members: Trip["members"];
   onChangeMember: (memberId: string) => void;

@@ -8,7 +8,7 @@ const planningMainWithRailClassName = "pr-[380px] max-[1199px]:pr-0";
 const importErrorClassName =
   "mx-6 mt-3 rounded-(--radius-sm) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2 text-sm font-bold text-(--color-danger) max-[767px]:mx-3";
 
-interface TripWorkspaceFrameProps {
+export interface TripWorkspaceFrameProps {
   children: ReactNode;
   contextRailOpen: boolean;
   importError: string | null;
