@@ -1,30 +1,15 @@
 import { useCallback } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import {
   moveTripItem,
   replaceItineraryItem,
   replaceItineraryItems,
 } from "@/src/trip/itinerary-items";
-import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { buildWorkspaceReorderApiInput } from "./command-inputs/workspace-itinerary-move-inputs";
-
-interface UseWorkspaceItineraryReorderCommandParams {
-  canEdit: boolean;
-  commitTrip: (
-    updater: (current: Trip) => Trip,
-    nextSelectedItemId?: string,
-  ) => void;
-  isApiMode: boolean;
-  nextClientMutationId: (purpose: string) => string;
-  participantSession: TripParticipantSession | null;
-  replaceApiTrip: (nextTrip: Trip) => void;
-  resolvedApiClient?: TripApiClient;
-  selectedTripPlanId: string;
-  setSelectedItemId: (itemId: string) => void;
-  trip: Trip;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type {
+  MoveItemCommand,
+  UseWorkspaceItineraryReorderCommandParams,
+} from "./workspace-itinerary-move-command-types";
 
 export function useWorkspaceItineraryReorderCommand({
   canEdit,
@@ -38,7 +23,7 @@ export function useWorkspaceItineraryReorderCommand({
   setSelectedItemId,
   trip,
   updateApiTrip,
-}: UseWorkspaceItineraryReorderCommandParams) {
+}: UseWorkspaceItineraryReorderCommandParams): MoveItemCommand {
   return useCallback(
     async (draggedItemId: string, targetItemId: string) => {
       if (!canEdit || draggedItemId === targetItemId) return;

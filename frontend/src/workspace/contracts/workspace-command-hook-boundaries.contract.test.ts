@@ -93,6 +93,12 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryMoveCommandTypes).toContain(
       "UseWorkspaceItineraryMoveCommandsParams",
     );
+    expect(itineraryMoveCommandTypes).toContain(
+      "UseWorkspaceItineraryReorderCommandParams",
+    );
+    expect(itineraryMoveCommandTypes).toContain(
+      "UseWorkspaceItineraryPathMoveCommandParams",
+    );
     expect(itineraryBlockMoveCommand).toContain("moveTripItemIntoPlanBlock");
     expect(itineraryBlockMoveCommand).toContain(
       "buildWorkspaceMoveItemPatchRequest",
@@ -104,7 +110,13 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryPathMoveCommand).toContain(
       "buildWorkspacePathMovePlacement",
     );
+    expect(itineraryPathMoveCommand).not.toContain(
+      "interface UseWorkspaceItineraryPathMoveCommandParams",
+    );
     expect(itineraryReorderCommand).toContain("buildWorkspaceReorderApiInput");
+    expect(itineraryReorderCommand).not.toContain(
+      "interface UseWorkspaceItineraryReorderCommandParams",
+    );
     expect(createItineraryBookingDraftCommand).toContain("buildItineraryBookingDraftInput");
     expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
     expect(saveItineraryBookingTicketCommand).toContain(

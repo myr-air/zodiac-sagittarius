@@ -4,13 +4,8 @@ import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { buildWorkspaceMoveItemToDayPatchRequest } from "./command-inputs/workspace-itinerary-move-inputs";
 import type {
   MoveItemToDayCommand,
-  UseWorkspaceItineraryMoveCommandsParams,
+  UseWorkspaceItineraryDayMoveCommandParams,
 } from "./workspace-itinerary-move-command-types";
-
-type UseWorkspaceItineraryDayMoveCommandParams = Omit<
-  UseWorkspaceItineraryMoveCommandsParams,
-  "updateApiTrip"
->;
 
 export function useWorkspaceItineraryDayMoveCommand({
   canEdit,

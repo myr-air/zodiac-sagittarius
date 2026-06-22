@@ -18,6 +18,29 @@ export interface UseWorkspaceItineraryMoveCommandsParams {
   updateApiTrip: (updater: (current: Trip) => Trip) => void;
 }
 
+export type UseWorkspaceItineraryReorderCommandParams =
+  UseWorkspaceItineraryMoveCommandsParams;
+
+export type UseWorkspaceItineraryBlockMoveCommandParams = Omit<
+  UseWorkspaceItineraryMoveCommandsParams,
+  "updateApiTrip"
+>;
+
+export type UseWorkspaceItineraryDayMoveCommandParams = Omit<
+  UseWorkspaceItineraryMoveCommandsParams,
+  "updateApiTrip"
+>;
+
+export type UseWorkspaceItineraryPathMoveCommandParams = Omit<
+  UseWorkspaceItineraryMoveCommandsParams,
+  "replaceApiTrip" | "selectedTripPlanId"
+>;
+
+export type MoveItemCommand = (
+  draggedItemId: string,
+  targetItemId: string,
+) => Promise<void>;
+
 export type MoveItemIntoPlanBlockCommand = (
   draggedItemId: string,
   planBlockItemId: string,
@@ -26,4 +49,9 @@ export type MoveItemIntoPlanBlockCommand = (
 export type MoveItemToDayCommand = (
   draggedItemId: string,
   targetDay: string,
+) => Promise<void>;
+
+export type MoveItemToPathCommand = (
+  itemId: string,
+  pathId: string,
 ) => Promise<void>;

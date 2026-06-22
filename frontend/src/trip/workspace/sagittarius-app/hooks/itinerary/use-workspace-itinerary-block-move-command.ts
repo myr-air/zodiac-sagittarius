@@ -7,13 +7,8 @@ import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
 import { buildWorkspaceMoveItemPatchRequest } from "./command-inputs/workspace-itinerary-move-inputs";
 import type {
   MoveItemIntoPlanBlockCommand,
-  UseWorkspaceItineraryMoveCommandsParams,
+  UseWorkspaceItineraryBlockMoveCommandParams,
 } from "./workspace-itinerary-move-command-types";
-
-type UseWorkspaceItineraryBlockMoveCommandParams = Omit<
-  UseWorkspaceItineraryMoveCommandsParams,
-  "updateApiTrip"
->;
 
 export function useWorkspaceItineraryBlockMoveCommand({
   canEdit,
