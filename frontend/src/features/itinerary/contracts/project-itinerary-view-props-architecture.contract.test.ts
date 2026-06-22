@@ -4,6 +4,7 @@ import { readItineraryArchitectureSource } from "./project-itinerary-architectur
 describe("Sagittarius itinerary view prop architecture contracts", () => {
   it("keeps reusable view prop contracts outside component bodies", () => {
     const timelineView = readItineraryArchitectureSource("src/features/itinerary/components/TimelineView.tsx");
+    const timelineViewModel = readItineraryArchitectureSource("src/features/itinerary/components/TimelineView.model.ts");
     const timelineViewTypes = readItineraryArchitectureSource("src/features/itinerary/components/TimelineView.types.ts");
     const timelineViewTest = readItineraryArchitectureSource("src/features/itinerary/components/tests/TimelineView.test.tsx");
     const timelineStorySupport = readItineraryArchitectureSource("src/features/itinerary/stories/TimelinePage.stories.support.ts");
@@ -13,7 +14,11 @@ describe("Sagittarius itinerary view prop architecture contracts", () => {
     const workspaceViews = readItineraryArchitectureSource("src/trip/workspace/TripWorkspaceViews.tsx");
 
     expect(timelineView).toContain("./TimelineView.types");
+    expect(timelineView).toContain("./TimelineView.model");
     expect(timelineView).not.toContain("interface TimelineViewProps");
+    expect(timelineView).not.toContain("items.reduce");
+    expect(timelineViewModel).toContain("export function buildTimelineViewModel");
+    expect(timelineViewModel).toContain("export function timelineStartTime");
     expect(timelineViewTypes).toContain("export interface TimelineViewProps");
     expect(timelineViewTest).not.toContain("Parameters<typeof TimelineView>");
     expect(timelineStorySupport).not.toContain("Parameters<typeof TimelineView>");

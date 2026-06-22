@@ -1,7 +1,6 @@
-import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary-core";
+import { formatDayLabel } from "@/src/trip/itinerary-core";
 import { Badge, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { TimelineMotif } from "@/src/shared/components/travel-motifs";
@@ -13,6 +12,10 @@ import {
   formatEndTime,
   formatThaiDate,
 } from "@/src/features/itinerary/lib/itinerary-display";
+import {
+  buildTimelineViewModel,
+  timelineStartTime,
+} from "./TimelineView.model";
 import {
   detailsToggleButtonClassName,
   pageHeaderActionsClassName,
@@ -48,10 +51,12 @@ export function TimelineView({
   onToggleContextRail,
 }: TimelineViewProps) {
   const { locale, t } = useI18n();
-  const groups = itineraryView?.dayGroups ?? groupItemsByDay(items);
-  const warningCount = itineraryView?.warningCount ?? items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);
-  const totalMinutes = items.reduce((total, item) => total + (item.durationMinutes ?? 0), 0);
-  const primaryRoute = groups.map((group) => dayRouteLabel(group.day, locale)).join(" / ");
+  const { groups, primaryRoute, totalMinutes, warningCount } =
+    buildTimelineViewModel({
+      items,
+      itineraryView,
+      locale,
+    });
 
   return (
     <section className={timelinePanelClassName} id="timeline" aria-labelledby="timeline-heading" aria-label={t.timeline.pageLabel}>
@@ -139,9 +144,4 @@ export function TimelineView({
       </div>
     </section>
   );
-}
-
-function timelineStartTime(item: ItineraryItem): string {
-  /* v8 ignore next */
-  return item.startTime || "—";
 }
