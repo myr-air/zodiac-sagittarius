@@ -160,7 +160,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(noteModal).toContain("./ActivityCellModalHeader");
     expect(noteModal).not.toContain("useState");
     expect(noteModel).toContain("export function useItineraryNoteModalModel");
-    expect(noteModel).toContain("const [body, setBody]");
+    expect(noteModel).toContain("./itinerary-note-modal-state");
+    expect(noteModel).toContain("const [state, setState]");
+    expect(noteModel).not.toContain("const [body, setBody]");
+    expect(noteModel).not.toContain("const [saving, setSaving]");
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(ticketModal).toContain("./ActivityCellModalHeader");
     expect(bookingButton).toContain("export function ItineraryBookingButton");

@@ -4,6 +4,11 @@ import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
 
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import {
+  initialItineraryNoteModalState,
+  setItineraryNoteModalSaving,
+  updateItineraryNoteModalBody,
+} from "./itinerary-note-modal-state";
 
 export function useItineraryNoteModalModel({
   item,
@@ -14,8 +19,7 @@ export function useItineraryNoteModalModel({
   locale: Locale;
   onSave: (body: string) => ItineraryAsyncVoidResult;
 }) {
-  const [body, setBody] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [state, setState] = useState(initialItineraryNoteModalState);
   const copy =
     locale === "th"
       ? {
@@ -39,21 +43,22 @@ export function useItineraryNoteModalModel({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmed = body.trim();
-    if (!trimmed || saving) return;
-    setSaving(true);
+    const trimmed = state.body.trim();
+    if (!trimmed || state.saving) return;
+    setState((current) => setItineraryNoteModalSaving(current, true));
     try {
       await onSave(trimmed);
     } finally {
-      setSaving(false);
+      setState((current) => setItineraryNoteModalSaving(current, false));
     }
   }
 
   return {
-    body,
+    body: state.body,
     copy,
-    saving,
-    setBody,
+    saving: state.saving,
+    setBody: (body: string) =>
+      setState((current) => updateItineraryNoteModalBody(current, body)),
     submit,
   };
 }
