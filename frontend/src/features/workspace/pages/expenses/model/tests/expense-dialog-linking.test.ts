@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   expenseDialogEffectiveTripPlanId,
+  expenseDialogItemSelectionFields,
   expenseDialogLinkedItem,
   expenseDialogTripPlanIdForItemSelection,
   expenseDialogTripPlanOptions,
@@ -36,6 +37,26 @@ describe("expense dialog linking helpers", () => {
     expect(expenseDialogTripPlanIdForItemSelection(seedTrip, "item-arrive-hkg")).toBe("plan-main");
     expect(expenseDialogTripPlanIdForItemSelection(seedTrip, "")).toBeNull();
     expect(expenseDialogTripPlanIdForItemSelection(seedTrip, "missing-item")).toBeNull();
+  });
+
+  it("builds item selection fields while preserving the current plan fallback", () => {
+    expect(expenseDialogItemSelectionFields({
+      currentTripPlanId: "plan-rain",
+      itemId: "item-arrive-hkg",
+      trip: seedTrip,
+    })).toEqual({
+      itemId: "item-arrive-hkg",
+      tripPlanId: "plan-main",
+    });
+
+    expect(expenseDialogItemSelectionFields({
+      currentTripPlanId: "plan-rain",
+      itemId: "",
+      trip: seedTrip,
+    })).toEqual({
+      itemId: "",
+      tripPlanId: "plan-rain",
+    });
   });
 
   it("prefers canonical Trip Plans over legacy plan variants for dialog options", () => {

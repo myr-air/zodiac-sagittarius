@@ -5,8 +5,8 @@ import {
 } from "../model/expense-dialog-calculation";
 import {
   expenseDialogEffectiveTripPlanId,
+  expenseDialogItemSelectionFields,
   expenseDialogLinkedItem,
-  expenseDialogTripPlanIdForItemSelection,
   expenseDialogTripPlanOptions,
 } from "../model/expense-dialog-linking";
 import {
@@ -128,9 +128,13 @@ export function useExpenseDialogState({
   }
 
   function changeItemId(nextItemId: string) {
-    setItemId(nextItemId);
-    const nextTripPlanId = expenseDialogTripPlanIdForItemSelection(trip, nextItemId);
-    if (nextTripPlanId) setTripPlanId(nextTripPlanId);
+    const nextFields = expenseDialogItemSelectionFields({
+      currentTripPlanId: tripPlanId,
+      itemId: nextItemId,
+      trip,
+    });
+    setItemId(nextFields.itemId);
+    setTripPlanId(nextFields.tripPlanId);
   }
 
   async function submitExpense(event: FormEvent<HTMLFormElement>) {

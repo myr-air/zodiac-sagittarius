@@ -26,6 +26,22 @@ export function expenseDialogTripPlanIdForItemSelection(
   return expenseDialogLinkedItem(trip, itemId)?.planVariantId ?? null;
 }
 
+export function expenseDialogItemSelectionFields({
+  currentTripPlanId,
+  itemId,
+  trip,
+}: {
+  currentTripPlanId: string;
+  itemId: string;
+  trip: Pick<Trip, "itineraryItems">;
+}): { itemId: string; tripPlanId: string } {
+  return {
+    itemId,
+    tripPlanId:
+      expenseDialogTripPlanIdForItemSelection(trip, itemId) ?? currentTripPlanId,
+  };
+}
+
 export function expenseDialogTripPlanOptions(
   trip: Pick<Trip, "tripPlans" | "planVariants">,
 ) {
