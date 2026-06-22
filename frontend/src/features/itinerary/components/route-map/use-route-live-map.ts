@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RouteViewport } from "./route-map.config";
 import {
   applyRouteMapTheme,
-  cleanupRouteLayers,
+  cleanupLiveRouteMap,
   fitLiveRoute,
   removeMapChromeFromTabOrder,
   synchronizeRouteLayers,
@@ -123,16 +123,14 @@ export function useRouteLiveMap({
 
     return () => {
       disposed = true;
-      const map = mapRef.current;
-      mountedMarkers.forEach((entry) => entry.marker.remove());
-      mountedMarkers.clear();
-      if (map) cleanupRouteLayers(map, sourceIdsRef.current);
-      sourceIdsRef.current = [];
-      map?.remove();
-      mapRef.current = null;
-      if (liveMapContainer) {
-        liveMapContainer.inert = false;
-      }
+      const cleaned = cleanupLiveRouteMap({
+        container: liveMapContainer,
+        map: mapRef.current,
+        markers: mountedMarkers,
+        sourceIds: sourceIdsRef.current,
+      });
+      sourceIdsRef.current = cleaned.sourceIds;
+      mapRef.current = cleaned.map;
     };
   }, [
     fallbackViewport.center,
@@ -163,17 +161,14 @@ export function useRouteLiveMap({
   }, [activeDay, fallbackViewport, liveMapState, liveRoutePoints, visibleLiveRoutePoints, routeDayGroups, markerItems]);
 
   const retryLiveMap = useCallback(() => {
-    markersRef.current.forEach((entry) => entry.marker.remove());
-    markersRef.current.clear();
-    if (mapRef.current) {
-      cleanupRouteLayers(mapRef.current, sourceIdsRef.current);
-      mapRef.current.remove();
-    }
-    sourceIdsRef.current = [];
-    mapRef.current = null;
-    if (mapContainerRef.current) {
-      mapContainerRef.current.inert = false;
-    }
+    const cleaned = cleanupLiveRouteMap({
+      container: mapContainerRef.current,
+      map: mapRef.current,
+      markers: markersRef.current,
+      sourceIds: sourceIdsRef.current,
+    });
+    sourceIdsRef.current = cleaned.sourceIds;
+    mapRef.current = cleaned.map;
     setLiveMapLifecycleState((current) => retryRouteLiveMap(current));
   }, []);
 

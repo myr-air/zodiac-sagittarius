@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { routeMapCoordinateItems } from "../testing/fixtures/route-map-fixtures";
 import { allDaysFilter } from "../route-map.types";
-import { cleanupRouteLayers, applyRouteMapTheme, fitLiveRoute, synchronizeRouteLayers } from "../route-map.live";
+import {
+  applyRouteMapTheme,
+  cleanupLiveRouteMap,
+  cleanupRouteLayers,
+  fitLiveRoute,
+  synchronizeRouteLayers,
+} from "../route-map.live";
 
 describe("route map live utilities", () => {
   it("uses fallback center and supports live route fit transitions", () => {
@@ -60,5 +66,36 @@ describe("route map live utilities", () => {
     expect(map.removeLayer).toHaveBeenNthCalledWith(1, "trip-route-day-0-line");
     expect(map.removeLayer).toHaveBeenNthCalledWith(2, "trip-route-day-0-shadow");
     expect(map.removeSource).toHaveBeenCalledWith("trip-route-day-0");
+  });
+
+  it("cleans up live route map resources as one lifecycle operation", () => {
+    const container = document.createElement("div");
+    container.inert = true;
+    const marker = { remove: vi.fn() };
+    const markers = new Map([
+      ["item-1", { day: "2026-01-01", marker }],
+    ]);
+    const map = {
+      getLayer: vi.fn(() => true),
+      getSource: vi.fn(() => true),
+      remove: vi.fn(),
+      removeLayer: vi.fn(),
+      removeSource: vi.fn(),
+    };
+
+    const cleaned = cleanupLiveRouteMap({
+      container,
+      map: map as never,
+      markers: markers as never,
+      sourceIds: ["trip-route-day-0"],
+    });
+
+    expect(marker.remove).toHaveBeenCalled();
+    expect(markers.size).toBe(0);
+    expect(map.removeLayer).toHaveBeenCalledWith("trip-route-day-0-line");
+    expect(map.removeSource).toHaveBeenCalledWith("trip-route-day-0");
+    expect(map.remove).toHaveBeenCalled();
+    expect(container.inert).toBe(false);
+    expect(cleaned).toEqual({ map: null, sourceIds: [] });
   });
 });

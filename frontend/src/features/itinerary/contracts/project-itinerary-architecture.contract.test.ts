@@ -126,6 +126,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const routeMapViewState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-map-view-state.ts");
     const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
     const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
+    const routeMapLive = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live.ts");
     const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
 
@@ -146,6 +147,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(routeMapViewStateModel).toContain("export interface RouteMapViewState");
     expect(routeMapViewStateModel).toContain("initialRouteMapViewState");
     expect(routeLiveMap).toContain("./route-live-map-state");
+    expect(routeLiveMap).toContain("cleanupLiveRouteMap");
+    expect(routeLiveMap).not.toContain("markersRef.current.forEach");
+    expect(routeLiveMap).not.toContain("cleanupRouteLayers(mapRef.current");
+    expect(routeMapLive).toContain("export function cleanupLiveRouteMap");
+    expect(routeMapLive).toContain("cleanupRouteLayers(map, sourceIds)");
     expect(routeLiveMap).toContain("const [liveMapLifecycleState, setLiveMapLifecycleState]");
     expect(routeLiveMap).not.toContain("const [autoLiveMapState, setAutoLiveMapState]");
     expect(routeLiveMap).not.toContain("const [liveMapRetryKey, setLiveMapRetryKey]");
