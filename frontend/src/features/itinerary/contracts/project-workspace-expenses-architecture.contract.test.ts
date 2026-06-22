@@ -17,6 +17,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
     const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
     const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
+    const expenseDialogSummary = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseDialogSummary.tsx");
+    const expenseDialogSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-summary-display.ts");
     const expenseSummaryStats = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseSummaryStats.tsx");
     const expenseSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-summary-display.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
@@ -90,6 +92,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseSplitEditor).not.toContain("const [lineItems, setLineItems]");
     expect(expenseSplitEditorModel).toContain("export interface ExpenseSplitEditorState");
     expect(expenseSplitEditorModel).toContain("export function changeExpenseSplitEditorMode");
+    expect(expenseDialogSummary).toContain("../model/expense-dialog-summary-display");
+    expect(expenseDialogSummary).not.toContain("formatMoney");
+    expect(expenseDialogSummary).not.toContain("copy.settleValue");
+    expect(expenseDialogSummaryDisplay).toContain("export function expenseDialogSummaryDisplay");
+    expect(expenseDialogSummaryDisplay).toContain("formatMoney");
     expect(contextRailExpenseForm).toContain("./context-rail-expense-form-state");
     expect(contextRailExpenseForm).toContain("const [state, setState]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");
