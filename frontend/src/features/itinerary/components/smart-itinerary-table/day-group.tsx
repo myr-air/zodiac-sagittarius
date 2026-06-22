@@ -1,20 +1,14 @@
 import { formatDayLabel } from "@/src/trip/itinerary-core";
-import { Icon } from "@/src/ui/icons";
-import { ActivityPathGraphDay } from "../activity-path-graph/ActivityPathGraphDay";
 import {
   groupChildItemsByParent,
   groupTopLevelItems,
 } from "@/src/features/itinerary/domain/itinerary-table-grouping";
 import {
-  addStopInlineButtonClassName,
-  addStopRowClassName,
   dayGroupClassName,
   daySpacerRowClassName,
-  graphCellClassName,
-  itemPlaceholderCellClassName,
-  itemPlaceholderRowClassName,
 } from "./smart-itinerary-table.styles";
-import { ActivityCell } from "./activity-cell";
+import { DayGroupActivityRows } from "./DayGroupActivityRows";
+import { DayGroupGraphCell } from "./DayGroupGraphCell";
 import { DayGroupHeader } from "./DayGroupHeader";
 import type { DayGroupProps } from "./day-group.types";
 
@@ -76,23 +70,18 @@ export function DayGroup({
         dayPathOverride={dayPathOverride}
         graphCell={
           showGraph ? (
-            <td
-              className={graphCellClassName}
-              rowSpan={Math.max(2, visibleItems.length + 2)}
-            >
-              <ActivityPathGraphDay
-                canEdit={canEdit}
-                day={group.day}
-                dayLabel={dayA11yLabel}
-                graphItems={visibleGraphItems}
-                graphWidth={graphColumnWidth}
-                pathOptions={pathOptions}
-                rowItems={visibleItems}
-                selectedItemId={selectedItemId}
-                onMoveItemToPath={onMoveItemToPath}
-                onSelectItem={onSelectItem}
-              />
-            </td>
+            <DayGroupGraphCell
+              canEdit={canEdit}
+              day={group.day}
+              dayLabel={dayA11yLabel}
+              graphColumnWidth={graphColumnWidth}
+              graphItems={visibleGraphItems}
+              pathOptions={pathOptions}
+              rowItems={visibleItems}
+              selectedItemId={selectedItemId}
+              onMoveItemToPath={onMoveItemToPath}
+              onSelectItem={onSelectItem}
+            />
           ) : null
         }
         group={group}
@@ -107,57 +96,30 @@ export function DayGroup({
         showGraph={showGraph}
         startDate={startDate}
       />
-      {!collapsed
-        ? visibleItems.map((item) => (
-            <tr
-              aria-label={itineraryLabels.row.openDetails({
-                activity: item.activity,
-              })}
-              className={itemPlaceholderRowClassName}
-              data-item-id={item.id}
-              data-hierarchy-level={1}
-              key={item.id}
-            >
-              <td className={itemPlaceholderCellClassName}>
-                <ActivityCell
-                  canEdit={canEdit}
-                  item={item}
-                  itineraryLabels={itineraryLabels}
-                  locale={locale}
-                  selected={selectedItemId === item.id}
-                  subItems={childItemsByParentId.get(item.id) ?? []}
-                  onAddSubActivity={onAddSubActivity}
-                  onAddNoteForItem={onAddNoteForItem}
-                  onAddBookingForItem={onAddBookingForItem}
-                  onSaveBookingForItem={onSaveBookingForItem}
-                  onUnlinkBookingForItem={onUnlinkBookingForItem}
-                  bookingDocs={bookingDocs}
-                  bookingLinkItems={bookingLinkItems}
-                  onDeleteItem={onDeleteItem}
-                  onEditItem={onEditItem}
-                  onOpenItemDetails={onOpenItemDetails}
-                  onSelectItem={onSelectItem}
-                  onUpdateItemInline={onUpdateItemInline}
-                />
-              </td>
-            </tr>
-          ))
-        : null}
       {!collapsed ? (
-        <tr className={addStopRowClassName} data-day-drop={group.day}>
-          <td colSpan={showGraph ? 1 : 2}>
-            {canEdit && onAddStop ? (
-              <button
-                type="button"
-                className={addStopInlineButtonClassName}
-                onClick={() => onAddStop(group.day)}
-              >
-                <Icon name="plus" />
-                <span>{itineraryLabels.addStop}</span>
-              </button>
-            ) : null}
-          </td>
-        </tr>
+        <DayGroupActivityRows
+          bookingDocs={bookingDocs}
+          bookingLinkItems={bookingLinkItems}
+          canEdit={canEdit}
+          childItemsByParentId={childItemsByParentId}
+          day={group.day}
+          itineraryLabels={itineraryLabels}
+          locale={locale}
+          selectedItemId={selectedItemId}
+          showGraph={showGraph}
+          visibleItems={visibleItems}
+          onAddBookingForItem={onAddBookingForItem}
+          onAddNoteForItem={onAddNoteForItem}
+          onAddStop={onAddStop}
+          onAddSubActivity={onAddSubActivity}
+          onDeleteItem={onDeleteItem}
+          onEditItem={onEditItem}
+          onOpenItemDetails={onOpenItemDetails}
+          onSaveBookingForItem={onSaveBookingForItem}
+          onSelectItem={onSelectItem}
+          onUnlinkBookingForItem={onUnlinkBookingForItem}
+          onUpdateItemInline={onUpdateItemInline}
+        />
       ) : null}
     </tbody>
   );
