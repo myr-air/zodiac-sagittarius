@@ -3,6 +3,7 @@ import {
   isTripParticipantDisabled,
 } from "@/src/trip/auth";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
+import { findMemberById } from "@/src/trip/members";
 import type { Member, Trip, TripParticipantSession } from "@/src/trip/types";
 import { tripFromJoinResponse } from "../model/trip-join-response-mapper";
 import { useTripJoinGateFormState } from "./use-trip-join-gate-form-state";
@@ -60,7 +61,7 @@ export function useTripJoinGateState({
   /* v8 ignore next */
   const activeTrip = joinedTrip ?? trip ?? null;
   const selectedMember = useMemo(
-    () => activeTrip?.members.find((member) => member.id === selectedMemberId) ?? null,
+    () => findMemberById(activeTrip?.members ?? [], selectedMemberId) ?? null,
     [activeTrip, selectedMemberId],
   );
   /* v8 ignore next */

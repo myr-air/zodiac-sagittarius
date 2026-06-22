@@ -1,5 +1,6 @@
 import { createLocalSessionToken } from "./auth-local-secrets";
 import { isTripParticipantDisabled } from "./auth-member-local";
+import { findMemberById } from "../members";
 import type { Member, Trip, TripParticipantSession } from "../types";
 
 interface TripParticipantSessionOptions {
@@ -23,6 +24,6 @@ export function createTripParticipantSession(trip: Trip, memberId: string, optio
 export function findSessionMember(trip: Trip, session: TripParticipantSession | null, now = new Date()): Member | null {
   if (!session || session.tripId !== trip.id) return null;
   if (Date.parse(session.expiresAt) <= now.getTime()) return null;
-  const member = trip.members.find((candidate) => candidate.id === session.memberId) ?? null;
+  const member = findMemberById(trip.members, session.memberId) ?? null;
   return member && !isTripParticipantDisabled(member) ? member : null;
 }

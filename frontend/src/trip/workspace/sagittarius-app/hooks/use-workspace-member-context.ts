@@ -1,5 +1,6 @@
 import { findSessionMember } from "@/src/trip/auth";
 import { isLocalParticipantSession } from "@/src/trip/auth";
+import { findMemberById } from "@/src/trip/members";
 import type {
   Member,
   Trip,
@@ -31,7 +32,7 @@ export function useWorkspaceMemberContext({
   const sessionMember = findSessionMember(trip, participantSession);
   const currentMember =
     sessionMember ??
-    trip.members.find((member) => member.id === currentMemberId) ??
+    findMemberById(trip.members, currentMemberId) ??
     trip.members[0];
   const isApiMode =
     dataSource === "api" && !isLocalParticipantSession(participantSession);

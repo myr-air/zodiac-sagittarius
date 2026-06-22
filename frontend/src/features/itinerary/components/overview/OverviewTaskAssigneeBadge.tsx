@@ -1,5 +1,6 @@
 import type { Trip, TripTask } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
+import { findMemberById } from "@/src/trip/members";
 import { overviewTaskMetaClassName } from "./overview.styles";
 
 export interface TaskAssigneeLabels {
@@ -19,7 +20,7 @@ export function TaskAssigneeBadge({
   labels: TaskAssigneeLabels;
 }) {
   const isPrivate = task.visibility === "private";
-  const member = task.assigneeId ? trip.members.find((m) => m.id === task.assigneeId) : null;
+  const member = findMemberById(trip.members, task.assigneeId) ?? null;
   const name = member?.displayName ?? labels.tripMember;
   const color = member?.color ?? "var(--color-text-subtle)";
   const initial = name.slice(0, 1).toUpperCase();

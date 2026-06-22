@@ -7,6 +7,7 @@ import type {
 } from "@/src/trip/types";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
 import { formatMoney } from "@/src/trip/expenses";
+import { findMemberById } from "@/src/trip/members";
 import {
   buildDestinationVisual,
   buildHighlightItems,
@@ -66,7 +67,7 @@ export function buildOverviewPageModel({
   const assignableMembers = trip.members.filter(
     (member) => member.id !== "member-viewer" && member.accessStatus !== "disabled",
   );
-  const currentMember = trip.members.find((member) => member.id === currentMemberId);
+  const currentMember = findMemberById(trip.members, currentMemberId);
   const roleLens = overviewRoleLens(currentMember);
 
   return {
