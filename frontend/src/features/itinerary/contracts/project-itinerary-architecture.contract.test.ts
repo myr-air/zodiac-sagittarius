@@ -31,6 +31,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
     const controlsDraftState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/trip-plan-controls-draft-state.ts");
     const headerControls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableHeaderControls.tsx");
+    const headerControlsHook = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryHeaderControls.ts");
     const headerControlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-header-controls-state.ts");
     const tripPlanControlsStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTableTripPlanControls.stories.tsx");
     const pathFiltersStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTablePathFilters.stories.tsx");
@@ -50,8 +51,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controlsDraftState).toContain("export interface TripPlanControlDraftState");
     expect(controlsDraftState).toContain("initialTripPlanControlDraftState");
     expect(controlsDraftState).toContain("resolveEditedTripPlanName");
-    expect(headerControls).toContain("./smart-itinerary-header-controls-state");
-    expect(headerControls).toContain("const [headerControlsState, setHeaderControlsState]");
+    expect(headerControls).toContain("./hooks/useSmartItineraryHeaderControls");
+    expect(headerControls).not.toContain("./smart-itinerary-header-controls-state");
+    expect(headerControls).not.toContain("useState");
+    expect(headerControls).not.toContain("useEffect");
+    expect(headerControls).not.toContain("useRef");
+    expect(headerControls).not.toContain("useDismissOnOutside");
+    expect(headerControlsHook).toContain("../smart-itinerary-header-controls-state");
+    expect(headerControlsHook).toContain("export function useSmartItineraryHeaderControls");
+    expect(headerControlsHook).toContain("const [headerControlsState, setHeaderControlsState]");
+    expect(headerControlsHook).toContain("useDismissOnOutside");
     expect(headerControls).not.toContain("const [headerControlsExpanded, setHeaderControlsExpanded]");
     expect(headerControls).not.toContain("const [renderHeaderControls, setRenderHeaderControls]");
     expect(headerControlsState).toContain("export interface SmartItineraryHeaderControlsState");

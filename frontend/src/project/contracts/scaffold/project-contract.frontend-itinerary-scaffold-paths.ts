@@ -200,6 +200,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/storybook/day-title-editor.stories.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/storybook/ItineraryNoteModal.stories.tsx",
   "src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryPathFilters.ts",
+  "src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryHeaderControls.ts",
   "src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts",
   "src/features/itinerary/components/activity-path-graph/ActivityPathGraphDay.tsx",
   "src/features/itinerary/components/activity-path-graph/storybook/ActivityPathGraphDay.stories.tsx",

@@ -1,6 +1,3 @@
-import { useEffect, useRef, useState } from "react";
-import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
-import { findTripPlanOptionById } from "@/src/trip/trip-plans";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import {
@@ -10,14 +7,8 @@ import {
   pageHeaderNoteClassName,
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
-import {
-  closeSmartItineraryHeaderControls,
-  initialSmartItineraryHeaderControlsState,
-  toggleSmartItineraryHeaderControls,
-  unmountClosedSmartItineraryHeaderControls,
-} from "./smart-itinerary-header-controls-state";
-import { selectedTripPlanIdForControl } from "./smart-itinerary-table-trip-plan-labels";
 import type { TripPlanHeaderControlsProps } from "./trip-plan-controls.types";
+import { useSmartItineraryHeaderControls } from "./hooks/useSmartItineraryHeaderControls";
 
 export function SmartItineraryTableHeaderControls({
   canEdit,
@@ -40,44 +31,16 @@ export function SmartItineraryTableHeaderControls({
   tripPlanError,
   tripPlans,
 }: TripPlanHeaderControlsProps) {
-  const [headerControlsState, setHeaderControlsState] = useState(
-    initialSmartItineraryHeaderControlsState,
-  );
-  const headerControlsRef = useRef<HTMLDivElement>(null);
-  const headerControlsButtonRef = useRef<HTMLButtonElement>(null);
-
-  const selectedTripPlanIdForControlValue = selectedTripPlanIdForControl(
-    tripPlans,
-    selectedTripPlanId,
-  );
-
-  const selectedTripPlan = findTripPlanOptionById(
-    tripPlans,
+  const {
+    headerControlsButtonRef,
+    headerControlsRef,
+    headerControlsState,
+    selectedTripPlan,
     selectedTripPlanIdForControlValue,
-  );
-
-  useEffect(() => {
-    if (headerControlsState.expanded || !headerControlsState.render) return;
-
-    const timeoutId = window.setTimeout(() => {
-      setHeaderControlsState(unmountClosedSmartItineraryHeaderControls());
-    }, 170);
-    return () => window.clearTimeout(timeoutId);
-  }, [headerControlsState.expanded, headerControlsState.render]);
-
-  useDismissOnOutside({
-    enabled: headerControlsState.expanded,
-    onDismiss: () =>
-      setHeaderControlsState((current) =>
-        closeSmartItineraryHeaderControls(current),
-      ),
-    triggerRefs: [headerControlsRef],
-    onEscape: () => {
-      setHeaderControlsState((current) =>
-        closeSmartItineraryHeaderControls(current),
-      );
-      headerControlsButtonRef.current?.focus();
-    },
+    toggleHeaderControls,
+  } = useSmartItineraryHeaderControls({
+    selectedTripPlanId,
+    tripPlans,
   });
 
   return (
@@ -94,11 +57,7 @@ export function SmartItineraryTableHeaderControls({
         aria-label={`${itineraryLabels.tripPlans.selectorLabel} controls`}
         aria-controls="itinerary-header-controls"
         aria-expanded={headerControlsState.expanded}
-        onClick={() => {
-          setHeaderControlsState((current) =>
-            toggleSmartItineraryHeaderControls(current),
-          );
-        }}
+        onClick={toggleHeaderControls}
       >
         <Icon name="settings" />
         <span className="min-w-0 truncate">
