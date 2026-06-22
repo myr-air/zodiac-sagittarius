@@ -9,6 +9,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       bookingFolders,
       bookingList,
       bookingDialog,
+      bookingDialogFields,
       bookingFilePanel,
       bookingDialogLinks,
       bookingDialogState,
@@ -55,9 +56,12 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingFilePanel).not.toContain("grid max-w-[360px] gap-1");
     expect(bookingDialogState).toContain("export function useBookingDialogState");
     expect(bookingDialogState).toContain("export type BookingDialogState");
-    expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialogState).not.toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogState).toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
     expect(bookingDialogState).toContain("function submit");
+    expect(bookingDialogFields).toContain("export function initialBookingDialogFields");
+    expect(bookingDialogFields).toContain("export function buildBookingDialogSubmitInput");
+    expect(bookingDialogFields).toContain("@/src/features/itinerary/lib/itinerary-time");
 
     expect(photoAlbumDialog).toContain("./usePhotoAlbumDialogState");
     expect(photoAlbumDialog).toContain("PhotoAlbumDialogFields");

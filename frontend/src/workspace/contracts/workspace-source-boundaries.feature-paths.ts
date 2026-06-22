@@ -4,6 +4,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   bookingFolders: "src/features/workspace/pages/bookings-docs/model/booking-folders.ts",
   bookingList: "src/features/workspace/pages/bookings-docs/model/booking-list.ts",
   bookingDialog: "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx",
+  bookingDialogFields: "src/features/workspace/pages/bookings-docs/model/booking-dialog-fields.ts",
   bookingDialogLinks: "src/features/workspace/pages/bookings-docs/components/BookingDialogLinks.tsx",
   bookingFilePanel: "src/features/workspace/pages/bookings-docs/components/BookingFilePanel.tsx",
   bookingDialogState: "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts",
