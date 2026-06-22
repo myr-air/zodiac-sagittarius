@@ -3,7 +3,10 @@ import type { AccountApiClient, AccountSession } from "@/src/account/api-client"
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { enMessages } from "@/src/i18n/messages/en";
-import { buildAccountPortalDashboardHandlers } from "../account-access-panel-portal-handlers";
+import {
+  buildAccountPortalDashboardHandlers,
+  type BuildAccountPortalDashboardHandlersOptions,
+} from "../account-access-panel-portal-handlers";
 
 const accountSession: AccountSession = {
   createdAt: "2026-06-01T00:00:00.000Z",
@@ -28,7 +31,7 @@ const trip = {
   name: "Tokyo",
 } as Trip;
 
-function buildHandlers(options: Partial<Parameters<typeof buildAccountPortalDashboardHandlers>[0]> = {}) {
+function buildHandlers(options: Partial<BuildAccountPortalDashboardHandlersOptions> = {}) {
   const accountClient = {
     logout: vi.fn().mockResolvedValue(undefined),
   } as unknown as AccountApiClient;

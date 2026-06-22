@@ -65,6 +65,7 @@ describe("Sagittarius account source boundaries", () => {
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(accountAccessPanel).toContain("AccountAccessChrome");
+    expect(accountAccessPanel).toContain("export interface AccountAccessPanelProps");
     expect(accountAccessPanel).toContain("accountAccessPanelPageClassName");
     expect(accountAccessPanel).toContain("accountAccessPanelShellClassName");
     expect(accountAccessPanel).not.toContain("accountHeroClassName");
@@ -79,6 +80,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPortalContent).toContain("buildAccountPortalDashboardHandlers");
     expect(accountAccessPortalContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessPortalHandlers).toContain("export function buildAccountPortalDashboardHandlers");
+    expect(accountAccessPortalHandlers).toContain("export interface BuildAccountPortalDashboardHandlersOptions");
     expect(accountAccessPortalHandlers).toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessChrome).toContain("export function AccountAccessChrome");
     expect(accountAccessChrome).toContain("accountHeroClassName");
@@ -99,6 +101,8 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStorySupport).toContain("accountStoryClient");
     expect(accountAccessStorySupport).not.toContain("const accountSettings");
     expect(accountAccessStorySupport).not.toContain("AccountSettingsUpdateRequest");
+    expect(accountAccessStorySupport).toContain("AccountAccessPanelProps");
+    expect(accountAccessStorySupport).not.toContain("Parameters<typeof AccountAccessPanel>");
     expect(accountAccessStorySupport).toContain("export const accountLoginStoryArgs");
     expect(accountAccessStorySupport).toContain("export const portalDashboardStoryArgs");
     expect(accountAccessFixtures).toContain("export const accountSettings");

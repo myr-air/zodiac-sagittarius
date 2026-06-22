@@ -3,7 +3,7 @@ import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 
-interface BuildAccountPortalDashboardHandlersOptions {
+export interface BuildAccountPortalDashboardHandlersOptions {
   accountClient: AccountApiClient;
   accountSession: AccountSession;
   apiClient?: TripApiClient;

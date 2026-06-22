@@ -26,7 +26,7 @@ import {
 } from "./layout/account-access-panel-shell-classes";
 import { useAccountAccessPanelState } from "./state/use-account-access-panel-state";
 
-interface AccountAccessPanelProps {
+export interface AccountAccessPanelProps {
   accessMode?: AccountAccessMode;
   accountClient: AccountApiClient;
   accountSession: AccountSession | null;

@@ -1,6 +1,6 @@
 import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
-import type { AccountAccessPanel } from "../AccountAccessPanel";
+import type { AccountAccessPanelProps } from "../AccountAccessPanel";
 import {
   accountStoryClient,
   accountStoryTripApiClient,
@@ -13,7 +13,7 @@ export {
   trustedStorySession,
 } from "./account-access-panel.stories.clients";
 
-type AccountAccessStoryArgs = Parameters<typeof AccountAccessPanel>[0];
+type AccountAccessStoryArgs = AccountAccessPanelProps;
 
 export const accountLoginStoryArgs = {
   accessMode: "account-login",
