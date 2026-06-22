@@ -94,7 +94,10 @@ export {
 export {
   buildInlineItineraryItemPatch,
   daysBetweenIsoDates,
+  durationBetweenTimes,
+  endOffsetDaysBetweenTimes,
   itineraryDateTime,
+  minutesToTime,
   normalizeInlineTimePatch,
   parseTime,
   shiftIsoDate,

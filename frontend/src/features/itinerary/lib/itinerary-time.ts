@@ -1,4 +1,9 @@
-import { parseTime } from "@/src/trip/itinerary-core";
+import {
+  durationBetweenTimes as coreDurationBetweenTimes,
+  endOffsetDaysBetweenTimes as coreEndOffsetDaysBetweenTimes,
+  minutesToTime as coreMinutesToTime,
+  parseTime,
+} from "@/src/trip/itinerary-core";
 
 export function parseTimeToMinutes(value: string): number | null {
   const trimmed = value.trim();
@@ -20,10 +25,7 @@ export function fromDateTimeLocalValue(value: string): string | null {
 }
 
 export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-  if (start === null || end === null) return 0;
-  return end <= start ? 1 : 0;
+  return coreEndOffsetDaysBetweenTimes(startTime.trim(), endTime.trim());
 }
 
 export function durationBetweenTimes(
@@ -31,15 +33,9 @@ export function durationBetweenTimes(
   endTime: string,
   endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
 ): number | null {
-  const start = parseTimeToMinutes(startTime);
-  const end = parseTimeToMinutes(endTime);
-  if (start === null || end === null) return null;
-  const duration = end + endOffsetDays * 24 * 60 - start;
-  return Math.max(1, duration);
+  return coreDurationBetweenTimes(startTime.trim(), endTime.trim(), endOffsetDays);
 }
 
 export function minutesToTime(value: number): string {
-  const hour = Math.floor(value / 60);
-  const minute = value % 60;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  return coreMinutesToTime(value);
 }

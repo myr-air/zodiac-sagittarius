@@ -31,6 +31,31 @@ export function parseTime(value: string): number | null {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
+export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
+  const start = parseTime(startTime);
+  const end = parseTime(endTime);
+  if (start === null || end === null) return 0;
+  return end <= start ? 1 : 0;
+}
+
+export function durationBetweenTimes(
+  startTime: string,
+  endTime: string,
+  endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
+): number | null {
+  const start = parseTime(startTime);
+  const end = parseTime(endTime);
+  if (start === null || end === null) return null;
+  const duration = end + endOffsetDays * 24 * 60 - start;
+  return Math.max(1, duration);
+}
+
+export function minutesToTime(value: number): string {
+  const hour = Math.floor(value / 60);
+  const minute = value % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 export function daysBetweenIsoDates(from: string, to: string): number {
   return Math.round(
     (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
