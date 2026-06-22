@@ -17,20 +17,25 @@ describe("bookings docs page state structure", () => {
     const bookingPageStateSource = readBookingsDocsPageSource(
       "model/booking-page-state.ts",
     );
+    const bookingBrowserStateSource = readBookingsDocsPageSource(
+      "hooks/useBookingBrowserState.ts",
+    );
 
-    expect(pageStateSource).toContain("initialBookingBrowserState");
+    expect(pageStateSource).toContain("useBookingBrowserState");
     expect(pageStateSource).toContain("initialBookingModalState");
-    expect(pageStateSource).toContain("updateBookingBrowserState");
     expect(pageStateSource).toContain("updateBookingModalState");
-    expect(pageStateSource).toContain("selectBookingBrowserState");
-    expect(pageStateSource).toContain("selectBookingFolderBrowserState");
-    expect(pageStateSource).toContain("changeBookingQueryBrowserState");
-    expect(pageStateSource).toContain("changeBookingStatusFilterBrowserState");
-    expect(pageStateSource).toContain("setBookingStatusMenuOpenBrowserState");
-    expect(pageStateSource).toContain("const [browserState, setBrowserState]");
+    expect(pageStateSource).not.toContain("const [browserState, setBrowserState]");
     expect(pageStateSource).toContain("const [modalState, setModalState]");
     expect(pageStateSource).not.toContain("const [activeFolderId, setActiveFolderId]");
     expect(pageStateSource).not.toContain("const [dialogBooking, setDialogBooking]");
+    expect(bookingBrowserStateSource).toContain("initialBookingBrowserState");
+    expect(bookingBrowserStateSource).toContain("updateBookingBrowserState");
+    expect(bookingBrowserStateSource).toContain("selectBookingBrowserState");
+    expect(bookingBrowserStateSource).toContain("selectBookingFolderBrowserState");
+    expect(bookingBrowserStateSource).toContain("changeBookingQueryBrowserState");
+    expect(bookingBrowserStateSource).toContain("changeBookingStatusFilterBrowserState");
+    expect(bookingBrowserStateSource).toContain("setBookingStatusMenuOpenBrowserState");
+    expect(bookingBrowserStateSource).toContain("const [browserState, setBrowserState]");
     expect(bookingPageStateSource).toContain("export interface BookingBrowserState");
     expect(bookingPageStateSource).toContain("export interface BookingModalState");
     expect(bookingPageStateSource).toContain(

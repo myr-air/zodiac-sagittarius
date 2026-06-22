@@ -1,4 +1,4 @@
-import { type SetStateAction, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import type {
   BookingDocInput,
@@ -6,25 +6,12 @@ import type {
   DeleteBookingDocHandler,
   UpdateBookingDocHandler,
 } from "../BookingsDocsPage.types";
-import type { BookingStatusFilter } from "../model/booking-options";
 import {
-  changeBookingQueryBrowserState,
-  changeBookingStatusFilterBrowserState,
-  initialBookingBrowserState,
   initialBookingModalState,
-  selectBookingBrowserState,
-  selectBookingFolderBrowserState,
-  setBookingStatusMenuOpenBrowserState,
-  updateBookingBrowserState,
   updateBookingModalState,
-  type BookingBrowserState,
   type BookingModalState,
 } from "../model/booking-page-state";
-import {
-  countBookingFolders,
-  findBookingFolder,
-  type BookingFolderId,
-} from "../model/booking-folders";
+import { countBookingFolders, findBookingFolder } from "../model/booking-folders";
 import {
   filterBookingPageDocs,
   lockedBookingDocsForMember,
@@ -32,6 +19,7 @@ import {
   selectedBookingPageRelations,
   visibleBookingDocsForMember,
 } from "../model/booking-page-selectors";
+import { useBookingBrowserState } from "./useBookingBrowserState";
 
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];
@@ -52,9 +40,20 @@ export function useBookingsDocsPageState({
   tasks,
   trip,
 }: UseBookingsDocsPageStateInput) {
-  const [browserState, setBrowserState] = useState<BookingBrowserState>(() =>
-    initialBookingBrowserState(bookingDocs),
-  );
+  const {
+    activeFolderId,
+    changeQuery,
+    changeStatusFilter,
+    mobilePreviewOpen,
+    query,
+    selectedBookingId,
+    selectBooking,
+    selectFolder,
+    setMobilePreviewOpen,
+    setStatusMenuOpen,
+    statusFilter,
+    statusMenuOpen,
+  } = useBookingBrowserState({ bookingDocs });
   const [modalState, setModalState] = useState<BookingModalState>(
     initialBookingModalState,
   );
@@ -64,39 +63,26 @@ export function useBookingsDocsPageState({
   );
   const folderDocs = useMemo(
     () => filterBookingPageDocs({
-      activeFolderId: browserState.activeFolderId,
+      activeFolderId,
       docs: visibleDocs,
-      query: browserState.query,
-      statusFilter: browserState.statusFilter,
+      query,
+      statusFilter,
       trip,
     }),
-    [
-      browserState.activeFolderId,
-      browserState.query,
-      browserState.statusFilter,
-      trip,
-      visibleDocs,
-    ],
+    [activeFolderId, query, statusFilter, trip, visibleDocs],
   );
   const folderCounts = useMemo(() => countBookingFolders(visibleDocs), [visibleDocs]);
   const lockedDocs = lockedBookingDocsForMember(bookingDocs, currentMember);
   const selectedBooking = selectedBookingPageDoc(
     folderDocs,
-    browserState.selectedBookingId,
+    selectedBookingId,
   );
   const selectedRelations = selectedBookingPageRelations({
     booking: selectedBooking,
     tasks,
     trip,
   });
-  const activeFolder = findBookingFolder(browserState.activeFolderId);
-
-  function updateBrowserState<Field extends keyof BookingBrowserState>(
-    field: Field,
-    value: BookingBrowserState[Field],
-  ) {
-    setBrowserState((current) => updateBookingBrowserState(current, field, value));
-  }
+  const activeFolder = findBookingFolder(activeFolderId);
 
   function updateModalState<Field extends keyof BookingModalState>(
     field: Field,
@@ -120,43 +106,9 @@ export function useBookingsDocsPageState({
     updateModalState("deleteBooking", null);
   }
 
-  function selectBooking(bookingDocId: string) {
-    setBrowserState((current) =>
-      selectBookingBrowserState(current, bookingDocId),
-    );
-  }
-
-  function selectFolder(folderId: BookingFolderId) {
-    setBrowserState((current) =>
-      selectBookingFolderBrowserState(current, folderId),
-    );
-  }
-
-  function changeQuery(nextQuery: string) {
-    setBrowserState((current) =>
-      changeBookingQueryBrowserState(current, nextQuery),
-    );
-  }
-
-  function changeStatusFilter(nextStatus: BookingStatusFilter) {
-    setBrowserState((current) =>
-      changeBookingStatusFilterBrowserState(current, nextStatus),
-    );
-  }
-
-  function setMobilePreviewOpen(nextOpen: boolean) {
-    updateBrowserState("mobilePreviewOpen", nextOpen);
-  }
-
-  function setStatusMenuOpen(nextOpen: SetStateAction<boolean>) {
-    setBrowserState((current) =>
-      setBookingStatusMenuOpenBrowserState(current, nextOpen),
-    );
-  }
-
   return {
     activeFolder,
-    activeFolderId: browserState.activeFolderId,
+    activeFolderId,
     changeQuery,
     changeStatusFilter,
     confirmDelete,
@@ -165,8 +117,8 @@ export function useBookingsDocsPageState({
     folderCounts,
     folderDocs,
     lockedDocs,
-    mobilePreviewOpen: browserState.mobilePreviewOpen,
-    query: browserState.query,
+    mobilePreviewOpen,
+    query,
     selectedBooking,
     selectedRelations,
     selectBooking,
@@ -177,8 +129,8 @@ export function useBookingsDocsPageState({
       updateModalState("dialogBooking", dialogBooking),
     setMobilePreviewOpen,
     setStatusMenuOpen,
-    statusFilter: browserState.statusFilter,
-    statusMenuOpen: browserState.statusMenuOpen,
+    statusFilter,
+    statusMenuOpen,
     submitBooking,
   };
 }
