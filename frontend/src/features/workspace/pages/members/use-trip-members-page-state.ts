@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, type SetStateAction, useMemo, useState } from "react";
 import type {
   Member,
   Trip,
@@ -47,6 +47,18 @@ interface UseTripMembersPageStateInput {
   trip: Trip;
 }
 
+interface MemberFilterState {
+  query: string;
+  roleFilter: MemberRoleFilter;
+  statusFilter: MemberStatusFilter;
+}
+
+interface MemberCreateFormState {
+  isOpen: boolean;
+  name: string;
+  role: Exclude<TripRole, "owner">;
+}
+
 export function useTripMembersPageState({
   canManagePeople,
   currentMember,
@@ -60,13 +72,17 @@ export function useTripMembersPageState({
   onTransferOwnership,
   trip,
 }: UseTripMembersPageStateInput) {
-  const [query, setQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<MemberRoleFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<MemberStatusFilter>("all");
-  const [createPanelOpen, setCreatePanelOpen] = useState(false);
-  const [newMemberName, setNewMemberName] = useState("");
-  const [newMemberRole, setNewMemberRole] =
-    useState<Exclude<TripRole, "owner">>(defaultCreatedMemberRole);
+  const [filterState, setFilterState] = useState<MemberFilterState>({
+    query: "",
+    roleFilter: "all",
+    statusFilter: "all",
+  });
+  const [createFormState, setCreateFormState] =
+    useState<MemberCreateFormState>({
+      isOpen: false,
+      name: "",
+      role: defaultCreatedMemberRole,
+    });
   const {
     copyInviteLink,
     copyState,
@@ -110,31 +126,62 @@ export function useTripMembersPageState({
       filterTripMembers({
         currentMemberId: currentMember.id,
         members: visibleMembers,
-        query,
-        roleFilter,
-        statusFilter,
+        query: filterState.query,
+        roleFilter: filterState.roleFilter,
+        statusFilter: filterState.statusFilter,
       }),
-    [currentMember.id, query, roleFilter, statusFilter, visibleMembers],
+    [
+      currentMember.id,
+      filterState.query,
+      filterState.roleFilter,
+      filterState.statusFilter,
+      visibleMembers,
+    ],
   );
 
+  function updateFilterState<Field extends keyof MemberFilterState>(
+    field: Field,
+    value: MemberFilterState[Field],
+  ) {
+    setFilterState((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateCreateFormState<Field extends keyof MemberCreateFormState>(
+    field: Field,
+    value: MemberCreateFormState[Field],
+  ) {
+    setCreateFormState((current) => ({ ...current, [field]: value }));
+  }
+
   function resetFilters() {
-    setQuery("");
-    setRoleFilter("all");
-    setStatusFilter("all");
+    setFilterState({
+      query: "",
+      roleFilter: "all",
+      statusFilter: "all",
+    });
+  }
+
+  function setCreatePanelOpen(nextOpen: SetStateAction<boolean>) {
+    setCreateFormState((current) => ({
+      ...current,
+      isOpen: typeof nextOpen === "function" ? nextOpen(current.isOpen) : nextOpen,
+    }));
   }
 
   function submitNewMember(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input = buildCreateMemberInput({
       canManagePeople,
-      displayName: newMemberName,
-      role: newMemberRole,
+      displayName: createFormState.name,
+      role: createFormState.role,
     });
     if (!input) return;
     onCreateMember(input);
-    setNewMemberName("");
-    setNewMemberRole(defaultCreatedMemberRole);
-    setCreatePanelOpen(false);
+    setCreateFormState({
+      isOpen: false,
+      name: "",
+      role: defaultCreatedMemberRole,
+    });
   }
 
   return {
@@ -143,28 +190,31 @@ export function useTripMembersPageState({
     confirmTransferOwnership,
     copyInviteLink,
     copyState,
-    createPanelOpen,
+    createPanelOpen: createFormState.isOpen,
     filteredMembers,
     inviteLink,
     isRotatingInviteToken,
     memberDialog,
-    newMemberName,
-    newMemberRole,
+    newMemberName: createFormState.name,
+    newMemberRole: createFormState.role,
     passwordError,
     passwordValue,
     promptChangePassword,
-    query,
+    query: filterState.query,
     resetFilters,
-    roleFilter,
+    roleFilter: filterState.roleFilter,
     rotateInviteToken,
     setCreatePanelOpen,
-    setNewMemberName,
-    setNewMemberRole,
+    setNewMemberName: (name: string) => updateCreateFormState("name", name),
+    setNewMemberRole: (role: Exclude<TripRole, "owner">) =>
+      updateCreateFormState("role", role),
     setPasswordValue,
-    setQuery,
-    setRoleFilter,
-    setStatusFilter,
-    statusFilter,
+    setQuery: (query: string) => updateFilterState("query", query),
+    setRoleFilter: (roleFilter: MemberRoleFilter) =>
+      updateFilterState("roleFilter", roleFilter),
+    setStatusFilter: (statusFilter: MemberStatusFilter) =>
+      updateFilterState("statusFilter", statusFilter),
+    statusFilter: filterState.statusFilter,
     submitMemberDialog,
     submitNewMember,
     summaryStats,

@@ -15,6 +15,14 @@ describe("members page state structure", () => {
     const taskDialogSource = readMembersPageSource("use-member-task-dialog-state.ts");
 
     expect(pageStateSource).toContain("useMemberTaskDialogState");
+    expect(pageStateSource).toContain("MemberFilterState");
+    expect(pageStateSource).toContain("MemberCreateFormState");
+    expect(pageStateSource).toContain("const [filterState, setFilterState]");
+    expect(pageStateSource).toContain("const [createFormState, setCreateFormState]");
+    expect(pageStateSource).toContain("function updateFilterState");
+    expect(pageStateSource).toContain("function updateCreateFormState");
+    expect(pageStateSource).not.toContain("const [query, setQuery]");
+    expect(pageStateSource).not.toContain("const [newMemberName, setNewMemberName]");
     expect(pageStateSource).not.toContain("function submitMemberDialog");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("function submitMemberDialog");
