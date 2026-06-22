@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import type { useI18n } from "@/src/i18n/I18nProvider";
-import type { CopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import type { CopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import type { TripInvitableRole } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "../model/member-page-options";
 

@@ -1,6 +1,6 @@
 import { type Dispatch, type SetStateAction, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
-import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import {
   generateJoinPassword,
   randomToken,

@@ -1,5 +1,5 @@
 import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-albums";
-import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";

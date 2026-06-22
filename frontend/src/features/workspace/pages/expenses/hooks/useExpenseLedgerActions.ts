@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { slugifyFilePart } from "@/src/lib/file-names";
-import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import { buildExpenseCsv, buildPaybackReminder } from "@/src/trip/expenses";
 import type {
   ExpenseSummary,

@@ -10,7 +10,7 @@ import { Icon } from "@/src/ui/icons";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { useCopyFeedbackState } from "@/src/shared/hooks/use-copy-feedback-state";
+import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { errorMessage } from "../auth";
 import {
