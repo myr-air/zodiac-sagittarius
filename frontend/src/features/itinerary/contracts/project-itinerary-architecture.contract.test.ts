@@ -107,6 +107,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
   });
 
+  it("keeps context rail booking display labels in the itinerary booking domain", () => {
+    const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
+    const contextRailUtils = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail.utils.ts");
+    const bookingDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-booking-display.ts");
+
+    expect(bookingDocItem).toContain("@/src/features/itinerary/domain/itinerary-booking-display");
+    expect(contextRailUtils).not.toContain("function formatBookingDocTypeLabel");
+    expect(bookingDisplay).toContain("export function formatBookingDocTypeLabel");
+  });
+
   it("keeps itinerary ticket modal form state split from modal render", () => {
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
     const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");

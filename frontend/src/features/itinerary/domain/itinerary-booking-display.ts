@@ -84,3 +84,10 @@ export function formatBookingSummary(booking: BookingDoc, items: ItineraryItem[]
   const provider = booking.providerName ? `${booking.providerName} · ` : "";
   return `${provider}${linkedNames.length ? linkedNames.join(", ") : booking.status}`;
 }
+
+export function formatBookingDocTypeLabel(type: BookingDocType): string {
+  return type
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}

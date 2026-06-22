@@ -4,7 +4,6 @@ import type { BookingDocType, Member, Suggestion, TripTask } from "@/src/trip/ty
 import {
   bookingDocTypeOptions,
   contextRailTabValues,
-  formatBookingDocTypeLabel,
   memberDisplayName,
   suggestionLabel,
   taskKindLabel,
@@ -13,11 +12,6 @@ import {
 describe("context rail utils", () => {
   it("keeps context rail tabs in display order", () => {
     expect(contextRailTabValues).toEqual(["notes", "booking", "suggestions"]);
-  });
-
-  it("formats booking document type labels", () => {
-    expect(formatBookingDocTypeLabel("public_transport")).toBe("Public Transport");
-    expect(formatBookingDocTypeLabel("activity_ticket")).toBe("Activity Ticket");
   });
 
   it("lists all booking doc type options", () => {

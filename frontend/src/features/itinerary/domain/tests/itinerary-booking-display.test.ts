@@ -6,6 +6,7 @@ import {
   bookingIconForItem,
   bookingTemplateForItem,
   bookingTemplateLabel,
+  formatBookingDocTypeLabel,
   formatBookingSummary,
 } from "../itinerary-booking-display";
 
@@ -55,5 +56,10 @@ describe("itinerary-booking-display", () => {
         }),
       ]),
     ).toBe("MTR · Airport train");
+  });
+
+  it("formats booking document type labels", () => {
+    expect(formatBookingDocTypeLabel("public_transport")).toBe("Public Transport");
+    expect(formatBookingDocTypeLabel("activity_ticket")).toBe("Activity Ticket");
   });
 });
