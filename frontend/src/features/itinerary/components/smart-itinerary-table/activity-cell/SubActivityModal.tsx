@@ -1,12 +1,11 @@
-import { Icon } from "@/src/ui/icons";
 import {
   subActivityModalBackdropClassName,
   subActivityModalBodyClassName,
   subActivityModalClassName,
-  subActivityModalCloseClassName,
   subActivityModalHeaderClassName,
   subActivityModalTitleClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { SubActivityList } from "./SubActivityList";
 import type { SubActivityModalProps } from "./sub-activity.types";
@@ -42,20 +41,14 @@ export function SubActivityModal({
         aria-label={`Sub-activities for ${item.activity}`}
         onClick={(event) => event.stopPropagation()}
       >
-        <header className={subActivityModalHeaderClassName}>
-          <strong className={subActivityModalTitleClassName}>
-            <span>{item.activity}</span>
-            <small>{itineraryLabels.row.subItemQuick}</small>
-          </strong>
-          <button
-            type="button"
-            className={subActivityModalCloseClassName}
-            aria-label="Close sub-activities"
-            onClick={onClose}
-          >
-            <Icon name="x" />
-          </button>
-        </header>
+        <ActivityCellModalHeader
+          closeLabel="Close sub-activities"
+          headerClassName={subActivityModalHeaderClassName}
+          onClose={onClose}
+          subtitle={itineraryLabels.row.subItemQuick}
+          title={item.activity}
+          titleClassName={subActivityModalTitleClassName}
+        />
         <div className={subActivityModalBodyClassName}>
           <SubActivityList
             canEdit={canEdit}

@@ -1,4 +1,3 @@
-import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
@@ -7,13 +6,13 @@ import {
   ticketModalCopy,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
-  subActivityModalCloseClassName,
   ticketModalBackdropClassName,
   ticketModalBodyClassName,
   ticketModalClassName,
   ticketModalHeaderClassName,
   ticketModalTitleClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ItineraryTicketModalFooter } from "./ItineraryTicketModalFooter";
 import {
   ExistingTicketList,
@@ -90,20 +89,14 @@ export function ItineraryTicketModal({
         onClick={(event) => event.stopPropagation()}
         onSubmit={(event) => void submit(event)}
       >
-        <header className={ticketModalHeaderClassName}>
-          <strong className={ticketModalTitleClassName}>
-            <span>{copy.title(item.activity)}</span>
-            <small>{copy.subtitle}</small>
-          </strong>
-          <button
-            type="button"
-            className={subActivityModalCloseClassName}
-            aria-label={copy.close}
-            onClick={onClose}
-          >
-            <Icon name="x" />
-          </button>
-        </header>
+        <ActivityCellModalHeader
+          closeLabel={copy.close}
+          headerClassName={ticketModalHeaderClassName}
+          onClose={onClose}
+          subtitle={copy.subtitle}
+          title={copy.title(item.activity)}
+          titleClassName={ticketModalTitleClassName}
+        />
         <div className={ticketModalBodyClassName}>
           <TicketModeToggle
             copy={copy}

@@ -1,7 +1,5 @@
 import { TimePickerField } from "@/src/shared/components/date-time-pickers";
-import { Icon } from "@/src/ui/icons";
 import {
-  subActivityModalCloseClassName,
   timeEditFieldsClassName,
   timeEditFieldClassName,
   timeEditHelperClassName,
@@ -18,6 +16,7 @@ import {
   timeEditPreviewValueClassName,
   timeEditSaveButtonClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import type { TimeEditModalProps } from "./time-components.types";
 import { useTimeEditModalModel } from "./use-time-edit-modal-model";
@@ -54,22 +53,14 @@ export function TimeEditModal({
         onClick={(event) => event.stopPropagation()}
         onSubmit={(event) => void save(event)}
       >
-        <header className={timeEditModalHeaderClassName}>
-          <strong className={timeEditModalTitleClassName}>
-            <span>{item.activity}</span>
-            <small>
-              {itineraryLabels.row.inlineTime({ activity: item.activity })}
-            </small>
-          </strong>
-          <button
-            type="button"
-            className={subActivityModalCloseClassName}
-            aria-label="Close time editor"
-            onClick={onClose}
-          >
-            <Icon name="x" />
-          </button>
-        </header>
+        <ActivityCellModalHeader
+          closeLabel="Close time editor"
+          headerClassName={timeEditModalHeaderClassName}
+          onClose={onClose}
+          subtitle={itineraryLabels.row.inlineTime({ activity: item.activity })}
+          title={item.activity}
+          titleClassName={timeEditModalTitleClassName}
+        />
         <div className={timeEditModalBodyClassName}>
           <div className={timeEditFieldsClassName}>
             <label className={timeEditFieldClassName}>

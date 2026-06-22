@@ -73,6 +73,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const modalPortal = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx",
     );
+    const modalHeader = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalHeader.tsx",
+    );
     const modalModel = readItineraryArchitectureSource(
       "src/features/itinerary/domain/time-edit-modal-model.ts",
     );
@@ -94,6 +97,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
+    expect(modal).toContain("./ActivityCellModalHeader");
     expect(modal).toContain("./use-time-edit-modal-model");
     expect(modal).toContain("./ActivityCellModalPortal");
     expect(modal).not.toContain("createPortal");
@@ -112,6 +116,8 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modalPortal).toContain("export function ActivityCellModalPortal");
     expect(modalPortal).toContain("createPortal");
     expect(modalPortal).toContain("@/src/shared/hooks/use-escape-to-close");
+    expect(modalHeader).toContain("export function ActivityCellModalHeader");
+    expect(modalHeader).toContain("subActivityModalCloseClassName");
   });
 
   it("keeps smart itinerary styles split by table, header, and activity cell responsibility", () => {
@@ -179,6 +185,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(item).toContain("InlineActivityField");
     expect(item).toContain("ItineraryBookingButton");
     expect(modal).toContain("export function SubActivityModal");
+    expect(modal).toContain("./ActivityCellModalHeader");
     expect(modal).toContain("./ActivityCellModalPortal");
     expect(modal).not.toContain("createPortal");
     expect(modal).not.toContain("@/src/shared/hooks/use-escape-to-close");

@@ -1,7 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
-import { subActivityModalCloseClassName } from "../smart-itinerary-table.styles";
 import {
   noteModalSaveButtonClassName,
   ticketModalCancelButtonClassName,
@@ -15,6 +14,7 @@ import {
 } from "../smart-itinerary-table.styles";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { useItineraryNoteModalModel } from "./use-itinerary-note-modal-model";
 
@@ -48,20 +48,14 @@ export function ItineraryNoteModal({
         onClick={(event) => event.stopPropagation()}
       >
         <form className="contents" onSubmit={(event) => void submit(event)}>
-          <header className={ticketModalHeaderClassName}>
-            <strong className={ticketModalTitleClassName}>
-              <span>{copy.title}</span>
-              <small>{copy.subtitle}</small>
-            </strong>
-            <button
-              type="button"
-              className={subActivityModalCloseClassName}
-              aria-label={copy.close}
-              onClick={onClose}
-            >
-              <Icon name="x" />
-            </button>
-          </header>
+          <ActivityCellModalHeader
+            closeLabel={copy.close}
+            headerClassName={ticketModalHeaderClassName}
+            onClose={onClose}
+            subtitle={copy.subtitle}
+            title={copy.title}
+            titleClassName={ticketModalTitleClassName}
+          />
           <div className={ticketModalBodyClassName}>
             <label className={cn(ticketFieldClassName, "col-span-full")}>
               <span>{copy.label}</span>
