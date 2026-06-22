@@ -75,6 +75,14 @@ export function safePhotoAlbumCoverHref(value: string | null | undefined): strin
   return safePhotoAlbumHref(trimmed);
 }
 
+export function findPhotoAlbumById(
+  albums: readonly TripPhotoAlbumLink[],
+  albumId: string | null | undefined,
+): TripPhotoAlbumLink | null {
+  if (!albumId) return null;
+  return albums.find((album) => album.id === albumId) ?? null;
+}
+
 export function findPhotoAlbumRelations(
   album: TripPhotoAlbumLink,
   trip: Trip,

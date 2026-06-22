@@ -1,4 +1,7 @@
-import { filterPhotoAlbumLinks } from "@/src/trip/photo-albums";
+import {
+  filterPhotoAlbumLinks,
+  findPhotoAlbumById,
+} from "@/src/trip/photo-albums";
 import { safeExternalHost } from "@/src/trip/places";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { photoProviders, type PhotoProviderFilter } from "./photo-page-options";
@@ -23,7 +26,7 @@ export function selectedPhotoAlbum(
   albums: readonly TripPhotoAlbumLink[],
   selectedAlbumId: string,
 ): TripPhotoAlbumLink | null {
-  return albums.find((album) => album.id === selectedAlbumId) ?? albums[0] ?? null;
+  return findPhotoAlbumById(albums, selectedAlbumId) ?? albums[0] ?? null;
 }
 
 export function photoAlbumLinkHost(href: string | null): string | null {

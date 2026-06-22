@@ -24,6 +24,7 @@ export type {
 export {
   buildPhotoAlbumSummary,
   filterPhotoAlbumLinks,
+  findPhotoAlbumById,
   findPhotoAlbumRelations,
   safePhotoAlbumCoverHref,
   safePhotoAlbumHref,

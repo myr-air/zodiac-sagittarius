@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPhotoAlbumSummary,
   filterPhotoAlbumLinks,
+  findPhotoAlbumById,
   findPhotoAlbumRelations,
   normalizePhotoAlbumCreateInput,
   safePhotoAlbumCoverHref,
@@ -28,6 +29,13 @@ describe("photo album helpers", () => {
     expect(filterPhotoAlbumLinks(albums, { provider: "dropbox" }).map((album) => album.id)).toEqual(["album-dropbox"]);
     expect(filterPhotoAlbumLinks(albums, { access: "view_only" }).map((album) => album.id)).toEqual(["album-drive"]);
     expect(filterPhotoAlbumLinks(albums, { day: "2026-06-18" }).map((album) => album.id)).toEqual(["album-google"]);
+  });
+
+  it("finds photo albums by id with null fallbacks", () => {
+    expect(findPhotoAlbumById(albums, "album-dropbox")?.title).toBe("Dropbox upload request");
+    expect(findPhotoAlbumById(albums, "missing-album")).toBeNull();
+    expect(findPhotoAlbumById(albums, null)).toBeNull();
+    expect(findPhotoAlbumById(albums, undefined)).toBeNull();
   });
 
   it("blocks unsafe album URLs before rendering anchors", () => {
