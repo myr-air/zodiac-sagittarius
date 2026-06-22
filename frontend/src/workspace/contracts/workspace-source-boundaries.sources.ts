@@ -18,6 +18,14 @@ export const workspaceBoundarySourcePaths = {
   workspaceRailProps: "src/trip/workspace/sagittarius-app/props/workspace-rail-props.ts",
   workspaceToastProps: "src/trip/workspace/sagittarius-app/props/workspace-toast-props.ts",
   workspaceCoreCommandProps: "src/trip/workspace/sagittarius-app/props/workspace-core-command-props.ts",
+  workspaceCoreCommandPropsTypes:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-command-props.types.ts",
+  workspaceCoreAppCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-app-command-props.ts",
+  workspaceCorePlanningCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-planning-command-props.ts",
+  workspaceCoreSetupCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-setup-command-props.ts",
   workspaceCoreFrameProps: "src/trip/workspace/sagittarius-app/props/workspace-core-frame-props.ts",
   workspaceCoreRecordProps: "src/trip/workspace/sagittarius-app/props/workspace-core-record-props.ts",
   workspacePageViewProps: "src/trip/workspace/sagittarius-app/props/workspace-page-view-props.ts",

@@ -26,6 +26,8 @@ describe("Sagittarius workspace feature source boundaries", () => {
       workspaceCoreRecordProps,
       workspaceFrameProps,
       workspaceFrameActionProps,
+      workspaceCoreAppCommandProps,
+      workspaceCorePlanningCommandProps,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).toContain("buildWorkspaceCoreFrameProps");
@@ -33,8 +35,13 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceCoreCommandProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceCoreRecordProps");
-    expect(workspaceCoreCommandProps).toContain("onAddStop:");
-    expect(workspaceCoreCommandProps).toContain("onSaveTripSettings");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCoreAppCommandProps");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCorePlanningCommandProps");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCoreSetupCommandProps");
+    expect(workspaceCoreCommandProps).not.toContain("onAddStop:");
+    expect(workspaceCoreAppCommandProps).toContain("onAddStop:");
+    expect(workspaceCoreAppCommandProps).toContain("onSaveTripSettings");
+    expect(workspaceCorePlanningCommandProps).toContain("toggleTaskStatus");
     expect(workspaceCoreFrameProps).not.toContain("onAddStop:");
     expect(workspaceCoreRecordProps).toContain("bookingDocs:");
     expect(workspaceCoreRecordProps).toContain("tasks:");

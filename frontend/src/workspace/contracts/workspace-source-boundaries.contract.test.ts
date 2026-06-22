@@ -25,6 +25,10 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceRailProps,
       workspaceToastProps,
       workspaceCoreCommandProps,
+      workspaceCoreCommandPropsTypes,
+      workspaceCoreAppCommandProps,
+      workspaceCorePlanningCommandProps,
+      workspaceCoreSetupCommandProps,
       workspaceCoreFrameProps,
       workspaceCoreRecordProps,
       workspaceFrameActionProps,
@@ -65,8 +69,21 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceCoreCommandProps).toContain(
       "export function buildWorkspaceCoreCommandProps",
     );
-    expect(workspaceCoreCommandProps).toContain("onSaveTripSettings");
-    expect(workspaceCoreCommandProps).toContain("toggleTaskStatus");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCoreAppCommandProps");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCorePlanningCommandProps");
+    expect(workspaceCoreCommandProps).toContain("buildWorkspaceCoreSetupCommandProps");
+    expect(workspaceCoreCommandProps).not.toContain("onSaveTripSettings:");
+    expect(workspaceCoreCommandProps).not.toContain("toggleTaskStatus:");
+    expect(workspaceCoreCommandPropsTypes).toContain("export type WorkspaceCoreCommandProps");
+    expect(workspaceCoreCommandPropsTypes).toContain("WorkspaceCoreSetupCommandProps");
+    expect(workspaceCoreCommandPropsTypes).toContain("WorkspaceCorePlanningCommandProps");
+    expect(workspaceCoreCommandPropsTypes).toContain("WorkspaceCoreAppCommandProps");
+    expect(workspaceCoreAppCommandProps).toContain("export function buildWorkspaceCoreAppCommandProps");
+    expect(workspaceCoreAppCommandProps).toContain("onSaveTripSettings");
+    expect(workspaceCorePlanningCommandProps).toContain("export function buildWorkspaceCorePlanningCommandProps");
+    expect(workspaceCorePlanningCommandProps).toContain("toggleTaskStatus");
+    expect(workspaceCoreSetupCommandProps).toContain("export function buildWorkspaceCoreSetupCommandProps");
+    expect(workspaceCoreSetupCommandProps).toContain("setContextRailVisibility");
     expect(workspaceCoreRecordProps).toContain(
       "export function buildWorkspaceCoreRecordProps",
     );
@@ -143,6 +160,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceFrameProps).not.toContain("Parameters<typeof buildWorkspace");
     expect(workspaceCoreFrameProps).not.toContain("Parameters<typeof buildWorkspace");
     expect(workspaceCoreCommandProps).not.toContain("Parameters<typeof buildWorkspace");
+    expect(workspaceCoreCommandPropsTypes).not.toContain("Parameters<typeof buildWorkspace");
     expect(workspaceCoreRecordProps).not.toContain("Parameters<typeof buildWorkspace");
     expect(tripWorkspaceFrame).toContain("export interface TripWorkspaceFrameProps");
     expect(tripWorkspaceRail).toContain("export interface TripWorkspaceRailProps");
