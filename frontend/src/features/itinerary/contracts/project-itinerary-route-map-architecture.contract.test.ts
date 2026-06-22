@@ -11,6 +11,7 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
     const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
     const routeLiveMapRefs = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-refs.ts");
+    const routeLiveMapSync = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-sync.ts");
     const routeMapLive = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live.ts");
     const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
@@ -33,9 +34,17 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     expect(routeMapViewStateModel).toContain("initialRouteMapViewState");
     expect(routeLiveMap).toContain("./route-live-map-state");
     expect(routeLiveMap).toContain("./use-route-live-map-refs");
+    expect(routeLiveMap).toContain("./use-route-live-map-sync");
     expect(routeLiveMap).not.toContain("cleanupLiveRouteMap");
     expect(routeLiveMapRefs).toContain("cleanupLiveRouteMap");
     expect(routeLiveMapRefs).toContain("export function useRouteLiveMapRefs");
+    expect(routeLiveMap).not.toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMap).not.toContain("synchronizeRouteLayers");
+    expect(routeLiveMap).not.toContain("fitLiveRoute");
+    expect(routeLiveMapSync).toContain("export function useRouteLiveMapSync");
+    expect(routeLiveMapSync).toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMapSync).toContain("synchronizeRouteLayers");
+    expect(routeLiveMapSync).toContain("fitLiveRoute");
     expect(routeLiveMap).not.toContain("markersRef.current.forEach");
     expect(routeLiveMap).not.toContain("cleanupRouteLayers(mapRef.current");
     expect(routeMapLive).toContain("export function cleanupLiveRouteMap");

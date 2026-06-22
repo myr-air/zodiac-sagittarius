@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { RouteViewport } from "./route-map.config";
 import {
   applyRouteMapTheme,
-  fitLiveRoute,
   removeMapChromeFromTabOrder,
-  synchronizeRouteLayers,
 } from "./route-map.live";
-import { synchronizeLiveRouteMarkers } from "./route-map.live-markers";
 import {
   initialRouteLiveMapLifecycleState,
   retryRouteLiveMap,
@@ -19,6 +16,7 @@ import type {
 } from "./route-map.types";
 import { getRouteCenter } from "./route-map.viewport";
 import { useRouteLiveMapRefs } from "./use-route-live-map-refs";
+import { useRouteLiveMapSync } from "./use-route-live-map-sync";
 
 interface UseRouteLiveMapInput {
   activeDay: DayFilter;
@@ -55,8 +53,6 @@ export function useRouteLiveMap({
     liveMapAvailability === "auto"
       ? liveMapLifecycleState.state
       : liveMapAvailability;
-
-  const markerItems = useMemo(() => new Set(liveRoutePoints.map((point) => point.item.id)), [liveRoutePoints]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !liveMapEnabled || liveMapAvailability !== "auto") return undefined;
@@ -133,37 +129,18 @@ export function useRouteLiveMap({
     mapRef,
   ]);
 
-  useEffect(() => {
-    const map = mapRef.current;
-    const maplibregl = maplibreModuleRef.current;
-    if (!map || liveMapState !== "ready" || !maplibregl) return;
-
-    synchronizeLiveRouteMarkers({
-      activeDay,
-      liveRoutePoints,
-      map,
-      maplibregl,
-      markerItems,
-      markers: markersRef.current,
-      routeDayGroups,
-      visibleLiveRoutePoints,
-    });
-
-    sourceIdsRef.current = synchronizeRouteLayers(map, sourceIdsRef.current, routeDayGroups, activeDay);
-    fitLiveRoute(map, visibleLiveRoutePoints, fallbackViewport);
-  }, [
+  useRouteLiveMapSync({
     activeDay,
     fallbackViewport,
     liveMapState,
     liveRoutePoints,
     maplibreModuleRef,
     mapRef,
-    markerItems,
     markersRef,
     routeDayGroups,
     sourceIdsRef,
     visibleLiveRoutePoints,
-  ]);
+  });
 
   const retryLiveMap = useCallback(() => {
     cleanupLiveMap();

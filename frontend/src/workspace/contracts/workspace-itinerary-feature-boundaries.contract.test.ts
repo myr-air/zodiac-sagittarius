@@ -20,6 +20,7 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       routeMapUnresolvedPanel,
       routeLiveMapHook,
       routeLiveMapRefs,
+      routeLiveMapSync,
       routeLiveMapMarkers,
       routeMapViewport,
       routeMapUtils,
@@ -78,7 +79,11 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(routeLiveMapHook).toContain("maplibre-gl");
     expect(routeLiveMapHook).toContain("function mountLiveMap");
     expect(routeLiveMapHook).toContain("useRouteLiveMapRefs");
-    expect(routeLiveMapHook).toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMapHook).toContain("useRouteLiveMapSync");
+    expect(routeLiveMapHook).not.toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMapSync).toContain("export function useRouteLiveMapSync");
+    expect(routeLiveMapSync).toContain("synchronizeLiveRouteMarkers");
+    expect(routeLiveMapSync).toContain("synchronizeRouteLayers");
     expect(routeLiveMapRefs).toContain("export function useRouteLiveMapRefs");
     expect(routeLiveMapRefs).toContain("cleanupLiveRouteMap");
     expect(routeLiveMapHook).not.toContain("document.createElement(\"span\")");
