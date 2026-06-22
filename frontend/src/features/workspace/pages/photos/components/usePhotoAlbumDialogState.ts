@@ -9,6 +9,7 @@ import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
 import {
   buildPhotoAlbumDialogSubmitInput,
   initialPhotoAlbumDialogFields,
+  type PhotoAlbumDialogFields,
   photoAlbumDialogDayOptions,
 } from "../model/photo-album-dialog-fields";
 
@@ -26,64 +27,58 @@ export function usePhotoAlbumDialogState({
   onSubmit,
 }: PhotoAlbumDialogStateInput) {
   const initialFields = initialPhotoAlbumDialogFields({ album, currentMember });
-  const [title, setTitle] = useState(initialFields.title);
-  const [provider, setProvider] = useState(initialFields.provider);
-  const [access, setAccess] = useState(initialFields.access);
-  const [url, setUrl] = useState(initialFields.url);
-  const [ownerMemberId, setOwnerMemberId] = useState(
-    initialFields.ownerMemberId,
-  );
-  const [day, setDay] = useState(initialFields.day);
-  const [description, setDescription] = useState(initialFields.description);
-  const [accessNote, setAccessNote] = useState(initialFields.accessNote);
-  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
-    initialFields.relatedItineraryItemIds,
-  );
+  const [formFields, setFormFields] =
+    useState<PhotoAlbumDialogFields>(initialFields);
   const days = photoAlbumDialogDayOptions(trip);
 
+  function updateFormField<Field extends keyof PhotoAlbumDialogFields>(
+    field: Field,
+    value: PhotoAlbumDialogFields[Field],
+  ) {
+    setFormFields((current) => ({ ...current, [field]: value }));
+  }
+
   function toggleRelatedItem(itemId: string) {
-    setRelatedItineraryItemIds((current) => toggleId(current, itemId));
+    setFormFields((current) => ({
+      ...current,
+      relatedItineraryItemIds: toggleId(current.relatedItineraryItemIds, itemId),
+    }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await onSubmit(buildPhotoAlbumDialogSubmitInput({
       album,
-      fields: {
-        access,
-        accessNote,
-        day,
-        description,
-        ownerMemberId,
-        provider,
-        relatedItineraryItemIds,
-        title,
-        url,
-      },
+      fields: formFields,
     }));
   }
 
   return {
-    access,
-    accessNote,
-    day,
+    access: formFields.access,
+    accessNote: formFields.accessNote,
+    day: formFields.day,
     days,
-    description,
-    ownerMemberId,
-    provider,
-    relatedItineraryItemIds,
-    setAccess,
-    setAccessNote,
-    setDay,
-    setDescription,
-    setOwnerMemberId,
-    setProvider,
-    setTitle,
-    setUrl,
+    description: formFields.description,
+    ownerMemberId: formFields.ownerMemberId,
+    provider: formFields.provider,
+    relatedItineraryItemIds: formFields.relatedItineraryItemIds,
+    setAccess: (access: PhotoAlbumDialogFields["access"]) =>
+      updateFormField("access", access),
+    setAccessNote: (accessNote: string) =>
+      updateFormField("accessNote", accessNote),
+    setDay: (day: string) => updateFormField("day", day),
+    setDescription: (description: string) =>
+      updateFormField("description", description),
+    setOwnerMemberId: (ownerMemberId: string) =>
+      updateFormField("ownerMemberId", ownerMemberId),
+    setProvider: (provider: PhotoAlbumDialogFields["provider"]) =>
+      updateFormField("provider", provider),
+    setTitle: (title: string) => updateFormField("title", title),
+    setUrl: (url: string) => updateFormField("url", url),
     submit,
-    title,
+    title: formFields.title,
     toggleRelatedItem,
-    url,
+    url: formFields.url,
   };
 }
 
