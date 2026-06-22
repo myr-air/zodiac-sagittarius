@@ -1,4 +1,5 @@
 import { expenseAmountInSettlementCurrency } from "@/src/trip/expenses";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById } from "@/src/trip/members";
 import type { Expense, ItineraryItem, Member } from "@/src/trip/types";
 
@@ -49,9 +50,10 @@ export function filterExpenses({
   const normalizedQuery = query.trim().toLocaleLowerCase();
   return expenses.filter((expense) => {
     const payer = findMemberById(members, expense.paidBy);
-    const linkedItem = expense.itineraryItemId
-      ? itineraryItems.find((item) => item.id === expense.itineraryItemId)
-      : null;
+    const linkedItem = findItineraryItemById(
+      itineraryItems,
+      expense.itineraryItemId,
+    );
     const matchesQuery =
       !normalizedQuery ||
       expense.title.toLocaleLowerCase().includes(normalizedQuery) ||

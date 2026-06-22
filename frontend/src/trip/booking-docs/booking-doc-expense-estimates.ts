@@ -1,3 +1,4 @@
+import { findItineraryItemById } from "../itinerary-items";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 import type {
   BookingDocType,
@@ -32,9 +33,10 @@ export function bookingDocInputForExpenseEstimate(
     context.selectedTripPlanId ||
     context.mainTripPlanId ||
     context.activePlanVariantId;
-  const linkedItem = expense.itineraryItemId
-    ? context.itineraryItems.find((item) => item.id === expense.itineraryItemId)
-    : null;
+  const linkedItem = findItineraryItemById(
+    context.itineraryItems,
+    expense.itineraryItemId,
+  );
 
   return {
     tripPlanId: sourceTripPlanId,

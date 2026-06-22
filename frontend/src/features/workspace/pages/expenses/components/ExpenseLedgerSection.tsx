@@ -1,4 +1,5 @@
 import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById, memberInitial } from "@/src/trip/members";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { IconButton } from "@/src/ui";
@@ -93,7 +94,10 @@ export function ExpenseLedgerSection({
           <tbody className={expenseStyles.tableBodyClassName}>
             {filteredExpenses.map((expense) => {
               const payer = findMemberById(members, expense.paidBy);
-              const linkedItem = expense.itineraryItemId ? trip.itineraryItems.find((item) => item.id === expense.itineraryItemId) : null;
+              const linkedItem = findItineraryItemById(
+                trip.itineraryItems,
+                expense.itineraryItemId,
+              );
               const tone = categoryTone(expense.category);
               return (
                 <tr key={expense.id}>

@@ -1,3 +1,4 @@
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { tripPlanOptions } from "@/src/trip/trip-plans";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
@@ -5,8 +6,7 @@ export function expenseDialogLinkedItem(
   trip: Pick<Trip, "itineraryItems">,
   itemId: string,
 ): ItineraryItem | null {
-  if (!itemId) return null;
-  return trip.itineraryItems.find((item) => item.id === itemId) ?? null;
+  return findItineraryItemById(trip.itineraryItems, itemId);
 }
 
 export function expenseDialogEffectiveTripPlanId({

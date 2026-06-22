@@ -8,6 +8,7 @@ export {
   replaceItineraryItems,
 } from "./itinerary-item-collection";
 export type { ItineraryItemPlacement } from "./itinerary-item-collection";
+export { findItineraryItemById } from "./itinerary-item-lookup";
 export {
   hasDescendantItem,
   moveTripItem,
