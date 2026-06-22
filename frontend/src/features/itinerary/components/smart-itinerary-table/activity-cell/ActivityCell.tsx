@@ -1,14 +1,7 @@
-import { ActivityTypePicker } from "./ActivityTypePicker";
-import { ActivityTimeButton } from "./ActivityTimeButton";
-import {
-  activityCellClassName,
-  activityTimeRailClassName,
-  activityTypePickerClassName,
-  activityTypeRailClassName,
-  activityMobileTypePickerClassName,
-} from "../smart-itinerary-table.styles";
+import { activityCellClassName } from "../smart-itinerary-table.styles";
 import { ActivityCellBody } from "./ActivityCellBody";
 import { ActivityCellOverlays } from "./ActivityCellOverlays";
+import { ActivityCellRails } from "./ActivityCellRails";
 import type { ActivityCellProps } from "./activity-cell.types";
 import { useActivityCellModel } from "./use-activity-cell-model";
 
@@ -62,33 +55,13 @@ export function ActivityCell({
       data-selected={selected ? "true" : undefined}
       onClick={() => onSelectItem(item.id)}
     >
-      <div className={activityTimeRailClassName}>
-        <ActivityTimeButton
-          editable={editable}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
-        />
-        <ActivityTypePicker
-          buttonClassName={activityMobileTypePickerClassName}
-          disabled={!editable}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          onUpdateItemInline={onUpdateItemInline}
-        />
-      </div>
-      <div className={activityTypeRailClassName}>
-        <ActivityTypePicker
-          buttonClassName={activityTypePickerClassName}
-          disabled={!editable}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          onUpdateItemInline={onUpdateItemInline}
-        />
-      </div>
+      <ActivityCellRails
+        editable={editable}
+        item={item}
+        itineraryLabels={itineraryLabels}
+        locale={locale}
+        onUpdateItemInline={onUpdateItemInline}
+      />
       <ActivityCellBody
         actionMenuLabel={actionMenuLabel}
         actionsExpanded={actionsExpanded}
