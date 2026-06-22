@@ -3,9 +3,7 @@ import type { TripTask } from "@/src/trip/types";
 
 import {
   applyOverviewTaskSubmission,
-  buildOverviewTaskSubmission,
   closeOverviewTaskDialog,
-  countOverviewOpenTasks,
   initialOverviewNewTaskFormState,
   initialOverviewTaskFilterState,
   initialOverviewTaskUiState,
@@ -15,8 +13,12 @@ import {
   updateOverviewTaskFilterState,
   updateOverviewTaskUiFilterState,
   updateOverviewTaskUiFormState,
-  visibleOverviewTasks,
 } from "../overview-task-state";
+import {
+  buildOverviewTaskSubmission,
+  countOverviewOpenTasks,
+  visibleOverviewTasks,
+} from "../overview-task-derivation";
 
 function task({
   id,

@@ -6,16 +6,18 @@ import type {
 } from "./overview-role-panels.types";
 import {
   applyOverviewTaskSubmission,
-  buildOverviewTaskSubmission,
   closeOverviewTaskDialog,
-  countOverviewOpenTasks,
   initialOverviewTaskUiState,
   openOverviewTaskDialog,
   setOverviewUndoTask,
   updateOverviewTaskUiFilterState,
   updateOverviewTaskUiFormState,
-  visibleOverviewTasks,
 } from "./overview-task-state";
+import {
+  buildOverviewTaskSubmission,
+  countOverviewOpenTasks,
+  visibleOverviewTasks,
+} from "./overview-task-derivation";
 
 interface UseOverviewTaskStateArgs {
   currentMemberId: string;
