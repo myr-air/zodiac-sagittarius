@@ -10,7 +10,7 @@ import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { photoCopy } from "./content/TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
 import type { TripPhotosPageProps } from "./TripPhotosPage.types";
-import { useTripPhotosPageState } from "./use-trip-photos-page-state";
+import { useTripPhotosPageState } from "./hooks/use-trip-photos-page-state";
 
 export type {
   CreatePhotoAlbumHandler,

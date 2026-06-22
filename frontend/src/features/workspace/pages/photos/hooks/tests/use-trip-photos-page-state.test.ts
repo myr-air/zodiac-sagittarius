@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const photosPageDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const photosPageDir = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readPhotosPageSource(fileName: string) {
   return readFileSync(join(photosPageDir, fileName), "utf8");
@@ -12,7 +12,7 @@ function readPhotosPageSource(fileName: string) {
 describe("trip photos page state structure", () => {
   it("keeps browser and modal transitions grouped in the page state model", () => {
     const pageStateSource = readPhotosPageSource(
-      "use-trip-photos-page-state.ts",
+      "hooks/use-trip-photos-page-state.ts",
     );
     const photoPageStateSource = readPhotosPageSource("model/photo-page-state.ts");
 

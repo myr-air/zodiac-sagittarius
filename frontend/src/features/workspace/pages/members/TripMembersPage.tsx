@@ -9,7 +9,7 @@ import { MemberSummaryStats } from "./components/MemberSummaryStats";
 import { MemberTaskDialog } from "./components/MemberTaskDialog";
 import * as memberStyles from "./TripMembersPage.styles";
 import type { TripMembersPageProps } from "./TripMembersPage.types";
-import { useTripMembersPageState } from "./use-trip-members-page-state";
+import { useTripMembersPageState } from "./hooks/use-trip-members-page-state";
 
 export type { TripMembersPageProps } from "./TripMembersPage.types";
 

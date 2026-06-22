@@ -4,12 +4,12 @@ import {
   findPhotoAlbumRelations,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
-import type { PhotoProviderFilter } from "./model/photo-page-options";
+import type { PhotoProviderFilter } from "../model/photo-page-options";
 import {
   countPhotoProviders,
   selectedPhotoAlbum,
   visiblePhotoAlbumsForProvider,
-} from "./model/photo-page-selectors";
+} from "../model/photo-page-selectors";
 import {
   initialPhotoAlbumBrowserState,
   initialPhotoAlbumModalState,
@@ -17,13 +17,13 @@ import {
   updatePhotoAlbumModalState,
   type PhotoAlbumBrowserState,
   type PhotoAlbumModalState,
-} from "./model/photo-page-state";
+} from "../model/photo-page-state";
 import type {
   CreatePhotoAlbumHandler,
   DeletePhotoAlbumHandler,
   TripPhotoAlbumInput,
   UpdatePhotoAlbumHandler,
-} from "./TripPhotosPage.types";
+} from "../TripPhotosPage.types";
 
 interface UseTripPhotosPageStateInput {
   onCreatePhotoAlbum: CreatePhotoAlbumHandler;

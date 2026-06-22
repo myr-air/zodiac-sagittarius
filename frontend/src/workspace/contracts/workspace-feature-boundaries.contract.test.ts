@@ -74,7 +74,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(dateTimePickers).not.toContain("function TimePickerContent");
     expect(dateTimePickers).not.toContain("createPortal");
     expect(tripSettingsPage).toContain("./model/trip-settings-state-key");
-    expect(tripSettingsPage).toContain("./use-trip-settings-form-state");
+    expect(tripSettingsPage).toContain("./hooks/use-trip-settings-form-state");
     expect(tripSettingsPage).not.toContain("function daysBetweenIsoDates");
     expect(tripSettingsPage).not.toContain("function shiftIsoDate");
     expect(tripSettingsPage).not.toContain("useState");

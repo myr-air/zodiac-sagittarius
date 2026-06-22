@@ -8,7 +8,7 @@ import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { TripExpensesPageProps } from "./model/expense-page-types";
-import { useTripExpensesPageState } from "./use-trip-expenses-page-state";
+import { useTripExpensesPageState } from "./hooks/use-trip-expenses-page-state";
 
 export type {
   CreateExpenseHandler,

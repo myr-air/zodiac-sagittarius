@@ -4,7 +4,7 @@ import { readItineraryArchitectureSource } from "./project-itinerary-architectur
 describe("Sagittarius workspace expenses architecture contracts", () => {
   it("keeps expenses page state split from page composition", () => {
     const expensesPage = readItineraryArchitectureSource("src/features/workspace/pages/expenses/TripExpensesPage.tsx");
-    const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
+    const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/use-trip-expenses-page-state.ts");
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
@@ -35,16 +35,16 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
 
-    expect(expensesPage).toContain("./use-trip-expenses-page-state");
+    expect(expensesPage).toContain("./hooks/use-trip-expenses-page-state");
     expect(expensesPage).not.toContain("useState");
     expect(expensesPage).not.toContain("useMemo");
     expect(expensesPage).not.toContain("buildExpenseCsv");
     expect(expensesPage).not.toContain("refundSplits");
     expect(expensesPage).not.toContain("function recordRefund");
-    expect(expensesState).toContain("./model/expense-page-filters");
-    expect(expensesState).toContain("./model/expense-page-filter-state");
-    expect(expensesState).toContain("./model/expense-page-actions");
-    expect(expensesState).toContain("./hooks/useExpenseLedgerActions");
+    expect(expensesState).toContain("../model/expense-page-filters");
+    expect(expensesState).toContain("../model/expense-page-filter-state");
+    expect(expensesState).toContain("../model/expense-page-actions");
+    expect(expensesState).toContain("./useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
     expect(expensesState).toContain("const [filterState, setFilterState]");
     expect(expensesState).not.toContain("const [query, setQuery]");

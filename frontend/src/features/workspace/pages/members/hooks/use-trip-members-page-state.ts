@@ -9,12 +9,12 @@ import {
   filterTripMembers,
   memberSummaryCounts,
   visibleTripMembers,
-} from "./model/member-page-selectors";
-import { buildCreateMemberInput } from "./model/member-create-input";
+} from "../model/member-page-selectors";
+import { buildCreateMemberInput } from "../model/member-create-input";
 import type {
   MemberRoleFilter,
   MemberStatusFilter,
-} from "./model/member-page-options";
+} from "../model/member-page-options";
 import {
   initialMemberCreateFormState,
   initialMemberFilterState,
@@ -23,9 +23,9 @@ import {
   updateMemberFilterState,
   type MemberCreateFormState,
   type MemberFilterState,
-} from "./model/member-page-state";
-import { useMemberInviteActions } from "./hooks/useMemberInviteActions";
-import { useMemberTaskDialogState } from "./hooks/useMemberTaskDialogState";
+} from "../model/member-page-state";
+import { useMemberInviteActions } from "./useMemberInviteActions";
+import { useMemberTaskDialogState } from "./useMemberTaskDialogState";
 
 interface TripMembersPageStateLabels {
   disable: string;

@@ -4,16 +4,16 @@ import {
   canSubmitTripSettings,
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
-} from "./model/trip-settings-form-model";
+} from "../model/trip-settings-form-model";
 import {
   failedTripSettingsFormState,
   initialTripSettingsFormState,
   savedTripSettingsFormState,
   savingTripSettingsFormState,
   tripSettingsFormValueState,
-} from "./model/trip-settings-form-state";
-import { countStopsOutsideSettingsRange } from "./model/trip-settings-date-impact";
-import type { TripSettingsFormValues } from "./TripSettingsPage.types";
+} from "../model/trip-settings-form-state";
+import { countStopsOutsideSettingsRange } from "../model/trip-settings-date-impact";
+import type { TripSettingsFormValues } from "../TripSettingsPage.types";
 
 interface TripSettingsFormStateInput {
   canEdit: boolean;

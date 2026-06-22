@@ -10,7 +10,7 @@ import { BookingInspector } from "./components/BookingInspector";
 import { bookingCopy } from "./content/BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
 import type { BookingsDocsPageProps } from "./BookingsDocsPage.types";
-import { useBookingsDocsPageState } from "./use-bookings-docs-page-state";
+import { useBookingsDocsPageState } from "./hooks/use-bookings-docs-page-state";
 
 export type {
   BookingDocInput,

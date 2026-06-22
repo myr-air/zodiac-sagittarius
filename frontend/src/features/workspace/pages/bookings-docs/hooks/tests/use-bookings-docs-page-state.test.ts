@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const bookingsDocsPageDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const bookingsDocsPageDir = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readBookingsDocsPageSource(fileName: string) {
   return readFileSync(join(bookingsDocsPageDir, fileName), "utf8");
@@ -12,7 +12,7 @@ function readBookingsDocsPageSource(fileName: string) {
 describe("bookings docs page state structure", () => {
   it("keeps browser and modal transitions grouped in the page state model", () => {
     const pageStateSource = readBookingsDocsPageSource(
-      "use-bookings-docs-page-state.ts",
+      "hooks/use-bookings-docs-page-state.ts",
     );
     const bookingPageStateSource = readBookingsDocsPageSource(
       "model/booking-page-state.ts",

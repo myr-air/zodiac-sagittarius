@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const membersPageDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const membersPageDir = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readMembersPageSource(fileName: string) {
   return readFileSync(join(membersPageDir, fileName), "utf8");
@@ -11,7 +11,9 @@ function readMembersPageSource(fileName: string) {
 
 describe("members page state structure", () => {
   it("keeps member task dialog workflow out of the page state hook", () => {
-    const pageStateSource = readMembersPageSource("use-trip-members-page-state.ts");
+    const pageStateSource = readMembersPageSource(
+      "hooks/use-trip-members-page-state.ts",
+    );
     const memberPageStateSource = readMembersPageSource(
       "model/member-page-state.ts",
     );
@@ -43,8 +45,8 @@ describe("members page state structure", () => {
     expect(memberPageStateSource).toContain(
       "export function updateMemberFilterState",
     );
-    expect(pageStateSource).toContain("./hooks/useMemberInviteActions");
-    expect(pageStateSource).toContain("./hooks/useMemberTaskDialogState");
+    expect(pageStateSource).toContain("./useMemberInviteActions");
+    expect(pageStateSource).toContain("./useMemberTaskDialogState");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
     expect(taskDialogSource).toContain("../model/member-task-dialog-state");

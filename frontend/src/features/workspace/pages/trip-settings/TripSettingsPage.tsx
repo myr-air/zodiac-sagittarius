@@ -8,7 +8,7 @@ import { TripSettingsForm } from "./components/TripSettingsForm";
 import { TripSettingsImpactCard } from "./components/TripSettingsImpactCard";
 import * as settingsStyles from "./TripSettingsPage.styles";
 import { tripSettingsStateKey } from "./model/trip-settings-state-key";
-import { useTripSettingsFormState } from "./use-trip-settings-form-state";
+import { useTripSettingsFormState } from "./hooks/use-trip-settings-form-state";
 import type { TripSettingsPageProps } from "./TripSettingsPage.types";
 
 export type { TripSettingsFormValues, TripSettingsPageProps } from "./TripSettingsPage.types";

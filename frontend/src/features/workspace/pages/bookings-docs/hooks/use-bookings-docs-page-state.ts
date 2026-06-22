@@ -5,8 +5,8 @@ import type {
   CreateBookingDocHandler,
   DeleteBookingDocHandler,
   UpdateBookingDocHandler,
-} from "./BookingsDocsPage.types";
-import type { BookingStatusFilter } from "./model/booking-options";
+} from "../BookingsDocsPage.types";
+import type { BookingStatusFilter } from "../model/booking-options";
 import {
   changeBookingQueryBrowserState,
   changeBookingStatusFilterBrowserState,
@@ -19,19 +19,19 @@ import {
   updateBookingModalState,
   type BookingBrowserState,
   type BookingModalState,
-} from "./model/booking-page-state";
+} from "../model/booking-page-state";
 import {
   countBookingFolders,
   findBookingFolder,
   type BookingFolderId,
-} from "./model/booking-folders";
+} from "../model/booking-folders";
 import {
   filterBookingPageDocs,
   lockedBookingDocsForMember,
   selectedBookingPageDoc,
   selectedBookingPageRelations,
   visibleBookingDocsForMember,
-} from "./model/booking-page-selectors";
+} from "../model/booking-page-selectors";
 
 interface UseBookingsDocsPageStateInput {
   bookingDocs: BookingDoc[];
