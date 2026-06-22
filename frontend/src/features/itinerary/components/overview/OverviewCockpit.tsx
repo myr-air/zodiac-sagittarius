@@ -6,7 +6,7 @@ import {
   overviewCockpitClassName,
   overviewReadinessChipsClassName,
 } from "./overview-page.styles";
-import { formatOverviewStopSchedule } from "./overview-stop-labels";
+import { formatOverviewStopSchedule } from "@/src/features/itinerary/domain/overview-stop-labels";
 
 interface OverviewCockpitLabels {
   alertSummary: (params: { warnings: number; suggestions: number }) => string;

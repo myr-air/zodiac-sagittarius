@@ -7,7 +7,7 @@ import {
   getHighlightImage,
   highlightTone,
 } from "@/src/features/itinerary/domain/overview";
-import { formatOverviewStopSchedule } from "./overview-stop-labels";
+import { formatOverviewStopSchedule } from "@/src/features/itinerary/domain/overview-stop-labels";
 import {
   overviewBoardTitleClassName,
   overviewHighlightBoardClassName,

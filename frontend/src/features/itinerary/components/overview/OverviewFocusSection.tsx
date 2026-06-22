@@ -5,7 +5,7 @@ import { overviewNextStopClassName } from "./overview.styles";
 import { cn } from "@/src/lib/cn";
 import { OverviewFocusList } from "./OverviewSections";
 import { overviewPanelClassName, overviewPanelTitleClassName, overviewPanelWideClassName } from "./overview-page.styles";
-import { formatOverviewStopScheduleWithPlace } from "./overview-stop-labels";
+import { formatOverviewStopScheduleWithPlace } from "@/src/features/itinerary/domain/overview-stop-labels";
 import { TripCompletedPostcard } from "./TripCompletedPostcard";
 
 interface OverviewFocusSectionProps {

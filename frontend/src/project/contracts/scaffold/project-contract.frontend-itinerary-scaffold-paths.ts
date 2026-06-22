@@ -44,6 +44,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/domain/tests/overview-highlights.test.ts",
   "src/features/itinerary/domain/overview-roles.ts",
   "src/features/itinerary/domain/tests/overview-roles.test.ts",
+  "src/features/itinerary/domain/overview-stop-labels.ts",
+  "src/features/itinerary/domain/tests/overview-stop-labels.test.ts",
   "src/features/itinerary/domain/overview-visuals.ts",
   "src/features/itinerary/domain/tests/overview-visuals.test.ts",
   "src/features/itinerary/domain/tests/overview.test-support.ts",

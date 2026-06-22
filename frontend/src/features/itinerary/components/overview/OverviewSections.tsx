@@ -10,7 +10,7 @@ import {
 import {
   formatOverviewStopSchedule,
   formatOverviewStopScheduleWithPlace,
-} from "./overview-stop-labels";
+} from "@/src/features/itinerary/domain/overview-stop-labels";
 
 export function ViewerNextStopPanel({
   item,
