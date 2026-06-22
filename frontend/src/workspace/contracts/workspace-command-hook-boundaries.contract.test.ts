@@ -23,6 +23,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       bookingCommandTicketInputs,
       taskActionsHook,
       stopNoteActionsHook,
+      stopNoteCommandTypes,
+      createStopNoteCommand,
+      updateStopNoteCommand,
+      deleteStopNoteCommand,
       recordCommandInputs,
       photoAlbumsHook,
       photoAlbumApiCommands,
@@ -166,7 +170,16 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(bookingCommandTicketInputs).toContain("findDuplicateBookingDoc");
     expect(taskActionsHook).toContain("buildWorkspaceTaskCreateDraft");
     expect(taskActionsHook).not.toContain("tripPlanIdForRecord");
-    expect(stopNoteActionsHook).toContain("buildWorkspaceStopNoteCreateInput");
+    expect(stopNoteActionsHook).toContain("useCreateWorkspaceStopNoteCommand");
+    expect(stopNoteActionsHook).toContain("useUpdateWorkspaceStopNoteCommand");
+    expect(stopNoteActionsHook).toContain("useDeleteWorkspaceStopNoteCommand");
+    expect(stopNoteActionsHook).not.toContain("buildWorkspaceStopNoteCreateInput");
+    expect(stopNoteActionsHook).not.toContain("buildPatchStopNoteRequest");
+    expect(stopNoteCommandTypes).toContain("WorkspaceStopNoteCommandBaseParams");
+    expect(createStopNoteCommand).toContain("buildWorkspaceStopNoteCreateInput");
+    expect(createStopNoteCommand).toContain("buildCreateStopNoteRequest");
+    expect(updateStopNoteCommand).toContain("buildPatchStopNoteRequest");
+    expect(deleteStopNoteCommand).toContain("deleteLocalStopNote");
     expect(stopNoteActionsHook).not.toContain("tripPlanIdForRecord");
     expect(recordCommandInputs).toContain("tripPlanIdForRecord");
     expect(photoAlbumsHook).toContain("normalizePhotoAlbumCreateInput");

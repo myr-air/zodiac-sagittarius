@@ -132,6 +132,14 @@ export const workspaceBoundarySourcePaths = {
     "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-ticket-inputs.ts",
   taskActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-task-actions.ts",
   stopNoteActionsHook: "src/trip/workspace/sagittarius-app/hooks/records/use-workspace-stop-note-actions.ts",
+  stopNoteCommandTypes:
+    "src/trip/workspace/sagittarius-app/hooks/records/workspace-stop-note-command-types.ts",
+  createStopNoteCommand:
+    "src/trip/workspace/sagittarius-app/hooks/records/use-create-workspace-stop-note-command.ts",
+  updateStopNoteCommand:
+    "src/trip/workspace/sagittarius-app/hooks/records/use-update-workspace-stop-note-command.ts",
+  deleteStopNoteCommand:
+    "src/trip/workspace/sagittarius-app/hooks/records/use-delete-workspace-stop-note-command.ts",
   recordCommandInputs: "src/trip/workspace/sagittarius-app/support/workspace-record-command-inputs.ts",
   photoAlbumsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts",
   photoAlbumApiCommands: "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-api-photo-album-commands.ts",

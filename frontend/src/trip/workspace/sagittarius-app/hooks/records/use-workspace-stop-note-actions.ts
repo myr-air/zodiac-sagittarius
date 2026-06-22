@@ -1,23 +1,14 @@
 import { useCallback } from "react";
-import { nextClientMutationId, nextLocalStopNoteId } from "@/src/trip/identity";
 import type { WorkspaceContextRailPrimaryTab } from "@/src/trip/workspace/context-rail-tabs";
-import {
-  appendStopNote,
-  buildCreateStopNoteRequest,
-  buildPatchStopNoteRequest,
-  createLocalStopNoteInList,
-  deleteLocalStopNote,
-  removeStopNote,
-  replaceStopNote,
-  updateLocalStopNote,
-} from "@/src/trip/records";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type {
   StopNote,
   Trip,
   TripParticipantSession,
 } from "@/src/trip/types";
-import { buildWorkspaceStopNoteCreateInput } from "../../support/workspace-record-command-inputs";
+import { useCreateWorkspaceStopNoteCommand } from "./use-create-workspace-stop-note-command";
+import { useDeleteWorkspaceStopNoteCommand } from "./use-delete-workspace-stop-note-command";
+import { useUpdateWorkspaceStopNoteCommand } from "./use-update-workspace-stop-note-command";
 
 interface UseWorkspaceStopNoteActionsParams {
   canCreateStopNote: boolean;
@@ -48,41 +39,7 @@ export function useWorkspaceStopNoteActions({
   stopNotes,
   trip,
 }: UseWorkspaceStopNoteActionsParams) {
-  const createStopNote = useCallback(async (input: { itemId: string; body: string }) => {
-    if (!canCreateStopNote) return;
-    const noteInput = buildWorkspaceStopNoteCreateInput(input, {
-      selectedTripPlanId,
-      trip,
-    });
-    if (!noteInput) return;
-    if (isApiMode && resolveApiClient && participantSession) {
-      const note = await resolveApiClient.createStopNote(
-        trip.id,
-        participantSession.sessionToken,
-        buildCreateStopNoteRequest(
-          noteInput,
-          {
-            clientMutationId: nextClientMutationId("stop-note-create"),
-            tripPlanId: noteInput.tripPlanId,
-          },
-        ),
-      );
-      setStopNotes((current) => appendStopNote(current, note));
-      return;
-    }
-    setStopNotes((current) =>
-      createLocalStopNoteInList(
-        trip,
-        current,
-        noteInput,
-        {
-          authorId: currentMemberId,
-          createdAt: new Date().toISOString(),
-          nextStopNoteId: nextLocalStopNoteId,
-        },
-      ),
-    );
-  }, [
+  const createStopNote = useCreateWorkspaceStopNoteCommand({
     canCreateStopNote,
     currentMemberId,
     isApiMode,
@@ -91,7 +48,7 @@ export function useWorkspaceStopNoteActions({
     selectedTripPlanId,
     setStopNotes,
     trip,
-  ]);
+  });
 
   const createItineraryNote = useCallback(async (itemId: string, body: string) => {
     if (!canCreateStopNote) return;
@@ -108,30 +65,7 @@ export function useWorkspaceStopNoteActions({
     trip.itineraryItems,
   ]);
 
-  const updateStopNote = useCallback(async (input: { noteId: string; body: string }) => {
-    const body = input.body.trim();
-    if (!body) return;
-    if (isApiMode && resolveApiClient && participantSession) {
-      const existing = stopNotes.find((note) => note.id === input.noteId);
-      if (!existing) return;
-      const note = await resolveApiClient.patchStopNote(
-        trip.id,
-        input.noteId,
-        participantSession.sessionToken,
-        buildPatchStopNoteRequest(existing, body, {
-          clientMutationId: nextClientMutationId("stop-note-patch"),
-        }),
-      );
-      setStopNotes((current) => replaceStopNote(current, note));
-      return;
-    }
-    setStopNotes((current) =>
-      updateLocalStopNote(current, input.noteId, body, {
-        currentMemberId,
-        canEdit,
-      }),
-    );
-  }, [
+  const updateStopNote = useUpdateWorkspaceStopNoteCommand({
     canEdit,
     currentMemberId,
     isApiMode,
@@ -139,34 +73,18 @@ export function useWorkspaceStopNoteActions({
     resolveApiClient,
     setStopNotes,
     stopNotes,
-    trip.id,
-  ]);
+    trip,
+  });
 
-  const deleteStopNote = useCallback(async (noteId: string) => {
-    if (isApiMode && resolveApiClient && participantSession) {
-      await resolveApiClient.deleteStopNote(
-        trip.id,
-        noteId,
-        participantSession.sessionToken,
-      );
-      setStopNotes((current) => removeStopNote(current, noteId));
-      return;
-    }
-    setStopNotes((current) =>
-      deleteLocalStopNote(current, noteId, {
-        currentMemberId,
-        canEdit,
-      }),
-    );
-  }, [
+  const deleteStopNote = useDeleteWorkspaceStopNoteCommand({
     canEdit,
     currentMemberId,
     isApiMode,
     participantSession,
     resolveApiClient,
     setStopNotes,
-    trip.id,
-  ]);
+    trip,
+  });
 
   return {
     createItineraryNote,
