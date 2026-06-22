@@ -175,7 +175,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(linkedActivitiesPicker).toContain("toggleId");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("@/src/features/itinerary/domain/booking-ticket-form");
+    expect(ticketModel).toContain("type TicketFormValues");
+    expect(ticketModel).toContain("const [formValues, setFormValues]");
+    expect(ticketModel).toContain("function updateTicketField");
     expect(ticketModel).not.toContain("function buildTicketSubmitInput");
+    expect(ticketModel).not.toContain("const [title, setTitle]");
+    expect(ticketModel).not.toContain("const [providerName, setProviderName]");
     expect(ticketForm).toContain("export function buildTicketSubmitInput");
     expect(ticketForm).toContain("export interface TicketFormValues");
     expect(modalPortal).toContain("export function ActivityCellModalPortal");

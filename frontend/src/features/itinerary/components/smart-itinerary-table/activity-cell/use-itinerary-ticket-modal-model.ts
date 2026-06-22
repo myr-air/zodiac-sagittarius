@@ -11,6 +11,7 @@ import {
   buildTicketSubmitInput,
   findLinkedTicket,
   findTicketCandidates,
+  type TicketFormValues,
   type TicketFormMode,
 } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
@@ -44,35 +45,27 @@ export function useItineraryTicketModalModel({
   const selectedBooking =
     existingCandidates.find((booking) => booking.id === selectedBookingId) ??
     null;
-  const initialValues = buildTicketFormValues({
+  const initialFormValues = buildTicketFormValues({
     booking: mode === "existing" ? selectedBooking : null,
     item,
     locale,
     type,
   });
-  const [title, setTitle] = useState(initialValues.title);
-  const [providerName, setProviderName] = useState(initialValues.providerName);
-  const [confirmationCode, setConfirmationCode] = useState(
-    initialValues.confirmationCode,
-  );
-  const [startsAt, setStartsAt] = useState(initialValues.startsAt);
-  const [endsAt, setEndsAt] = useState(initialValues.endsAt);
-  const [notes, setNotes] = useState(initialValues.notes);
-  const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
-    initialValues.relatedItineraryItemIds,
+  const [formValues, setFormValues] = useState<TicketFormValues>(
+    initialFormValues,
   );
   const [saving, setSaving] = useState(false);
   const [unlinking, setUnlinking] = useState(false);
 
   function hydrateTicketFields(booking: BookingDoc | null) {
-    const nextValues = buildTicketFormValues({ booking, item, locale, type });
-    setTitle(nextValues.title);
-    setProviderName(nextValues.providerName);
-    setConfirmationCode(nextValues.confirmationCode);
-    setStartsAt(nextValues.startsAt);
-    setEndsAt(nextValues.endsAt);
-    setNotes(nextValues.notes);
-    setRelatedItineraryItemIds(nextValues.relatedItineraryItemIds);
+    setFormValues(buildTicketFormValues({ booking, item, locale, type }));
+  }
+
+  function updateTicketField<Field extends keyof TicketFormValues>(
+    field: Field,
+    value: TicketFormValues[Field],
+  ) {
+    setFormValues((current) => ({ ...current, [field]: value }));
   }
 
   function selectNewTicketMode() {
@@ -94,7 +87,7 @@ export function useItineraryTicketModalModel({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmedTitle = title.trim();
+    const trimmedTitle = formValues.title.trim();
     if (saving || unlinking || !trimmedTitle) return;
     setSaving(true);
     try {
@@ -107,13 +100,8 @@ export function useItineraryTicketModalModel({
           template,
           type,
           values: {
+            ...formValues,
             title: trimmedTitle,
-            providerName,
-            confirmationCode,
-            startsAt,
-            endsAt,
-            notes,
-            relatedItineraryItemIds,
           },
         }),
       );
@@ -133,29 +121,35 @@ export function useItineraryTicketModalModel({
   }
 
   return {
-    confirmationCode,
+    confirmationCode: formValues.confirmationCode,
     currentLinkedBooking,
-    endsAt,
+    endsAt: formValues.endsAt,
     existingCandidates,
     mode,
-    notes,
-    providerName,
-    relatedItineraryItemIds,
+    notes: formValues.notes,
+    providerName: formValues.providerName,
+    relatedItineraryItemIds: formValues.relatedItineraryItemIds,
     saving,
     selectExistingTicket,
     selectExistingTicketMode,
     selectNewTicketMode,
     selectedBookingId,
-    setConfirmationCode,
-    setEndsAt,
-    setNotes,
-    setProviderName,
-    setRelatedItineraryItemIds,
-    setStartsAt,
-    setTitle,
-    startsAt,
+    setConfirmationCode: (confirmationCode: string) =>
+      updateTicketField("confirmationCode", confirmationCode),
+    setEndsAt: (endsAt: string) => updateTicketField("endsAt", endsAt),
+    setNotes: (notes: string) => updateTicketField("notes", notes),
+    setProviderName: (providerName: string) =>
+      updateTicketField("providerName", providerName),
+    setRelatedItineraryItemIds: (updater: (current: string[]) => string[]) =>
+      setFormValues((current) => ({
+        ...current,
+        relatedItineraryItemIds: updater(current.relatedItineraryItemIds),
+      })),
+    setStartsAt: (startsAt: string) => updateTicketField("startsAt", startsAt),
+    setTitle: (title: string) => updateTicketField("title", title),
+    startsAt: formValues.startsAt,
     submit,
-    title,
+    title: formValues.title,
     unlinkCurrentBooking,
     unlinking,
   };
