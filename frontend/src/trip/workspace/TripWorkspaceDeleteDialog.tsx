@@ -1,11 +1,4 @@
-import { Button } from "@/src/ui";
-import {
-  deleteDialogClassName,
-  deleteDialogTitleClassName,
-  workspaceDialogActionsClassName,
-  workspaceDialogBackdropClassName,
-  workspaceDialogBodyClassName,
-} from "./TripWorkspaceDialog.styles";
+import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 
 interface DeleteDialogItem {
   activity: string;
@@ -34,32 +27,15 @@ export function TripWorkspaceDeleteDialog({
   if (!item) return null;
 
   return (
-    <div className={workspaceDialogBackdropClassName} role="presentation">
-      <section
-        className={deleteDialogClassName}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="app-delete-dialog-title"
-      >
-        <h2 className={deleteDialogTitleClassName} id="app-delete-dialog-title">
-          {titleForActivity(item.activity)}
-        </h2>
-        <p className={workspaceDialogBodyClassName}>
-          {bodyForActivity(item.activity)}
-        </p>
-        <div className={workspaceDialogActionsClassName}>
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            {cancelLabel}
-          </Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => void onConfirm(item.id)}
-          >
-            {confirmLabel}
-          </Button>
-        </div>
-      </section>
-    </div>
+    <WorkspaceConfirmDialog
+      body={bodyForActivity(item.activity)}
+      cancelLabel={cancelLabel}
+      confirmLabel={confirmLabel}
+      onCancel={onCancel}
+      onConfirm={() => void onConfirm(item.id)}
+      title={titleForActivity(item.activity)}
+      titleId="app-delete-dialog-title"
+      titleTone="danger"
+    />
   );
 }

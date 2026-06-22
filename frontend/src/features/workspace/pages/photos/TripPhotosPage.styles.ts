@@ -5,10 +5,7 @@ import {
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
 import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface";
 import {
-  workspaceDeleteDialogClassName,
-  workspaceCompactDialogBodyClassName,
   workspaceDialogActionsClassName,
-  workspaceDialogBackdropClassName,
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
 } from "@/src/shared/components/workspace-dialog";
@@ -28,11 +25,8 @@ export const albumCoverClassName = "photo-album-cover min-h-[74px] overflow-hidd
 export const inspectorClassName = "photos-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto max-[1199px]:static max-[1199px]:max-h-none";
 export const inspectorSectionClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2.5 text-sm";
 export const copyFeedbackClassName = `photo-copy-feedback min-h-8 rounded-(--radius-sm) bg-(--color-surface) px-2 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackStatusClassName}`;
-export const dialogBackdropClassName = workspaceDialogBackdropClassName;
 export const dialogClassName = "photos-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[720px] shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]";
 export const dialogFormClassName = workspaceDialogFormClassName;
 export const dialogGridClassName = workspaceDialogGridClassName;
 export const fieldClassName = workspaceFieldClassName;
 export const dialogActionsClassName = workspaceDialogActionsClassName;
-export const deleteDialogClassName = workspaceDeleteDialogClassName;
-export const deleteDialogBodyClassName = workspaceCompactDialogBodyClassName;

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@/src/ui";
+import { WorkspaceConfirmDialog } from "../WorkspaceConfirmDialog";
 import { WorkspaceDialog } from "../WorkspaceDialog";
 import { workspaceDialogActionsClassName, workspaceDialogFormClassName } from "../workspace-dialog.styles";
 
@@ -35,5 +36,20 @@ export const FormDialog: Story = {
         <Button type="submit">Save</Button>
       </div>
     </WorkspaceDialog>
+  ),
+};
+
+export const ConfirmDialog: StoryObj<typeof WorkspaceConfirmDialog> = {
+  render: () => (
+    <WorkspaceConfirmDialog
+      body="Delete Hotel confirmation? Related itinerary, todo, and expense records will stay in place."
+      cancelLabel="Cancel"
+      confirmLabel="Delete booking"
+      onCancel={() => undefined}
+      onConfirm={() => undefined}
+      title="Delete booking"
+      titleId="storybook-delete-booking-title"
+      titleTone="danger"
+    />
   ),
 };

@@ -1,6 +1,5 @@
-import { Button } from "@/src/ui";
+import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import * as bookingStyles from "../BookingsDocsPage.styles";
 
 interface BookingDeleteDialogProps {
   bookingTitle: string;
@@ -11,15 +10,16 @@ interface BookingDeleteDialogProps {
 
 export function BookingDeleteDialog({ bookingTitle, copy, onCancel, onConfirm }: BookingDeleteDialogProps) {
   return (
-    <div className={bookingStyles.dialogBackdropClassName} role="presentation">
-      <section className={bookingStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-labelledby="booking-delete-title">
-        <h2 id="booking-delete-title" className="m-0 text-base font-extrabold text-(--color-danger)">{copy.deleteBooking}</h2>
-        <p className={bookingStyles.deleteDialogBodyClassName}>{copy.deletePrompt(bookingTitle)}</p>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onCancel}>{copy.cancel}</Button>
-          <Button type="button" variant="danger" onClick={onConfirm}>{copy.deleteBooking}</Button>
-        </div>
-      </section>
-    </div>
+    <WorkspaceConfirmDialog
+      body={copy.deletePrompt(bookingTitle)}
+      cancelLabel={copy.cancel}
+      cancelVariant="secondary"
+      confirmLabel={copy.deleteBooking}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+      title={copy.deleteBooking}
+      titleId="booking-delete-title"
+      titleTone="danger"
+    />
   );
 }

@@ -1,3 +1,4 @@
+export { WorkspaceConfirmDialog } from "./WorkspaceConfirmDialog";
 export { WorkspaceDialog } from "./WorkspaceDialog";
 
 export {

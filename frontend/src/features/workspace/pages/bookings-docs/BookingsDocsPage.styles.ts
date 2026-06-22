@@ -1,9 +1,6 @@
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
 import {
-  workspaceDeleteDialogClassName,
-  workspaceCompactDialogBodyClassName,
   workspaceDialogActionsClassName,
-  workspaceDialogBackdropClassName,
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
 } from "@/src/shared/components/workspace-dialog";
@@ -38,10 +35,7 @@ export const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[ca
 export const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
 export const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
 export const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
-export const dialogBackdropClassName = workspaceDialogBackdropClassName;
 export const dialogClassName = "booking-dialog max-h-[min(760px,calc(100vh_-_32px))] max-w-[760px] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
 export const dialogFormClassName = workspaceDialogFormClassName;
 export const dialogGridClassName = workspaceDialogGridClassName;
 export const dialogActionsClassName = workspaceDialogActionsClassName;
-export const deleteDialogClassName = workspaceDeleteDialogClassName;
-export const deleteDialogBodyClassName = workspaceCompactDialogBodyClassName;

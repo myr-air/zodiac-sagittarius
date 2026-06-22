@@ -2,7 +2,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
-import { Button, WorkspacePage } from "@/src/ui";
+import { WorkspacePage } from "@/src/ui";
+import { PhotoAlbumDeleteDialog } from "./components/PhotoAlbumDeleteDialog";
 import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
 import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
@@ -124,16 +125,12 @@ export function TripPhotosPage({
       ) : null}
 
       {deleteAlbum ? (
-        <div className={photoStyles.dialogBackdropClassName}>
-          <div className={photoStyles.deleteDialogClassName} role="dialog" aria-modal="true" aria-label={copy.deleteAlbum}>
-            <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{copy.deleteAlbum}</h2>
-            <p className={photoStyles.deleteDialogBodyClassName}>{copy.deletePrompt(deleteAlbum.title)}</p>
-            <div className={photoStyles.dialogActionsClassName}>
-              <Button type="button" variant="ghost" onClick={() => setDeleteAlbum(null)}>{copy.cancel}</Button>
-              <Button type="button" variant="danger" onClick={() => void confirmDelete()}>{copy.deleteAlbum}</Button>
-            </div>
-          </div>
-        </div>
+        <PhotoAlbumDeleteDialog
+          album={deleteAlbum}
+          copy={copy}
+          onCancel={() => setDeleteAlbum(null)}
+          onConfirm={() => void confirmDelete()}
+        />
       ) : null}
     </WorkspacePage>
   );
