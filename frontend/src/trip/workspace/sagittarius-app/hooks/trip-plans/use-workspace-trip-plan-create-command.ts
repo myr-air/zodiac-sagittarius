@@ -1,29 +1,15 @@
 import { useCallback } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import {
   buildCreateTripPlanRequest,
   createLocalTripPlan,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { nextClientMutationId, nextLocalPlanVariantId } from "@/src/trip/identity";
-import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
-
-interface UseWorkspaceTripPlanCreateCommandParams {
-  canManageTripPlans: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  reloadTripPlanConflict: (preferredTripPlanId?: string | null) => Promise<void>;
-  rememberSelectedTripPlanId: (trip: Trip, tripPlanId: string) => void;
-  resolvedApiClient?: TripApiClient;
-  setIsTripPlanBusy: (busy: boolean) => void;
-  setSelectedTripPlanId: (tripPlanId: string) => void;
-  setTripPlanError: (error: string | null) => void;
-  trip: Trip;
-  tripPlanErrorMessage: string;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type {
+  CreateTripPlanCommand,
+  UseWorkspaceTripPlanCreateCommandParams,
+} from "./workspace-trip-plan-command-types";
 
 export function useWorkspaceTripPlanCreateCommand({
   canManageTripPlans,
@@ -39,7 +25,7 @@ export function useWorkspaceTripPlanCreateCommand({
   trip,
   tripPlanErrorMessage,
   updateApiTrip,
-}: UseWorkspaceTripPlanCreateCommandParams) {
+}: UseWorkspaceTripPlanCreateCommandParams): CreateTripPlanCommand {
   return useCallback(async (name: string): Promise<boolean> => {
     if (!canManageTripPlans) return false;
     const trimmedName = name.trim();

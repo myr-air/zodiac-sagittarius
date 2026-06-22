@@ -72,6 +72,16 @@ export const workspaceBoundarySourcePaths = {
   workspaceSessionHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-session.ts",
   workspaceSessionRestore: "src/trip/workspace/sagittarius-app/hooks/workspace-session-restore.ts",
   workspaceTripPlansHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-trip-plans.ts",
+  tripPlanMutationCommands:
+    "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-mutation-commands.ts",
+  tripPlanCommandTypes:
+    "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-command-types.ts",
+  tripPlanCreateCommand:
+    "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-create-command.ts",
+  tripPlanMainCommand:
+    "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-main-command.ts",
+  tripPlanPatchCommands:
+    "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-patch-commands.ts",
   workspaceTripPlanSelection: "src/trip/workspace/sagittarius-app/hooks/trip-plans/workspace-trip-plan-selection.ts",
   workspaceCommandsHook: "src/trip/workspace/sagittarius-app/hooks/use-workspace-commands.ts",
   workspaceCommandsParams: "src/trip/workspace/sagittarius-app/hooks/use-workspace-commands-params.ts",

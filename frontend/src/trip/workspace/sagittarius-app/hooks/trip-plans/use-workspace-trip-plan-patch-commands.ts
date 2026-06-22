@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import {
   buildPatchTripPlanStatusRequest,
   buildRenameTripPlanRequest,
@@ -7,22 +6,12 @@ import {
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { nextClientMutationId } from "@/src/trip/identity";
-import type { PlanStatus, Trip, TripParticipantSession } from "@/src/trip/types";
 import { runWorkspaceApiCommand } from "../../support/workspace-api-command";
-
-interface UseWorkspaceTripPlanPatchCommandsParams {
-  canManageTripPlans: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  reloadTripPlanConflict: (preferredTripPlanId?: string | null) => Promise<void>;
-  resolvedApiClient?: TripApiClient;
-  setIsTripPlanBusy: (busy: boolean) => void;
-  setTripPlanError: (error: string | null) => void;
-  trip: Trip;
-  tripPlanErrorMessage: string;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type {
+  RenameTripPlanCommand,
+  UpdateTripPlanStatusCommand,
+  UseWorkspaceTripPlanPatchCommandsParams,
+} from "./workspace-trip-plan-command-types";
 
 export function useWorkspaceTripPlanPatchCommands({
   canManageTripPlans,
@@ -37,10 +26,10 @@ export function useWorkspaceTripPlanPatchCommands({
   tripPlanErrorMessage,
   updateApiTrip,
 }: UseWorkspaceTripPlanPatchCommandsParams) {
-  const updateTripPlanStatus = useCallback(async (
-    tripPlanId: string,
-    status: Exclude<PlanStatus, "main">,
-  ): Promise<boolean> => {
+  const updateTripPlanStatus = useCallback<UpdateTripPlanStatusCommand>(async (
+    tripPlanId,
+    status,
+  ) => {
     if (!canManageTripPlans || !tripPlanId) return false;
     const currentPlan = trip.planVariants.find((plan) => plan.id === tripPlanId);
     if (!currentPlan || currentPlan.status === "main") return false;
@@ -94,10 +83,10 @@ export function useWorkspaceTripPlanPatchCommands({
     updateApiTrip,
   ]);
 
-  const renameTripPlan = useCallback(async (
-    tripPlanId: string,
-    name: string,
-  ): Promise<boolean> => {
+  const renameTripPlan = useCallback<RenameTripPlanCommand>(async (
+    tripPlanId,
+    name,
+  ) => {
     if (!canManageTripPlans || !tripPlanId) return false;
     const trimmedName = name.trim();
     if (!trimmedName) return false;

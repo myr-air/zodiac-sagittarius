@@ -8,6 +8,11 @@ describe("Sagittarius workspace planning hook source boundaries", () => {
       sagaCore,
       workspaceContextsHook,
       workspaceTripPlansHook,
+      tripPlanMutationCommands,
+      tripPlanCommandTypes,
+      tripPlanCreateCommand,
+      tripPlanMainCommand,
+      tripPlanPatchCommands,
       workspaceTripPlanSelection,
       itineraryViewModelHook,
       setupContextHook,
@@ -61,6 +66,19 @@ describe("Sagittarius workspace planning hook source boundaries", () => {
     expect(planningRecordsContextHook).toContain("@/src/trip/workspace/use-trip-workspace-records");
     expect(workspaceTripPlansHook).toContain("canSelectWorkspaceTripPlan");
     expect(workspaceTripPlansHook).toContain("resolveReloadedTripPlanSelection");
+    expect(tripPlanMutationCommands).toContain("useWorkspaceTripPlanCreateCommand");
+    expect(tripPlanMutationCommands).toContain("useWorkspaceTripPlanMainCommand");
+    expect(tripPlanMutationCommands).toContain("useWorkspaceTripPlanPatchCommands");
+    expect(tripPlanMutationCommands).not.toContain("buildSetMainTripPlanRequest");
+    expect(tripPlanMutationCommands).not.toContain("setLocalMainTripPlan");
+    expect(tripPlanCommandTypes).toContain(
+      "UseWorkspaceTripPlanMutationCommandsParams",
+    );
+    expect(tripPlanCreateCommand).toContain("buildCreateTripPlanRequest");
+    expect(tripPlanMainCommand).toContain("buildSetMainTripPlanRequest");
+    expect(tripPlanMainCommand).toContain("setLocalMainTripPlan");
+    expect(tripPlanPatchCommands).toContain("buildPatchTripPlanStatusRequest");
+    expect(tripPlanPatchCommands).toContain("buildRenameTripPlanRequest");
     expect(workspaceTripPlanSelection).toContain("planVariants.some");
   });
 });
