@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { nextLocalExpenseCommentId } from "@/src/trip/identity";
 import type { Expense, ExpenseComment, Member } from "@/src/trip/types";
+import { appendExpenseDialogComment } from "../model/expense-dialog-comments";
 
 interface UseExpenseCommentsInput {
   currentMember: Member;
@@ -17,17 +17,14 @@ export function useExpenseComments({
   const [commentDraft, setCommentDraft] = useState("");
 
   function addComment() {
-    const body = commentDraft.trim();
-    if (!body) return;
-    setComments((current) => [
-      ...current,
-      {
-        id: nextLocalExpenseCommentId(current),
+    if (!commentDraft.trim()) return;
+    setComments((current) =>
+      appendExpenseDialogComment({
         authorId: currentMember.id,
-        body,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+        comments: current,
+        draft: commentDraft,
+      }),
+    );
     setCommentDraft("");
   }
 
