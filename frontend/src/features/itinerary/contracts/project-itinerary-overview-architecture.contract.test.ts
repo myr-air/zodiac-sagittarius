@@ -28,6 +28,7 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const overviewHero = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewHero.tsx");
     const overviewSummaryBand = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSummaryBand.tsx");
     const tripCompletedPostcard = readItineraryArchitectureSource("src/features/itinerary/components/overview/TripCompletedPostcard.tsx");
+    const completedPostcardLabels = readItineraryArchitectureSource("src/features/itinerary/domain/overview-completed-postcard.ts");
     const overviewFocusSection = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewFocusSection.tsx");
     const cockpit = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpit.tsx");
     const cockpitCard = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpitCard.tsx");
@@ -41,6 +42,9 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(overviewHero).toContain("export function OverviewHero");
     expect(tripCompletedPostcard).toContain("export interface TripCompletedPostcardProps");
     expect(tripCompletedPostcard).toContain("export function TripCompletedPostcard");
+    expect(tripCompletedPostcard).toContain("@/src/features/itinerary/domain/overview-completed-postcard");
+    expect(tripCompletedPostcard).not.toContain('locale === "th"');
+    expect(completedPostcardLabels).toContain("export function buildCompletedPostcardLabels");
     expect(overviewSummaryBand).toContain("./OverviewHero");
     expect(overviewSummaryBand).toContain("OverviewHeroProps");
     expect(overviewSummaryBand).not.toContain("ComponentProps<typeof OverviewHero>");
