@@ -1,6 +1,6 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { findMemberById, memberInitial } from "@/src/trip/members";
+import { memberInitial } from "@/src/trip/members";
 import { tripPlanName } from "@/src/trip/trip-plans";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
@@ -9,8 +9,7 @@ import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   categorySpendAmountLabel,
   expenseMemberBalanceDisplay,
-  settlementReminderLabel,
-  settlementSuggestionLabel,
+  settlementSuggestionDisplay,
 } from "../model/expense-overview-display";
 import { categoryTone } from "../model/expense-page-options";
 
@@ -84,28 +83,22 @@ export function ExpenseOverviewPanels({
         {expenseSummary.settlementSuggestions.length ? (
           <div className={expenseStyles.balanceListClassName}>
             {expenseSummary.settlementSuggestions.map((suggestion) => {
-              const from = findMemberById(trip.members, suggestion.from);
-              const to = findMemberById(trip.members, suggestion.to);
-              const fromName = from?.displayName ?? suggestion.from;
-              const toName = to?.displayName ?? suggestion.to;
+              const display = settlementSuggestionDisplay({
+                balanceCopy: t.expenses.balance,
+                locale,
+                members: trip.members,
+                reminderCopy: t.expenses.reminders,
+                settlementCurrency,
+                suggestion,
+              });
               return (
                 <div className={expenseStyles.settlementRowClassName} key={`${suggestion.from}-${suggestion.to}-${suggestion.amount}`}>
                   <span className={expenseStyles.balanceMetaClassName}>
-                    {settlementSuggestionLabel({
-                      balanceCopy: t.expenses.balance,
-                      fromName,
-                      settlementCurrency,
-                      suggestion,
-                      toName,
-                    })}
+                    {display.label}
                   </span>
-                  {suggestion.lastRemindedAt ? (
+                  {display.lastReminderLabel ? (
                     <span className={expenseStyles.balanceMetaClassName}>
-                      {settlementReminderLabel({
-                        locale,
-                        remindedAt: suggestion.lastRemindedAt,
-                        reminderCopy: t.expenses.reminders,
-                      })}
+                      {display.lastReminderLabel}
                     </span>
                   ) : null}
                   <span className={expenseStyles.balanceActionsClassName}>

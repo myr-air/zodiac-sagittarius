@@ -5,6 +5,7 @@ import {
   type ExpenseReminderCopy,
   expenseMemberBalanceDisplay,
   settlementReminderLabel,
+  settlementSuggestionDisplay,
   settlementSuggestionLabel,
 } from "../expense-overview-display";
 
@@ -77,6 +78,28 @@ describe("expense overview display", () => {
         toName: "Aom",
       }),
     ).toBe("Beam pays Aom HK$20.00");
+  });
+
+  it("builds settlement row display from members with id fallbacks", () => {
+    expect(settlementSuggestionDisplay({
+      balanceCopy,
+      locale: "en",
+      members: [
+        { color: "#0f766e", displayName: "Aom", id: "member-aom", presence: "online", role: "owner" },
+      ],
+      reminderCopy,
+      settlementCurrency: "HKD",
+      suggestion: {
+        amount: 35,
+        currency: "CNY",
+        from: "member-beam",
+        lastRemindedAt: "2025-06-01T00:00:00.000Z",
+        to: "member-aom",
+      },
+    })).toEqual({
+      label: "member-beam pays Aom CN¥35.00",
+      lastReminderLabel: "Last sent Jun 1, 2025, 07:00 AM",
+    });
   });
 
   it("formats category spend and reminder labels", () => {

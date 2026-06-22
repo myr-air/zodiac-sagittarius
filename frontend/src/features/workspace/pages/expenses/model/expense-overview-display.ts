@@ -1,6 +1,7 @@
 import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import type { DisplayDateTimeLocale } from "@/src/shared/date-time-display";
-import type { SettlementSuggestion } from "@/src/trip/types";
+import { findMemberById } from "@/src/trip/members";
+import type { Member, SettlementSuggestion } from "@/src/trip/types";
 
 export interface ExpenseBalanceCopy {
   owed(input: { name: string; amount: string }): string;
@@ -17,6 +18,11 @@ export interface ExpenseMemberBalanceDisplay {
   amountLabel: string;
   description: string;
   tone: "negative" | "neutral" | "positive";
+}
+
+export interface SettlementSuggestionDisplay {
+  label: string;
+  lastReminderLabel: string | null;
 }
 
 export function expenseMemberBalanceDisplay({
@@ -79,6 +85,42 @@ export function settlementSuggestionLabel({
     from: fromName,
     to: toName,
   });
+}
+
+export function settlementSuggestionDisplay({
+  balanceCopy,
+  locale,
+  members,
+  reminderCopy,
+  settlementCurrency,
+  suggestion,
+}: {
+  balanceCopy: ExpenseBalanceCopy;
+  locale: DisplayDateTimeLocale;
+  members: Member[];
+  reminderCopy: ExpenseReminderCopy;
+  settlementCurrency: string;
+  suggestion: SettlementSuggestion;
+}): SettlementSuggestionDisplay {
+  const from = findMemberById(members, suggestion.from);
+  const to = findMemberById(members, suggestion.to);
+
+  return {
+    label: settlementSuggestionLabel({
+      balanceCopy,
+      fromName: from?.displayName ?? suggestion.from,
+      settlementCurrency,
+      suggestion,
+      toName: to?.displayName ?? suggestion.to,
+    }),
+    lastReminderLabel: suggestion.lastRemindedAt
+      ? settlementReminderLabel({
+        locale,
+        remindedAt: suggestion.lastRemindedAt,
+        reminderCopy,
+      })
+      : null,
+  };
 }
 
 export function categorySpendAmountLabel({
