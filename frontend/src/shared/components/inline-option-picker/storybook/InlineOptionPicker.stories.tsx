@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
-import type { InlineOptionPickerOption } from "../inline-option-picker.types";
+import type {
+  InlineOptionPickerOption,
+  InlineOptionPickerProps,
+} from "../inline-option-picker.types";
 import { InlineOptionPicker } from "../InlineOptionPicker";
-import type { ComponentProps } from "react";
 
 const sampleOptions: InlineOptionPickerOption[] = [
   { icon: "route", label: "Travel", value: "travel" },
@@ -17,7 +19,7 @@ const travelSubOptions: InlineOptionPickerOption[] = [
   { icon: "train", label: "Train", value: "train" },
 ];
 
-const StoryRenderer = (args: ComponentProps<typeof InlineOptionPicker>) => {
+const StoryRenderer = (args: InlineOptionPickerProps) => {
   const [value, setValue] = useState(args.value);
   const [selectedSubValue, setSelectedSubValue] = useState(args.selectedSubValue ?? "");
 

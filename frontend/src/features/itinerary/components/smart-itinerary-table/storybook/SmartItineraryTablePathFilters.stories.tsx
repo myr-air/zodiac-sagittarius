@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
 import { SmartItineraryTablePathFilters } from "../SmartItineraryTablePathFilters";
-import type { ComponentProps } from "react";
+import type { SmartItineraryTablePathFiltersProps } from "../trip-plan-controls.types";
 import {
   mainPathOption,
   pathIdPlanA,
@@ -13,7 +13,7 @@ import {
 } from "@/src/features/itinerary/testing";
 import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
-const StoryRenderer = (args: ComponentProps<typeof SmartItineraryTablePathFilters>) => {
+const StoryRenderer = (args: SmartItineraryTablePathFiltersProps) => {
   const [selected, setSelected] = useState(new Set(args.selectedPathIds));
   const [showAllPaths, setShowAllPaths] = useState(args.showAllPaths);
 

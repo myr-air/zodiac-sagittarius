@@ -1,14 +1,15 @@
-import { useState, type ComponentProps } from "react";
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { messages } from "@/src/i18n/messages";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { SmartItineraryTableTripPlanControls } from "../SmartItineraryTableTripPlanControls";
+import type { SmartItineraryTableTripPlanControlsProps } from "../trip-plan-controls.types";
 import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
 
 const tripPlans = tripFixture.trip.planVariants;
 const selectedTripPlanId = tripPlans[0]?.id ?? "plan-main";
-type TripPlanControlsProps = ComponentProps<typeof SmartItineraryTableTripPlanControls>;
+type TripPlanControlsProps = SmartItineraryTableTripPlanControlsProps;
 
 const tripPlanControlActions = {
   onChangeTripPlan: fn(),

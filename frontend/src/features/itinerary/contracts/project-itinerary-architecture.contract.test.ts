@@ -20,6 +20,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps trip plan controls state split from control rendering", () => {
     const controls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx");
     const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
+    const tripPlanControlsStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTableTripPlanControls.stories.tsx");
+    const pathFiltersStory = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/storybook/SmartItineraryTablePathFilters.stories.tsx");
 
     expect(controls).toContain("./use-trip-plan-controls-state");
     expect(controls).not.toContain("useState");
@@ -28,12 +30,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controlsState).toContain("export function useTripPlanControlsState");
     expect(controlsState).toContain("function submitNewTripPlan");
     expect(controlsState).toContain("tripPlanStatus(");
+    expect(tripPlanControlsStory).toContain("SmartItineraryTableTripPlanControlsProps");
+    expect(tripPlanControlsStory).not.toContain("ComponentProps<typeof SmartItineraryTableTripPlanControls>");
+    expect(pathFiltersStory).toContain("SmartItineraryTablePathFiltersProps");
+    expect(pathFiltersStory).not.toContain("ComponentProps<typeof SmartItineraryTablePathFilters>");
   });
 
   it("keeps inline option picker menu rendering split from trigger state", () => {
     const picker = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPicker.tsx");
     const pickerMenu = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx");
     const pickerPosition = readItineraryArchitectureSource("src/shared/components/inline-option-picker/model/inline-option-picker-position.ts");
+    const pickerStory = readItineraryArchitectureSource("src/shared/components/inline-option-picker/storybook/InlineOptionPicker.stories.tsx");
 
     expect(picker).toContain("./InlineOptionPickerMenu");
     expect(picker).toContain("./model/inline-option-picker-position");
@@ -46,18 +53,23 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
     expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
     expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");
+    expect(pickerStory).toContain("InlineOptionPickerProps");
+    expect(pickerStory).not.toContain("ComponentProps<typeof InlineOptionPicker>");
   });
 
   it("keeps route map canvas rendering split from map page orchestration", () => {
     const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
     const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+    const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
 
     expect(mapView).toContain("./RouteMapCanvas");
     expect(mapView).not.toContain("routeMapCanvasClassName");
     expect(mapView).not.toContain("StaticRouteFallback");
     expect(mapCanvas).toContain("export function RouteMapCanvas");
     expect(mapCanvas).toContain("StaticRouteFallback");
-    expect(mapCanvas).toContain('type RouteMapCanvasCopy = Messages["map"]');
+    expect(mapCanvas).toContain("./route-map.types");
+    expect(mapCanvas).not.toContain('type RouteMapCanvasCopy = Messages["map"]');
+    expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
   });
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
