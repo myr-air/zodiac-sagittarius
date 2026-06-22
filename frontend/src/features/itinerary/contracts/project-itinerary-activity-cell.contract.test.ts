@@ -47,7 +47,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx",
     );
     const modalModel = readItineraryArchitectureSource(
-      "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-edit-modal-model.ts",
+      "src/features/itinerary/domain/time-edit-modal-model.ts",
     );
     const types = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts",
@@ -63,7 +63,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
-    expect(modal).toContain("buildTimeEditModalModel");
+    expect(modal).toContain("@/src/features/itinerary/domain/time-edit-modal-model");
     expect(modal).not.toContain("formatDuration");
     expect(modal).not.toContain("parseTimeToMinutes");
     expect(modalModel).toContain("export function buildTimeEditModalModel");

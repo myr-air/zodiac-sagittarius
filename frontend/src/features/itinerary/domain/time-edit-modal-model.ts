@@ -1,10 +1,10 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 import {
   durationBetweenTimes,
   formatTimeRangeLabel,
   parseTimeToMinutes,
-} from "@/src/features/itinerary/domain/itinerary-item-editing";
+} from "./itinerary-item-editing";
+import { formatDuration } from "./itinerary-time-display";
 
 interface BuildTimeEditModalModelInput {
   endOffsetDays: number;

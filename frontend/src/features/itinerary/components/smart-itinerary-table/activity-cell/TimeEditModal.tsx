@@ -5,6 +5,7 @@ import { Icon } from "@/src/ui/icons";
 import {
   endOffsetDaysBetweenTimes,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
+import { buildTimeEditModalModel } from "@/src/features/itinerary/domain/time-edit-modal-model";
 import {
   subActivityModalCloseClassName,
   timeEditFieldsClassName,
@@ -25,7 +26,6 @@ import {
 } from "../smart-itinerary-table.styles";
 import { useEscapeToClose } from "./use-escape-close";
 import type { TimeEditModalProps } from "./time-components.types";
-import { buildTimeEditModalModel } from "./time-edit-modal-model";
 
 export function TimeEditModal({
   item,
