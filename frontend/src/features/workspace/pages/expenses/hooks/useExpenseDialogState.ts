@@ -23,6 +23,7 @@ import {
   setExpenseDialogSaving,
   updateExpenseDialogTripPlanId,
 } from "../model/expense-dialog-ui-state";
+import { submitExpenseDialog } from "../model/expense-dialog-submit-action";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
 import type {
   CreateExpenseHandler,
@@ -153,16 +154,15 @@ export function useExpenseDialogState({
       splitMode: splitEditor.splitMode,
       title: formValues.title,
     });
-    setUiState((current) => setExpenseDialogSaving(current, true));
-    try {
-      if (expense) {
-        await onUpdateExpense({ ...input, expenseId: expense.id });
-        return;
-      }
-      await onCreateExpense(input);
-    } finally {
-      setUiState((current) => setExpenseDialogSaving(current, false));
-    }
+    await submitExpenseDialog({
+      canSubmitExpense,
+      expense,
+      input,
+      onCreateExpense,
+      onUpdateExpense,
+      setSaving: (isSaving) =>
+        setUiState((current) => setExpenseDialogSaving(current, isSaving)),
+    });
   }
 
   return {

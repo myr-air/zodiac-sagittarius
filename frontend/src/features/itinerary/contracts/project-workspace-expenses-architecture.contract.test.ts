@@ -20,6 +20,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
+    const expenseDialogSubmitAction = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-submit-action.ts");
     const expenseSplitEditor = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSplitEditor.ts");
     const expenseSplitEditorModel = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-split-editor.ts");
     const expenseDialogSummary = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseDialogSummary.tsx");
@@ -115,6 +116,12 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialogState).toContain("const [uiState, setUiState]");
     expect(expenseDialogState).toContain("function updateFormValue");
     expect(expenseDialogState).toContain("function submitExpense");
+    expect(expenseDialogState).toContain("submitExpenseDialog");
+    expect(expenseDialogState).not.toContain("await onUpdateExpense");
+    expect(expenseDialogState).not.toContain("await onCreateExpense");
+    expect(expenseDialogSubmitAction).toContain("export async function submitExpenseDialog");
+    expect(expenseDialogSubmitAction).toContain("await onUpdateExpense");
+    expect(expenseDialogSubmitAction).toContain("await onCreateExpense");
     expect(expenseDialogState).not.toContain("const [title, setTitle]");
     expect(expenseDialogState).not.toContain("const [amount, setAmount]");
     expect(expenseDialogState).not.toContain("const [currency, setCurrency]");
