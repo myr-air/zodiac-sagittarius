@@ -231,6 +231,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const actionGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx");
     const actionButtons = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButtons.tsx");
     const actionButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx");
+    const inlineActivityField = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/InlineActivityField.tsx");
+    const inlineActivityFieldState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/inline-activity-field-state.ts");
 
     expect(activityCell).toContain("./ActivityCellBody");
     expect(activityCell).toContain("./ActivityCellRails");
@@ -247,6 +249,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(activityCell).not.toContain("./ActivityActionButtons");
     expect(titleLine).toContain("export function ActivityCellTitleLine");
     expect(titleLine).toContain("InlineActivityField");
+    expect(inlineActivityField).toContain("./inline-activity-field-state");
+    expect(inlineActivityField).toContain("const [state, setState]");
+    expect(inlineActivityField).not.toContain("const [draft, setDraft]");
+    expect(inlineActivityField).not.toContain("const [source, setSource]");
+    expect(inlineActivityFieldState).toContain("export interface InlineActivityFieldState");
+    expect(inlineActivityFieldState).toContain("initialInlineActivityFieldState");
     expect(actionGroup).toContain("export function ActivityCellActionGroup");
     expect(actionGroup).toContain("ActivityActionButtons");
     expect(actionButtons).toContain("./ActivityActionButton");

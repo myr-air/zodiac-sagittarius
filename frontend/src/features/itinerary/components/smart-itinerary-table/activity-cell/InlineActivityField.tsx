@@ -1,5 +1,11 @@
 import { useState } from "react";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import {
+  commitInlineActivityFieldDraft,
+  initialInlineActivityFieldState,
+  resetInlineActivityFieldDraft,
+  updateInlineActivityFieldDraft,
+} from "./inline-activity-field-state";
 
 export function InlineActivityField({
   ariaLabel,
@@ -22,22 +28,22 @@ export function InlineActivityField({
   placeholder: string;
   value: string;
 }) {
-  const [draft, setDraft] = useState(value);
-  const [source, setSource] = useState(value);
+  const [state, setState] = useState(() =>
+    initialInlineActivityFieldState(value),
+  );
 
   function reset() {
-    setDraft(source);
+    setState((current) => resetInlineActivityFieldDraft(current));
   }
 
   async function commit(nextValue: string) {
     const trimmed = nextValue.trim();
-    if (disabled || trimmed === source) {
-      setDraft(source);
+    if (disabled || trimmed === state.source) {
+      setState((current) => resetInlineActivityFieldDraft(current));
       return;
     }
     await onCommit(trimmed);
-    setSource(trimmed);
-    setDraft(trimmed);
+    setState(commitInlineActivityFieldDraft(trimmed));
   }
 
   return (
@@ -50,12 +56,19 @@ export function InlineActivityField({
       placeholder={placeholder}
       size={
         autoSize
-          ? Math.max(1, Math.min(maxLength, draft.length || placeholder.length || 1))
+          ? Math.max(
+              1,
+              Math.min(maxLength, state.draft.length || placeholder.length || 1),
+            )
           : undefined
       }
-      value={draft}
-      onBlur={() => void commit(draft)}
-      onChange={(event) => setDraft(event.target.value)}
+      value={state.draft}
+      onBlur={() => void commit(state.draft)}
+      onChange={(event) =>
+        setState((current) =>
+          updateInlineActivityFieldDraft(current, event.target.value),
+        )
+      }
       onClick={(event) => event.stopPropagation()}
       onFocus={(event) => event.currentTarget.select()}
       onKeyDown={(event) => {
