@@ -1,4 +1,5 @@
 import type { ItineraryView } from "@/src/trip/itinerary-core";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { ItineraryItem } from "@/src/trip/types";
 
 interface ResolveSelectedWorkspaceItemInput {
@@ -23,7 +24,7 @@ export function resolveSelectedWorkspaceItem({
   tripStartDate,
 }: ResolveSelectedWorkspaceItemInput): SelectedWorkspaceItem {
   const selectedItem =
-    activePlanItems.find((item) => item.id === selectedItemId) ??
+    findItineraryItemById(activePlanItems, selectedItemId) ??
     planItems[0] ??
     activePlanItems[0];
 
