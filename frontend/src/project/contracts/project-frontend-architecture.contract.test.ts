@@ -75,6 +75,45 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(appShellSupport).not.toContain("export function roleLabel");
   });
 
+  it("keeps inline option picker menu rendering split from trigger state", () => {
+    const picker = readFileSync(
+      join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPicker.tsx"),
+      "utf8",
+    );
+    const pickerMenu = readFileSync(
+      join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx"),
+      "utf8",
+    );
+    const pickerPosition = readFileSync(
+      join(
+        frontendRoot,
+        "src/shared/components/inline-option-picker/model/inline-option-picker-position.ts",
+      ),
+      "utf8",
+    );
+    const pickerStory = readFileSync(
+      join(
+        frontendRoot,
+        "src/shared/components/inline-option-picker/storybook/InlineOptionPicker.stories.tsx",
+      ),
+      "utf8",
+    );
+
+    expect(picker).toContain("./InlineOptionPickerMenu");
+    expect(picker).toContain("./model/inline-option-picker-position");
+    expect(picker).not.toContain("createPortal");
+    expect(picker).not.toContain("floatingOptionMenuClassName");
+    expect(picker).not.toContain("window.innerHeight - rect.bottom");
+    expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
+    expect(pickerMenu).toContain("createPortal");
+    expect(pickerMenu).toContain("./model/inline-option-picker-position");
+    expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
+    expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
+    expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");
+    expect(pickerStory).toContain("InlineOptionPickerProps");
+    expect(pickerStory).not.toContain("ComponentProps<typeof InlineOptionPicker>");
+  });
+
   it("keeps public about page styles colocated outside the page component", () => {
     const aboutPage = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.tsx"), "utf8");
     const aboutPageStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.styles.ts"), "utf8");

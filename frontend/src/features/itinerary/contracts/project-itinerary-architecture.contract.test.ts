@@ -97,27 +97,6 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(subActivityTypes).not.toContain("ItineraryItemInteractionProps");
   });
 
-  it("keeps inline option picker menu rendering split from trigger state", () => {
-    const picker = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPicker.tsx");
-    const pickerMenu = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx");
-    const pickerPosition = readItineraryArchitectureSource("src/shared/components/inline-option-picker/model/inline-option-picker-position.ts");
-    const pickerStory = readItineraryArchitectureSource("src/shared/components/inline-option-picker/storybook/InlineOptionPicker.stories.tsx");
-
-    expect(picker).toContain("./InlineOptionPickerMenu");
-    expect(picker).toContain("./model/inline-option-picker-position");
-    expect(picker).not.toContain("createPortal");
-    expect(picker).not.toContain("floatingOptionMenuClassName");
-    expect(picker).not.toContain("window.innerHeight - rect.bottom");
-    expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
-    expect(pickerMenu).toContain("createPortal");
-    expect(pickerMenu).toContain("./model/inline-option-picker-position");
-    expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
-    expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
-    expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");
-    expect(pickerStory).toContain("InlineOptionPickerProps");
-    expect(pickerStory).not.toContain("ComponentProps<typeof InlineOptionPicker>");
-  });
-
   it("keeps itinerary page header metadata centralized", () => {
     const itineraryHeaderMeta = readItineraryArchitectureSource("src/features/itinerary/components/ItineraryHeaderMeta.tsx");
     const itineraryHeaderMetaStory = readItineraryArchitectureSource("src/features/itinerary/components/storybook/ItineraryHeaderMeta.stories.tsx");
