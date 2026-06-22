@@ -1,3 +1,8 @@
+import {
+  appStoryPaths,
+  srcStoryPath,
+} from "../../../storybook/contracts/storybook.contract.story-paths";
+
 export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/TripWorkspaceApp.tsx",
   "src/trip/workspace/TripWorkspaceDeleteDialog.tsx",
@@ -181,7 +186,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-patch-commands.ts",
   "src/trip/workspace/sagittarius-app/hooks/trip-plans/use-workspace-trip-plan-mutation-commands.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts",
-  "src/app/storybook/SagittariusApp.stories.tsx",
+  srcStoryPath(appStoryPaths.sagittariusApp),
   "src/trip/workspace/TripAccessLoadingFrame.tsx",
   "src/trip/workspace/WorkspaceToast.tsx",
   "src/trip/workspace/tests/TripWorkspaceImportDialog.test.tsx",

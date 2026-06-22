@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { requiredAccessRouteStoryStates } from "./storybook.contract.required-states";
+import { appStoryPaths } from "./storybook.contract.story-paths";
 import {
   readProjectFile,
   storyText,
@@ -33,9 +34,7 @@ describe("Storybook access route contracts", () => {
   it("requires access-gated app stories to declare an explicit access mode", () => {
     const appStories = readProjectFile(
       "src",
-      "app",
-      "storybook",
-      "SagittariusApp.stories.tsx",
+      ...appStoryPaths.sagittariusApp.split("/"),
     );
     const gatedStoryLines = appStories
       .split("\n")

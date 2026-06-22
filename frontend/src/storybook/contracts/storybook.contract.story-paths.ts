@@ -1,3 +1,7 @@
+export const appStoryPaths = {
+  sagittariusApp: "app/storybook/SagittariusApp.stories.tsx",
+} as const;
+
 export const itineraryStoryPaths = {
   contextRail: "features/itinerary/stories/ContextRail.stories.tsx",
   itineraryPage: "features/itinerary/stories/ItineraryPage.stories.tsx",
@@ -33,6 +37,7 @@ export const workspaceStoryPaths = {
 } as const;
 
 export type StorybookStoryPath =
+  | (typeof appStoryPaths)[keyof typeof appStoryPaths]
   | (typeof itineraryStoryPaths)[keyof typeof itineraryStoryPaths]
   | (typeof workspaceStoryPaths)[keyof typeof workspaceStoryPaths];
 

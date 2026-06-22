@@ -3,6 +3,10 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { frontendRoot, repoRoot } from "../project-contract.helpers";
 import {
+  appStoryPaths,
+  srcStoryPath,
+} from "../../../storybook/contracts/storybook.contract.story-paths";
+import {
   frontendScaffoldPathsAbsent,
   frontendScaffoldPathsPresent,
   repoScaffoldPathsAbsent,
@@ -52,7 +56,10 @@ describe("Sagittarius project scaffold", () => {
 
   it("splits Sagittarius story fixtures and asserts via shared storybook support", () => {
     const stories = readFileSync(
-      join(frontendRoot, "src/app/storybook/SagittariusApp.stories.tsx"),
+      join(
+        frontendRoot,
+        ...srcStoryPath(appStoryPaths.sagittariusApp).split("/"),
+      ),
       "utf8",
     );
     const storySupport = readFileSync(

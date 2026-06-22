@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  appStoryPaths,
   itineraryStoryPaths,
   srcStoryPath,
   workspaceStoryPaths,
@@ -218,7 +219,7 @@ export const workspaceBoundarySourcePaths = {
   selectedTripPlanTest: "src/trip/workspace/tests/selected-trip-plan.test.ts",
   selectedTripPlanTestFixtures: "src/trip/workspace/testing/fixtures/selected-trip-plan-fixtures.ts",
   workspaceDialogs: "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx",
-  sagittariusAppStory: "src/app/storybook/SagittariusApp.stories.tsx",
+  sagittariusAppStory: srcStoryPath(appStoryPaths.sagittariusApp),
   appShellStory: srcStoryPath(workspaceStoryPaths.appShell),
   appShellStorySupport: srcStoryPath(workspaceStoryPaths.appShellSupport),
   bookingsDocsPageStory: srcStoryPath(workspaceStoryPaths.bookingsDocsPage),

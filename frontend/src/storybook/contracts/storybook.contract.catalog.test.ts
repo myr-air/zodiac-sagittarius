@@ -6,6 +6,7 @@ import {
   requiredTemplateStates,
 } from "./storybook.contract.required-states";
 import { requiredPageStates } from "./storybook.contract.page-states";
+import { appStoryPaths } from "./storybook.contract.story-paths";
 import {
   expectStoryExports,
   readProjectFile,
@@ -36,9 +37,7 @@ describe("Storybook catalog contracts", () => {
   it("documents top-level cockpit owner, traveler, and viewer roles", () => {
     const appStories = readProjectFile(
       "src",
-      "app",
-      "storybook",
-      "SagittariusApp.stories.tsx",
+      ...appStoryPaths.sagittariusApp.split("/"),
     );
 
     ["Owner", "OwnerThai", "Traveler", "Viewer", "Dense", "Empty"].forEach(
@@ -52,7 +51,7 @@ describe("Storybook catalog contracts", () => {
 
   it("documents app-level responsive stories for every primary cockpit view", () => {
     expectStoryExports(
-      "app/storybook/SagittariusApp.stories.tsx",
+      appStoryPaths.sagittariusApp,
       requiredAppResponsiveStates,
     );
   });
