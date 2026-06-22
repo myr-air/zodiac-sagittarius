@@ -28,6 +28,23 @@ export interface RouteDayGroup {
   points: RoutePoint[];
 }
 
+interface VisibleRouteMapStateInput {
+  activeDay: DayFilter;
+  coordinateRoutePoints: RoutePoint[];
+  liveRoutePoints: RoutePoint[];
+  maxAllDaysCoordinateResolutionBatch: number;
+  routeDayGroups: RouteDayGroup[];
+  unresolvedItems: ItineraryItem[];
+}
+
+export interface VisibleRouteMapState {
+  coordinateResolutionBatch: ItineraryItem[];
+  visibleLiveRoutePoints: RoutePoint[];
+  visibleRouteDayGroups: RouteDayGroup[];
+  visibleRoutePoints: RoutePoint[];
+  visibleUnresolvedItems: ItineraryItem[];
+}
+
 export function hasCoordinates(coordinate: ItineraryItem["coordinates"]): coordinate is NonNullable<ItineraryItem["coordinates"]> {
   return Boolean(
     coordinate
@@ -54,6 +71,37 @@ export function dayColorFor(day: string, groups: RouteDayGroup[]): string {
   return groups.find((group) => group.day === day)?.color ?? routeDayColors[0];
 }
 
+export function buildVisibleRouteMapState({
+  activeDay,
+  coordinateRoutePoints,
+  liveRoutePoints,
+  maxAllDaysCoordinateResolutionBatch,
+  routeDayGroups,
+  unresolvedItems,
+}: VisibleRouteMapStateInput): VisibleRouteMapState {
+  const isAllDays = activeDay === allDaysFilter;
+  const visibleRouteDayGroups = isAllDays
+    ? routeDayGroups
+    : routeDayGroups.filter((group) => group.day === activeDay);
+  const visibleRoutePoints = visibleRoutePointsForDay(
+    coordinateRoutePoints,
+    activeDay,
+  );
+  const visibleUnresolvedItems = isAllDays
+    ? unresolvedItems
+    : unresolvedItems.filter((item) => item.day === activeDay);
+
+  return {
+    coordinateResolutionBatch: isAllDays
+      ? visibleUnresolvedItems.slice(0, maxAllDaysCoordinateResolutionBatch)
+      : visibleUnresolvedItems,
+    visibleLiveRoutePoints: visibleRoutePointsForDay(liveRoutePoints, activeDay),
+    visibleRouteDayGroups,
+    visibleRoutePoints,
+    visibleUnresolvedItems,
+  };
+}
+
 export function buildRouteDayGroups(
   groups: ReturnType<typeof groupItemsByDay>,
   routePoints: RoutePoint[],
@@ -77,6 +125,15 @@ export function buildRoutePoints(items: ItineraryItem[]): RoutePoint[] {
     const point = item.coordinates && bounds ? projectCoordinate(item.coordinates, bounds) : fallbackPoint(item, regionalItems, index);
     return { item, ...point };
   });
+}
+
+function visibleRoutePointsForDay(
+  points: RoutePoint[],
+  activeDay: DayFilter,
+): RoutePoint[] {
+  return activeDay === allDaysFilter
+    ? points
+    : points.filter((point) => point.item.day === activeDay);
 }
 
 function getBounds(items: ItineraryItem[]) {
