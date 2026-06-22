@@ -8,9 +8,22 @@ function tripPathSegment(tripId: string): string {
   return encodePathSegment(decodeTripId(tripId));
 }
 
+function queryString(params: Record<string, string | null | undefined>): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) searchParams.set(key, value);
+  });
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+function tripPlanQuery(tripPlanId?: string | null): string {
+  return queryString({ tripPlanId });
+}
+
 export const tripApiRoutes = {
   joinSession: () => "/api/v1/trip-join-sessions",
-  joinInviteTokenCurrent: (token: string) => `/api/v1/trip-join-invite-tokens/current?${new URLSearchParams({ token })}`,
+  joinInviteTokenCurrent: (token: string) => `/api/v1/trip-join-invite-tokens/current${queryString({ token })}`,
   joinInviteTokens: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/join-invite-tokens`,
   trip: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}`,
   claimMember: (tripId: string, memberId: string) =>
@@ -44,18 +57,18 @@ export const tripApiRoutes = {
     `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/${encodePathSegment(itemId)}`,
   reorderItineraryItems: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/itinerary-items/order`,
   planChecks: (tripId: string, tripPlanId?: string | null) =>
-    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks${tripPlanQuery(tripPlanId)}`,
   latestPlanCheck: (tripId: string, tripPlanId?: string | null) =>
-    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks/latest${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/plan-checks/latest${tripPlanQuery(tripPlanId)}`,
   planSuggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/plan-suggestions/${encodePathSegment(suggestionId)}`,
   suggestions: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/suggestions`,
   suggestion: (tripId: string, suggestionId: string) =>
     `/api/v1/trips/${tripPathSegment(tripId)}/suggestions/${encodePathSegment(suggestionId)}`,
   expensesSummary: (tripId: string, tripPlanId?: string | null) =>
-    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/summary${tripPlanQuery(tripPlanId)}`,
   expenseReminders: (tripId: string, tripPlanId?: string | null) =>
-    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/reminders${tripPlanId ? `?${new URLSearchParams({ tripPlanId })}` : ""}`,
+    `/api/v1/trips/${tripPathSegment(tripId)}/expenses/reminders${tripPlanQuery(tripPlanId)}`,
   expenses: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses`,
   expense: (tripId: string, expenseId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/expenses/${encodePathSegment(expenseId)}`,
   bookings: (tripId: string) => `/api/v1/trips/${tripPathSegment(tripId)}/bookings`,

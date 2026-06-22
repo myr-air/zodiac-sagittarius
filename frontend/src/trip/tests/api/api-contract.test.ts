@@ -29,6 +29,12 @@ describe("trip auth API contract", () => {
   });
 
   it("builds plan-scoped expense summary routes", () => {
+    expect(tripApiRoutes.planChecks("trip 1", "plan / rain")).toBe(
+      "/api/v1/trips/trip%201/plan-checks?tripPlanId=plan+%2F+rain",
+    );
+    expect(tripApiRoutes.latestPlanCheck("trip 1")).toBe(
+      "/api/v1/trips/trip%201/plan-checks/latest",
+    );
     expect(tripApiRoutes.expensesSummary("trip 1", "plan / rain")).toBe(
       "/api/v1/trips/trip%201/expenses/summary?tripPlanId=plan+%2F+rain",
     );
