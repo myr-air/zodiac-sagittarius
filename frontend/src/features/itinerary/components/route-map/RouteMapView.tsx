@@ -1,18 +1,15 @@
 import { useMemo } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Icon } from "@/src/ui/icons";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import { PageHeader } from "@/src/shared/components/page-header";
 import {
   routeMapLayoutClassName,
   routeMapPanelClassName,
 } from "./route-map.config";
-import {
-  activeDayLabel,
-} from "@/src/features/itinerary/domain/route-map-model";
 import { fallbackRouteViewport } from "./route-map.viewport";
 import type { RouteMapViewProps } from "./route-map.types";
 import { RouteMapCanvas } from "./RouteMapCanvas";
+import { RouteMapHeaderMeta } from "./RouteMapHeaderMeta";
 import { useRouteMapViewState } from "./use-route-map-view-state";
 import { useRouteLiveMap } from "./use-route-live-map";
 
@@ -71,12 +68,19 @@ export function RouteMapView({
         title={t.map.title}
         subtitle={tripName}
         meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}</span>
-            <span><Icon name="location" /> {t.map.locationStatus({ mapped: visibleRoutePoints.length, total: items.length, unresolved: visibleUnresolvedItems.length })}</span>
-            <span><Icon name="warning" /> {t.dates.warningCount({ count: warningCount })}</span>
-            <span><Icon name="route" /> {activeDayLabel(activeDay, routeDayGroups, t.map.allDays, t.map.chooseDay)}</span>
-          </>
+          <RouteMapHeaderMeta
+            activeDay={activeDay}
+            copy={t.map}
+            endDate={endDate}
+            itemsCount={items.length}
+            locale={locale}
+            mappedCount={visibleRoutePoints.length}
+            routeDayGroups={routeDayGroups}
+            startDate={startDate}
+            unresolvedCount={visibleUnresolvedItems.length}
+            warningCount={warningCount}
+            warningCountLabel={t.dates.warningCount}
+          />
         )}
         motif={<TravelMotif tone="route" />}
       />

@@ -121,6 +121,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps route map canvas rendering split from map page orchestration", () => {
     const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
     const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+    const mapHeaderMeta = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapHeaderMeta.tsx");
+    const mapHeaderMetaStory = readItineraryArchitectureSource("src/features/itinerary/components/route-map/storybook/RouteMapHeaderMeta.stories.tsx");
     const routeMapViewState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-map-view-state.ts");
     const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
     const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
@@ -128,8 +130,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
 
     expect(mapView).toContain("./RouteMapCanvas");
+    expect(mapView).toContain("./RouteMapHeaderMeta");
     expect(mapView).not.toContain("routeMapCanvasClassName");
     expect(mapView).not.toContain("StaticRouteFallback");
+    expect(mapView).not.toContain("formatTripRange");
+    expect(mapView).not.toContain("activeDayLabel(");
     expect(mapCanvas).toContain("export function RouteMapCanvas");
     expect(mapCanvas).toContain("StaticRouteFallback");
     expect(mapCanvas).toContain("./route-map.types");
@@ -147,6 +152,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(routeLiveMapState).toContain("export interface RouteLiveMapLifecycleState");
     expect(routeLiveMapState).toContain("retryRouteLiveMap");
     expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
+    expect(mapHeaderMeta).toContain("export function RouteMapHeaderMeta");
+    expect(mapHeaderMeta).toContain("formatTripRange");
+    expect(mapHeaderMeta).toContain("activeDayLabel");
+    expect(mapHeaderMetaStory).toContain("RouteMapHeaderMeta");
+    expect(mapHeaderMetaStory).toContain("ThaiSelectedDay");
   });
 
   it("keeps itinerary page header metadata centralized", () => {
