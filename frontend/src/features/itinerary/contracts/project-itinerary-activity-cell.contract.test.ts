@@ -162,6 +162,12 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const tableStyles = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table.styles.ts",
     );
+    const tableLayoutStyles = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-layout.styles.ts",
+    );
+    const dayGroupStyles = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/day-group.styles.ts",
+    );
     const headerStyles = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-header.styles.ts",
     );
@@ -171,6 +177,10 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
 
     expect(tableStyles).toContain("./activity-cell/activity-cell.styles");
     expect(tableStyles).toContain("./smart-itinerary-table-header.styles");
+    expect(tableStyles).toContain("./smart-itinerary-table-layout.styles");
+    expect(tableStyles).toContain("./day-group.styles");
+    expect(tableStyles).not.toContain("const tablePanelClassName");
+    expect(tableStyles).not.toContain("const dayGroupClassName");
     expect(tableStyles).not.toContain("const headerControlsPanelClassName");
     expect(tableStyles).not.toContain("const pathFilterPanelClassName");
     expect(tableStyles).not.toContain("const activityCellClassName");
@@ -178,6 +188,10 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(tableStyles).not.toContain("const ticketModalClassName");
     expect(headerStyles).toContain("export const headerControlsPanelClassName");
     expect(headerStyles).toContain("export const pathFilterPanelClassName");
+    expect(tableLayoutStyles).toContain("export const tablePanelClassName");
+    expect(tableLayoutStyles).toContain("export const smartTableClassName");
+    expect(dayGroupStyles).toContain("export const dayGroupClassName");
+    expect(dayGroupStyles).toContain("export const dayTitleInputClassName");
     expect(activityCellStyles).toContain("export const activityCellClassName");
     expect(activityCellStyles).toContain("export const timeEditModalClassName");
     expect(activityCellStyles).toContain("export const ticketModalClassName");
