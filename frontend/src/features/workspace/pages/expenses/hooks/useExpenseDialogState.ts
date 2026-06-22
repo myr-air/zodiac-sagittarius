@@ -1,11 +1,9 @@
-import { useCallback, type FormEvent } from "react";
+import { useCallback } from "react";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
 } from "../model/expense-dialog-calculation";
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
-import { submitExpenseDialog } from "../model/expense-dialog-submit-action";
-import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
 import type {
   CreateExpenseHandler,
   UpdateExpenseHandler,
@@ -13,6 +11,7 @@ import type {
 import { useExpenseComments } from "./useExpenseComments";
 import { useExpenseDialogFormValues } from "./useExpenseDialogFormValues";
 import { useExpenseDialogLinkingState } from "./useExpenseDialogLinkingState";
+import { useExpenseDialogSubmitHandler } from "./useExpenseDialogSubmitHandler";
 import { useExpenseExchangeRateAutofill } from "./useExpenseExchangeRateAutofill";
 import { useExpenseSplitEditor } from "./useExpenseSplitEditor";
 
@@ -98,31 +97,18 @@ export function useExpenseDialogState({
     onExchangeRateChange: autofillExchangeRate,
   });
 
-  async function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canSubmitExpense) return;
-    const input = buildExpenseDialogSubmitInput({
-      calculatedState,
-      category: formValues.category,
-      comments,
-      effectiveTripPlanId: linkingState.effectiveTripPlanId,
-      expense,
-      itemId: formValues.itemId,
-      notes: formValues.notes,
-      paidBy: formValues.paidBy,
-      receiptUrl: formValues.receiptUrl,
-      splitMode: splitEditor.splitMode,
-      title: formValues.title,
-    });
-    await submitExpenseDialog({
-      canSubmitExpense,
-      expense,
-      input,
-      onCreateExpense,
-      onUpdateExpense,
-      setSaving: linkingState.setSaving,
-    });
-  }
+  const submitExpense = useExpenseDialogSubmitHandler({
+    calculatedState,
+    canSubmitExpense,
+    comments,
+    effectiveTripPlanId: linkingState.effectiveTripPlanId,
+    expense,
+    formValues,
+    onCreateExpense,
+    onUpdateExpense,
+    setSaving: linkingState.setSaving,
+    splitEditor,
+  });
 
   return {
     amount: formValues.amount,
