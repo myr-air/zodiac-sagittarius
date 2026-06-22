@@ -312,9 +312,13 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(stopDialogFormFields).toContain("StopDialogPlaceResolution");
     expect(stopDialogModel).toContain("export function useStopDialogModel");
     expect(stopDialogModel).toContain("@/src/features/itinerary/domain/stop-form-model");
+    expect(stopDialogModel).toContain("./stop-dialog-submit-state");
+    expect(stopDialogModel).toContain("const [submitState, setSubmitState]");
     expect(stopDialogModel).toContain("buildStopSubmitValues");
     expect(stopDialogModel).toContain("applyStopActivityInput");
     expect(stopDialogModel).not.toContain("./stop-dialog.form");
+    expect(stopDialogModel).not.toContain("const [isSubmitting, setIsSubmitting]");
+    expect(stopDialogModel).not.toContain("const [submitError, setSubmitError]");
     expect(stopDialogTypes).toContain("export interface StopDialogProps");
   });
 

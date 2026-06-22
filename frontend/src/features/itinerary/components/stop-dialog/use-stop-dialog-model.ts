@@ -21,6 +21,13 @@ import {
   type StopDetailValues,
   detailTypeFromItem,
 } from "@/src/features/itinerary/domain/stop-details";
+import {
+  beginStopDialogSubmit,
+  clearStopDialogSubmitError,
+  completeStopDialogSubmit,
+  failStopDialogSubmit,
+  initialStopDialogSubmitState,
+} from "./stop-dialog-submit-state";
 
 interface UseStopDialogModelArgs {
   initialDay?: string;
@@ -55,8 +62,7 @@ export function useStopDialogModel({
   );
   const [selectedCandidate, setSelectedCandidate] =
     useState<PlaceResolutionCandidate>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitState, setSubmitState] = useState(initialStopDialogSubmitState);
 
   const isSubActivity = Boolean(values.parentItemId);
   const derivedDuration =
@@ -68,7 +74,7 @@ export function useStopDialogModel({
     key: K,
     value: StopFormValues[K],
   ) {
-    setSubmitError(null);
+    setSubmitState((current) => clearStopDialogSubmitError(current));
     setValues((current) => ({ ...current, [key]: value }));
   }
 
@@ -77,7 +83,7 @@ export function useStopDialogModel({
   }
 
   function updateTimeMode(timeMode: ItineraryTimeMode) {
-    setSubmitError(null);
+    setSubmitState((current) => clearStopDialogSubmitError(current));
     setValues((current) => applyStopTimeMode(current, timeMode));
   }
 
@@ -102,7 +108,7 @@ export function useStopDialogModel({
   }
 
   function updateActivity(activity: string) {
-    setSubmitError(null);
+    setSubmitState((current) => clearStopDialogSubmitError(current));
     const result = applyStopActivityInput({ activity, detailValues, values });
     if (result.detailType) setDetailType(result.detailType);
     if (result.detailValues) setDetailValues(result.detailValues);
@@ -120,14 +126,16 @@ export function useStopDialogModel({
   }
 
   async function submitValues(saveUnresolved: boolean) {
-    setSubmitError(null);
-    setIsSubmitting(true);
+    setSubmitState(beginStopDialogSubmit());
     try {
       await onSubmit(buildSubmitValues(saveUnresolved));
     } catch {
-      setSubmitError(saveFailedMessage);
+      setSubmitState(failStopDialogSubmit(saveFailedMessage));
+      return;
     } finally {
-      setIsSubmitting(false);
+      setSubmitState((current) =>
+        current.isSubmitting ? completeStopDialogSubmit() : current,
+      );
     }
   }
 
@@ -146,10 +154,10 @@ export function useStopDialogModel({
     detailValues,
     handleSubmit,
     isSubActivity,
-    isSubmitting,
+    isSubmitting: submitState.isSubmitting,
     selectedCandidate,
     setSelectedCandidate,
-    submitError,
+    submitError: submitState.submitError,
     submitUnresolved,
     toggleNextDayEnd,
     update,
