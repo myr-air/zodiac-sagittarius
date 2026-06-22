@@ -77,9 +77,17 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(overviewPageDerived).toContain("export function buildOverviewTaskListLabels");
     expect(overviewPageTypes).toContain("export interface OverviewPageProps");
     expect(overviewTaskState).toContain("export function useOverviewTaskState");
+    expect(overviewTaskState).toContain("TaskFilterState");
+    expect(overviewTaskState).toContain("NewTaskFormState");
+    expect(overviewTaskState).toContain("const [filterState, setFilterState]");
+    expect(overviewTaskState).toContain("const [newTaskFormState, setNewTaskFormState]");
+    expect(overviewTaskState).toContain("function updateFilterState");
+    expect(overviewTaskState).toContain("function updateNewTaskFormState");
     expect(overviewTaskState).toContain("function submitTask");
     expect(overviewTaskState).toContain("isMyTask");
     expect(overviewTaskState).toContain("myOpenTasks");
     expect(overviewTaskState).toContain("sharedOpenTasks");
+    expect(overviewTaskState).not.toContain("const [taskScope, setTaskScope]");
+    expect(overviewTaskState).not.toContain("const [newTaskTitle, setNewTaskTitle]");
   });
 });

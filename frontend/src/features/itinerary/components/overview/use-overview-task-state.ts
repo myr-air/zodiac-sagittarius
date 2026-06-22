@@ -17,36 +17,49 @@ interface UseOverviewTaskStateArgs {
   tasks: TripTask[];
 }
 
+interface TaskFilterState {
+  scope: TaskScopeFilter;
+  status: TaskStatusFilter;
+}
+
+interface NewTaskFormState {
+  assigneeId: string;
+  title: string;
+  visibility: TripTask["visibility"];
+}
+
 export function useOverviewTaskState({
   currentMemberId,
   onCreateTask,
   onToggleTaskStatus,
   tasks,
 }: UseOverviewTaskStateArgs) {
-  const [taskScope, setTaskScope] = useState<TaskScopeFilter>("mine");
-  const [taskStatusFilter, setTaskStatusFilter] =
-    useState<TaskStatusFilter>("all");
+  const [filterState, setFilterState] = useState<TaskFilterState>({
+    scope: "mine",
+    status: "all",
+  });
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskVisibility, setNewTaskVisibility] =
-    useState<TripTask["visibility"]>("private");
-  const [newTaskAssigneeId, setNewTaskAssigneeId] = useState("");
+  const [newTaskFormState, setNewTaskFormState] = useState<NewTaskFormState>({
+    assigneeId: "",
+    title: "",
+    visibility: "private",
+  });
   const [undoTask, setUndoTask] = useState<TripTask | null>(null);
 
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
-        if (taskScope === "mine" && !isMyTask(task, currentMemberId)) {
+        if (filterState.scope === "mine" && !isMyTask(task, currentMemberId)) {
           return false;
         }
-        if (taskScope === "trip" && task.visibility !== "shared") {
+        if (filterState.scope === "trip" && task.visibility !== "shared") {
           return false;
         }
-        if (taskStatusFilter === "open") return task.status === "open";
-        if (taskStatusFilter === "done") return task.status === "done";
+        if (filterState.status === "open") return task.status === "open";
+        if (filterState.status === "done") return task.status === "done";
         return true;
       }),
-    [currentMemberId, taskScope, taskStatusFilter, tasks],
+    [currentMemberId, filterState.scope, filterState.status, tasks],
   );
   const myOpenTasks = useMemo(
     () =>
@@ -63,28 +76,48 @@ export function useOverviewTaskState({
     [tasks],
   );
 
+  function updateFilterState<Field extends keyof TaskFilterState>(
+    field: Field,
+    value: TaskFilterState[Field],
+  ) {
+    setFilterState((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateNewTaskFormState<Field extends keyof NewTaskFormState>(
+    field: Field,
+    value: NewTaskFormState[Field],
+  ) {
+    setNewTaskFormState((current) => ({ ...current, [field]: value }));
+  }
+
+  function resetNewTaskForm() {
+    setNewTaskFormState({
+      assigneeId: "",
+      title: "",
+      visibility: "private",
+    });
+  }
+
   function submitTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const title = newTaskTitle.trim();
+    const title = newTaskFormState.title.trim();
     if (!title) return;
     onCreateTask({
       title,
-      visibility: newTaskVisibility,
-      assigneeId: newTaskAssigneeId || null,
+      visibility: newTaskFormState.visibility,
+      assigneeId: newTaskFormState.assigneeId || null,
     });
-    setNewTaskTitle("");
-    setNewTaskVisibility("private");
-    setNewTaskAssigneeId("");
-    setTaskScope(newTaskVisibility === "shared" ? "trip" : "mine");
-    setTaskStatusFilter("all");
+    resetNewTaskForm();
+    setFilterState({
+      scope: newTaskFormState.visibility === "shared" ? "trip" : "mine",
+      status: "all",
+    });
     setIsTaskDialogOpen(false);
   }
 
   function closeTaskDialog() {
     setIsTaskDialogOpen(false);
-    setNewTaskTitle("");
-    setNewTaskVisibility("private");
-    setNewTaskAssigneeId("");
+    resetNewTaskForm();
   }
 
   function toggleTask(task: TripTask) {
@@ -102,19 +135,23 @@ export function useOverviewTaskState({
     closeTaskDialog,
     isTaskDialogOpen,
     myOpenTasks,
-    newTaskAssigneeId,
-    newTaskTitle,
-    newTaskVisibility,
+    newTaskAssigneeId: newTaskFormState.assigneeId,
+    newTaskTitle: newTaskFormState.title,
+    newTaskVisibility: newTaskFormState.visibility,
     openTaskDialog: () => setIsTaskDialogOpen(true),
-    setNewTaskAssigneeId,
-    setNewTaskTitle,
-    setNewTaskVisibility,
-    setTaskScope,
-    setTaskStatusFilter,
+    setNewTaskAssigneeId: (assigneeId: string) =>
+      updateNewTaskFormState("assigneeId", assigneeId),
+    setNewTaskTitle: (title: string) => updateNewTaskFormState("title", title),
+    setNewTaskVisibility: (visibility: TripTask["visibility"]) =>
+      updateNewTaskFormState("visibility", visibility),
+    setTaskScope: (scope: TaskScopeFilter) =>
+      updateFilterState("scope", scope),
+    setTaskStatusFilter: (status: TaskStatusFilter) =>
+      updateFilterState("status", status),
     sharedOpenTasks,
     submitTask,
-    taskScope,
-    taskStatusFilter,
+    taskScope: filterState.scope,
+    taskStatusFilter: filterState.status,
     toggleTask,
     undoTask,
     undoTaskToggle,
