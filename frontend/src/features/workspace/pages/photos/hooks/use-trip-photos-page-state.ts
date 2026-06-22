@@ -4,18 +4,14 @@ import {
   findPhotoAlbumRelations,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
-import type { PhotoProviderFilter } from "../model/photo-page-options";
 import {
   countPhotoProviders,
   selectedPhotoAlbum,
   visiblePhotoAlbumsForProvider,
 } from "../model/photo-page-selectors";
 import {
-  initialPhotoAlbumBrowserState,
   initialPhotoAlbumModalState,
-  updatePhotoAlbumBrowserState,
   updatePhotoAlbumModalState,
-  type PhotoAlbumBrowserState,
   type PhotoAlbumModalState,
 } from "../model/photo-page-state";
 import type {
@@ -24,6 +20,7 @@ import type {
   TripPhotoAlbumInput,
   UpdatePhotoAlbumHandler,
 } from "../TripPhotosPage.types";
+import { usePhotoAlbumBrowserState } from "./usePhotoAlbumBrowserState";
 
 interface UseTripPhotosPageStateInput {
   onCreatePhotoAlbum: CreatePhotoAlbumHandler;
@@ -40,29 +37,23 @@ export function useTripPhotosPageState({
   photoAlbumLinks,
   trip,
 }: UseTripPhotosPageStateInput) {
-  const [browserState, setBrowserState] = useState<PhotoAlbumBrowserState>(() =>
-    initialPhotoAlbumBrowserState(photoAlbumLinks),
-  );
+  const {
+    activeProvider,
+    selectedAlbumId,
+    setActiveProvider,
+    setSelectedAlbumId,
+  } = usePhotoAlbumBrowserState({ photoAlbumLinks });
   const [modalState, setModalState] = useState<PhotoAlbumModalState>(
     initialPhotoAlbumModalState,
   );
   const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
   const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
   const visibleAlbums = useMemo(
-    () => visiblePhotoAlbumsForProvider(photoAlbumLinks, browserState.activeProvider),
-    [browserState.activeProvider, photoAlbumLinks],
+    () => visiblePhotoAlbumsForProvider(photoAlbumLinks, activeProvider),
+    [activeProvider, photoAlbumLinks],
   );
-  const selectedAlbum = selectedPhotoAlbum(visibleAlbums, browserState.selectedAlbumId);
+  const selectedAlbum = selectedPhotoAlbum(visibleAlbums, selectedAlbumId);
   const selectedRelations = selectedAlbum ? findPhotoAlbumRelations(selectedAlbum, trip) : null;
-
-  function updateBrowserState<Field extends keyof PhotoAlbumBrowserState>(
-    field: Field,
-    value: PhotoAlbumBrowserState[Field],
-  ) {
-    setBrowserState((current) =>
-      updatePhotoAlbumBrowserState(current, field, value),
-    );
-  }
 
   function updateModalState<Field extends keyof PhotoAlbumModalState>(
     field: Field,
@@ -87,21 +78,19 @@ export function useTripPhotosPageState({
   }
 
   return {
-    activeProvider: browserState.activeProvider,
+    activeProvider,
     confirmDelete,
     deleteAlbum: modalState.deleteAlbum,
     dialogAlbum: modalState.dialogAlbum,
     providerCounts,
     selectedAlbum,
     selectedRelations,
-    setActiveProvider: (activeProvider: PhotoProviderFilter) =>
-      updateBrowserState("activeProvider", activeProvider),
+    setActiveProvider,
     setDeleteAlbum: (deleteAlbum: TripPhotoAlbumLink | null) =>
       updateModalState("deleteAlbum", deleteAlbum),
     setDialogAlbum: (dialogAlbum: TripPhotoAlbumLink | "new" | null) =>
       updateModalState("dialogAlbum", dialogAlbum),
-    setSelectedAlbumId: (selectedAlbumId: string) =>
-      updateBrowserState("selectedAlbumId", selectedAlbumId),
+    setSelectedAlbumId,
     submitAlbum,
     summary,
     visibleAlbums,
