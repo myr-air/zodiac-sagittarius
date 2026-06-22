@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-import { buildExpenseStatement } from "@/src/trip/expenses";
 import type {
   Expense,
   ExpenseSummary,
@@ -16,17 +14,9 @@ import type {
   RecordPaybackReminderHandler,
   UpdateExpenseHandler,
 } from "../model/expense-page-types";
-import {
-  expenseCategorySpend,
-  filterExpenses,
-  inferredScopeExpenses as filterInferredScopeExpenses,
-} from "../model/expense-page-filters";
-import {
-  currentMemberExpenseBalance,
-  expensePageSettlementCurrency,
-} from "../model/expense-page-selectors";
 import { useExpenseDialogTargetState } from "./useExpenseDialogTargetState";
 import { useExpenseLedgerActions } from "./useExpenseLedgerActions";
+import { useExpensePageDerivedState } from "./useExpensePageDerivedState";
 import { useExpensePageFilters } from "./useExpensePageFilters";
 
 interface UseTripExpensesPageStateArgs {
@@ -67,16 +57,23 @@ export function useTripExpensesPageState({
     onUpdateExpense,
   });
 
-  const settlementCurrency = expensePageSettlementCurrency(expenseSummary);
   const {
+    categorySpend,
     currentNet,
+    filteredExpenses,
+    inferredScopeExpenses,
     owedToYou,
+    settlementCurrency,
+    statement,
     youOwe,
-  } = currentMemberExpenseBalance(expenseSummary, currentMember.id);
-  const statement = useMemo(
-    () => buildExpenseStatement({ trip, expenseSummary }),
-    [expenseSummary, trip],
-  );
+  } = useExpensePageDerivedState({
+    categoryFilter,
+    currentMember,
+    expenseSummary,
+    payerFilter,
+    query,
+    trip,
+  });
   const {
     copyPaybackReminder,
     copyState,
@@ -88,32 +85,6 @@ export function useTripExpensesPageState({
     statement,
     trip,
   });
-  const inferredScopeExpenses = useMemo(
-    () => filterInferredScopeExpenses(trip.expenses),
-    [trip.expenses],
-  );
-  const categorySpend = useMemo(
-    () => expenseCategorySpend(trip.expenses, settlementCurrency),
-    [settlementCurrency, trip.expenses],
-  );
-  const filteredExpenses = useMemo(
-    () => filterExpenses({
-      categoryFilter,
-      expenses: trip.expenses,
-      itineraryItems: trip.itineraryItems,
-      members: trip.members,
-      payerFilter,
-      query,
-    }),
-    [
-      categoryFilter,
-      payerFilter,
-      query,
-      trip.expenses,
-      trip.itineraryItems,
-      trip.members,
-    ],
-  );
 
   function recordSettlement(suggestion: SettlementSuggestion) {
     onCreateExpense(buildSettlementExpenseInput({

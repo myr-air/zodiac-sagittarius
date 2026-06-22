@@ -90,6 +90,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.plays.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogTargetState.ts",
+  "src/features/workspace/pages/expenses/hooks/useExpensePageDerivedState.ts",
   "src/features/workspace/pages/expenses/hooks/useExpensePageFilters.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseComments.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts",

@@ -7,6 +7,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/use-trip-expenses-page-state.ts");
     const expenseDialogTargetState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogTargetState.ts");
     const expensePageFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpensePageFilters.ts");
+    const expensePageDerivedState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpensePageDerivedState.ts");
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
@@ -43,9 +44,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensesPage).not.toContain("buildExpenseCsv");
     expect(expensesPage).not.toContain("refundSplits");
     expect(expensesPage).not.toContain("function recordRefund");
-    expect(expensesState).toContain("../model/expense-page-filters");
     expect(expensesState).toContain("./useExpenseDialogTargetState");
     expect(expensesState).toContain("./useExpensePageFilters");
+    expect(expensesState).toContain("./useExpensePageDerivedState");
     expect(expensesState).toContain("../model/expense-page-actions");
     expect(expensesState).toContain("./useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
@@ -54,6 +55,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensesState).not.toContain("const [payerFilter, setPayerFilter]");
     expect(expensesState).not.toContain("const [categoryFilter, setCategoryFilter]");
     expect(expensesState).not.toContain("const [dialogExpense, setDialogExpense]");
+    expect(expensesState).not.toContain("buildExpenseStatement");
+    expect(expensesState).not.toContain("currentMemberExpenseBalance");
+    expect(expensesState).not.toContain("expenseCategorySpend");
+    expect(expensesState).not.toContain("filterExpenses");
+    expect(expensesState).not.toContain("filterInferredScopeExpenses");
     expect(expenseDialogTargetState).toContain("const [dialogExpense, setDialogExpense]");
     expect(expenseDialogTargetState).toContain("async function createDialogExpense");
     expect(expenseDialogTargetState).toContain("async function updateDialogExpense");
@@ -68,6 +74,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseFilters).toContain("export function filterExpenses");
     expect(expenseFilters).toContain("export function expenseCategorySpend");
     expect(expenseFilters).toContain("export function inferredScopeExpenses");
+    expect(expensePageDerivedState).toContain("../model/expense-page-filters");
+    expect(expensePageDerivedState).toContain("../model/expense-page-selectors");
+    expect(expensePageDerivedState).toContain("buildExpenseStatement");
+    expect(expensePageDerivedState).toContain("currentMemberExpenseBalance");
+    expect(expensePageDerivedState).toContain("export function useExpensePageDerivedState");
     expect(expenseOverviewPanels).toContain("../model/expense-overview-display");
     expect(expenseOverviewPanels).not.toContain("t.expenses.balance.owed");
     expect(expenseOverviewPanels).not.toContain("t.expenses.balance.payback");
