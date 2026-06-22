@@ -3,15 +3,15 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const bookingsDocsComponentsDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const bookingsDocsHooksDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-function readBookingsDocsComponentSource(fileName: string) {
-  return readFileSync(join(bookingsDocsComponentsDir, fileName), "utf8");
+function readBookingsDocsHookSource(fileName: string) {
+  return readFileSync(join(bookingsDocsHooksDir, fileName), "utf8");
 }
 
 describe("booking dialog state structure", () => {
   it("keeps form state grouped by the shared booking dialog field model", () => {
-    const dialogStateSource = readBookingsDocsComponentSource(
+    const dialogStateSource = readBookingsDocsHookSource(
       "useBookingDialogState.ts",
     );
 

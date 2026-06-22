@@ -4,9 +4,9 @@ import { Button } from "@/src/ui";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
+import { usePhotoAlbumDialogState } from "../hooks/usePhotoAlbumDialogState";
 import { PhotoAlbumDialogFields } from "./PhotoAlbumDialogFields";
 import { PhotoAlbumDialogRelatedItems } from "./PhotoAlbumDialogRelatedItems";
-import { usePhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogProps {
   album: TripPhotoAlbumLink | null;

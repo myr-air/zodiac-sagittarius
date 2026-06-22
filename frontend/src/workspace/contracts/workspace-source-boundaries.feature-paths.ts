@@ -7,7 +7,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   bookingDialogFields: "src/features/workspace/pages/bookings-docs/model/booking-dialog-fields.ts",
   bookingDialogLinks: "src/features/workspace/pages/bookings-docs/components/BookingDialogLinks.tsx",
   bookingFilePanel: "src/features/workspace/pages/bookings-docs/components/BookingFilePanel.tsx",
-  bookingDialogState: "src/features/workspace/pages/bookings-docs/components/useBookingDialogState.ts",
+  bookingDialogState: "src/features/workspace/pages/bookings-docs/hooks/useBookingDialogState.ts",
   itineraryTimeLib: "src/features/itinerary/lib/itinerary-time.ts",
   overviewPage: "src/features/itinerary/components/overview/OverviewPage.tsx",
   overviewSummaryBand: "src/features/itinerary/components/overview/OverviewSummaryBand.tsx",
@@ -48,7 +48,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   photoAlbumBrowser: "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",
   photoAlbumDialogRelatedItems: "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
-  photoAlbumDialogState: "src/features/workspace/pages/photos/components/usePhotoAlbumDialogState.ts",
+  photoAlbumDialogState: "src/features/workspace/pages/photos/hooks/usePhotoAlbumDialogState.ts",
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
   accountAccessPanelContent:
     "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx",

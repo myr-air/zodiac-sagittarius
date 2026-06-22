@@ -2,7 +2,7 @@ import { CheckboxGroup } from "@/src/shared/components/checkbox-group";
 import type { Trip } from "@/src/trip/types";
 import { buildItineraryItemOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
-import type { PhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
+import type { PhotoAlbumDialogState } from "../hooks/usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogRelatedItemsProps {
   copy: PhotoCopy;

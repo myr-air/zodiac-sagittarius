@@ -4,9 +4,9 @@ import { Button } from "@/src/ui";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
+import { useBookingDialogState } from "../hooks/useBookingDialogState";
 import { BookingDialogFields } from "./BookingDialogFields";
 import { BookingDialogLinks } from "./BookingDialogLinks";
-import { useBookingDialogState } from "./useBookingDialogState";
 
 interface BookingDialogProps {
   booking: BookingDoc | null;

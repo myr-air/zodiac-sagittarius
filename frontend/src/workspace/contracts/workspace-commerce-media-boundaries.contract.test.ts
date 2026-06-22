@@ -41,7 +41,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingList).toContain("compareBookingStartWithUndated");
     expect(bookingList).not.toContain("export function bookingDocMatchesQuery");
     expect(bookingList).not.toContain("export function compareBookingStartWithUndated");
-    expect(bookingDialog).toContain("./useBookingDialogState");
+    expect(bookingDialog).toContain("../hooks/useBookingDialogState");
     expect(bookingDialog).not.toContain("useState");
     expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialog).not.toContain("@/src/features/itinerary/lib/itinerary-item-helpers");
@@ -65,7 +65,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingDialogFields).not.toContain("@/src/features/itinerary/lib/itinerary-time");
     expect(bookingDialogFields).toContain("@/src/shared/date-time-local");
 
-    expect(photoAlbumDialog).toContain("./usePhotoAlbumDialogState");
+    expect(photoAlbumDialog).toContain("../hooks/usePhotoAlbumDialogState");
     expect(photoAlbumDialog).toContain("PhotoAlbumDialogFields");
     expect(photoAlbumDialog).toContain("PhotoAlbumDialogRelatedItems");
     expect(photoAlbumDialog).not.toContain("useState");

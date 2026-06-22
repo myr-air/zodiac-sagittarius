@@ -8,7 +8,7 @@ import {
   buildTaskOptions,
 } from "@/src/features/workspace/model/related-checkbox-options";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import type { BookingDialogState } from "./useBookingDialogState";
+import type { BookingDialogState } from "../hooks/useBookingDialogState";
 
 interface BookingDialogLinksProps {
   copy: BookingCopy;

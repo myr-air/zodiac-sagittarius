@@ -12,7 +12,7 @@ import {
   photoProviderLabel,
   photoProviderOptions,
 } from "../model/photo-page-options";
-import type { PhotoAlbumDialogState } from "./usePhotoAlbumDialogState";
+import type { PhotoAlbumDialogState } from "../hooks/usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogFieldsProps {
   copy: PhotoCopy;

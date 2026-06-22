@@ -10,7 +10,7 @@ import {
   formatEnumLabel,
 } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import type { BookingDialogState } from "./useBookingDialogState";
+import type { BookingDialogState } from "../hooks/useBookingDialogState";
 
 interface BookingDialogFieldsProps {
   copy: BookingCopy;
