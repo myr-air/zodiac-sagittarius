@@ -3,6 +3,7 @@ export const frontendTripDomainCatalogSupportScaffoldPathsPresent = [
   "src/trip/metadata/trip-countries.ts",
   "src/trip/metadata/trip-date-calendar.ts",
   "src/trip/metadata/trip-defaults.ts",
+  "src/trip/metadata/trip-destination-options.ts",
   "src/trip/metadata/trip-destinations.ts",
   "src/trip/tests/metadata/trip-countries.test.ts",
   "src/trip/tests/metadata/trip-date-calendar.test.ts",
