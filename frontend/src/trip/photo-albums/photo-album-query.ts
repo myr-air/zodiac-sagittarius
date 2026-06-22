@@ -2,6 +2,7 @@ import {
   normalizeSearchQuery,
   valuesMatchSearchQuery,
 } from "@/src/shared/text-search";
+import { findById } from "@/src/shared/collection/find-by-id";
 import { findMemberById } from "../members";
 import { safeExternalHref } from "../places";
 import type {
@@ -79,8 +80,7 @@ export function findPhotoAlbumById(
   albums: readonly TripPhotoAlbumLink[],
   albumId: string | null | undefined,
 ): TripPhotoAlbumLink | null {
-  if (!albumId) return null;
-  return albums.find((album) => album.id === albumId) ?? null;
+  return findById(albums, albumId);
 }
 
 export function findPhotoAlbumRelations(

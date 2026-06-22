@@ -1,10 +1,10 @@
+import { findById } from "@/src/shared/collection/find-by-id";
 import type { Member } from "../types";
 
 type MemberDisplayNameSource = Pick<Member, "displayName" | "id">;
 
 export function findMemberById(members: readonly Member[], memberId: string | null | undefined): Member | undefined {
-  if (!memberId) return undefined;
-  return members.find((member) => member.id === memberId);
+  return findById(members, memberId) ?? undefined;
 }
 
 export function buildMemberDisplayNameResolver(

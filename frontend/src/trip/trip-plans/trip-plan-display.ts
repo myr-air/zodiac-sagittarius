@@ -1,3 +1,4 @@
+import { findById } from "@/src/shared/collection/find-by-id";
 import type { PlanVariant, Trip } from "../types";
 
 type TripPlanDisplaySource = Pick<
@@ -15,8 +16,7 @@ export function findTripPlanOptionById(
   tripPlans: readonly PlanVariant[],
   tripPlanId: string | null | undefined,
 ): PlanVariant | null {
-  if (!tripPlanId) return null;
-  return tripPlans.find((plan) => plan.id === tripPlanId) ?? null;
+  return findById(tripPlans, tripPlanId);
 }
 
 export function findTripPlanById(

@@ -1,3 +1,4 @@
+import { findById } from "@/src/shared/collection/find-by-id";
 import type { BookingDoc } from "../types";
 import type { BookingDocInputLike } from "./booking-doc-inputs";
 
@@ -5,8 +6,7 @@ export function findBookingDocById<TDoc extends Pick<BookingDoc, "id">>(
   bookingDocs: readonly TDoc[],
   bookingDocId: string | null | undefined,
 ): TDoc | null {
-  if (!bookingDocId) return null;
-  return bookingDocs.find((bookingDoc) => bookingDoc.id === bookingDocId) ?? null;
+  return findById(bookingDocs, bookingDocId);
 }
 
 export function findDuplicateBookingDoc(
