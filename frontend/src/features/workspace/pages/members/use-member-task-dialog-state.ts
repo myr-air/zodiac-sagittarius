@@ -4,6 +4,7 @@ import type {
   TripMemberAccessStatus,
 } from "@/src/trip/types";
 import type { MemberTaskDialogState } from "./components/MemberTaskDialog";
+import { buildMemberPasswordInput } from "./model/member-password-input";
 
 interface MemberTaskDialogLabels {
   disable: string;
@@ -102,8 +103,8 @@ export function useMemberTaskDialogState({
       closeMemberDialog();
       return;
     }
-    const password = passwordValue.trim();
-    if (password.length < 4) {
+    const password = buildMemberPasswordInput(passwordValue);
+    if (!password) {
       setPasswordError(labels.passwordTooShort);
       return;
     }
