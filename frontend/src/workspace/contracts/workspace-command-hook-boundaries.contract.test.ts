@@ -10,6 +10,12 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       workspaceCommandsHook,
       workspaceCommandsParams,
       itineraryBookingCommands,
+      itineraryMoveCommands,
+      itineraryMoveCommandTypes,
+      itineraryBlockMoveCommand,
+      itineraryDayMoveCommand,
+      itineraryPathMoveCommand,
+      itineraryReorderCommand,
       bookingDocCommands,
       bookingCommandInputs,
       bookingCommandCreateInputs,
@@ -76,6 +82,29 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       "buildItineraryBookingTicketDocInput",
     );
     expect(itineraryBookingCommandTypes).toContain("UseWorkspaceItineraryBookingCommandsOptions");
+    expect(itineraryMoveCommands).toContain("useWorkspaceItineraryReorderCommand");
+    expect(itineraryMoveCommands).toContain(
+      "useWorkspaceItineraryBlockMoveCommand",
+    );
+    expect(itineraryMoveCommands).toContain("useWorkspaceItineraryDayMoveCommand");
+    expect(itineraryMoveCommands).toContain("useWorkspaceItineraryPathMoveCommand");
+    expect(itineraryMoveCommands).not.toContain("moveTripItemIntoPlanBlock");
+    expect(itineraryMoveCommands).not.toContain("moveTripItemToDay");
+    expect(itineraryMoveCommandTypes).toContain(
+      "UseWorkspaceItineraryMoveCommandsParams",
+    );
+    expect(itineraryBlockMoveCommand).toContain("moveTripItemIntoPlanBlock");
+    expect(itineraryBlockMoveCommand).toContain(
+      "buildWorkspaceMoveItemPatchRequest",
+    );
+    expect(itineraryDayMoveCommand).toContain("moveTripItemToDay");
+    expect(itineraryDayMoveCommand).toContain(
+      "buildWorkspaceMoveItemToDayPatchRequest",
+    );
+    expect(itineraryPathMoveCommand).toContain(
+      "buildWorkspacePathMovePlacement",
+    );
+    expect(itineraryReorderCommand).toContain("buildWorkspaceReorderApiInput");
     expect(createItineraryBookingDraftCommand).toContain("buildItineraryBookingDraftInput");
     expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
     expect(saveItineraryBookingTicketCommand).toContain(
