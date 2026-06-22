@@ -354,10 +354,18 @@ describe("Sagittarius itinerary architecture contracts", () => {
   });
 
   it("keeps smart itinerary path filter state split from table derived state", () => {
+    const table = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx");
+    const tablePageState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryTablePageState.ts");
     const tableState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryTableState.ts");
     const tableStateModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-state.ts");
     const pathFilters = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryPathFilters.ts");
 
+    expect(table).toContain("./hooks/useSmartItineraryTablePageState");
+    expect(table).not.toContain("@/src/i18n/I18nProvider");
+    expect(table).not.toContain("./hooks/useSmartItineraryTableState");
+    expect(tablePageState).toContain("export function useSmartItineraryTablePageState");
+    expect(tablePageState).toContain("@/src/i18n/I18nProvider");
+    expect(tablePageState).toContain("./useSmartItineraryTableState");
     expect(tableState).toContain("./useSmartItineraryPathFilters");
     expect(tableState).toContain("../smart-itinerary-table-state");
     expect(tableState).not.toContain("export interface SmartItineraryTableState");

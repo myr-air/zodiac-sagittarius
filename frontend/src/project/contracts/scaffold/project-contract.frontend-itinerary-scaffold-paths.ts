@@ -124,6 +124,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/context-rail/tests/use-context-rail-note-form.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx",
   "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types.ts",
+  "src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryTablePageState.ts",
   "src/features/itinerary/components/smart-itinerary-table/tests/SmartItineraryTable.activity-booking.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/tests/SmartItineraryTable.activity-editing.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/tests/SmartItineraryTable.activity-rows.test.tsx",

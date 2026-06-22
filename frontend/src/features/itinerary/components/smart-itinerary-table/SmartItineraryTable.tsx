@@ -1,11 +1,10 @@
-import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "@/src/trip/itinerary-paths";
 import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 import { SmartItineraryTablePageHeader } from "./SmartItineraryTablePageHeader";
-import { useSmartItineraryTableState } from "./hooks/useSmartItineraryTableState";
+import { useSmartItineraryTablePageState } from "./hooks/useSmartItineraryTablePageState";
 import type { SmartItineraryTableProps } from "./SmartItineraryTable.types";
 
 import { tablePanelClassName, tableScrollClassName } from "./smart-itinerary-table.styles";
@@ -52,7 +51,17 @@ export function SmartItineraryTable({
   onClearDayPath,
   onToggleShowAllPaths,
 }: SmartItineraryTableProps) {
-  const { locale, t } = useI18n();
+  const { locale, t, tableState } = useSmartItineraryTablePageState({
+    canRestructure,
+    dailyBriefings,
+    endDate,
+    graphItems,
+    itineraryView,
+    items,
+    pathOptions,
+    role,
+    startDate,
+  });
   const {
     canEdit,
     canManageTripPlans,
@@ -70,19 +79,7 @@ export function SmartItineraryTable({
     togglePlanFilter,
     selectedFilterLabel,
     smartTableStyle,
-  } = useSmartItineraryTableState({
-    pathOptions,
-    items,
-    graphItems,
-    role,
-    startDate,
-    endDate,
-    dailyBriefings,
-    itineraryView,
-    selectedCountLabel: t.itinerary.filters.selectedCount,
-    selectedNamesLabel: t.itinerary.filters.selectedNames,
-    canRestructure,
-  });
+  } = tableState;
 
   return (
     <section
