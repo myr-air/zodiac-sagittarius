@@ -4,8 +4,14 @@ import {
   canSubmitTripSettings,
   hasInvalidTripSettingsDateRange,
   normalizeTripSettingsForm,
-  tripToSettingsForm,
 } from "./model/trip-settings-form-model";
+import {
+  failedTripSettingsFormState,
+  initialTripSettingsFormState,
+  savedTripSettingsFormState,
+  savingTripSettingsFormState,
+  tripSettingsFormValueState,
+} from "./model/trip-settings-form-state";
 import { countStopsOutsideSettingsRange } from "./model/trip-settings-date-impact";
 import type { TripSettingsFormValues } from "./TripSettingsPage.types";
 
@@ -22,45 +28,47 @@ export function useTripSettingsFormState({
   trip,
   onSave,
 }: TripSettingsFormStateInput) {
-  const [form, setForm] = useState<TripSettingsFormValues>(() =>
-    tripToSettingsForm(trip),
-  );
-  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [error, setError] = useState<string | null>(null);
-  const invalidDateRange = hasInvalidTripSettingsDateRange(form);
+  const [state, setState] = useState(() => initialTripSettingsFormState(trip));
+  const invalidDateRange = hasInvalidTripSettingsDateRange(state.form);
   const outsideStopCount = useMemo(
-    () => countStopsOutsideSettingsRange(trip, form),
-    [form, trip],
+    () => countStopsOutsideSettingsRange(trip, state.form),
+    [state.form, trip],
   );
   const canSubmit = canSubmitTripSettings({
     canEdit,
-    form,
+    form: state.form,
     invalidDateRange,
-    status,
+    status: state.status,
   });
 
   async function submitSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) return;
-    setStatus("saving");
-    setError(null);
+    setState(savingTripSettingsFormState);
     try {
-      await onSave(normalizeTripSettingsForm(form));
-      setStatus("saved");
+      await onSave(normalizeTripSettingsForm(state.form));
+      setState(savedTripSettingsFormState);
     } catch {
-      setStatus("idle");
-      setError(saveFailedMessage);
+      setState((current) =>
+        failedTripSettingsFormState(current, saveFailedMessage),
+      );
     }
   }
 
   return {
     canSubmit,
-    error,
-    form,
+    error: state.error,
+    form: state.form,
     invalidDateRange,
     outsideStopCount,
-    setForm,
-    status,
+    setForm: (
+      updater:
+        | TripSettingsFormValues
+        | ((current: TripSettingsFormValues) => TripSettingsFormValues),
+    ) => {
+      setState((current) => tripSettingsFormValueState(current, updater));
+    },
+    status: state.status,
     submitSettings,
   };
 }

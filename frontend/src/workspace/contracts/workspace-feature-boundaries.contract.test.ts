@@ -86,6 +86,11 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(tripSettingsDateImpact).toContain("export function countStopsOutsideSettingsRange");
     expect(tripSettingsFormState).toContain("useTripSettingsFormState");
     expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");
+    expect(tripSettingsFormState).toContain("initialTripSettingsFormState");
+    expect(tripSettingsFormState).toContain("const [state, setState]");
+    expect(tripSettingsFormState).not.toContain("const [form, setForm]");
+    expect(tripSettingsFormState).not.toContain("const [status, setStatus]");
+    expect(tripSettingsFormState).not.toContain("const [error, setError]");
     expect(selectedTripPlanHookTest).toContain("testing/fixtures/selected-trip-plan-fixtures");
     expect(selectedTripPlanHookTest).not.toContain("function tripWithPlans");
     expect(selectedTripPlanTest).toContain("../testing/fixtures/selected-trip-plan-fixtures");
