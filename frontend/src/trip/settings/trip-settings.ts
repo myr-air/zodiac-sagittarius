@@ -16,6 +16,21 @@ export interface TripSettingsValues {
   defaultTimezone: string;
 }
 
+export const tripPartySizeRange = {
+  min: 1,
+} as const;
+
+export function isValidTripPartySize(value: number): boolean {
+  return Number.isFinite(value) && value >= tripPartySizeRange.min;
+}
+
+export function normalizeTripPartySize(value: number | null | undefined): number {
+  return Math.max(
+    tripPartySizeRange.min,
+    Math.floor(value || tripPartySizeRange.min),
+  );
+}
+
 export function buildPatchTripSettingsRequest(
   values: TripSettingsValues,
   options: {

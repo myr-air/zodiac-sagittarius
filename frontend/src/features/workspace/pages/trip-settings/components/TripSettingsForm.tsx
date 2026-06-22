@@ -3,6 +3,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Button, FieldLabel, WorkspaceSurface } from "@/src/ui";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
+import { tripPartySizeRange } from "@/src/trip/settings";
 import * as settingsStyles from "../TripSettingsPage.styles";
 import type { TripSettingsFormValues } from "../TripSettingsPage.types";
 
@@ -81,7 +82,7 @@ export function TripSettingsForm({
           <input
             className={settingsStyles.inputClassName}
             disabled={!canEdit}
-            min={1}
+            min={tripPartySizeRange.min}
             type="number"
             value={form.partySize}
             onChange={(event) =>

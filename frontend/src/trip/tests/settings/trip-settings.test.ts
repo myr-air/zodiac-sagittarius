@@ -3,11 +3,22 @@ import {
   applyTripSettingsToTrip,
   buildShiftedItineraryItemDayRequests,
   buildPatchTripSettingsRequest,
+  isValidTripPartySize,
   mergePatchedTripSettings,
+  normalizeTripPartySize,
+  tripPartySizeRange,
 } from "@/src/trip/settings";
 import { seedTrip } from "@/src/trip/seed";
 
 describe("trip settings", () => {
+  it("centralizes trip party size bounds and normalization", () => {
+    expect(isValidTripPartySize(tripPartySizeRange.min)).toBe(true);
+    expect(isValidTripPartySize(tripPartySizeRange.min - 1)).toBe(false);
+    expect(normalizeTripPartySize(2.8)).toBe(2);
+    expect(normalizeTripPartySize(0)).toBe(tripPartySizeRange.min);
+    expect(normalizeTripPartySize(undefined)).toBe(tripPartySizeRange.min);
+  });
+
   it("builds API patch requests for trip settings", () => {
     expect(
       buildPatchTripSettingsRequest(

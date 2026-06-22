@@ -1,4 +1,8 @@
 import type { Trip } from "@/src/trip/types";
+import {
+  isValidTripPartySize,
+  normalizeTripPartySize,
+} from "@/src/trip/settings";
 import type { TripSettingsFormValues } from "../TripSettingsPage.types";
 
 export function tripToSettingsForm(trip: Trip): TripSettingsFormValues {
@@ -7,7 +11,7 @@ export function tripToSettingsForm(trip: Trip): TripSettingsFormValues {
     destinationLabel: trip.destinationLabel,
     startDate: trip.startDate,
     endDate: trip.endDate,
-    partySize: trip.partySize ?? 1,
+    partySize: normalizeTripPartySize(trip.partySize),
     defaultTimezone: trip.defaultTimezone ?? "Asia/Bangkok",
   };
 }
@@ -33,8 +37,7 @@ export function canSubmitTripSettings({
       form.name.trim() &&
       form.destinationLabel.trim() &&
       form.defaultTimezone.trim() &&
-      Number.isFinite(form.partySize) &&
-      form.partySize >= 1 &&
+      isValidTripPartySize(form.partySize) &&
       status !== "saving",
   );
 }
@@ -45,7 +48,7 @@ export function normalizeTripSettingsForm(form: TripSettingsFormValues): TripSet
     destinationLabel: form.destinationLabel.trim(),
     startDate: form.startDate,
     endDate: form.endDate,
-    partySize: Math.max(1, Math.floor(form.partySize || 1)),
+    partySize: normalizeTripPartySize(form.partySize),
     defaultTimezone: form.defaultTimezone.trim(),
   };
 }
