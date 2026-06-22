@@ -116,6 +116,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps route map canvas rendering split from map page orchestration", () => {
     const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
     const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+    const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
+    const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
 
     expect(mapView).toContain("./RouteMapCanvas");
@@ -125,6 +127,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(mapCanvas).toContain("StaticRouteFallback");
     expect(mapCanvas).toContain("./route-map.types");
     expect(mapCanvas).not.toContain('type RouteMapCanvasCopy = Messages["map"]');
+    expect(routeLiveMap).toContain("./route-live-map-state");
+    expect(routeLiveMap).toContain("const [liveMapLifecycleState, setLiveMapLifecycleState]");
+    expect(routeLiveMap).not.toContain("const [autoLiveMapState, setAutoLiveMapState]");
+    expect(routeLiveMap).not.toContain("const [liveMapRetryKey, setLiveMapRetryKey]");
+    expect(routeLiveMapState).toContain("export interface RouteLiveMapLifecycleState");
+    expect(routeLiveMapState).toContain("retryRouteLiveMap");
     expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
   });
 

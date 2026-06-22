@@ -11,10 +11,14 @@ import {
   type LiveRouteMarkerRegistry,
   synchronizeLiveRouteMarkers,
 } from "./route-map.live-markers";
+import {
+  initialRouteLiveMapLifecycleState,
+  retryRouteLiveMap,
+  setRouteLiveMapState,
+} from "./route-live-map-state";
 import type {
   DayFilter,
   RouteDayGroup,
-  RouteLiveMapState,
   RoutePoint,
 } from "./route-map.types";
 import { getRouteCenter } from "./route-map.viewport";
@@ -38,15 +42,19 @@ export function useRouteLiveMap({
   routeDayGroups,
   visibleLiveRoutePoints,
 }: UseRouteLiveMapInput) {
-  const [autoLiveMapState, setAutoLiveMapState] = useState<RouteLiveMapState>("idle");
-  const [liveMapRetryKey, setLiveMapRetryKey] = useState(0);
+  const [liveMapLifecycleState, setLiveMapLifecycleState] = useState(
+    initialRouteLiveMapLifecycleState,
+  );
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const maplibreModuleRef = useRef<typeof import("maplibre-gl") | null>(null);
   const markersRef = useRef<LiveRouteMarkerRegistry>(new Map());
   const sourceIdsRef = useRef<string[]>([]);
   const liveRoutePointsRef = useRef(liveRoutePoints);
-  const liveMapState = liveMapAvailability === "auto" ? autoLiveMapState : liveMapAvailability;
+  const liveMapState =
+    liveMapAvailability === "auto"
+      ? liveMapLifecycleState.state
+      : liveMapAvailability;
 
   const markerItems = useMemo(() => new Set(liveRoutePoints.map((point) => point.item.id)), [liveRoutePoints]);
 
@@ -62,7 +70,9 @@ export function useRouteLiveMap({
     const mountedMarkers = markersRef.current;
 
     async function mountLiveMap() {
-      setAutoLiveMapState("loading");
+      setLiveMapLifecycleState((current) =>
+        setRouteLiveMapState(current, "loading"),
+      );
 
       try {
         const maplibregl = await import("maplibre-gl");
@@ -88,16 +98,24 @@ export function useRouteLiveMap({
           if (disposed) return;
           applyRouteMapTheme(map);
           container.inert = false;
-          setAutoLiveMapState("ready");
+          setLiveMapLifecycleState((current) =>
+            setRouteLiveMapState(current, "ready"),
+          );
         });
 
         map.on("error", () => {
           if (disposed) return;
-          setAutoLiveMapState("error");
+          setLiveMapLifecycleState((current) =>
+            setRouteLiveMapState(current, "error"),
+          );
         });
       } catch {
         /* v8 ignore next */
-        if (!disposed) setAutoLiveMapState("error");
+        if (!disposed) {
+          setLiveMapLifecycleState((current) =>
+            setRouteLiveMapState(current, "error"),
+          );
+        }
       }
     }
 
@@ -116,7 +134,13 @@ export function useRouteLiveMap({
         liveMapContainer.inert = false;
       }
     };
-  }, [fallbackViewport.center, fallbackViewport.zoom, liveMapAvailability, liveMapEnabled, liveMapRetryKey]);
+  }, [
+    fallbackViewport.center,
+    fallbackViewport.zoom,
+    liveMapAvailability,
+    liveMapEnabled,
+    liveMapLifecycleState.retryKey,
+  ]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -150,8 +174,7 @@ export function useRouteLiveMap({
     if (mapContainerRef.current) {
       mapContainerRef.current.inert = false;
     }
-    setAutoLiveMapState("idle");
-    setLiveMapRetryKey((key) => key + 1);
+    setLiveMapLifecycleState((current) => retryRouteLiveMap(current));
   }, []);
 
   return {
