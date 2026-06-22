@@ -1,11 +1,15 @@
 import { type FormEvent, useState } from "react";
 
-import {
-  endOffsetDaysBetweenTimes,
-} from "@/src/features/itinerary/domain/itinerary-item-editing";
 import { buildTimeEditModalModel } from "@/src/features/itinerary/domain/time-edit-modal-model";
 
 import type { TimeEditModalProps } from "./time-components.types";
+import {
+  initialTimeEditModalFormState,
+  setTimeEditModalSaving,
+  toggleTimeEditModalEndOffsetDays,
+  updateTimeEditModalEndTime,
+  updateTimeEditModalStartTime,
+} from "./time-edit-modal-state";
 
 export function useTimeEditModalModel({
   item,
@@ -13,59 +17,53 @@ export function useTimeEditModalModel({
   onClose,
   onSave,
 }: Pick<TimeEditModalProps, "item" | "locale" | "onClose" | "onSave">) {
-  const [startTime, setStartTime] = useState(item.startTime ?? "");
-  const [endTime, setEndTime] = useState(item.endTime ?? "");
-  const [endOffsetDays, setEndOffsetDays] = useState(
-    item.endTime ? item.endOffsetDays ?? 0 : 0,
+  const [state, setState] = useState(() =>
+    initialTimeEditModalFormState(item),
   );
-  const [saving, setSaving] = useState(false);
   const model = buildTimeEditModalModel({
-    endOffsetDays,
-    endTime,
+    endOffsetDays: state.endOffsetDays,
+    endTime: state.endTime,
     locale,
-    startTime,
+    startTime: state.startTime,
   });
 
   function updateStartTime(nextStartTime: string) {
-    setStartTime(nextStartTime);
-    if (!endTime) return;
-    setEndOffsetDays(endOffsetDaysBetweenTimes(nextStartTime, endTime));
+    setState((current) =>
+      updateTimeEditModalStartTime(current, nextStartTime),
+    );
   }
 
   function updateEndTime(nextEndTime: string) {
-    setEndTime(nextEndTime);
-    setEndOffsetDays(
-      nextEndTime ? endOffsetDaysBetweenTimes(startTime, nextEndTime) : 0,
-    );
+    setState((current) => updateTimeEditModalEndTime(current, nextEndTime));
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (saving || model.errorMessage) return;
-    const trimmedEndTime = endTime.trim();
-    setSaving(true);
+    if (state.saving || model.errorMessage) return;
+    const trimmedEndTime = state.endTime.trim();
+    setState((current) => setTimeEditModalSaving(current, true));
     try {
       await onSave({
-        startTime: startTime.trim(),
+        startTime: state.startTime.trim(),
         endTime: trimmedEndTime || null,
-        endOffsetDays: trimmedEndTime ? endOffsetDays : 0,
+        endOffsetDays: trimmedEndTime ? state.endOffsetDays : 0,
         durationMinutes: trimmedEndTime ? model.derivedDuration : null,
       });
       onClose();
     } finally {
-      setSaving(false);
+      setState((current) => setTimeEditModalSaving(current, false));
     }
   }
 
   return {
-    endOffsetDays,
-    endTime,
+    endOffsetDays: state.endOffsetDays,
+    endTime: state.endTime,
     model,
     save,
-    saving,
-    startTime,
+    saving: state.saving,
+    startTime: state.startTime,
     toggleEndOffsetDays: () =>
-      setEndOffsetDays((current) => (current > 0 ? 0 : 1)),
+      setState((current) => toggleTimeEditModalEndOffsetDays(current)),
     updateEndTime,
     updateStartTime,
   };
