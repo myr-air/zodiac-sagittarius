@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import {
   buildPatchMemberAccessStatusRequest,
   buildPatchMemberPasswordRequest,
@@ -10,21 +9,10 @@ import {
   updateTripParticipantRole,
 } from "@/src/trip/auth";
 import type {
-  Trip,
   TripMemberAccessStatus,
-  TripParticipantSession,
   TripRole,
 } from "@/src/trip/types";
-
-interface UseWorkspaceMemberPatchActionsOptions {
-  canManagePeople: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  currentMemberId: string;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  trip: Trip;
-}
+import type { UseWorkspaceMemberPatchActionsOptions } from "./workspace-administration-command-types";
 
 export function useWorkspaceMemberPatchActions({
   canManagePeople,

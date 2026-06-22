@@ -1,34 +1,7 @@
-import type { Dispatch, SetStateAction } from "react";
-import { type TripApiClient, type TripCockpit } from "@/src/trip/api-client";
-import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
-import type {
-  Trip,
-  TripParticipantSession,
-} from "@/src/trip/types";
+import type { UseWorkspaceAdministrationOptions } from "./administration/workspace-administration-command-types";
 import { useWorkspaceAccountClaimActions } from "./administration/use-workspace-account-claim-actions";
 import { useWorkspaceMemberAdminActions } from "./administration/use-workspace-member-admin-actions";
 import { useWorkspaceTripSettingsActions } from "./administration/use-workspace-trip-settings-actions";
-
-interface UseWorkspaceAdministrationOptions {
-  accountClient: AccountApiClient;
-  accountSession: AccountSession | null;
-  canManagePeople: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  currentMemberId: string;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  setAccountClaimState: Dispatch<
-    SetStateAction<{
-      status: "idle" | "saving";
-      message: string | null;
-    }>
-  >;
-  setJoinInviteToken: Dispatch<SetStateAction<string | null>>;
-  trip: Trip;
-  replaceCockpitFromApi: (cockpit: TripCockpit) => void;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
 
 export function useWorkspaceAdministration({
   accountClient,

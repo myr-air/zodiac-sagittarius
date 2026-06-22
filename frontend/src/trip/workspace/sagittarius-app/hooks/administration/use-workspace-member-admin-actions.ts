@@ -1,6 +1,4 @@
 import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import {
   appendTripParticipant,
   buildCreateMemberRequest,
@@ -9,22 +7,10 @@ import {
   replaceTripParticipant,
 } from "@/src/trip/auth";
 import type {
-  Trip,
-  TripParticipantSession,
-  TripRole,
-} from "@/src/trip/types";
+  CreateWorkspaceMemberCommand,
+  UseWorkspaceMemberAdminActionsOptions,
+} from "./workspace-administration-command-types";
 import { useWorkspaceMemberPatchActions } from "./use-workspace-member-patch-actions";
-
-interface UseWorkspaceMemberAdminActionsOptions {
-  canManagePeople: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  currentMemberId: string;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  setJoinInviteToken: Dispatch<SetStateAction<string | null>>;
-  trip: Trip;
-}
 
 export function useWorkspaceMemberAdminActions({
   canManagePeople,
@@ -71,11 +57,8 @@ export function useWorkspaceMemberAdminActions({
     trip,
   ]);
 
-  const createMember = useCallback(
-    async (input: {
-      displayName: string;
-      role: Exclude<TripRole, "owner">;
-    }) => {
+  const createMember: CreateWorkspaceMemberCommand = useCallback(
+    async (input) => {
       /* v8 ignore next */
       if (!canManagePeople) return;
       if (isApiMode && resolvedApiClient && participantSession) {

@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
 import { Icon } from "@/src/ui/icons";
-import { appRoutes, tripWorkspaceNavItems } from "@/src/trip/workspace/sagittarius-app/support";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { AppShellProps } from "./app-shell.types";
 import {
   activeRailLinkClassName,
@@ -34,8 +35,9 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
   const navItems = tripWorkspaceNavItems(trip.id, t.routes);
+  const settingsView: PlanningView = "settings";
   const settingsHref = appRoutes.tripSettings(trip.id);
-  const activeNavLabel = activeView === "settings"
+  const activeNavLabel = activeView === settingsView
     ? t.appShell.nav.settings
     : (navItems.find((item) => item.id === activeView)?.label ?? t.appShell.nav.overview);
 
@@ -113,17 +115,17 @@ export function AppShell({ activeView, children, collapsed, currentMember, onLea
             </a>
           );})}
           <a
-            aria-current={activeView === "settings" ? "page" : undefined}
-            className={cn(railLinkClassName, activeView === "settings" && activeRailLinkClassName)}
+            aria-current={activeView === settingsView ? "page" : undefined}
+            className={cn(railLinkClassName, activeView === settingsView && activeRailLinkClassName)}
             data-collapsed={collapsed ? "true" : "false"}
-            data-active={activeView === "settings" ? "true" : "false"}
+            data-active={activeView === settingsView ? "true" : "false"}
             href={settingsHref}
             onClick={onNavigateView ? (event) => {
               event.preventDefault();
               setMobileMenuOpen(false);
-              onNavigateView("settings", settingsHref);
+              onNavigateView(settingsView, settingsHref);
             } : undefined}
-            ref={activeView === "settings" ? activeLinkRef : undefined}
+            ref={activeView === settingsView ? activeLinkRef : undefined}
             title={t.appShell.nav.settings}
           >
             <Icon name="settings" />

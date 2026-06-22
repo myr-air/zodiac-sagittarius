@@ -9,6 +9,12 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       workspaceContextsHook,
       workspaceCommandsHook,
       workspaceCommandsParams,
+      administrationHook,
+      administrationCommandTypes,
+      memberAdminActions,
+      memberPatchActions,
+      accountClaimActions,
+      tripSettingsActions,
       itineraryBookingCommands,
       itineraryMoveCommands,
       itineraryMoveCommandTypes,
@@ -79,6 +85,32 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(workspaceCommandsHook).toContain("useWorkspaceAdministration");
     expect(workspaceCommandsHook).not.toContain("type AdministrationParams");
     expect(workspaceCommandsParams).toContain("type AdministrationParams");
+    expect(administrationHook).toContain("useWorkspaceAccountClaimActions");
+    expect(administrationHook).toContain("useWorkspaceMemberAdminActions");
+    expect(administrationHook).toContain("useWorkspaceTripSettingsActions");
+    expect(administrationHook).not.toContain("interface UseWorkspaceAdministrationOptions");
+    expect(administrationCommandTypes).toContain(
+      "WorkspaceAdministrationCommandBaseParams",
+    );
+    expect(administrationCommandTypes).toContain(
+      "UseWorkspaceAdministrationOptions",
+    );
+    expect(memberAdminActions).toContain("UseWorkspaceMemberAdminActionsOptions");
+    expect(memberAdminActions).not.toContain(
+      "interface UseWorkspaceMemberAdminActionsOptions",
+    );
+    expect(memberPatchActions).toContain("UseWorkspaceMemberPatchActionsOptions");
+    expect(memberPatchActions).not.toContain(
+      "interface UseWorkspaceMemberPatchActionsOptions",
+    );
+    expect(accountClaimActions).toContain("UseWorkspaceAccountClaimActionsOptions");
+    expect(accountClaimActions).not.toContain(
+      "interface UseWorkspaceAccountClaimActionsOptions",
+    );
+    expect(tripSettingsActions).toContain("UseWorkspaceTripSettingsActionsOptions");
+    expect(tripSettingsActions).not.toContain(
+      "interface UseWorkspaceTripSettingsActionsOptions",
+    );
     expect(planningCommandsHook).toContain("useWorkspaceBookingCommands");
     expect(planningCommandsHook).toContain("useWorkspaceItineraryCommands");
     expect(planningCommandsHook).toContain("useWorkspaceItineraryImport");

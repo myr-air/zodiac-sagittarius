@@ -1,22 +1,5 @@
 import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
-import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
-import type { TripParticipantSession } from "@/src/trip/types";
-
-interface UseWorkspaceAccountClaimActionsOptions {
-  accountClient: AccountApiClient;
-  accountSession: AccountSession | null;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  replaceCockpitFromApi: (cockpit: TripCockpit) => void;
-  setAccountClaimState: Dispatch<
-    SetStateAction<{
-      status: "idle" | "saving";
-      message: string | null;
-    }>
-  >;
-}
+import type { UseWorkspaceAccountClaimActionsOptions } from "./workspace-administration-command-types";
 
 export function useWorkspaceAccountClaimActions({
   accountClient,

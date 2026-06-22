@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import type { TripApiClient } from "@/src/trip/api-client";
 import { deriveTripCountriesFromDestination } from "@/src/trip/metadata";
 import {
   applyTripSettingsToTrip,
@@ -8,21 +7,8 @@ import {
   mergePatchedTripSettings,
 } from "@/src/trip/settings";
 import { nextClientMutationId } from "@/src/trip/identity";
-import type {
-  Trip,
-  TripParticipantSession,
-} from "@/src/trip/types";
 import type { TripSettingsFormValues } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage.types";
-
-interface UseWorkspaceTripSettingsActionsOptions {
-  canManagePeople: boolean;
-  commitTrip: (updater: (current: Trip) => Trip) => void;
-  isApiMode: boolean;
-  participantSession: TripParticipantSession | null;
-  resolvedApiClient?: TripApiClient;
-  trip: Trip;
-  updateApiTrip: (updater: (current: Trip) => Trip) => void;
-}
+import type { UseWorkspaceTripSettingsActionsOptions } from "./workspace-administration-command-types";
 
 export function useWorkspaceTripSettingsActions({
   canManagePeople,
