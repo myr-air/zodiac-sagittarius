@@ -1,5 +1,3 @@
-import type { Messages } from "@/src/i18n/messages";
-import type { Locale } from "@/src/i18n/types";
 import { StopDialogAdvancedFields } from "./StopDialogAdvancedFields";
 import { StopDialogContextFields } from "./StopDialogContextFields";
 import { StopDialogDetailSection } from "./StopDialogDetailSection";
@@ -7,26 +5,10 @@ import { StopDialogPlaceResolution } from "./StopDialogPlaceResolution";
 import { StopDialogPrimaryFields } from "./StopDialogPrimaryFields";
 import { StopDialogTimeWindow } from "./StopDialogTimeWindow";
 import { dialogErrorClassName, dialogGridClassName } from "./stop-dialog.styles";
-import type { StopDialogProps, StopManualPathOption } from "./stop-dialog.types";
-import type { StopDialogModel } from "./use-stop-dialog-model";
+import type { StopDialogFormFieldsProps } from "./stop-dialog.types";
 import {
-  stopDetailLabels,
   stopDialogDetailTypeOptions,
 } from "./stop-dialog.utils";
-
-interface StopDialogFormFieldsProps {
-  dayOptions: string[];
-  detailLabels: ReturnType<typeof stopDetailLabels>;
-  locale: Locale;
-  manualPathOptions: StopManualPathOption[];
-  mode: StopDialogProps["mode"];
-  model: StopDialogModel;
-  moreDetailsLabel: string;
-  placeResolution: StopDialogProps["placeResolution"];
-  startDate?: string;
-  stopDialogMessages: Messages["stopDialog"];
-  itineraryHeaders: Messages["itinerary"]["headers"];
-}
 
 export function StopDialogFormFields({
   dayOptions,

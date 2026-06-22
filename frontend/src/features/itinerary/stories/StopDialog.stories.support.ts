@@ -1,6 +1,6 @@
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { StopDialog } from "@/src/features/itinerary/components";
+import type { StopDialogProps } from "@/src/features/itinerary/components";
 import { stopDialogStoryItem } from "./StopDialog.stories.items";
 
 export {
@@ -13,7 +13,7 @@ export {
   transportationStoryItem,
 } from "./StopDialog.stories.items";
 
-export type StopDialogStoryArgs = Parameters<typeof StopDialog>[0];
+export type StopDialogStoryArgs = StopDialogProps;
 
 export const stopDialogCreateArgs = {
   mode: "create",

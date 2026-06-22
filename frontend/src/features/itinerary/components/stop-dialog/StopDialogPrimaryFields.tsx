@@ -1,19 +1,6 @@
-import type { StopDetailType } from "./stop-dialog.utils";
 import { dialogFieldWideClassName } from "./stop-dialog.styles";
-import type { StopFormValues } from "./stop-dialog.types";
+import type { StopDialogPrimaryFieldsProps } from "./stop-dialog.types";
 import { stopDialogFieldIds } from "./stop-dialog.utils";
-
-interface StopDialogPrimaryFieldsProps {
-  activityLabel: string;
-  detailType: StopDetailType;
-  isFocusedEdit: boolean;
-  noteLabel: string;
-  placeLabel: string;
-  transportationLabel: string;
-  values: StopFormValues;
-  onUpdate: <K extends keyof StopFormValues>(key: K, value: StopFormValues[K]) => void;
-  onUpdateActivity: (activity: string) => void;
-}
 
 export function StopDialogPrimaryFields({
   activityLabel,

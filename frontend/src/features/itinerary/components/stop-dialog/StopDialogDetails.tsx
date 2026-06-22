@@ -1,11 +1,5 @@
-import { stopDialogFieldIds, stopDetailLabels, type StopDetailType, type StopDetailValues } from "./stop-dialog.utils";
-
-type StopDetailFieldsProps = {
-  detailLabels: ReturnType<typeof stopDetailLabels>;
-  detailType: StopDetailType;
-  detailValues: StopDetailValues;
-  updateDetail: <K extends keyof StopDetailValues>(key: K, value: StopDetailValues[K]) => void;
-};
+import { stopDialogFieldIds } from "./stop-dialog.utils";
+import type { StopDetailFieldsProps } from "./stop-dialog.types";
 
 export function StopDialogDetails({ detailLabels, detailType, detailValues, updateDetail }: StopDetailFieldsProps) {
   if (detailType === "transportation") {
