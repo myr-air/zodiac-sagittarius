@@ -151,6 +151,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps context rail booking display labels in the itinerary booking domain", () => {
     const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
+    const bookingDocItemModel = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-booking-doc-item-model.ts");
     const bookingSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingSection.tsx");
     const noteItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx");
     const suggestionsSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.tsx");
@@ -159,6 +160,11 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const contextRailDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-context-rail-display.ts");
 
     expect(bookingDocItem).toContain("@/src/features/itinerary/domain/itinerary-booking-display");
+    expect(bookingDocItem).toContain("./context-rail-booking-doc-item-model");
+    expect(bookingDocItem).not.toContain("function bookingDocQuickFieldCopy");
+    expect(bookingDocItem).not.toContain("function getDraftValue");
+    expect(bookingDocItemModel).toContain("export function bookingDocQuickFieldCopy");
+    expect(bookingDocItemModel).toContain("bookingDocQuickFieldPatchFromDraft");
     [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
       (source) =>
         expect(source).toContain(

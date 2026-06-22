@@ -10,10 +10,14 @@ import {
 } from "./context-rail.styles";
 import {
   bookingDocQuickFieldKeys,
-  buildBookingDocQuickFieldPatch,
   getBookingDocQuickFieldValue,
   type BookingDocQuickFieldKey,
 } from "@/src/trip/booking-docs";
+import {
+  bookingDocQuickFieldCopy,
+  bookingDocQuickFieldPatchFromDraft,
+  shouldCommitBookingDocQuickField,
+} from "./context-rail-booking-doc-item-model";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
   ContextRailBookingDocTypeChangeHandler,
@@ -37,45 +41,24 @@ interface ContextRailBookingDocItemProps {
   onChangeBookingDocQuickFields?: ContextRailBookingDocQuickFieldsChangeHandler;
 }
 
-function getDraftValue(target: HTMLInputElement): string {
-  return (target.dataset.draftValue ?? target.value).trim();
-}
-
 function handleQuickFieldCommit(
   event: ChangeEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
   bookingDoc: BookingDoc,
   key: BookingDocQuickFieldKey,
   onChangeBookingDocQuickFields?: ContextRailBookingDocItemProps["onChangeBookingDocQuickFields"],
 ) {
-  if ("key" in event && event.key !== "Enter") return;
+  if (!shouldCommitBookingDocQuickField("key" in event ? event.key : undefined)) {
+    return;
+  }
   event.preventDefault();
 
-  const patch = buildBookingDocQuickFieldPatch(
+  const patch = bookingDocQuickFieldPatchFromDraft({
     bookingDoc,
     key,
-    getDraftValue(event.currentTarget),
-  );
+    target: event.currentTarget,
+  });
   if (!patch) return;
   onChangeBookingDocQuickFields?.(bookingDoc.id, patch);
-}
-
-function bookingDocQuickFieldCopy(
-  copy: ContextRailBookingDocItemProps["copy"],
-  key: BookingDocQuickFieldKey,
-) {
-  if (key === "providerName") {
-    return {
-      label: copy.provider,
-      placeholder: copy.providerPlaceholder,
-      ariaLabel: copy.providerFor,
-    };
-  }
-
-  return {
-    label: copy.reference,
-    placeholder: copy.referencePlaceholder,
-    ariaLabel: copy.referenceFor,
-  };
 }
 
 export function ContextRailBookingDocItem({
