@@ -64,4 +64,4 @@ export {
   parseRouteActivity,
   parseTimeRange,
   timeToMinutes,
-} from "./stop-dialog-time";
+} from "@/src/features/itinerary/domain/stop-time";

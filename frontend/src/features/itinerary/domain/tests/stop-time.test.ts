@@ -7,9 +7,9 @@ import {
   endWindowFromDuration,
   parseRouteActivity,
   parseTimeRange,
-} from "../stop-dialog-time";
+} from "../stop-time";
 
-describe("stop dialog time helpers", () => {
+describe("stop time helpers", () => {
   it("computes duration and end windows across day boundaries", () => {
     expect(durationBetweenTimes("23:00", "01:00", 1)).toBe(120);
     expect(endOffsetDaysBetweenTimes("23:00", "01:00")).toBe(1);

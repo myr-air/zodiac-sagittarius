@@ -15,7 +15,7 @@ import {
   addMinutesToTime,
   endWindowFromDuration,
   parseRouteActivity,
-} from "./stop-dialog-time";
+} from "@/src/features/itinerary/domain/stop-time";
 export {
   applyStopEndTime,
   applyStopStartTime,

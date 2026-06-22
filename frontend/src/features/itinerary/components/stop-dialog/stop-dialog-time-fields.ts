@@ -3,7 +3,7 @@ import type { StopFormValues } from "./stop-dialog.types";
 import {
   durationBetweenTimes,
   endOffsetDaysBetweenTimes,
-} from "./stop-dialog-time";
+} from "@/src/features/itinerary/domain/stop-time";
 
 export function applyStopStartTime(values: StopFormValues, startTime: string): StopFormValues {
   const nextEndOffsetDays = values.endTime
