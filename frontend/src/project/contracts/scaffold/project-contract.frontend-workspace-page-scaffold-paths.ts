@@ -97,6 +97,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/members/tests/TripMembersPage.ownership.test.tsx",
   "src/features/workspace/pages/members/testing/support/render-members-page.tsx",
   "src/features/workspace/pages/members/tests/use-member-task-dialog-state.test.ts",
+  "src/features/workspace/pages/members/hooks/useMemberInviteActions.ts",
+  "src/features/workspace/pages/members/hooks/useMemberTaskDialogState.ts",
   "src/features/workspace/pages/members/model/member-task-dialog-state.ts",
   "src/features/workspace/pages/members/model/tests/member-task-dialog-state.test.ts",
   "src/features/workspace/pages/members/model/member-page-options.ts",

@@ -42,7 +42,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   tripSettingsPageTypesSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.types.ts",
   memberPageOptions: "src/features/workspace/pages/members/model/member-page-options.ts",
   memberPageSelectors: "src/features/workspace/pages/members/model/member-page-selectors.ts",
-  memberInviteActions: "src/features/workspace/pages/members/use-member-invite-actions.ts",
+  memberInviteActions: "src/features/workspace/pages/members/hooks/useMemberInviteActions.ts",
   photoPageOptions: "src/features/workspace/pages/photos/model/photo-page-options.ts",
   photoPageSelectors: "src/features/workspace/pages/photos/model/photo-page-selectors.ts",
   photoAlbumBrowser: "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",

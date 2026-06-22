@@ -17,7 +17,9 @@ describe("members page state structure", () => {
     );
     const memberTaskDialogSource = readMembersPageSource("components/MemberTaskDialog.tsx");
     const memberStylesSource = readMembersPageSource("TripMembersPage.styles.ts");
-    const taskDialogSource = readMembersPageSource("use-member-task-dialog-state.ts");
+    const taskDialogSource = readMembersPageSource(
+      "hooks/useMemberTaskDialogState.ts",
+    );
     const taskDialogStateSource = readMembersPageSource(
       "model/member-task-dialog-state.ts",
     );
@@ -41,9 +43,11 @@ describe("members page state structure", () => {
     expect(memberPageStateSource).toContain(
       "export function updateMemberFilterState",
     );
+    expect(pageStateSource).toContain("./hooks/useMemberInviteActions");
+    expect(pageStateSource).toContain("./hooks/useMemberTaskDialogState");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
-    expect(taskDialogSource).toContain("./model/member-task-dialog-state");
+    expect(taskDialogSource).toContain("../model/member-task-dialog-state");
     expect(taskDialogSource).toContain("function submitMemberDialog");
     expect(taskDialogSource).not.toContain("const [memberDialog, setMemberDialog]");
     expect(taskDialogSource).not.toContain("const [passwordValue, setPasswordValue]");

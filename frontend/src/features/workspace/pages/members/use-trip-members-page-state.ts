@@ -24,8 +24,8 @@ import {
   type MemberCreateFormState,
   type MemberFilterState,
 } from "./model/member-page-state";
-import { useMemberInviteActions } from "./use-member-invite-actions";
-import { useMemberTaskDialogState } from "./use-member-task-dialog-state";
+import { useMemberInviteActions } from "./hooks/useMemberInviteActions";
+import { useMemberTaskDialogState } from "./hooks/useMemberTaskDialogState";
 
 interface TripMembersPageStateLabels {
   disable: string;

@@ -88,6 +88,8 @@ export const frontendWorkspaceFeatureScaffoldPathsAbsent = [
   "src/features/workspace/pages/members/TripMembersPage.management.test.tsx",
   "src/features/workspace/pages/members/TripMembersPage.ownership.test.tsx",
   "src/features/workspace/pages/members/TripMembersPage.test-support.tsx",
+  "src/features/workspace/pages/members/use-member-invite-actions.ts",
+  "src/features/workspace/pages/members/use-member-task-dialog-state.ts",
   "src/features/workspace/pages/members/use-member-task-dialog-state.test.ts",
   "src/features/workspace/pages/members/member-task-dialog-state.ts",
   "src/features/workspace/pages/members/member-task-dialog-state.test.ts",
