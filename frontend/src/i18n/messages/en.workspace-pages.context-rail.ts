@@ -64,6 +64,8 @@ export const enContextRailMessages = {
     perPerson: "Cost per person (estimate)",
     totalFor: ({ count }: { count: number }) => `Total for ${count} people`,
     edit: "Add/edit actual expense",
+    editExpense: ({ title }: { title: string }) => `Edit expense ${title}`,
+    deleteExpense: ({ title }: { title: string }) => `Delete expense ${title}`,
     actualOnlyHint: "Use this only for paid or committed money. Keep plan estimates in booking drafts or notes.",
     formTitle: "Actual expense title",
     formAmount: "Amount",

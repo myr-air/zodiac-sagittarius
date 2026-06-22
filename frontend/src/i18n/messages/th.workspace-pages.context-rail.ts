@@ -64,6 +64,8 @@ export const thContextRailMessages = {
     perPerson: "ค่าใช้จ่ายต่อคน (โดยประมาณ)",
     totalFor: ({ count }: { count: number }) => `รวมสำหรับ ${count} คน`,
     edit: "เพิ่ม/แก้ไขค่าใช้จ่ายจริง",
+    editExpense: ({ title }: { title: string }) => `แก้ไขค่าใช้จ่าย ${title}`,
+    deleteExpense: ({ title }: { title: string }) => `ลบค่าใช้จ่าย ${title}`,
     actualOnlyHint: "ใช้เฉพาะเงินที่จ่ายแล้วหรือผูกพันต้องจ่าย ประมาณการให้เก็บใน booking draft หรือโน้ต",
     formTitle: "ชื่อค่าใช้จ่ายจริง",
     formAmount: "จำนวนเงิน",

@@ -1,11 +1,8 @@
-import { Icon } from "@/src/ui/icons";
+import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatMoney } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
-import {
-  expenseItemClassName,
-  noteActionButtonClassName,
-  noteActionsClassName,
-} from "./context-rail.styles";
+import { expenseItemClassName } from "./context-rail.styles";
+import { ContextRailItemActionButtons } from "./ContextRailItemActionButtons";
 
 interface ContextRailExpenseItemProps {
   expense: Expense;
@@ -20,6 +17,8 @@ export function ContextRailExpenseItem({
   onDeleteExpense,
   onEditExpense,
 }: ContextRailExpenseItemProps) {
+  const { t } = useI18n();
+
   return (
     <article className={expenseItemClassName}>
       <span>
@@ -27,26 +26,26 @@ export function ContextRailExpenseItem({
         <br />
         {formatMoney(expense.amount, expense.currency ?? "HKD")}
       </span>
-      <span className={noteActionsClassName}>
-        <button
-          className={noteActionButtonClassName}
-          type="button"
-          aria-label={`Edit expense ${expense.title}`}
-          disabled={!canEditExpenses}
-          onClick={() => onEditExpense(expense)}
-        >
-          <Icon name="edit" />
-        </button>
-        <button
-          className={noteActionButtonClassName}
-          type="button"
-          aria-label={`Delete expense ${expense.title}`}
-          disabled={!canEditExpenses}
-          onClick={() => onDeleteExpense(expense.id)}
-        >
-          <Icon name="trash" />
-        </button>
-      </span>
+      <ContextRailItemActionButtons
+        actions={[
+          {
+            ariaLabel: t.contextRail.expenses.editExpense({
+              title: expense.title,
+            }),
+            disabled: !canEditExpenses,
+            icon: "edit",
+            onClick: () => onEditExpense(expense),
+          },
+          {
+            ariaLabel: t.contextRail.expenses.deleteExpense({
+              title: expense.title,
+            }),
+            disabled: !canEditExpenses,
+            icon: "trash",
+            onClick: () => onDeleteExpense(expense.id),
+          },
+        ]}
+      />
     </article>
   );
 }

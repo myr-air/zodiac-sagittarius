@@ -52,7 +52,7 @@ describe("ContextRail expenses", () => {
     });
 
     fireEvent.click(
-      screen.getByRole("button", { name: /Edit expense Dim sum/i }),
+      screen.getByRole("button", { name: "แก้ไขค่าใช้จ่าย Dim sum" }),
     );
     fireEvent.change(screen.getByLabelText("ชื่อค่าใช้จ่ายจริง"), {
       target: { value: "Dim sum edited" },
@@ -70,7 +70,7 @@ describe("ContextRail expenses", () => {
       category: "food",
     });
     fireEvent.click(
-      screen.getByRole("button", { name: /Delete expense Dim sum/i }),
+      screen.getByRole("button", { name: "ลบค่าใช้จ่าย Dim sum" }),
     );
     expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimdim-1");
   });

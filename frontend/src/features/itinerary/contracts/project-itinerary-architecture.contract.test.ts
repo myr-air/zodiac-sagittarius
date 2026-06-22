@@ -153,7 +153,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
     const bookingDocItemModel = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-booking-doc-item-model.ts");
     const bookingSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingSection.tsx");
+    const contextRailItemActionButtons = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailItemActionButtons.tsx");
+    const contextRailItemActionButtonsStory = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/storybook/ContextRailItemActionButtons.stories.tsx");
     const noteItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx");
+    const expenseItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpenseItem.tsx");
     const suggestionsSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.tsx");
     const contextRailUtils = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail.utils.ts");
     const bookingDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-booking-display.ts");
@@ -165,6 +168,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(bookingDocItem).not.toContain("function getDraftValue");
     expect(bookingDocItemModel).toContain("export function bookingDocQuickFieldCopy");
     expect(bookingDocItemModel).toContain("bookingDocQuickFieldPatchFromDraft");
+    [noteItem, expenseItem].forEach((source) => {
+      expect(source).toContain("./ContextRailItemActionButtons");
+      expect(source).not.toContain("noteActionButtonClassName");
+      expect(source).not.toContain("noteActionsClassName");
+    });
+    expect(contextRailItemActionButtons).toContain("export function ContextRailItemActionButtons");
+    expect(contextRailItemActionButtons).toContain("noteActionButtonClassName");
+    expect(contextRailItemActionButtons).toContain("noteActionsClassName");
+    expect(contextRailItemActionButtonsStory).toContain("ContextRailItemActionButtons");
+    expect(contextRailItemActionButtonsStory).toContain("Disabled");
     [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
       (source) =>
         expect(source).toContain(

@@ -1,12 +1,9 @@
 import type { FormEvent } from "react";
 import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import type { Member, StopNote } from "@/src/trip/types";
 import {
   detailButtonClassName,
-  noteActionButtonClassName,
-  noteActionsClassName,
   noteEditActionsClassName,
   noteEditFormClassName,
   noteEditLabelClassName,
@@ -15,6 +12,7 @@ import {
   noteItemClassName,
 } from "./context-rail.styles";
 import { memberDisplayName } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
+import { ContextRailItemActionButtons } from "./ContextRailItemActionButtons";
 
 interface ContextRailNoteItemProps {
   author: Member | undefined;
@@ -49,24 +47,20 @@ export function ContextRailNoteItem({
       <div className={noteHeaderClassName}>
         <strong>{authorName}</strong>
         {canManageNote ? (
-          <span className={noteActionsClassName}>
-            <button
-              className={noteActionButtonClassName}
-              type="button"
-              aria-label={t.contextRail.notes.editBy({ name: authorName })}
-              onClick={() => onStartEditingNote(note)}
-            >
-              <Icon name="edit" />
-            </button>
-            <button
-              className={noteActionButtonClassName}
-              type="button"
-              aria-label={t.contextRail.notes.deleteBy({ name: authorName })}
-              onClick={() => onDeleteNote(note.id)}
-            >
-              <Icon name="trash" />
-            </button>
-          </span>
+          <ContextRailItemActionButtons
+            actions={[
+              {
+                ariaLabel: t.contextRail.notes.editBy({ name: authorName }),
+                icon: "edit",
+                onClick: () => onStartEditingNote(note),
+              },
+              {
+                ariaLabel: t.contextRail.notes.deleteBy({ name: authorName }),
+                icon: "trash",
+                onClick: () => onDeleteNote(note.id),
+              },
+            ]}
+          />
         ) : null}
       </div>
       {isEditing ? (
