@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import type { MutableRefObject } from "react";
-import type { TripPhotoAlbumInput } from "@/src/features/workspace/pages/photos/TripPhotosPage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import {
+  type PhotoAlbumInput,
   normalizePhotoAlbumCreateInput,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
@@ -57,7 +57,7 @@ export function useWorkspacePhotoAlbums({
     trip,
   });
 
-  const createPhotoAlbum = useCallback(async (input: TripPhotoAlbumInput) => {
+  const createPhotoAlbum = useCallback(async (input: PhotoAlbumInput) => {
     if (!canEditPhotoAlbums) return;
     const photoAlbumInput = normalizePhotoAlbumCreateInput(input);
     if (!photoAlbumInput) return;
@@ -75,7 +75,7 @@ export function useWorkspacePhotoAlbums({
 
   const updatePhotoAlbum = useCallback(async (
     albumId: string,
-    input: TripPhotoAlbumInput,
+    input: PhotoAlbumInput,
   ) => {
     if (!canEditPhotoAlbums) return;
     if (useApiPhotoAlbums) {

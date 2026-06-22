@@ -7,7 +7,7 @@ export type {
   BuildCreatePhotoAlbumRequestOptions,
   BuildPatchPhotoAlbumRequestOptions,
 } from "./photo-album-api";
-export type { PhotoAlbumInputForApi } from "./photo-album-inputs";
+export type { PhotoAlbumInput, PhotoAlbumInputForApi } from "./photo-album-inputs";
 export {
   appendPhotoAlbumToTrip,
   createLocalPhotoAlbum,

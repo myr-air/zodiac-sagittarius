@@ -1,4 +1,4 @@
-import type { PhotoAlbumInputForApi } from "./photo-album-inputs";
+import type { PhotoAlbumInput } from "./photo-album-inputs";
 import type { Trip, TripPhotoAlbumLink } from "../types";
 
 export interface LocalPhotoAlbumCreateOptions {
@@ -16,8 +16,8 @@ export interface LocalPhotoAlbumUpdateOptions {
 }
 
 export function normalizePhotoAlbumCreateInput(
-  input: PhotoAlbumInputForApi,
-): PhotoAlbumInputForApi | null {
+  input: PhotoAlbumInput,
+): PhotoAlbumInput | null {
   const title = input.title.trim();
   const url = input.url.trim();
   if (!title || !url) return null;
@@ -31,7 +31,7 @@ export function normalizePhotoAlbumCreateInput(
 
 export function createLocalPhotoAlbum(
   trip: Pick<Trip, "id" | "photoAlbumLinks">,
-  input: PhotoAlbumInputForApi,
+  input: PhotoAlbumInput,
   options: LocalPhotoAlbumCreateOptions,
 ): TripPhotoAlbumLink {
   const albums = trip.photoAlbumLinks ?? [];
@@ -74,7 +74,7 @@ export function replacePhotoAlbumInTrip<T extends Pick<Trip, "photoAlbumLinks">>
 
 export function updateLocalPhotoAlbum(
   album: TripPhotoAlbumLink,
-  input: PhotoAlbumInputForApi,
+  input: PhotoAlbumInput,
   options: LocalPhotoAlbumUpdateOptions,
 ): TripPhotoAlbumLink {
   return {
@@ -92,7 +92,7 @@ export function updateLocalPhotoAlbum(
 export function updateLocalPhotoAlbumInTrip<T extends Pick<Trip, "photoAlbumLinks">>(
   trip: T,
   albumId: string,
-  input: PhotoAlbumInputForApi,
+  input: PhotoAlbumInput,
   options: LocalPhotoAlbumUpdateOptions,
 ): T {
   return {

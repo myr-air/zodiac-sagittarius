@@ -9,7 +9,7 @@ import {
   buildPatchPhotoAlbumRequest,
   removePhotoAlbumFromTrip,
   replacePhotoAlbumInTrip,
-  type PhotoAlbumInputForApi,
+  type PhotoAlbumInput,
 } from "@/src/trip/photo-albums";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 
@@ -31,7 +31,7 @@ export function useWorkspaceApiPhotoAlbumCommands({
   tripId,
 }: UseWorkspaceApiPhotoAlbumCommandsOptions) {
   const createApiPhotoAlbum = useCallback(
-    async (input: PhotoAlbumInputForApi) => {
+    async (input: PhotoAlbumInput) => {
       if (!apiClient || !participantSession) return;
       const photoAlbum = await apiClient.createPhotoAlbum(
         tripId,
@@ -48,7 +48,7 @@ export function useWorkspaceApiPhotoAlbumCommands({
   );
 
   const updateApiPhotoAlbum = useCallback(
-    async (albumId: string, input: PhotoAlbumInputForApi) => {
+    async (albumId: string, input: PhotoAlbumInput) => {
       if (!apiClient || !participantSession) return;
       const currentTrip = latestTripRef.current;
       const photoAlbum = currentTrip.photoAlbumLinks?.find(

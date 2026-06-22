@@ -1,6 +1,6 @@
 import type { TripPhotoAlbumLink } from "../types";
 
-export type PhotoAlbumInputForApi = Pick<
+export type PhotoAlbumInput = Pick<
   TripPhotoAlbumLink,
   "access" | "provider" | "relatedItineraryItemIds" | "title" | "url"
 > &
@@ -10,3 +10,5 @@ export type PhotoAlbumInputForApi = Pick<
       "accessNote" | "coverUrl" | "day" | "description" | "ownerMemberId"
     >
   >;
+
+export type PhotoAlbumInputForApi = PhotoAlbumInput;

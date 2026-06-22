@@ -4,7 +4,7 @@ import {
   appendPhotoAlbumToTrip,
   createLocalPhotoAlbum,
   removePhotoAlbumFromTrip,
-  type PhotoAlbumInputForApi,
+  type PhotoAlbumInput,
   updateLocalPhotoAlbumInTrip,
 } from "@/src/trip/photo-albums";
 import type { Trip } from "@/src/trip/types";
@@ -22,7 +22,7 @@ export function useWorkspaceLocalPhotoAlbumCommands({
   trip,
 }: UseWorkspaceLocalPhotoAlbumCommandsOptions) {
   const createLocalWorkspacePhotoAlbum = useCallback(
-    async (input: PhotoAlbumInputForApi) => {
+    async (input: PhotoAlbumInput) => {
       const photoAlbum = createLocalPhotoAlbum(trip, input, {
         title: input.title,
         url: input.url,
@@ -36,7 +36,7 @@ export function useWorkspaceLocalPhotoAlbumCommands({
   );
 
   const updateLocalWorkspacePhotoAlbum = useCallback(
-    async (albumId: string, input: PhotoAlbumInputForApi) => {
+    async (albumId: string, input: PhotoAlbumInput) => {
       commitTrip((current) =>
         updateLocalPhotoAlbumInTrip(current, albumId, input, {
           title: input.title.trim(),

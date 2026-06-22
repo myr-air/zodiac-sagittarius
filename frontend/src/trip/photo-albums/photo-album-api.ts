@@ -2,7 +2,7 @@ import type {
   CreatePhotoAlbumApiRequest,
   PatchPhotoAlbumApiRequest,
 } from "../api-client";
-import type { PhotoAlbumInputForApi } from "./photo-album-inputs";
+import type { PhotoAlbumInput } from "./photo-album-inputs";
 
 export interface BuildCreatePhotoAlbumRequestOptions {
   clientMutationId: string;
@@ -13,7 +13,7 @@ export interface BuildPatchPhotoAlbumRequestOptions {
   expectedVersion: number;
 }
 
-export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
+export function serializePhotoAlbumInputForApi(input: PhotoAlbumInput) {
   return {
     ...input,
     title: input.title.trim(),
@@ -26,7 +26,7 @@ export function serializePhotoAlbumInputForApi(input: PhotoAlbumInputForApi) {
 }
 
 export function buildCreatePhotoAlbumRequest(
-  input: PhotoAlbumInputForApi,
+  input: PhotoAlbumInput,
   options: BuildCreatePhotoAlbumRequestOptions,
 ): CreatePhotoAlbumApiRequest {
   return {
@@ -36,7 +36,7 @@ export function buildCreatePhotoAlbumRequest(
 }
 
 export function buildPatchPhotoAlbumRequest(
-  input: PhotoAlbumInputForApi,
+  input: PhotoAlbumInput,
   options: BuildPatchPhotoAlbumRequestOptions,
 ): PatchPhotoAlbumApiRequest {
   return {

@@ -1,24 +1,8 @@
-import type {
-  Member,
-  Trip,
-  TripPhotoAlbumAccess,
-  TripPhotoAlbumLink,
-  TripPhotoAlbumProvider,
-} from "@/src/trip/types";
+import type { Member, Trip, TripPhotoAlbumLink } from "@/src/trip/types";
+import type { PhotoAlbumInput } from "@/src/trip/photo-albums";
 import type { WorkspaceMutationResult } from "../../model/workspace-action-types";
 
-export interface TripPhotoAlbumInput {
-  title: string;
-  provider: TripPhotoAlbumProvider;
-  url: string;
-  access: TripPhotoAlbumAccess;
-  ownerMemberId?: string | null;
-  relatedItineraryItemIds: string[];
-  day?: string | null;
-  description?: string | null;
-  accessNote?: string | null;
-  coverUrl?: string | null;
-}
+export type TripPhotoAlbumInput = PhotoAlbumInput;
 
 export type TripPhotoAlbumMutationResult = WorkspaceMutationResult;
 
