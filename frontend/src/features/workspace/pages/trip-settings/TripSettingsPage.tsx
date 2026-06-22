@@ -1,7 +1,6 @@
 "use client";
 
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Member, Trip } from "@/src/trip/types";
 import { WorkspacePage } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { PageHeader } from "@/src/shared/components/page-header";
@@ -10,14 +9,9 @@ import { TripSettingsImpactCard } from "./components/TripSettingsImpactCard";
 import * as settingsStyles from "./TripSettingsPage.styles";
 import { tripSettingsStateKey } from "./model/trip-settings-state-key";
 import { useTripSettingsFormState } from "./use-trip-settings-form-state";
-import type { TripSettingsFormValues } from "./TripSettingsPage.types";
+import type { TripSettingsPageProps } from "./TripSettingsPage.types";
 
-interface TripSettingsPageProps {
-  canEdit: boolean;
-  currentMember: Member;
-  trip: Trip;
-  onSave: (values: TripSettingsFormValues) => Promise<void>;
-}
+export type { TripSettingsFormValues, TripSettingsPageProps } from "./TripSettingsPage.types";
 
 export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
   return (
