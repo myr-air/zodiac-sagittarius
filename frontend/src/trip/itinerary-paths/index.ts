@@ -16,6 +16,13 @@ export {
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
 export {
+  generatedDayFromSubPathId,
+  generatedSubPathForIndex,
+  generatedSubPathIndexFromId,
+  generatedSubPathNameFromId,
+} from "./itinerary-generated-sub-paths";
+export type { GeneratedSubPath } from "./itinerary-generated-sub-paths";
+export {
   type ItineraryPathOption,
   completeItineraryPathOptions,
   deriveItineraryPathOptions,

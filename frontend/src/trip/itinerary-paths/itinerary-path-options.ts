@@ -4,6 +4,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
+import { generatedDayFromSubPathId } from "./itinerary-generated-sub-paths";
 import type { ItineraryItem, ItineraryPath, ItineraryPathScope } from "../types";
 
 export interface ItineraryPathOption {
@@ -46,7 +47,7 @@ export function completeItineraryPathOptions(
   for (const item of items) {
     const pathId = itineraryItemPathId(item);
     if (options.has(pathId)) continue;
-    const generatedDay = generatedDayFromPathId(pathId);
+    const generatedDay = generatedDayFromSubPathId(pathId);
     options.set(pathId, {
       id: pathId,
       name: item.pathName || (pathId === mainItineraryPathId ? mainItineraryPathName : humanizePathId(pathId)),
@@ -68,9 +69,4 @@ export function itineraryPathOptionsForDay(
       option.scope === "trip" ||
       option.day === day,
   );
-}
-
-function generatedDayFromPathId(pathId: string): string | null {
-  const match = pathId.match(/^path-(\d{4}-\d{2}-\d{2})-sub-[a-z]+$/i);
-  return match?.[1] ?? null;
 }
