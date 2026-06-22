@@ -30,6 +30,7 @@ export const frontendTripDomainCommerceRecordsScaffoldPathsPresent = [
   "src/trip/tests/expenses/expense-splits.test.ts",
   "src/trip/tests/expenses/expense-summary-reminders.test.ts",
   "src/trip/tests/expenses/expense-summary.test.ts",
+  "src/trip/tests/expenses/expense-summary-totals.test.ts",
   "src/trip/tests/expenses/expense-update-drafts.test.ts",
   "src/trip/tests/expenses/expenses-api-requests.test.ts",
   "src/trip/tests/photo-albums/photo-album-api-requests.test.ts",
@@ -95,6 +96,7 @@ export const frontendTripDomainCommerceRecordsScaffoldPathsPresent = [
   "src/trip/expenses/expense-settlements.ts",
   "src/trip/expenses/expense-splits.ts",
   "src/trip/expenses/expense-summary.ts",
+  "src/trip/expenses/expense-summary-totals.ts",
   "src/trip/expenses/expense-types.ts",
   "src/trip/expenses/expense-update-drafts.ts",
 ] as const;

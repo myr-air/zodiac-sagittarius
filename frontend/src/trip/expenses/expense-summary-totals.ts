@@ -1,18 +1,18 @@
-import type { ExpenseSummary } from "@/src/trip/types";
+import type { ExpenseSummary } from "../types";
 import {
   expenseSummarySettlementCurrency,
-  formatMoney,
-} from "@/src/trip/expenses";
+} from "./expense-summary";
+import { formatMoney } from "./expense-money";
 
-export interface ContextRailExpenseTotals {
+export interface ExpenseSummaryTotals {
   groupSpend: string;
   perPerson: string;
 }
 
-export function formatContextRailExpenseTotals(
+export function formatExpenseSummaryTotals(
   expenseSummary: ExpenseSummary,
   memberCount: number,
-): ContextRailExpenseTotals {
+): ExpenseSummaryTotals {
   const payingMemberCount = Math.max(1, memberCount - 1);
   const settlementCurrency = expenseSummarySettlementCurrency(expenseSummary);
   return {

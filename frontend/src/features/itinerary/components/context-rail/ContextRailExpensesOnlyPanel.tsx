@@ -1,6 +1,6 @@
 import { ContextRailExpensesSection } from "./ContextRailExpensesSection";
 import { ContextRailPanelShell } from "./ContextRailPanelShell";
-import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
+import { formatExpenseSummaryTotals } from "@/src/trip/expenses";
 import type { ContextRailExpensesOnlyPanelProps } from "./context-rail.types";
 
 export function ContextRailExpensesOnlyPanel({
@@ -15,7 +15,7 @@ export function ContextRailExpensesOnlyPanel({
   onDeleteExpense,
   onUpdateExpense,
 }: ContextRailExpensesOnlyPanelProps) {
-  const expenseTotals = formatContextRailExpenseTotals(
+  const expenseTotals = formatExpenseSummaryTotals(
     expenseSummary,
     members.length,
   );

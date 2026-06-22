@@ -7,7 +7,7 @@ import { ContextRailPanelShell } from "./ContextRailPanelShell";
 import { ContextRailSuggestionsSection } from "./ContextRailSuggestionsSection";
 import { ContextRailStopDetailSection } from "./ContextRailStopDetailSection";
 import { ContextRailTabs } from "./ContextRailTabs";
-import { formatContextRailExpenseTotals } from "./context-rail-expense-totals";
+import { formatExpenseSummaryTotals } from "@/src/trip/expenses";
 import type { ContextRailSelectedStopPanelProps } from "./context-rail.types";
 
 export function ContextRailSelectedStopPanel({
@@ -43,7 +43,7 @@ export function ContextRailSelectedStopPanel({
   currentMember,
 }: ContextRailSelectedStopPanelProps) {
   const { t } = useI18n();
-  const expenseTotals = formatContextRailExpenseTotals(
+  const expenseTotals = formatExpenseSummaryTotals(
     expenseSummary,
     trip.members.length,
   );

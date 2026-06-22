@@ -91,7 +91,6 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/context-rail/context-rail.state.ts",
   "src/features/itinerary/components/context-rail/testing/fixtures/context-rail-fixtures.ts",
   "src/features/itinerary/components/context-rail/testing/support/context-rail-render.tsx",
-  "src/features/itinerary/components/context-rail/tests/context-rail-expense-totals.test.ts",
   "src/features/itinerary/components/context-rail/tests/context-rail.state.test.ts",
   "src/features/itinerary/components/context-rail/tests/context-rail.utils.test.ts",
   "src/features/itinerary/components/context-rail/tests/ContextRail.expenses.test.tsx",

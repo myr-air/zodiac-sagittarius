@@ -63,3 +63,5 @@ export type {
   BuildExpenseReminderRequestOptions,
   ExpenseReminderRequest,
 } from "./expense-summary";
+export { formatExpenseSummaryTotals } from "./expense-summary-totals";
+export type { ExpenseSummaryTotals } from "./expense-summary-totals";
