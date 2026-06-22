@@ -56,6 +56,7 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const overviewPageDerived = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-page-derived.tsx");
     const overviewPageTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPage.types.ts");
     const overviewTaskState = readItineraryArchitectureSource("src/features/itinerary/components/overview/use-overview-task-state.ts");
+    const overviewTaskStateModel = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-task-state.ts");
 
     expect(overviewPage).toContain("./use-overview-task-state");
     expect(overviewPage).toContain("./OverviewPage.types");
@@ -77,16 +78,18 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(overviewPageDerived).toContain("export function buildOverviewTaskListLabels");
     expect(overviewPageTypes).toContain("export interface OverviewPageProps");
     expect(overviewTaskState).toContain("export function useOverviewTaskState");
-    expect(overviewTaskState).toContain("TaskFilterState");
-    expect(overviewTaskState).toContain("NewTaskFormState");
-    expect(overviewTaskState).toContain("const [filterState, setFilterState]");
-    expect(overviewTaskState).toContain("const [newTaskFormState, setNewTaskFormState]");
+    expect(overviewTaskState).toContain("./overview-task-state");
     expect(overviewTaskState).toContain("function updateFilterState");
     expect(overviewTaskState).toContain("function updateNewTaskFormState");
     expect(overviewTaskState).toContain("function submitTask");
-    expect(overviewTaskState).toContain("isMyTask");
+    expect(overviewTaskState).not.toContain("isMyTask");
     expect(overviewTaskState).toContain("myOpenTasks");
     expect(overviewTaskState).toContain("sharedOpenTasks");
+    expect(overviewTaskStateModel).toContain("export interface OverviewTaskFilterState");
+    expect(overviewTaskStateModel).toContain("export interface OverviewNewTaskFormState");
+    expect(overviewTaskStateModel).toContain("export function visibleOverviewTasks");
+    expect(overviewTaskStateModel).toContain("export function buildOverviewTaskSubmission");
+    expect(overviewTaskStateModel).toContain("isMyTask");
     expect(overviewTaskState).not.toContain("const [taskScope, setTaskScope]");
     expect(overviewTaskState).not.toContain("const [newTaskTitle, setNewTaskTitle]");
   });
