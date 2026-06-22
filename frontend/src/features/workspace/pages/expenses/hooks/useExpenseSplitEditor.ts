@@ -2,11 +2,11 @@ import { useState } from "react";
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, Member } from "@/src/trip/types";
 import {
-  expenseSplitValuesForMode,
   initialExpenseSplitValues,
 } from "../model/expense-dialog-initial-state";
 import {
   emptyExpenseLineItem,
+  expenseSplitModeTransitionFields,
   initialExpenseLineItems,
   type EditableExpenseLineItem,
 } from "../model/expense-dialog-line-items";
@@ -23,15 +23,13 @@ export function useExpenseSplitEditor({ expense, members }: UseExpenseSplitEdito
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {
     setSplitMode(nextMode);
-    if (nextMode === "exact") {
-      setSplitValues(expenseSplitValuesForMode(members, "0"));
-    } else if (nextMode === "shares") {
-      setSplitValues(expenseSplitValuesForMode(members, "1"));
-    } else if (nextMode === "percentage") {
-      setSplitValues(expenseSplitValuesForMode(members, "0"));
-    } else if (nextMode === "itemized" && !lineItems.length) {
-      setLineItems([emptyExpenseLineItem(members)]);
-    }
+    const nextFields = expenseSplitModeTransitionFields({
+      lineItems,
+      members,
+      nextMode,
+    });
+    if (nextFields.splitValues) setSplitValues(nextFields.splitValues);
+    if (nextFields.lineItems) setLineItems(nextFields.lineItems);
   }
 
   function updateLineItem(index: number, patch: Partial<EditableExpenseLineItem>) {
