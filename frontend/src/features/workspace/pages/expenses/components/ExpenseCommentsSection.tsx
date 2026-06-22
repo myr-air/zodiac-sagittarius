@@ -1,7 +1,7 @@
-import { findMemberById } from "@/src/trip/members";
 import type { ExpenseComment, Member } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
+import { expenseCommentDisplay } from "../model/expense-comments-state";
 
 interface ExpenseCommentsSectionProps {
   comments: ExpenseComment[];
@@ -36,11 +36,15 @@ export function ExpenseCommentsSection({
     <section className={expenseStyles.commentsClassName} aria-label={copy.fields.comments}>
       <div className={expenseStyles.balanceListClassName}>
         {comments.map((comment) => {
-          const author = findMemberById(members, comment.authorId);
+          const display = expenseCommentDisplay({
+            comment,
+            members,
+            unknownAuthor: copy.comment.unknownAuthor,
+          });
           return (
-            <div className={expenseStyles.commentRowClassName} key={comment.id}>
-              <strong>{author?.displayName ?? copy.comment.unknownAuthor}</strong>
-              <span>{comment.body}</span>
+            <div className={expenseStyles.commentRowClassName} key={display.id}>
+              <strong>{display.authorName}</strong>
+              <span>{display.body}</span>
             </div>
           );
         })}

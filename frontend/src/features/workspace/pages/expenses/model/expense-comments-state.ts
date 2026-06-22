@@ -1,9 +1,16 @@
-import type { ExpenseComment } from "@/src/trip/types";
+import { findMemberById } from "@/src/trip/members";
+import type { ExpenseComment, Member } from "@/src/trip/types";
 import { appendExpenseDialogComment } from "./expense-dialog-comments";
 
 export interface ExpenseCommentsState {
   commentDraft: string;
   comments: ExpenseComment[];
+}
+
+export interface ExpenseCommentDisplay {
+  authorName: string;
+  body: string;
+  id: string;
 }
 
 export function initialExpenseCommentsState(
@@ -39,5 +46,22 @@ export function addExpenseCommentFromDraft({
     : {
         commentDraft: "",
         comments,
-      };
+    };
+}
+
+export function expenseCommentDisplay({
+  comment,
+  members,
+  unknownAuthor,
+}: {
+  comment: ExpenseComment;
+  members: Member[];
+  unknownAuthor: string;
+}): ExpenseCommentDisplay {
+  const author = findMemberById(members, comment.authorId);
+  return {
+    authorName: author?.displayName ?? unknownAuthor,
+    body: comment.body,
+    id: comment.id,
+  };
 }

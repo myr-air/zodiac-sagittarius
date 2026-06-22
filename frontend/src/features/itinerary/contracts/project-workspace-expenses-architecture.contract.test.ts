@@ -21,6 +21,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseDialogSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-summary-display.ts");
     const expenseSummaryStats = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseSummaryStats.tsx");
     const expenseSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-summary-display.ts");
+    const expenseCommentsSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseCommentsSection.tsx");
+    const expenseCommentsState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-comments-state.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
 
@@ -106,6 +108,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialogSummary).not.toContain("copy.settleValue");
     expect(expenseDialogSummaryDisplay).toContain("export function expenseDialogSummaryDisplay");
     expect(expenseDialogSummaryDisplay).toContain("formatMoney");
+    expect(expenseCommentsSection).toContain("../model/expense-comments-state");
+    expect(expenseCommentsSection).not.toContain("findMemberById");
+    expect(expenseCommentsState).toContain("export function expenseCommentDisplay");
     expect(contextRailExpenseForm).toContain("./context-rail-expense-form-state");
     expect(contextRailExpenseForm).toContain("const [state, setState]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");

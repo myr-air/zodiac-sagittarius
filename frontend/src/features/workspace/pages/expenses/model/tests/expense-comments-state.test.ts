@@ -3,6 +3,7 @@ import type { ExpenseComment } from "@/src/trip/types";
 
 import {
   addExpenseCommentFromDraft,
+  expenseCommentDisplay,
   initialExpenseCommentsState,
   updateExpenseCommentDraft,
 } from "../expense-comments-state";
@@ -68,5 +69,27 @@ describe("expense comments state", () => {
         state,
       }),
     ).toBe(state);
+  });
+
+  it("builds comment display author names with an unknown fallback", () => {
+    expect(expenseCommentDisplay({
+      comment: existingComments[0],
+      members: [
+        { color: "#0f766e", displayName: "Aom", id: "member-aom", presence: "online", role: "owner" },
+      ],
+      unknownAuthor: "Unknown traveler",
+    })).toEqual({
+      authorName: "Aom",
+      body: "Receipt uploaded.",
+      id: "comment-existing",
+    });
+    expect(expenseCommentDisplay({
+      comment: {
+        ...existingComments[0],
+        authorId: "member-missing",
+      },
+      members: [],
+      unknownAuthor: "Unknown traveler",
+    }).authorName).toBe("Unknown traveler");
   });
 });
