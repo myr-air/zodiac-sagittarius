@@ -1,3 +1,7 @@
+import {
+  normalizeSearchQuery,
+  valuesMatchSearchQuery,
+} from "@/src/shared/text-search";
 import { findMemberById } from "../members";
 import { safeExternalHref } from "../places";
 import type {
@@ -44,20 +48,19 @@ export function filterPhotoAlbumLinks(
   albums: TripPhotoAlbumLink[],
   filters: PhotoAlbumFilters,
 ): TripPhotoAlbumLink[] {
-  const query = filters.query?.trim().toLowerCase() ?? "";
+  const query = normalizeSearchQuery(filters.query);
   return albums.filter((album) => {
     if (filters.provider && filters.provider !== "all" && album.provider !== filters.provider) return false;
     if (filters.access && filters.access !== "all" && album.access !== filters.access) return false;
     if (filters.day && filters.day !== "all" && album.day !== filters.day) return false;
-    if (!query) return true;
-    return [
+    return valuesMatchSearchQuery([
       album.title,
       album.provider,
       album.access,
       album.description,
       album.accessNote,
       album.url,
-    ].some((value) => value?.toLowerCase().includes(query));
+    ], query);
   });
 }
 

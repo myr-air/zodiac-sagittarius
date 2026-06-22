@@ -1,3 +1,7 @@
+import {
+  normalizeSearchQuery,
+  valuesMatchSearchQuery,
+} from "@/src/shared/text-search";
 import type { BookingDoc, Trip } from "../types";
 
 export function compareBookingStartWithUndated(left: BookingDoc, right: BookingDoc): number {
@@ -6,10 +10,9 @@ export function compareBookingStartWithUndated(left: BookingDoc, right: BookingD
 }
 
 export function bookingDocMatchesQuery(doc: BookingDoc, trip: Trip, query: string): boolean {
-  const normalizedQuery = query.trim().toLocaleLowerCase();
-  if (!normalizedQuery) return true;
-  return searchableBookingDocValues(doc, trip).some((value) =>
-    value.toLocaleLowerCase().includes(normalizedQuery),
+  return valuesMatchSearchQuery(
+    searchableBookingDocValues(doc, trip),
+    normalizeSearchQuery(query),
   );
 }
 

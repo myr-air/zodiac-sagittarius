@@ -1,3 +1,7 @@
+import {
+  normalizeSearchQuery,
+  textMatchesSearchQuery,
+} from "@/src/shared/text-search";
 import type { Member } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "./member-page-options";
 
@@ -42,9 +46,11 @@ export function filterTripMembers({
   roleFilter: MemberRoleFilter;
   statusFilter: MemberStatusFilter;
 }): Member[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const normalizedQuery = normalizeSearchQuery(query);
   return members.filter((member) => {
-    const matchesQuery = normalizedQuery.length === 0 || member.displayName.toLocaleLowerCase().includes(normalizedQuery);
+    const matchesQuery =
+      !normalizedQuery ||
+      textMatchesSearchQuery(member.displayName, normalizedQuery);
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
     const matchesStatus =
       statusFilter === "all" ||
