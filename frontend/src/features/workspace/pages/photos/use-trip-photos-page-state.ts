@@ -10,6 +10,14 @@ import {
   selectedPhotoAlbum,
   visiblePhotoAlbumsForProvider,
 } from "./model/photo-page-selectors";
+import {
+  initialPhotoAlbumBrowserState,
+  initialPhotoAlbumModalState,
+  updatePhotoAlbumBrowserState,
+  updatePhotoAlbumModalState,
+  type PhotoAlbumBrowserState,
+  type PhotoAlbumModalState,
+} from "./model/photo-page-state";
 import type {
   CreatePhotoAlbumHandler,
   DeletePhotoAlbumHandler,
@@ -25,16 +33,6 @@ interface UseTripPhotosPageStateInput {
   trip: Trip;
 }
 
-interface PhotoAlbumBrowserState {
-  activeProvider: PhotoProviderFilter;
-  selectedAlbumId: string;
-}
-
-interface PhotoAlbumModalState {
-  deleteAlbum: TripPhotoAlbumLink | null;
-  dialogAlbum: TripPhotoAlbumLink | "new" | null;
-}
-
 export function useTripPhotosPageState({
   onCreatePhotoAlbum,
   onDeletePhotoAlbum,
@@ -42,14 +40,12 @@ export function useTripPhotosPageState({
   photoAlbumLinks,
   trip,
 }: UseTripPhotosPageStateInput) {
-  const [browserState, setBrowserState] = useState<PhotoAlbumBrowserState>({
-    activeProvider: "all",
-    selectedAlbumId: photoAlbumLinks[0]?.id ?? "",
-  });
-  const [modalState, setModalState] = useState<PhotoAlbumModalState>({
-    deleteAlbum: null,
-    dialogAlbum: null,
-  });
+  const [browserState, setBrowserState] = useState<PhotoAlbumBrowserState>(() =>
+    initialPhotoAlbumBrowserState(photoAlbumLinks),
+  );
+  const [modalState, setModalState] = useState<PhotoAlbumModalState>(
+    initialPhotoAlbumModalState,
+  );
   const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
   const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
   const visibleAlbums = useMemo(
@@ -63,14 +59,16 @@ export function useTripPhotosPageState({
     field: Field,
     value: PhotoAlbumBrowserState[Field],
   ) {
-    setBrowserState((current) => ({ ...current, [field]: value }));
+    setBrowserState((current) =>
+      updatePhotoAlbumBrowserState(current, field, value),
+    );
   }
 
   function updateModalState<Field extends keyof PhotoAlbumModalState>(
     field: Field,
     value: PhotoAlbumModalState[Field],
   ) {
-    setModalState((current) => ({ ...current, [field]: value }));
+    setModalState((current) => updatePhotoAlbumModalState(current, field, value));
   }
 
   async function submitAlbum(input: TripPhotoAlbumInput) {

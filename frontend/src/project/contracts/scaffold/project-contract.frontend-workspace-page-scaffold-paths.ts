@@ -110,6 +110,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/photos/model/tests/photo-page-options.test.ts",
   "src/features/workspace/pages/photos/model/photo-page-selectors.ts",
   "src/features/workspace/pages/photos/model/tests/photo-page-selectors.test.ts",
+  "src/features/workspace/pages/photos/model/photo-page-state.ts",
+  "src/features/workspace/pages/photos/model/tests/photo-page-state.test.ts",
   "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   "src/features/workspace/pages/photos/components/PhotoAlbumDialogFields.tsx",
   "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
