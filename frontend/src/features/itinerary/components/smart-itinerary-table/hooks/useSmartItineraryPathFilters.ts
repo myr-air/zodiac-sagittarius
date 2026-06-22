@@ -5,7 +5,7 @@ import type { ItineraryItem } from "@/src/trip/types";
 import {
   dedupePathOptions,
   formatSelectedPlanLabel,
-} from "../smart-itinerary-table-utils";
+} from "../smart-itinerary-table-labels";
 
 interface UseSmartItineraryPathFiltersParams {
   items: ItineraryItem[];

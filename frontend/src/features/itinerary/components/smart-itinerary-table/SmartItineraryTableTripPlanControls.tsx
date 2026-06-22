@@ -9,7 +9,7 @@ import {
   tripPlanSelectClassName,
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableTripPlanCreateControls } from "./SmartItineraryTableTripPlanCreateControls";
-import { formatTripPlanOptionLabel } from "./smart-itinerary-table-utils";
+import { formatTripPlanOptionLabel } from "./smart-itinerary-table-trip-plan-labels";
 import type { SmartItineraryTableTripPlanControlsProps } from "./trip-plan-controls.types";
 import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
 

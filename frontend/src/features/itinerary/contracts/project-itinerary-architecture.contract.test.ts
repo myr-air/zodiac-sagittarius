@@ -161,6 +161,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
     const tableUtils = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-utils.ts");
+    const tableGrouping = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-grouping.ts");
+    const tableGraph = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-graph.ts");
+    const tableLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-labels.ts");
+    const tableTripPlanLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-trip-plan-labels.ts");
     const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/weather-summary.ts");
     const weatherChip = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx");
 
@@ -168,6 +172,18 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(tableUtils).not.toContain("weather-briefings");
     expect(tableUtils).not.toContain("buildWeatherSummary");
     expect(tableUtils).not.toContain("buildWeatherTooltip");
+    expect(tableUtils).toContain("./smart-itinerary-table-grouping");
+    expect(tableUtils).toContain("./smart-itinerary-table-graph");
+    expect(tableUtils).toContain("./smart-itinerary-table-labels");
+    expect(tableUtils).toContain("./smart-itinerary-table-trip-plan-labels");
+    expect(tableUtils).not.toContain("function mergeTripDayGroups");
+    expect(tableUtils).not.toContain("function itemStatusLabel");
+    expect(tableGrouping).toContain("export function mergeTripDayGroups");
+    expect(tableGrouping).toContain("export function groupChildItemsByParent");
+    expect(tableGraph).toContain("export function buildGraphColumnWidth");
+    expect(tableLabels).toContain("export function itemStatusLabel");
+    expect(tableLabels).toContain("export function formatSelectedPlanLabel");
+    expect(tableTripPlanLabels).toContain("export function tripPlanStatus");
     expect(weatherSummary).toContain("export function buildWeatherSummary");
     expect(weatherSummary).toContain("export function buildWeatherTooltip");
     expect(weatherChip).toContain("./weather-summary");

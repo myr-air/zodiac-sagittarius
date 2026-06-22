@@ -3,7 +3,7 @@ import type { PlanVariant } from "@/src/trip/types";
 import {
   formatTripPlanOptionLabel,
   selectedTripPlanIdForControl,
-} from "../smart-itinerary-table-utils";
+} from "../smart-itinerary-table-trip-plan-labels";
 
 describe("smart itinerary table trip plan labels", () => {
   it("builds trip plan option labels from status", () => {

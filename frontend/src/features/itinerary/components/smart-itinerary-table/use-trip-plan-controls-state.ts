@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
-import { tripPlanStatus } from "./smart-itinerary-table-utils";
+import { tripPlanStatus } from "./smart-itinerary-table-trip-plan-labels";
 import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface TripPlanControlsStateInput {

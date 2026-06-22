@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
-  buildGraphColumnWidth,
   groupChildItemsByParent,
-  groupGraphItemsByDay,
   mergeTripDayGroups,
-} from "../smart-itinerary-table-utils";
+} from "../smart-itinerary-table-grouping";
+import {
+  buildGraphColumnWidth,
+  groupGraphItemsByDay,
+} from "../smart-itinerary-table-graph";
 
 describe("smart itinerary table grouping utilities", () => {
   it("fills missing day groups with ordered empty entries", () => {

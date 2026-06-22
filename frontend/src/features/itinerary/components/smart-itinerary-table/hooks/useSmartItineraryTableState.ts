@@ -14,8 +14,8 @@ import { canTripRole } from "@/src/trip/auth";
 import {
   buildGraphColumnWidth,
   groupGraphItemsByDay,
-  mergeTripDayGroups,
-} from "../smart-itinerary-table-utils";
+} from "../smart-itinerary-table-graph";
+import { mergeTripDayGroups } from "../smart-itinerary-table-grouping";
 import {
   graphColumnLaneGap,
   graphColumnMinWidth,

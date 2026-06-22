@@ -9,7 +9,7 @@ import {
   pageHeaderNoteClassName,
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableHeaderControlsPanel } from "./SmartItineraryTableHeaderControlsPanel";
-import { selectedTripPlanIdForControl } from "./smart-itinerary-table-utils";
+import { selectedTripPlanIdForControl } from "./smart-itinerary-table-trip-plan-labels";
 import type { TripPlanHeaderControlsProps } from "./trip-plan-controls.types";
 
 export function SmartItineraryTableHeaderControls({
