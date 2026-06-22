@@ -1,3 +1,4 @@
+import { tripPlanOptions } from "../trip-plans";
 import type {
   BookingDoc,
   Expense,
@@ -30,7 +31,7 @@ export function buildItineraryExport({
   trip: Trip;
 }): ItineraryExportDocument {
   const exportItems = items.map(toExportItem);
-  const tripPlans = trip.tripPlans ?? trip.planVariants;
+  const tripPlans = tripPlanOptions(trip);
   return {
     schema: itineraryExportSchema,
     version: itineraryExportVersion,

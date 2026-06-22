@@ -1,3 +1,4 @@
+import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import type { Member, Trip, Expense } from "@/src/trip/types";
 
 export function initialExpenseSplitValues(
@@ -31,10 +32,6 @@ export function initialExpenseTripPlanId({
   return (
     expense?.tripPlanId ??
     selectedTripPlanId ??
-    trip.mainTripPlanId ??
-    trip.activePlanVariantId ??
-    trip.tripPlans?.[0]?.id ??
-    trip.planVariants[0]?.id ??
-    ""
+    defaultTripPlanId(trip)
   );
 }

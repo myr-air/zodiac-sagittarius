@@ -1,16 +1,14 @@
+import {
+  defaultTripPlanId,
+  tripHasPlan,
+} from "@/src/trip/trip-plans";
 import type { Trip } from "@/src/trip/types";
 
 export const selectedTripPlanQueryParam = "tripPlanId";
 const selectedTripPlanSessionStoragePrefix = "sagittarius:selected-trip-plan:";
 
 export function initialSelectedTripPlanId(trip: Trip): string {
-  return (
-    trip.mainTripPlanId ||
-    trip.activePlanVariantId ||
-    trip.tripPlans?.[0]?.id ||
-    trip.planVariants[0]?.id ||
-    ""
-  );
+  return defaultTripPlanId(trip);
 }
 
 export function resolveSelectedTripPlanId(
@@ -28,8 +26,8 @@ export function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
   safeSessionStorage()?.setItem(selectedTripPlanStorageKey(trip.id), tripPlanId);
 
   const searchParams = new URLSearchParams(window.location.search);
-  const defaultTripPlanId = initialSelectedTripPlanId(trip);
-  if (tripPlanId === defaultTripPlanId) {
+  const defaultSelectedTripPlanId = initialSelectedTripPlanId(trip);
+  if (tripPlanId === defaultSelectedTripPlanId) {
     searchParams.delete(selectedTripPlanQueryParam);
   } else {
     searchParams.set(selectedTripPlanQueryParam, tripPlanId);
@@ -42,12 +40,6 @@ export function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
   ) {
     window.history.replaceState(window.history.state, "", nextHref);
   }
-}
-
-export function tripHasPlan(trip: Trip, tripPlanId: string): boolean {
-  return [...trip.planVariants, ...(trip.tripPlans ?? [])].some(
-    (plan) => plan.id === tripPlanId,
-  );
 }
 
 export function selectedTripPlanStorageKey(tripId: string): string {

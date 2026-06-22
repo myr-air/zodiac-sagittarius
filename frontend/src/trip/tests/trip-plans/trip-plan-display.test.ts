@@ -1,8 +1,37 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../seed";
-import { tripPlanName } from "../../trip-plans";
+import {
+  defaultTripPlanId,
+  tripHasPlan,
+  tripPlanName,
+  tripPlanOptions,
+} from "../../trip-plans";
 
 describe("trip plan display", () => {
+  it("centralizes canonical Trip Plan options and default ids", () => {
+    const canonicalTripPlans = [
+      {
+        ...seedTrip.planVariants[1],
+        id: "canonical-rain",
+      },
+    ];
+
+    expect(tripPlanOptions({
+      ...seedTrip,
+      tripPlans: canonicalTripPlans,
+    })).toBe(canonicalTripPlans);
+    expect(tripPlanOptions({
+      ...seedTrip,
+      tripPlans: undefined,
+    })).toBe(seedTrip.planVariants);
+    expect(defaultTripPlanId({
+      ...seedTrip,
+      activePlanVariantId: "",
+      mainTripPlanId: "",
+      tripPlans: canonicalTripPlans,
+    })).toBe("canonical-rain");
+  });
+
   it("resolves Trip Plan names from canonical tripPlans", () => {
     expect(tripPlanName(seedTrip, "plan-rain")).toBe("แผนฝนตก");
   });
@@ -15,5 +44,7 @@ describe("trip plan display", () => {
     expect(tripPlanName(seedTrip, "missing-plan")).toBe("missing-plan");
     expect(tripPlanName(seedTrip, null)).toBe("Unassigned");
     expect(tripPlanName(seedTrip, undefined, "No plan")).toBe("No plan");
+    expect(tripHasPlan(seedTrip, "plan-rain")).toBe(true);
+    expect(tripHasPlan(seedTrip, "missing-plan")).toBe(false);
   });
 });

@@ -1,3 +1,4 @@
+import { tripPlanOptions } from "@/src/trip/trip-plans";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 
 export function expenseDialogLinkedItem(
@@ -28,5 +29,5 @@ export function expenseDialogTripPlanIdForItemSelection(
 export function expenseDialogTripPlanOptions(
   trip: Pick<Trip, "tripPlans" | "planVariants">,
 ) {
-  return trip.tripPlans ?? trip.planVariants;
+  return tripPlanOptions(trip);
 }

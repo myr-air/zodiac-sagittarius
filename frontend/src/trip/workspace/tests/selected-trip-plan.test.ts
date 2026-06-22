@@ -4,9 +4,9 @@ import {
   rememberSelectedTripPlanId,
   resolveSelectedTripPlanId,
   selectedTripPlanStorageKey,
-  tripHasPlan,
 } from "../selected-trip-plan";
 import { tripWithPlans } from "../testing/fixtures/selected-trip-plan-fixtures";
+import { tripHasPlan } from "@/src/trip/trip-plans";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 

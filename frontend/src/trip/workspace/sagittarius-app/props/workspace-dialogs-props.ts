@@ -1,3 +1,4 @@
+import { tripPlanOptions } from "@/src/trip/trip-plans";
 import type {
   BuildWorkspaceShellPropsInput,
   WorkspaceShellProps,
@@ -71,7 +72,7 @@ export function buildWorkspaceDialogsProps({
     setStopPlaceResolution,
     stopPlaceResolution,
     trip,
-    tripPlanOptions: trip.tripPlans ?? trip.planVariants,
+    tripPlanOptions: tripPlanOptions(trip),
     updateSelectedStop,
     deleteCancelLabel: t.itinerary.row.confirmDeleteNo,
     deleteConfirmLabel: t.itinerary.row.confirmDeleteYes,

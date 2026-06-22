@@ -1,3 +1,4 @@
+import { tripPlanOptions } from "@/src/trip/trip-plans";
 import type {
   BuildWorkspaceViewsPropsInput,
   WorkspaceViewsProps,
@@ -82,7 +83,7 @@ export function buildWorkspacePlanningViewProps({
       dailyBriefings,
       itineraryView,
       pathOptions,
-      tripPlans: trip.tripPlans ?? trip.planVariants,
+      tripPlans: tripPlanOptions(trip),
       selectedTripPlanId,
       mainTripPlanId: trip.mainTripPlanId || trip.activePlanVariantId,
       onChangeTripPlan,
