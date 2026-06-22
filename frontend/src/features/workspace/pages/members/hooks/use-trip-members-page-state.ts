@@ -1,4 +1,4 @@
-import { type FormEvent, type SetStateAction, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   Member,
   Trip,
@@ -10,20 +10,16 @@ import {
   memberSummaryCounts,
   visibleTripMembers,
 } from "../model/member-page-selectors";
-import { buildCreateMemberInput } from "../model/member-create-input";
 import type {
   MemberRoleFilter,
   MemberStatusFilter,
 } from "../model/member-page-options";
 import {
-  initialMemberCreateFormState,
   initialMemberFilterState,
-  setMemberCreatePanelOpenState,
-  updateMemberCreateFormState,
   updateMemberFilterState,
-  type MemberCreateFormState,
   type MemberFilterState,
 } from "../model/member-page-state";
+import { useMemberCreateFormState } from "./useMemberCreateFormState";
 import { useMemberInviteActions } from "./useMemberInviteActions";
 import { useMemberTaskDialogState } from "./useMemberTaskDialogState";
 
@@ -69,8 +65,18 @@ export function useTripMembersPageState({
   const [filterState, setFilterState] = useState<MemberFilterState>(
     initialMemberFilterState,
   );
-  const [createFormState, setCreateFormState] =
-    useState<MemberCreateFormState>(initialMemberCreateFormState);
+  const {
+    createPanelOpen,
+    newMemberName,
+    newMemberRole,
+    setCreatePanelOpen,
+    setNewMemberName,
+    setNewMemberRole,
+    submitNewMember,
+  } = useMemberCreateFormState({
+    canManagePeople,
+    onCreateMember,
+  });
   const {
     copyInviteLink,
     copyState,
@@ -134,35 +140,8 @@ export function useTripMembersPageState({
     setFilterState((current) => updateMemberFilterState(current, field, value));
   }
 
-  function updateCreateFormState<Field extends keyof MemberCreateFormState>(
-    field: Field,
-    value: MemberCreateFormState[Field],
-  ) {
-    setCreateFormState((current) =>
-      updateMemberCreateFormState(current, field, value),
-    );
-  }
-
   function resetFilters() {
     setFilterState(initialMemberFilterState);
-  }
-
-  function setCreatePanelOpen(nextOpen: SetStateAction<boolean>) {
-    setCreateFormState((current) =>
-      setMemberCreatePanelOpenState(current, nextOpen),
-    );
-  }
-
-  function submitNewMember(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const input = buildCreateMemberInput({
-      canManagePeople,
-      displayName: createFormState.name,
-      role: createFormState.role,
-    });
-    if (!input) return;
-    onCreateMember(input);
-    setCreateFormState(initialMemberCreateFormState);
   }
 
   return {
@@ -171,13 +150,13 @@ export function useTripMembersPageState({
     confirmTransferOwnership,
     copyInviteLink,
     copyState,
-    createPanelOpen: createFormState.isOpen,
+    createPanelOpen,
     filteredMembers,
     inviteLink,
     isRotatingInviteToken,
     memberDialog,
-    newMemberName: createFormState.name,
-    newMemberRole: createFormState.role,
+    newMemberName,
+    newMemberRole,
     passwordError,
     passwordValue,
     promptChangePassword,
@@ -186,9 +165,8 @@ export function useTripMembersPageState({
     roleFilter: filterState.roleFilter,
     rotateInviteToken,
     setCreatePanelOpen,
-    setNewMemberName: (name: string) => updateCreateFormState("name", name),
-    setNewMemberRole: (role: Exclude<TripRole, "owner">) =>
-      updateCreateFormState("role", role),
+    setNewMemberName,
+    setNewMemberRole,
     setPasswordValue,
     setQuery: (query: string) => updateFilterState("query", query),
     setRoleFilter: (roleFilter: MemberRoleFilter) =>

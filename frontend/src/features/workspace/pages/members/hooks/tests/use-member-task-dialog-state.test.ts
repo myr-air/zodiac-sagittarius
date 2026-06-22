@@ -22,21 +22,23 @@ describe("members page state structure", () => {
     const taskDialogSource = readMembersPageSource(
       "hooks/useMemberTaskDialogState.ts",
     );
+    const createFormSource = readMembersPageSource(
+      "hooks/useMemberCreateFormState.ts",
+    );
     const taskDialogStateSource = readMembersPageSource(
       "model/member-task-dialog-state.ts",
     );
 
     expect(pageStateSource).toContain("useMemberTaskDialogState");
+    expect(pageStateSource).toContain("useMemberCreateFormState");
     expect(pageStateSource).toContain("initialMemberFilterState");
-    expect(pageStateSource).toContain("initialMemberCreateFormState");
     expect(pageStateSource).toContain("updateMemberFilterState");
-    expect(pageStateSource).toContain("updateMemberCreateFormState");
-    expect(pageStateSource).toContain("setMemberCreatePanelOpenState");
     expect(pageStateSource).toContain("const [filterState, setFilterState]");
-    expect(pageStateSource).toContain("const [createFormState, setCreateFormState]");
+    expect(pageStateSource).not.toContain("const [createFormState, setCreateFormState]");
     expect(pageStateSource).not.toContain("const [query, setQuery]");
     expect(pageStateSource).not.toContain("const [newMemberName, setNewMemberName]");
     expect(pageStateSource).not.toContain("function submitMemberDialog");
+    expect(pageStateSource).not.toContain("function submitNewMember");
     expect(memberPageStateSource).toContain("export interface MemberFilterState");
     expect(memberPageStateSource).toContain("export interface MemberCreateFormState");
     expect(memberPageStateSource).toContain(
@@ -45,7 +47,13 @@ describe("members page state structure", () => {
     expect(memberPageStateSource).toContain(
       "export function updateMemberFilterState",
     );
+    expect(createFormSource).toContain("export function useMemberCreateFormState");
+    expect(createFormSource).toContain("initialMemberCreateFormState");
+    expect(createFormSource).toContain("updateMemberCreateFormState");
+    expect(createFormSource).toContain("setMemberCreatePanelOpenState");
+    expect(createFormSource).toContain("buildCreateMemberInput");
     expect(pageStateSource).toContain("./useMemberInviteActions");
+    expect(pageStateSource).toContain("./useMemberCreateFormState");
     expect(pageStateSource).toContain("./useMemberTaskDialogState");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
