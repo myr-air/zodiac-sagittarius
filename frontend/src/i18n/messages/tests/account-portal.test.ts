@@ -25,6 +25,12 @@ describe("account portal messages", () => {
     expect(thAccountPortalMessages.portal.nav.dashboard).toBe("แดชบอร์ด");
     expect(enAccountPortalMessages.dashboard.noEmail).toBe("No email loaded");
     expect(thAccountPortalMessages.dashboard.noEmail).toBe("ยังไม่ได้โหลดอีเมล");
+    expect(enAccountPortalMessages.dashboard.createTrip.share.ready("HK Trip")).toBe(
+      "HK Trip is ready to share.",
+    );
+    expect(thAccountPortalMessages.dashboard.createTrip.share.copyInvite).toBe(
+      "คัดลอกลิงก์เชิญ",
+    );
     expect(enAccountPortalMessages.settings.form.displayName).toBe("Display name *");
     expect(thAccountPortalMessages.settings.form.displayName).toBe("ชื่อที่แสดง *");
   });

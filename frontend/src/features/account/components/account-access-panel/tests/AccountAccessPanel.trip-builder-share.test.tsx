@@ -37,6 +37,7 @@ describe("AccountAccessPanel trip builder share preview", () => {
     expect(within(sharePanel).getByText(/Invite link:/i).textContent).toContain("token=created-token");
     await user.click(within(sharePanel).getByRole("button", { name: /Copy invite link/i }));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("token=created-token"));
+    expect(within(sharePanel).getByRole("button", { name: "Copied" })).toBeInTheDocument();
     expect(within(sharePanel).getByRole("link", { name: /Send email/i })).toHaveAttribute(
       "href",
       expect.stringContaining("mailto:"),

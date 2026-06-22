@@ -106,6 +106,7 @@ export function PortalNewTripSection({
       </div>
       {createdTripShare ? (
         <PortalCreatedTripShare
+          copy={t.access.dashboard.createTrip.share}
           hasCopiedInvite={hasCopiedCreatedInvite}
           share={createdTripShare}
           onCopyInvite={() => void copyCreatedInviteLink()}
