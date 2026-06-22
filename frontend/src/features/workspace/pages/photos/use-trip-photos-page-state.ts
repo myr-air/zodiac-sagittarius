@@ -25,6 +25,16 @@ interface UseTripPhotosPageStateInput {
   trip: Trip;
 }
 
+interface PhotoAlbumBrowserState {
+  activeProvider: PhotoProviderFilter;
+  selectedAlbumId: string;
+}
+
+interface PhotoAlbumModalState {
+  deleteAlbum: TripPhotoAlbumLink | null;
+  dialogAlbum: TripPhotoAlbumLink | "new" | null;
+}
+
 export function useTripPhotosPageState({
   onCreatePhotoAlbum,
   onDeletePhotoAlbum,
@@ -32,46 +42,68 @@ export function useTripPhotosPageState({
   photoAlbumLinks,
   trip,
 }: UseTripPhotosPageStateInput) {
-  const [activeProvider, setActiveProvider] = useState<PhotoProviderFilter>("all");
-  const [selectedAlbumId, setSelectedAlbumId] = useState(photoAlbumLinks[0]?.id ?? "");
-  const [dialogAlbum, setDialogAlbum] = useState<TripPhotoAlbumLink | "new" | null>(null);
-  const [deleteAlbum, setDeleteAlbum] = useState<TripPhotoAlbumLink | null>(null);
+  const [browserState, setBrowserState] = useState<PhotoAlbumBrowserState>({
+    activeProvider: "all",
+    selectedAlbumId: photoAlbumLinks[0]?.id ?? "",
+  });
+  const [modalState, setModalState] = useState<PhotoAlbumModalState>({
+    deleteAlbum: null,
+    dialogAlbum: null,
+  });
   const summary = useMemo(() => buildPhotoAlbumSummary(photoAlbumLinks), [photoAlbumLinks]);
   const providerCounts = useMemo(() => countPhotoProviders(photoAlbumLinks), [photoAlbumLinks]);
   const visibleAlbums = useMemo(
-    () => visiblePhotoAlbumsForProvider(photoAlbumLinks, activeProvider),
-    [activeProvider, photoAlbumLinks],
+    () => visiblePhotoAlbumsForProvider(photoAlbumLinks, browserState.activeProvider),
+    [browserState.activeProvider, photoAlbumLinks],
   );
-  const selectedAlbum = selectedPhotoAlbum(visibleAlbums, selectedAlbumId);
+  const selectedAlbum = selectedPhotoAlbum(visibleAlbums, browserState.selectedAlbumId);
   const selectedRelations = selectedAlbum ? findPhotoAlbumRelations(selectedAlbum, trip) : null;
 
+  function updateBrowserState<Field extends keyof PhotoAlbumBrowserState>(
+    field: Field,
+    value: PhotoAlbumBrowserState[Field],
+  ) {
+    setBrowserState((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateModalState<Field extends keyof PhotoAlbumModalState>(
+    field: Field,
+    value: PhotoAlbumModalState[Field],
+  ) {
+    setModalState((current) => ({ ...current, [field]: value }));
+  }
+
   async function submitAlbum(input: TripPhotoAlbumInput) {
-    if (dialogAlbum === "new") {
+    if (modalState.dialogAlbum === "new") {
       await onCreatePhotoAlbum(input);
-    } else if (dialogAlbum) {
-      await onUpdatePhotoAlbum(dialogAlbum.id, input);
+    } else if (modalState.dialogAlbum) {
+      await onUpdatePhotoAlbum(modalState.dialogAlbum.id, input);
     }
-    setDialogAlbum(null);
+    updateModalState("dialogAlbum", null);
   }
 
   async function confirmDelete() {
-    if (!deleteAlbum) return;
-    await onDeletePhotoAlbum(deleteAlbum.id);
-    setDeleteAlbum(null);
+    if (!modalState.deleteAlbum) return;
+    await onDeletePhotoAlbum(modalState.deleteAlbum.id);
+    updateModalState("deleteAlbum", null);
   }
 
   return {
-    activeProvider,
+    activeProvider: browserState.activeProvider,
     confirmDelete,
-    deleteAlbum,
-    dialogAlbum,
+    deleteAlbum: modalState.deleteAlbum,
+    dialogAlbum: modalState.dialogAlbum,
     providerCounts,
     selectedAlbum,
     selectedRelations,
-    setActiveProvider,
-    setDeleteAlbum,
-    setDialogAlbum,
-    setSelectedAlbumId,
+    setActiveProvider: (activeProvider: PhotoProviderFilter) =>
+      updateBrowserState("activeProvider", activeProvider),
+    setDeleteAlbum: (deleteAlbum: TripPhotoAlbumLink | null) =>
+      updateModalState("deleteAlbum", deleteAlbum),
+    setDialogAlbum: (dialogAlbum: TripPhotoAlbumLink | "new" | null) =>
+      updateModalState("dialogAlbum", dialogAlbum),
+    setSelectedAlbumId: (selectedAlbumId: string) =>
+      updateBrowserState("selectedAlbumId", selectedAlbumId),
     submitAlbum,
     summary,
     visibleAlbums,
