@@ -344,6 +344,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const expensesState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts");
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
+    const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
     const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
@@ -358,9 +359,14 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expensesPage).not.toContain("refundSplits");
     expect(expensesPage).not.toContain("function recordRefund");
     expect(expensesState).toContain("./model/expense-page-filters");
+    expect(expensesState).toContain("./model/expense-page-filter-state");
     expect(expensesState).toContain("./model/expense-page-actions");
     expect(expensesState).toContain("./hooks/useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
+    expect(expensesState).toContain("const [filterState, setFilterState]");
+    expect(expensesState).not.toContain("const [query, setQuery]");
+    expect(expensesState).not.toContain("const [payerFilter, setPayerFilter]");
+    expect(expensesState).not.toContain("const [categoryFilter, setCategoryFilter]");
     expect(expensesState).not.toContain("buildExpenseCsv");
     expect(expensesState).not.toContain("function filterExpenses");
     expect(expensesState).not.toContain("refundSplits");
@@ -368,6 +374,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(expenseFilters).toContain("export function filterExpenses");
     expect(expenseFilters).toContain("export function expenseCategorySpend");
     expect(expenseFilters).toContain("export function inferredScopeExpenses");
+    expect(expenseFilterState).toContain("export interface ExpensePageFilterState");
+    expect(expenseFilterState).toContain("initialExpensePageFilterState");
+    expect(expenseFilterState).toContain("clearedExpensePageFilterState");
     expect(expenseActions).toContain("export function buildSettlementExpenseInput");
     expect(expenseActions).toContain("export function buildRefundExpenseInput");
     expect(expenseActions).toContain("refundSplits");
