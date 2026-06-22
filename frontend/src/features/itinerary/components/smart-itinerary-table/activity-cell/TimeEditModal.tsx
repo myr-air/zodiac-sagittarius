@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 import { TimePickerField } from "@/src/shared/components/date-time-pickers";
+import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import {
   endOffsetDaysBetweenTimes,
@@ -24,7 +25,6 @@ import {
   timeEditPreviewValueClassName,
   timeEditSaveButtonClassName,
 } from "../smart-itinerary-table.styles";
-import { useEscapeToClose } from "./use-escape-close";
 import type { TimeEditModalProps } from "./time-components.types";
 
 export function TimeEditModal({

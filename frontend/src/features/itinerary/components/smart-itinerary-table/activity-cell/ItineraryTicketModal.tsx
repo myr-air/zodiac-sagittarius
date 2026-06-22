@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 
+import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
@@ -16,7 +17,6 @@ import {
   ticketModalHeaderClassName,
   ticketModalTitleClassName,
 } from "../smart-itinerary-table.styles";
-import { useEscapeToClose } from "./use-escape-close";
 import { ItineraryTicketModalFooter } from "./ItineraryTicketModalFooter";
 import {
   ExistingTicketList,

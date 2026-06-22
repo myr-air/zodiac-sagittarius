@@ -63,6 +63,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
+    expect(modal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(modal).toContain("@/src/features/itinerary/domain/time-edit-modal-model");
     expect(modal).not.toContain("formatDuration");
     expect(modal).not.toContain("parseTimeToMinutes");
@@ -128,6 +129,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(exports).not.toContain("SubActivityComponents");
     expect(list).toContain("export function SubActivityList");
     expect(modal).toContain("export function SubActivityModal");
+    expect(modal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(types).toContain("export interface SubActivitySharedProps");
   });
 });

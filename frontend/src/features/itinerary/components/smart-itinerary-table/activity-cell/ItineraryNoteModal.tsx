@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Locale } from "@/src/i18n/types";
+import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
-import { useEscapeToClose } from "./use-escape-close";
 import { cn } from "@/src/lib/cn";
 import { subActivityModalCloseClassName } from "../smart-itinerary-table.styles";
 import {

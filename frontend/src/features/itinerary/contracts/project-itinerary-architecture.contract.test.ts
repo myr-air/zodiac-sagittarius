@@ -127,6 +127,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(exports).not.toContain("BookingComponents");
     expect(ticketModal).toContain("./ItineraryTicketModalFooter");
     expect(ticketModal).toContain("./ItineraryTicketModalSections");
+    expect(ticketModal).toContain("@/src/shared/hooks/use-escape-to-close");
     expect(ticketModal).not.toContain("useState");
     expect(ticketModal).not.toContain("buildTicketSubmitInput");
     expect(ticketModal).not.toContain("formatBookingSummary");

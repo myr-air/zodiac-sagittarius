@@ -1,4 +1,5 @@
 import { createPortal } from "react-dom";
+import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import {
   subActivityModalBackdropClassName,
@@ -8,7 +9,6 @@ import {
   subActivityModalHeaderClassName,
   subActivityModalTitleClassName,
 } from "../smart-itinerary-table.styles";
-import { useEscapeToClose } from "./use-escape-close";
 import { SubActivityList } from "./SubActivityList";
 import type { SubActivityModalProps } from "./sub-activity.types";
 

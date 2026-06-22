@@ -84,6 +84,7 @@ export const frontendItineraryFeatureScaffoldPathsAbsent = [
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-edit-modal-model.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-edit-modal-model.test.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/tests/time-edit-modal-model.test.ts",
+  "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-escape-close.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/BookingComponents.tsx",
   "src/features/itinerary/components/smart-itinerary-table.styles.ts",
   "src/features/itinerary/components/smart-itinerary-table-utils.ts",
