@@ -1,9 +1,8 @@
 import type { ItineraryItem } from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 
-import { activityIconButtonClassName } from "../smart-itinerary-table.styles";
+import { ActivityActionButton } from "./ActivityActionButton";
 
 export function ActivityActionButtons({
   iconClassName,
@@ -43,96 +42,62 @@ export function ActivityActionButtons({
     locale === "th"
       ? `เพิ่มโน้ต ${item.activity}`
       : `Add note for ${item.activity}`;
+  const detailsLabel = itineraryLabels.row.openDetails({
+    activity: item.activity,
+  });
+  const editLabel = itineraryLabels.row.edit({
+    activity: item.activity,
+  });
+  const deleteLabel = itineraryLabels.row.delete({
+    activity: item.activity,
+  });
 
   return (
     <>
       {showMap && item.mapLink ? (
-        <a
-          className={activityIconButtonClassName}
+        <ActivityActionButton
+          ariaLabel={mapLabel}
           href={item.mapLink}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={mapLabel}
-          title={mapLabel}
-          onClick={(event) => {
-            event.stopPropagation();
-            onActionComplete?.();
-          }}
-        >
-          <Icon name="map" className={iconClassName} />
-        </a>
+          iconClassName={iconClassName}
+          iconName="map"
+          onActionComplete={onActionComplete}
+        />
       ) : null}
       {showNote && onOpenNoteForItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={noteLabel}
-          title={noteLabel}
-          onClick={(event) => {
-            event.stopPropagation();
-            onActionComplete?.();
-            onOpenNoteForItem(item);
-          }}
-        >
-          <Icon name="note" className={iconClassName} />
-        </button>
+        <ActivityActionButton
+          ariaLabel={noteLabel}
+          iconClassName={iconClassName}
+          iconName="note"
+          onAction={() => onOpenNoteForItem(item)}
+          onActionComplete={onActionComplete}
+        />
       ) : null}
       {showDetails && onOpenItemDetails ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={itineraryLabels.row.openDetails({
-            activity: item.activity,
-          })}
-          title={itineraryLabels.row.openDetails({
-            activity: item.activity,
-          })}
-          onClick={(event) => {
-            event.stopPropagation();
-            onActionComplete?.();
-            onOpenItemDetails(item.id);
-          }}
-        >
-          <Icon name="panel" className={iconClassName} />
-        </button>
+        <ActivityActionButton
+          ariaLabel={detailsLabel}
+          iconClassName={iconClassName}
+          iconName="panel"
+          onAction={() => onOpenItemDetails(item.id)}
+          onActionComplete={onActionComplete}
+        />
       ) : null}
       {showEdit && onEditItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={itineraryLabels.row.edit({
-            activity: item.activity,
-          })}
-          title={itineraryLabels.row.edit({
-            activity: item.activity,
-          })}
-          onClick={(event) => {
-            event.stopPropagation();
-            onActionComplete?.();
-            onEditItem(item.id);
-          }}
-        >
-          <Icon name="edit" className={iconClassName} />
-        </button>
+        <ActivityActionButton
+          ariaLabel={editLabel}
+          iconClassName={iconClassName}
+          iconName="edit"
+          onAction={() => onEditItem(item.id)}
+          onActionComplete={onActionComplete}
+        />
       ) : null}
       {showDelete && onDeleteItem ? (
-        <button
-          type="button"
-          className={activityIconButtonClassName}
-          aria-label={itineraryLabels.row.delete({
-            activity: item.activity,
-          })}
-          title={itineraryLabels.row.delete({
-            activity: item.activity,
-          })}
-          onClick={(event) => {
-            event.stopPropagation();
-            onActionComplete?.();
-            onDeleteItem(item.id);
-          }}
-        >
-          <Icon name="trash" className={iconClassName} />
-        </button>
+        <ActivityActionButton
+          ariaLabel={deleteLabel}
+          iconClassName={iconClassName}
+          iconName="trash"
+          onAction={() => onDeleteItem(item.id)}
+          onActionComplete={onActionComplete}
+        />
       ) : null}
     </>
   );

@@ -152,6 +152,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/day-group.types.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx",
+  "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellOverlays.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellTitleLine.tsx",

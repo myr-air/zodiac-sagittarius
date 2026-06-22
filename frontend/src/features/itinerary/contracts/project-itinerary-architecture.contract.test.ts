@@ -181,6 +181,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx");
     const titleLine = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellTitleLine.tsx");
     const actionGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx");
+    const actionButtons = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButtons.tsx");
+    const actionButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx");
 
     expect(activityCell).toContain("./ActivityCellTitleLine");
     expect(activityCell).toContain("./ActivityCellActionGroup");
@@ -190,6 +192,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(titleLine).toContain("InlineActivityField");
     expect(actionGroup).toContain("export function ActivityCellActionGroup");
     expect(actionGroup).toContain("ActivityActionButtons");
+    expect(actionButtons).toContain("./ActivityActionButton");
+    expect(actionButtons).not.toContain("event.stopPropagation");
+    expect(actionButton).toContain("export function ActivityActionButton");
+    expect(actionButton).toContain("event.stopPropagation");
   });
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
