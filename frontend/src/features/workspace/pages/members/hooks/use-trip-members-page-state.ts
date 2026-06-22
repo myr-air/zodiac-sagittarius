@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type {
   Member,
   Trip,
@@ -10,17 +10,9 @@ import {
   memberSummaryCounts,
   visibleTripMembers,
 } from "../model/member-page-selectors";
-import type {
-  MemberRoleFilter,
-  MemberStatusFilter,
-} from "../model/member-page-options";
-import {
-  initialMemberFilterState,
-  updateMemberFilterState,
-  type MemberFilterState,
-} from "../model/member-page-state";
 import { useMemberCreateFormState } from "./useMemberCreateFormState";
 import { useMemberInviteActions } from "./useMemberInviteActions";
+import { useMemberPageFilters } from "./useMemberPageFilters";
 import { useMemberTaskDialogState } from "./useMemberTaskDialogState";
 
 interface TripMembersPageStateLabels {
@@ -62,9 +54,15 @@ export function useTripMembersPageState({
   onTransferOwnership,
   trip,
 }: UseTripMembersPageStateInput) {
-  const [filterState, setFilterState] = useState<MemberFilterState>(
-    initialMemberFilterState,
-  );
+  const {
+    query,
+    resetFilters,
+    roleFilter,
+    setQuery,
+    setRoleFilter,
+    setStatusFilter,
+    statusFilter,
+  } = useMemberPageFilters();
   const {
     createPanelOpen,
     newMemberName,
@@ -120,29 +118,18 @@ export function useTripMembersPageState({
       filterTripMembers({
         currentMemberId: currentMember.id,
         members: visibleMembers,
-        query: filterState.query,
-        roleFilter: filterState.roleFilter,
-        statusFilter: filterState.statusFilter,
+        query,
+        roleFilter,
+        statusFilter,
       }),
     [
       currentMember.id,
-      filterState.query,
-      filterState.roleFilter,
-      filterState.statusFilter,
+      query,
+      roleFilter,
+      statusFilter,
       visibleMembers,
     ],
   );
-
-  function updateFilterState<Field extends keyof MemberFilterState>(
-    field: Field,
-    value: MemberFilterState[Field],
-  ) {
-    setFilterState((current) => updateMemberFilterState(current, field, value));
-  }
-
-  function resetFilters() {
-    setFilterState(initialMemberFilterState);
-  }
 
   return {
     confirmChangeAccessStatus,
@@ -160,20 +147,18 @@ export function useTripMembersPageState({
     passwordError,
     passwordValue,
     promptChangePassword,
-    query: filterState.query,
+    query,
     resetFilters,
-    roleFilter: filterState.roleFilter,
+    roleFilter,
     rotateInviteToken,
     setCreatePanelOpen,
     setNewMemberName,
     setNewMemberRole,
     setPasswordValue,
-    setQuery: (query: string) => updateFilterState("query", query),
-    setRoleFilter: (roleFilter: MemberRoleFilter) =>
-      updateFilterState("roleFilter", roleFilter),
-    setStatusFilter: (statusFilter: MemberStatusFilter) =>
-      updateFilterState("statusFilter", statusFilter),
-    statusFilter: filterState.statusFilter,
+    setQuery,
+    setRoleFilter,
+    setStatusFilter,
+    statusFilter,
     submitMemberDialog,
     submitNewMember,
     summaryStats,
