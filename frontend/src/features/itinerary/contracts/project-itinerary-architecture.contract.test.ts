@@ -137,6 +137,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps itinerary ticket modal form state split from modal render", () => {
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
+    const modalPortal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx");
     const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");
     const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
     const ticketFooter = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx");
@@ -155,7 +156,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(exports).not.toContain("BookingComponents");
     expect(ticketModal).toContain("./ItineraryTicketModalFooter");
     expect(ticketModal).toContain("./ItineraryTicketModalSections");
-    expect(ticketModal).toContain("@/src/shared/hooks/use-escape-to-close");
+    expect(ticketModal).toContain("./ActivityCellModalPortal");
+    expect(ticketModal).not.toContain("createPortal");
+    expect(ticketModal).not.toContain("@/src/shared/hooks/use-escape-to-close");
     expect(ticketModal).not.toContain("useState");
     expect(ticketModal).not.toContain("buildTicketSubmitInput");
     expect(ticketModal).not.toContain("formatBookingSummary");
@@ -175,6 +178,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModel).not.toContain("function buildTicketSubmitInput");
     expect(ticketForm).toContain("export function buildTicketSubmitInput");
     expect(ticketForm).toContain("export interface TicketFormValues");
+    expect(modalPortal).toContain("export function ActivityCellModalPortal");
+    expect(modalPortal).toContain("createPortal");
+    expect(modalPortal).toContain("@/src/shared/hooks/use-escape-to-close");
   });
 
   it("keeps activity cell title editing and actions split from shell layout", () => {

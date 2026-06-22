@@ -1,7 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { createPortal } from "react-dom";
 import { TimePickerField } from "@/src/shared/components/date-time-pickers";
-import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import {
   endOffsetDaysBetweenTimes,
@@ -25,6 +23,7 @@ import {
   timeEditPreviewValueClassName,
   timeEditSaveButtonClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import type { TimeEditModalProps } from "./time-components.types";
 
 export function TimeEditModal({
@@ -46,8 +45,6 @@ export function TimeEditModal({
     locale,
     startTime,
   });
-
-  useEscapeToClose(onClose);
 
   function updateStartTime(nextStartTime: string) {
     setStartTime(nextStartTime);
@@ -80,13 +77,10 @@ export function TimeEditModal({
     }
   }
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={timeEditModalBackdropClassName}
-      role="presentation"
-      onClick={onClose}
+  return (
+    <ActivityCellModalPortal
+      backdropClassName={timeEditModalBackdropClassName}
+      onClose={onClose}
     >
       <form
         className={timeEditModalClassName}
@@ -175,7 +169,6 @@ export function TimeEditModal({
           </button>
         </footer>
       </form>
-    </div>,
-    document.body,
+    </ActivityCellModalPortal>
   );
 }

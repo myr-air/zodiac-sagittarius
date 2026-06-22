@@ -49,6 +49,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const modal = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx",
     );
+    const modalPortal = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx",
+    );
     const modalModel = readItineraryArchitectureSource(
       "src/features/itinerary/domain/time-edit-modal-model.ts",
     );
@@ -68,7 +71,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
-    expect(modal).toContain("@/src/shared/hooks/use-escape-to-close");
+    expect(modal).toContain("./ActivityCellModalPortal");
+    expect(modal).not.toContain("createPortal");
+    expect(modal).not.toContain("@/src/shared/hooks/use-escape-to-close");
     expect(modal).toContain("@/src/features/itinerary/domain/time-edit-modal-model");
     expect(modal).not.toContain("formatDuration");
     expect(modal).not.toContain("parseTimeToMinutes");
@@ -76,6 +81,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modalModel).toContain("formatDuration");
     expect(modalModel).toContain("parseTimeToMinutes");
     expect(types).toContain("export interface ActivityTimeButtonProps");
+    expect(modalPortal).toContain("export function ActivityCellModalPortal");
+    expect(modalPortal).toContain("createPortal");
+    expect(modalPortal).toContain("@/src/shared/hooks/use-escape-to-close");
   });
 
   it("keeps smart itinerary styles split by table, header, and activity cell responsibility", () => {
@@ -143,7 +151,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(item).toContain("InlineActivityField");
     expect(item).toContain("ItineraryBookingButton");
     expect(modal).toContain("export function SubActivityModal");
-    expect(modal).toContain("@/src/shared/hooks/use-escape-to-close");
+    expect(modal).toContain("./ActivityCellModalPortal");
+    expect(modal).not.toContain("createPortal");
+    expect(modal).not.toContain("@/src/shared/hooks/use-escape-to-close");
     expect(types).toContain("export interface SubActivitySharedProps");
   });
 });

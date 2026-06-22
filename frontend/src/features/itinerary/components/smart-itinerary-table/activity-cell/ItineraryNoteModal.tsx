@@ -1,7 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { createPortal } from "react-dom";
 import type { Locale } from "@/src/i18n/types";
-import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { subActivityModalCloseClassName } from "../smart-itinerary-table.styles";
@@ -18,6 +16,7 @@ import {
 } from "../smart-itinerary-table.styles";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 
 export function ItineraryNoteModal({
   item,
@@ -42,8 +41,6 @@ export function ItineraryNoteModal({
       ? "เช่น นัดเจอกันที่ทางออก A, เตรียมพาสปอร์ต"
       : "Example: Meet at exit A, keep passports ready";
 
-  useEscapeToClose(onClose);
-
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = body.trim();
@@ -56,10 +53,11 @@ export function ItineraryNoteModal({
     }
   }
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div className={ticketModalBackdropClassName} role="presentation" onClick={onClose}>
+  return (
+    <ActivityCellModalPortal
+      backdropClassName={ticketModalBackdropClassName}
+      onClose={onClose}
+    >
       <div
         className={cn(ticketModalClassName, "max-w-[480px]")}
         role="dialog"
@@ -112,7 +110,6 @@ export function ItineraryNoteModal({
           </footer>
         </form>
       </div>
-    </div>,
-    document.body,
+    </ActivityCellModalPortal>
   );
 }

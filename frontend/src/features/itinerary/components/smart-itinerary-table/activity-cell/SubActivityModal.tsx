@@ -1,5 +1,3 @@
-import { createPortal } from "react-dom";
-import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import {
   subActivityModalBackdropClassName,
@@ -9,6 +7,7 @@ import {
   subActivityModalHeaderClassName,
   subActivityModalTitleClassName,
 } from "../smart-itinerary-table.styles";
+import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { SubActivityList } from "./SubActivityList";
 import type { SubActivityModalProps } from "./sub-activity.types";
 
@@ -31,15 +30,10 @@ export function SubActivityModal({
   onUpdateItemInline,
   subItems,
 }: SubActivityModalProps) {
-  useEscapeToClose(onClose);
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={subActivityModalBackdropClassName}
-      role="presentation"
-      onClick={onClose}
+  return (
+    <ActivityCellModalPortal
+      backdropClassName={subActivityModalBackdropClassName}
+      onClose={onClose}
     >
       <section
         className={subActivityModalClassName}
@@ -85,7 +79,6 @@ export function SubActivityModal({
           />
         </div>
       </section>
-    </div>,
-    document.body,
+    </ActivityCellModalPortal>
   );
 }

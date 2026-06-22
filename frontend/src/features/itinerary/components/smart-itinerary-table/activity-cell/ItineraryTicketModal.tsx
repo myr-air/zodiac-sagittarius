@@ -1,6 +1,3 @@
-import { createPortal } from "react-dom";
-
-import { useEscapeToClose } from "@/src/shared/hooks/use-escape-to-close";
 import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
@@ -25,6 +22,7 @@ import {
   TicketModeToggle,
 } from "./ItineraryTicketModalSections";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { useItineraryTicketModalModel } from "./use-itinerary-ticket-modal-model";
 
 export function ItineraryTicketModal({
@@ -79,15 +77,10 @@ export function ItineraryTicketModal({
   });
   const copy = ticketModalCopy(locale);
 
-  useEscapeToClose(onClose);
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={ticketModalBackdropClassName}
-      role="presentation"
-      onClick={onClose}
+  return (
+    <ActivityCellModalPortal
+      backdropClassName={ticketModalBackdropClassName}
+      onClose={onClose}
     >
       <form
         className={ticketModalClassName}
@@ -163,7 +156,6 @@ export function ItineraryTicketModal({
           unlinking={unlinking}
         />
       </form>
-    </div>,
-    document.body,
+    </ActivityCellModalPortal>
   );
 }
