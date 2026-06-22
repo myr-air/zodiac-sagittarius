@@ -196,10 +196,15 @@ describe("Sagittarius workspace source boundaries", () => {
 
   it("keeps workspace dialog chrome styles shared", () => {
     const importDialog = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceImportDialog.tsx"), "utf8");
+    const importDialogState = readFileSync(join(frontendRoot, "src/trip/workspace/trip-workspace-import-dialog-state.ts"), "utf8");
     const deleteDialog = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"), "utf8");
     const dialogStyles = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDialog.styles.ts"), "utf8");
 
     expect(importDialog).toContain("./TripWorkspaceDialog.styles");
+    expect(importDialog).toContain("./trip-workspace-import-dialog-state");
+    expect(importDialog).not.toContain("useState");
+    expect(importDialogState).toContain("export function useTripWorkspaceImportDialogState");
+    expect(importDialogState).toContain("initialTripWorkspaceImportDialogState");
     expect(deleteDialog).toContain("./TripWorkspaceDialog.styles");
     expect(importDialog).not.toContain("const importModalBackdropClassName");
     expect(deleteDialog).not.toContain("const deleteModalBackdropClassName");

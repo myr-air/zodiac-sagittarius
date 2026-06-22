@@ -1,0 +1,90 @@
+import { useState } from "react";
+import {
+  mainItineraryPathName,
+  type ItineraryImportApplyTarget,
+  type ItineraryPathOption,
+} from "@/src/trip/itinerary-paths";
+import type { ItineraryExportItem } from "@/src/trip/itinerary-import-export";
+import type { PlanVariant } from "@/src/trip/types";
+
+export interface TripWorkspaceImportDialogState {
+  day: string;
+  mode: ItineraryImportApplyTarget["mode"];
+  pathNameInput: string;
+  recordMode: ItineraryImportApplyTarget["recordMode"];
+  scope: ItineraryImportApplyTarget["scope"];
+  targetTripPlanId: string;
+}
+
+export function initialTripWorkspaceImportDialogState({
+  currentTripPathId,
+  importedItems,
+  pathOptions,
+  startDate,
+  tripPlanId,
+}: {
+  currentTripPathId: string;
+  importedItems: ItineraryExportItem[];
+  pathOptions: ItineraryPathOption[];
+  startDate: string;
+  tripPlanId: string;
+}): TripWorkspaceImportDialogState {
+  const currentPathName =
+    pathOptions.find((option) => option.id === currentTripPathId)?.name ??
+    mainItineraryPathName;
+
+  return {
+    day: importedItems[0]?.day ?? startDate,
+    mode: "replace-target",
+    pathNameInput: currentPathName,
+    recordMode: "clone-linked",
+    scope: "trip",
+    targetTripPlanId: tripPlanId,
+  };
+}
+
+export function useTripWorkspaceImportDialogState({
+  currentTripPathId,
+  importedItems,
+  pathOptions,
+  startDate,
+  tripPlanId,
+}: {
+  currentTripPathId: string;
+  importedItems: ItineraryExportItem[];
+  pathOptions: ItineraryPathOption[];
+  startDate: string;
+  tripPlanId: string;
+}) {
+  const [state, setState] = useState(() =>
+    initialTripWorkspaceImportDialogState({
+      currentTripPathId,
+      importedItems,
+      pathOptions,
+      startDate,
+      tripPlanId,
+    }),
+  );
+
+  function updateField<Field extends keyof TripWorkspaceImportDialogState>(
+    field: Field,
+    value: TripWorkspaceImportDialogState[Field],
+  ) {
+    setState((current) => ({ ...current, [field]: value }));
+  }
+
+  return {
+    ...state,
+    setDay: (day: string) => updateField("day", day),
+    setMode: (mode: ItineraryImportApplyTarget["mode"]) =>
+      updateField("mode", mode),
+    setPathNameInput: (pathNameInput: string) =>
+      updateField("pathNameInput", pathNameInput),
+    setRecordMode: (recordMode: ItineraryImportApplyTarget["recordMode"]) =>
+      updateField("recordMode", recordMode),
+    setScope: (scope: ItineraryImportApplyTarget["scope"]) =>
+      updateField("scope", scope),
+    setTargetTripPlanId: (targetTripPlanId: PlanVariant["id"]) =>
+      updateField("targetTripPlanId", targetTripPlanId),
+  };
+}

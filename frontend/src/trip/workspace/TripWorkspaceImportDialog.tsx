@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
 import { Button } from "@/src/ui";
 import {
   mainItineraryPathName,
@@ -11,6 +11,7 @@ import type {
 } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
 import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
+import { useTripWorkspaceImportDialogState } from "./trip-workspace-import-dialog-state";
 import {
   TripWorkspaceImportDialogFields,
   TripWorkspaceImportDialogSummary,
@@ -52,17 +53,26 @@ export function TripWorkspaceImportDialog({
     records.bookingDocs.length +
     records.stopNotes.length +
     records.tasks.length;
-  const currentPathName =
-    pathOptions.find((option) => option.id === currentTripPathId)?.name ??
-    mainItineraryPathName;
-  const [pathNameInput, setPathNameInput] = useState(currentPathName);
-  const [scope, setScope] = useState<"trip" | "day">("trip");
-  const [day, setDay] = useState(importedItems[0]?.day ?? startDate);
-  const [mode, setMode] =
-    useState<ItineraryImportApplyTarget["mode"]>("replace-target");
-  const [recordMode, setRecordMode] =
-    useState<ItineraryImportApplyTarget["recordMode"]>("clone-linked");
-  const [targetTripPlanId, setTargetTripPlanId] = useState(tripPlanId);
+  const {
+    day,
+    mode,
+    pathNameInput,
+    recordMode,
+    scope,
+    setDay,
+    setMode,
+    setPathNameInput,
+    setRecordMode,
+    setScope,
+    setTargetTripPlanId,
+    targetTripPlanId,
+  } = useTripWorkspaceImportDialogState({
+    currentTripPathId,
+    importedItems,
+    pathOptions,
+    startDate,
+    tripPlanId,
+  });
 
   function submitImport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
