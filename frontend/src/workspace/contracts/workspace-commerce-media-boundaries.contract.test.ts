@@ -62,7 +62,8 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingDialogState).toContain("function submit");
     expect(bookingDialogFields).toContain("export function initialBookingDialogFields");
     expect(bookingDialogFields).toContain("export function buildBookingDialogSubmitInput");
-    expect(bookingDialogFields).toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialogFields).not.toContain("@/src/features/itinerary/lib/itinerary-time");
+    expect(bookingDialogFields).toContain("@/src/shared/date-time-local");
 
     expect(photoAlbumDialog).toContain("./usePhotoAlbumDialogState");
     expect(photoAlbumDialog).toContain("PhotoAlbumDialogFields");

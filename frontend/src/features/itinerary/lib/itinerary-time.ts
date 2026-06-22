@@ -4,6 +4,10 @@ import {
   minutesToTime as coreMinutesToTime,
   parseTime,
 } from "@/src/trip/itinerary-core";
+export {
+  fromDateTimeLocalValue,
+  toDateTimeLocalValue,
+} from "@/src/shared/date-time-local";
 
 export function parseTimeToMinutes(value: string): number | null {
   const trimmed = value.trim();
@@ -14,14 +18,6 @@ export function parseTimeToMinutes(value: string): number | null {
 export function itineraryDateTimeValue(day: string, time: string | null | undefined): string | null {
   const trimmed = time?.trim();
   return trimmed ? `${day}T${trimmed}` : null;
-}
-
-export function toDateTimeLocalValue(value: string | null | undefined): string {
-  return value ? value.slice(0, 16) : "";
-}
-
-export function fromDateTimeLocalValue(value: string): string | null {
-  return value.trim() || null;
 }
 
 export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {

@@ -1,7 +1,7 @@
 import {
   fromDateTimeLocalValue,
   toDateTimeLocalValue,
-} from "@/src/features/itinerary/lib/itinerary-time";
+} from "@/src/shared/date-time-local";
 import type {
   BookingDoc,
   BookingDocStatus,
