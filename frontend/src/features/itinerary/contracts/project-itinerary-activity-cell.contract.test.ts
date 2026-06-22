@@ -21,6 +21,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const activityCellModel = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-activity-cell-model.ts",
     );
+    const activityActionLabels = readItineraryArchitectureSource(
+      "src/features/itinerary/domain/itinerary-activity-actions.ts",
+    );
     const activityCellUiState = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell-ui-state.ts",
     );
@@ -48,6 +51,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(activityCellRails).toContain("./ActivityTypePicker");
     expect(activityCellMeta).toContain("export function ActivityCellMeta");
     expect(activityCellModel).toContain("export function useActivityCellModel");
+    expect(activityCellModel).toContain("@/src/features/itinerary/domain/itinerary-activity-actions");
+    expect(activityCellModel).not.toContain('locale === "th"');
+    expect(activityActionLabels).toContain("export function activityActionMenuLabel");
     expect(activityCellModel).toContain("initialActivityCellUiState");
     expect(activityCellModel).toContain("const [uiState, setUiState]");
     expect(activityCellModel).not.toContain("const [subActivityModalOpen, setSubActivityModalOpen]");

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Locale } from "@/src/i18n/types";
+import { activityActionMenuLabel } from "@/src/features/itinerary/domain/itinerary-activity-actions";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import { itemStatusLabel } from "../smart-itinerary-table-labels";
@@ -39,10 +40,7 @@ export function useActivityCellModel({
   const [uiState, setUiState] = useState(initialActivityCellUiState);
   const showSubActivityToggle =
     Boolean(onAddSubActivity) || subItems.length > 0;
-  const actionMenuLabel =
-    locale === "th"
-      ? `จัดการกิจกรรม ${item.activity}`
-      : `Activity actions for ${item.activity}`;
+  const actionMenuLabel = activityActionMenuLabel(item, locale);
 
   function openNoteModal(target: ItineraryItem, compact = false) {
     setUiState((current) =>

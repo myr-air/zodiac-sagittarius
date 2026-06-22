@@ -1,6 +1,10 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
+import {
+  activityMapActionLabel,
+  activityNoteActionLabel,
+} from "@/src/features/itinerary/domain/itinerary-activity-actions";
 
 import { ActivityActionButton } from "./ActivityActionButton";
 
@@ -35,13 +39,11 @@ export function ActivityActionButtons({
   showMap?: boolean;
   showNote?: boolean;
 }) {
-  const mapLabel = `${itineraryLabels.row.mapFallback}: ${
-    item.place || item.activity
-  }`;
-  const noteLabel =
-    locale === "th"
-      ? `เพิ่มโน้ต ${item.activity}`
-      : `Add note for ${item.activity}`;
+  const mapLabel = activityMapActionLabel(
+    item,
+    itineraryLabels.row.mapFallback,
+  );
+  const noteLabel = activityNoteActionLabel(item, locale);
   const detailsLabel = itineraryLabels.row.openDetails({
     activity: item.activity,
   });

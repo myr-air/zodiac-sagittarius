@@ -320,6 +320,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const actionGroup = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellActionGroup.tsx");
     const actionButtons = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButtons.tsx");
     const actionButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx");
+    const activityActionLabels = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-activity-actions.ts");
     const inlineActivityField = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/InlineActivityField.tsx");
     const inlineActivityFieldState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/inline-activity-field-state.ts");
 
@@ -347,9 +348,13 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(actionGroup).toContain("export function ActivityCellActionGroup");
     expect(actionGroup).toContain("ActivityActionButtons");
     expect(actionButtons).toContain("./ActivityActionButton");
+    expect(actionButtons).toContain("@/src/features/itinerary/domain/itinerary-activity-actions");
+    expect(actionButtons).not.toContain('locale === "th"');
     expect(actionButtons).not.toContain("event.stopPropagation");
     expect(actionButton).toContain("export function ActivityActionButton");
     expect(actionButton).toContain("event.stopPropagation");
+    expect(activityActionLabels).toContain("export function activityNoteActionLabel");
+    expect(activityActionLabels).toContain("export function activityMapActionLabel");
   });
 
   it("keeps itinerary table weather formatting split from path utilities", () => {
