@@ -18,7 +18,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseOverviewRowDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-row-display.ts");
     const expenseOverviewSettlementDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-settlement-display.ts");
     const expenseLedgerActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts");
-    const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/ExpenseDialog.tsx");
+    const expenseDialog = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseDialog.tsx");
     const expenseDialogFormContent = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseDialogFormContent.tsx");
     const expenseDialogState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts");
     const expenseDialogFormValues = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseDialogFormValues.ts");
@@ -109,8 +109,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerActions).toContain("buildExpenseCsv");
     expect(expenseLedgerActions).toContain("buildPaybackReminder");
     expect(expensesState).toContain("function recordRefund");
-    expect(expenseDialog).toContain("./hooks/useExpenseDialogState");
-    expect(expenseDialog).toContain("./components/ExpenseDialogFormContent");
+    expect(expenseDialog).toContain("../hooks/useExpenseDialogState");
+    expect(expenseDialog).toContain("./ExpenseDialogFormContent");
     expect(expenseDialog).not.toContain("useState");
     expect(expenseDialog).not.toContain("calculateExpenseDialogState");
     expect(expenseDialog).not.toContain("function submitExpense");

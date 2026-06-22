@@ -221,7 +221,10 @@ describe("Sagittarius workspace source boundaries", () => {
   it("keeps workspace page form dialogs on shared chrome", () => {
     const workspaceDialog = readFileSync(join(frontendRoot, "src/shared/components/workspace-dialog/WorkspaceDialog.tsx"), "utf8");
     const workspaceConfirmDialog = readFileSync(join(frontendRoot, "src/shared/components/workspace-dialog/WorkspaceConfirmDialog.tsx"), "utf8");
-    const expenseDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/expenses/ExpenseDialog.tsx"), "utf8");
+    const expenseDialog = readFileSync(
+      join(frontendRoot, "src/features/workspace/pages/expenses/components/ExpenseDialog.tsx"),
+      "utf8",
+    );
     const bookingDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDialog.tsx"), "utf8");
     const bookingDeleteDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/bookings-docs/components/BookingDeleteDialog.tsx"), "utf8");
     const photoDialog = readFileSync(join(frontendRoot, "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx"), "utf8");

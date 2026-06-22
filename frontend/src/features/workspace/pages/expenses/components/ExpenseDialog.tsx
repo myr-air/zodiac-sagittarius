@@ -1,13 +1,13 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspaceDialog } from "@/src/shared/components/workspace-dialog";
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { ExpenseDialogFormContent } from "./components/ExpenseDialogFormContent";
-import { useExpenseDialogState } from "./hooks/useExpenseDialogState";
-import * as expenseStyles from "./TripExpensesPage.styles";
+import { useExpenseDialogState } from "../hooks/useExpenseDialogState";
+import * as expenseStyles from "../TripExpensesPage.styles";
 import type {
   CreateExpenseHandler,
   UpdateExpenseHandler,
-} from "./model/expense-page-types";
+} from "../model/expense-page-types";
+import { ExpenseDialogFormContent } from "./ExpenseDialogFormContent";
 
 interface ExpenseDialogProps {
   expense: Expense | null;

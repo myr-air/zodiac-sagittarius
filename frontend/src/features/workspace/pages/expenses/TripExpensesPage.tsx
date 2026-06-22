@@ -2,7 +2,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { ExpenseDialog } from "./ExpenseDialog";
+import { ExpenseDialog } from "./components/ExpenseDialog";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";

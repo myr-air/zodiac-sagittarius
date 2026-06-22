@@ -48,6 +48,7 @@ export const frontendWorkspaceFeatureScaffoldPathsAbsent = [
   "src/features/workspace/pages/expenses/TripExpensesPage.settlements.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.splits.test.tsx",
   "src/features/workspace/pages/expenses/TripExpensesPage.test-support.tsx",
+  "src/features/workspace/pages/expenses/ExpenseDialog.tsx",
   "src/features/workspace/pages/expenses/use-trip-expenses-page-state.ts",
   "src/features/workspace/pages/expenses/expense-page-actions.ts",
   "src/features/workspace/pages/expenses/expense-page-actions.test.ts",
