@@ -1,15 +1,20 @@
 import type { BookingDoc, ItineraryItem, PlanStatus, PlanVariant, TripDailyBriefing, TripRole } from "@/src/trip/types";
-import type { ItineraryBookingTemplate, ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { ItineraryView } from "@/src/trip/itinerary-core";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
-import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
 import type {
   ItineraryAsyncVoidResult,
-  ItineraryBookingMutationResult,
+  ItineraryBookingActionProps,
+  ItineraryInlineItemEditProps,
+  ItineraryItemInteractionProps,
+  ItineraryNestedActivityActionProps,
 } from "./itinerary-action.types";
 import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
-export interface SmartItineraryTableProps {
+export interface SmartItineraryTableProps
+  extends ItineraryBookingActionProps,
+    ItineraryInlineItemEditProps,
+    ItineraryItemInteractionProps,
+    ItineraryNestedActivityActionProps {
   canRestructure?: boolean;
   endDate: string;
   graphItems?: ItineraryItem[];
@@ -29,29 +34,8 @@ export interface SmartItineraryTableProps {
   dayPathOverrides?: Record<string, string | undefined>;
   showAllPaths?: boolean;
   tripName: string;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => ItineraryBookingMutationResult;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => ItineraryBookingMutationResult;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => ItineraryAsyncVoidResult;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
-  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
-  onOpenItemDetails: (itemId: string) => void;
-  onSelectItem: (itemId: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => ItineraryAsyncVoidResult;
-  onEditItem?: (itemId: string) => void;
-  onDeleteItem?: (itemId: string) => void;
   onChangeTripPlan: (tripPlanId: string) => TripPlanMutationResult;
   onChangeTripPlanStatus: (
     tripPlanId: string,

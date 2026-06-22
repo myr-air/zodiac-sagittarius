@@ -3,21 +3,23 @@ import type { ItineraryDayGroup } from "@/src/trip/itinerary-core";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import type { InlineItineraryItemPatch } from "../../lib/inline-itinerary-item-patch";
-import type {
-  ItineraryBookingTemplate,
-  ItineraryBookingTicketInput,
-} from "@/src/trip/booking-docs";
 import type { CSSProperties } from "react";
 import { DayGroup } from "./day-group";
 import { SmartItineraryTableHead } from "./SmartItineraryTableHead";
 import type {
   ItineraryAsyncVoidResult,
-  ItineraryBookingMutationResult,
+  ItineraryBookingActionProps,
+  ItineraryInlineItemEditProps,
+  ItineraryItemInteractionProps,
+  ItineraryNestedActivityActionProps,
 } from "./itinerary-action.types";
 import { smartTableClassName } from "./smart-itinerary-table.styles";
 
-interface SmartItineraryTableBodyProps {
+interface SmartItineraryTableBodyProps
+  extends ItineraryBookingActionProps,
+    ItineraryInlineItemEditProps,
+    ItineraryItemInteractionProps,
+    ItineraryNestedActivityActionProps {
   collapsedDays: string[];
   groups: ItineraryDayGroup[];
   graphItemsByDay: Map<string, ItineraryItem[]>;
@@ -35,29 +37,8 @@ interface SmartItineraryTableBodyProps {
   bookingLinkItems: ItineraryItem[];
   canRestructureItems: boolean;
   onAddStop: (day?: string) => void;
-  onAddSubActivity?: (parentItemId: string) => ItineraryAsyncVoidResult;
-  onAddNoteForItem?: (itemId: string, body: string) => ItineraryAsyncVoidResult;
-  onAddBookingForItem?: (
-    itemId: string,
-    template?: ItineraryBookingTemplate,
-  ) => ItineraryBookingMutationResult;
-  onSaveBookingForItem?: (
-    input: ItineraryBookingTicketInput,
-  ) => ItineraryBookingMutationResult;
-  onUnlinkBookingForItem?: (
-    bookingDocId: string,
-    itemId: string,
-  ) => ItineraryAsyncVoidResult;
-  onDeleteItem?: (itemId: string) => void;
-  onEditItem?: (itemId: string) => void;
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
-  onOpenItemDetails: (itemId: string) => void;
-  onSelectItem: (itemId: string) => void;
   onSaveDayTitle?: (date: string, version: number, title: string | null) => ItineraryAsyncVoidResult;
-  onUpdateItemInline?: (
-    itemId: string,
-    patch: InlineItineraryItemPatch,
-  ) => ItineraryAsyncVoidResult;
   onToggleDay: (day: string) => void;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;

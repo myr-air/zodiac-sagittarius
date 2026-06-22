@@ -36,6 +36,41 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(pathFiltersStory).not.toContain("ComponentProps<typeof SmartItineraryTablePathFilters>");
   });
 
+  it("keeps smart itinerary item action prop contracts centralized", () => {
+    const actionTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/itinerary-action.types.ts");
+    const tableTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types.ts");
+    const tableBody = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableBody.tsx");
+    const dayGroupTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.types.ts");
+    const activityCellTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts");
+    const subActivityTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/sub-activity.types.ts");
+
+    expect(actionTypes).toContain("export interface ItineraryBookingActionProps");
+    expect(actionTypes).toContain("export interface ItineraryNestedActivityActionProps");
+    expect(actionTypes).toContain("export interface ItineraryItemInteractionProps");
+    expect(actionTypes).toContain("export interface ItineraryInlineItemEditProps");
+    [
+      tableTypes,
+      tableBody,
+      dayGroupTypes,
+      activityCellTypes,
+      subActivityTypes,
+    ].forEach((source) => {
+      expect(source).toContain("ItineraryBookingActionProps");
+      expect(source).toContain("ItineraryNestedActivityActionProps");
+      expect(source).toContain("ItineraryInlineItemEditProps");
+      expect(source).not.toContain("onAddBookingForItem?: (");
+      expect(source).not.toContain("onAddSubActivity?: (parentItemId: string)");
+      expect(source).not.toContain("onUpdateItemInline?: (");
+    });
+    [
+      tableTypes,
+      tableBody,
+      dayGroupTypes,
+      activityCellTypes,
+    ].forEach((source) => expect(source).toContain("ItineraryItemInteractionProps"));
+    expect(subActivityTypes).not.toContain("ItineraryItemInteractionProps");
+  });
+
   it("keeps inline option picker menu rendering split from trigger state", () => {
     const picker = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPicker.tsx");
     const pickerMenu = readItineraryArchitectureSource("src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx");
