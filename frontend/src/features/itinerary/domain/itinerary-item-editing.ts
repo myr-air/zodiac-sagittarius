@@ -1,6 +1,5 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 import {
   toggleId,
   uniqueIds,
@@ -19,6 +18,7 @@ import {
   buildActivitySubtypePatch,
   buildActivityTypePatch,
 } from "./itinerary-activity-types";
+import { formatDuration } from "./itinerary-time-display";
 import {
   normalizeTravelSubtype,
   travelSubtypeForItem,
