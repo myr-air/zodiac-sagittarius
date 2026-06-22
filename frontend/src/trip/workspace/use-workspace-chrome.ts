@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { WorkspaceContextRailTab } from "./context-rail-tabs";
+import {
+  initialWorkspaceChromeState,
+  workspaceChromeContextRailUnmountedState,
+  workspaceChromeContextRailVisibilityState,
+  workspaceChromePreferredTabState,
+  workspaceChromeSidebarToggledState,
+  workspaceChromeToastDismissedState,
+  workspaceChromeToastDismissingState,
+} from "./workspace-chrome-state";
 
 interface UseWorkspaceChromeOptions {
   autoDismissToast: boolean;
@@ -8,46 +17,51 @@ interface UseWorkspaceChromeOptions {
 export function useWorkspaceChrome({
   autoDismissToast,
 }: UseWorkspaceChromeOptions) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [contextRailOpen, setContextRailOpen] = useState(false);
-  const [contextRailMounted, setContextRailMounted] = useState(false);
-  const [contextRailPreferredTab, setContextRailPreferredTab] =
-    useState<WorkspaceContextRailTab>("notes");
-  const [toastDismissed, setToastDismissed] = useState(false);
-  const [toastDismissing, setToastDismissing] = useState(false);
+  const [chromeState, setChromeState] = useState(initialWorkspaceChromeState);
 
   useEffect(() => {
-    if (contextRailOpen) return undefined;
-    const timeout = window.setTimeout(() => setContextRailMounted(false), 900);
+    if (chromeState.contextRailOpen) return undefined;
+    const timeout = window.setTimeout(() => {
+      setChromeState(workspaceChromeContextRailUnmountedState);
+    }, 900);
     return () => window.clearTimeout(timeout);
-  }, [contextRailOpen]);
+  }, [chromeState.contextRailOpen]);
 
   const setContextRailVisibility = useCallback((open: boolean) => {
-    if (open) setContextRailMounted(true);
-    setContextRailOpen(open);
+    setChromeState((current) =>
+      workspaceChromeContextRailVisibilityState(current, open),
+    );
+  }, []);
+
+  const setContextRailPreferredTab = useCallback((
+    tab: WorkspaceContextRailTab,
+  ) => {
+    setChromeState((current) => workspaceChromePreferredTabState(current, tab));
   }, []);
 
   const toggleSidebarCollapsed = useCallback(() => {
-    setSidebarCollapsed((current) => !current);
+    setChromeState(workspaceChromeSidebarToggledState);
   }, []);
 
   const toggleContextRail = useCallback(() => {
-    setContextRailVisibility(!contextRailOpen);
-  }, [contextRailOpen, setContextRailVisibility]);
+    setContextRailVisibility(!chromeState.contextRailOpen);
+  }, [chromeState.contextRailOpen, setContextRailVisibility]);
 
   const dismissWorkspaceToast = useCallback(() => {
-    setToastDismissing(true);
-    setTimeout(() => setToastDismissed(true), 220);
+    setChromeState(workspaceChromeToastDismissingState);
+    setTimeout(() => {
+      setChromeState(workspaceChromeToastDismissedState);
+    }, 220);
   }, []);
 
   useEffect(() => {
-    if (!autoDismissToast || toastDismissed) return;
+    if (!autoDismissToast || chromeState.toastDismissed) return;
     const timer = setTimeout(dismissWorkspaceToast, 6000);
     return () => clearTimeout(timer);
-  }, [autoDismissToast, dismissWorkspaceToast, toastDismissed]);
+  }, [autoDismissToast, dismissWorkspaceToast, chromeState.toastDismissed]);
 
   useEffect(() => {
-    if (!contextRailOpen) return undefined;
+    if (!chromeState.contextRailOpen) return undefined;
 
     function closeContextRailFromOutside(event: Event) {
       if (!(event.target instanceof Element)) return;
@@ -64,19 +78,19 @@ export function useWorkspaceChrome({
       document.removeEventListener("pointerdown", closeContextRailFromOutside);
       document.removeEventListener("click", closeContextRailFromOutside);
     };
-  }, [contextRailOpen, setContextRailVisibility]);
+  }, [chromeState.contextRailOpen, setContextRailVisibility]);
 
   return {
-    contextRailMounted,
-    contextRailOpen,
-    contextRailPreferredTab,
+    contextRailMounted: chromeState.contextRailMounted,
+    contextRailOpen: chromeState.contextRailOpen,
+    contextRailPreferredTab: chromeState.contextRailPreferredTab,
     dismissWorkspaceToast,
     setContextRailPreferredTab,
     setContextRailVisibility,
-    sidebarCollapsed,
+    sidebarCollapsed: chromeState.sidebarCollapsed,
     toggleContextRail,
     toggleSidebarCollapsed,
-    toastDismissed,
-    toastDismissing,
+    toastDismissed: chromeState.toastDismissed,
+    toastDismissing: chromeState.toastDismissing,
   };
 }

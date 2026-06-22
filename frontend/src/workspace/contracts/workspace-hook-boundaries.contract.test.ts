@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
@@ -73,5 +75,19 @@ describe("Sagittarius workspace hook source boundaries", () => {
     expect(setupContextHook).toContain("@/src/trip/workspace/use-workspace-chrome");
     expect(sagaCore).not.toContain("@/src/trip/workspace/use-workspace-navigation");
     expect(navigationContextHook).toContain("@/src/trip/workspace/use-workspace-navigation");
+  });
+
+  it("keeps workspace chrome lifecycle state centralized", () => {
+    const chromeHook = readFileSync(join(frontendRoot, "src/trip/workspace/use-workspace-chrome.ts"), "utf8");
+    const chromeState = readFileSync(join(frontendRoot, "src/trip/workspace/workspace-chrome-state.ts"), "utf8");
+
+    expect(chromeHook).toContain("initialWorkspaceChromeState");
+    expect(chromeHook).toContain("const [chromeState, setChromeState]");
+    expect(chromeHook).not.toContain("const [sidebarCollapsed, setSidebarCollapsed]");
+    expect(chromeHook).not.toContain("const [contextRailOpen, setContextRailOpen]");
+    expect(chromeHook).not.toContain("const [toastDismissed, setToastDismissed]");
+    expect(chromeState).toContain("export interface WorkspaceChromeState");
+    expect(chromeState).toContain("workspaceChromeContextRailVisibilityState");
+    expect(chromeState).toContain("workspaceChromeToastDismissedState");
   });
 });
