@@ -5,6 +5,7 @@ import {
   toggleId,
   uniqueIds,
 } from "@/src/shared/collection";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 import {
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
@@ -13,7 +14,6 @@ import {
   parseTimeToMinutes,
   toDateTimeLocalValue,
 } from "../lib/itinerary-time";
-import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 import {
   activityTypeOptions,
   buildActivitySubtypePatch,

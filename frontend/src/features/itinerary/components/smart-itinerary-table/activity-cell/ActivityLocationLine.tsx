@@ -2,8 +2,8 @@ import { cn } from "@/src/lib/cn";
 import type { Messages } from "@/src/i18n/messages";
 import type { InlineItineraryItemPatch } from "../../../lib/inline-itinerary-item-patch";
 import type { ItineraryItem } from "@/src/trip/types";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 import { InlineActivityField } from "./InlineActivityField";
-import { readItineraryDetailString } from "../../../lib/itinerary-item-helpers";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
   activityMobilePlaceInputClassName,

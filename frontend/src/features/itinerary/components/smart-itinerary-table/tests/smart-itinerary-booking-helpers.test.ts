@@ -15,7 +15,7 @@ import {
   toDateTimeLocalValue,
 } from "../../../lib/itinerary-time";
 import { travelSubtypeForItem } from "../../../domain/itinerary-activity-types";
-import { readItineraryDetailString } from "../../../lib/itinerary-item-helpers";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 
 describe("smart itinerary booking helpers", () => {
   it("builds booking type helpers from itinerary data", () => {

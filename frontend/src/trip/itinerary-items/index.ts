@@ -36,6 +36,7 @@ export type {
   BuildShiftItineraryItemDayRequestOptions,
 } from "./itinerary-api-requests";
 export { itemKindFromActivityType } from "./itinerary-item-kind";
+export { readItineraryDetailString } from "./itinerary-item-details";
 export {
   compareItineraryItemsWithinDay,
   orderHierarchyItemsForDay,

@@ -1,4 +1,6 @@
 import { itineraryDateTime, shiftIsoDate } from "../itinerary-core";
+import { uniqueIds } from "@/src/shared/collection";
+import { readItineraryDetailString } from "../itinerary-items";
 import type {
   BookingDocType,
   ItineraryItem,
@@ -77,7 +79,7 @@ export function clearItineraryBookingTicketDetails(
 }
 
 export function uniqueStringIds(ids: string[]): string[] {
-  return Array.from(new Set(ids.filter(Boolean)));
+  return uniqueIds(ids);
 }
 
 export function bookingTypeForBookingTemplate(
@@ -143,12 +145,4 @@ function itineraryTravelModeForTicket(
   if (existingMode) return existingMode;
   if (input.type === "public_transport") return "transport";
   return null;
-}
-
-function readItineraryDetailString(
-  details: ItineraryItem["details"] | null | undefined,
-  key: string,
-): string {
-  const value = details?.[key];
-  return typeof value === "string" ? value.trim() : "";
 }

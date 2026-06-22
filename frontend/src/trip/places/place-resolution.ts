@@ -1,4 +1,5 @@
 import { safeExternalHref } from "./safe-links";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 import type {
   ItineraryItem,
   PlaceResolutionCandidate,
@@ -10,6 +11,7 @@ import type {
 export type PlaceResolver = (
   request: PlaceResolutionRequest,
 ) => Promise<PlaceResolutionResponse>;
+export { readItineraryDetailString };
 
 export type StopPlaceResolutionState = {
   state: "idle" | "resolving" | "ambiguous" | "unresolved";
@@ -128,14 +130,6 @@ export function locationFieldsFromCandidate(
         coordinates: undefined,
         mapLink: explicitMapLink || buildMapLink(place),
       };
-}
-
-export function readItineraryDetailString(
-  details: ItineraryItem["details"] | null | undefined,
-  key: string,
-): string {
-  const value = details?.[key];
-  return typeof value === "string" ? value.trim() : "";
 }
 
 function compactText(parts: string[]): string {

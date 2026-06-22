@@ -1,8 +1,8 @@
 import type { Locale } from "@/src/i18n/types";
 import { activitySubtypeValues } from "@/src/trip/itinerary-core";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 import type { ActivitySubtype, ItineraryItem } from "@/src/trip/types";
 import { type IconName } from "@/src/ui/icons";
-import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 
 export type TravelSubtype = ActivitySubtype;
 
