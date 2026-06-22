@@ -2,14 +2,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Expense } from "@/src/trip/types";
-import {
-  contextRailExpenseCategoryOptions,
-  initialContextRailExpenseFormState,
-  resetContextRailExpenseFormAfterSubmit,
-  startContextRailExpenseEdit,
-  updateContextRailExpenseFormValue,
-  useContextRailExpenseForm,
-} from "../use-context-rail-expense-form";
+import { useContextRailExpenseForm } from "../use-context-rail-expense-form";
 
 function createHook(options: { selectedItemId?: string } = {}) {
   const onCreateExpense = vi.fn();
@@ -35,62 +28,6 @@ function submit(result: ReturnType<typeof createHook>["result"]) {
 }
 
 describe("useContextRailExpenseForm", () => {
-  it("updates composed expense form state immutably", () => {
-    const initial = initialContextRailExpenseFormState("member-owner");
-
-    expect(initial).toEqual({
-      editingExpenseId: null,
-      formValues: {
-        amount: "",
-        category: "food",
-        paidBy: "member-owner",
-        title: "",
-      },
-    });
-    expect(
-      updateContextRailExpenseFormValue(initial, "title", "Taxi"),
-    ).toEqual({
-      ...initial,
-      formValues: {
-        ...initial.formValues,
-        title: "Taxi",
-      },
-    });
-  });
-
-  it("starts editing and resets submit fields from one form state", () => {
-    const expense: Expense = {
-      id: "expense-dimdim-1",
-      title: "Dim sum",
-      amount: 240,
-      paidBy: "member-aom",
-      splits: {},
-      category: "food",
-      itineraryItemId: "item-dimdim",
-      version: 1,
-    };
-    const editing = startContextRailExpenseEdit(expense);
-
-    expect(editing).toEqual({
-      editingExpenseId: "expense-dimdim-1",
-      formValues: {
-        amount: "240",
-        category: "food",
-        paidBy: "member-aom",
-        title: "Dim sum",
-      },
-    });
-    expect(resetContextRailExpenseFormAfterSubmit(editing)).toEqual({
-      editingExpenseId: null,
-      formValues: {
-        amount: "",
-        category: "food",
-        paidBy: "member-aom",
-        title: "",
-      },
-    });
-  });
-
   it("creates expenses with normalized form values", () => {
     const { result, onCreateExpense, onUpdateExpense } = createHook({
       selectedItemId: "item-dimdim",
@@ -172,16 +109,5 @@ describe("useContextRailExpenseForm", () => {
 
     expect(onCreateExpense).not.toHaveBeenCalled();
     expect(onUpdateExpense).not.toHaveBeenCalled();
-  });
-
-  it("exports the canonical category order used by context rail expense forms", () => {
-    expect(contextRailExpenseCategoryOptions).toEqual([
-      "food",
-      "transport",
-      "tickets",
-      "stay",
-      "shopping",
-      "settlement",
-    ]);
   });
 });

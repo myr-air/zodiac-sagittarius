@@ -9,10 +9,8 @@ import {
 } from "./context-rail.styles";
 import { ContextRailDetailSection } from "./ContextRailDetailSection";
 import { ContextRailExpenseItem } from "./ContextRailExpenseItem";
-import {
-  contextRailExpenseCategoryOptions,
-  useContextRailExpenseForm,
-} from "./use-context-rail-expense-form";
+import { contextRailExpenseCategoryOptions } from "./context-rail-expense-form-state";
+import { useContextRailExpenseForm } from "./use-context-rail-expense-form";
 import type { ContextRailExpensesSectionProps } from "./context-rail.types";
 
 export function ContextRailExpensesSection({
