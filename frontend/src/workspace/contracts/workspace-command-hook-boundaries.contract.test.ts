@@ -44,6 +44,9 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       saveItineraryBookingTicketCommand,
       unlinkItineraryBookingCommand,
       bookingDocUpdateCommands,
+      bookingDocCommandTypes,
+      createBookingDocCommand,
+      deleteBookingDocCommand,
       bookingDocUpdateCommandTypes,
       bookingDocUpdateRunner,
       bookingDocTypeCommand,
@@ -125,9 +128,18 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(saveItineraryBookingTicketCommand).toContain("syncItineraryDetailsWithBookingTicket");
     expect(unlinkItineraryBookingCommand).toContain("bookingDocInputFromRecord");
     expect(unlinkItineraryBookingCommand).toContain("clearItineraryBookingTicketDetails");
-    expect(bookingDocCommands).toContain("buildWorkspaceBookingDocCreateInput");
+    expect(bookingDocCommands).toContain("useCreateBookingDocCommand");
+    expect(bookingDocCommands).toContain("useDeleteBookingDocCommand");
+    expect(bookingDocCommands).toContain("useWorkspaceBookingDocUpdateCommands");
+    expect(bookingDocCommands).not.toContain("buildWorkspaceBookingDocCreateInput");
+    expect(bookingDocCommands).not.toContain("removeBookingDocFromTrip");
     expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
     expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
+    expect(bookingDocCommandTypes).toContain("UseWorkspaceBookingDocCommandsOptions");
+    expect(createBookingDocCommand).toContain("buildWorkspaceBookingDocCreateInput");
+    expect(createBookingDocCommand).toContain("buildCreateBookingDocRequest");
+    expect(createBookingDocCommand).toContain("createLocalBookingDoc");
+    expect(deleteBookingDocCommand).toContain("removeBookingDocFromTrip");
     expect(bookingDocUpdateCommands).toContain("useBookingDocUpdateRunner");
     expect(bookingDocUpdateCommands).toContain("useBookingDocTypeCommand");
     expect(bookingDocUpdateCommands).toContain("useBookingDocQuickFieldCommand");
