@@ -1,18 +1,18 @@
-import type { BookingDoc, BookingDocType, ItineraryItem } from "@/src/trip/types";
+import type { Locale } from "@/src/i18n/types";
+import { uniqueIds } from "@/src/shared/collection";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
 } from "@/src/trip/booking-docs";
+import { readItineraryDetailString } from "@/src/trip/itinerary-items";
+import type { BookingDoc, BookingDocType, ItineraryItem } from "@/src/trip/types";
 import {
   bookingTitleForItem,
+  fromDateTimeLocalValue,
   itineraryDateTimeValue,
   ticketNotesForItem,
   toDateTimeLocalValue,
-  fromDateTimeLocalValue,
-} from "@/src/features/itinerary/domain/itinerary-item-editing";
-import { uniqueIds } from "@/src/shared/collection";
-import { readItineraryDetailString } from "@/src/trip/itinerary-items";
-import type { Locale } from "@/src/i18n/types";
+} from "./itinerary-item-editing";
 
 export const ticketFormModeValues = ["existing", "new"] as const;
 export type TicketFormMode = (typeof ticketFormModeValues)[number];

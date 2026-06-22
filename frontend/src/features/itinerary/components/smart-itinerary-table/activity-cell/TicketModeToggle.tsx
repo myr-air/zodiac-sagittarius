@@ -3,7 +3,7 @@ import {
   ticketModeButtonClassName,
   ticketModeToggleClassName,
 } from "../smart-itinerary-table.styles";
-import type { TicketFormMode } from "./booking-ticket-form";
+import type { TicketFormMode } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { TicketModalCopy } from "./itinerary-ticket-modal.types";
 
 interface TicketModeToggleProps {

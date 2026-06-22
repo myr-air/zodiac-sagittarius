@@ -117,6 +117,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const ticketFieldGrid = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TicketFieldGrid.tsx");
     const linkedActivitiesPicker = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/LinkedActivitiesPicker.tsx");
     const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
+    const ticketForm = readItineraryArchitectureSource("src/features/itinerary/domain/booking-ticket-form.ts");
 
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(bookingButton).toContain("export function ItineraryBookingButton");
@@ -141,7 +142,10 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(linkedActivitiesPicker).toContain("export function LinkedActivitiesPicker");
     expect(linkedActivitiesPicker).toContain("toggleId");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
-    expect(ticketModel).toContain("buildTicketSubmitInput");
+    expect(ticketModel).toContain("@/src/features/itinerary/domain/booking-ticket-form");
+    expect(ticketModel).not.toContain("function buildTicketSubmitInput");
+    expect(ticketForm).toContain("export function buildTicketSubmitInput");
+    expect(ticketForm).toContain("export interface TicketFormValues");
   });
 
   it("keeps activity cell title editing and actions split from shell layout", () => {

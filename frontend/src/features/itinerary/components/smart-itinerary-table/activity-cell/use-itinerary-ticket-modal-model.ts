@@ -12,7 +12,7 @@ import {
   findLinkedTicket,
   findTicketCandidates,
   type TicketFormMode,
-} from "./booking-ticket-form";
+} from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 
 interface UseItineraryTicketModalModelOptions {

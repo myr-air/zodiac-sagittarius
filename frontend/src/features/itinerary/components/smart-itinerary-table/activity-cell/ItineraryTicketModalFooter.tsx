@@ -7,7 +7,7 @@ import {
   ticketModalSaveButtonClassName,
   ticketModalUnlinkButtonClassName,
 } from "../smart-itinerary-table.styles";
-import type { TicketFormMode } from "./booking-ticket-form";
+import type { TicketFormMode } from "@/src/features/itinerary/domain/booking-ticket-form";
 
 interface ItineraryTicketModalFooterProps {
   copy: ReturnType<typeof ticketModalCopy>;
