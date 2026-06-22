@@ -1,15 +1,9 @@
 import { type FormEvent } from "react";
-import type { Member, TripMemberAccessStatus } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { ActionBar, Button, FieldLabel, TextInput } from "@/src/ui";
 import * as memberStyles from "../TripMembersPage.styles";
+import type { MemberTaskDialogState } from "../member-task-dialog-state";
 import type { MemberConfirmLabels } from "./member-management.types";
-
-export type MemberTaskDialogState =
-  | { kind: "reset"; member: Member }
-  | { kind: "access"; member: Member; accessStatus: TripMemberAccessStatus; actionLabel: string }
-  | { kind: "transfer"; member: Member }
-  | { kind: "password"; member: Member };
 
 interface MemberTaskDialogProps {
   dialog: MemberTaskDialogState;

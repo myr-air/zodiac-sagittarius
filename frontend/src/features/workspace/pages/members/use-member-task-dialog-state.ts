@@ -3,8 +3,13 @@ import type {
   Member,
   TripMemberAccessStatus,
 } from "@/src/trip/types";
-import type { MemberTaskDialogState } from "./components/MemberTaskDialog";
-import { buildMemberPasswordInput } from "./model/member-password-input";
+import {
+  buildMemberTaskDialogSubmission,
+  closeMemberTaskDialogState,
+  initialMemberTaskDialogFormState,
+  openMemberTaskDialogState,
+  updateMemberTaskDialogPasswordValue,
+} from "./member-task-dialog-state";
 
 interface MemberTaskDialogLabels {
   disable: string;
@@ -32,10 +37,9 @@ export function useMemberTaskDialogState({
   onTransferOwnership,
   visibleMembers,
 }: UseMemberTaskDialogStateInput) {
-  const [memberDialog, setMemberDialog] =
-    useState<MemberTaskDialogState | null>(null);
-  const [passwordValue, setPasswordValue] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [dialogState, setDialogState] = useState(
+    initialMemberTaskDialogFormState,
+  );
 
   function findVisibleMember(memberId: string) {
     return visibleMembers.find((candidate) => candidate.id === memberId);
@@ -45,7 +49,7 @@ export function useMemberTaskDialogState({
     const member = findVisibleMember(memberId);
     /* v8 ignore next */
     if (!member) return;
-    setMemberDialog({ kind: "reset", member });
+    setDialogState(openMemberTaskDialogState({ kind: "reset", member }));
   }
 
   function confirmChangeAccessStatus(
@@ -57,58 +61,70 @@ export function useMemberTaskDialogState({
     if (!member) return;
     const actionLabel =
       accessStatus === "disabled" ? labels.disable : labels.enable;
-    setMemberDialog({ kind: "access", member, accessStatus, actionLabel });
+    setDialogState(
+      openMemberTaskDialogState({
+        kind: "access",
+        member,
+        accessStatus,
+        actionLabel,
+      }),
+    );
   }
 
   function confirmTransferOwnership(memberId: string) {
     const member = findVisibleMember(memberId);
     /* v8 ignore next */
     if (!member) return;
-    setMemberDialog({ kind: "transfer", member });
+    setDialogState(openMemberTaskDialogState({ kind: "transfer", member }));
   }
 
   function promptChangePassword(memberId: string) {
     const member = findVisibleMember(memberId);
     /* v8 ignore next */
     if (!member) return;
-    setPasswordValue("");
-    setPasswordError(null);
-    setMemberDialog({ kind: "password", member });
+    setDialogState(openMemberTaskDialogState({ kind: "password", member }));
   }
 
   function closeMemberDialog() {
-    setMemberDialog(null);
-    setPasswordValue("");
-    setPasswordError(null);
+    setDialogState(closeMemberTaskDialogState());
+  }
+
+  function setPasswordValue(passwordValue: string) {
+    setDialogState((current) =>
+      updateMemberTaskDialogPasswordValue(current, passwordValue),
+    );
   }
 
   function submitMemberDialog(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    if (!memberDialog) return;
-    if (memberDialog.kind === "reset") {
-      onResetMemberClaim(memberDialog.member.id);
+    const submission = buildMemberTaskDialogSubmission(
+      dialogState,
+      labels.passwordTooShort,
+    );
+    if (submission.kind === "none") return;
+    if (submission.kind === "invalidPassword") {
+      setDialogState(submission.state);
+      return;
+    }
+    if (submission.kind === "reset") {
+      onResetMemberClaim(submission.memberId);
       closeMemberDialog();
       return;
     }
-    if (memberDialog.kind === "access") {
+    if (submission.kind === "access") {
       onChangeMemberAccessStatus(
-        memberDialog.member.id,
-        memberDialog.accessStatus,
+        submission.memberId,
+        submission.accessStatus,
       );
       closeMemberDialog();
       return;
     }
-    if (memberDialog.kind === "transfer") {
-      onTransferOwnership?.(memberDialog.member.id);
+    if (submission.kind === "transfer") {
+      onTransferOwnership?.(submission.memberId);
       closeMemberDialog();
       return;
     }
-    const password = buildMemberPasswordInput(passwordValue);
-    if (!password) {
-      setPasswordError(labels.passwordTooShort);
-      return;
-    }
-    onChangeMemberPassword(memberDialog.member.id, password);
+    onChangeMemberPassword(submission.memberId, submission.password);
     closeMemberDialog();
   }
 
@@ -117,9 +133,9 @@ export function useMemberTaskDialogState({
     confirmChangeAccessStatus,
     confirmResetClaim,
     confirmTransferOwnership,
-    memberDialog,
-    passwordError,
-    passwordValue,
+    memberDialog: dialogState.dialog,
+    passwordError: dialogState.passwordError,
+    passwordValue: dialogState.passwordValue,
     promptChangePassword,
     setPasswordValue,
     submitMemberDialog,

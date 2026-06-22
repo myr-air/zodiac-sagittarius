@@ -13,6 +13,7 @@ describe("members page state structure", () => {
   it("keeps member task dialog workflow out of the page state hook", () => {
     const pageStateSource = readMembersPageSource("use-trip-members-page-state.ts");
     const taskDialogSource = readMembersPageSource("use-member-task-dialog-state.ts");
+    const taskDialogStateSource = readMembersPageSource("member-task-dialog-state.ts");
 
     expect(pageStateSource).toContain("useMemberTaskDialogState");
     expect(pageStateSource).toContain("MemberFilterState");
@@ -25,6 +26,13 @@ describe("members page state structure", () => {
     expect(pageStateSource).not.toContain("const [newMemberName, setNewMemberName]");
     expect(pageStateSource).not.toContain("function submitMemberDialog");
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
+    expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
+    expect(taskDialogSource).toContain("./member-task-dialog-state");
     expect(taskDialogSource).toContain("function submitMemberDialog");
+    expect(taskDialogSource).not.toContain("const [memberDialog, setMemberDialog]");
+    expect(taskDialogSource).not.toContain("const [passwordValue, setPasswordValue]");
+    expect(taskDialogSource).not.toContain("const [passwordError, setPasswordError]");
+    expect(taskDialogStateSource).toContain("export interface MemberTaskDialogFormState");
+    expect(taskDialogStateSource).toContain("export function buildMemberTaskDialogSubmission");
   });
 });
