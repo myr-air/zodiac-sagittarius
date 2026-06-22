@@ -21,6 +21,10 @@ import {
   graphColumnMinWidth,
   graphColumnSidePadding,
 } from "../smart-itinerary-table.styles";
+import {
+  type SmartItineraryTableState,
+  toggleCollapsedDay,
+} from "../smart-itinerary-table-state";
 import { useSmartItineraryPathFilters } from "./useSmartItineraryPathFilters";
 
 interface UseSmartItineraryTableStateParams {
@@ -35,39 +39,6 @@ interface UseSmartItineraryTableStateParams {
   canRestructure?: boolean;
   selectedCountLabel: ({ count }: { count: number }) => string;
   selectedNamesLabel: ({ names }: { names: string }) => string;
-}
-
-interface SmartItineraryTableFilterState {
-  filterOptions: { id: string; name: string }[];
-  selectedPathIds: string[];
-  selectedPathIdSet: Set<string>;
-  displayItems: ItineraryItem[];
-  selectedFilterLabel: string;
-  groups: ReturnType<typeof mergeTripDayGroups>;
-}
-
-interface SmartItineraryTablePresentationState {
-  canEdit: boolean;
-  canManageTripPlans: boolean;
-  canRestructureItems: boolean;
-}
-
-interface SmartItineraryTableDerivedState {
-  dailyBriefingsByDate: Map<string, TripDailyBriefing>;
-  graphItemsByDay: Map<string, ItineraryItem[]>;
-  warningCount: number;
-  totalMinutes: number;
-  graphColumnWidth: number;
-  smartTableStyle: CSSProperties;
-}
-
-export interface SmartItineraryTableState
-  extends SmartItineraryTableFilterState,
-    SmartItineraryTablePresentationState,
-    SmartItineraryTableDerivedState {
-  collapsedDays: string[];
-  toggleDay: (day: string) => void;
-  togglePlanFilter: (pathId: string) => void;
 }
 
 export function useSmartItineraryTableState({
@@ -134,11 +105,7 @@ export function useSmartItineraryTableState({
   } as CSSProperties;
 
   function toggleDay(day: string) {
-    setCollapsedDays((current) =>
-      current.includes(day)
-        ? current.filter((item) => item !== day)
-        : [...current, day],
-    );
+    setCollapsedDays((current) => toggleCollapsedDay(current, day));
   }
 
   return {

@@ -331,11 +331,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
 
   it("keeps smart itinerary path filter state split from table derived state", () => {
     const tableState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryTableState.ts");
+    const tableStateModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-state.ts");
     const pathFilters = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryPathFilters.ts");
 
     expect(tableState).toContain("./useSmartItineraryPathFilters");
+    expect(tableState).toContain("../smart-itinerary-table-state");
+    expect(tableState).not.toContain("export interface SmartItineraryTableState");
+    expect(tableState).not.toContain("interface SmartItineraryTableFilterState");
     expect(tableState).not.toContain("knownFilterIdsRef");
     expect(tableState).not.toContain("itineraryItemPathId");
+    expect(tableStateModel).toContain("export interface SmartItineraryTableState");
+    expect(tableStateModel).toContain("export function toggleCollapsedDay");
     expect(pathFilters).toContain("export function useSmartItineraryPathFilters");
     expect(pathFilters).toContain("knownFilterIdsRef");
     expect(pathFilters).toContain("itineraryItemPathId");
