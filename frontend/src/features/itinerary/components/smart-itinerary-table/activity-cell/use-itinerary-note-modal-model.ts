@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 
 import type { Locale } from "@/src/i18n/types";
+import { itineraryNoteModalCopy } from "@/src/features/itinerary/domain/itinerary-note-display";
 import type { ItineraryItem } from "@/src/trip/types";
 
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
@@ -20,26 +21,7 @@ export function useItineraryNoteModalModel({
   onSave: (body: string) => ItineraryAsyncVoidResult;
 }) {
   const [state, setState] = useState(initialItineraryNoteModalState);
-  const copy =
-    locale === "th"
-      ? {
-          cancel: "ยกเลิก",
-          close: "ปิด modal โน้ต",
-          label: "โน้ต",
-          placeholder: "เช่น นัดเจอกันที่ทางออก A, เตรียมพาสปอร์ต",
-          save: "บันทึกโน้ต",
-          subtitle: "เก็บรายละเอียดสั้น ๆ ที่เกี่ยวกับ activity นี้",
-          title: `โน้ตสำหรับ ${item.activity}`,
-        }
-      : {
-          cancel: "Cancel",
-          close: "Close note modal",
-          label: "Note",
-          placeholder: "Example: Meet at exit A, keep passports ready",
-          save: "Save note",
-          subtitle: "Capture a short note tied to this activity.",
-          title: `Note for ${item.activity}`,
-        };
+  const copy = itineraryNoteModalCopy(item, locale);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

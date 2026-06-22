@@ -227,6 +227,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps itinerary ticket modal form state split from modal render", () => {
     const noteModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryNoteModal.tsx");
     const noteModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-model.ts");
+    const noteDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-note-display.ts");
     const modalHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalHeader.tsx");
     const modalActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalActions.tsx");
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
@@ -246,10 +247,15 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(noteModal).toContain("./ActivityCellModalHeader");
     expect(noteModal).not.toContain("useState");
     expect(noteModel).toContain("export function useItineraryNoteModalModel");
+    expect(noteModel).toContain("@/src/features/itinerary/domain/itinerary-note-display");
     expect(noteModel).toContain("./itinerary-note-modal-state");
     expect(noteModel).toContain("const [state, setState]");
+    expect(noteModel).not.toContain('locale === "th"');
+    expect(noteModel).not.toContain("Close note modal");
     expect(noteModel).not.toContain("const [body, setBody]");
     expect(noteModel).not.toContain("const [saving, setSaving]");
+    expect(noteDisplay).toContain("export function itineraryNoteModalCopy");
+    expect(noteDisplay).toContain("export interface ItineraryNoteModalCopy");
     expect(ticketModal).toContain("./use-itinerary-ticket-modal-model");
     expect(ticketModal).toContain("./ActivityCellModalHeader");
     expect(bookingButton).toContain("export function ItineraryBookingButton");
