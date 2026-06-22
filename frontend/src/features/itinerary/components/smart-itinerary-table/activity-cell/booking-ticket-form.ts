@@ -10,10 +10,8 @@ import {
   toDateTimeLocalValue,
   fromDateTimeLocalValue,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
-import {
-  readItineraryDetailString,
-  uniqueIds,
-} from "@/src/features/itinerary/lib/itinerary-item-helpers";
+import { readItineraryDetailString } from "@/src/features/itinerary/lib/itinerary-item-helpers";
+import { uniqueIds } from "@/src/shared/collection";
 import type { Locale } from "@/src/i18n/types";
 
 export const ticketFormModeValues = ["existing", "new"] as const;

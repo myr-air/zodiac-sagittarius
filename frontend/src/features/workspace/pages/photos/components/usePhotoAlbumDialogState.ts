@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { toggleId } from "@/src/shared/collection";
 import type {
   Member,
   Trip,
@@ -41,11 +42,7 @@ export function usePhotoAlbumDialogState({
   const days = photoAlbumDialogDayOptions(trip);
 
   function toggleRelatedItem(itemId: string) {
-    setRelatedItineraryItemIds((current) =>
-      current.includes(itemId)
-        ? current.filter((id) => id !== itemId)
-        : [...current, itemId],
-    );
+    setRelatedItineraryItemIds((current) => toggleId(current, itemId));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {

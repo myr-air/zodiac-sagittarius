@@ -15,7 +15,7 @@ import {
   toDateTimeLocalValue,
 } from "../../../lib/itinerary-time";
 import { travelSubtypeForItem } from "../../../domain/itinerary-activity-types";
-import { readItineraryDetailString, toggleId, uniqueIds } from "../../../lib/itinerary-item-helpers";
+import { readItineraryDetailString } from "../../../lib/itinerary-item-helpers";
 
 describe("smart itinerary booking helpers", () => {
   it("builds booking type helpers from itinerary data", () => {
@@ -110,8 +110,5 @@ describe("smart itinerary booking helpers", () => {
 
     expect(toDateTimeLocalValue("2026-06-10")).toBe("2026-06-10");
     expect(fromDateTimeLocalValue("2026-06-10T09:45:30.000Z")).toBe("2026-06-10T09:45:30.000Z");
-    expect(uniqueIds(["a", "b", "a", "", "c"])).toEqual(["a", "b", "c"]);
-    expect(toggleId(["a"], "b")).toEqual(["a", "b"]);
-    expect(toggleId(["a", "b"], "a")).toEqual(["b"]);
   });
 });

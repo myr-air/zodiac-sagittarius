@@ -2,6 +2,10 @@ import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 import {
+  toggleId,
+  uniqueIds,
+} from "@/src/shared/collection";
+import {
   fromDateTimeLocalValue,
   itineraryDateTimeValue,
   durationBetweenTimes,
@@ -9,11 +13,7 @@ import {
   parseTimeToMinutes,
   toDateTimeLocalValue,
 } from "../lib/itinerary-time";
-import {
-  readItineraryDetailString,
-  toggleId,
-  uniqueIds,
-} from "../lib/itinerary-item-helpers";
+import { readItineraryDetailString } from "../lib/itinerary-item-helpers";
 import {
   activityTypeOptions,
   buildActivitySubtypePatch,

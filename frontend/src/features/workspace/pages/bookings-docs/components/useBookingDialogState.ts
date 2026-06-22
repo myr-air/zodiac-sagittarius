@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { toggleId } from "@/src/features/itinerary/lib/itinerary-item-helpers";
+import { toggleId } from "@/src/shared/collection";
 import type {
   BookingDoc,
   Trip,
