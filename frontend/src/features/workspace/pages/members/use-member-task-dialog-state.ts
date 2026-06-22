@@ -9,7 +9,7 @@ import {
   initialMemberTaskDialogFormState,
   openMemberTaskDialogState,
   updateMemberTaskDialogPasswordValue,
-} from "./member-task-dialog-state";
+} from "./model/member-task-dialog-state";
 
 interface MemberTaskDialogLabels {
   disable: string;

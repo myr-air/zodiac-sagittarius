@@ -3,7 +3,7 @@ import { cn } from "@/src/lib/cn";
 import { WorkspaceCompactFormDialog } from "@/src/shared/components/workspace-dialog";
 import { Button, FieldLabel, TextInput } from "@/src/ui";
 import * as memberStyles from "../TripMembersPage.styles";
-import type { MemberTaskDialogState } from "../member-task-dialog-state";
+import type { MemberTaskDialogState } from "../model/member-task-dialog-state";
 import type { MemberConfirmLabels } from "./member-management.types";
 
 interface MemberTaskDialogProps {

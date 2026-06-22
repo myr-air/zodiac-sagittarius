@@ -2,7 +2,7 @@ import type {
   Member,
   TripMemberAccessStatus,
 } from "@/src/trip/types";
-import { buildMemberPasswordInput } from "./model/member-password-input";
+import { buildMemberPasswordInput } from "./member-password-input";
 
 export type MemberTaskDialogState =
   | { kind: "reset"; member: Member }
