@@ -89,6 +89,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/project-itinerary-activity-cell.contract.test.ts",
   "src/project-itinerary-architecture.contract.test.ts",
   "src/project-itinerary-overview-architecture.contract.test.ts",
+  "src/project-itinerary-route-map-architecture.contract.test.ts",
   "src/project-itinerary-architecture.test-support.ts",
   "src/shared/components/page-header/PageHeader.test.tsx",
   "src/shared/components/page-header/PageHeader.stories.tsx",

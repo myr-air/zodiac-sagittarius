@@ -1,0 +1,51 @@
+import { describe, expect, it } from "vitest";
+import { readItineraryArchitectureSource } from "./project-itinerary-architecture.test-support";
+
+describe("Sagittarius itinerary route map architecture contracts", () => {
+  it("keeps route map canvas rendering split from map page orchestration", () => {
+    const mapView = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapView.tsx");
+    const mapCanvas = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapCanvas.tsx");
+    const mapHeaderMeta = readItineraryArchitectureSource("src/features/itinerary/components/route-map/RouteMapHeaderMeta.tsx");
+    const mapHeaderMetaStory = readItineraryArchitectureSource("src/features/itinerary/components/route-map/storybook/RouteMapHeaderMeta.stories.tsx");
+    const routeMapViewState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-map-view-state.ts");
+    const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
+    const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
+    const routeMapLive = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live.ts");
+    const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
+    const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
+
+    expect(mapView).toContain("./RouteMapCanvas");
+    expect(mapView).toContain("./RouteMapHeaderMeta");
+    expect(mapView).not.toContain("routeMapCanvasClassName");
+    expect(mapView).not.toContain("StaticRouteFallback");
+    expect(mapView).not.toContain("formatTripRange");
+    expect(mapView).not.toContain("activeDayLabel(");
+    expect(mapCanvas).toContain("export function RouteMapCanvas");
+    expect(mapCanvas).toContain("StaticRouteFallback");
+    expect(mapCanvas).toContain("./route-map.types");
+    expect(mapCanvas).not.toContain('type RouteMapCanvasCopy = Messages["map"]');
+    expect(routeMapViewState).toContain("./route-map-view-state");
+    expect(routeMapViewState).toContain("const [viewState, setViewState]");
+    expect(routeMapViewState).not.toContain("const [activeDay, setActiveDay]");
+    expect(routeMapViewState).not.toContain("const [resolutionState, setResolutionState]");
+    expect(routeMapViewStateModel).toContain("export interface RouteMapViewState");
+    expect(routeMapViewStateModel).toContain("initialRouteMapViewState");
+    expect(routeLiveMap).toContain("./route-live-map-state");
+    expect(routeLiveMap).toContain("cleanupLiveRouteMap");
+    expect(routeLiveMap).not.toContain("markersRef.current.forEach");
+    expect(routeLiveMap).not.toContain("cleanupRouteLayers(mapRef.current");
+    expect(routeMapLive).toContain("export function cleanupLiveRouteMap");
+    expect(routeMapLive).toContain("cleanupRouteLayers(map, sourceIds)");
+    expect(routeLiveMap).toContain("const [liveMapLifecycleState, setLiveMapLifecycleState]");
+    expect(routeLiveMap).not.toContain("const [autoLiveMapState, setAutoLiveMapState]");
+    expect(routeLiveMap).not.toContain("const [liveMapRetryKey, setLiveMapRetryKey]");
+    expect(routeLiveMapState).toContain("export interface RouteLiveMapLifecycleState");
+    expect(routeLiveMapState).toContain("retryRouteLiveMap");
+    expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
+    expect(mapHeaderMeta).toContain("export function RouteMapHeaderMeta");
+    expect(mapHeaderMeta).toContain("formatTripRange");
+    expect(mapHeaderMeta).toContain("activeDayLabel");
+    expect(mapHeaderMetaStory).toContain("RouteMapHeaderMeta");
+    expect(mapHeaderMetaStory).toContain("ThaiSelectedDay");
+  });
+});
