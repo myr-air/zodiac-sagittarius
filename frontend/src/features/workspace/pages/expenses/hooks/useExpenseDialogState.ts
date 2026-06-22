@@ -4,6 +4,12 @@ import type { Expense, Member, Trip } from "@/src/trip/types";
 import {
   calculateExpenseDialogState,
 } from "../model/expense-dialog-calculation";
+import {
+  expenseDialogEffectiveTripPlanId,
+  expenseDialogLinkedItem,
+  expenseDialogTripPlanIdForItemSelection,
+  expenseDialogTripPlanOptions,
+} from "../model/expense-dialog-linking";
 import { canSubmitExpenseDialog } from "../model/expense-dialog-submit-guard";
 import { initialExpenseTripPlanId } from "../model/expense-dialog-initial-state";
 import { buildExpenseDialogSubmitInput } from "../model/expense-dialog-submit-input";
@@ -85,11 +91,12 @@ export function useExpenseDialogState({
     state: calculatedState,
     title,
   });
-  const linkedItem = itemId
-    ? (trip.itineraryItems.find((item) => item.id === itemId) ?? null)
-    : null;
-  const effectiveTripPlanId = linkedItem?.planVariantId ?? tripPlanId;
-  const tripPlanOptions = trip.tripPlans ?? trip.planVariants;
+  const linkedItem = expenseDialogLinkedItem(trip, itemId);
+  const effectiveTripPlanId = expenseDialogEffectiveTripPlanId({
+    linkedItem,
+    tripPlanId,
+  });
+  const tripPlanOptions = expenseDialogTripPlanOptions(trip);
 
   const autofillExchangeRate = useCallback((nextExchangeRate: string) => {
     setExchangeRate(nextExchangeRate);
@@ -116,12 +123,8 @@ export function useExpenseDialogState({
 
   function changeItemId(nextItemId: string) {
     setItemId(nextItemId);
-    const nextLinkedItem = nextItemId
-      ? trip.itineraryItems.find((item) => item.id === nextItemId)
-      : null;
-    if (nextLinkedItem?.planVariantId) {
-      setTripPlanId(nextLinkedItem.planVariantId);
-    }
+    const nextTripPlanId = expenseDialogTripPlanIdForItemSelection(trip, nextItemId);
+    if (nextTripPlanId) setTripPlanId(nextTripPlanId);
   }
 
   async function submitExpense(event: FormEvent<HTMLFormElement>) {

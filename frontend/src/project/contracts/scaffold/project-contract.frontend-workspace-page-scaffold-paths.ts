@@ -72,6 +72,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/model/expense-dialog-submit-guard.ts",
   "src/features/workspace/pages/expenses/model/expense-dialog-initial-state.ts",
   "src/features/workspace/pages/expenses/model/tests/expense-dialog-initial-state.test.ts",
+  "src/features/workspace/pages/expenses/model/expense-dialog-linking.ts",
+  "src/features/workspace/pages/expenses/model/tests/expense-dialog-linking.test.ts",
   "src/features/workspace/pages/expenses/model/expense-dialog-line-items.ts",
   "src/features/workspace/pages/expenses/model/tests/expense-dialog-line-items.test.ts",
   "src/features/workspace/pages/expenses/model/expense-dialog-submit-input.ts",
