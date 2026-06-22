@@ -1,7 +1,7 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { formatDayLabel, groupItemsByDay, type ItineraryView } from "@/src/trip/itinerary-core";
+import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary-core";
 import { Badge, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { TimelineMotif } from "@/src/shared/components/travel-motifs";
@@ -32,18 +32,9 @@ import {
   timelineTimeClassName,
   timelineWarningClassName,
 } from "./TimelineView.styles";
+import type { TimelineViewProps } from "./TimelineView.types";
 
-interface TimelineViewProps {
-  contextRailOpen: boolean;
-  endDate: string;
-  items: ItineraryItem[];
-  itineraryView?: ItineraryView;
-  selectedItemId: string;
-  startDate: string;
-  tripName: string;
-  onSelectItem: (itemId: string) => void;
-  onToggleContextRail: () => void;
-}
+export type { TimelineViewProps } from "./TimelineView.types";
 
 export function TimelineView({
   contextRailOpen,

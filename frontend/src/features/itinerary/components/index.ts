@@ -6,7 +6,9 @@ export type { ContextRailProps } from "./context-rail/context-rail.types";
 export type { ContextRailTab } from "./context-rail/context-rail.utils";
 export { RouteMapView } from "./route-map/RouteMapView";
 export { SmartItineraryTable } from "./smart-itinerary-table/SmartItineraryTable";
+export type { SmartItineraryTableProps } from "./smart-itinerary-table/SmartItineraryTable.types";
 export { TimelineView } from "./TimelineView";
+export type { TimelineViewProps } from "./TimelineView.types";
 export { StopDialog } from "./stop-dialog/StopDialog";
 
 export type { InlineItineraryItemPatch } from "../lib/inline-itinerary-item-patch";

@@ -1,8 +1,12 @@
 "use client";
 
-import type { ComponentProps } from "react";
 import { OverviewPage, RouteMapView, SmartItineraryTable, TimelineView } from "@/src/features/itinerary/components";
-import type { RouteMapViewProps } from "@/src/features/itinerary/components";
+import type {
+  OverviewPageProps,
+  RouteMapViewProps,
+  SmartItineraryTableProps,
+  TimelineViewProps,
+} from "@/src/features/itinerary/components";
 import { BookingsDocsPage, type BookingsDocsPageProps } from "@/src/features/workspace/pages/bookings-docs/BookingsDocsPage";
 import { TripExpensesPage, type TripExpensesPageProps } from "@/src/features/workspace/pages/expenses/TripExpensesPage";
 import { TripMembersPage, type TripMembersPageProps } from "@/src/features/workspace/pages/members/TripMembersPage";
@@ -14,13 +18,13 @@ export interface TripWorkspaceViewsProps {
   currentView: PlanningView;
   bookingsProps: BookingsDocsPageProps;
   expensesProps: TripExpensesPageProps;
-  itineraryProps: ComponentProps<typeof SmartItineraryTable>;
+  itineraryProps: SmartItineraryTableProps;
   mapProps: RouteMapViewProps;
   membersProps: TripMembersPageProps;
-  overviewProps: ComponentProps<typeof OverviewPage>;
+  overviewProps: OverviewPageProps;
   photosProps: TripPhotosPageProps;
   settingsProps: TripSettingsPageProps;
-  timelineProps: ComponentProps<typeof TimelineView>;
+  timelineProps: TimelineViewProps;
 }
 
 export function TripWorkspaceViews({
