@@ -188,6 +188,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-selected-trip-plan.ts",
   srcStoryPath(appStoryPaths.sagittariusApp),
   "src/trip/workspace/TripAccessLoadingFrame.tsx",
+  "src/trip/workspace/TripWorkspaceImportDialogFields.tsx",
   "src/trip/workspace/WorkspaceToast.tsx",
   "src/trip/workspace/tests/TripWorkspaceImportDialog.test.tsx",
   "src/trip/workspace/tests/itinerary-import-api-merge.test.ts",
