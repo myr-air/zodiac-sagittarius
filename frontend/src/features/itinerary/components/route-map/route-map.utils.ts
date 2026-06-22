@@ -1,3 +1,4 @@
+import { uniqueStrings } from "@/src/shared/collection";
 import { formatDayLabel, groupItemsByDay } from "@/src/trip/itinerary-core";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
@@ -126,7 +127,7 @@ function projectCoordinate(
 }
 
 function fallbackPoint(item: ItineraryItem, items: ItineraryItem[], index: number): { x: number; y: number } {
-  const dayIndex = Array.from(new Set(items.map((candidate) => candidate.day))).indexOf(item.day);
+  const dayIndex = uniqueStrings(items.map((candidate) => candidate.day)).indexOf(item.day);
   const dayItems = items.filter((candidate) => candidate.day === item.day);
   const indexInDay = Math.max(0, dayItems.findIndex((candidate) => candidate.id === item.id));
   const x = 14 + (indexInDay / Math.max(1, dayItems.length - 1)) * 72;
