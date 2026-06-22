@@ -23,6 +23,10 @@ import {
   filterExpenses,
   inferredScopeExpenses as filterInferredScopeExpenses,
 } from "./model/expense-page-filters";
+import {
+  currentMemberExpenseBalance,
+  expensePageSettlementCurrency,
+} from "./model/expense-page-selectors";
 import type {
   ExpenseCategoryFilter,
   ExpenseDialogTarget,
@@ -54,10 +58,12 @@ export function useTripExpensesPageState({
   const [payerFilter, setPayerFilter] = useState("all");
   const [dialogExpense, setDialogExpense] = useState<ExpenseDialogTarget>(null);
 
-  const settlementCurrency = expenseSummary.settlementCurrency ?? "HKD";
-  const currentNet = expenseSummary.netByMember[currentMember.id] ?? 0;
-  const youOwe = Math.max(0, -currentNet);
-  const owedToYou = Math.max(0, currentNet);
+  const settlementCurrency = expensePageSettlementCurrency(expenseSummary);
+  const {
+    currentNet,
+    owedToYou,
+    youOwe,
+  } = currentMemberExpenseBalance(expenseSummary, currentMember.id);
   const statement = useMemo(
     () => buildExpenseStatement({ trip, expenseSummary }),
     [expenseSummary, trip],
