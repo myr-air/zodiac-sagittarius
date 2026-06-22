@@ -1,3 +1,7 @@
+import {
+  srcStoryPath,
+  workspaceStoryPaths,
+} from "../../../storybook/contracts/storybook.contract.story-paths";
 import { frontendItineraryScaffoldPathsPresent } from "./project-contract.frontend-itinerary-scaffold-paths";
 
 export const frontendFeatureScaffoldPathsPresent = [
@@ -218,7 +222,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/trip-settings/model/trip-settings-date-impact.ts",
   "src/features/workspace/pages/trip-settings/model/tests/trip-settings-date-impact.test.ts",
   "src/features/workspace/pages/trip-settings/TripSettingsPage.styles.ts",
-  "src/features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.tsx",
+  srcStoryPath(workspaceStoryPaths.tripSettingsPage),
   "src/features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.plays.ts",
   "src/features/workspace/pages/trip-settings/storybook/TripSettingsPage.stories.support.ts",
   "src/features/workspace/pages/trip-settings/tests/TripSettingsPage.test.tsx",
@@ -249,7 +253,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/bookings-docs/tests/BookingsDocsPage.mutations.test.tsx",
   "src/features/workspace/pages/bookings-docs/tests/BookingsDocsPage.overview.test.tsx",
   "src/features/workspace/pages/bookings-docs/testing/fixtures/bookings-docs-test-fixtures.ts",
-  "src/features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.tsx",
+  srcStoryPath(workspaceStoryPaths.bookingsDocsPage),
   "src/features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.support.ts",
   "src/features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.plays.ts",
   "src/features/workspace/pages/bookings-docs/model/booking-display.ts",
@@ -282,15 +286,15 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/model/tests/expense-dialog-line-items.test.ts",
   "src/features/workspace/pages/expenses/model/expense-dialog-submit-input.ts",
   "src/features/workspace/pages/expenses/model/tests/expense-dialog-submit-input.test.ts",
-  "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.tsx",
+  srcStoryPath(workspaceStoryPaths.expensesPage),
   "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.support.ts",
   "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.plays.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseDialogState.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseComments.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts",
   "src/features/workspace/pages/members/use-trip-members-page-state.ts",
-  "src/features/workspace/pages/members/storybook/MembersPage.stories.tsx",
-  "src/features/workspace/pages/members/storybook/MembersTemplate.stories.tsx",
+  srcStoryPath(workspaceStoryPaths.membersPage),
+  srcStoryPath(workspaceStoryPaths.membersTemplate),
   "src/features/workspace/pages/members/storybook/MembersPage.stories.plays.ts",
   "src/features/workspace/pages/members/storybook/MembersPage.stories.support.ts",
   "src/features/workspace/pages/members/tests/TripMembersPage.filters.test.tsx",
@@ -320,7 +324,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/workspace/pages/photos/content/TripPhotosPage.copy.en.ts",
   "src/features/workspace/pages/photos/content/TripPhotosPage.copy.th.ts",
   "src/features/workspace/pages/photos/content/tests/TripPhotosPage.copy.test.ts",
-  "src/features/workspace/pages/photos/storybook/TripPhotosPage.stories.tsx",
+  srcStoryPath(workspaceStoryPaths.photosPage),
   "src/features/workspace/pages/photos/storybook/TripPhotosPage.stories.support.ts",
   "src/features/workspace/pages/photos/storybook/TripPhotosPage.stories.plays.ts",
   "src/features/workspace/pages/photos/tests/TripPhotosPage.test.tsx",
