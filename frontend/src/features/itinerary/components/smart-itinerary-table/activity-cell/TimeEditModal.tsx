@@ -1,10 +1,5 @@
-import { type FormEvent, useState } from "react";
 import { TimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Icon } from "@/src/ui/icons";
-import {
-  endOffsetDaysBetweenTimes,
-} from "@/src/features/itinerary/domain/itinerary-item-editing";
-import { buildTimeEditModalModel } from "@/src/features/itinerary/domain/time-edit-modal-model";
 import {
   subActivityModalCloseClassName,
   timeEditFieldsClassName,
@@ -25,6 +20,7 @@ import {
 } from "../smart-itinerary-table.styles";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import type { TimeEditModalProps } from "./time-components.types";
+import { useTimeEditModalModel } from "./use-time-edit-modal-model";
 
 export function TimeEditModal({
   item,
@@ -33,49 +29,17 @@ export function TimeEditModal({
   onClose,
   onSave,
 }: TimeEditModalProps) {
-  const [startTime, setStartTime] = useState(item.startTime ?? "");
-  const [endTime, setEndTime] = useState(item.endTime ?? "");
-  const [endOffsetDays, setEndOffsetDays] = useState(
-    item.endTime ? item.endOffsetDays ?? 0 : 0,
-  );
-  const [saving, setSaving] = useState(false);
-  const model = buildTimeEditModalModel({
+  const {
     endOffsetDays,
     endTime,
-    locale,
+    model,
+    save,
+    saving,
     startTime,
-  });
-
-  function updateStartTime(nextStartTime: string) {
-    setStartTime(nextStartTime);
-    if (!endTime) return;
-    const nextOffset = endOffsetDaysBetweenTimes(nextStartTime, endTime);
-    setEndOffsetDays(nextOffset);
-  }
-
-  function updateEndTime(nextEndTime: string) {
-    setEndTime(nextEndTime);
-    setEndOffsetDays(
-      nextEndTime ? endOffsetDaysBetweenTimes(startTime, nextEndTime) : 0,
-    );
-  }
-
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (saving || model.errorMessage) return;
-    setSaving(true);
-    try {
-      await onSave({
-        startTime: startTime.trim(),
-        endTime: endTime.trim() || null,
-        endOffsetDays: endTime.trim() ? endOffsetDays : 0,
-        durationMinutes: endTime.trim() ? model.derivedDuration : null,
-      });
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  }
+    toggleEndOffsetDays,
+    updateEndTime,
+    updateStartTime,
+  } = useTimeEditModalModel({ item, locale, onClose, onSave });
 
   return (
     <ActivityCellModalPortal
@@ -133,7 +97,7 @@ export function TimeEditModal({
             className={timeEditNextDayClassName}
             aria-pressed={endOffsetDays > 0}
             disabled={!endTime}
-            onClick={() => setEndOffsetDays((current) => (current > 0 ? 0 : 1))}
+            onClick={toggleEndOffsetDays}
           >
             +1 {locale === "th" ? "จบวันถัดไป" : "next day end"}
           </button>
