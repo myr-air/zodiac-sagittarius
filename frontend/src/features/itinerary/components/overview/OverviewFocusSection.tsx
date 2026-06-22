@@ -3,9 +3,10 @@ import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { overviewNextStopClassName } from "./overview.styles";
 import { cn } from "@/src/lib/cn";
-import { OverviewFocusList, TripCompletedPostcard } from "./OverviewSections";
+import { OverviewFocusList } from "./OverviewSections";
 import { overviewPanelClassName, overviewPanelTitleClassName, overviewPanelWideClassName } from "./overview-page.styles";
 import { formatOverviewStopScheduleWithPlace } from "./overview-stop-labels";
+import { TripCompletedPostcard } from "./TripCompletedPostcard";
 
 interface OverviewFocusSectionProps {
   ariaLabel: string;

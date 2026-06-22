@@ -17,6 +17,15 @@ import {
   overviewMutedClassName,
 } from "./overview.styles";
 
+export interface HighlightBoardProps {
+  items: ItineraryItem[];
+  startDate: string;
+  locale: Locale;
+  emptyMessage: string;
+  title: string;
+  subtitle: string;
+}
+
 export function HighlightBoard({
   items,
   startDate,
@@ -24,14 +33,7 @@ export function HighlightBoard({
   emptyMessage,
   title,
   subtitle,
-}: {
-  items: ItineraryItem[];
-  startDate: string;
-  locale: Locale;
-  emptyMessage: string;
-  title: string;
-  subtitle: string;
-}) {
+}: HighlightBoardProps) {
   if (items.length === 1) return null;
 
   return (

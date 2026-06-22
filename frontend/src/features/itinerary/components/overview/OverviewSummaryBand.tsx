@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type {
   DailyBriefingOverrides,
   ItineraryItem,
@@ -9,18 +9,19 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { formatTripRange } from "@/src/shared/components/page-header";
 import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
 import type { OverviewRoleLens } from "@/src/features/itinerary/domain/overview";
-import { HighlightBoard, OverviewHero } from "./OverviewSections";
+import { HighlightBoard, type HighlightBoardProps } from "./OverviewHighlightBoard";
+import { OverviewHero, type OverviewHeroProps } from "./OverviewHero";
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
 
 interface OverviewSummaryBandProps {
   activeMembers: number;
-  countdown: ComponentProps<typeof OverviewHero>["countdown"];
+  countdown: OverviewHeroProps["countdown"];
   currentMemberCard: ReactNode;
   dailyBriefings: TripDailyBriefing[];
   groupSpendLabel: string;
-  heroVisual: ComponentProps<typeof OverviewHero>["visual"];
-  highlightItems: ComponentProps<typeof HighlightBoard>["items"];
+  heroVisual: OverviewHeroProps["visual"];
+  highlightItems: HighlightBoardProps["items"];
   isManagerLens: boolean;
   items: ItineraryItem[];
   nextStop?: ItineraryItem;

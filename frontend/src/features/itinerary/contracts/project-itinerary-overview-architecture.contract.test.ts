@@ -25,12 +25,26 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
 
   it("keeps overview cockpit cards split from shared overview sections", () => {
     const overviewSections = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSections.tsx");
+    const overviewHero = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewHero.tsx");
+    const overviewSummaryBand = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSummaryBand.tsx");
+    const tripCompletedPostcard = readItineraryArchitectureSource("src/features/itinerary/components/overview/TripCompletedPostcard.tsx");
+    const overviewFocusSection = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewFocusSection.tsx");
     const cockpit = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpit.tsx");
     const cockpitCard = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewCockpitCard.tsx");
 
     expect(cockpit).toContain("./OverviewCockpitCard");
     expect(cockpit).toContain("CockpitCard");
     expect(overviewSections).not.toContain("export function CockpitCard");
+    expect(overviewSections).not.toContain("export function OverviewHero");
+    expect(overviewSections).not.toContain("export function TripCompletedPostcard");
+    expect(overviewHero).toContain("export interface OverviewHeroProps");
+    expect(overviewHero).toContain("export function OverviewHero");
+    expect(tripCompletedPostcard).toContain("export interface TripCompletedPostcardProps");
+    expect(tripCompletedPostcard).toContain("export function TripCompletedPostcard");
+    expect(overviewSummaryBand).toContain("./OverviewHero");
+    expect(overviewSummaryBand).toContain("OverviewHeroProps");
+    expect(overviewSummaryBand).not.toContain("ComponentProps<typeof OverviewHero>");
+    expect(overviewFocusSection).toContain("./TripCompletedPostcard");
     expect(overviewSections).not.toContain("cockpitCardButtonClassName");
     expect(cockpitCard).toContain("export function CockpitCard");
     expect(cockpitCard).toContain("cockpitCardButtonClassName");
