@@ -1,4 +1,3 @@
-import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { Button, WorkspacePage } from "@/src/ui";
@@ -10,30 +9,16 @@ import { BookingsDocsHeader } from "./components/BookingsDocsHeader";
 import { BookingInspector } from "./components/BookingInspector";
 import { bookingCopy } from "./content/BookingsDocsPage.copy";
 import * as bookingStyles from "./BookingsDocsPage.styles";
-import type {
-  CreateBookingDocHandler,
-  DeleteBookingDocHandler,
-  UpdateBookingDocHandler,
-} from "./BookingsDocsPage.types";
+import type { BookingsDocsPageProps } from "./BookingsDocsPage.types";
 import { useBookingsDocsPageState } from "./use-bookings-docs-page-state";
 
 export type {
   BookingDocInput,
+  BookingsDocsPageProps,
   CreateBookingDocHandler,
   DeleteBookingDocHandler,
   UpdateBookingDocHandler,
 } from "./BookingsDocsPage.types";
-
-interface BookingsDocsPageProps {
-  trip: Trip;
-  tasks: TripTask[];
-  currentMember: Member;
-  bookingDocs: BookingDoc[];
-  canEditBookings: boolean;
-  onCreateBookingDoc: CreateBookingDocHandler;
-  onUpdateBookingDoc: UpdateBookingDocHandler;
-  onDeleteBookingDoc: DeleteBookingDocHandler;
-}
 
 export function BookingsDocsPage({
   trip,

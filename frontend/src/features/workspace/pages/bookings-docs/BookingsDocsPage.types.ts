@@ -1,4 +1,12 @@
-import type { BookingDoc, BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/src/trip/types";
+import type {
+  BookingDoc,
+  BookingDocStatus,
+  BookingDocType,
+  BookingDocVisibility,
+  Member,
+  Trip,
+  TripTask,
+} from "@/src/trip/types";
 import type { WorkspaceMutationResult } from "../../model/workspace-action-types";
 
 export interface BookingDocInput {
@@ -42,3 +50,14 @@ export type DeleteBookingDocHandler = (
 export type SubmitBookingDocHandler = (
   input: BookingDocInput,
 ) => BookingDocMutationResult;
+
+export interface BookingsDocsPageProps {
+  trip: Trip;
+  tasks: TripTask[];
+  currentMember: Member;
+  bookingDocs: BookingDoc[];
+  canEditBookings: boolean;
+  onCreateBookingDoc: CreateBookingDocHandler;
+  onUpdateBookingDoc: UpdateBookingDocHandler;
+  onDeleteBookingDoc: DeleteBookingDocHandler;
+}

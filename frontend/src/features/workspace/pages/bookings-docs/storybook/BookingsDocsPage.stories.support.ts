@@ -4,11 +4,11 @@ import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { BookingDoc } from "@/src/trip/types";
 import type {
-  BookingsDocsPage,
+  BookingsDocsPageProps,
   CreateBookingDocHandler,
 } from "../BookingsDocsPage";
 
-type BookingsDocsPageStoryArgs = Parameters<typeof BookingsDocsPage>[0];
+type BookingsDocsPageStoryArgs = BookingsDocsPageProps;
 
 export const onStoryCreateBookingDoc = fn();
 export const onStoryUpdateBookingDoc = fn();
