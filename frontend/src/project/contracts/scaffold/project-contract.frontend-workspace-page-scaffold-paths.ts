@@ -101,6 +101,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/members/model/tests/member-page-options.test.ts",
   "src/features/workspace/pages/members/model/member-page-selectors.ts",
   "src/features/workspace/pages/members/model/tests/member-page-selectors.test.ts",
+  "src/features/workspace/pages/members/model/member-page-state.ts",
+  "src/features/workspace/pages/members/model/tests/member-page-state.test.ts",
   "src/features/workspace/pages/members/components/MemberCreatePanel.tsx",
   "src/features/workspace/pages/members/components/MemberFilterControls.tsx",
   "src/features/workspace/pages/members/components/MemberInviteActions.tsx",

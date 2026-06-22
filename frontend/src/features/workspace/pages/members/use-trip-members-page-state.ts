@@ -10,14 +10,20 @@ import {
   memberSummaryCounts,
   visibleTripMembers,
 } from "./model/member-page-selectors";
-import {
-  buildCreateMemberInput,
-  defaultCreatedMemberRole,
-} from "./model/member-create-input";
+import { buildCreateMemberInput } from "./model/member-create-input";
 import type {
   MemberRoleFilter,
   MemberStatusFilter,
 } from "./model/member-page-options";
+import {
+  initialMemberCreateFormState,
+  initialMemberFilterState,
+  setMemberCreatePanelOpenState,
+  updateMemberCreateFormState,
+  updateMemberFilterState,
+  type MemberCreateFormState,
+  type MemberFilterState,
+} from "./model/member-page-state";
 import { useMemberInviteActions } from "./use-member-invite-actions";
 import { useMemberTaskDialogState } from "./use-member-task-dialog-state";
 
@@ -47,18 +53,6 @@ interface UseTripMembersPageStateInput {
   trip: Trip;
 }
 
-interface MemberFilterState {
-  query: string;
-  roleFilter: MemberRoleFilter;
-  statusFilter: MemberStatusFilter;
-}
-
-interface MemberCreateFormState {
-  isOpen: boolean;
-  name: string;
-  role: Exclude<TripRole, "owner">;
-}
-
 export function useTripMembersPageState({
   canManagePeople,
   currentMember,
@@ -72,17 +66,11 @@ export function useTripMembersPageState({
   onTransferOwnership,
   trip,
 }: UseTripMembersPageStateInput) {
-  const [filterState, setFilterState] = useState<MemberFilterState>({
-    query: "",
-    roleFilter: "all",
-    statusFilter: "all",
-  });
+  const [filterState, setFilterState] = useState<MemberFilterState>(
+    initialMemberFilterState,
+  );
   const [createFormState, setCreateFormState] =
-    useState<MemberCreateFormState>({
-      isOpen: false,
-      name: "",
-      role: defaultCreatedMemberRole,
-    });
+    useState<MemberCreateFormState>(initialMemberCreateFormState);
   const {
     copyInviteLink,
     copyState,
@@ -143,29 +131,26 @@ export function useTripMembersPageState({
     field: Field,
     value: MemberFilterState[Field],
   ) {
-    setFilterState((current) => ({ ...current, [field]: value }));
+    setFilterState((current) => updateMemberFilterState(current, field, value));
   }
 
   function updateCreateFormState<Field extends keyof MemberCreateFormState>(
     field: Field,
     value: MemberCreateFormState[Field],
   ) {
-    setCreateFormState((current) => ({ ...current, [field]: value }));
+    setCreateFormState((current) =>
+      updateMemberCreateFormState(current, field, value),
+    );
   }
 
   function resetFilters() {
-    setFilterState({
-      query: "",
-      roleFilter: "all",
-      statusFilter: "all",
-    });
+    setFilterState(initialMemberFilterState);
   }
 
   function setCreatePanelOpen(nextOpen: SetStateAction<boolean>) {
-    setCreateFormState((current) => ({
-      ...current,
-      isOpen: typeof nextOpen === "function" ? nextOpen(current.isOpen) : nextOpen,
-    }));
+    setCreateFormState((current) =>
+      setMemberCreatePanelOpenState(current, nextOpen),
+    );
   }
 
   function submitNewMember(event: FormEvent<HTMLFormElement>) {
@@ -177,11 +162,7 @@ export function useTripMembersPageState({
     });
     if (!input) return;
     onCreateMember(input);
-    setCreateFormState({
-      isOpen: false,
-      name: "",
-      role: defaultCreatedMemberRole,
-    });
+    setCreateFormState(initialMemberCreateFormState);
   }
 
   return {

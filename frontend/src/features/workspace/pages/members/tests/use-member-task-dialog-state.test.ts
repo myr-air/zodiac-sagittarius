@@ -12,21 +12,33 @@ function readMembersPageSource(fileName: string) {
 describe("members page state structure", () => {
   it("keeps member task dialog workflow out of the page state hook", () => {
     const pageStateSource = readMembersPageSource("use-trip-members-page-state.ts");
+    const memberPageStateSource = readMembersPageSource(
+      "model/member-page-state.ts",
+    );
     const memberTaskDialogSource = readMembersPageSource("components/MemberTaskDialog.tsx");
     const memberStylesSource = readMembersPageSource("TripMembersPage.styles.ts");
     const taskDialogSource = readMembersPageSource("use-member-task-dialog-state.ts");
     const taskDialogStateSource = readMembersPageSource("member-task-dialog-state.ts");
 
     expect(pageStateSource).toContain("useMemberTaskDialogState");
-    expect(pageStateSource).toContain("MemberFilterState");
-    expect(pageStateSource).toContain("MemberCreateFormState");
+    expect(pageStateSource).toContain("initialMemberFilterState");
+    expect(pageStateSource).toContain("initialMemberCreateFormState");
+    expect(pageStateSource).toContain("updateMemberFilterState");
+    expect(pageStateSource).toContain("updateMemberCreateFormState");
+    expect(pageStateSource).toContain("setMemberCreatePanelOpenState");
     expect(pageStateSource).toContain("const [filterState, setFilterState]");
     expect(pageStateSource).toContain("const [createFormState, setCreateFormState]");
-    expect(pageStateSource).toContain("function updateFilterState");
-    expect(pageStateSource).toContain("function updateCreateFormState");
     expect(pageStateSource).not.toContain("const [query, setQuery]");
     expect(pageStateSource).not.toContain("const [newMemberName, setNewMemberName]");
     expect(pageStateSource).not.toContain("function submitMemberDialog");
+    expect(memberPageStateSource).toContain("export interface MemberFilterState");
+    expect(memberPageStateSource).toContain("export interface MemberCreateFormState");
+    expect(memberPageStateSource).toContain(
+      "export const initialMemberFilterState",
+    );
+    expect(memberPageStateSource).toContain(
+      "export function updateMemberFilterState",
+    );
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
     expect(taskDialogSource).toContain("./member-task-dialog-state");
