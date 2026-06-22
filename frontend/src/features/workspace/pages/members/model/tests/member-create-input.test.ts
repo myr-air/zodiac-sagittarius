@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCreateMemberInput,
+  canBuildCreateMemberInput,
   defaultCreatedMemberRole,
 } from "../member-create-input";
 
@@ -27,6 +28,24 @@ describe("member create input", () => {
       displayName: "Guide",
       role: defaultCreatedMemberRole,
     })).toBeNull();
+  });
+
+  it("checks whether member creation can be submitted", () => {
+    expect(canBuildCreateMemberInput({
+      canManagePeople: true,
+      displayName: "Guide",
+      role: defaultCreatedMemberRole,
+    })).toBe(true);
+    expect(canBuildCreateMemberInput({
+      canManagePeople: true,
+      displayName: "  ",
+      role: defaultCreatedMemberRole,
+    })).toBe(false);
+    expect(canBuildCreateMemberInput({
+      canManagePeople: false,
+      displayName: "Guide",
+      role: defaultCreatedMemberRole,
+    })).toBe(false);
   });
 
   it("keeps the default created member role centralized", () => {

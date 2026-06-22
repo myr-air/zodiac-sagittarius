@@ -3,6 +3,7 @@ import { tripInvitableRoleValues } from "@/src/trip/members";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
+import { canBuildCreateMemberInput } from "../model/member-create-input";
 import type { MemberCreatePanelProps, NewMemberRole } from "./member-management.types";
 
 export function MemberCreatePanel({
@@ -19,6 +20,11 @@ export function MemberCreatePanel({
     traveler: labels.appShell.roles.traveler,
     viewer: labels.appShell.roles.viewer,
   };
+  const canCreateMember = canBuildCreateMemberInput({
+    canManagePeople,
+    displayName: newMemberName,
+    role: newMemberRole,
+  });
 
   return (
     <WorkspaceSurface
@@ -51,7 +57,7 @@ export function MemberCreatePanel({
           className={cn(memberStyles.memberCreateButtonClassName, "w-auto")}
           variant="ghost"
           type="submit"
-          disabled={!canManagePeople || !newMemberName.trim()}
+          disabled={!canCreateMember}
         >
           <Icon name="check" />
           {labels.members.actions.saveMember}

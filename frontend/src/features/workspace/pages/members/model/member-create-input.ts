@@ -23,3 +23,11 @@ export function buildCreateMemberInput({
     role,
   };
 }
+
+export function canBuildCreateMemberInput(input: {
+  canManagePeople: boolean;
+  displayName: string;
+  role: Exclude<TripRole, "owner">;
+}): boolean {
+  return buildCreateMemberInput(input) !== null;
+}
