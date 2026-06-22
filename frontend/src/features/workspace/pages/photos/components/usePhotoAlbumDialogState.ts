@@ -2,11 +2,14 @@ import { useState, type FormEvent } from "react";
 import type {
   Member,
   Trip,
-  TripPhotoAlbumAccess,
   TripPhotoAlbumLink,
-  TripPhotoAlbumProvider,
 } from "@/src/trip/types";
 import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
+import {
+  buildPhotoAlbumDialogSubmitInput,
+  initialPhotoAlbumDialogFields,
+  photoAlbumDialogDayOptions,
+} from "../model/photo-album-dialog-fields";
 
 interface PhotoAlbumDialogStateInput {
   album: TripPhotoAlbumLink | null;
@@ -21,26 +24,21 @@ export function usePhotoAlbumDialogState({
   trip,
   onSubmit,
 }: PhotoAlbumDialogStateInput) {
-  const [title, setTitle] = useState(album?.title ?? "");
-  const [provider, setProvider] = useState<TripPhotoAlbumProvider>(
-    album?.provider ?? "google_photos",
-  );
-  const [access, setAccess] = useState<TripPhotoAlbumAccess>(
-    album?.access ?? "collaborative",
-  );
-  const [url, setUrl] = useState(album?.url ?? "");
+  const initialFields = initialPhotoAlbumDialogFields({ album, currentMember });
+  const [title, setTitle] = useState(initialFields.title);
+  const [provider, setProvider] = useState(initialFields.provider);
+  const [access, setAccess] = useState(initialFields.access);
+  const [url, setUrl] = useState(initialFields.url);
   const [ownerMemberId, setOwnerMemberId] = useState(
-    album?.ownerMemberId ?? currentMember.id,
+    initialFields.ownerMemberId,
   );
-  const [day, setDay] = useState(album?.day ?? "");
-  const [description, setDescription] = useState(album?.description ?? "");
-  const [accessNote, setAccessNote] = useState(album?.accessNote ?? "");
+  const [day, setDay] = useState(initialFields.day);
+  const [description, setDescription] = useState(initialFields.description);
+  const [accessNote, setAccessNote] = useState(initialFields.accessNote);
   const [relatedItineraryItemIds, setRelatedItineraryItemIds] = useState(
-    album?.relatedItineraryItemIds ?? [],
+    initialFields.relatedItineraryItemIds,
   );
-  const days = Array.from(
-    new Set(trip.itineraryItems.map((item) => item.day)),
-  ).sort();
+  const days = photoAlbumDialogDayOptions(trip);
 
   function toggleRelatedItem(itemId: string) {
     setRelatedItineraryItemIds((current) =>
@@ -52,18 +50,20 @@ export function usePhotoAlbumDialogState({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await onSubmit({
-      title: title.trim(),
-      provider,
-      url: url.trim(),
-      access,
-      ownerMemberId: ownerMemberId || null,
-      relatedItineraryItemIds,
-      day: day || null,
-      description: description.trim() || null,
-      accessNote: accessNote.trim() || null,
-      coverUrl: album?.coverUrl ?? null,
-    });
+    await onSubmit(buildPhotoAlbumDialogSubmitInput({
+      album,
+      fields: {
+        access,
+        accessNote,
+        day,
+        description,
+        ownerMemberId,
+        provider,
+        relatedItineraryItemIds,
+        title,
+        url,
+      },
+    }));
   }
 
   return {
