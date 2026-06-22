@@ -1,6 +1,10 @@
 import { useState } from "react";
-import type { Expense, ExpenseComment, Member } from "@/src/trip/types";
-import { appendExpenseDialogComment } from "../model/expense-dialog-comments";
+import type { Expense, Member } from "@/src/trip/types";
+import {
+  addExpenseCommentFromDraft,
+  initialExpenseCommentsState,
+  updateExpenseCommentDraft,
+} from "../model/expense-comments-state";
 
 interface UseExpenseCommentsInput {
   currentMember: Member;
@@ -11,27 +15,24 @@ export function useExpenseComments({
   currentMember,
   expense,
 }: UseExpenseCommentsInput) {
-  const [comments, setComments] = useState<ExpenseComment[]>(
-    expense?.comments ?? [],
+  const [state, setState] = useState(() =>
+    initialExpenseCommentsState(expense?.comments),
   );
-  const [commentDraft, setCommentDraft] = useState("");
 
   function addComment() {
-    if (!commentDraft.trim()) return;
-    setComments((current) =>
-      appendExpenseDialogComment({
+    setState((current) =>
+      addExpenseCommentFromDraft({
         authorId: currentMember.id,
-        comments: current,
-        draft: commentDraft,
+        state: current,
       }),
     );
-    setCommentDraft("");
   }
 
   return {
     addComment,
-    commentDraft,
-    comments,
-    setCommentDraft,
+    commentDraft: state.commentDraft,
+    comments: state.comments,
+    setCommentDraft: (commentDraft: string) =>
+      setState((current) => updateExpenseCommentDraft(current, commentDraft)),
   };
 }
