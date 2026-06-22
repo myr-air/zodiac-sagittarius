@@ -1,7 +1,6 @@
-import type { ComponentProps } from "react";
-import type { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
+import type { TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
 
-export type WorkspaceViewsProps = ComponentProps<typeof TripWorkspaceViews>;
+export type WorkspaceViewsProps = TripWorkspaceViewsProps;
 
 export interface BuildWorkspaceViewsPropsInput {
   activePlanItems: WorkspaceViewsProps["itineraryProps"]["graphItems"];

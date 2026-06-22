@@ -10,7 +10,7 @@ import { TripPhotosPage, type TripPhotosPageProps } from "@/src/features/workspa
 import { TripSettingsPage, type TripSettingsPageProps } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
 import type { PlanningView } from "./planning-view";
 
-interface TripWorkspaceViewsProps {
+export interface TripWorkspaceViewsProps {
   currentView: PlanningView;
   bookingsProps: BookingsDocsPageProps;
   expensesProps: TripExpensesPageProps;

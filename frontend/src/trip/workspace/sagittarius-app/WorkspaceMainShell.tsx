@@ -2,7 +2,7 @@ import type { ComponentProps } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell";
 import { TripWorkspaceFrame } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail } from "@/src/trip/workspace/TripWorkspaceRail";
-import { TripWorkspaceViews } from "@/src/trip/workspace/TripWorkspaceViews";
+import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
 import { WorkspaceToast } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview } from "./WorkspaceRolePreview";
@@ -17,7 +17,7 @@ export interface WorkspaceMainShellProps {
   showRolePreview: boolean;
   showToast: boolean;
   toastProps: ComponentProps<typeof WorkspaceToast>;
-  viewsProps: ComponentProps<typeof TripWorkspaceViews>;
+  viewsProps: TripWorkspaceViewsProps;
 }
 
 export function WorkspaceMainShell({
