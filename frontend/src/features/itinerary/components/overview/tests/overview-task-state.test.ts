@@ -2,12 +2,19 @@ import { describe, expect, it } from "vitest";
 import type { TripTask } from "@/src/trip/types";
 
 import {
+  applyOverviewTaskSubmission,
   buildOverviewTaskSubmission,
+  closeOverviewTaskDialog,
   countOverviewOpenTasks,
   initialOverviewNewTaskFormState,
   initialOverviewTaskFilterState,
+  initialOverviewTaskUiState,
+  openOverviewTaskDialog,
+  setOverviewUndoTask,
   updateOverviewNewTaskFormState,
   updateOverviewTaskFilterState,
+  updateOverviewTaskUiFilterState,
+  updateOverviewTaskUiFormState,
   visibleOverviewTasks,
 } from "../overview-task-state";
 
@@ -106,6 +113,62 @@ describe("overview task state", () => {
       assigneeId: "",
       title: "Check passport",
       visibility: "private",
+    });
+  });
+
+  it("updates composed task ui state immutably", () => {
+    expect(
+      updateOverviewTaskUiFilterState(
+        initialOverviewTaskUiState,
+        "scope",
+        "trip",
+      ),
+    ).toEqual({
+      ...initialOverviewTaskUiState,
+      filterState: { scope: "trip", status: "all" },
+    });
+
+    expect(
+      updateOverviewTaskUiFormState(
+        initialOverviewTaskUiState,
+        "title",
+        "Check passport",
+      ),
+    ).toEqual({
+      ...initialOverviewTaskUiState,
+      newTaskFormState: {
+        assigneeId: "",
+        title: "Check passport",
+        visibility: "private",
+      },
+    });
+  });
+
+  it("opens, closes, submits, and tracks undo task from one ui state", () => {
+    const openState = openOverviewTaskDialog({
+      ...initialOverviewTaskUiState,
+      newTaskFormState: {
+        assigneeId: "member-nam",
+        title: "Confirm ferry",
+        visibility: "shared",
+      },
+    });
+
+    expect(openState.isTaskDialogOpen).toBe(true);
+    expect(closeOverviewTaskDialog(openState)).toEqual(
+      initialOverviewTaskUiState,
+    );
+
+    const submission = buildOverviewTaskSubmission(openState.newTaskFormState);
+    expect(submission).not.toBeNull();
+    expect(applyOverviewTaskSubmission(openState, submission!)).toEqual({
+      ...initialOverviewTaskUiState,
+      filterState: { scope: "trip", status: "all" },
+    });
+
+    expect(setOverviewUndoTask(initialOverviewTaskUiState, tasks[0])).toEqual({
+      ...initialOverviewTaskUiState,
+      undoTask: tasks[0],
     });
   });
 

@@ -5,12 +5,15 @@ import type {
   TaskStatusFilter,
 } from "./overview-role-panels.types";
 import {
+  applyOverviewTaskSubmission,
   buildOverviewTaskSubmission,
+  closeOverviewTaskDialog,
   countOverviewOpenTasks,
-  initialOverviewNewTaskFormState,
-  initialOverviewTaskFilterState,
-  updateOverviewNewTaskFormState,
-  updateOverviewTaskFilterState,
+  initialOverviewTaskUiState,
+  openOverviewTaskDialog,
+  setOverviewUndoTask,
+  updateOverviewTaskUiFilterState,
+  updateOverviewTaskUiFormState,
   visibleOverviewTasks,
 } from "./overview-task-state";
 
@@ -31,83 +34,75 @@ export function useOverviewTaskState({
   onToggleTaskStatus,
   tasks,
 }: UseOverviewTaskStateArgs) {
-  const [filterState, setFilterState] = useState(
-    initialOverviewTaskFilterState,
-  );
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-  const [newTaskFormState, setNewTaskFormState] = useState(
-    initialOverviewNewTaskFormState,
-  );
-  const [undoTask, setUndoTask] = useState<TripTask | null>(null);
+  const [taskState, setTaskState] = useState(initialOverviewTaskUiState);
 
   const visibleTasks = useMemo(
-    () => visibleOverviewTasks({ currentMemberId, filterState, tasks }),
-    [currentMemberId, filterState, tasks],
+    () =>
+      visibleOverviewTasks({
+        currentMemberId,
+        filterState: taskState.filterState,
+        tasks,
+      }),
+    [currentMemberId, taskState.filterState, tasks],
   );
   const { myOpenTasks, sharedOpenTasks } = useMemo(
     () => countOverviewOpenTasks(tasks, currentMemberId),
     [currentMemberId, tasks],
   );
 
-  function updateFilterState<Field extends keyof typeof filterState>(
+  function updateFilterState<Field extends keyof typeof taskState.filterState>(
     field: Field,
-    value: (typeof filterState)[Field],
+    value: (typeof taskState.filterState)[Field],
   ) {
-    setFilterState((current) =>
-      updateOverviewTaskFilterState(current, field, value),
+    setTaskState((current) =>
+      updateOverviewTaskUiFilterState(current, field, value),
     );
   }
 
   function updateNewTaskFormState<
-    Field extends keyof typeof newTaskFormState,
-  >(field: Field, value: (typeof newTaskFormState)[Field]) {
-    setNewTaskFormState((current) =>
-      updateOverviewNewTaskFormState(current, field, value),
+    Field extends keyof typeof taskState.newTaskFormState,
+  >(field: Field, value: (typeof taskState.newTaskFormState)[Field]) {
+    setTaskState((current) =>
+      updateOverviewTaskUiFormState(current, field, value),
     );
-  }
-
-  function resetNewTaskForm() {
-    setNewTaskFormState(initialOverviewNewTaskFormState);
   }
 
   function submitTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const submission = buildOverviewTaskSubmission(newTaskFormState);
+    const submission = buildOverviewTaskSubmission(taskState.newTaskFormState);
     if (!submission) return;
     onCreateTask({
       title: submission.title,
       visibility: submission.visibility,
       assigneeId: submission.assigneeId,
     });
-    resetNewTaskForm();
-    setFilterState(submission.nextFilterState);
-    setIsTaskDialogOpen(false);
+    setTaskState((current) => applyOverviewTaskSubmission(current, submission));
   }
 
   function closeTaskDialog() {
-    setIsTaskDialogOpen(false);
-    resetNewTaskForm();
+    setTaskState((current) => closeOverviewTaskDialog(current));
   }
 
   function toggleTask(task: TripTask) {
     onToggleTaskStatus(task.id);
-    setUndoTask(task);
+    setTaskState((current) => setOverviewUndoTask(current, task));
   }
 
   function undoTaskToggle() {
-    if (!undoTask) return;
-    onToggleTaskStatus(undoTask.id);
-    setUndoTask(null);
+    if (!taskState.undoTask) return;
+    onToggleTaskStatus(taskState.undoTask.id);
+    setTaskState((current) => setOverviewUndoTask(current, null));
   }
 
   return {
     closeTaskDialog,
-    isTaskDialogOpen,
+    isTaskDialogOpen: taskState.isTaskDialogOpen,
     myOpenTasks,
-    newTaskAssigneeId: newTaskFormState.assigneeId,
-    newTaskTitle: newTaskFormState.title,
-    newTaskVisibility: newTaskFormState.visibility,
-    openTaskDialog: () => setIsTaskDialogOpen(true),
+    newTaskAssigneeId: taskState.newTaskFormState.assigneeId,
+    newTaskTitle: taskState.newTaskFormState.title,
+    newTaskVisibility: taskState.newTaskFormState.visibility,
+    openTaskDialog: () =>
+      setTaskState((current) => openOverviewTaskDialog(current)),
     setNewTaskAssigneeId: (assigneeId: string) =>
       updateNewTaskFormState("assigneeId", assigneeId),
     setNewTaskTitle: (title: string) => updateNewTaskFormState("title", title),
@@ -119,10 +114,10 @@ export function useOverviewTaskState({
       updateFilterState("status", status),
     sharedOpenTasks,
     submitTask,
-    taskScope: filterState.scope,
-    taskStatusFilter: filterState.status,
+    taskScope: taskState.filterState.scope,
+    taskStatusFilter: taskState.filterState.status,
     toggleTask,
-    undoTask,
+    undoTask: taskState.undoTask,
     undoTaskToggle,
     visibleTasks,
   };
