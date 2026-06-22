@@ -121,6 +121,10 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modal).not.toContain("useState");
     expect(modal).not.toContain("endOffsetDaysBetweenTimes");
     expect(modal).not.toContain("@/src/shared/hooks/use-escape-to-close");
+    expect(modal).not.toContain("Close time editor");
+    expect(modal).not.toContain("next day end");
+    expect(modal).not.toContain("Display preview");
+    expect(modal).not.toContain('locale === "th"');
     expect(hook).toContain("export function useTimeEditModalModel");
     expect(hook).toContain("@/src/features/itinerary/domain/time-edit-modal-model");
     expect(hook).toContain("./time-edit-modal-state");
@@ -134,6 +138,8 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modal).not.toContain("formatDuration");
     expect(modal).not.toContain("parseTimeToMinutes");
     expect(modalModel).toContain("export function buildTimeEditModalModel");
+    expect(modalModel).toContain("timeEditModalCopy");
+    expect(modalModel).toContain("nextDayEndLabel");
     expect(modalModel).toContain("formatDuration");
     expect(modalModel).toContain("parseTimeToMinutes");
     expect(types).toContain("export interface ActivityTimeButtonProps");

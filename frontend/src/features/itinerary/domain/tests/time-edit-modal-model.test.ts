@@ -11,6 +11,9 @@ describe("buildTimeEditModalModel", () => {
     });
 
     expect(model.errorMessage).toBeNull();
+    expect(model.closeLabel).toBe("Close time editor");
+    expect(model.nextDayEndLabel).toBe("next day end");
+    expect(model.previewLabel).toBe("Display preview");
     expect(model.previewWindow).toBe("23:30 - 01:15 +1");
     expect(model.durationLabel).toBe("Duration: 1 h 45 m");
   });
@@ -24,6 +27,9 @@ describe("buildTimeEditModalModel", () => {
     });
 
     expect(model.errorMessage).toBe("ใส่เวลาเริ่มก่อนใส่เวลาจบ");
+    expect(model.closeLabel).toBe("ปิดตัวแก้ไขเวลา");
+    expect(model.nextDayEndLabel).toBe("จบวันถัดไป");
+    expect(model.previewLabel).toBe("ตัวอย่างที่จะแสดง");
     expect(model.previewWindow).toBe("--:--");
     expect(model.durationLabel).toBe("ไม่แสดง duration");
   });

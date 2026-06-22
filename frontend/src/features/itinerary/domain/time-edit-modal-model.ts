@@ -14,15 +14,62 @@ interface BuildTimeEditModalModelInput {
 }
 
 export interface TimeEditModalModel {
+  closeLabel: string;
   derivedDuration: number | null;
   durationLabel: string;
   endLabel: string;
   errorMessage: string | null;
+  nextDayEndLabel: string;
   optionalEndHint: string;
+  previewLabel: string;
   previewWindow: string;
   startLabel: string;
   timeFormatHint: string;
 }
+
+const timeEditModalCopy: Record<
+  Locale,
+  {
+    closeLabel: string;
+    durationHidden: string;
+    durationPrefix: string;
+    endLabel: string;
+    invalidTime: string;
+    needsStartForEnd: string;
+    nextDayEndLabel: string;
+    optionalEndHint: string;
+    previewLabel: string;
+    startLabel: string;
+    timeFormatHint: string;
+  }
+> = {
+  en: {
+    closeLabel: "Close time editor",
+    durationHidden: "Duration hidden",
+    durationPrefix: "Duration",
+    endLabel: "End time",
+    invalidTime: "Use HH:MM time, for example 09:30.",
+    needsStartForEnd: "Add a start time before adding an end time.",
+    nextDayEndLabel: "next day end",
+    optionalEndHint: "End time is optional. Leave it blank to hide duration.",
+    previewLabel: "Display preview",
+    startLabel: "Start time",
+    timeFormatHint: "Use 24-hour time, for example 08:30.",
+  },
+  th: {
+    closeLabel: "ปิดตัวแก้ไขเวลา",
+    durationHidden: "ไม่แสดง duration",
+    durationPrefix: "ระยะเวลา",
+    endLabel: "เวลาจบ",
+    invalidTime: "เวลาใช้รูปแบบ HH:MM เช่น 09:30",
+    needsStartForEnd: "ใส่เวลาเริ่มก่อนใส่เวลาจบ",
+    nextDayEndLabel: "จบวันถัดไป",
+    optionalEndHint: "เวลาจบไม่บังคับ ถ้าเว้นว่างจะไม่แสดง duration",
+    previewLabel: "ตัวอย่างที่จะแสดง",
+    startLabel: "เวลาเริ่ม",
+    timeFormatHint: "ใช้รูปแบบ 24 ชั่วโมง เช่น 08:30",
+  },
+};
 
 export function buildTimeEditModalModel({
   endOffsetDays,
@@ -30,6 +77,7 @@ export function buildTimeEditModalModel({
   locale,
   startTime,
 }: BuildTimeEditModalModelInput): TimeEditModalModel {
+  const copy = timeEditModalCopy[locale];
   const startMinutes = parseTimeToMinutes(startTime);
   const endMinutes = endTime ? parseTimeToMinutes(endTime) : null;
   const hasValidStart = !startTime || startMinutes !== null;
@@ -39,42 +87,31 @@ export function buildTimeEditModalModel({
     startMinutes !== null && endMinutes !== null
       ? durationBetweenTimes(startTime, endTime, endOffsetDays)
       : null;
-  const timeFormatHint =
-    locale === "th"
-      ? "ใช้รูปแบบ 24 ชั่วโมง เช่น 08:30"
-      : "Use 24-hour time, for example 08:30.";
-  const optionalEndHint =
-    locale === "th"
-      ? "เวลาจบไม่บังคับ ถ้าเว้นว่างจะไม่แสดง duration"
-      : "End time is optional. Leave it blank to hide duration.";
   const errorMessage =
     !hasValidStart || !hasValidEnd
-      ? locale === "th"
-        ? "เวลาใช้รูปแบบ HH:MM เช่น 09:30"
-        : "Use HH:MM time, for example 09:30."
+      ? copy.invalidTime
       : needsStartForEnd
-        ? locale === "th"
-          ? "ใส่เวลาเริ่มก่อนใส่เวลาจบ"
-          : "Add a start time before adding an end time."
+        ? copy.needsStartForEnd
         : null;
   const previewWindow =
     startTime && endTime && derivedDuration
       ? formatTimeRangeLabel(startTime, endTime, endOffsetDays)
       : startTime || "--:--";
   const durationLabel = derivedDuration
-    ? `${locale === "th" ? "ระยะเวลา" : "Duration"}: ${formatDuration(derivedDuration, locale)}`
-    : locale === "th"
-      ? "ไม่แสดง duration"
-      : "Duration hidden";
+    ? `${copy.durationPrefix}: ${formatDuration(derivedDuration, locale)}`
+    : copy.durationHidden;
 
   return {
+    closeLabel: copy.closeLabel,
     derivedDuration,
     durationLabel,
-    endLabel: locale === "th" ? "เวลาจบ" : "End time",
+    endLabel: copy.endLabel,
     errorMessage,
-    optionalEndHint,
+    nextDayEndLabel: copy.nextDayEndLabel,
+    optionalEndHint: copy.optionalEndHint,
+    previewLabel: copy.previewLabel,
     previewWindow,
-    startLabel: locale === "th" ? "เวลาเริ่ม" : "Start time",
-    timeFormatHint,
+    startLabel: copy.startLabel,
+    timeFormatHint: copy.timeFormatHint,
   };
 }

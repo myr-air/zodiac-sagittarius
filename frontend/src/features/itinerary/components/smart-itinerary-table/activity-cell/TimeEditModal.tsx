@@ -55,7 +55,7 @@ export function TimeEditModal({
         onSubmit={(event) => void save(event)}
       >
         <ActivityCellModalHeader
-          closeLabel="Close time editor"
+          closeLabel={model.closeLabel}
           headerClassName={timeEditModalHeaderClassName}
           onClose={onClose}
           subtitle={itineraryLabels.row.inlineTime({ activity: item.activity })}
@@ -91,12 +91,10 @@ export function TimeEditModal({
             disabled={!endTime}
             onClick={toggleEndOffsetDays}
           >
-            +1 {locale === "th" ? "จบวันถัดไป" : "next day end"}
+            +1 {model.nextDayEndLabel}
           </button>
           <div className={timeEditPreviewClassName}>
-            <span>
-              {locale === "th" ? "ตัวอย่างที่จะแสดง" : "Display preview"}
-            </span>
+            <span>{model.previewLabel}</span>
             <strong className={timeEditPreviewValueClassName}>
               {model.previewWindow}
             </strong>
