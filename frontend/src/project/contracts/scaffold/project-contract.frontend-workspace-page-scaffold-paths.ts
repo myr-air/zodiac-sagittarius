@@ -130,6 +130,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/photos/components/PhotoAlbumDialogFields.tsx",
   "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
   "src/features/workspace/pages/photos/hooks/usePhotoAlbumDialogState.ts",
+  "src/features/workspace/pages/photos/hooks/usePhotoAlbumModalState.ts",
   "src/features/workspace/pages/photos/hooks/tests/use-photo-album-dialog-state.test.ts",
   "src/features/workspace/pages/photos/content/TripPhotosPage.copy.ts",
   "src/features/workspace/pages/photos/content/TripPhotosPage.copy.en.ts",

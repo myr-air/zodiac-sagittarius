@@ -18,17 +18,24 @@ describe("trip photos page state structure", () => {
     const photoBrowserStateSource = readPhotosPageSource(
       "hooks/usePhotoAlbumBrowserState.ts",
     );
+    const photoModalStateSource = readPhotosPageSource(
+      "hooks/usePhotoAlbumModalState.ts",
+    );
 
     expect(pageStateSource).toContain("usePhotoAlbumBrowserState");
-    expect(pageStateSource).toContain("initialPhotoAlbumModalState");
-    expect(pageStateSource).toContain("updatePhotoAlbumModalState");
+    expect(pageStateSource).toContain("usePhotoAlbumModalState");
     expect(pageStateSource).not.toContain("const [browserState, setBrowserState]");
-    expect(pageStateSource).toContain("const [modalState, setModalState]");
+    expect(pageStateSource).not.toContain("const [modalState, setModalState]");
     expect(pageStateSource).not.toContain("const [activeProvider, setActiveProvider]");
     expect(pageStateSource).not.toContain("const [dialogAlbum, setDialogAlbum]");
     expect(photoBrowserStateSource).toContain("initialPhotoAlbumBrowserState");
     expect(photoBrowserStateSource).toContain("updatePhotoAlbumBrowserState");
     expect(photoBrowserStateSource).toContain("const [browserState, setBrowserState]");
+    expect(photoModalStateSource).toContain("initialPhotoAlbumModalState");
+    expect(photoModalStateSource).toContain("updatePhotoAlbumModalState");
+    expect(photoModalStateSource).toContain("const [modalState, setModalState]");
+    expect(photoModalStateSource).toContain("async function submitAlbum");
+    expect(photoModalStateSource).toContain("async function confirmDelete");
     expect(photoPageStateSource).toContain("export interface PhotoAlbumBrowserState");
     expect(photoPageStateSource).toContain("export interface PhotoAlbumModalState");
     expect(photoPageStateSource).toContain(
