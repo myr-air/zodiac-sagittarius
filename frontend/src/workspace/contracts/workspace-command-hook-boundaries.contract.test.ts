@@ -26,6 +26,10 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       photoAlbumLocal,
       photoAlbumQuery,
       expenseMutationCommands,
+      expenseMutationCommandTypes,
+      createExpenseCommand,
+      deleteExpenseCommand,
+      updateExpenseCommand,
       expenseDrafts,
       planningCommandsHook,
       planningCommandsParams,
@@ -129,9 +133,21 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(photoAlbumLocal).toContain("normalizePhotoAlbumCreateInput");
     expect(photoAlbumLocal).toContain("createLocalPhotoAlbum");
     expect(photoAlbumQuery).toContain("buildPhotoAlbumSummary");
-    expect(expenseMutationCommands).toContain(
+    expect(expenseMutationCommands).toContain("useCreateWorkspaceExpenseCommand");
+    expect(expenseMutationCommands).toContain("useDeleteWorkspaceExpenseCommand");
+    expect(expenseMutationCommands).toContain("useUpdateWorkspaceExpenseCommand");
+    expect(expenseMutationCommands).not.toContain(
       "resolveExpenseCreateDraftTripPlanId",
     );
+    expect(expenseMutationCommands).not.toContain("buildExpenseUpdateDraft");
+    expect(expenseMutationCommandTypes).toContain("UseWorkspaceExpenseMutationCommandsOptions");
+    expect(createExpenseCommand).toContain("buildExpenseCreateDrafts");
+    expect(createExpenseCommand).toContain(
+      "resolveExpenseCreateDraftTripPlanId",
+    );
+    expect(deleteExpenseCommand).toContain("removeExpenseFromTrip");
+    expect(updateExpenseCommand).toContain("buildExpenseUpdateDraft");
+    expect(updateExpenseCommand).toContain("buildPatchExpenseRequest");
     expect(expenseDrafts).toContain("resolveExpenseCreateDraftTripPlanId");
   });
 });

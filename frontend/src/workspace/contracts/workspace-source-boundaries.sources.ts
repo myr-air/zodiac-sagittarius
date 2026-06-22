@@ -114,6 +114,14 @@ export const workspaceBoundarySourcePaths = {
   photoAlbumQuery: "src/trip/photo-albums/photo-album-query.ts",
   expensesPageStory: "src/features/workspace/pages/expenses/storybook/ExpensesPage.stories.tsx",
   expenseMutationCommands: "src/trip/workspace/sagittarius-app/hooks/expenses/use-workspace-expense-mutation-commands.ts",
+  expenseMutationCommandTypes:
+    "src/trip/workspace/sagittarius-app/hooks/expenses/workspace-expense-mutation-command-types.ts",
+  createExpenseCommand:
+    "src/trip/workspace/sagittarius-app/hooks/expenses/use-create-workspace-expense-command.ts",
+  deleteExpenseCommand:
+    "src/trip/workspace/sagittarius-app/hooks/expenses/use-delete-workspace-expense-command.ts",
+  updateExpenseCommand:
+    "src/trip/workspace/sagittarius-app/hooks/expenses/use-update-workspace-expense-command.ts",
   expenseDrafts: "src/trip/expenses/expense-drafts.ts",
   expenseSummary: "src/trip/expenses/expense-summary.ts",
   expenseSettlements: "src/trip/expenses/expense-settlements.ts",
