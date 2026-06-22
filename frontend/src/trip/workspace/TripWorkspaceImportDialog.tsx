@@ -1,4 +1,5 @@
 import { type FormEvent } from "react";
+import { WorkspaceCompactFormDialog } from "@/src/shared/components/workspace-dialog";
 import { Button } from "@/src/ui";
 import {
   mainItineraryPathName,
@@ -18,9 +19,6 @@ import {
 } from "./TripWorkspaceImportDialogFields";
 import {
   importDialogClassName,
-  importDialogTitleClassName,
-  workspaceDialogActionsClassName,
-  workspaceDialogBackdropClassName,
 } from "./TripWorkspaceDialog.styles";
 
 interface TripWorkspaceImportDialogProps {
@@ -94,48 +92,41 @@ export function TripWorkspaceImportDialog({
   }
 
   return (
-    <div className={workspaceDialogBackdropClassName} role="presentation">
-      <form
-        className={importDialogClassName}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="itinerary-import-options-title"
-        onSubmit={submitImport}
-      >
-        <h2
-          className={importDialogTitleClassName}
-          id="itinerary-import-options-title"
-        >
-          ตั้งค่า import itinerary
-        </h2>
-        <TripWorkspaceImportDialogSummary
-          importedItems={importedItems}
-          recordCount={recordCount}
-          records={records}
-        />
-        <TripWorkspaceImportDialogFields
-          day={day}
-          mode={mode}
-          pathNameInput={pathNameInput}
-          recordCount={recordCount}
-          recordMode={recordMode}
-          scope={scope}
-          targetTripPlanId={targetTripPlanId}
-          tripPlanOptions={tripPlanOptions}
-          onDayChange={setDay}
-          onModeChange={setMode}
-          onPathNameChange={setPathNameInput}
-          onRecordModeChange={setRecordMode}
-          onScopeChange={setScope}
-          onTargetTripPlanChange={setTargetTripPlanId}
-        />
-        <div className={workspaceDialogActionsClassName}>
+    <WorkspaceCompactFormDialog
+      actions={(
+        <>
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button type="submit">Import itinerary</Button>
-        </div>
-      </form>
-    </div>
+        </>
+      )}
+      className={importDialogClassName}
+      onSubmit={submitImport}
+      title="ตั้งค่า import itinerary"
+      titleId="itinerary-import-options-title"
+    >
+      <TripWorkspaceImportDialogSummary
+        importedItems={importedItems}
+        recordCount={recordCount}
+        records={records}
+      />
+      <TripWorkspaceImportDialogFields
+        day={day}
+        mode={mode}
+        pathNameInput={pathNameInput}
+        recordCount={recordCount}
+        recordMode={recordMode}
+        scope={scope}
+        targetTripPlanId={targetTripPlanId}
+        tripPlanOptions={tripPlanOptions}
+        onDayChange={setDay}
+        onModeChange={setMode}
+        onPathNameChange={setPathNameInput}
+        onRecordModeChange={setRecordMode}
+        onScopeChange={setScope}
+        onTargetTripPlanChange={setTargetTripPlanId}
+      />
+    </WorkspaceCompactFormDialog>
   );
 }

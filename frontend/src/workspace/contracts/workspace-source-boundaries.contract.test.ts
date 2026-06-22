@@ -200,17 +200,21 @@ describe("Sagittarius workspace source boundaries", () => {
     const deleteDialog = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDeleteDialog.tsx"), "utf8");
     const dialogStyles = readFileSync(join(frontendRoot, "src/trip/workspace/TripWorkspaceDialog.styles.ts"), "utf8");
 
+    expect(importDialog).toContain("WorkspaceCompactFormDialog");
     expect(importDialog).toContain("./TripWorkspaceDialog.styles");
     expect(importDialog).toContain("./trip-workspace-import-dialog-state");
     expect(importDialog).not.toContain("useState");
     expect(importDialogState).toContain("export function useTripWorkspaceImportDialogState");
     expect(importDialogState).toContain("initialTripWorkspaceImportDialogState");
     expect(deleteDialog).toContain("WorkspaceConfirmDialog");
+    expect(importDialog).not.toContain("workspaceDialogBackdropClassName");
+    expect(importDialog).not.toContain("importDialogTitleClassName");
+    expect(importDialog).not.toContain("workspaceDialogActionsClassName");
     expect(importDialog).not.toContain("const importModalBackdropClassName");
     expect(deleteDialog).not.toContain("const deleteModalBackdropClassName");
     expect(deleteDialog).not.toContain("deleteDialogClassName");
-    expect(dialogStyles).toContain("export const workspaceDialogBackdropClassName");
-    expect(dialogStyles).toContain("export const workspaceDialogActionsClassName");
+    expect(dialogStyles).not.toContain("export const workspaceDialogBackdropClassName");
+    expect(dialogStyles).not.toContain("export const workspaceDialogActionsClassName");
   });
 
   it("keeps workspace page form dialogs on shared chrome", () => {

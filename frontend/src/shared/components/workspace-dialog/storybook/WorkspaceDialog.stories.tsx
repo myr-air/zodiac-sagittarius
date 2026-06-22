@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@/src/ui";
+import { WorkspaceCompactFormDialog } from "../WorkspaceCompactFormDialog";
 import { WorkspaceConfirmDialog } from "../WorkspaceConfirmDialog";
 import { WorkspaceDialog } from "../WorkspaceDialog";
 import { workspaceDialogActionsClassName, workspaceDialogFormClassName } from "../workspace-dialog.styles";
@@ -67,5 +68,33 @@ export const ConfirmPrimaryDialog: StoryObj<typeof WorkspaceConfirmDialog> = {
       title="Switch identity"
       titleId="storybook-switch-identity-title"
     />
+  ),
+};
+
+export const CompactFormDialog: StoryObj<typeof WorkspaceCompactFormDialog> = {
+  render: () => (
+    <WorkspaceCompactFormDialog
+      actions={(
+        <>
+          <Button type="button" variant="ghost">Cancel</Button>
+          <Button type="submit">Import itinerary</Button>
+        </>
+      )}
+      className="import-options-dialog w-[min(520px,100%)]"
+      onSubmit={(event) => event.preventDefault()}
+      title="Import itinerary"
+      titleId="storybook-import-options-title"
+    >
+      <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">
+        4 itinerary items and 2 linked records are ready to import.
+      </p>
+      <label className="grid gap-1.5 text-sm font-bold text-(--color-text-muted)">
+        Scope
+        <select className="min-h-9 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm" defaultValue="trip">
+          <option value="trip">Trip</option>
+          <option value="day">Day</option>
+        </select>
+      </label>
+    </WorkspaceCompactFormDialog>
   ),
 };
