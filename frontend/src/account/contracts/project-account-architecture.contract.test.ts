@@ -54,6 +54,7 @@ describe("Sagittarius account architecture contracts", () => {
   it("keeps account access panel state split from render composition", () => {
     const accountPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/AccountAccessPanel.tsx"), "utf8");
     const accountPanelContent = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx"), "utf8");
+    const accountEmailLoginPanelContent = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/composition/account-email-login-panel-content.tsx"), "utf8");
     const accountPanelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/state/use-account-access-panel-state.ts"), "utf8");
 
     expect(accountPanel).toContain("./state/use-account-access-panel-state");
@@ -64,9 +65,12 @@ describe("Sagittarius account architecture contracts", () => {
     expect(accountPanel).not.toContain("clearAccountPortalDataCache");
     expect(accountPanel).not.toContain("./EmailLoginPanel");
     expect(accountPanel).not.toContain("../trip-join-gate/TripJoinGate");
-    expect(accountPanelContent).toContain("../email-login");
+    expect(accountPanelContent).toContain("./account-email-login-panel-content");
+    expect(accountPanelContent).not.toContain('from "../email-login"');
     expect(accountPanelContent).toContain("@/src/features/account/components/trip-join-gate/TripJoinGate");
     expect(accountPanelContent).toContain("../portal");
+    expect(accountEmailLoginPanelContent).toContain("../email-login");
+    expect(accountEmailLoginPanelContent).toContain("accountAuthCardClassName");
     expect(accountPanelState).toContain("export function useAccountAccessPanelState");
     expect(accountPanelState).toContain("useAccountPortalData");
     expect(accountPanelState).toContain("clearAccountPortalDataCache");

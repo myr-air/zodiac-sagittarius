@@ -59,6 +59,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
   accountAccessPanelContent:
     "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx",
+  accountEmailLoginPanelContent:
+    "src/features/account/components/account-access-panel/composition/account-email-login-panel-content.tsx",
   accountAccessChrome:
     "src/features/account/components/account-access-panel/composition/account-access-panel-chrome.tsx",
   accountAccessShellClasses:

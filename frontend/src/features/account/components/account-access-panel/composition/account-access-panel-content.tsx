@@ -11,15 +11,14 @@ import { StatusMessage, type AuthFlow } from "../auth";
 import {
   AccountPortalLoadingFrame,
 } from "../portal";
-import { EmailLoginPanel } from "../email-login";
 import {
-  accountAuthCardClassName,
   accountDashboardClassName,
   portalContentClassName,
   portalLoadingCardClassName,
 } from "../layout/account-access-panel-layout";
 import { AccountAccessPanelPortalContent } from "../portal/account-access-panel-portal-content";
 import type { UseAccountAccessPanelState } from "../state/use-account-access-panel-state";
+import { AccountEmailLoginPanelContent } from "./account-email-login-panel-content";
 
 interface AccountAccessPanelContentProps {
   accountClient: AccountApiClient;
@@ -42,37 +41,6 @@ interface AccountAccessPanelContentProps {
   onAuthenticated: (session: TripParticipantSession) => void;
   onCockpitLoaded?: (cockpit: TripCockpit) => void;
   onTripChange: (trip: Trip) => void;
-}
-
-interface AccountEmailLoginPanelContentProps {
-  accountClient: AccountApiClient;
-  entryFlow: AuthFlow;
-  formError: string | null;
-  messages: Messages["access"];
-  showRouteTabs: boolean;
-  state: UseAccountAccessPanelState;
-}
-
-function AccountEmailLoginPanelContent({
-  accountClient,
-  entryFlow,
-  formError,
-  messages,
-  showRouteTabs,
-  state,
-}: AccountEmailLoginPanelContentProps) {
-  return (
-    <EmailLoginPanel
-      flow={entryFlow}
-      accountClient={accountClient}
-      authCardClassName={accountAuthCardClassName}
-      formError={formError}
-      showRouteTabs={showRouteTabs}
-      onFlowChange={state.setEntryFlowOverride}
-      onLoggedIn={(session) => state.handleLoggedIn(session, messages.messages)}
-      onError={state.setError}
-    />
-  );
 }
 
 export function AccountAccessPanelContent({

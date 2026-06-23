@@ -7,6 +7,7 @@ describe("Sagittarius account source boundaries", () => {
     const {
       accountAccessPanel,
       accountAccessPanelContent,
+      accountEmailLoginPanelContent,
       accountAccessChrome,
       accountAccessShellClasses,
       accountAccessPortalHandlers,
@@ -91,6 +92,11 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
     expect(accountAccessPanelContent).toContain("./portal/account-access-panel-portal-content");
+    expect(accountAccessPanelContent).toContain("./account-email-login-panel-content");
+    expect(accountAccessPanelContent).not.toContain('from "../email-login"');
+    expect(accountEmailLoginPanelContent).toContain("../email-login");
+    expect(accountEmailLoginPanelContent).toContain("accountAuthCardClassName");
+    expect(accountEmailLoginPanelContent).toContain("export function AccountEmailLoginPanelContent");
     expect(accountAccessPanelContent).not.toContain("accountClient.logout(accountSession.sessionToken)");
     expect(accountAccessPortalContent).toContain("AccountPortalDashboard");
     expect(accountAccessPortalContent).toContain("buildAccountPortalDashboardHandlers");
