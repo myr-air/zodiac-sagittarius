@@ -3,10 +3,7 @@ import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/u
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
 import { canBuildCreateMemberInput } from "../model/member-create-input";
-import {
-  memberInviteRoleLabel,
-  memberInviteRoleValues,
-} from "../model/member-page-options";
+import { memberInviteRoleSelectOptions } from "../model/member-page-options";
 import type { MemberCreatePanelProps, NewMemberRole } from "./member-management.types";
 
 export function MemberCreatePanel({
@@ -46,8 +43,8 @@ export function MemberCreatePanel({
             value={newMemberRole}
             onChange={(event) => onNewMemberRoleChange(event.target.value as NewMemberRole)}
           >
-            {memberInviteRoleValues.map((role) => (
-              <option key={role} value={role}>{memberInviteRoleLabel(role, labels)}</option>
+            {memberInviteRoleSelectOptions(labels).map((role) => (
+              <option key={role.value} value={role.value}>{role.label}</option>
             ))}
           </Select>
         </FieldLabel>

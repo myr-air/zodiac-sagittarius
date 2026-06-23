@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { enMessages } from "@/src/i18n/messages/en";
 import {
   memberInviteRoleLabel,
+  memberInviteRoleSelectOptions,
   memberInviteRoleValues,
   memberRoleFilterLabel,
+  memberRoleFilterSelectOptions,
   memberRoleFilterValues,
   memberStatusFilterLabel,
+  memberStatusFilterSelectOptions,
   memberStatusFilterValues,
 } from "../member-page-options";
 
@@ -42,5 +45,18 @@ describe("member page options", () => {
     expect(memberStatusFilterLabel("active", enMessages)).toBe("Active");
     expect(memberStatusFilterLabel("claimed", enMessages)).toBe(enMessages.join.memberStatus.claimed);
     expect(memberStatusFilterLabel("pending", enMessages)).toBe("Pending");
+  });
+
+  it("builds member select options from centralized labels", () => {
+    expect(memberInviteRoleSelectOptions(enMessages)).toEqual([
+      { value: "organizer", label: "Organizer" },
+      { value: "traveler", label: "Traveler" },
+      { value: "viewer", label: "Viewer" },
+    ]);
+    expect(memberRoleFilterSelectOptions(enMessages)[0]).toEqual({ value: "all", label: "All roles" });
+    expect(memberStatusFilterSelectOptions(enMessages)).toContainEqual({
+      value: "claimed",
+      label: enMessages.join.memberStatus.claimed,
+    });
   });
 });

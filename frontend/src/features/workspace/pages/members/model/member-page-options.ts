@@ -20,6 +20,11 @@ export const memberStatusFilterValues = [
 ] as const;
 export type MemberStatusFilter = (typeof memberStatusFilterValues)[number];
 
+export interface MemberSelectOption<Value extends string = string> {
+  value: Value;
+  label: string;
+}
+
 export interface MemberFilterLabelSource {
   appShell: {
     roles: Record<TripRole, string>;
@@ -61,4 +66,22 @@ export function memberStatusFilterLabel(
   if (status === "all") return labels.members.filters.allStatuses;
   if (status === "claimed") return labels.join.memberStatus.claimed;
   return labels.common.status[status];
+}
+
+export function memberInviteRoleSelectOptions(
+  labels: MemberFilterLabelSource,
+): MemberSelectOption<MemberInviteRole>[] {
+  return memberInviteRoleValues.map((value) => ({ value, label: memberInviteRoleLabel(value, labels) }));
+}
+
+export function memberRoleFilterSelectOptions(
+  labels: MemberFilterLabelSource,
+): MemberSelectOption<MemberRoleFilter>[] {
+  return memberRoleFilterValues.map((value) => ({ value, label: memberRoleFilterLabel(value, labels) }));
+}
+
+export function memberStatusFilterSelectOptions(
+  labels: MemberFilterLabelSource,
+): MemberSelectOption<MemberStatusFilter>[] {
+  return memberStatusFilterValues.map((value) => ({ value, label: memberStatusFilterLabel(value, labels) }));
 }

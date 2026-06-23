@@ -1,9 +1,7 @@
 import { FieldLabel, Select, TextInput } from "@/src/ui";
 import {
-  memberRoleFilterLabel,
-  memberRoleFilterValues,
-  memberStatusFilterLabel,
-  memberStatusFilterValues,
+  memberRoleFilterSelectOptions,
+  memberStatusFilterSelectOptions,
   type MemberRoleFilter,
   type MemberStatusFilter,
 } from "../model/member-page-options";
@@ -35,8 +33,8 @@ export function MemberFilterControls({
           value={roleFilter}
           onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}
         >
-          {memberRoleFilterValues.map((role) => (
-            <option key={role} value={role}>{memberRoleFilterLabel(role, labels)}</option>
+          {memberRoleFilterSelectOptions(labels).map((role) => (
+            <option key={role.value} value={role.value}>{role.label}</option>
           ))}
         </Select>
       </FieldLabel>
@@ -46,8 +44,8 @@ export function MemberFilterControls({
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}
         >
-          {memberStatusFilterValues.map((status) => (
-            <option key={status} value={status}>{memberStatusFilterLabel(status, labels)}</option>
+          {memberStatusFilterSelectOptions(labels).map((status) => (
+            <option key={status.value} value={status.value}>{status.label}</option>
           ))}
         </Select>
       </FieldLabel>
