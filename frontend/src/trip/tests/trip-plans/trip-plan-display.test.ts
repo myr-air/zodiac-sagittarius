@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../seed";
 import {
+  buildTripPlanSelectOptions,
   defaultTripPlanId,
   findTripPlanById,
   findTripPlanOptionById,
@@ -40,6 +41,16 @@ describe("trip plan display", () => {
   it("resolves Trip Plan names from canonical tripPlans", () => {
     expect(tripPlanName(seedTrip, "plan-rain")).toBe("แผนฝนตก");
     expect(findTripPlanById(seedTrip, "plan-rain")?.name).toBe("แผนฝนตก");
+  });
+
+  it("builds select options from Trip Plan ids and names", () => {
+    expect(buildTripPlanSelectOptions([
+      { id: "plan-main", name: "Main Plan" },
+      { id: "plan-rain", name: "Rain Plan" },
+    ])).toEqual([
+      { value: "plan-main", label: "Main Plan" },
+      { value: "plan-rain", label: "Rain Plan" },
+    ]);
   });
 
   it("falls back to legacy planVariants when canonical tripPlans are omitted", () => {

@@ -5,6 +5,7 @@ import {
   buildMemberSelectOptions,
 } from "@/src/features/workspace/model/related-checkbox-options";
 import { SelectOptions } from "@/src/shared/components/select-options";
+import { buildTripPlanSelectOptions } from "@/src/trip/trip-plans";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
@@ -76,9 +77,7 @@ export function ExpenseLinkingFields({
         <label className={expenseStyles.fieldClassName}>
           <span>{copy.fields.tripPlan}</span>
           <Select value={effectiveTripPlanId} disabled={Boolean(linkedItem)} onChange={(event) => onTripPlanIdChange(event.target.value)}>
-            {tripPlanOptions.map((plan) => (
-              <option key={plan.id} value={plan.id}>{plan.name}</option>
-            ))}
+            <SelectOptions options={buildTripPlanSelectOptions(tripPlanOptions)} />
           </Select>
         </label>
         {linkedItem ? <span className={expenseStyles.balanceMetaClassName}>{copy.dialog.planLockedToLinkedStop}</span> : null}

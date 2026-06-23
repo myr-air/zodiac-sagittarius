@@ -1,4 +1,6 @@
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
+import { buildTripPlanSelectOptions } from "@/src/trip/trip-plans";
 import type { ItineraryImportApplyTarget } from "@/src/trip/itinerary-paths";
 import type {
   ItineraryExportItem,
@@ -81,11 +83,7 @@ export function TripWorkspaceImportDialogFields({
           value={targetTripPlanId}
           onChange={(event) => onTargetTripPlanChange(event.target.value)}
         >
-          {tripPlanOptions.map((plan) => (
-            <option value={plan.id} key={plan.id}>
-              {plan.name}
-            </option>
-          ))}
+          <SelectOptions options={buildTripPlanSelectOptions(tripPlanOptions)} />
         </Select>
       </label>
       <label>

@@ -6,10 +6,21 @@ type TripPlanDisplaySource = Pick<
   "activePlanVariantId" | "mainTripPlanId" | "planVariants" | "tripPlans"
 >;
 
+export interface TripPlanSelectOption {
+  value: string;
+  label: string;
+}
+
 export function tripPlanOptions(
   trip: Pick<Trip, "planVariants" | "tripPlans">,
 ): PlanVariant[] {
   return trip.tripPlans ?? trip.planVariants;
+}
+
+export function buildTripPlanSelectOptions(
+  tripPlans: readonly Pick<PlanVariant, "id" | "name">[],
+): TripPlanSelectOption[] {
+  return tripPlans.map((plan) => ({ value: plan.id, label: plan.name }));
 }
 
 export function findTripPlanOptionById(
