@@ -14,6 +14,7 @@ use crate::domain::patches::{
     CreatePhotoAlbumLinkRequest, PatchPhotoAlbumLinkRequest, PhotoAlbumLinkPatch,
 };
 use crate::domain::types::{Capability, PhotoAlbumLinkSummary};
+use crate::domain::uuid_values::unique_uuids;
 use crate::realtime::{RealtimeEvent, RealtimeHub};
 
 #[derive(Debug, Clone, Default)]
@@ -25,7 +26,7 @@ pub async fn list_photo_album_links(
     pool: &PgPool,
     trip_id: Uuid,
 ) -> Result<Vec<PhotoAlbumLinkSummary>, ServiceError> {
-    let records = db::queries::list_photo_album_links(pool, trip_id).await?;
+    let records = db::photo_album_queries::list_photo_album_links(pool, trip_id).await?;
     let album_ids = records.iter().map(|record| record.id).collect::<Vec<_>>();
     let relations = load_relation_map(pool, trip_id, &album_ids).await?;
 
@@ -70,7 +71,7 @@ pub async fn create_photo_album_link(
     validate_itinerary_items(&mut tx, trip_id, &request.related_itinerary_item_ids).await?;
 
     let album_id = Uuid::now_v7();
-    let record = db::queries::insert_photo_album_link(
+    let record = db::photo_album_queries::insert_photo_album_link(
         &mut tx,
         NewPhotoAlbumLink {
             id: album_id,
@@ -89,7 +90,7 @@ pub async fn create_photo_album_link(
     )
     .await?;
 
-    db::queries::replace_photo_album_itinerary_relations(
+    db::photo_album_queries::replace_photo_album_itinerary_relations(
         &mut tx,
         trip_id,
         album_id,
@@ -130,7 +131,7 @@ pub async fn patch_photo_album_link(
 
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_photo_album_link(&mut tx, album_id)
+    let existing = db::photo_album_queries::lock_photo_album_link(&mut tx, album_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -159,7 +160,7 @@ pub async fn patch_photo_album_link(
     }
 
     validate_patch_references(&mut tx, trip_id, &request.patch).await?;
-    let updated = db::queries::update_photo_album_link(
+    let updated = db::photo_album_queries::update_photo_album_link(
         &mut tx,
         album_id,
         &request,
@@ -169,8 +170,10 @@ pub async fn patch_photo_album_link(
     .ok_or(ServiceError::NotFound)?;
 
     if let Some(ids) = request.patch.related_itinerary_item_ids.as_deref() {
-        db::queries::replace_photo_album_itinerary_relations(&mut tx, trip_id, album_id, ids)
-            .await?;
+        db::photo_album_queries::replace_photo_album_itinerary_relations(
+            &mut tx, trip_id, album_id, ids,
+        )
+        .await?;
     }
 
     let relations = patched_relations(&existing_summary, &request.patch);
@@ -199,7 +202,7 @@ pub async fn delete_photo_album_link(
 ) -> Result<PhotoAlbumLinkSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_photo_album_link(&mut tx, album_id)
+    let existing = db::photo_album_queries::lock_photo_album_link(&mut tx, album_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -213,10 +216,13 @@ pub async fn delete_photo_album_link(
     }
 
     let existing_summary = load_photo_album_summary(pool, &existing).await?;
-    let deleted =
-        db::queries::soft_delete_photo_album_link(&mut tx, album_id, existing.version + 1)
-            .await?
-            .ok_or(ServiceError::NotFound)?;
+    let deleted = db::photo_album_queries::soft_delete_photo_album_link(
+        &mut tx,
+        album_id,
+        existing.version + 1,
+    )
+    .await?
+    .ok_or(ServiceError::NotFound)?;
     let album = summary_from_record(
         deleted,
         PhotoAlbumRelations {
@@ -256,7 +262,8 @@ async fn load_relation_map(
     album_ids: &[Uuid],
 ) -> Result<BTreeMap<Uuid, PhotoAlbumRelations>, ServiceError> {
     let pairs =
-        db::queries::list_photo_album_itinerary_relation_ids(pool, trip_id, album_ids).await?;
+        db::photo_album_queries::list_photo_album_itinerary_relation_ids(pool, trip_id, album_ids)
+            .await?;
     let mut map = BTreeMap::<Uuid, PhotoAlbumRelations>::new();
     for album_id in album_ids {
         map.entry(*album_id).or_default();
@@ -380,11 +387,6 @@ fn format_time(value: OffsetDateTime) -> String {
     value
         .format(&Rfc3339)
         .unwrap_or_else(|_| value.unix_timestamp().to_string())
-}
-
-fn unique_uuids(ids: &[Uuid]) -> Vec<Uuid> {
-    let mut seen = std::collections::HashSet::new();
-    ids.iter().copied().filter(|id| seen.insert(*id)).collect()
 }
 
 async fn write_event(

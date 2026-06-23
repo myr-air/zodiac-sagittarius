@@ -17,6 +17,7 @@ use crate::domain::patches::{
 use crate::domain::types::{
     BookingDocExternalLinkSummary, BookingDocSummary, Capability, TripRole,
 };
+use crate::domain::uuid_values::unique_uuids;
 use crate::realtime::{RealtimeEvent, RealtimeHub};
 
 #[derive(Debug, Clone, Default)]
@@ -792,11 +793,6 @@ fn price_amount_to_minor(value: f64) -> i32 {
     (value * 100.0).round() as i32
 }
 
-fn unique_uuids(ids: &[Uuid]) -> Vec<Uuid> {
-    let mut seen = std::collections::HashSet::new();
-    ids.iter().copied().filter(|id| seen.insert(*id)).collect()
-}
-
 async fn write_event(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     booking_doc: &BookingDocSummary,
@@ -918,18 +914,6 @@ mod tests {
             &record,
             &relations
         ));
-    }
-
-    #[test]
-    fn unique_uuids_preserves_first_seen_order() {
-        let first = Uuid::now_v7();
-        let second = Uuid::now_v7();
-        let third = Uuid::now_v7();
-
-        assert_eq!(
-            unique_uuids(&[first, second, first, third, second]),
-            vec![first, second, third]
-        );
     }
 
     #[test]
