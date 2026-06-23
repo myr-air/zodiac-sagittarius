@@ -1,5 +1,5 @@
 import { formatMoney, refundAmount, sumShares } from "@/src/trip/expenses";
-import { findMemberById, memberInitial } from "@/src/trip/members";
+import { findMemberById } from "@/src/trip/members";
 import type { Expense, Member } from "@/src/trip/types";
 
 export interface ExpenseLedgerRowDisplay {
@@ -10,7 +10,6 @@ export interface ExpenseLedgerRowDisplay {
 
 export interface ExpenseLedgerPayerDisplay {
   color: string;
-  initial: string;
   name: string;
 }
 
@@ -38,7 +37,6 @@ export function expenseLedgerPayerDisplay({
   if (!payer) return null;
   return {
     color: payer.color,
-    initial: memberInitial(payer.displayName),
     name: payer.displayName,
   };
 }

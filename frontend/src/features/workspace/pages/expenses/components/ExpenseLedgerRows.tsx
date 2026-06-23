@@ -9,6 +9,7 @@ import {
 } from "../model/expense-ledger-display";
 import type { DuplicateExpenseAsEstimateHandler } from "../model/expense-page-types";
 import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
+import { ExpenseMemberLine } from "./ExpenseMemberLine";
 
 interface ExpenseLedgerRowsProps {
   canEditExpenses: boolean;
@@ -68,10 +69,7 @@ export function ExpenseLedgerRows({
             <td><span className={expenseStyles.ledgerAmountClassName}>{display.amountLabel}</span></td>
             <td>
               {payer ? (
-                <span className={expenseStyles.memberLineClassName}>
-                  <span className={expenseStyles.avatarClassName} style={{ backgroundColor: payer.color }} aria-hidden="true">{payer.initial}</span>
-                  <span className={expenseStyles.balanceNameClassName}>{payer.name}</span>
-                </span>
+                <ExpenseMemberLine color={payer.color} name={payer.name} />
               ) : expense.paidBy}
             </td>
             <td>{display.splitTotalLabel}</td>

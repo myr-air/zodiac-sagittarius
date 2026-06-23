@@ -88,7 +88,6 @@ describe("expense ledger display", () => {
       paidBy: "member-aom",
     })).toEqual({
       color: "#2563eb",
-      initial: "A",
       name: "Aom",
     });
     expect(expenseLedgerPayerDisplay({

@@ -1,6 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { memberInitial } from "@/src/trip/members";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -13,6 +12,7 @@ import {
   ExpenseCategorySpendSection,
   ExpenseScopeAuditSection,
 } from "./ExpenseOverviewSections";
+import { ExpenseMemberLine } from "./ExpenseMemberLine";
 
 interface ExpenseOverviewPanelsProps {
   trip: Trip;
@@ -54,16 +54,11 @@ export function ExpenseOverviewPanels({
             });
             return (
               <div className={expenseStyles.balanceRowClassName} key={member.id}>
-                <span className={expenseStyles.memberLineClassName}>
-                  <span className={expenseStyles.avatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">{memberInitial(member.displayName)}</span>
-                  <span className="min-w-0">
-                    <span className={expenseStyles.balanceNameClassName}>{member.displayName}</span>
-                    <br />
-                    <span className={expenseStyles.balanceMetaClassName}>
-                      {balance.description}
-                    </span>
-                  </span>
-                </span>
+                <ExpenseMemberLine
+                  color={member.color}
+                  name={member.displayName}
+                  meta={balance.description}
+                />
                 <strong
                   className={cn(
                     expenseStyles.amountClassName,
