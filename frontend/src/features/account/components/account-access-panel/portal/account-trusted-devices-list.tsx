@@ -5,7 +5,7 @@ import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import { formatDateTime } from "../auth";
+import { trustedDeviceSummary } from "./account-trusted-devices-list.model";
 
 interface AccountTrustedDevicesListClassNames {
   deviceList: string;
@@ -35,10 +35,7 @@ export function AccountTrustedDevicesList({
           <div className={classNames.deviceRow} key={device.id}>
             <div>
               <strong>{device.label}</strong>
-              <span>
-                {device.userAgent || labels.unknownBrowser} ·{" "}
-                {device.lastSeenAt ? formatDateTime(device.lastSeenAt, locale) : formatDateTime(device.createdAt, locale)}
-              </span>
+              <span>{trustedDeviceSummary(device, labels, locale)}</span>
             </div>
             <Button type="button" variant="secondary" onClick={() => onRevokeDevice(device.id)} disabled={revokingDeviceId === device.id}>
               <Icon name="x" />
