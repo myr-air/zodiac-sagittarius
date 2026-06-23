@@ -3,10 +3,18 @@ import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { pathIdMain } from "@/src/features/itinerary/testing";
 import {
+  branchGraphPathOptions,
+  buildOwnerStoryArgs,
   buildPrefixedPathScenarioItems,
   pathNameMain,
   buildOverflowStoryItems,
+  denseTripFixture,
+  emptyTripFixture,
+  planABPathOptions,
+  planAPathOptions,
+  stressPathOptions,
 } from "./support/itinerary-story-fixtures";
+import { buildVisiblePathStoryArgs } from "./support/itinerary-path-story-args";
 
 export const onStoryChangeDayPath = fn();
 export const onStoryMoveItemToPath = fn();
@@ -60,3 +68,79 @@ export function buildPageOverflowItems(): ItineraryItem[] {
     placeDetail: " - gate notes, booking reference, and meet-up details",
   });
 }
+
+export const pageOwnerArgs = buildOwnerStoryArgs({
+  onMoveItemToPath: onStoryMoveItemToPath,
+  onChangeDayPath: onStoryChangeDayPath,
+  onToggleShowAllPaths: onStoryToggleShowAllPaths,
+  onUpdateItemInline: onStoryUpdateItemInline,
+});
+
+export const pageTimeWindowDurationArgs = {
+  items: pageWindowOnlyDurationItems,
+  selectedItemId: "page-window-only-duration",
+};
+
+export const pageDenseArgs = {
+  items: denseTripFixture.itineraryItems,
+  selectedItemId: "",
+};
+
+export const pageEmptyArgs = {
+  items: emptyTripFixture.itineraryItems,
+  selectedItemId: "",
+};
+
+export const pageOverlapConflictArgs = {
+  selectedItemId: "overlap-dim-sum",
+  items: pageOverlapConflictItems,
+};
+
+export const pagePlanAArgs = buildVisiblePathStoryArgs(
+  pagePlanAExampleItems,
+  "page-plan-a-main-breakfast",
+  planAPathOptions,
+);
+
+export const pagePlanABArgs = buildVisiblePathStoryArgs(
+  pagePlanABAlternativeItems,
+  "page-plan-ab-main-breakfast",
+  planABPathOptions,
+);
+
+export const pagePathAndDurationArgs = {
+  ...buildVisiblePathStoryArgs(pagePlanABAlternativeItems, "page-plan-ab-main-breakfast", planABPathOptions, {
+    showAllPaths: false,
+  }),
+  onChangeDayPath: onStoryChangeDayPath,
+  onMoveItemToPath: onStoryMoveItemToPath,
+  onToggleShowAllPaths: onStoryToggleShowAllPaths,
+  onUpdateItemInline: onStoryUpdateItemInline,
+};
+
+export const pageBranchGraphArgs = buildVisiblePathStoryArgs(
+  pageBranchGraphItems,
+  "page-graph-main",
+  branchGraphPathOptions,
+);
+
+export const pageRequestedPlanArgs = buildVisiblePathStoryArgs(
+  pageRequestedPlanExampleItems,
+  "page-requested-main-0800",
+  planAPathOptions,
+);
+
+export const pageStressPathsArgs = buildVisiblePathStoryArgs(
+  pageStressPathItems,
+  "page-stress-0800-main",
+  stressPathOptions,
+);
+
+export const pageTableOverflowArgs = buildVisiblePathStoryArgs(
+  buildPageOverflowItems(),
+  "page-overflow-page-stress-0800-main",
+  stressPathOptions,
+  {
+    graphItems: pageStressPathItems,
+  },
+);

@@ -59,7 +59,7 @@ export const requiredSupportingPageStates: Array<[string, string[]]> = [
     ],
   ],
   [
-    "features/account/components/account-access-panel/portal/storybook/account-portal-primitives.stories.tsx",
+    "features/account/components/account-access-panel/portal/primitives/storybook/account-portal-primitives.stories.tsx",
     ["Overview", "ThaiEmpty"],
   ],
 ];

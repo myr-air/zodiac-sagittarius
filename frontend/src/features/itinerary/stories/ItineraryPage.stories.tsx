@@ -1,28 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
-  branchGraphPathOptions,
-  planAPathOptions,
-  planABPathOptions,
-  stressPathOptions,
-  buildOwnerStoryArgs,
-  denseTripFixture,
-  emptyTripFixture,
-} from "./support/itinerary-story-fixtures";
-import {
-  buildPageOverflowItems,
-  onStoryChangeDayPath,
+  pageBranchGraphArgs,
+  pageDenseArgs,
+  pageEmptyArgs,
+  pageOverlapConflictArgs,
+  pageOwnerArgs,
+  pagePathAndDurationArgs,
+  pagePlanABArgs,
+  pagePlanAArgs,
+  pageRequestedPlanArgs,
+  pageStressPathsArgs,
+  pageTableOverflowArgs,
+  pageTimeWindowDurationArgs,
   onStoryInlineQuickEdit,
-  onStoryMoveItemToPath,
-  onStoryToggleShowAllPaths,
-  onStoryUpdateItemInline,
-  pageBranchGraphItems,
-  pageOverlapConflictItems,
-  pagePlanABAlternativeItems,
-  pagePlanAExampleItems,
-  pageRequestedPlanExampleItems,
-  pageStressPathItems,
-  pageWindowOnlyDurationItems,
 } from "./ItineraryPage.stories.support";
 import {
   branchGraphPlay,
@@ -46,7 +37,6 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
-import { buildVisiblePathStoryArgs } from "./support/itinerary-path-story-args";
 
 const meta = {
   title: "Pages/Itinerary",
@@ -61,12 +51,7 @@ const ownerStory = ownerArgsStory<Story>;
 const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
-  args: buildOwnerStoryArgs({
-    onMoveItemToPath: onStoryMoveItemToPath,
-    onChangeDayPath: onStoryChangeDayPath,
-    onToggleShowAllPaths: onStoryToggleShowAllPaths,
-    onUpdateItemInline: onStoryUpdateItemInline,
-  }),
+  args: pageOwnerArgs,
   play: ownerPlay,
 };
 
@@ -81,8 +66,7 @@ export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
 });
 
 export const TimeWindowDuration: Story = ownerStory(Owner.args, {
-  items: pageWindowOnlyDurationItems,
-  selectedItemId: "page-window-only-duration",
+  ...pageTimeWindowDurationArgs,
 });
 
 export const Viewer: Story = ownerStory(Owner.args, { role: "viewer" }, viewerPlay);
@@ -90,54 +74,43 @@ export const Viewer: Story = ownerStory(Owner.args, { role: "viewer" }, viewerPl
 export const Traveler: Story = ownerStory(Owner.args, { role: "traveler" }, travelerPlay);
 
 export const Dense: Story = ownerStory(Owner.args, {
-  items: denseTripFixture.itineraryItems,
-  selectedItemId: "",
+  ...pageDenseArgs,
 });
 
 export const Empty: Story = ownerStory(Owner.args, {
-  items: emptyTripFixture.itineraryItems,
-  selectedItemId: "",
+  ...pageEmptyArgs,
 });
 
 export const OverlapConflictWarning: Story = ownerStory(Owner.args, {
-  selectedItemId: "overlap-dim-sum",
-  items: pageOverlapConflictItems,
+  ...pageOverlapConflictArgs,
 }, overlapConflictWarningPlay);
 
 export const PlanAExample: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pagePlanAExampleItems, "page-plan-a-main-breakfast", planAPathOptions),
+  ...pagePlanAArgs,
 }, planAExamplePlay);
 
 export const PlanABAlternatives: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pagePlanABAlternativeItems, "page-plan-ab-main-breakfast", planABPathOptions),
+  ...pagePlanABArgs,
 }, planABAlternativesPlay);
 
 export const PathAndDurationInteractions: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pagePlanABAlternativeItems, "page-plan-ab-main-breakfast", planABPathOptions, {
-    showAllPaths: false,
-  }),
-  onChangeDayPath: onStoryChangeDayPath,
-  onMoveItemToPath: onStoryMoveItemToPath,
-  onToggleShowAllPaths: onStoryToggleShowAllPaths,
-  onUpdateItemInline: onStoryUpdateItemInline,
+  ...pagePathAndDurationArgs,
 }, pathAndDurationInteractionsPlay);
 
 export const BranchGraph: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pageBranchGraphItems, "page-graph-main", branchGraphPathOptions),
+  ...pageBranchGraphArgs,
 }, branchGraphPlay);
 
 export const RequestedPlanExample: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pageRequestedPlanExampleItems, "page-requested-main-0800", planAPathOptions),
+  ...pageRequestedPlanArgs,
 }, requestedPlanExamplePlay);
 
 export const StressPaths: Story = ownerStory(Owner.args, {
-  ...buildVisiblePathStoryArgs(pageStressPathItems, "page-stress-0800-main", stressPathOptions),
+  ...pageStressPathsArgs,
 }, stressPathsPlay);
 
 export const TableOverflow: Story = viewportStoryForOwner(Owner.args, "mobile320", tableOverflowPlay, {
-  ...buildVisiblePathStoryArgs(buildPageOverflowItems(), "page-overflow-page-stress-0800-main", stressPathOptions, {
-    graphItems: pageStressPathItems,
-  }),
+  ...pageTableOverflowArgs,
 });
 
 export const Tablet: Story = viewportStoryForOwner(Owner.args, "tablet768", responsivePlay);
