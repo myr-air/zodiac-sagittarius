@@ -14,12 +14,21 @@ describe("booking dialog state structure", () => {
     const dialogStateSource = readBookingsDocsHookSource(
       "useBookingDialogState.ts",
     );
+    const dialogActionsSource = readBookingsDocsHookSource(
+      "useBookingDialogActions.ts",
+    );
 
     expect(dialogStateSource).toContain("type BookingDialogFields");
     expect(dialogStateSource).toContain("@/src/shared/form-state");
     expect(dialogStateSource).toContain("const [formFields, setFormFields]");
     expect(dialogStateSource).toContain("function updateFormField");
     expect(dialogStateSource).toContain("function toggleFormFieldId");
+    expect(dialogStateSource).toContain("useBookingDialogActions");
+    expect(dialogStateSource).not.toContain("buildBookingDialogSubmitInput");
+    expect(dialogStateSource).not.toContain("function submit");
+    expect(dialogActionsSource).toContain("export function useBookingDialogActions");
+    expect(dialogActionsSource).toContain("function submit");
+    expect(dialogActionsSource).toContain("buildBookingDialogSubmitInput");
     expect(dialogStateSource).not.toContain("const [title, setTitle]");
     expect(dialogStateSource).not.toContain("const [travelerIds, setTravelerIds]");
     expect(dialogStateSource).not.toContain(

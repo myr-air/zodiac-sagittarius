@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import {
   toggleIdFieldState,
   updateFieldState,
@@ -10,10 +10,10 @@ import type {
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import type { SubmitBookingDocHandler } from "../BookingsDocsPage.types";
 import {
-  buildBookingDialogSubmitInput,
   type BookingDialogFields,
   initialBookingDialogFields,
 } from "../model/booking-dialog-fields";
+import { useBookingDialogActions } from "./useBookingDialogActions";
 
 interface BookingDialogStateInput {
   booking: BookingDoc | null;
@@ -50,15 +50,12 @@ export function useBookingDialogState({
     setFormFields((current) => toggleIdFieldState(current, field, id));
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const input = buildBookingDialogSubmitInput({
-      booking,
-      externalLinkLabel: copy.externalLinkLabel,
-      fields: formFields,
-    });
-    if (input) onSubmit(input);
-  }
+  const { submit } = useBookingDialogActions({
+    booking,
+    copy,
+    formFields,
+    onSubmit,
+  });
 
   return {
     confirmationCode: formFields.confirmationCode,

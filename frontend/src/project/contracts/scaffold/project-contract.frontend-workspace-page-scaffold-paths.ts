@@ -63,6 +63,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/bookings-docs/components/tests/BookingFileList.test.tsx",
   "src/features/workspace/pages/bookings-docs/components/tests/BookingFileToolbar.test.tsx",
   "src/features/workspace/pages/bookings-docs/hooks/useBookingBrowserState.ts",
+  "src/features/workspace/pages/bookings-docs/hooks/useBookingDialogActions.ts",
   "src/features/workspace/pages/bookings-docs/hooks/useBookingDialogState.ts",
   "src/features/workspace/pages/bookings-docs/hooks/useBookingModalState.ts",
   "src/features/workspace/pages/bookings-docs/hooks/tests/useBookingDialogState.test.ts",
