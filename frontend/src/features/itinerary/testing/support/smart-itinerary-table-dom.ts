@@ -2,6 +2,16 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
+export function queryItineraryItemRow(itemId: string): HTMLTableRowElement | null {
+  return document.querySelector<HTMLTableRowElement>(`[data-item-id="${itemId}"]`);
+}
+
+export function getItineraryItemRow(itemId: string): HTMLTableRowElement {
+  const row = queryItineraryItemRow(itemId);
+  if (!row) throw new Error(`Itinerary row not found: ${itemId}`);
+  return row;
+}
+
 export function findGraphLine(from: HTMLElement, to: HTMLElement): Element | undefined {
   const fromCenter = {
     x: Number.parseFloat(from.style.left),

@@ -1,7 +1,10 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { renderSmartItineraryTable } from "@/src/features/itinerary/testing";
+import {
+  getItineraryItemRow,
+  renderSmartItineraryTable,
+} from "@/src/features/itinerary/testing";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 const renderTable = renderSmartItineraryTable;
@@ -27,11 +30,8 @@ describe("SmartItineraryTable activity editing", () => {
       onUpdateItemInline,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="time-modal-item"]',
-    );
-    expect(row).not.toBeNull();
-    const timeButton = within(row as HTMLElement).getByRole("button", {
+    const row = getItineraryItemRow("time-modal-item");
+    const timeButton = within(row).getByRole("button", {
       name: /แก้ไขเวลา Harbour transfer/i,
     });
     expect(timeButton).toHaveTextContent("08:00");
@@ -85,11 +85,8 @@ describe("SmartItineraryTable activity editing", () => {
       onUpdateItemInline,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="travel-subtype-row"]',
-    );
-    expect(row).not.toBeNull();
-    const typeButton = within(row as HTMLElement)
+    const row = getItineraryItemRow("travel-subtype-row");
+    const typeButton = within(row)
       .getAllByRole("button", { name: /แก้ไขประเภท Hotel transfer/i })
       .find((button) => button.className.includes("activity-type-picker "));
     expect(typeButton).toBeDefined();
@@ -132,11 +129,8 @@ describe("SmartItineraryTable activity editing", () => {
       onUpdateItemInline,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="mobile-travel-subtype-row"]',
-    );
-    expect(row).not.toBeNull();
-    const typeButton = within(row as HTMLElement)
+    const row = getItineraryItemRow("mobile-travel-subtype-row");
+    const typeButton = within(row)
       .getAllByRole("button", { name: /แก้ไขประเภท Mobile transfer/i })
       .find((button) => button.className.includes("activity-type-picker-mobile"));
     expect(typeButton).toBeDefined();
