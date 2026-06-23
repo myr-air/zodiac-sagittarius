@@ -11,6 +11,7 @@ import {
   photoProviderLabel,
 } from "../model/photo-page-options";
 import { photoAlbumLinkHost } from "../model/photo-page-selectors";
+import { PhotoCopyFeedback } from "./PhotoCopyFeedback";
 
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
@@ -55,14 +56,7 @@ export function PhotoAlbumInspector({
           ) : null}
         </div>
         {copyState !== "idle" ? (
-          <span
-            className={photoStyles.copyFeedbackClassName}
-            data-state={copyState}
-            role="status"
-            aria-label={copy.copyStatusLabel}
-          >
-            {copyState === "copied" ? copy.copied : copy.copyError}
-          </span>
+          <PhotoCopyFeedback copy={copy} copyState={copyState} />
         ) : null}
         {href ? (
           <Button asChild className="w-full">
