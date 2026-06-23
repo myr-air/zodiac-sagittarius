@@ -1,9 +1,9 @@
-import type { Messages } from "@/src/i18n/messages";
 import { cn } from "@/src/lib/cn";
 import {
-  checkedChecklistKeys,
-  checklistKeys,
-  previewDayKeys,
+  type HomeLandingPreviewCopy,
+  buildHomePreviewChecklistItems,
+  buildHomePreviewDayCards,
+  buildHomePreviewMenuItems,
 } from "./HomeLanding.meta";
 import {
   homeChecklistCardClassName,
@@ -29,8 +29,6 @@ import {
   homePreviewMenuItemClassName,
 } from "./HomeLanding.styles";
 
-type HomeLandingPreviewCopy = Messages["homeLanding"]["preview"];
-
 export function HomePreviewMenu({ preview }: { preview: HomeLandingPreviewCopy }) {
   return (
     <div
@@ -38,25 +36,16 @@ export function HomePreviewMenu({ preview }: { preview: HomeLandingPreviewCopy }
       aria-label={preview.sectionsLabel}
       role="list"
     >
-      <span
-        className={homePreviewMenuItemClassName}
-        data-active="true"
-        role="listitem"
-      >
-        {preview.sections.overview}
-      </span>
-      <span className={homePreviewMenuItemClassName} role="listitem">
-        {preview.sections.itinerary}
-      </span>
-      <span className={homePreviewMenuItemClassName} role="listitem">
-        {preview.sections.map}
-      </span>
-      <span className={homePreviewMenuItemClassName} role="listitem">
-        {preview.sections.budget}
-      </span>
-      <span className={homePreviewMenuItemClassName} role="listitem">
-        {preview.sections.checklist}
-      </span>
+      {buildHomePreviewMenuItems(preview).map((item) => (
+        <span
+          className={homePreviewMenuItemClassName}
+          data-active={item.active ? "true" : undefined}
+          key={item.key}
+          role="listitem"
+        >
+          {item.label}
+        </span>
+      ))}
     </div>
   );
 }
@@ -77,20 +66,20 @@ export function HomePreviewMain({ preview }: { preview: HomeLandingPreviewCopy }
 function HomePreviewDayStrip({ preview }: { preview: HomeLandingPreviewCopy }) {
   return (
     <div className={homeDayStripClassName}>
-      {previewDayKeys.map((dayKey, artIndex) => (
-        <article className={homeDayCardClassName} key={dayKey}>
+      {buildHomePreviewDayCards(preview).map((day) => (
+        <article className={homeDayCardClassName} key={day.key}>
           <span className={homeDayPillClassName}>
-            {preview.days[dayKey].day}
+            {day.label}
           </span>
           <h2 className={homeDayTitleClassName}>
-            {preview.days[dayKey].title}
+            {day.title}
           </h2>
           <p className={homeDayTextClassName}>
-            {preview.days[dayKey].detail}
+            {day.detail}
           </p>
           <div
             className={homeDayImageClassName}
-            style={{ backgroundPosition: `${artIndex * 33.333}% 50%` }}
+            style={{ backgroundPosition: day.backgroundPosition }}
             aria-hidden="true"
           />
         </article>
@@ -154,18 +143,18 @@ function HomePreviewChecklist({ preview }: { preview: HomeLandingPreviewCopy }) 
         75%
       </meter>
       <ul className={homeChecklistListClassName}>
-        {checklistKeys.map((itemKey) => (
+        {buildHomePreviewChecklistItems(preview).map((item) => (
           <li
             className={cn(
               homeChecklistItemClassName,
-              checkedChecklistKeys.has(itemKey)
+              item.checked
                 ? "line-through text-(--color-text-subtle) font-medium"
                 : "text-(--color-text) font-bold",
             )}
-            data-checked={checkedChecklistKeys.has(itemKey) ? "true" : "false"}
-            key={itemKey}
+            data-checked={item.checked ? "true" : "false"}
+            key={item.key}
           >
-            {preview.checklistItems[itemKey]}
+            {item.label}
           </li>
         ))}
       </ul>

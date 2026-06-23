@@ -7,7 +7,7 @@ import type { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes } from "@/src/routes/app-routes";
 import { Icon } from "@/src/ui/icons";
-import { workflowStepMeta } from "./HomeLanding.meta";
+import { buildHomeWorkflowItems } from "./HomeLanding.meta";
 import {
   homeBrandClassName,
   homeBrandMarkClassName,
@@ -84,17 +84,17 @@ export function HomeWorkflowSection({ landing }: { landing: HomeLandingCopy }) {
       </h2>
       <p className={homeWorkflowDetailClassName}>{landing.workflow.detail}</p>
       <div className={homeWorkflowGridClassName}>
-        {workflowStepMeta.map((step, index) => {
+        {buildHomeWorkflowItems(landing).map((step) => {
           const toneClassNames = workflowToneClassNames[step.tone];
 
           return (
             <article className={homeWorkflowItemClassName} data-tone={step.tone} key={step.key}>
-              <span className={cn(homeWorkflowNumberClassName, toneClassNames.number)}>{index + 1}</span>
+              <span className={cn(homeWorkflowNumberClassName, toneClassNames.number)}>{step.number}</span>
               <span className={cn(homeWorkflowIconClassName, toneClassNames.icon)} aria-hidden="true">
                 <Icon name={step.icon} />
               </span>
-              <h3 className={homeWorkflowItemTitleClassName}>{landing.workflow.steps[step.key].title}</h3>
-              <p className={homeWorkflowItemTextClassName}>{landing.workflow.steps[step.key].text}</p>
+              <h3 className={homeWorkflowItemTitleClassName}>{step.title}</h3>
+              <p className={homeWorkflowItemTextClassName}>{step.text}</p>
             </article>
           );
         })}
