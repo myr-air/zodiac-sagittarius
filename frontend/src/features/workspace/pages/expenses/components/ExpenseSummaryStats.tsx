@@ -13,11 +13,6 @@ interface ExpenseSummaryStatsProps {
   youOwe: number;
 }
 
-const summaryValueToneClassNames = {
-  positive: expenseStyles.positiveClassName,
-  negative: expenseStyles.negativeClassName,
-};
-
 export function ExpenseSummaryStats({
   currentNet,
   expenseSummary,
@@ -48,7 +43,7 @@ export function ExpenseSummaryStats({
         label={t.expenses.stats.yourBalance}
         tone={display.currentNetTone}
         value={expenseSummary.currentUserNetLabel}
-        valueToneClassNames={summaryValueToneClassNames}
+        valueToneClassNames={expenseStyles.summaryValueToneClassNames}
       />
       <WorkspaceSummaryStat
         className={expenseStyles.statClassName}
@@ -56,7 +51,7 @@ export function ExpenseSummaryStats({
         label={t.expenses.stats.owedToYou}
         tone="positive"
         value={display.owedToYouLabel}
-        valueToneClassNames={summaryValueToneClassNames}
+        valueToneClassNames={expenseStyles.summaryValueToneClassNames}
       />
       <WorkspaceSummaryStat
         className={expenseStyles.statClassName}
@@ -64,7 +59,7 @@ export function ExpenseSummaryStats({
         label={t.expenses.stats.youOwe}
         tone="negative"
         value={display.youOweLabel}
-        valueToneClassNames={summaryValueToneClassNames}
+        valueToneClassNames={expenseStyles.summaryValueToneClassNames}
       />
     </div>
   );

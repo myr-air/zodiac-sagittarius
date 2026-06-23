@@ -28,6 +28,10 @@ export const balanceMetaClassName = "text-(--color-text-muted)";
 export const amountClassName = "font-extrabold tabular-nums";
 export const positiveClassName = "text-[#15803d]";
 export const negativeClassName = "text-[#b91c1c]";
+export const summaryValueToneClassNames = {
+  positive: positiveClassName,
+  negative: negativeClassName,
+};
 export const commandBarClassName = `expenses-command-bar grid content-start gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(135deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_54%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} max-[1199px]:p-3`;
 export const filterGridClassName = "grid grid-cols-[minmax(180px,1fr)_minmax(150px,220px)_minmax(150px,220px)_auto] items-end gap-2 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
 export const commandActionsClassName = "expenses-command-actions flex flex-wrap items-center gap-2 max-[767px]:[&>*]:flex-[1_1_180px]";

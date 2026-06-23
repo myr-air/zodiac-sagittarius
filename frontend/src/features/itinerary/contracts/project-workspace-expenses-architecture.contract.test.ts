@@ -36,6 +36,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseDialogSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-dialog-summary-display.ts");
     const expenseSummaryStats = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseSummaryStats.tsx");
     const expenseSummaryDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-summary-display.ts");
+    const expenseStyles = readItineraryArchitectureSource("src/features/workspace/pages/expenses/TripExpensesPage.styles.ts");
     const expenseCommentsSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseCommentsSection.tsx");
     const expenseCommentsState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-comments-state.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
@@ -143,8 +144,11 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerPayerDisplay");
     expect(expenseSummaryStats).toContain("../model/expense-summary-display");
+    expect(expenseSummaryStats).toContain("expenseStyles.summaryValueToneClassNames");
+    expect(expenseSummaryStats).not.toContain("const summaryValueToneClassNames");
     expect(expenseSummaryStats).not.toContain("formatMoney");
     expect(expenseSummaryDisplay).toContain("export function expenseSummaryDisplay");
+    expect(expenseStyles).toContain("export const summaryValueToneClassNames");
     expect(expenseLedgerActions).toContain("export function useExpenseLedgerActions");
     expect(expenseLedgerActions).toContain("buildExpenseCsv");
     expect(expenseLedgerActions).toContain("buildPaybackReminder");

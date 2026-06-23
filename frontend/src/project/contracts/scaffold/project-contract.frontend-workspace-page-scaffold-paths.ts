@@ -85,6 +85,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/tests/TripExpensesPage.dialog.test.tsx",
   "src/features/workspace/pages/expenses/tests/TripExpensesPage.overview.test.tsx",
   "src/features/workspace/pages/expenses/tests/TripExpensesPage.plan-scope.test.tsx",
+  "src/features/workspace/pages/expenses/tests/ExpenseSummaryStats.test.tsx",
   "src/features/workspace/pages/expenses/components/ExpenseDialog.tsx",
   "src/features/workspace/pages/expenses/components/ExpensePageHeader.tsx",
   "src/features/workspace/pages/expenses/model/expense-dialog-calculation.ts",
