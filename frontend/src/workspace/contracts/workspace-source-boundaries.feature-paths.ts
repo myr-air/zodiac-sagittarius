@@ -128,6 +128,9 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-access-actions.ts",
   portalTripWizardCredentialSync:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-credential-sync.ts",
+  tripPreviewMap: "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map.tsx",
+  tripPreviewLiveMapHook:
+    "src/features/account/components/account-access-panel/trip-wizard/map/use-trip-preview-live-map.ts",
   accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
   accountPortalSettingsSection:
     "src/features/account/components/account-access-panel/portal/settings/portal-settings-section.tsx",
