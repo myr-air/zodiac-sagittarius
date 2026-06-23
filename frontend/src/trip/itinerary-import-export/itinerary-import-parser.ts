@@ -2,33 +2,18 @@ import {
   itineraryExportSchema,
   itineraryExportVersion,
 } from "./itinerary-import-export-schema";
-import { itemKindFromActivityType } from "../itinerary-items";
+import { normalizeImportedHierarchy } from "./itinerary-import-hierarchy";
+import { parseExportItem } from "./itinerary-import-item-parser";
+import { parseExportRecords } from "./itinerary-import-record-parser";
 import { parseExportTrip } from "./itinerary-import-trip-parser";
 import { parseSpreadsheetItineraryImportDocument } from "./itinerary-spreadsheet-import";
-import { safeExternalHref } from "../places";
 import {
   isRecord,
-  readActivityType,
-  readAdvisories,
-  readCoordinates,
-  readDetails,
-  readNumber,
-  readOptionalActivitySubtype,
-  readOptionalItemKind,
-  readOptionalNullableString,
-  readOptionalPathRole,
-  readOptionalPriority,
-  readOptionalStatus,
-  readOptionalString,
-  readOptionalTimeMode,
-  readRecordArray,
   readString,
-  unsupportedImportFileError,
 } from "./itinerary-import-readers";
 import type {
   ItineraryExportDocument,
   ItineraryExportItem,
-  ItineraryExportRecords,
 } from "./itinerary-import-export-types";
 
 export function parseItineraryImport(source: string): ItineraryExportItem[] {
@@ -88,87 +73,4 @@ function looksLikeJsonImport(source: string): boolean {
 
 function stripByteOrderMark(source: string): string {
   return source.charCodeAt(0) === 0xfeff ? source.slice(1) : source;
-}
-
-function parseExportRecords(value: unknown): ItineraryExportRecords {
-  if (value === undefined || value === null) {
-    return { expenses: [], bookingDocs: [], stopNotes: [], tasks: [] };
-  }
-  if (!isRecord(value) || Array.isArray(value)) {
-    throw unsupportedImportFileError();
-  }
-  return {
-    expenses: readRecordArray(value, "expenses"),
-    bookingDocs: readRecordArray(value, "bookingDocs"),
-    stopNotes: readRecordArray(value, "stopNotes"),
-    tasks: readRecordArray(value, "tasks"),
-  };
-}
-
-function parseExportItem(value: unknown): ItineraryExportItem {
-  if (!isRecord(value)) throw unsupportedImportFileError();
-  const item = value as Record<string, unknown>;
-
-  return {
-    id: readString(item, "id"),
-    pathGroupId: readOptionalString(item, "pathGroupId"),
-    pathId: readOptionalString(item, "pathId"),
-    pathName: readOptionalString(item, "pathName"),
-    pathRole: readOptionalPathRole(item, "pathRole"),
-    itemKind:
-      readOptionalItemKind(item.itemKind) ??
-      itemKindFromActivityType(readActivityType(item.activityType)),
-    timeMode:
-      readOptionalTimeMode(item.timeMode) ??
-      (item.startTime === null ? "flexible" : "scheduled"),
-    parentItemId: readOptionalNullableString(item, "parentItemId"),
-    isPlanBlock: typeof item.isPlanBlock === "boolean" ? item.isPlanBlock : false,
-    status: readOptionalStatus(item.status) ?? "planned",
-    priority: readOptionalPriority(item.priority) ?? "normal",
-    day: readString(item, "day"),
-    sortOrder: readNumber(item, "sortOrder"),
-    startTime: item.startTime === null ? "" : readString(item, "startTime"),
-    endTime: readOptionalNullableString(item, "endTime"),
-    endOffsetDays:
-      item.endOffsetDays === undefined ? 0 : readNumber(item, "endOffsetDays"),
-    activity: readString(item, "activity"),
-    activityType: readActivityType(item.activityType),
-    activitySubtype: readOptionalActivitySubtype(item.activitySubtype) ?? null,
-    place: readString(item, "place"),
-    linkLabel: typeof item.linkLabel === "string" ? item.linkLabel : "Map",
-    mapLink: typeof item.mapLink === "string" ? safeExternalHref(item.mapLink) : "",
-    coordinates: readCoordinates(item.coordinates),
-    address: typeof item.address === "string" ? item.address : undefined,
-    durationMinutes:
-      item.durationMinutes === null
-        ? null
-        : readNumber(item, "durationMinutes"),
-    transportation:
-      typeof item.transportation === "string" ? item.transportation : "",
-    details: readDetails(item.details),
-    advisories: readAdvisories(item.advisories),
-    note: typeof item.note === "string" ? item.note : "",
-  };
-}
-
-function normalizeImportedHierarchy(
-  items: ItineraryExportItem[],
-): ItineraryExportItem[] {
-  const itemsById = new Map(items.map((item) => [item.id, item]));
-  const parentIds = new Set<string>();
-  for (const item of items) {
-    if (item.parentItemId) parentIds.add(item.parentItemId);
-  }
-
-  return items.map((item) => {
-    if (!item.parentItemId) {
-      return parentIds.has(item.id) ? { ...item, isPlanBlock: true } : item;
-    }
-    const parent = itemsById.get(item.parentItemId);
-    if (!parent) throw unsupportedImportFileError();
-    if (parent.parentItemId || item.day !== parent.day) {
-      throw unsupportedImportFileError();
-    }
-    return { ...item, isPlanBlock: false };
-  });
 }
