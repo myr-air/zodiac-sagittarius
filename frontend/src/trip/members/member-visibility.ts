@@ -19,3 +19,10 @@ export function assignableTripMembers<
     (member) => member.accessStatus !== "disabled",
   );
 }
+
+export function isTripMemberJoined(
+  member: Pick<Member, "claimPasswordHash" | "id">,
+  currentMemberId: string,
+): boolean {
+  return Boolean(member.claimPasswordHash) || member.id === currentMemberId;
+}

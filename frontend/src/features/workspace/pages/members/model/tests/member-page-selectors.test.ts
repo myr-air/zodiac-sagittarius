@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import {
   filterTripMembers,
-  isMemberJoined,
   memberSummaryCounts,
   visibleTripMembers,
 } from "../member-page-selectors";
@@ -30,7 +29,6 @@ describe("member page selectors", () => {
       pending: 2,
       total: 4,
     });
-    expect(isMemberJoined(claimedMembers[0], currentMember.id)).toBe(true);
   });
 
   it("filters members by query, role, and claim status", () => {

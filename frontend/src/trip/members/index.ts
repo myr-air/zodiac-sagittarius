@@ -23,5 +23,6 @@ export {
 export {
   assignableTripMembers,
   isSyntheticViewerMember,
+  isTripMemberJoined,
   visibleTripMembers,
 } from "./member-visibility";

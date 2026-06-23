@@ -2,7 +2,10 @@ import {
   normalizeSearchQuery,
   textMatchesSearchQuery,
 } from "@/src/shared/text-search";
-import { visibleTripMembers as domainVisibleTripMembers } from "@/src/trip/members";
+import {
+  isTripMemberJoined,
+  visibleTripMembers as domainVisibleTripMembers,
+} from "@/src/trip/members";
 import type { Member } from "@/src/trip/types";
 import type { MemberRoleFilter, MemberStatusFilter } from "./member-page-options";
 
@@ -18,13 +21,9 @@ export function visibleTripMembers(members: Member[]): Member[] {
   return domainVisibleTripMembers(members);
 }
 
-export function isMemberJoined(member: Member, currentMemberId: string): boolean {
-  return Boolean(member.claimPasswordHash) || member.id === currentMemberId;
-}
-
 export function memberSummaryCounts(members: Member[], currentMemberId: string): MemberSummaryCounts {
   const active = members.filter((member) => member.accessStatus !== "disabled").length;
-  const joined = members.filter((member) => isMemberJoined(member, currentMemberId)).length;
+  const joined = members.filter((member) => isTripMemberJoined(member, currentMemberId)).length;
   return {
     active,
     disabled: members.length - active,
@@ -57,8 +56,8 @@ export function filterTripMembers({
       statusFilter === "all" ||
       (statusFilter === "active" && member.accessStatus !== "disabled") ||
       (statusFilter === "disabled" && member.accessStatus === "disabled") ||
-      (statusFilter === "claimed" && isMemberJoined(member, currentMemberId)) ||
-      (statusFilter === "pending" && !isMemberJoined(member, currentMemberId));
+      (statusFilter === "claimed" && isTripMemberJoined(member, currentMemberId)) ||
+      (statusFilter === "pending" && !isTripMemberJoined(member, currentMemberId));
 
     return matchesQuery && matchesRole && matchesStatus;
   });
