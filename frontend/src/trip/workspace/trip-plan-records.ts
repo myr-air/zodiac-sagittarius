@@ -1,4 +1,5 @@
 import { defaultTripPlanId } from "@/src/trip/trip-plans";
+import { mapValueById } from "@/src/shared/collection";
 import type {
   BookingDoc,
   Expense,
@@ -49,8 +50,9 @@ export function selectTripPlanRecords(
   },
 ): TripPlanRecordSet {
   const fallbackTripPlanId = selectedTripPlanId || defaultTripPlanId(trip);
-  const itemPlanById = new Map(
-    trip.itineraryItems.map((item) => [item.id, item.planVariantId]),
+  const itemPlanById = mapValueById(
+    trip.itineraryItems,
+    (item) => item.planVariantId,
   );
   const belongsToSelectedPlan = (
     explicitTripPlanId?: string | null,

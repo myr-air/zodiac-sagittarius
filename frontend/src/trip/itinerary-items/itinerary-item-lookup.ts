@@ -1,4 +1,4 @@
-import { findById } from "@/src/shared/collection";
+import { findById, mapValueById } from "@/src/shared/collection";
 import type { ItineraryItem } from "../types";
 
 type ItineraryActivitySource = Pick<ItineraryItem, "activity" | "id">;
@@ -13,9 +13,7 @@ export function findItineraryItemById<TItem extends Pick<ItineraryItem, "id">>(
 export function buildItineraryActivityResolver(
   itineraryItems: readonly ItineraryActivitySource[],
 ): (itemId: string) => string | null {
-  const itineraryActivities = new Map(
-    itineraryItems.map((item) => [item.id, item.activity]),
-  );
+  const itineraryActivities = mapValueById(itineraryItems, (item) => item.activity);
 
   return (itemId) => itineraryActivities.get(itemId) ?? null;
 }

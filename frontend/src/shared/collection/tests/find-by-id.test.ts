@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { findById, mapById, upsertById } from "..";
+import { findById, mapById, mapValueById, upsertById } from "..";
 
 describe("findById", () => {
   const items = [
@@ -21,6 +21,7 @@ describe("findById", () => {
 
   it("indexes items by id for shared collection replacement flows", () => {
     expect(mapById(items).get("item-2")).toEqual({ id: "item-2", label: "Second" });
+    expect(mapValueById(items, (item) => item.label).get("item-2")).toBe("Second");
   });
 
   it("replaces existing ids and appends new ids without mutating inputs", () => {

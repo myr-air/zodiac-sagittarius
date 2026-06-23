@@ -5,6 +5,7 @@ import type {
   Member,
   Trip,
 } from "../types";
+import { mapValueById } from "@/src/shared/collection";
 import { bookingDocMatchesQuery } from "./booking-doc-search";
 
 export {
@@ -110,9 +111,7 @@ export function filterBookingDocs(
   const status = filters.status ?? "all";
   const travelerId = filters.travelerId ?? "all";
   const day = filters.day ?? "all";
-  const itemDayById = new Map(
-    trip.itineraryItems.map((item) => [item.id, item.day]),
-  );
+  const itemDayById = mapValueById(trip.itineraryItems, (item) => item.day);
 
   return docs.filter((doc) => {
     if (!canViewBookingDoc(doc, member)) return false;
