@@ -215,6 +215,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/people-panel/storybook/PeoplePanel.stories.plays.ts",
   "src/shared/components/people-panel/storybook/PeoplePanel.stories.support.ts",
   "src/shared/components/page-header/tests/PageHeader.test.tsx",
+  "src/shared/components/page-header/tests/PageHeader.styles.test.ts",
+  "src/shared/components/page-header/PageHeader.styles.ts",
   "src/shared/components/page-header/storybook/PageHeader.stories.tsx",
   "src/shared/components/page-header/storybook/PageHeader.stories.plays.ts",
   "src/shared/components/suggestion-panel/tests/SuggestionPanel.test.tsx",
