@@ -18,6 +18,11 @@ export function formatEndTime(startTime: string, minutes: number | null): string
   return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
 }
 
+export function formatTimeRangeLabel(startTime: string, endTime: string, endOffsetDays = 0): string {
+  const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
+  return `${startTime || "--:--"} - ${endTime}${endOffset}`;
+}
+
 export function formatTimeWindow(item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">): string {
   const startTime = item.startTime?.trim();
   const endTime = item.endTime?.trim();

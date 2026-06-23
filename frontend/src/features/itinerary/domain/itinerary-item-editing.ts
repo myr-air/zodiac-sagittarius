@@ -18,7 +18,10 @@ import {
   buildActivitySubtypePatch,
   buildActivityTypePatch,
 } from "./itinerary-activity-types";
-import { formatDuration } from "./itinerary-time-display";
+import {
+  formatDuration,
+  formatTimeRangeLabel,
+} from "./itinerary-time-display";
 import {
   normalizeTravelSubtype,
   travelSubtypeForItem,
@@ -36,11 +39,6 @@ import {
   ticketModalCopy,
   ticketNotesForItem,
 } from "./itinerary-booking-display";
-
-function formatTimeRangeLabel(startTime: string, endTime: string, endOffsetDays = 0): string {
-  const endOffset = endOffsetDays > 0 ? ` +${endOffsetDays}` : "";
-  return `${startTime || "--:--"} - ${endTime}${endOffset}`;
-}
 
 function formatTimeTooltip(
   item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays" | "durationMinutes">,

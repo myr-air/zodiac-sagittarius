@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatDuration,
   formatEndTime,
+  formatTimeRangeLabel,
   formatTimeWindow,
 } from "../itinerary-time-display";
 
@@ -17,6 +18,9 @@ describe("itinerary time display", () => {
   });
 
   it("formats compact time windows with next-day offsets", () => {
+    expect(formatTimeRangeLabel("09:00", "10:00", 0)).toBe("09:00 - 10:00");
+    expect(formatTimeRangeLabel("09:00", "07:30", 1)).toBe("09:00 - 07:30 +1");
+    expect(formatTimeRangeLabel("", "07:30", 1)).toBe("--:-- - 07:30 +1");
     expect(formatTimeWindow({ startTime: "23:00", endTime: "02:00", endOffsetDays: 1 })).toBe("23:00-02:00⁺¹");
     expect(formatTimeWindow({ startTime: "09:00", endTime: null, endOffsetDays: 0 })).toBe("09:00");
     expect(formatTimeWindow({ startTime: "", endTime: "22:00", endOffsetDays: 0 })).toBe("22:00");
