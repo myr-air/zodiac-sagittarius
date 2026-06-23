@@ -3,6 +3,7 @@ import type {
   TripPhotoAlbumAccess,
   TripPhotoAlbumProvider,
 } from "@/src/trip/types";
+import { buildMemberOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import { Select } from "@/src/ui";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
@@ -47,7 +48,7 @@ export function PhotoAlbumDialogFields({
         <span>{copy.ownerField}</span>
         <Select value={state.ownerMemberId} onChange={(event) => state.setOwnerMemberId(event.target.value)}>
           <option value="">{copy.noOwner}</option>
-          {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
+          {buildMemberOptions(trip.members).map((member) => <option key={member.id} value={member.id}>{member.label}</option>)}
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>

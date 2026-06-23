@@ -1,5 +1,6 @@
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, ItineraryItem, Trip, TripPlan } from "@/src/trip/types";
+import { buildMemberOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { expenseCategories, expenseSplitModes } from "../model/expense-page-options";
@@ -55,7 +56,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.paidBy}</span>
         <Select value={paidBy} onChange={(event) => onPaidByChange(event.target.value)}>
-          {trip.members.map((member) => <option key={member.id} value={member.id}>{member.displayName}</option>)}
+          {buildMemberOptions(trip.members).map((member) => <option key={member.id} value={member.id}>{member.label}</option>)}
         </Select>
       </label>
       <label className={expenseStyles.fieldClassName}>
