@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildItineraryItem,
   findGraphLine,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
@@ -10,8 +10,7 @@ const renderTable = renderSmartItineraryTable;
 
 describe("SmartItineraryTable graph edges", () => {
   it("draws dashed graph lines for same-plan gaps", () => {
-    const earlyItem = {
-      ...tripFixture.planItems[0],
+    const earlyItem = buildItineraryItem({
       id: "gap-early",
       day: "2026-06-19",
       startTime: "08:00",
@@ -19,9 +18,8 @@ describe("SmartItineraryTable graph edges", () => {
       activity: "Gap early",
       sortOrder: 100,
       pathRole: "main" as const,
-    };
-    const lateItem = {
-      ...tripFixture.planItems[1],
+    });
+    const lateItem = buildItineraryItem({
       id: "gap-late",
       day: "2026-06-19",
       startTime: "09:15",
@@ -29,7 +27,7 @@ describe("SmartItineraryTable graph edges", () => {
       activity: "Gap late",
       sortOrder: 200,
       pathRole: "main" as const,
-    };
+    });
 
     renderTable({
       items: [earlyItem, lateItem],
