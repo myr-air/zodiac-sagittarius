@@ -8,6 +8,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const dayGroupGraphCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/DayGroupGraphCell.tsx");
     const dayGroupHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/DayGroupHeader.tsx");
     const dayTitleEditor = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-title-editor.tsx");
+    const dayTitleEditorActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-day-title-editor-actions.ts");
     const dayTitleEditorState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-title-editor-state.ts");
     const dayGroupTypes = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-group.types.ts");
 
@@ -27,10 +28,17 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(dayGroupHeader).toContain("DayTitleEditor");
     expect(dayGroupHeader).toContain("DayPathControls");
     expect(dayTitleEditor).toContain("./day-title-editor-state");
+    expect(dayTitleEditor).toContain("./use-day-title-editor-actions");
     expect(dayTitleEditor).toContain("const [state, setState]");
+    expect(dayTitleEditor).toContain("const actions = useDayTitleEditorActions");
+    expect(dayTitleEditor).not.toContain("async function commit");
+    expect(dayTitleEditor).not.toContain("useRef");
     expect(dayTitleEditor).not.toContain("const [draft, setDraft]");
     expect(dayTitleEditor).not.toContain("const [sourceTitle, setSourceTitle]");
     expect(dayTitleEditor).not.toContain("const [saving, setSaving]");
+    expect(dayTitleEditorActions).toContain("export function useDayTitleEditorActions");
+    expect(dayTitleEditorActions).toContain("async function commit");
+    expect(dayTitleEditorActions).toContain("revertWithoutCommit");
     expect(dayTitleEditorState).toContain("export interface DayTitleEditorState");
     expect(dayTitleEditorState).toContain("initialDayTitleEditorState");
     expect(dayGroupTypes).toContain("export interface DayGroupProps");

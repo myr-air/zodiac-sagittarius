@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   dayTitleInputClassName,
   dayTitleMaxLength,
@@ -6,13 +6,10 @@ import {
 } from "./smart-itinerary-table.styles";
 import type { ItineraryAsyncVoidResult } from "./itinerary-action.types";
 import {
-  beginDayTitleEditorSave,
-  completeDayTitleEditorSave,
-  endDayTitleEditorSave,
   initialDayTitleEditorState,
-  revertDayTitleEditorDraft,
   updateDayTitleEditorDraft,
 } from "./day-title-editor-state";
+import { useDayTitleEditorActions } from "./use-day-title-editor-actions";
 
 interface DayTitleEditorProps {
   canEdit: boolean;
@@ -40,34 +37,19 @@ export function DayTitleEditor({
   const [state, setState] = useState(() =>
     initialDayTitleEditorState(title, dayTitleMaxLength),
   );
-  const suppressNextCommitRef = useRef(false);
+  const actions = useDayTitleEditorActions({
+    canEdit,
+    date,
+    defaultTitle,
+    onSaveDayTitle,
+    setState,
+    state,
+    version,
+  });
   const dynamicWidthCh = Math.max(
     dayTitleMinWidthCh,
     Math.min(dayTitleMaxLength, state.draft.length || defaultTitle.length) + 1,
   );
-
-  async function commit(nextValue: string) {
-    if (!canEdit || !onSaveDayTitle || state.saving) return;
-    if (suppressNextCommitRef.current) {
-      suppressNextCommitRef.current = false;
-      return;
-    }
-    const trimmed = nextValue.trim();
-    const normalizedTitle = trimmed || defaultTitle;
-    if (normalizedTitle === state.sourceTitle) {
-      setState((current) => revertDayTitleEditorDraft(current));
-      return;
-    }
-    setState((current) => beginDayTitleEditorSave(current));
-    try {
-      await onSaveDayTitle(date, version, trimmed ? normalizedTitle : null);
-      setState((current) =>
-        completeDayTitleEditorSave(current, normalizedTitle),
-      );
-    } finally {
-      setState((current) => endDayTitleEditorSave(current));
-    }
-  }
 
   return (
     <input
@@ -79,7 +61,7 @@ export function DayTitleEditor({
       style={{ width: `${dynamicWidthCh}ch` }}
       title={`${state.draft.length}/${dayTitleMaxLength}`}
       value={state.draft}
-      onBlur={() => void commit(state.draft)}
+      onBlur={() => void actions.commit(state.draft)}
       onChange={(event) =>
         setState((current) =>
           updateDayTitleEditorDraft(current, event.target.value),
@@ -90,8 +72,7 @@ export function DayTitleEditor({
           event.currentTarget.blur();
         }
         if (event.key === "Escape") {
-          suppressNextCommitRef.current = true;
-          setState((current) => revertDayTitleEditorDraft(current));
+          actions.revertWithoutCommit();
           event.currentTarget.blur();
         }
       }}
