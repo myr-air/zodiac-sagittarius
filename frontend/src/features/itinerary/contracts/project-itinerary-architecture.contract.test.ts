@@ -321,6 +321,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const actionButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityActionButton.tsx");
     const activityActionLabels = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-activity-actions.ts");
     const inlineActivityField = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/InlineActivityField.tsx");
+    const inlineActivityFieldActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-inline-activity-field-actions.ts");
     const inlineActivityFieldState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/inline-activity-field-state.ts");
 
     expect(activityCell).toContain("./ActivityCellBody");
@@ -339,9 +340,15 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(titleLine).toContain("export function ActivityCellTitleLine");
     expect(titleLine).toContain("InlineActivityField");
     expect(inlineActivityField).toContain("./inline-activity-field-state");
+    expect(inlineActivityField).toContain("./use-inline-activity-field-actions");
     expect(inlineActivityField).toContain("const [state, setState]");
+    expect(inlineActivityField).toContain("const actions = useInlineActivityFieldActions");
+    expect(inlineActivityField).not.toContain("async function commit");
     expect(inlineActivityField).not.toContain("const [draft, setDraft]");
     expect(inlineActivityField).not.toContain("const [source, setSource]");
+    expect(inlineActivityFieldActions).toContain("export function useInlineActivityFieldActions");
+    expect(inlineActivityFieldActions).toContain("async function commit");
+    expect(inlineActivityFieldActions).toContain("function reset");
     expect(inlineActivityFieldState).toContain("export interface InlineActivityFieldState");
     expect(inlineActivityFieldState).toContain("initialInlineActivityFieldState");
     expect(actionGroup).toContain("export function ActivityCellActionGroup");

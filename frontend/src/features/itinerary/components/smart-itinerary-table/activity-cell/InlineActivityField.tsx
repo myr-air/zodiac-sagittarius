@@ -1,11 +1,10 @@
 import { useState } from "react";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
-  commitInlineActivityFieldDraft,
   initialInlineActivityFieldState,
-  resetInlineActivityFieldDraft,
   updateInlineActivityFieldDraft,
 } from "./inline-activity-field-state";
+import { useInlineActivityFieldActions } from "./use-inline-activity-field-actions";
 
 export function InlineActivityField({
   ariaLabel,
@@ -31,20 +30,12 @@ export function InlineActivityField({
   const [state, setState] = useState(() =>
     initialInlineActivityFieldState(value),
   );
-
-  function reset() {
-    setState((current) => resetInlineActivityFieldDraft(current));
-  }
-
-  async function commit(nextValue: string) {
-    const trimmed = nextValue.trim();
-    if (disabled || trimmed === state.source) {
-      setState((current) => resetInlineActivityFieldDraft(current));
-      return;
-    }
-    await onCommit(trimmed);
-    setState(commitInlineActivityFieldDraft(trimmed));
-  }
+  const actions = useInlineActivityFieldActions({
+    disabled,
+    onCommit,
+    setState,
+    state,
+  });
 
   return (
     <input
@@ -63,7 +54,7 @@ export function InlineActivityField({
           : undefined
       }
       value={state.draft}
-      onBlur={() => void commit(state.draft)}
+      onBlur={() => void actions.commit(state.draft)}
       onChange={(event) =>
         setState((current) =>
           updateInlineActivityFieldDraft(current, event.target.value),
@@ -75,7 +66,7 @@ export function InlineActivityField({
         event.stopPropagation();
         if (event.key === "Enter") event.currentTarget.blur();
         if (event.key === "Escape") {
-          reset();
+          actions.reset();
           event.currentTarget.blur();
         }
       }}
