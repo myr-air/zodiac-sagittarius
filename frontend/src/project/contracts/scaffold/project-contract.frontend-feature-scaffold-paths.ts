@@ -151,6 +151,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/portal/vault/usePortalVaultSectionActions.ts",
   "src/features/account/components/account-access-panel/portal/vault/tests/usePortalVaultSectionActions.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
+  "src/features/account/components/account-access-panel/trip-wizard/share/portal-created-trip-share.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/shell/portal-trip-wizard-actions.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-dates-step.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-destination-step.tsx",

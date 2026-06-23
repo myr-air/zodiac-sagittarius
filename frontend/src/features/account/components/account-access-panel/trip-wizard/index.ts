@@ -7,5 +7,5 @@ export {
   defaultTripForm,
   normalizedTripForm,
 } from "./model/account-trip-form";
-export { PortalCreatedTripShare, type CreatedTripShare } from "./portal-created-trip-share";
+export { PortalCreatedTripShare, type CreatedTripShare } from "./share/portal-created-trip-share";
 export { PortalTripWizard } from "./portal-trip-wizard";
