@@ -1,6 +1,7 @@
 import type { IconName } from "@/src/ui/icons";
 import type { BookingDocStatus, BookingDocType } from "@/src/trip/types";
 import { formatOptionalDisplayDateTime } from "@/src/shared/date-time-display";
+import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 
 export function formatDateTime(value: string | null | undefined): string {
   return formatOptionalDisplayDateTime({
@@ -10,6 +11,27 @@ export function formatDateTime(value: string | null | undefined): string {
     options: { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" },
     value,
   });
+}
+
+export function bookingDateDisplay(
+  value: string | null | undefined,
+  copy: Pick<BookingCopy, "noDate">,
+): string {
+  return value ? formatDateTime(value) : copy.noDate;
+}
+
+export function bookingProviderDisplay(
+  providerName: string | null | undefined,
+  copy: Pick<BookingCopy, "noProvider">,
+): string {
+  return providerName ?? copy.noProvider;
+}
+
+export function bookingConfirmationDisplay(
+  confirmationCode: string | null | undefined,
+  copy: Pick<BookingCopy, "confirmation" | "noConfirmation">,
+): string {
+  return confirmationCode ? `${copy.confirmation}: ${confirmationCode}` : copy.noConfirmation;
 }
 
 export function bookingTypeIcon(type: BookingDocType): IconName {

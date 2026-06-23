@@ -5,7 +5,11 @@ import { Button, IconButton, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import { formatDateTime } from "../model/booking-display";
+import {
+  bookingConfirmationDisplay,
+  bookingDateDisplay,
+  bookingProviderDisplay,
+} from "../model/booking-display";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { BookingTypeLabel } from "./BookingTypeDisplay";
 
@@ -63,9 +67,9 @@ export function BookingInspector({
       <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.quickFacts}</strong>
         <BookingTypeLabel copy={copy} type={booking.type} />
-        <span>{booking.startsAt ? formatDateTime(booking.startsAt) : copy.noDate}</span>
-        <span>{booking.providerName ?? copy.noProvider}</span>
-        <span>{booking.confirmationCode ? `${copy.confirmation}: ${booking.confirmationCode}` : copy.noConfirmation}</span>
+        <span>{bookingDateDisplay(booking.startsAt, copy)}</span>
+        <span>{bookingProviderDisplay(booking.providerName, copy)}</span>
+        <span>{bookingConfirmationDisplay(booking.confirmationCode, copy)}</span>
       </div>
 
       <div className={bookingStyles.inspectorSectionClassName}>

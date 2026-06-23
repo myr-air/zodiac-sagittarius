@@ -5,7 +5,11 @@ import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { bookingDocLinkedContext } from "../model/booking-list";
-import { formatDateTime } from "../model/booking-display";
+import {
+  bookingConfirmationDisplay,
+  bookingDateDisplay,
+  bookingProviderDisplay,
+} from "../model/booking-display";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { BookingTypeLabel, BookingTypeMark } from "./BookingTypeDisplay";
 
@@ -22,7 +26,8 @@ interface BookingFileRowProps {
 
 export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, onDelete }: BookingFileRowProps) {
   const linkedStop = bookingDocLinkedContext(doc, trip) || copy.noLinkedStop;
-  const provider = doc.providerName ?? copy.noProvider;
+  const provider = bookingProviderDisplay(doc.providerName, copy);
+  const confirmation = doc.confirmationCode ? ` · ${bookingConfirmationDisplay(doc.confirmationCode, copy)}` : "";
 
   return (
     <article className={cn(bookingStyles.fileRowClassName, selected && bookingStyles.selectedFileRowClassName)}>
@@ -31,11 +36,11 @@ export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, o
         <span className="min-w-0">
           <strong className="block truncate text-sm font-black text-(--color-text)">{doc.title}</strong>
           <span className="block truncate text-[11px] font-bold text-(--color-text-muted)">
-            <BookingTypeLabel copy={copy} type={doc.type} />{doc.confirmationCode ? ` · ${copy.confirmation}: ${doc.confirmationCode}` : ""}
+            <BookingTypeLabel copy={copy} type={doc.type} />{confirmation}
           </span>
         </span>
       </button>
-      <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{doc.startsAt ? formatDateTime(doc.startsAt) : copy.noDate}</span>
+      <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{bookingDateDisplay(doc.startsAt, copy)}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-3 max-[1199px]:pl-[42px]">{provider}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:hidden">{linkedStop}</span>
       <BookingStatusBadge
