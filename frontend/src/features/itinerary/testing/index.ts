@@ -6,6 +6,13 @@ export {
   defaultSmartItineraryPathOptions,
 } from "./fixtures/itinerary-items";
 export {
+  buildItineraryStoryItem,
+  buildItineraryStoryPathItems,
+  buildOverflowStoryItems,
+  withStoryPrefix,
+  type ItineraryStoryPathItemRow,
+} from "./fixtures/itinerary-story-items";
+export {
   branchGraphPathOptions,
   itineraryFixtureDay,
   mainPathOption,

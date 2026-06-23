@@ -1,9 +1,13 @@
 import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { SmartItineraryTableProps } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
-import { buildOverflowStoryItems, withStoryPrefix } from "./itinerary-story-item-builders";
-import { defaultSmartItineraryPathOptions } from "@/src/features/itinerary/testing";
-import { pathIdStoryRain, itineraryFixtureDay } from "@/src/features/itinerary/testing";
+import {
+  buildOverflowStoryItems,
+  defaultSmartItineraryPathOptions,
+  itineraryFixtureDay,
+  pathIdStoryRain,
+  withStoryPrefix,
+} from "@/src/features/itinerary/testing";
 
 export type SmartItineraryStoryArgs = SmartItineraryTableProps;
 

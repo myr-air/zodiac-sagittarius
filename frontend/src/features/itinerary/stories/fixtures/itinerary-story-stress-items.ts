@@ -2,9 +2,9 @@ import {
   pathIdStoryPlanA,
   pathIdStoryPlanB,
   pathIdStoryPlanC,
+  buildItineraryStoryPathItems,
 } from "@/src/features/itinerary/testing";
 import type { ItineraryItem } from "@/src/trip/types";
-import { buildItineraryStoryPathItems } from "../support/itinerary-story-item-builders";
 import {
   pathNameMain,
   pathNamePlanA,

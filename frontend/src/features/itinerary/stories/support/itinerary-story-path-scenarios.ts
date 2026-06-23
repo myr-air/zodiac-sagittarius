@@ -1,5 +1,5 @@
 import type { ItineraryItem } from "@/src/trip/types";
-import { withStoryPrefix } from "./itinerary-story-item-builders";
+import { withStoryPrefix } from "@/src/features/itinerary/testing";
 import {
   branchGraphItemsBase,
   planABAlternativeItemsBase,

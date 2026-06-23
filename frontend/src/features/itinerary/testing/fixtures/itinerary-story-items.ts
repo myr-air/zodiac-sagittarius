@@ -1,8 +1,6 @@
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
-import {
-  itineraryFixtureDay,
-} from "@/src/features/itinerary/testing";
+import { buildItineraryItem } from "./itinerary-items";
+import { itineraryFixtureDay } from "./path-options";
 
 export type ItineraryStoryPathItemRow = readonly [
   id: string,
@@ -16,18 +14,17 @@ export type ItineraryStoryPathItemRow = readonly [
 ];
 
 export function buildItineraryStoryItem(
-  sourceIndex: number,
+  _sourceIndex: number,
   patch: Partial<ItineraryItem>,
 ): ItineraryItem {
-  return {
-    ...tripFixture.planItems[sourceIndex],
+  return buildItineraryItem({
     startTime: "08:00",
     durationMinutes: 60,
     sortOrder: 100,
     activity: "",
     day: itineraryFixtureDay,
     ...patch,
-  } as ItineraryItem;
+  });
 }
 
 export function buildItineraryStoryPathItems(

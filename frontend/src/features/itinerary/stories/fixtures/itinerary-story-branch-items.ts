@@ -1,9 +1,9 @@
 import {
   pathIdStoryPlanA,
   pathIdStoryRain,
+  buildItineraryStoryItem,
 } from "@/src/features/itinerary/testing";
 import type { ItineraryItem } from "@/src/trip/types";
-import { buildItineraryStoryItem } from "../support/itinerary-story-item-builders";
 import {
   pathNameMain,
   pathNamePlanA,

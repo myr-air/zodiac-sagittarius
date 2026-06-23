@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planAPathOptions } from "./itinerary-story-fixtures";
-import { buildItineraryStoryItem } from "./itinerary-story-item-builders";
+import { buildItineraryStoryItem } from "@/src/features/itinerary/testing";
 import { buildVisiblePathStoryArgs } from "./itinerary-path-story-args";
 
 describe("itinerary path story args", () => {
