@@ -5,9 +5,19 @@ import {
   passwordLoginErrorMessage,
 } from "../../auth";
 
-interface EmailLoginSubmitErrorContext {
+export interface EmailLoginSubmitErrorContext {
   emailLoginMessages: Messages["access"]["emailLogin"];
   messages: Messages["access"]["messages"];
+}
+
+export function buildEmailLoginSubmitErrorContext({
+  emailLoginMessages,
+  messages,
+}: EmailLoginSubmitErrorContext): EmailLoginSubmitErrorContext {
+  return {
+    emailLoginMessages,
+    messages,
+  };
 }
 
 export function emailLoginStartError(

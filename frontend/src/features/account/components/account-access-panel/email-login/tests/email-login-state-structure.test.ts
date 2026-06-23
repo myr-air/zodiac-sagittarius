@@ -84,11 +84,13 @@ describe("email login state structure", () => {
     expect(codeRequestActions).toContain("export function useEmailLoginCodeRequestActions");
     expect(codeRequestActions).toContain("startEmailLogin");
     expect(codeRequestActions).toContain("emailLoginStartError");
+    expect(codeRequestActions).toContain("buildEmailLoginSubmitErrorContext");
     expect(codeRequestActions).toContain("runEmailLoginSubmission");
     expect(codeRequestActions).toContain("./email-login-submit-errors");
     expect(registrationActions).toContain("export function useEmailLoginRegistrationActions");
     expect(registrationActions).toContain("finishEmailCodeLogin");
     expect(registrationActions).toContain("finishEmailRegistrationSetup");
+    expect(registrationActions).toContain("buildEmailLoginSubmitErrorContext");
     expect(registrationActions).toContain("emailLoginInvalidCodeError");
     expect(registrationActions).toContain("emailLoginPasswordSetupError");
     expect(registrationActions).toContain("runEmailLoginSubmission");
@@ -96,9 +98,11 @@ describe("email login state structure", () => {
     expect(signInActions).toContain("export function useEmailLoginSignInActions");
     expect(signInActions).toContain("finishEmailPasswordLogin");
     expect(signInActions).toContain("signInWithEmailPasskey");
+    expect(signInActions).toContain("buildEmailLoginSubmitErrorContext");
     expect(signInActions).toContain("runEmailLoginSubmission");
     expect(signInActions).toContain("./email-login-submit-errors");
     expect(submitErrors).toContain("export function emailLoginPasswordSubmitError");
+    expect(submitErrors).toContain("export function buildEmailLoginSubmitErrorContext");
     expect(submitErrors).toContain("passwordLoginErrorMessage");
     expect(submitRoute).toContain("export function selectEmailLoginSubmitRoute");
     expect(submitRoute).toContain("export function selectEmailLoginSubmitHandler");

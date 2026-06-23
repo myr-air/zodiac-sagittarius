@@ -14,6 +14,7 @@ import {
   finishEmailRegistrationSetup,
 } from "./email-login-auth-actions";
 import {
+  buildEmailLoginSubmitErrorContext,
   emailLoginInvalidCodeError,
   emailLoginPasswordSetupError,
 } from "./email-login-submit-errors";
@@ -68,7 +69,7 @@ export function useEmailLoginRegistrationActions({
   updateCode,
   verifiedRegistrationSession,
 }: UseEmailLoginRegistrationActionsOptions) {
-  const errorContext = { emailLoginMessages, messages };
+  const errorContext = buildEmailLoginSubmitErrorContext({ emailLoginMessages, messages });
 
   async function submitCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

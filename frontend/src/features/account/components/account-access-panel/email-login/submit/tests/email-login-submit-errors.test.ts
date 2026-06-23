@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { enMessages } from "@/src/i18n/messages/en";
 import {
+  buildEmailLoginSubmitErrorContext,
   emailLoginInvalidCodeError,
   emailLoginPasskeyError,
   emailLoginPasswordSetupError,
@@ -8,12 +9,19 @@ import {
   emailLoginStartError,
 } from "../email-login-submit-errors";
 
-const context = {
+const context = buildEmailLoginSubmitErrorContext({
   emailLoginMessages: enMessages.access.emailLogin,
   messages: enMessages.access.messages,
-};
+});
 
 describe("email login submit errors", () => {
+  it("builds the shared submit error context once for submit hooks", () => {
+    expect(context).toEqual({
+      emailLoginMessages: enMessages.access.emailLogin,
+      messages: enMessages.access.messages,
+    });
+  });
+
   it("maps start, code, setup, and passkey errors through localized access errors", () => {
     expect(emailLoginStartError({ code: "email_delivery_failed" }, context)).toBe(
       enMessages.access.messages.emailDeliveryFailed,

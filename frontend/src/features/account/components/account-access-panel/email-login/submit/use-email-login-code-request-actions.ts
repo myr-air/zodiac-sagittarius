@@ -4,7 +4,10 @@ import type { Dispatch, SetStateAction } from "react";
 import type { AccountApiClient, EmailLoginStartResponse } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
 import type { AuthFlow } from "../../auth";
-import { emailLoginStartError } from "./email-login-submit-errors";
+import {
+  buildEmailLoginSubmitErrorContext,
+  emailLoginStartError,
+} from "./email-login-submit-errors";
 import { runEmailLoginSubmission } from "./email-login-submit-runner";
 
 interface UseEmailLoginCodeRequestActionsOptions {
@@ -34,7 +37,7 @@ export function useEmailLoginCodeRequestActions({
   setIsSubmitting,
   startResendCooldown,
 }: UseEmailLoginCodeRequestActionsOptions) {
-  const errorContext = { emailLoginMessages, messages };
+  const errorContext = buildEmailLoginSubmitErrorContext({ emailLoginMessages, messages });
 
   async function requestEmailCode() {
     if (!isEmailValid || (activeFlow === "register" && !passwordReady)) return;

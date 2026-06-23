@@ -9,6 +9,7 @@ import {
   signInWithEmailPasskey,
 } from "./email-login-auth-actions";
 import {
+  buildEmailLoginSubmitErrorContext,
   emailLoginPasskeyError,
   emailLoginPasswordSubmitError,
 } from "./email-login-submit-errors";
@@ -43,7 +44,7 @@ export function useEmailLoginSignInActions({
   setIsSubmitting,
   trustDevice,
 }: UseEmailLoginSignInActionsOptions) {
-  const errorContext = { emailLoginMessages, messages };
+  const errorContext = buildEmailLoginSubmitErrorContext({ emailLoginMessages, messages });
 
   async function signInWithPassword() {
     if (!isEmailValid || !passwordReady) return;
