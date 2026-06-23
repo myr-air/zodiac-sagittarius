@@ -138,6 +138,30 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(pickerStory).not.toContain("ComponentProps<typeof InlineOptionPicker>");
   });
 
+  it("keeps people panel row presentation and controls split from row policy", () => {
+    const row = readFileSync(join(frontendRoot, "src/shared/components/people-panel/PeoplePanelRow.tsx"), "utf8");
+    const rowControls = readFileSync(
+      join(frontendRoot, "src/shared/components/people-panel/PeoplePanelRowControls.tsx"),
+      "utf8",
+    );
+    const rowStatus = readFileSync(
+      join(frontendRoot, "src/shared/components/people-panel/PeoplePanelRowStatus.tsx"),
+      "utf8",
+    );
+
+    expect(row).toContain("./PeoplePanelRowControls");
+    expect(row).toContain("./PeoplePanelRowStatus");
+    expect(row).not.toContain("@/src/ui");
+    expect(row).not.toContain("function PeoplePanelRowControls");
+    expect(row).not.toContain("memberInitial");
+    expect(rowControls).toContain("export function PeoplePanelRowControls");
+    expect(rowControls).toContain("@/src/ui");
+    expect(rowControls).toContain("PeoplePanelManagedRole");
+    expect(rowStatus).toContain("export function PeoplePanelRowIdentity");
+    expect(rowStatus).toContain("export function PeoplePanelPresencePill");
+    expect(rowStatus).toContain("memberInitial");
+  });
+
   it("keeps public about page styles colocated outside the page component", () => {
     const aboutPage = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.tsx"), "utf8");
     const aboutPageStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.styles.ts"), "utf8");
