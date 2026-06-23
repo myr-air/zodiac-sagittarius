@@ -2,10 +2,10 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildItineraryItem,
   getItineraryItemRow,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 const renderTable = renderSmartItineraryTable;
 
@@ -13,15 +13,14 @@ describe("SmartItineraryTable activity editing", () => {
   it("edits activity start and optional end time in a focused modal", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
-    const item = {
-      ...tripFixture.planItems[0],
+    const item = buildItineraryItem({
       id: "time-modal-item",
       activity: "Harbour transfer",
       startTime: "08:00",
       endTime: "09:15",
       endOffsetDays: 0,
       durationMinutes: 75,
-    };
+    });
 
     renderTable({
       items: [item],
@@ -67,16 +66,14 @@ describe("SmartItineraryTable activity editing", () => {
   it("opens travel sub-type options from the type picker and stores the selected mode", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
-    const item = {
-      ...tripFixture.planItems[0],
+    const item = buildItineraryItem({
       id: "travel-subtype-row",
       activity: "Hotel transfer",
       activityType: "travel" as const,
       details: {
-        ...tripFixture.planItems[0].details,
         mode: "bus",
       },
-    };
+    });
 
     renderTable({
       items: [item],
@@ -111,16 +108,14 @@ describe("SmartItineraryTable activity editing", () => {
   it("uses the same travel sub-type patch from the mobile type picker", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
-    const item = {
-      ...tripFixture.planItems[0],
+    const item = buildItineraryItem({
       id: "mobile-travel-subtype-row",
       activity: "Mobile transfer",
       activityType: "travel" as const,
       details: {
-        ...tripFixture.planItems[0].details,
         mode: "bus",
       },
-    };
+    });
 
     renderTable({
       items: [item],
