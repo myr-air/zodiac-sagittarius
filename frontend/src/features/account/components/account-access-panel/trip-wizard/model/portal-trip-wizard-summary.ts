@@ -1,6 +1,6 @@
 import type { Messages } from "@/src/i18n/messages";
 import { uniqueStrings } from "@/src/shared/collection";
-import { tripCountryOptions } from "../model/account-trip-destinations";
+import { tripCountryOptions } from "./account-trip-destinations";
 
 interface BuildPortalTripWizardSummaryInput {
   accessComplete: boolean;

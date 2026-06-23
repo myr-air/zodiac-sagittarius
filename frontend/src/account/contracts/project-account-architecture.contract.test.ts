@@ -6,13 +6,13 @@ import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 describe("Sagittarius account architecture contracts", () => {
   it("keeps portal trip wizard model logic out of the render component", () => {
     const portalTripWizard = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx"), "utf8");
-    const portalTripWizardMainPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx"), "utf8");
+    const portalTripWizardMainPanel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/shell/portal-trip-wizard-main-panel.tsx"), "utf8");
     const portalTripWizardModel = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-model.ts"), "utf8");
     const portalTripWizardMobileState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-mobile-state.ts"), "utf8");
-    const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-summary.ts"), "utf8");
+    const portalTripWizardSummary = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/trip-wizard/model/portal-trip-wizard-summary.ts"), "utf8");
 
     expect(portalTripWizard).toContain("./state/use-portal-trip-wizard-model");
-    expect(portalTripWizard).toContain("./portal-trip-wizard-main-panel");
+    expect(portalTripWizard).toContain("./shell/portal-trip-wizard-main-panel");
     expect(portalTripWizard).not.toContain("TripWizardDestinationStep");
     expect(portalTripWizard).not.toContain("const [countryQuery");
     expect(portalTripWizard).not.toContain("function regenerateCredentials");
@@ -79,13 +79,13 @@ describe("Sagittarius account architecture contracts", () => {
   it("keeps account email login step navigation split from style constants", () => {
     const panelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts"), "utf8");
     const stepNavigation = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/state/use-email-login-step-navigation.ts"), "utf8");
-    const styles = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/account-email-login-styles.ts"), "utf8");
+    const styles = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/ui/account-email-login-styles.ts"), "utf8");
 
     expect(panelState).toContain("./use-email-login-step-navigation");
     expect(panelState).not.toContain("useState<EmailLoginAuthStep>");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("export type AuthTransitionDirection");
-    expect(styles).toContain("./state/use-email-login-step-navigation");
+    expect(styles).toContain("../state/use-email-login-step-navigation");
     expect(styles).not.toContain('= "forward" | "back" | "mode"');
   });
 

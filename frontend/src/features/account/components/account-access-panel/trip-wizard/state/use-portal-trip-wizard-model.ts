@@ -3,7 +3,7 @@ import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { buildPortalTripWizardDerivedState } from "../model/portal-trip-wizard-derived-state";
 import { buildPortalTripWizardSubmitForm } from "./portal-trip-wizard-model-actions";
-import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
+import { buildPortalTripWizardSummary } from "../model/portal-trip-wizard-summary";
 import { usePortalTripWizardAccessActions } from "./use-portal-trip-wizard-access-actions";
 import { usePortalTripWizardCredentialSync } from "./use-portal-trip-wizard-credential-sync";
 import { usePortalTripWizardDateActions } from "./use-portal-trip-wizard-date-actions";

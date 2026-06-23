@@ -66,6 +66,8 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/state/tests/portal-trip-wizard-derived-state.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-model-actions.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-summary.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-summary.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/state/tests/portal-trip-wizard-summary.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-access-actions.ts",
   "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-credential-sync.ts",
   "src/features/account/components/account-access-panel/trip-wizard/use-portal-trip-wizard-date-actions.ts",
