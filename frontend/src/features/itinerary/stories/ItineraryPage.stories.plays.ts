@@ -20,6 +20,7 @@ import {
   expectItineraryResponsiveContract,
   expectPathGraphNode,
   expectSelectedPathGraphNode,
+  expectThaiItineraryTableContract,
   expectTripPlanControlsEnabled,
   getTripPlanControlsButton,
 } from "./support/itinerary-story-assertions";
@@ -46,9 +47,7 @@ export const inlineQuickEditPlay: ItineraryPagePlay = async ({ canvas, canvasEle
 };
 
 export const ownerThaiPlay: ItineraryPagePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
-  await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-  await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
+  await expectThaiItineraryTableContract(canvas);
 };
 
 export const viewerPlay: ItineraryPagePlay = async ({ canvas }) => {

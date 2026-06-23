@@ -19,6 +19,18 @@ export async function expectItineraryResponsiveContract(
   ).toBeInTheDocument();
 }
 
+export async function expectThaiItineraryTableContract(canvas: StoryCanvas) {
+  await expect(
+    canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i }),
+  ).toHaveClass("table-panel", "grid");
+  await expect(
+    canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i),
+  ).toHaveClass("table-scroll", "overflow-x-auto");
+  await expect(
+    canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i }),
+  ).toHaveClass("smart-table", "min-w-[520px]");
+}
+
 export async function expectDayActivityPathGraph(
   canvas: StoryCanvas,
   dayName: RegExp = /Activity path graph for Day 2/i,

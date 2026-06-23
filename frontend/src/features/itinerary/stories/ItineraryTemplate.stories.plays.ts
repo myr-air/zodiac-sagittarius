@@ -12,6 +12,7 @@ import {
   expectItineraryResponsiveContract,
   expectPathGraphNode,
   expectSelectedPathGraphNode,
+  expectThaiItineraryTableContract,
   expectTripPlanControlsEnabled,
 } from "./support/itinerary-story-assertions";
 import type { StoryPlay } from "./support/story-play-types";
@@ -25,9 +26,7 @@ export const ownerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
 };
 
 export const ownerThaiPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("region", { name: /ตารางแผนการเดินทาง/i })).toHaveClass("table-panel", "grid");
-  await expect(canvas.getByLabelText(/รายการแผนการเดินทางแบบเลื่อนได้/i)).toHaveClass("table-scroll", "overflow-x-auto");
-  await expect(canvas.getByRole("table", { name: /รายการแผนการเดินทาง แยกตามวัน/i })).toHaveClass("smart-table", "min-w-[520px]");
+  await expectThaiItineraryTableContract(canvas);
 };
 
 export const travelerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
