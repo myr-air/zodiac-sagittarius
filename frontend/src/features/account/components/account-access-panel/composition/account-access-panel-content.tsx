@@ -9,6 +9,7 @@ import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
 import { StatusMessage, type AuthFlow } from "../auth";
 import {
+  AccountAccessPanelPortalContent,
   AccountPortalLoadingFrame,
 } from "../portal";
 import {
@@ -16,7 +17,6 @@ import {
   portalContentClassName,
   portalLoadingCardClassName,
 } from "../layout/account-access-panel-layout";
-import { AccountAccessPanelPortalContent } from "../portal/account-access-panel-portal-content";
 import type { UseAccountAccessPanelState } from "../state/use-account-access-panel-state";
 import { AccountEmailLoginPanelContent } from "./account-email-login-panel-content";
 

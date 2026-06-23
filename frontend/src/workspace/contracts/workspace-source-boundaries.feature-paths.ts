@@ -75,9 +75,9 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountAccessShellClasses:
     "src/features/account/components/account-access-panel/layout/account-access-panel-shell-classes.ts",
   accountAccessPortalHandlers:
-    "src/features/account/components/account-access-panel/portal/account-access-panel-portal-handlers.ts",
+    "src/features/account/components/account-access-panel/portal/entry/account-access-panel-portal-handlers.ts",
   accountAccessPortalContent:
-    "src/features/account/components/account-access-panel/portal/account-access-panel-portal-content.tsx",
+    "src/features/account/components/account-access-panel/portal/entry/account-access-panel-portal-content.tsx",
   accountAccessModes: "src/features/account/components/account-access-panel/model/account-access-modes.ts",
   accountPortalNavItems:
     "src/features/account/components/account-access-panel/portal/nav/account-portal-nav-items.ts",
