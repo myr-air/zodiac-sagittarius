@@ -1,9 +1,12 @@
 import { cn } from "@/src/lib/cn";
-import { tripInvitableRoleValues } from "@/src/trip/members";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
 import { canBuildCreateMemberInput } from "../model/member-create-input";
+import {
+  memberInviteRoleLabel,
+  memberInviteRoleValues,
+} from "../model/member-page-options";
 import type { MemberCreatePanelProps, NewMemberRole } from "./member-management.types";
 
 export function MemberCreatePanel({
@@ -15,11 +18,6 @@ export function MemberCreatePanel({
   onNewMemberRoleChange,
   onSubmitNewMember,
 }: MemberCreatePanelProps) {
-  const newMemberRoleLabels: Record<NewMemberRole, string> = {
-    organizer: labels.appShell.roles.organizer,
-    traveler: labels.appShell.roles.traveler,
-    viewer: labels.appShell.roles.viewer,
-  };
   const canCreateMember = canBuildCreateMemberInput({
     canManagePeople,
     displayName: newMemberName,
@@ -48,8 +46,8 @@ export function MemberCreatePanel({
             value={newMemberRole}
             onChange={(event) => onNewMemberRoleChange(event.target.value as NewMemberRole)}
           >
-            {tripInvitableRoleValues.map((role) => (
-              <option key={role} value={role}>{newMemberRoleLabels[role]}</option>
+            {memberInviteRoleValues.map((role) => (
+              <option key={role} value={role}>{memberInviteRoleLabel(role, labels)}</option>
             ))}
           </Select>
         </FieldLabel>

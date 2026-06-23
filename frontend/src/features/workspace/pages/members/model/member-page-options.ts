@@ -1,8 +1,13 @@
 import {
   tripMemberAccessStatusValues,
+  tripInvitableRoleValues,
   tripRoleValues,
+  type TripInvitableRole,
   type TripRole,
 } from "@/src/trip/members";
+
+export const memberInviteRoleValues = tripInvitableRoleValues;
+export type MemberInviteRole = TripInvitableRole;
 
 export const memberRoleFilterValues = ["all", ...tripRoleValues] as const;
 export type MemberRoleFilter = (typeof memberRoleFilterValues)[number];
@@ -40,6 +45,13 @@ export function memberRoleFilterLabel(
   labels: MemberFilterLabelSource,
 ): string {
   return role === "all" ? labels.members.filters.allRoles : labels.appShell.roles[role];
+}
+
+export function memberInviteRoleLabel(
+  role: MemberInviteRole,
+  labels: MemberFilterLabelSource,
+): string {
+  return labels.appShell.roles[role];
 }
 
 export function memberStatusFilterLabel(
