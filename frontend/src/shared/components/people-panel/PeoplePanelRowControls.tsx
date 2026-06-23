@@ -1,3 +1,4 @@
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
 import {
   memberControlsClassName,
@@ -5,6 +6,7 @@ import {
   resetClaimButtonClassName,
 } from "./people-panel.styles";
 import { peoplePanelCopy } from "./people-panel.copy";
+import { peoplePanelManagedRoleOptions } from "./people-panel-role-options";
 import type {
   PeoplePanelManagementHandlers,
   PeoplePanelManagedRole,
@@ -44,9 +46,7 @@ export function PeoplePanelRowControls({
           value={member.role}
           onChange={(event) => onChangeMemberRole?.(member.id, event.target.value as PeoplePanelManagedRole)}
         >
-          <option value="organizer">{locale === "th" ? "ผู้จัดทริป" : "Organizer"}</option>
-          <option value="traveler">{locale === "th" ? "ผู้ร่วมเดินทาง" : "Traveler"}</option>
-          <option value="viewer">{locale === "th" ? "ผู้ชม" : "Viewer"}</option>
+          <SelectOptions options={peoplePanelManagedRoleOptions(locale)} />
         </Select>
       ) : null}
       {canChangePassword ? (
