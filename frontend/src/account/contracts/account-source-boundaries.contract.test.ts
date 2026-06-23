@@ -15,6 +15,9 @@ describe("Sagittarius account source boundaries", () => {
       accountPortalNavItems,
       accountPortalDataCache,
       accountPortalDashboardClassNames,
+      accountPortalVaultSection,
+      accountPortalVaultActions,
+      accountPortalVaultState,
       accountTripDates,
       accountTripForm,
       accountTripWizardSupport,
@@ -94,6 +97,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountPortalDataCache).toContain("export function getLatestAccountPortalDataCache");
     expect(accountPortalDashboardClassNames).toContain("export const accountPortalDashboardClassNames");
     expect(accountPortalDashboardClassNames).toContain("accountStepSummaryClassName");
+    expect(accountPortalVaultSection).toContain("usePortalVaultSectionActions");
+    expect(accountPortalVaultSection).not.toContain("async function submitVaultItem");
+    expect(accountPortalVaultActions).toContain("export function usePortalVaultSectionActions");
+    expect(accountPortalVaultActions).toContain("async function submitVaultItem");
+    expect(accountPortalVaultActions).toContain("buildPortalVaultCreateRequest");
+    expect(accountPortalVaultState).toContain("export function buildPortalVaultCreateRequest");
     expect(accountAccessStory).toContain("./account-access-panel.stories.support");
     expect(accountAccessStory).not.toContain("AccountApiClient");
     expect(accountAccessStory).not.toContain("const accountSettings");

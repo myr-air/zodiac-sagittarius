@@ -72,6 +72,12 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
   accountPortalDashboardClassNames:
     "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
+  accountPortalVaultSection:
+    "src/features/account/components/account-access-panel/portal/portal-vault-section.tsx",
+  accountPortalVaultActions:
+    "src/features/account/components/account-access-panel/portal/usePortalVaultSectionActions.ts",
+  accountPortalVaultState:
+    "src/features/account/components/account-access-panel/portal/portal-vault-section-state.ts",
   accountTripDates: "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-dates.ts",
   accountTripForm: "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-form.ts",
   accountTripWizardSupport:

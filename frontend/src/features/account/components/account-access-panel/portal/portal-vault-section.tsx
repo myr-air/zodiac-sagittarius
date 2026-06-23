@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import type {
   AccountApiClient,
   AccountSession,
@@ -10,15 +10,12 @@ import type {
 import { Badge, Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { errorMessage } from "../auth";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalListSkeleton } from "./account-portal-primitives";
 import { PortalVaultCloudProviderPanel } from "./portal-vault-cloud-provider-panel";
-import {
-  buildPortalVaultCreateRequest,
-  createEmptyPortalVaultForm,
-} from "./portal-vault-section-state";
+import { createEmptyPortalVaultForm } from "./portal-vault-section-state";
+import { usePortalVaultSectionActions } from "./usePortalVaultSectionActions";
 
 interface PortalVaultSectionClassNames {
   empty: string;
@@ -47,29 +44,25 @@ export function PortalVaultSection({
   vaultItems: AccountVaultItemSummary[];
 }) {
   const { t } = useI18n();
-  const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>(createEmptyPortalVaultForm);
-
-  async function submitVaultItem(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const vaultRequest = buildPortalVaultCreateRequest(vaultForm);
-    if (!vaultRequest) return;
-
-    try {
-      const item = await accountClient.createVaultItem(accountSession.sessionToken, vaultRequest);
-      onVaultItemCreated(item);
-      setVaultForm(createEmptyPortalVaultForm());
-      onMessage(t.access.portal.vaultCreate.success);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.portal.vaultCreate.error, t.access.messages));
-    }
-  }
+  const [vaultForm, setVaultForm] = useState<AccountVaultItemCreateRequest>(
+    createEmptyPortalVaultForm,
+  );
+  const actions = usePortalVaultSectionActions({
+    accountClient,
+    accountSession,
+    messages: t.access,
+    onError,
+    onMessage,
+    onVaultItemCreated,
+    setVaultForm,
+    vaultForm,
+  });
 
   return (
     <section className={classNames.section} id="portal-vault">
       <PanelHeading icon="document" title={t.access.portal.sections.vault.title} detail={t.access.portal.sections.vault.detail} />
       <PortalVaultCloudProviderPanel />
-      <form className={classNames.form} onSubmit={submitVaultItem}>
+      <form className={classNames.form} onSubmit={actions.submitVaultItem}>
         <div className={classNames.twoCol}>
           <label>
             <span>{t.access.portal.vaultCreate.kind}</span>
