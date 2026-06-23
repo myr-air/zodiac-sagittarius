@@ -34,6 +34,17 @@ describe("TripExpensesPage edit dialog", () => {
     }));
   });
 
+  it("uses the shared day and activity labels for linked stop options", async () => {
+    const user = userEvent.setup();
+    renderExpenses();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(within(dialog).getByRole("option", {
+      name: "2026-06-18 · ถึง Hong Kong International Airport",
+    })).toHaveValue("item-arrive-hkg");
+  });
+
   it("adds a comment to an existing expense before saving edits", async () => {
     const user = userEvent.setup();
     const trip = {
