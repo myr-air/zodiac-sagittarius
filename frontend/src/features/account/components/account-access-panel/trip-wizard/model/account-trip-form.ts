@@ -11,9 +11,11 @@ import {
   type TripCityOption,
 } from "./account-trip-destinations";
 import { generateJoinId, generateJoinPassword } from "./account-trip-credentials";
+import { defaultTripTravelDates } from "./account-trip-default-dates";
 
 export const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings["profile"] | null): AccountTripCreateRequest => {
   const origin = originCityFromProfile(profile);
+  const dates = defaultTripTravelDates();
   return {
     name: "",
     originLabel: `${origin.city}, ${origin.country}`,
@@ -25,10 +27,10 @@ export const defaultTripForm = (ownerDisplayName = "", profile?: AccountSettings
     countries: [],
     partySize: tripPartySizeRange.min,
     defaultTimezone: "",
-    startDate: new Date().toISOString().slice(0, 10),
-    endDate: new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
+    startDate: dates.startDate,
+    endDate: dates.endDate,
     ownerDisplayName,
-    joinId: generateJoinId(),
+    joinId: generateJoinId(dates.startDate),
     joinPassword: generateJoinPassword(),
   };
 };
