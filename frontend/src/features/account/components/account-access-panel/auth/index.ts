@@ -8,19 +8,21 @@ export {
   type AuthFlow,
 } from "./account-auth-chrome";
 export {
-  arrayBufferToBase64Url,
-  base64UrlToArrayBuffer,
-  buildPasskeyLoginFinishInput,
-  createPasskeyCredential,
   errorMessage,
-  formatDateTime,
   friendlyErrorText,
-  getPasskeyCredential,
   isApiLikeError,
   isCredentialFailure,
   isUnauthenticated,
   localizeAccessError,
   passwordLoginErrorMessage,
   rawErrorMessage,
-} from "./account-auth-support";
+} from "./account-auth-errors";
+export { formatDateTime } from "./account-auth-support";
+export {
+  arrayBufferToBase64Url,
+  base64UrlToArrayBuffer,
+  buildPasskeyLoginFinishInput,
+  createPasskeyCredential,
+  getPasskeyCredential,
+} from "./account-passkey-support";
 export { StatusMessage } from "./account-status-message";
