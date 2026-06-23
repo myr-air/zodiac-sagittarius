@@ -4,9 +4,11 @@ import {
   photoAccessBadgeTone,
   photoAccessLabel,
   photoAccessOptions,
+  photoAccessSelectOptions,
   photoProviderIcon,
   photoProviderLabel,
   photoProviderOptions,
+  photoProviderSelectOptions,
   photoProviders,
 } from "../photo-page-options";
 
@@ -32,6 +34,18 @@ describe("photo page options", () => {
     expect(photoProviderLabel("all", photoCopy.en)).toBe("All albums");
     expect(photoProviderLabel("google_drive", photoCopy.th)).toBe("Google Drive");
     expect(photoAccessLabel("upload_request", photoCopy.en)).toBe("Upload request");
+  });
+
+  it("builds dialog select options from the shared labels", () => {
+    expect(photoProviderSelectOptions(photoCopy.en)[0]).toEqual({
+      value: "google_photos",
+      label: "Google Photos",
+    });
+    expect(photoAccessSelectOptions(photoCopy.th)).toEqual([
+      { value: "view_only", label: photoCopy.th.accessLabels.view_only },
+      { value: "collaborative", label: photoCopy.th.accessLabels.collaborative },
+      { value: "upload_request", label: photoCopy.th.accessLabels.upload_request },
+    ]);
   });
 
   it("keeps provider icons centralized for provider picker surfaces", () => {

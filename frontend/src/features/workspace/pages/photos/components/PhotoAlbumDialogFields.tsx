@@ -8,10 +8,8 @@ import { Select } from "@/src/ui";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import {
-  photoAccessLabel,
-  photoAccessOptions,
-  photoProviderLabel,
-  photoProviderOptions,
+  photoAccessSelectOptions,
+  photoProviderSelectOptions,
 } from "../model/photo-page-options";
 import type { PhotoAlbumDialogState } from "../hooks/usePhotoAlbumDialogState";
 
@@ -35,13 +33,13 @@ export function PhotoAlbumDialogFields({
       <label className={photoStyles.fieldClassName}>
         <span>{copy.providerField}</span>
         <Select value={state.provider} onChange={(event) => state.setProvider(event.target.value as TripPhotoAlbumProvider)}>
-          {photoProviderOptions.map((option) => <option key={option} value={option}>{photoProviderLabel(option, copy)}</option>)}
+          {photoProviderSelectOptions(copy).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>
         <span>{copy.accessField}</span>
         <Select value={state.access} onChange={(event) => state.setAccess(event.target.value as TripPhotoAlbumAccess)}>
-          {photoAccessOptions.map((option) => <option key={option} value={option}>{photoAccessLabel(option, copy)}</option>)}
+          {photoAccessSelectOptions(copy).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>
