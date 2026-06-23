@@ -3,16 +3,18 @@ import {
   buildItineraryExport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export source records", () => {
   it("preserves actual expense and paid booking records as source references without remapping ids", () => {
     const selectedPlanId = "plan-client-draft";
-    const selectedItem = {
-      ...tripFixture.planItems[0],
+    const selectedItem = buildTripFixtureItineraryItem({
       id: "draft-flight-window",
       planVariantId: selectedPlanId,
-    };
+    });
     const paidExpense = {
       ...tripFixture.trip.expenses[0],
       id: "expense-paid-source",

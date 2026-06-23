@@ -4,19 +4,21 @@ import {
   parseItineraryImport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary import/export JSON", () => {
   it("preserves activity branch group fields in export and import", () => {
-    const branchedItem = {
-      ...tripFixture.planItems[0],
+    const branchedItem = buildTripFixtureItineraryItem({
       id: "item-rain-alt",
       pathGroupId: "group-morning",
       pathId: pathIdRain,
       pathName: "Rain plan",
       pathRole: "alternative" as const,
-    };
+    });
 
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T00:00:00.000Z",
@@ -40,8 +42,7 @@ describe("itinerary import/export JSON", () => {
   });
 
   it("preserves structured itinerary details in export and import", () => {
-    const itemWithDetails = {
-      ...tripFixture.planItems[0],
+    const itemWithDetails = buildTripFixtureItineraryItem({
       activityType: "travel" as const,
       details: {
         kind: "transportation",
@@ -50,7 +51,7 @@ describe("itinerary import/export JSON", () => {
         mode: "Train",
         ticketRef: "G5607",
       },
-    };
+    });
 
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T00:00:00.000Z",
@@ -69,14 +70,13 @@ describe("itinerary import/export JSON", () => {
   });
 
   it("preserves optional time windows with cross-day endings in export and import", () => {
-    const overnightItem = {
-      ...tripFixture.planItems[0],
+    const overnightItem = buildTripFixtureItineraryItem({
       id: "item-overnight-flight",
       startTime: "23:00",
       endTime: "02:00",
       endOffsetDays: 1,
       durationMinutes: 180,
-    };
+    });
 
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T00:00:00.000Z",
@@ -99,7 +99,7 @@ describe("itinerary import/export JSON", () => {
   it("parses JSON v1 imports and rejects unsupported files", () => {
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T12:00:00.000Z",
-      items: [tripFixture.planItems[0]],
+      items: [buildTripFixtureItineraryItem()],
       trip: tripFixture.trip,
     });
 
@@ -123,7 +123,7 @@ describe("itinerary import/export JSON", () => {
       schema: "joii.itinerary.export",
       version: 1,
       exportedAt: "2026-06-04T12:00:00.000Z",
-      items: [tripFixture.planItems[0]],
+      items: [buildTripFixtureItineraryItem()],
     };
 
     const document = parseItineraryImportDocument(JSON.stringify(payload));
@@ -147,10 +147,9 @@ describe("itinerary import/export JSON", () => {
     const payload = buildItineraryExport({
       exportedAt: "2026-06-04T12:00:00.000Z",
       items: [
-        {
-          ...tripFixture.planItems[0],
+        buildTripFixtureItineraryItem({
           mapLink: "javascript:alert(document.domain)",
-        },
+        }),
       ],
       trip: tripFixture.trip,
     });

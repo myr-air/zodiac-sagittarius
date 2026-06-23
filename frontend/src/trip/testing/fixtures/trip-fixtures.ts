@@ -1,6 +1,7 @@
 import { buildExpenseSummary } from "../../expenses";
 import { seedTrip } from "../../seed";
 import type { ItineraryItem, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "../../types";
+import { buildItineraryItem } from "./itinerary-item-fixtures";
 export { buildDenseTripFixture } from "./dense-trip-fixture";
 export {
   buildBookingDoc,
@@ -116,6 +117,16 @@ export function getTripFixtureItineraryItem(id: string): ItineraryItem {
     throw new Error(`Missing itinerary item test fixture: ${id}`);
   }
   return item;
+}
+
+export function buildTripFixtureItineraryItem(
+  overrides: Partial<ItineraryItem> = {},
+): ItineraryItem {
+  return buildItineraryItem({
+    tripId: tripFixture.trip.id,
+    planVariantId: tripFixture.trip.activePlanVariantId,
+    ...overrides,
+  });
 }
 
 export function buildEmptyTripFixture(): Trip {

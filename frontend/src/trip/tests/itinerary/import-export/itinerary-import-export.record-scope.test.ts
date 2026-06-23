@@ -4,7 +4,10 @@ import {
   parseItineraryImport,
   parseItineraryImportDocument,
 } from "../../../itinerary-import-export";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary import/export record scoping", () => {
   it("preserves plan-scoped records in export and import documents", () => {
@@ -47,12 +50,11 @@ describe("itinerary import/export record scoping", () => {
 
   it("keeps unlinked records scoped to the exported Trip Plan instead of the current Main Plan", () => {
     const backupPlanId = "plan-backup-export";
-    const backupItem = {
-      ...tripFixture.planItems[0],
+    const backupItem = buildTripFixtureItineraryItem({
       id: "backup-plan-stop",
       planVariantId: backupPlanId,
       activity: "Backup plan stop",
-    };
+    });
     const mainPlanExpense = {
       ...tripFixture.trip.expenses[0],
       id: "main-plan-expense",
