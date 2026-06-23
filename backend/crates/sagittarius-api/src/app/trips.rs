@@ -69,21 +69,21 @@ pub async fn load_cockpit(
         db::queries::list_stop_notes(pool, session_trip_id),
         async {
             if can_view_expenses {
-                db::queries::list_expenses(pool, session_trip_id).await
+                db::expense_queries::list_expenses(pool, session_trip_id).await
             } else {
                 Ok(Vec::new())
             }
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_splits(pool, session_trip_id, None).await
+                db::expense_queries::list_expense_splits(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }
         },
         async {
             if can_view_expenses {
-                db::queries::list_expense_reminders(pool, session_trip_id, None).await
+                db::expense_queries::list_expense_reminders(pool, session_trip_id, None).await
             } else {
                 Ok(Vec::new())
             }

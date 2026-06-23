@@ -539,7 +539,7 @@ async fn validate_related_record_plan_scope(
         "related task Trip Plan must match booking doc Trip Plan",
     )?;
     validate_related_plan_ids(
-        db::queries::expense_trip_plan_ids_for_trip(tx, trip_id, expense_ids).await?,
+        db::expense_queries::expense_trip_plan_ids_for_trip(tx, trip_id, expense_ids).await?,
         booking_trip_plan_id,
         "related expense Trip Plan must match booking doc Trip Plan",
     )?;
@@ -606,7 +606,7 @@ async fn validate_relations(
         }
     }
     if let Some(ids) = expense_ids {
-        if !db::queries::expense_ids_exist_for_trip(tx, trip_id, ids).await? {
+        if !db::expense_queries::expense_ids_exist_for_trip(tx, trip_id, ids).await? {
             return Err(ServiceError::NotFound);
         }
     }

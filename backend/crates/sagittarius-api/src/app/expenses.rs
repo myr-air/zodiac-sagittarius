@@ -29,8 +29,8 @@ pub async fn get_expense_summary(
     validate_expense_summary_trip_plan_id(pool, trip_id, trip_plan_id).await?;
 
     let (splits, reminders) = tokio::try_join!(
-        db::queries::list_expense_splits(pool, trip_id, trip_plan_id),
-        db::queries::list_expense_reminders(pool, trip_id, trip_plan_id),
+        db::expense_queries::list_expense_splits(pool, trip_id, trip_plan_id),
+        db::expense_queries::list_expense_reminders(pool, trip_id, trip_plan_id),
     )?;
     Ok(trips::build_expense_summary(
         splits,
@@ -72,7 +72,7 @@ pub async fn create_expense(
     )
     .await?;
 
-    let record = db::queries::insert_expense(
+    let record = db::expense_queries::insert_expense(
         &mut tx,
         NewExpense {
             id: Uuid::now_v7(),
@@ -144,7 +144,7 @@ pub async fn record_expense_reminder(
     let reminder_trip_plan_id =
         resolve_expense_reminder_trip_plan_id(&mut tx, trip_id, trip_plan_id).await?;
 
-    let reminder = db::queries::upsert_expense_reminder(
+    let reminder = db::expense_queries::upsert_expense_reminder(
         &mut tx,
         NewExpenseReminder {
             id: Uuid::now_v7(),
@@ -183,7 +183,7 @@ pub async fn patch_expense(
 
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_expense(&mut tx, expense_id)
+    let existing = db::expense_queries::lock_expense(&mut tx, expense_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -231,7 +231,7 @@ pub async fn patch_expense(
         request.amount_minor.unwrap_or(existing.amount_minor),
     )?;
 
-    let updated = db::queries::update_expense(
+    let updated = db::expense_queries::update_expense(
         &mut tx,
         expense_id,
         &request,
@@ -265,7 +265,7 @@ pub async fn delete_expense(
 ) -> Result<ExpenseItemSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_expense(&mut tx, expense_id)
+    let existing = db::expense_queries::lock_expense(&mut tx, expense_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -278,7 +278,7 @@ pub async fn delete_expense(
         return Err(ServiceError::Forbidden);
     }
 
-    let deleted = db::queries::delete_expense(&mut tx, expense_id, existing.version + 1)
+    let deleted = db::expense_queries::delete_expense(&mut tx, expense_id, existing.version + 1)
         .await?
         .ok_or(ServiceError::NotFound)?;
     let expense = ExpenseItemSummary::from(deleted);
