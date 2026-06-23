@@ -7,8 +7,8 @@ import {
   portalSkeletonLineClassName,
   portalSkeletonTitleClassName,
 } from "@/src/shared/components/portal-skeleton";
-import { getLatestAccountPortalDataCache } from "./data/account-portal-data-cache";
-import { AccountPortalNav } from "./nav/account-portal-nav";
+import { getLatestAccountPortalDataCache } from "../data/account-portal-data-cache";
+import { AccountPortalNav } from "../nav/account-portal-nav";
 
 export interface AccountPortalLoadingFrameClassNames {
   dashboard: string;

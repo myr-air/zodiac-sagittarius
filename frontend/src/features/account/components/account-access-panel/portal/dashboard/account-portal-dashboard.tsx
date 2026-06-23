@@ -22,7 +22,7 @@ import {
   accountPortalSectionStorageKey,
   accountPortalTransitionDirection,
 } from "./account-portal-dashboard-state";
-import { AccountPortalNav } from "./nav/account-portal-nav";
+import { AccountPortalNav } from "../nav/account-portal-nav";
 import { AccountPortalSectionContent } from "./account-portal-section-content";
 
 interface AccountPortalDashboardProps {

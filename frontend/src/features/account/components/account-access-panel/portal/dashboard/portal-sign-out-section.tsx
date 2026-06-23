@@ -1,7 +1,7 @@
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { PanelHeading } from "../primitives/account-panel-heading";
+import { PanelHeading } from "../../primitives/account-panel-heading";
 
 export function PortalSignOutSection({
   className,

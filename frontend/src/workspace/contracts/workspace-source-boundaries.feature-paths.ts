@@ -90,7 +90,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountPortalMessagesEn: "src/i18n/messages/en.account-portal.portal.ts",
   accountPortalMessagesTh: "src/i18n/messages/th.account-portal.portal.ts",
   accountPortalDashboardClassNames:
-    "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
+    "src/features/account/components/account-access-panel/portal/dashboard/account-portal-dashboard-classnames.ts",
   accountPortalNewTripSection:
     "src/features/account/components/account-access-panel/portal/new-trip/portal-new-trip-section.tsx",
   accountPortalNewTripActions:

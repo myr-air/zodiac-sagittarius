@@ -18,8 +18,8 @@ import {
   portalSettingsCardClassName,
   settingsProfilePreviewClassName,
   tripBuilderTopbarClassName,
-} from "../layout/account-access-panel-layout";
-import { accountStepSummaryClassName } from "../email-login/account-email-login-styles";
+} from "../../layout/account-access-panel-layout";
+import { accountStepSummaryClassName } from "../../email-login/account-email-login-styles";
 
 export const accountPortalDashboardClassNames = {
   avatar: accountAvatarClassName,
