@@ -2,7 +2,12 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { renderSmartItineraryTable } from "@/src/features/itinerary/testing";
+import {
+  getItineraryItemRow,
+  getSubItineraryItemLine,
+  queryItineraryItemRow,
+  renderSmartItineraryTable,
+} from "@/src/features/itinerary/testing";
 
 const renderTable = renderSmartItineraryTable;
 
@@ -39,16 +44,13 @@ describe("SmartItineraryTable sub-activities", () => {
       onUpdateItemInline,
     });
 
-    const parentRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="parent-type-switch"]',
-    );
-    expect(parentRow).not.toBeNull();
+    const parentRow = getItineraryItemRow(parent.id);
     await user.click(
-      within(parentRow as HTMLElement).getAllByRole("button", {
+      within(parentRow).getAllByRole("button", {
         name: /Sub-activities for Parent route/i,
       })[0],
     );
-    const childLine = within(parentRow as HTMLElement)
+    const childLine = within(parentRow)
       .getByDisplayValue("Airport transfer")
       .closest("[data-sub-item-id]");
     expect(childLine).not.toBeNull();
@@ -113,12 +115,9 @@ describe("SmartItineraryTable sub-activities", () => {
       onAddSubActivity,
     });
 
-    const parentRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="parent-activity"]',
-    );
-    expect(parentRow).not.toBeNull();
-    expect(within(parentRow as HTMLElement).getByDisplayValue("Parent route")).toBeInTheDocument();
-    const parentBody = parentRow?.querySelector(".activity-cell > div:nth-of-type(3)");
+    const parentRow = getItineraryItemRow(parent.id);
+    expect(within(parentRow).getByDisplayValue("Parent route")).toBeInTheDocument();
+    const parentBody = parentRow.querySelector(".activity-cell > div:nth-of-type(3)");
     expect(parentBody).not.toHaveTextContent("@");
     within(parentBody as HTMLElement)
       .getAllByLabelText(/แก้ไขสถานที่|Edit place/i)
@@ -126,24 +125,22 @@ describe("SmartItineraryTable sub-activities", () => {
         expect(placeInput).toHaveAttribute("placeholder", "");
       });
     await user.click(
-      within(parentRow as HTMLElement).getAllByRole("button", {
+      within(parentRow).getAllByRole("button", {
         name: /Sub-activities for Parent route/i,
       })[0],
     );
-    expect(within(parentRow as HTMLElement).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
-    expect(parentRow?.querySelector(".sub-activity-list")).toHaveClass(
+    expect(within(parentRow).getByDisplayValue("Buy Octopus card")).toBeInTheDocument();
+    expect(parentRow.querySelector(".sub-activity-list")).toHaveClass(
       "relative",
       "col-start-2",
       "col-span-2",
       "pl-5",
     );
-    expect(parentRow?.querySelector(".sub-activity-line")).toHaveClass(
+    expect(parentRow.querySelector(".sub-activity-line")).toHaveClass(
       "relative",
       "before:left-[-12px]",
     );
-    const childWithoutPlaceLine = parentRow?.querySelector(
-      '[data-sub-item-id="child-without-place"]',
-    );
+    const childWithoutPlaceLine = getSubItineraryItemLine(childWithoutPlace.id);
     expect(childWithoutPlaceLine).not.toHaveTextContent("@");
     expect(childWithoutPlaceLine?.querySelectorAll("input")).toHaveLength(2);
     expect(
@@ -151,10 +148,10 @@ describe("SmartItineraryTable sub-activities", () => {
         /แก้ไขสถานที่|Edit place/i,
       ),
     ).toHaveAttribute("placeholder", "");
-    expect(document.querySelector('[data-item-id="child-activity"]')).not.toBeInTheDocument();
+    expect(queryItineraryItemRow(child.id)).not.toBeInTheDocument();
 
     await user.click(
-      within(parentRow as HTMLElement).getByRole("button", {
+      within(parentRow).getByRole("button", {
         name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
       }),
     );

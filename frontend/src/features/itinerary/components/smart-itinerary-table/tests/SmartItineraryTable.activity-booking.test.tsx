@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  getItineraryItemRow,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
 
@@ -34,19 +35,16 @@ describe("SmartItineraryTable", () => {
       onAddBookingForItem,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="travel-flight-row"]',
-    );
-    expect(row).not.toBeNull();
+    const row = getItineraryItemRow(item.id);
     expect(row).toHaveTextContent("From");
     expect(row).toHaveTextContent("To");
     expect(row).not.toHaveTextContent("@");
-    expect(within(row as HTMLElement).getByDisplayValue("BKK")).toBeInTheDocument();
-    expect(within(row as HTMLElement).getByDisplayValue("HKG")).toBeInTheDocument();
+    expect(within(row).getByDisplayValue("BKK")).toBeInTheDocument();
+    expect(within(row).getByDisplayValue("HKG")).toBeInTheDocument();
 
-    const bookingButton = within(row as HTMLElement).getAllByRole("button", {
-        name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
-      })[0];
+    const bookingButton = within(row).getAllByRole("button", {
+      name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
+    })[0];
     expect(bookingButton).toHaveClass("text-(--color-text-muted)");
 
     await user.click(bookingButton);

@@ -12,6 +12,16 @@ export function getItineraryItemRow(itemId: string): HTMLTableRowElement {
   return row;
 }
 
+export function querySubItineraryItemLine(itemId: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[data-sub-item-id="${itemId}"]`);
+}
+
+export function getSubItineraryItemLine(itemId: string): HTMLElement {
+  const line = querySubItineraryItemLine(itemId);
+  if (!line) throw new Error(`Sub-itinerary line not found: ${itemId}`);
+  return line;
+}
+
 export function findGraphLine(from: HTMLElement, to: HTMLElement): Element | undefined {
   const fromCenter = {
     x: Number.parseFloat(from.style.left),

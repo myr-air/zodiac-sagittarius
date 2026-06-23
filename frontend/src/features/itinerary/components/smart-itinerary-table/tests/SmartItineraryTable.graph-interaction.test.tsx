@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   defaultDayPathOptions,
+  getItineraryItemRow,
   pathIdStoryPlanA,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
@@ -53,10 +54,8 @@ describe("SmartItineraryTable graph interaction", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Move Graph plan A to path/i)).toBeInTheDocument();
 
-    const planRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="graph-plan-a"]',
-    );
-    expect(within(planRow as HTMLElement).getByDisplayValue("Graph plan A")).toBeInTheDocument();
+    const planRow = getItineraryItemRow(alternativeItem.id);
+    expect(within(planRow).getByDisplayValue("Graph plan A")).toBeInTheDocument();
     expect(onSelectItem).toHaveBeenCalledTimes(1);
   });
 

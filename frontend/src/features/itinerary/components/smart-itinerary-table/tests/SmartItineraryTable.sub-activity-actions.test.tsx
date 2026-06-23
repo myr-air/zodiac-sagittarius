@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   createDragDataTransfer,
+  getItineraryItemRow,
+  getSubItineraryItemLine,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
 
@@ -43,14 +45,11 @@ describe("SmartItineraryTable sub-activity actions", () => {
       onAddSubActivity,
     });
 
-    const parentRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="empty-sub-parent"]',
-    );
-    expect(parentRow).not.toBeNull();
-    expect(parentRow?.querySelector(".sub-activity-list")).toBeInTheDocument();
+    const parentRow = getItineraryItemRow(parent.id);
+    expect(parentRow.querySelector(".sub-activity-list")).toBeInTheDocument();
 
     await user.click(
-      within(parentRow as HTMLElement).getByRole("button", {
+      within(parentRow).getByRole("button", {
         name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
       }),
     );
@@ -82,20 +81,17 @@ describe("SmartItineraryTable sub-activity actions", () => {
       onAddSubActivity,
     });
 
-    const parentRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="unselected-empty-sub-parent"]',
-    );
-    expect(parentRow).not.toBeNull();
-    expect(parentRow?.querySelector(".sub-activity-list")).toBeNull();
+    const parentRow = getItineraryItemRow(parent.id);
+    expect(parentRow.querySelector(".sub-activity-list")).toBeNull();
 
     await user.click(
-      within(parentRow as HTMLElement).getAllByRole("button", {
+      within(parentRow).getAllByRole("button", {
         name: /Sub-activities for Bus to Shenzhen/i,
       })[0],
     );
 
     await user.click(
-      within(parentRow as HTMLElement).getByRole("button", {
+      within(parentRow).getByRole("button", {
         name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
       }),
     );
@@ -148,43 +144,28 @@ describe("SmartItineraryTable sub-activity actions", () => {
       selectedItemId: "parent-a",
     });
 
-    const parentARow = document.querySelector<HTMLElement>(
-      '[data-item-id="parent-a"]',
-    );
-    const parentBRow = document.querySelector<HTMLElement>(
-      '[data-item-id="parent-b"]',
-    );
-    expect(parentARow).not.toBeNull();
-    expect(parentBRow).not.toBeNull();
+    const parentARow = getItineraryItemRow(parentA.id);
+    const parentBRow = getItineraryItemRow(parentB.id);
     fireEvent.click(
-      within(parentARow as HTMLElement).getAllByRole("button", {
+      within(parentARow).getAllByRole("button", {
         name: /Sub-activities for Parent A/i,
       })[0],
     );
     fireEvent.click(
-      within(parentBRow as HTMLElement).getAllByRole("button", {
+      within(parentBRow).getAllByRole("button", {
         name: /Sub-activities for Parent B/i,
       })[0],
     );
 
-    const childA1Line = document.querySelector<HTMLElement>(
-      '[data-sub-item-id="child-a-1"]',
-    );
-    const childA2Line = document.querySelector<HTMLElement>(
-      '[data-sub-item-id="child-a-2"]',
-    );
-    const childB1Line = document.querySelector<HTMLElement>(
-      '[data-sub-item-id="child-b-1"]',
-    );
-    expect(childA1Line).not.toBeNull();
-    expect(childA2Line).not.toBeNull();
-    expect(childB1Line).not.toBeNull();
+    const childA1Line = getSubItineraryItemLine(childA1.id);
+    const childA2Line = getSubItineraryItemLine(childA2.id);
+    const childB1Line = getSubItineraryItemLine(childB1.id);
 
     expect(childA1Line).not.toHaveAttribute("draggable", "true");
     expect(childA2Line).not.toHaveAttribute("draggable", "true");
     expect(childB1Line).not.toHaveAttribute("draggable", "true");
-    expect(childA1Line?.querySelector(".cursor-grab")).toBeNull();
-    fireEvent.drop(childA2Line as HTMLElement, {
+    expect(childA1Line.querySelector(".cursor-grab")).toBeNull();
+    fireEvent.drop(childA2Line, {
       dataTransfer: createDragDataTransfer(),
     });
   });

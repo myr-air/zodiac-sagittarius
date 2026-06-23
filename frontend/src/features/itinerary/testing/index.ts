@@ -49,7 +49,9 @@ export {
   createDragDataTransfer,
   findGraphLine,
   getItineraryItemRow,
+  getSubItineraryItemLine,
   layoutRect,
   openHeaderControls,
   queryItineraryItemRow,
+  querySubItineraryItemLine,
 } from "./support/smart-itinerary-table-dom";
