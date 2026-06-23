@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import type { RouteViewport } from "./route-map.config";
-import { fitLiveRoute, synchronizeRouteLayers } from "./route-map.live";
+import { fitLiveRoute } from "./route-map.live";
+import { synchronizeRouteLayers } from "./route-map.live-layers";
 import { synchronizeLiveRouteMarkers } from "./route-map.live-markers";
 import type {
   DayFilter,

@@ -4,8 +4,6 @@ import type { LiveRouteMarkerRegistry } from "./route-map.live-markers";
 import { cleanupRouteLayers } from "./route-map.live-layers";
 import type { RoutePoint } from "./route-map.types";
 
-export { cleanupRouteLayers, synchronizeRouteLayers } from "./route-map.live-layers";
-
 export function fitLiveRoute(map: import("maplibre-gl").Map, points: RoutePoint[], fallbackViewport = thailandRouteViewport) {
   const pointsWithCoordinates = points.filter((point) => point.item.coordinates && hasCoordinates(point.item.coordinates));
   if (pointsWithCoordinates.length > 1) {
