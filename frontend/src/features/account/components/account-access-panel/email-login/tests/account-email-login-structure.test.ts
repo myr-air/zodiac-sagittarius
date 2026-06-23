@@ -12,11 +12,18 @@ function readEmailLoginSource(fileName: string) {
 describe("account email login structure", () => {
   it("keeps the panel shell split from step rendering", () => {
     const panelSource = readEmailLoginSource("account-email-login-panel.tsx");
+    const panelFormSource = readEmailLoginSource("account-email-login-panel-form.tsx");
     const stageSource = readEmailLoginSource("account-email-login-step-stage.tsx");
     const dispatchSource = readEmailLoginSource("account-email-login-step-dispatch.tsx");
     const stepTypesSource = readEmailLoginSource("account-email-login-step.types.ts");
 
-    expect(panelSource).toContain("EmailLoginStepStage");
+    expect(panelSource).toContain("EmailLoginPanelForm");
+    expect(panelSource).toContain("useEmailLoginPanelState");
+    expect(panelSource).not.toContain("EmailLoginStepStage");
+    expect(panelSource).not.toContain("AccountAuthRouteTabs");
+    expect(panelFormSource).toContain("EmailLoginStepStage");
+    expect(panelFormSource).toContain("AccountAuthRouteTabs");
+    expect(panelFormSource).toContain("AccountAuthFlowSwitch");
     expect(panelSource).not.toContain("EmailLoginOtpStep");
     expect(stageSource).toContain("EmailLoginStepContent");
     expect(stageSource).toContain("./account-email-login-step.types");

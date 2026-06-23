@@ -173,6 +173,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   emailLoginSubmitErrors: "src/features/account/components/account-access-panel/email-login/submit/email-login-submit-errors.ts",
   emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/state/use-email-login-resend-cooldown.ts",
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
+  emailLoginPanelForm:
+    "src/features/account/components/account-access-panel/email-login/account-email-login-panel-form.tsx",
   emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",
   tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsStateKey:

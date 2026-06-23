@@ -180,3 +180,5 @@ export function useEmailLoginPanelState({
     updateCode,
   };
 }
+
+export type EmailLoginPanelState = ReturnType<typeof useEmailLoginPanelState>;
