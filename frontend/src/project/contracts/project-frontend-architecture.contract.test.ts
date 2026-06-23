@@ -162,6 +162,33 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(rowStatus).toContain("memberInitial");
   });
 
+  it("keeps date time picker popover layout logic split from popover rendering", () => {
+    const popover = readFileSync(
+      join(frontendRoot, "src/shared/components/date-time-pickers/internal/date-time-picker-popover.tsx"),
+      "utf8",
+    );
+    const popoverPosition = readFileSync(
+      join(frontendRoot, "src/shared/components/date-time-pickers/internal/date-time-picker-popover-position.ts"),
+      "utf8",
+    );
+    const pickerStyles = readFileSync(
+      join(frontendRoot, "src/shared/components/date-time-pickers/internal/date-time-picker.styles.ts"),
+      "utf8",
+    );
+
+    expect(popover).toContain("./date-time-picker-popover-position");
+    expect(popover).toContain("./date-time-picker.styles");
+    expect(popover).not.toContain("export function usePickerPosition");
+    expect(popover).not.toContain("const pickerPanelClassName");
+    expect(popover).not.toContain("const triggerClassName");
+    expect(popoverPosition).toContain("export function calculatePickerPanelPosition");
+    expect(popoverPosition).toContain("export function calculatePickerPanelInitialPosition");
+    expect(popoverPosition).toContain("export function usePickerPosition");
+    expect(popoverPosition).toContain("export function focusInputWithoutOpening");
+    expect(pickerStyles).toContain("export const pickerPanelClassName");
+    expect(pickerStyles).toContain("export const pickerTriggerClassName");
+  });
+
   it("keeps public about page styles colocated outside the page component", () => {
     const aboutPage = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.tsx"), "utf8");
     const aboutPageStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/about/AboutAppPage.styles.ts"), "utf8");

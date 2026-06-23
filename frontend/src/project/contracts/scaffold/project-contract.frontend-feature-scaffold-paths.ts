@@ -198,6 +198,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/date-time-pickers/DateTimePickerField.tsx",
   "src/shared/components/date-time-pickers/TimePickerField.tsx",
   "src/shared/components/date-time-pickers/DateTimePickerContent.tsx",
+  "src/shared/components/date-time-pickers/internal/date-time-picker-popover-position.ts",
+  "src/shared/components/date-time-pickers/internal/date-time-picker-popover-position.test.ts",
   "src/shared/components/date-time-pickers/internal/date-time-picker.styles.ts",
   "src/shared/components/date-time-pickers/internal/date-time-picker.types.ts",
   "src/shared/components/date-time-pickers/model/date-time-picker-model.ts",

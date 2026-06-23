@@ -1,4 +1,8 @@
 export const inputWrapClassName = "relative min-w-0";
+export const pickerPanelClassName =
+  "joii-picker fixed z-[40] grid max-h-[calc(100dvh-16px)] gap-3 overflow-auto rounded-(--radius-lg) border border-(--color-route-border) bg-(--color-surface) p-3 text-(--color-text) shadow-[0_20px_42px_rgb(37_99_235_/_0.1),0_8px_16px_rgb(15_23_42_/_0.07)]";
+export const pickerTriggerClassName =
+  "absolute inset-y-1 right-1 inline-grid min-h-0 w-8 place-items-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors hover:bg-(--color-route-soft) hover:text-(--color-route)";
 export const pickerHeaderClassName = "grid grid-cols-[32px_minmax(0,1fr)_32px] items-center gap-2";
 export const pickerNavButtonClassName =
   "inline-grid size-8 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-sm font-black text-(--color-route) hover:bg-(--color-route-soft)";
