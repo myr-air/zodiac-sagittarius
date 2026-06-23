@@ -1,5 +1,18 @@
 import type { PlanStatus, PlanVariant } from "@/src/trip/types";
 
+export interface SmartItineraryTripPlanSelectOption<Value extends string = string> {
+  value: Value;
+  label: string;
+  disabled?: boolean;
+}
+
+export const tripPlanStatusControlValues = [
+  "main",
+  "draft",
+  "backup",
+  "proposal",
+] as const satisfies readonly PlanStatus[];
+
 export function formatTripPlanOptionLabel(
   plan: PlanVariant,
   statusLabels: Readonly<Record<PlanStatus, string>>,
@@ -20,4 +33,24 @@ export function selectedTripPlanIdForControl(
 
 export function tripPlanStatus(plan: PlanVariant): PlanStatus {
   return plan.status ?? (plan.kind === "split" ? "proposal" : plan.kind);
+}
+
+export function buildSmartItineraryTripPlanSelectOptions(
+  tripPlans: PlanVariant[],
+  statusLabels: Readonly<Record<PlanStatus, string>>,
+): SmartItineraryTripPlanSelectOption[] {
+  return tripPlans.map((plan) => ({
+    value: plan.id,
+    label: formatTripPlanOptionLabel(plan, statusLabels),
+  }));
+}
+
+export function smartItineraryTripPlanStatusSelectOptions(
+  statusLabels: Readonly<Record<PlanStatus, string>>,
+): SmartItineraryTripPlanSelectOption<PlanStatus>[] {
+  return tripPlanStatusControlValues.map((value) => ({
+    value,
+    label: statusLabels[value],
+    ...(value === "main" ? { disabled: true } : {}),
+  }));
 }

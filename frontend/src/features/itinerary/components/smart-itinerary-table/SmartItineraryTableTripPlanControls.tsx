@@ -1,3 +1,4 @@
+import { SelectOptions } from "@/src/shared/components/select-options";
 import type { PlanStatus } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import {
@@ -9,7 +10,10 @@ import {
   tripPlanSelectClassName,
 } from "./smart-itinerary-table.styles";
 import { SmartItineraryTableTripPlanCreateControls } from "./SmartItineraryTableTripPlanCreateControls";
-import { formatTripPlanOptionLabel } from "./smart-itinerary-table-trip-plan-labels";
+import {
+  buildSmartItineraryTripPlanSelectOptions,
+  smartItineraryTripPlanStatusSelectOptions,
+} from "./smart-itinerary-table-trip-plan-labels";
 import type { SmartItineraryTableTripPlanControlsProps } from "./trip-plan-controls.types";
 import { useTripPlanControlsState } from "./use-trip-plan-controls-state";
 
@@ -49,11 +53,12 @@ export function SmartItineraryTableTripPlanControls({
             disabled={state.tripPlanSelectorDisabled}
             onChange={(event) => state.changeTripPlan(event.target.value)}
           >
-            {tripPlans.map((plan) => (
-              <option value={plan.id} key={plan.id}>
-                {formatTripPlanOptionLabel(plan, itineraryLabels.tripPlans.status)}
-              </option>
-            ))}
+            <SelectOptions
+              options={buildSmartItineraryTripPlanSelectOptions(
+                tripPlans,
+                itineraryLabels.tripPlans.status,
+              )}
+            />
           </Select>
         </label>
         <label className={tripPlanFieldClassName}>
@@ -69,12 +74,11 @@ export function SmartItineraryTableTripPlanControls({
               )
             }
           >
-            <option value="main" disabled>
-              {itineraryLabels.tripPlans.status.main}
-            </option>
-            <option value="draft">{itineraryLabels.tripPlans.status.draft}</option>
-            <option value="backup">{itineraryLabels.tripPlans.status.backup}</option>
-            <option value="proposal">{itineraryLabels.tripPlans.status.proposal}</option>
+            <SelectOptions
+              options={smartItineraryTripPlanStatusSelectOptions(
+                itineraryLabels.tripPlans.status,
+              )}
+            />
           </Select>
         </label>
         <label className={tripPlanFieldClassName}>

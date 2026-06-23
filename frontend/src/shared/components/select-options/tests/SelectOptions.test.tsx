@@ -32,4 +32,20 @@ describe("SelectOptions", () => {
     expect(screen.getByRole("option", { name: "No owner" })).toHaveValue("");
     expect(screen.getByRole("option", { name: "Aom" })).toHaveValue("member-aom");
   });
+
+  it("passes disabled state through to generated options", () => {
+    render(
+      <Select aria-label="Status" defaultValue="draft">
+        <SelectOptions
+          options={[
+            { value: "main", label: "Main", disabled: true },
+            { value: "draft", label: "Draft" },
+          ]}
+        />
+      </Select>,
+    );
+
+    expect(screen.getByRole("option", { name: "Main" })).toBeDisabled();
+    expect(screen.getByRole("option", { name: "Draft" })).not.toBeDisabled();
+  });
 });

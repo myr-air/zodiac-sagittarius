@@ -47,3 +47,21 @@ export const WithEmptyOption: Story = {
     </label>
   ),
 };
+
+export const WithDisabledOption: Story = {
+  args: {
+    options: [
+      { value: "main", label: "Main", disabled: true },
+      { value: "draft", label: "Draft" },
+      { value: "backup", label: "Backup" },
+    ],
+  },
+  render: (args) => (
+    <label className="grid max-w-xs gap-2 text-sm font-bold text-(--color-text)">
+      Status
+      <Select defaultValue="draft">
+        <SelectOptions options={args.options} />
+      </Select>
+    </label>
+  ),
+};
