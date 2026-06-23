@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { AuthFlow } from "../../auth";
-import { AccountField, AccountStepSummary } from "../account-email-login-fields";
+import { AccountField, AccountStepSummary } from "../ui/account-email-login-fields";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 

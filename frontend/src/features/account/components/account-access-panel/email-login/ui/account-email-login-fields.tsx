@@ -6,7 +6,7 @@ import {
   accountFieldHintClassName,
   accountTertiaryActionClassName,
 } from "./account-email-login-styles";
-import { accountStepSummaryClassName } from "../layout/account-access-panel-layout";
+import { accountStepSummaryClassName } from "../../layout/account-access-panel-layout";
 
 export function AccountStepSummary({ label, value }: { label: string; value: string }) {
   return (

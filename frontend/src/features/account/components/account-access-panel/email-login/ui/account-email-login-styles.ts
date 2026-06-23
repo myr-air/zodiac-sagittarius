@@ -1,4 +1,4 @@
-import type { AuthTransitionDirection } from "./state/use-email-login-step-navigation";
+import type { AuthTransitionDirection } from "../state/use-email-login-step-navigation";
 
 export const accountCheckClassName =
   "account-check grid grid-cols-[auto_minmax(0,1fr)] items-center [&_input]:min-h-[18px] [&_input]:w-[18px]";

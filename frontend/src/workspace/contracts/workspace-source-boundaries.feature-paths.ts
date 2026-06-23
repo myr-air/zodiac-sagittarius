@@ -133,7 +133,7 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/portal/settings/portal-settings-section.tsx",
   accountPortalSettingsPasskeyActions:
     "src/features/account/components/account-access-panel/portal/settings/usePortalSettingsPasskeyActions.ts",
-  emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
+  emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-content.tsx",
   tripJoinGate: "src/features/account/components/trip-join-gate/TripJoinGate.tsx",
   tripJoinGateChrome: "src/features/account/components/trip-join-gate/composition/TripJoinGateChrome.tsx",
   tripJoinGateVisual: "src/features/account/components/trip-join-gate/composition/TripJoinGateVisual.tsx",
@@ -194,8 +194,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/state/use-email-login-resend-cooldown.ts",
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
   emailLoginPanelForm:
-    "src/features/account/components/account-access-panel/email-login/account-email-login-panel-form.tsx",
-  emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/account-email-login-step-stage.tsx",
+    "src/features/account/components/account-access-panel/email-login/ui/account-email-login-panel-form.tsx",
+  emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-stage.tsx",
   tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsStateKey:
     "src/features/workspace/pages/trip-settings/model/trip-settings-state-key.ts",

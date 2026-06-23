@@ -32,7 +32,7 @@ describe("email login state structure", () => {
     const formState = readEmailLoginSource("state/use-email-login-form-state.ts");
     const derivedState = readEmailLoginSource("state/email-login-panel-derived-state.ts");
     const validation = readEmailLoginSource("model/email-login-validation.ts");
-    const styles = readEmailLoginSource("account-email-login-styles.ts");
+    const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginFormState");
     expect(panelState).not.toMatch(/const \[email,\s*setEmail\]/);
@@ -113,8 +113,8 @@ describe("email login state structure", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
     const entryActions = readEmailLoginSource("state/use-email-login-entry-actions.ts");
     const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
-    const stepTypes = readEmailLoginSource("account-email-login-step.types.ts");
-    const styles = readEmailLoginSource("account-email-login-styles.ts");
+    const stepTypes = readEmailLoginSource("ui/account-email-login-step.types.ts");
+    const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginEntryActions");
     expect(panelState).toContain("useEmailLoginStepNavigation");
@@ -130,15 +130,15 @@ describe("email login state structure", () => {
     expect(stepNavigation).toContain("export type AuthTransitionDirection");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("function goToStep");
-    expect(styles).toContain("./state/use-email-login-step-navigation");
+    expect(styles).toContain("../state/use-email-login-step-navigation");
     expect(styles).not.toContain("export type AuthTransitionDirection");
     expect(styles).not.toContain("accountStepSummaryClassName");
     expect(styles).not.toContain("buildAccountAuthCardClassName");
     expect(stepTypes).toContain(
-      "./state/use-email-login-step-navigation",
+      "../state/use-email-login-step-navigation",
     );
-    expect(readEmailLoginSource("account-email-login-step-stage.tsx")).not.toContain(
-      "./state/use-email-login-step-navigation",
+    expect(readEmailLoginSource("ui/account-email-login-step-stage.tsx")).not.toContain(
+      "../state/use-email-login-step-navigation",
     );
   });
 });

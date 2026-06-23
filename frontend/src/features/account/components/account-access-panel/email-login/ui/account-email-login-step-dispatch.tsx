@@ -15,7 +15,7 @@ import {
   EmailLoginSetupStep,
 } from "./account-email-login-step-content";
 import type { EmailLoginStepContentProps } from "./account-email-login-step.types";
-import { buildEmailLoginStepDisabledState } from "./model/email-login-step-disabled-state";
+import { buildEmailLoginStepDisabledState } from "../model/email-login-step-disabled-state";
 
 export function EmailLoginStepContent({
   activeFlow,

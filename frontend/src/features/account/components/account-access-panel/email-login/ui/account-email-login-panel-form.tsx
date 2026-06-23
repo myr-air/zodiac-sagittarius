@@ -1,4 +1,4 @@
-import { AccountAuthFlowSwitch, AccountAuthRouteTabs } from "../auth";
+import { AccountAuthFlowSwitch, AccountAuthRouteTabs } from "../../auth";
 import { cn } from "@/src/lib/cn";
 import {
   accountEntryLoginFlowClassName,
@@ -7,8 +7,8 @@ import {
 } from "./account-email-login-styles";
 import { AccountTrustDeviceField } from "./account-email-login-fields";
 import { EmailLoginStepStage } from "./account-email-login-step-stage";
-import { StatusMessage } from "../auth";
-import type { EmailLoginPanelState } from "./state/use-email-login-panel-state";
+import { StatusMessage } from "../../auth";
+import type { EmailLoginPanelState } from "../state/use-email-login-panel-state";
 
 interface EmailLoginPanelFormProps {
   authCardClassName: string;
