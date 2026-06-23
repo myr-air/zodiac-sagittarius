@@ -1,8 +1,7 @@
-import { tripFixture } from "./trip-fixtures";
+import { buildTripFixtureItineraryItem } from "./trip-fixtures";
 
 export function overlappingActivityItems() {
-  const mainItem = {
-    ...tripFixture.planItems[0],
+  const mainItem = buildTripFixtureItineraryItem({
     id: "item-main-long",
     day: "2026-06-19",
     startTime: "08:00",
@@ -12,9 +11,8 @@ export function overlappingActivityItems() {
     pathId: undefined,
     pathName: undefined,
     pathRole: undefined,
-  };
-  const middleItem = {
-    ...tripFixture.planItems[1],
+  });
+  const middleItem = buildTripFixtureItineraryItem({
     id: "item-middle",
     day: "2026-06-19",
     startTime: "08:30",
@@ -24,7 +22,7 @@ export function overlappingActivityItems() {
     pathId: undefined,
     pathName: undefined,
     pathRole: undefined,
-  };
+  });
   const lateItem = {
     ...middleItem,
     id: "item-late",
