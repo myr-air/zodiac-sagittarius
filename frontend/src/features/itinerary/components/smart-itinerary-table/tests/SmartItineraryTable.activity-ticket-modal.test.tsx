@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildBookingDoc,
+  getItineraryItemRow,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
@@ -76,22 +77,16 @@ describe("SmartItineraryTable activity ticket modal", () => {
       onSaveBookingForItem,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="travel-flight-row"]',
-    );
-    expect(row).not.toBeNull();
-    const linkedBusRow = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="bus-leg-row"]',
-    );
-    expect(linkedBusRow).not.toBeNull();
+    const row = getItineraryItemRow(flightItem.id);
+    const linkedBusRow = getItineraryItemRow(busItem.id);
     expect(
-      within(linkedBusRow as HTMLElement).getAllByRole("button", {
+      within(linkedBusRow).getAllByRole("button", {
         name: /สร้าง booking draft แบบ รถบัส สำหรับ Terminal shuttle/i,
       })[0],
     ).toHaveClass("text-(--color-route)");
 
     await user.click(
-      within(row as HTMLElement).getAllByRole("button", {
+      within(row).getAllByRole("button", {
         name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
       })[0],
     );
@@ -145,11 +140,8 @@ describe("SmartItineraryTable activity ticket modal", () => {
       onUnlinkBookingForItem,
     });
 
-    const row = document.querySelector<HTMLTableRowElement>(
-      '[data-item-id="travel-flight-row"]',
-    );
-    expect(row).not.toBeNull();
-    const bookingButton = within(row as HTMLElement).getAllByRole("button", {
+    const row = getItineraryItemRow(flightItem.id);
+    const bookingButton = within(row).getAllByRole("button", {
       name: /สร้าง booking draft แบบ เครื่องบิน สำหรับ Airport transfer/i,
     })[0];
     expect(bookingButton).toHaveClass("text-(--color-route)");
