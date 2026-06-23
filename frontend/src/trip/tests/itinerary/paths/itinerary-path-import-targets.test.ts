@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { applyImportedItemsToItineraryPath } from "../../../itinerary-paths";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { importItem } from "./itinerary-path-imports.test-support";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
@@ -76,14 +79,15 @@ describe("itinerary path import targets", () => {
   });
 
   it("replaces only the selected target path and keeps other paths", () => {
-    const existingRain = {
-      ...tripFixture.planItems[0],
+    const existingRain = buildItineraryItem({
       id: "existing-rain",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       pathGroupId: "group-breakfast",
       pathId: pathIdRain,
       pathRole: "alternative" as const,
-    };
+    });
     const existingSlow = {
       ...existingRain,
       id: "existing-slow",

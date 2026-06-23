@@ -4,7 +4,10 @@ import {
   cascadePathFieldsToSubActivities,
 } from "../../../itinerary-paths/itinerary-activity-branch-placement";
 import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   pathIdPlanA,
   pathNamePlanA,
@@ -13,15 +16,14 @@ import {
 describe("itinerary activity branch placement model", () => {
   it("cascades parent path fields to sub-activities in the same branch", () => {
     const { mainItem } = overlappingActivityItems();
-    const child = {
-      ...tripFixture.planItems[1],
+    const child = buildItineraryItem({
       id: "item-child",
       parentItemId: mainItem.id,
       pathGroupId: undefined,
       pathId: undefined,
       pathName: undefined,
       pathRole: undefined,
-    };
+    });
     const branchedParent = {
       ...mainItem,
       pathGroupId: "path-group-main",

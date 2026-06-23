@@ -2,6 +2,13 @@ import { buildExpenseSummary } from "../../expenses";
 import { seedTrip } from "../../seed";
 import type { ItineraryItem, Member, StopNote, Suggestion, Trip, TripRole, TripTask } from "../../types";
 export { buildDenseTripFixture } from "./dense-trip-fixture";
+export {
+  buildBookingDoc,
+  buildBusTravelItineraryItem,
+  buildFlightTravelItineraryItem,
+  buildItineraryItem,
+  buildSharedFlightBookingDoc,
+} from "./itinerary-item-fixtures";
 
 export type TripFixtureRole = TripRole;
 

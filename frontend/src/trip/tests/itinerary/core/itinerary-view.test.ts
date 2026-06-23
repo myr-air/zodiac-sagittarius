@@ -5,7 +5,11 @@ import {
   getNowNext,
   sortItemsForDay,
 } from "../../../itinerary-core";
-import { getTripFixtureItineraryItem, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  getTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { hongKongDay, shenzhenDay } from "@/src/trip/testing/fixtures/itinerary-test-days";
 
 describe("itinerary view helpers", () => {
@@ -26,22 +30,20 @@ describe("itinerary view helpers", () => {
   it("finds the current and next timed stops", () => {
     const day = "2026-06-19";
     const items = [
-      {
-        ...tripFixture.planItems[0],
+      buildItineraryItem({
         id: "item-breakfast",
         day,
         startTime: "09:00",
         endTime: "10:00",
         sortOrder: 100,
-      },
-      {
-        ...tripFixture.planItems[0],
+      }),
+      buildItineraryItem({
         id: "item-museum",
         day,
         startTime: "11:00",
         endTime: "12:00",
         sortOrder: 200,
-      },
+      }),
     ];
 
     expect(getNowNext(items, day, "09:30")).toMatchObject({
