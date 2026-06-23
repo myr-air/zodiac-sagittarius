@@ -51,6 +51,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/auth/tests/account-auth-errors.test.ts",
   "src/features/account/components/account-access-panel/auth/account-passkey-codec.ts",
   "src/features/account/components/account-access-panel/auth/tests/account-passkey-codec.test.ts",
+  "src/features/account/components/account-access-panel/auth/account-passkey-login-input.ts",
+  "src/features/account/components/account-access-panel/auth/tests/account-passkey-login-input.test.ts",
   "src/features/account/components/account-access-panel/auth/account-passkey-support.ts",
   "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
   "src/features/account/components/account-access-panel/auth/account-auth-chrome.tsx",

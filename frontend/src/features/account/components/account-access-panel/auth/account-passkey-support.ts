@@ -1,18 +1,15 @@
-import type {
-  AccountApiClient,
-  AccountSettings,
-  PasskeyLoginStartResponse,
-} from "@/src/account/api-client";
+import type { AccountSettings } from "@/src/account/api-client";
 import { ACCESS_ERROR_CODES } from "./account-access-error-codes";
-import {
-  arrayBufferToBase64Url,
-  base64UrlToArrayBuffer,
-} from "./account-passkey-codec";
+import { base64UrlToArrayBuffer } from "./account-passkey-codec";
 
 export {
   arrayBufferToBase64Url,
   base64UrlToArrayBuffer,
 } from "./account-passkey-codec";
+export {
+  buildPasskeyLoginFinishInput,
+  type PasskeyAssertionCredential,
+} from "./account-passkey-login-input";
 
 export async function createPasskeyCredential(challenge: string, settings: AccountSettings) {
   const credentials = assertCredentialApi();
@@ -76,8 +73,6 @@ type AssertionCredential = PublicKeyCredential & {
   response: AuthenticatorAssertionResponse;
 };
 
-type PasskeyLoginFinishInput = Parameters<AccountApiClient["finishPasskeyLogin"]>[0];
-
 function assertCredentialApi(): CredentialsContainer {
   if (typeof navigator === "undefined" || !navigator.credentials) {
     throw new Error(ACCESS_ERROR_CODES.passkeyUnsupported);
@@ -119,24 +114,4 @@ function isPublicKeyCredential(credential: Credential | null): credential is Pub
     "clientDataJSON" in credential.response &&
     credential.response.clientDataJSON instanceof ArrayBuffer
   );
-}
-
-export function buildPasskeyLoginFinishInput({
-  credential,
-  loginStart,
-  trustDevice,
-}: {
-  credential: AssertionCredential;
-  loginStart: Pick<PasskeyLoginStartResponse, "challengeId">;
-  trustDevice: boolean;
-}): PasskeyLoginFinishInput {
-  return {
-    challengeId: loginStart.challengeId,
-    credentialId: arrayBufferToBase64Url(credential.rawId),
-    clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
-    authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
-    signature: arrayBufferToBase64Url(credential.response.signature),
-    trustDevice,
-    deviceLabel: "",
-  };
 }

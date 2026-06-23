@@ -43,6 +43,8 @@ describe("Sagittarius account source boundaries", () => {
       portalTripWizardAccessActions,
       portalTripWizardCredentialSync,
       accountAuthSupport,
+      accountPasskeySupport,
+      accountPasskeyLoginInput,
       emailLoginStepContent,
       tripJoinGate,
       tripJoinGateChrome,
@@ -289,6 +291,14 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
     expect(accountAuthSupport).not.toContain("function base64UrlToArrayBuffer");
     expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
+    expect(accountPasskeySupport).toContain("export async function createPasskeyCredential");
+    expect(accountPasskeySupport).toContain("export async function getPasskeyCredential");
+    expect(accountPasskeySupport).toContain("./account-passkey-login-input");
+    expect(accountPasskeySupport).not.toContain("finishPasskeyLogin");
+    expect(accountPasskeySupport).not.toContain("credentialId: arrayBufferToBase64Url");
+    expect(accountPasskeyLoginInput).toContain("export function buildPasskeyLoginFinishInput");
+    expect(accountPasskeyLoginInput).toContain('Parameters<AccountApiClient["finishPasskeyLogin"]>[0]');
+    expect(accountPasskeyLoginInput).not.toContain("navigator.credentials");
 
     expect(emailLoginState).toContain("./use-email-login-form-state");
     expect(emailLoginState).toContain("./use-email-login-challenge-state");
