@@ -6,6 +6,11 @@ export interface MajorCurrencyOption {
   symbol: string;
 }
 
+export interface MajorCurrencySelectOption {
+  value: MajorCurrencyCode;
+  label: string;
+}
+
 export const majorCurrencyCodes = [
   "HKD",
   "THB",
@@ -31,6 +36,13 @@ export const majorCurrencyOptions: MajorCurrencyOption[] = [
   { code: "KRW", label: "South Korean Won", symbol: "₩" },
   { code: "TWD", label: "New Taiwan Dollar", symbol: "NT$" },
 ];
+
+export function majorCurrencySelectOptions(): MajorCurrencySelectOption[] {
+  return majorCurrencyOptions.map((option) => ({
+    value: option.code,
+    label: `${option.code} · ${option.label}`,
+  }));
+}
 
 const majorCurrencySet = new Set<string>(majorCurrencyCodes);
 

@@ -1,4 +1,5 @@
-import { majorCurrencyOptions } from "@/src/trip/currencies";
+import { SelectOptions } from "@/src/shared/components/select-options";
+import { majorCurrencySelectOptions } from "@/src/trip/currencies";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { expenseDialogRepeatCountRange } from "../model/expense-dialog-constraints";
@@ -69,9 +70,7 @@ export function ExpenseCoreFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.currency}</span>
         <Select aria-label={copy.fields.currency} value={currency} onChange={(event) => onCurrencyChange(event.target.value)}>
-          {majorCurrencyOptions.map((option) => (
-            <option key={option.code} value={option.code}>{option.code} · {option.label}</option>
-          ))}
+          <SelectOptions options={majorCurrencySelectOptions()} />
         </Select>
       </label>
       <label className={expenseStyles.fieldClassName}>

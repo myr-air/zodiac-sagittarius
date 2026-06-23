@@ -6,6 +6,7 @@ import {
   formatExchangeRateInput,
   majorCurrencyCodes,
   majorCurrencyOptions,
+  majorCurrencySelectOptions,
 } from "../../currencies";
 import { createMemoryStorage } from "@/src/testing/browser-storage";
 
@@ -13,6 +14,10 @@ describe("major currency exchange rates", () => {
   it("keeps the first release scoped to major travel currencies", () => {
     expect(majorCurrencyCodes).toEqual(["HKD", "THB", "USD", "JPY", "CNY", "EUR", "GBP", "SGD", "KRW", "TWD"]);
     expect(majorCurrencyOptions.map((option) => option.code)).toEqual(majorCurrencyCodes);
+    expect(majorCurrencySelectOptions()[0]).toEqual({
+      value: "HKD",
+      label: "HKD · Hong Kong Dollar",
+    });
   });
 
   it("fetches a backend shared rate for one major-currency pair and caches it", async () => {
