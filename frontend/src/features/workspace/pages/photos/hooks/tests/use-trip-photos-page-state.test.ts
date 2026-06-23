@@ -21,6 +21,9 @@ describe("trip photos page state structure", () => {
     const photoModalStateSource = readPhotosPageSource(
       "hooks/usePhotoAlbumModalState.ts",
     );
+    const photoModalActionsSource = readPhotosPageSource(
+      "hooks/usePhotoAlbumModalActions.ts",
+    );
 
     expect(pageStateSource).toContain("usePhotoAlbumBrowserState");
     expect(pageStateSource).toContain("usePhotoAlbumModalState");
@@ -34,8 +37,12 @@ describe("trip photos page state structure", () => {
     expect(photoModalStateSource).toContain("initialPhotoAlbumModalState");
     expect(photoModalStateSource).toContain("updatePhotoAlbumModalState");
     expect(photoModalStateSource).toContain("const [modalState, setModalState]");
-    expect(photoModalStateSource).toContain("async function submitAlbum");
-    expect(photoModalStateSource).toContain("async function confirmDelete");
+    expect(photoModalStateSource).toContain("usePhotoAlbumModalActions");
+    expect(photoModalStateSource).not.toContain("async function submitAlbum");
+    expect(photoModalStateSource).not.toContain("async function confirmDelete");
+    expect(photoModalActionsSource).toContain("export function usePhotoAlbumModalActions");
+    expect(photoModalActionsSource).toContain("async function submitAlbum");
+    expect(photoModalActionsSource).toContain("async function confirmDelete");
     expect(photoPageStateSource).toContain("export interface PhotoAlbumBrowserState");
     expect(photoPageStateSource).toContain("export interface PhotoAlbumModalState");
     expect(photoPageStateSource).toContain(

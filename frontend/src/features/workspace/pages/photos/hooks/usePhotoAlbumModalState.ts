@@ -8,9 +8,9 @@ import {
 import type {
   CreatePhotoAlbumHandler,
   DeletePhotoAlbumHandler,
-  TripPhotoAlbumInput,
   UpdatePhotoAlbumHandler,
 } from "../TripPhotosPage.types";
+import { usePhotoAlbumModalActions } from "./usePhotoAlbumModalActions";
 
 interface UsePhotoAlbumModalStateInput {
   onCreatePhotoAlbum: CreatePhotoAlbumHandler;
@@ -34,20 +34,16 @@ export function usePhotoAlbumModalState({
     setModalState((current) => updatePhotoAlbumModalState(current, field, value));
   }
 
-  async function submitAlbum(input: TripPhotoAlbumInput) {
-    if (modalState.dialogAlbum === "new") {
-      await onCreatePhotoAlbum(input);
-    } else if (modalState.dialogAlbum) {
-      await onUpdatePhotoAlbum(modalState.dialogAlbum.id, input);
-    }
-    updateModalState("dialogAlbum", null);
-  }
-
-  async function confirmDelete() {
-    if (!modalState.deleteAlbum) return;
-    await onDeletePhotoAlbum(modalState.deleteAlbum.id);
-    updateModalState("deleteAlbum", null);
-  }
+  const {
+    confirmDelete,
+    submitAlbum,
+  } = usePhotoAlbumModalActions({
+    modalState,
+    onCreatePhotoAlbum,
+    onDeletePhotoAlbum,
+    onUpdatePhotoAlbum,
+    updateModalState,
+  });
 
   return {
     confirmDelete,
