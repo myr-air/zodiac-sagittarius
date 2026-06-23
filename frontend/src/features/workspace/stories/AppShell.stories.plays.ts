@@ -1,6 +1,6 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import type { AppShell } from "@/src/features/workspace/components/app-shell";
+import type { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
 
 type AppShellPlay = NonNullable<StoryObj<typeof AppShell>["play"]>;
 

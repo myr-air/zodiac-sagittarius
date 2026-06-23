@@ -1,4 +1,5 @@
-import { AppShell, type AppShellProps } from "@/src/features/workspace/components/app-shell";
+import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
+import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";

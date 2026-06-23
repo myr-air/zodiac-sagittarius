@@ -1,7 +1,7 @@
 import { OverviewPage } from "@/src/features/itinerary/components";
 import { noop } from "@/src/testing/storybook-actions";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { AppShellProps } from "@/src/features/workspace/components/app-shell";
+import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 
 type AppShellStoryArgs = AppShellProps;
 

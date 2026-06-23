@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { resolveViewFromPath } from "@/src/features/workspace/components/app-shell";
+import { resolveViewFromPath } from "@/src/features/workspace/components/app-shell/app-shell-routing";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 
 interface UseWorkspaceNavigationOptions {

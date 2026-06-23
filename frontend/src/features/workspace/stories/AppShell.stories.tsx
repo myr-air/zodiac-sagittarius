@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { AppShell } from "@/src/features/workspace/components/app-shell";
+import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
 import {
   ownerArgsStory,
   viewportStory,
