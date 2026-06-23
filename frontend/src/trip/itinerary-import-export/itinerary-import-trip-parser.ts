@@ -1,4 +1,5 @@
 import type { TripPlan } from "../types";
+import { tripPlanAliasesMatch } from "../trip-plans";
 import type { ItineraryExportDocument } from "./itinerary-import-export-types";
 import {
   isRecord,
@@ -93,20 +94,5 @@ function assertTripPlanAliasesMatch(
   canonical: TripPlan[],
   legacy: TripPlan[],
 ): void {
-  if (canonical.length !== legacy.length) {
-    throw unsupportedImportFileError();
-  }
-  for (const [index, canonicalPlan] of canonical.entries()) {
-    const legacyPlan = legacy[index];
-    if (
-      !legacyPlan ||
-      canonicalPlan.id !== legacyPlan.id ||
-      canonicalPlan.name !== legacyPlan.name ||
-      canonicalPlan.version !== legacyPlan.version ||
-      canonicalPlan.kind !== legacyPlan.kind ||
-      canonicalPlan.status !== legacyPlan.status
-    ) {
-      throw unsupportedImportFileError();
-    }
-  }
+  if (!tripPlanAliasesMatch(canonical, legacy)) throw unsupportedImportFileError();
 }

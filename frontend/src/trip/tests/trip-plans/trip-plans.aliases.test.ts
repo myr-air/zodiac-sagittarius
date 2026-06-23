@@ -6,6 +6,7 @@ import {
   normalizeTripPlanSummary,
   planStatusForLegacyKind,
   setLocalMainTripPlan,
+  tripPlanAliasesMatch,
   updateTripPlanInTrip,
 } from "@/src/trip/trip-plans";
 import { seedTrip } from "@/src/trip/seed";
@@ -173,5 +174,23 @@ describe("trip plan aliases", () => {
         "plan-main",
       ),
     ).toMatchObject({ kind: "main", status: "main" });
+  });
+
+  it("compares canonical and legacy Trip Plan aliases from one shared rule", () => {
+    const canonical = [
+      plan({ id: "plan-main", kind: "main", status: "main", version: 2 }),
+      plan({ id: "plan-rain", kind: "split", status: "proposal", version: 3 }),
+    ];
+    const legacy = canonical.map((tripPlan) => ({ ...tripPlan }));
+
+    expect(tripPlanAliasesMatch(canonical, legacy)).toBe(true);
+    expect(tripPlanAliasesMatch(canonical, [
+      legacy[0]!,
+      { ...legacy[1]!, version: 4 },
+    ])).toBe(false);
+    expect(tripPlanAliasesMatch(canonical, [
+      legacy[0]!,
+      { ...legacy[1]!, kind: "backup", status: "backup" },
+    ])).toBe(false);
   });
 });

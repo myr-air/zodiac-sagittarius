@@ -14,7 +14,9 @@ import type {
 import { DEFAULT_TRIP_TIMEZONE } from "../metadata";
 import {
   legacyKindForPlanStatus,
+  normalizeTripPlanSummary,
   planStatusForLegacyKind,
+  tripPlanAliasesMatch,
 } from "../trip-plans/trip-plan-aliases";
 
 export function mapTripSummary(trip: TripSummaryResponse): Trip {
@@ -86,7 +88,7 @@ export function mapPlanVariantForMainPointer(
   variant: PlanVariantResponse,
   mainTripPlanId: string,
 ): PlanVariant {
-  return normalizePlanVariantForMainPointer(mapPlanVariant(variant), mainTripPlanId);
+  return normalizeTripPlanSummary(mapPlanVariant(variant), mainTripPlanId);
 }
 
 export function assertTripPlanResponse(variant: PlanVariantResponse): TripPlanResponse {
@@ -106,23 +108,15 @@ export function assertTripPlanResponseAliasesMatch(
   mainTripPlanId: string,
 ): void {
   if (canonicalPlans.length === 0 || legacyPlans.length === 0) return;
-  if (canonicalPlans.length !== legacyPlans.length) {
+  const normalizePlan = (plan: PlanVariant) => normalizeTripPlanSummary(plan, mainTripPlanId);
+  if (
+    !tripPlanAliasesMatch(
+      canonicalPlans.map(mapPlanVariant),
+      legacyPlans.map(mapPlanVariant),
+      normalizePlan,
+    )
+  ) {
     throwInvalidTripPlanAliasDrift();
-  }
-  for (const [index, canonicalPlan] of canonicalPlans.entries()) {
-    const legacyPlan = legacyPlans[index];
-    const mappedCanonicalPlan = normalizePlanVariantForMainPointer(mapPlanVariant(canonicalPlan), mainTripPlanId);
-    const mappedLegacyPlan = normalizePlanVariantForMainPointer(mapPlanVariant(legacyPlan), mainTripPlanId);
-    if (
-      !legacyPlan ||
-      canonicalPlan.id !== legacyPlan.id ||
-      canonicalPlan.name !== legacyPlan.name ||
-      canonicalPlan.version !== legacyPlan.version ||
-      mappedCanonicalPlan.kind !== mappedLegacyPlan.kind ||
-      mappedCanonicalPlan.status !== mappedLegacyPlan.status
-    ) {
-      throwInvalidTripPlanAliasDrift();
-    }
   }
 }
 
@@ -142,21 +136,4 @@ function throwInvalidTripPlanAliasDrift(): never {
     message: "Trip Plan compatibility aliases do not match",
     status: 0,
   });
-}
-
-function normalizePlanVariantForMainPointer(
-  plan: PlanVariant,
-  mainTripPlanId: string,
-): PlanVariant {
-  const status =
-    plan.id === mainTripPlanId
-      ? "main"
-      : plan.status === "main"
-        ? "backup"
-        : plan.status ?? planStatusForLegacyKind(plan.kind);
-  return {
-    ...plan,
-    kind: legacyKindForPlanStatus(status),
-    status,
-  };
 }

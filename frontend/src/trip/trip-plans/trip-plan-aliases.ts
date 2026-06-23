@@ -1,5 +1,7 @@
 import type { PlanStatus, PlanVariant, Trip } from "@/src/trip/types";
 
+type TripPlanAliasComparable = Pick<PlanVariant, "id" | "kind" | "name" | "status" | "version">;
+
 export function normalizeTripPlanAliases(trip: Trip): Trip {
   const plansById = new Map<string, PlanVariant>();
   for (const plan of trip.tripPlans ?? []) plansById.set(plan.id, plan);
@@ -90,6 +92,27 @@ export function normalizeTripPlanSummary(
     kind: legacyKindForPlanStatus(status),
     status,
   };
+}
+
+export function tripPlanAliasesMatch(
+  canonicalPlans: PlanVariant[],
+  legacyPlans: PlanVariant[],
+  normalizePlan: (plan: PlanVariant) => TripPlanAliasComparable = (plan) => plan,
+): boolean {
+  if (canonicalPlans.length !== legacyPlans.length) return false;
+  return canonicalPlans.every((canonicalPlan, index) => {
+    const legacyPlan = legacyPlans[index];
+    if (!legacyPlan) return false;
+    const canonicalComparable = normalizePlan(canonicalPlan);
+    const legacyComparable = normalizePlan(legacyPlan);
+    return (
+      canonicalComparable.id === legacyComparable.id &&
+      canonicalComparable.name === legacyComparable.name &&
+      canonicalComparable.version === legacyComparable.version &&
+      canonicalComparable.kind === legacyComparable.kind &&
+      canonicalComparable.status === legacyComparable.status
+    );
+  });
 }
 
 export function planStatusForLegacyKind(
