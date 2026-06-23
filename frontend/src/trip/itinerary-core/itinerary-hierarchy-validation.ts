@@ -1,9 +1,10 @@
+import { findItineraryItemById } from "../itinerary-items/itinerary-item-lookup";
 import type { ItineraryItem, ValidationWarning } from "../types";
 import { getTimeWindowInterval } from "./itinerary-time-window-interval";
 
 export function validateHierarchyFields(item: ItineraryItem, dayItems: ItineraryItem[]): ValidationWarning[] {
   if (!item.parentItemId) return [];
-  const parent = dayItems.find((candidate) => candidate.id === item.parentItemId);
+  const parent = findItineraryItemById(dayItems, item.parentItemId);
   if (!parent) {
     return [{
       code: "missing-parent-item",

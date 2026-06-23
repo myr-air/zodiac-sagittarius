@@ -18,6 +18,7 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "./itinerary-path-identifiers";
+import { findItineraryItemById } from "../itinerary-items/itinerary-item-lookup";
 import type { ItineraryItem, Trip } from "../types";
 
 export type { ItineraryActivityBranchPlacement } from "./itinerary-activity-branch-placement";
@@ -44,7 +45,7 @@ export function applyManualActivityPath(
   itemId: string,
   targetPathId: string,
 ): ItineraryActivityBranchPlacement {
-  const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+  const item = findItineraryItemById(trip.itineraryItems, itemId);
   if (!item)
     return { trip, item: trip.itineraryItems[0] as ItineraryItem, changedExistingItems: [] };
 
@@ -127,7 +128,7 @@ export function deriveManualActivityPathOptions(
   trip: Trip,
   itemId: string,
 ): ManualActivityPathOption[] {
-  const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+  const item = findItineraryItemById(trip.itineraryItems, itemId);
   if (!item) return [{ id: mainItineraryPathId, name: mainItineraryPathName }];
   return buildManualActivityPathOptions(
     item.day,

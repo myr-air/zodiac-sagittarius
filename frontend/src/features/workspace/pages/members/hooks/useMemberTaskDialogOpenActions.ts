@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { findMemberById } from "@/src/trip/members";
 import type {
   Member,
   TripMemberAccessStatus,
@@ -25,7 +26,7 @@ export function useMemberTaskDialogOpenActions({
   visibleMembers,
 }: UseMemberTaskDialogOpenActionsInput) {
   function findVisibleMember(memberId: string) {
-    return visibleMembers.find((candidate) => candidate.id === memberId);
+    return findMemberById(visibleMembers, memberId);
   }
 
   function confirmResetClaim(memberId: string) {
