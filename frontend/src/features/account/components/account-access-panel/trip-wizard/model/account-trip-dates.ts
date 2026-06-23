@@ -1,4 +1,7 @@
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
+import { normalizeTripPartySize } from "@/src/trip/settings";
+import type { TripCity } from "@/src/trip/types";
+import { defaultTripOriginCity } from "./account-trip-destinations";
 
 export {
   formatPreviewTravelDate,
@@ -52,4 +55,15 @@ export function nextTripWizardDateSelectionStep(
   step: TripWizardDateSelectionStep,
 ): TripWizardDateSelectionStep {
   return step === "depart" ? "return" : "depart";
+}
+
+export function tripWizardDefaultTimezone(
+  tripForm: Pick<AccountTripCreateRequest, "defaultTimezone">,
+  selectedDestinationCities: readonly Pick<TripCity, "timezone">[],
+): string {
+  return tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || defaultTripOriginCity.timezone;
+}
+
+export function tripWizardPartySizeFromInput(value: string): number {
+  return normalizeTripPartySize(Number(value));
 }

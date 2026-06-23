@@ -3,9 +3,12 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { DatePickerField } from "@/src/shared/components/date-time-pickers";
-import { normalizeTripPartySize, tripPartySizeRange } from "@/src/trip/settings";
+import { tripPartySizeRange } from "@/src/trip/settings";
 import type { TripCity } from "@/src/trip/types";
-import { defaultTripOriginCity } from "../model/account-trip-destinations";
+import {
+  tripWizardDefaultTimezone,
+  tripWizardPartySizeFromInput,
+} from "../model/account-trip-dates";
 import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardDateFieldsProps {
@@ -34,17 +37,6 @@ interface TripWizardDateFieldsProps {
   onChange: Dispatch<SetStateAction<AccountTripCreateRequest>>;
   onUpdateEndDate: (date: string) => void;
   onUpdateStartDate: (date: string) => void;
-}
-
-export function tripWizardDefaultTimezone(
-  tripForm: Pick<AccountTripCreateRequest, "defaultTimezone">,
-  selectedDestinationCities: Pick<TripCity, "timezone">[],
-): string {
-  return tripForm.defaultTimezone || selectedDestinationCities[0]?.timezone || defaultTripOriginCity.timezone;
-}
-
-export function tripWizardPartySizeFromInput(value: string): number {
-  return normalizeTripPartySize(Number(value));
 }
 
 export function TripWizardDateFields({

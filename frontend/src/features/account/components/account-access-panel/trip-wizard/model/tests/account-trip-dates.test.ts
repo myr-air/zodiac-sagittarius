@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
+import { tripPartySizeRange } from "@/src/trip/settings";
 import {
   applyTripCalendarDate,
   applyTripEndDate,
@@ -8,7 +9,9 @@ import {
   nextTripWizardDateSelectionStep,
   routeCalendarDays,
   tripNightCount,
+  tripWizardDefaultTimezone,
   tripWizardDateSelectionStepValues,
+  tripWizardPartySizeFromInput,
 } from "../account-trip-dates";
 
 describe("account trip date helpers", () => {
@@ -66,6 +69,30 @@ describe("account trip date helpers", () => {
       },
       selectingDateStep: "depart",
     });
+  });
+
+  it("prefers explicit timezone before destination and origin fallbacks", () => {
+    expect(
+      tripWizardDefaultTimezone(
+        { defaultTimezone: "Asia/Tokyo" },
+        [{ timezone: "Asia/Seoul" }],
+      ),
+    ).toBe("Asia/Tokyo");
+    expect(
+      tripWizardDefaultTimezone(
+        { defaultTimezone: "" },
+        [{ timezone: "Asia/Seoul" }],
+      ),
+    ).toBe("Asia/Seoul");
+    expect(tripWizardDefaultTimezone({ defaultTimezone: "" }, [])).toBe(
+      "Asia/Bangkok",
+    );
+  });
+
+  it("normalizes party size input through trip settings rules", () => {
+    expect(tripWizardPartySizeFromInput("2.8")).toBe(2);
+    expect(tripWizardPartySizeFromInput("")).toBe(tripPartySizeRange.min);
+    expect(tripWizardPartySizeFromInput("0")).toBe(tripPartySizeRange.min);
   });
 });
 
