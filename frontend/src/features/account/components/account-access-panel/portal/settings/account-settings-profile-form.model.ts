@@ -2,13 +2,12 @@ import type {
   AccountSettings,
   AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
+import {
+  buildAccountPortalProfileDisplay,
+  type AccountPortalProfileDisplay,
+} from "../profile/account-portal-profile-display";
 
-export interface AccountSettingsProfilePreview {
-  avatarColor: string;
-  avatarInitial: string;
-  displayName: string;
-  email: string;
-}
+export type AccountSettingsProfilePreview = AccountPortalProfileDisplay;
 
 export interface AccountSettingsLocaleSelectOption {
   value: string;
@@ -36,11 +35,10 @@ export function accountSettingsProfilePreview(
   settings: AccountSettings,
   labels: { noEmail: string },
 ): AccountSettingsProfilePreview {
-  const displayName = form.displayName;
-  return {
+  return buildAccountPortalProfileDisplay({
     avatarColor: form.avatarColor,
-    avatarInitial: displayName.slice(0, 1) || "A",
-    displayName,
-    email: settings.profile.primaryEmail ?? labels.noEmail,
-  };
+    displayName: form.displayName,
+    email: settings.profile.primaryEmail,
+    noEmail: labels.noEmail,
+  });
 }

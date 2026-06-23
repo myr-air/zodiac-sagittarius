@@ -3,6 +3,10 @@ import type {
   AccountSettings,
   AccountTripStats,
 } from "@/src/account/api-client";
+import {
+  buildAccountPortalProfileDisplay,
+  type AccountPortalProfileDisplay,
+} from "../profile/account-portal-profile-display";
 
 interface AccountPortalDashboardLabels {
   fallbackName: string;
@@ -19,12 +23,7 @@ interface AccountPortalDashboardLabels {
   };
 }
 
-export interface AccountPortalDashboardProfile {
-  avatarColor: string;
-  avatarInitial: string;
-  displayName: string;
-  email: string;
-}
+export type AccountPortalDashboardProfile = AccountPortalProfileDisplay;
 
 export interface AccountPortalDashboardSessionBadge {
   label: string;
@@ -41,12 +40,12 @@ export function buildAccountPortalDashboardProfile(
   labels: Pick<AccountPortalDashboardLabels, "fallbackName" | "noEmail">,
 ): AccountPortalDashboardProfile {
   const displayName = settings?.profile.displayName ?? labels.fallbackName;
-  return {
-    avatarColor: settings?.profile.avatarColor ?? "#c2410c",
-    avatarInitial: displayName.slice(0, 1),
+  return buildAccountPortalProfileDisplay({
+    avatarColor: settings?.profile.avatarColor,
     displayName,
-    email: settings?.profile.primaryEmail ?? labels.noEmail,
-  };
+    email: settings?.profile.primaryEmail,
+    noEmail: labels.noEmail,
+  });
 }
 
 export function buildAccountPortalDashboardSessionBadge(
