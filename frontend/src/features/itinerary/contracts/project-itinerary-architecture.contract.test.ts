@@ -158,6 +158,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const contextRailItemActionButtonsStory = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/storybook/ContextRailItemActionButtons.stories.tsx");
     const noteItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx");
     const expenseItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpenseItem.tsx");
+    const expenseSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpensesSection.tsx");
+    const expenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpenseForm.tsx");
     const suggestionsSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.tsx");
     const contextRailUtils = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail.utils.ts");
     const bookingDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-booking-display.ts");
@@ -178,6 +180,12 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(contextRailItemActionButtons).toContain("noteActionButtonClassName");
     expect(contextRailItemActionButtons).toContain("noteActionsClassName");
     expect(contextRailItemActionButtonsStory).toContain("ContextRailItemActionButtons");
+    expect(expenseSection).toContain("./ContextRailExpenseForm");
+    expect(expenseSection).not.toContain("contextRailExpenseCategoryOptions");
+    expect(expenseSection).not.toContain("expenseFormClassName");
+    expect(expenseForm).toContain("export function ContextRailExpenseForm");
+    expect(expenseForm).toContain("contextRailExpenseCategoryOptions");
+    expect(expenseForm).toContain("expenseFormClassName");
     expect(contextRailItemActionButtonsStory).toContain("Disabled");
     [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
       (source) =>

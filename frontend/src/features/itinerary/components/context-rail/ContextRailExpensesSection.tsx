@@ -1,15 +1,11 @@
-import { Button, Select } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import type { Expense } from "@/src/trip/types";
 import {
-  expenseFormClassName,
   expenseGridClassName,
-  detailButtonClassName,
   moduleListClassName,
 } from "./context-rail.styles";
 import { ContextRailDetailSection } from "./ContextRailDetailSection";
+import { ContextRailExpenseForm } from "./ContextRailExpenseForm";
 import { ContextRailExpenseItem } from "./ContextRailExpenseItem";
-import { contextRailExpenseCategoryOptions } from "./context-rail-expense-form-state";
 import { useContextRailExpenseForm } from "./use-context-rail-expense-form";
 import type { ContextRailExpensesSectionProps } from "./context-rail.types";
 
@@ -71,68 +67,29 @@ export function ContextRailExpensesSection({
           />
         ))}
       </div>
-      <form className={expenseFormClassName} onSubmit={submitExpense}>
-        <p className="m-0 text-[11px] font-bold leading-4 text-(--color-text-muted)">
-          {t.contextRail.expenses.actualOnlyHint}
-        </p>
-        <label>
-          <span>{t.contextRail.expenses.formTitle}</span>
-          <input
-            value={expenseTitle}
-            disabled={!canEditExpenses}
-            onChange={(event) => setExpenseTitle(event.target.value)}
-          />
-        </label>
-        <label>
-          <span>{t.contextRail.expenses.formAmount}</span>
-          <input
-            inputMode="decimal"
-            value={expenseAmount}
-            disabled={!canEditExpenses}
-            onChange={onAmountChange}
-          />
-        </label>
-        <label>
-          <span>{t.contextRail.expenses.formPaidBy}</span>
-          <Select
-            value={expensePaidBy}
-            disabled={!canEditExpenses}
-            onChange={(event) => setExpensePaidBy(event.target.value)}
-          >
-            {members.map((member) => (
-              <option value={member.id} key={member.id}>
-                {member.displayName}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label>
-          <span>{t.contextRail.expenses.formCategory}</span>
-          <Select
-            value={expenseCategory}
-            disabled={!canEditExpenses}
-            onChange={(event) =>
-              setExpenseCategory(event.target.value as Expense["category"])
-            }
-          >
-            {contextRailExpenseCategoryOptions.map((category) => (
-              <option value={category} key={category}>
-                {category}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <Button
-          type="submit"
-          variant="secondary"
-          className={detailButtonClassName}
-          disabled={
-            !canEditExpenses || !expenseTitle.trim() || !expenseAmount.trim()
-          }
-        >
-          {editingExpenseId ? t.common.actions.save : t.contextRail.expenses.edit}
-        </Button>
-      </form>
+      <ContextRailExpenseForm
+        canEditExpenses={canEditExpenses}
+        editingExpenseId={editingExpenseId}
+        expenseAmount={expenseAmount}
+        expenseCategory={expenseCategory}
+        expensePaidBy={expensePaidBy}
+        expenseTitle={expenseTitle}
+        labels={{
+          actualOnlyHint: t.contextRail.expenses.actualOnlyHint,
+          amount: t.contextRail.expenses.formAmount,
+          category: t.contextRail.expenses.formCategory,
+          create: t.contextRail.expenses.edit,
+          paidBy: t.contextRail.expenses.formPaidBy,
+          save: t.common.actions.save,
+          title: t.contextRail.expenses.formTitle,
+        }}
+        members={members}
+        onAmountChange={onAmountChange}
+        onCategoryChange={setExpenseCategory}
+        onPaidByChange={setExpensePaidBy}
+        onSubmit={submitExpense}
+        onTitleChange={setExpenseTitle}
+      />
     </ContextRailDetailSection>
   );
 }
