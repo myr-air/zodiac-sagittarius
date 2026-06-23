@@ -150,61 +150,6 @@ describe("Sagittarius itinerary architecture contracts", () => {
     });
   });
 
-  it("keeps context rail booking display labels in the itinerary booking domain", () => {
-    const bookingDocItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingDocItem.tsx");
-    const bookingDocItemModel = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-booking-doc-item-model.ts");
-    const bookingSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailBookingSection.tsx");
-    const contextRailItemActionButtons = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailItemActionButtons.tsx");
-    const contextRailItemActionButtonsStory = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/storybook/ContextRailItemActionButtons.stories.tsx");
-    const noteItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailNoteItem.tsx");
-    const expenseItem = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpenseItem.tsx");
-    const expenseSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpensesSection.tsx");
-    const expenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailExpenseForm.tsx");
-    const suggestionsSection = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/ContextRailSuggestionsSection.tsx");
-    const contextRailUtils = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail.utils.ts");
-    const bookingDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-booking-display.ts");
-    const contextRailDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-context-rail-display.ts");
-
-    expect(bookingDocItem).toContain("@/src/features/itinerary/domain/itinerary-booking-display");
-    expect(bookingDocItem).toContain("./context-rail-booking-doc-item-model");
-    expect(bookingDocItem).not.toContain("function bookingDocQuickFieldCopy");
-    expect(bookingDocItem).not.toContain("function getDraftValue");
-    expect(bookingDocItemModel).toContain("export function bookingDocQuickFieldCopy");
-    expect(bookingDocItemModel).toContain("bookingDocQuickFieldPatchFromDraft");
-    [noteItem, expenseItem].forEach((source) => {
-      expect(source).toContain("./ContextRailItemActionButtons");
-      expect(source).not.toContain("noteActionButtonClassName");
-      expect(source).not.toContain("noteActionsClassName");
-    });
-    expect(contextRailItemActionButtons).toContain("export function ContextRailItemActionButtons");
-    expect(contextRailItemActionButtons).toContain("noteActionButtonClassName");
-    expect(contextRailItemActionButtons).toContain("noteActionsClassName");
-    expect(contextRailItemActionButtonsStory).toContain("ContextRailItemActionButtons");
-    expect(expenseSection).toContain("./ContextRailExpenseForm");
-    expect(expenseSection).not.toContain("contextRailExpenseCategoryOptions");
-    expect(expenseSection).not.toContain("expenseFormClassName");
-    expect(expenseForm).toContain("export function ContextRailExpenseForm");
-    expect(expenseForm).toContain("contextRailExpenseCategoryOptions");
-    expect(expenseForm).toContain("expenseFormClassName");
-    expect(contextRailItemActionButtonsStory).toContain("Disabled");
-    [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
-      (source) =>
-        expect(source).toContain(
-          "@/src/features/itinerary/domain/itinerary-context-rail-display",
-        ),
-    );
-    expect(contextRailUtils).not.toContain("function formatBookingDocTypeLabel");
-    expect(contextRailUtils).not.toContain("function suggestionLabel");
-    expect(contextRailUtils).not.toContain("function memberDisplayName");
-    expect(contextRailUtils).not.toContain("bookingDocTypeOptions");
-    expect(contextRailUtils).not.toContain("taskKindLabel");
-    expect(bookingDisplay).toContain("export function formatBookingDocTypeLabel");
-    expect(contextRailDisplay).toContain("export const bookingDocTypeOptions");
-    expect(contextRailDisplay).toContain("export function suggestionLabel");
-    expect(contextRailDisplay).toContain("export function memberDisplayName");
-    expect(contextRailDisplay).toContain("export { taskKindLabel }");
-  });
-
   it("keeps activity cell title editing and actions split from shell layout", () => {
     const activityCell = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx");
     const activityCellBody = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellBody.tsx");
