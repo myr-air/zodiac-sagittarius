@@ -10,6 +10,7 @@ import {
   bookingDateDisplay,
   bookingProviderDisplay,
 } from "../model/booking-display";
+import { BookingExternalLinkAction } from "./BookingExternalLinkAction";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { BookingTypeLabel } from "./BookingTypeDisplay";
 
@@ -75,9 +76,12 @@ export function BookingInspector({
       <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.externalLinks}</strong>
         {booking.externalLinks.length ? booking.externalLinks.map((link) => (
-          <a className="inline-flex min-h-9 items-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-sm font-extrabold text-(--color-primary-strong)" href={link.url} key={link.id} target="_blank" rel="noreferrer">
-            <Icon name="external" /> {copy.openLink(link.label)}
-          </a>
+          <BookingExternalLinkAction
+            key={link.id}
+            link={link}
+            openLabel={copy.openLink(link.label)}
+            variant="inline"
+          />
         )) : <span className="text-sm text-(--color-text-muted)">{copy.noExternalLinks}</span>}
       </div>
 

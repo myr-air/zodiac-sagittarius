@@ -10,6 +10,7 @@ import {
   bookingDateDisplay,
   bookingProviderDisplay,
 } from "../model/booking-display";
+import { BookingExternalLinkAction } from "./BookingExternalLinkAction";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { BookingTypeLabel, BookingTypeMark } from "./BookingTypeDisplay";
 
@@ -50,9 +51,11 @@ export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, o
       />
       <span className="inline-flex justify-end gap-1 max-[1199px]:hidden">
         {doc.externalLinks[0] ? (
-          <a className="grid size-8 place-items-center rounded-(--radius-sm) text-(--color-primary-strong) hover:bg-(--color-primary-soft)" href={doc.externalLinks[0].url} target="_blank" rel="noreferrer" aria-label={copy.openLink(doc.externalLinks[0].label)}>
-            <Icon name="external" />
-          </a>
+          <BookingExternalLinkAction
+            link={doc.externalLinks[0]}
+            openLabel={copy.openLink(doc.externalLinks[0].label)}
+            variant="icon"
+          />
         ) : <span className="grid size-8 place-items-center text-(--color-text-muted)" title={copy.noLink}>-</span>}
         {canEdit ? (
           <>
