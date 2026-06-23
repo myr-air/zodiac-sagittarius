@@ -3,6 +3,10 @@ import { Badge } from "@/src/ui";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PortalList, PortalListRow } from "./account-portal-list";
+import {
+  accountPortalTodoBadgeTone,
+  accountPortalTodoDetail,
+} from "./account-portal-todo-list-item.model";
 import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
 
@@ -29,8 +33,8 @@ export function PortalTodosSection({
               key={todo.id}
               icon="list"
               title={todo.title}
-              detail={`${todo.tripName} · ${todo.visibility} · ${todo.kind ?? "prep"}`}
-              badge={<Badge tone={todo.status === "done" ? "success" : "warning"}>{todo.status}</Badge>}
+              detail={accountPortalTodoDetail(todo)}
+              badge={<Badge tone={accountPortalTodoBadgeTone(todo)}>{todo.status}</Badge>}
             />
           ))}
         </PortalList>
