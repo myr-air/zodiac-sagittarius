@@ -5,7 +5,11 @@ import { Badge, Button, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import { photoAccessLabel, photoProviderLabel } from "../model/photo-page-options";
+import {
+  photoAccessBadgeTone,
+  photoAccessLabel,
+  photoProviderLabel,
+} from "../model/photo-page-options";
 import { photoAlbumLinkHost } from "../model/photo-page-selectors";
 
 interface PhotoAlbumInspectorProps {
@@ -33,7 +37,7 @@ export function PhotoAlbumInspector({
   return (
     <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
       <div className="grid gap-2">
-        <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoProviderLabel(album.provider, copy)}</Badge>
+        <Badge tone={photoAccessBadgeTone(album.access)}>{photoProviderLabel(album.provider, copy)}</Badge>
         <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
         <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">{copy.externalProviderNote}</span>
       </div>

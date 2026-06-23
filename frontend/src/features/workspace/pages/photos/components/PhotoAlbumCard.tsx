@@ -5,7 +5,11 @@ import { Badge, Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
-import { photoAccessLabel, photoProviderLabel } from "../model/photo-page-options";
+import {
+  photoAccessBadgeTone,
+  photoAccessLabel,
+  photoProviderLabel,
+} from "../model/photo-page-options";
 
 interface PhotoAlbumCardProps {
   album: TripPhotoAlbumLink;
@@ -41,7 +45,7 @@ export function PhotoAlbumCard({
           style={coverHref ? { backgroundImage: `url(${coverHref})` } : undefined}
         />
         <span className="flex items-center justify-between gap-2">
-          <Badge tone={album.access === "collaborative" ? "primary" : album.access === "upload_request" ? "warning" : "route"}>{photoAccessLabel(album.access, copy)}</Badge>
+          <Badge tone={photoAccessBadgeTone(album.access)}>{photoAccessLabel(album.access, copy)}</Badge>
           <span className="text-xs font-extrabold text-(--color-text-muted)">{photoProviderLabel(album.provider, copy)}</span>
         </span>
         <span className="grid gap-1">

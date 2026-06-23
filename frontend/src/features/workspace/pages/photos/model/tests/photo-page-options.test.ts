@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { photoCopy } from "../../content/TripPhotosPage.copy";
 import {
+  photoAccessBadgeTone,
   photoAccessLabel,
   photoAccessOptions,
   photoProviderLabel,
@@ -30,5 +31,11 @@ describe("photo page options", () => {
     expect(photoProviderLabel("all", photoCopy.en)).toBe("All albums");
     expect(photoProviderLabel("google_drive", photoCopy.th)).toBe("Google Drive");
     expect(photoAccessLabel("upload_request", photoCopy.en)).toBe("Upload request");
+  });
+
+  it("keeps access badge tones centralized for album surfaces", () => {
+    expect(photoAccessBadgeTone("collaborative")).toBe("primary");
+    expect(photoAccessBadgeTone("upload_request")).toBe("warning");
+    expect(photoAccessBadgeTone("view_only")).toBe("route");
   });
 });
