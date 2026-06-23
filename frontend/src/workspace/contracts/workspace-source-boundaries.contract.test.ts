@@ -60,7 +60,7 @@ describe("Sagittarius workspace source boundaries", () => {
     expect(workspaceContextsHook).not.toContain("WorkspaceAppFrame");
     expect(sagittariusApp).not.toContain("./access-gate");
     expect(sagittariusApp).not.toContain("./WorkspaceMainShell");
-    expect(sagittariusApp).toContain("./props");
+    expect(sagittariusApp).toContain("./props/workspace-core-frame-props");
     expect(sagittariusApp).toContain("buildWorkspaceCoreFrameProps");
     expect(sagittariusApp).not.toContain("buildWorkspaceFrameProps");
     expect(workspaceCoreFrameProps).toContain("buildWorkspaceFrameProps");
