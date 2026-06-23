@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildItineraryBookingDraftInput } from "./booking-command-inputs";
+import { buildItineraryBookingDraftInput } from "./booking-command-draft-inputs";
 import {
   bookingCommandMembers,
   itineraryItem,

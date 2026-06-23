@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { syncItineraryDetailsWithBookingTicket } from "@/src/trip/booking-docs";
-import { resolveItineraryBookingTicketCommandInput } from "./booking-command-inputs";
+import { resolveItineraryBookingTicketCommandInput } from "./booking-command-ticket-inputs";
 import type {
   SaveItineraryBookingTicketCommand,
   UseWorkspaceItineraryBookingCommandsOptions,

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { findDuplicateBookingDoc } from "@/src/trip/booking-docs";
-import { buildItineraryBookingDraftInput } from "./booking-command-inputs";
+import { buildItineraryBookingDraftInput } from "./booking-command-draft-inputs";
 import type {
   CreateItineraryBookingDraftCommand,
   UseWorkspaceItineraryBookingCommandsOptions,

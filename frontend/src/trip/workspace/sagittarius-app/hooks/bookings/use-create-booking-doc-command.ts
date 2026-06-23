@@ -6,7 +6,7 @@ import {
 import { isVersionConflict } from "@/src/trip/api-client";
 import { nextLocalBookingDocId } from "@/src/trip/identity";
 import { workspaceLocalMutationTimestamp } from "../../support/local-mutations";
-import { buildWorkspaceBookingDocCreateInput } from "./booking-command-inputs";
+import { buildWorkspaceBookingDocCreateInput } from "./booking-command-create-inputs";
 import type {
   CreateBookingDocCommand,
   UseCreateBookingDocCommandOptions,

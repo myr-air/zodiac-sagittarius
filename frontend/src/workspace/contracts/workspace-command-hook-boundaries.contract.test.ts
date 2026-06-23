@@ -29,7 +29,6 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       itineraryStopCreateCommand,
       itineraryStopUpdateCommand,
       bookingDocCommands,
-      bookingCommandInputs,
       bookingCommandCreateInputs,
       bookingCommandDraftInputs,
       bookingCommandTicketInputs,
@@ -240,10 +239,6 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(bookingDocUpdateRunner).toContain("updateLocalBookingDocInTrip");
     expect(bookingDocTypeCommand).toContain("bookingDocInputFromRecord");
     expect(bookingDocQuickFieldCommand).toContain("bookingDocQuickFieldsInputFromRecord");
-    expect(bookingCommandInputs).toContain("./booking-command-create-inputs");
-    expect(bookingCommandInputs).toContain("./booking-command-draft-inputs");
-    expect(bookingCommandInputs).toContain("./booking-command-ticket-inputs");
-    expect(bookingCommandInputs).not.toContain("findDuplicateBookingDoc");
     expect(bookingCommandCreateInputs).toContain("buildWorkspaceBookingDocCreateInput");
     expect(bookingCommandCreateInputs).toContain("normalizeBookingDocTitle");
     expect(bookingCommandCreateInputs).toContain("resolveBookingDocCreateTripPlanId");

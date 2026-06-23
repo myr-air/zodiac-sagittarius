@@ -143,7 +143,6 @@ export const workspaceTripBoundarySourcePaths = {
     "src/trip/workspace/sagittarius-app/hooks/bookings/use-booking-doc-type-command.ts",
   bookingDocQuickFieldCommand:
     "src/trip/workspace/sagittarius-app/hooks/bookings/use-booking-doc-quick-field-command.ts",
-  bookingCommandInputs: "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-inputs.ts",
   bookingCommandCreateInputs:
     "src/trip/workspace/sagittarius-app/hooks/bookings/booking-command-create-inputs.ts",
   bookingCommandDraftInputs:
