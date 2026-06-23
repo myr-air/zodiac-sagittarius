@@ -1,3 +1,4 @@
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { FieldLabel, Select, TextInput } from "@/src/ui";
 import {
   memberRoleFilterSelectOptions,
@@ -33,9 +34,7 @@ export function MemberFilterControls({
           value={roleFilter}
           onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}
         >
-          {memberRoleFilterSelectOptions(labels).map((role) => (
-            <option key={role.value} value={role.value}>{role.label}</option>
-          ))}
+          <SelectOptions options={memberRoleFilterSelectOptions(labels)} />
         </Select>
       </FieldLabel>
       <FieldLabel>
@@ -44,9 +43,7 @@ export function MemberFilterControls({
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}
         >
-          {memberStatusFilterSelectOptions(labels).map((status) => (
-            <option key={status.value} value={status.value}>{status.label}</option>
-          ))}
+          <SelectOptions options={memberStatusFilterSelectOptions(labels)} />
         </Select>
       </FieldLabel>
     </div>

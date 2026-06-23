@@ -1,4 +1,5 @@
 import { buildMemberOptions } from "@/src/features/workspace/model/related-checkbox-options";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -54,11 +55,7 @@ export function ExpenseLedgerControls({
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.category}</span>
           <Select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as ExpenseCategoryFilter)}>
-            {expenseCategoryFilterSelectOptions(t.expenses.filters.allCategories).map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
+            <SelectOptions options={expenseCategoryFilterSelectOptions(t.expenses.filters.allCategories)} />
           </Select>
         </label>
         <label className={expenseStyles.fieldClassName}>

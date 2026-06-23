@@ -4,6 +4,7 @@ import type {
   TripPhotoAlbumProvider,
 } from "@/src/trip/types";
 import { buildMemberOptions } from "@/src/features/workspace/model/related-checkbox-options";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
@@ -33,13 +34,13 @@ export function PhotoAlbumDialogFields({
       <label className={photoStyles.fieldClassName}>
         <span>{copy.providerField}</span>
         <Select value={state.provider} onChange={(event) => state.setProvider(event.target.value as TripPhotoAlbumProvider)}>
-          {photoProviderSelectOptions(copy).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          <SelectOptions options={photoProviderSelectOptions(copy)} />
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>
         <span>{copy.accessField}</span>
         <Select value={state.access} onChange={(event) => state.setAccess(event.target.value as TripPhotoAlbumAccess)}>
-          {photoAccessSelectOptions(copy).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          <SelectOptions options={photoAccessSelectOptions(copy)} />
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>

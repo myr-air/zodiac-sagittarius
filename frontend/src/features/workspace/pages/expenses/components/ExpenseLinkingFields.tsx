@@ -4,6 +4,7 @@ import {
   buildItineraryItemOptions,
   buildMemberOptions,
 } from "@/src/features/workspace/model/related-checkbox-options";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
@@ -68,7 +69,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.category}</span>
         <Select value={category} onChange={(event) => onCategoryChange(event.target.value as Expense["category"])}>
-          {expenseCategorySelectOptions().map((candidate) => <option key={candidate.value} value={candidate.value}>{candidate.label}</option>)}
+          <SelectOptions options={expenseCategorySelectOptions()} />
         </Select>
       </label>
       <div className="grid gap-1.5">
@@ -92,7 +93,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.splitMode}</span>
         <Select value={splitMode} onChange={(event) => onSplitModeChange(event.target.value as ExpenseSplitMode)}>
-          {expenseSplitModeSelectOptions(copy.splitModes).map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
+          <SelectOptions options={expenseSplitModeSelectOptions(copy.splitModes)} />
         </Select>
       </label>
     </>

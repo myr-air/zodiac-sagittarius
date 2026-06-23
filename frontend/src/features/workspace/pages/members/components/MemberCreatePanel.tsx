@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/cn";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Button, FieldLabel, Select, TextInput, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
@@ -43,9 +44,7 @@ export function MemberCreatePanel({
             value={newMemberRole}
             onChange={(event) => onNewMemberRoleChange(event.target.value as NewMemberRole)}
           >
-            {memberInviteRoleSelectOptions(labels).map((role) => (
-              <option key={role.value} value={role.value}>{role.label}</option>
-            ))}
+            <SelectOptions options={memberInviteRoleSelectOptions(labels)} />
           </Select>
         </FieldLabel>
         <Button

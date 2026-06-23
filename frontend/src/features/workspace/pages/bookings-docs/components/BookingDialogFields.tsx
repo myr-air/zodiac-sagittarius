@@ -1,6 +1,7 @@
 import type { BookingDocStatus, BookingDocType, BookingDocVisibility } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
 import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import {
@@ -26,19 +27,19 @@ export function BookingDialogFields({ copy, state }: BookingDialogFieldsProps) {
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.typeField}</span>
         <Select value={state.type} onChange={(event) => state.setType(event.target.value as BookingDocType)}>
-          {bookingTypeSelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          <SelectOptions options={bookingTypeSelectOptions(copy)} />
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.statusField}</span>
         <Select value={state.status} onChange={(event) => state.setStatus(event.target.value as BookingDocStatus)}>
-          {bookingStatusSelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          <SelectOptions options={bookingStatusSelectOptions(copy)} />
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.visibilityField}</span>
         <Select value={state.visibility} onChange={(event) => state.setVisibility(event.target.value as BookingDocVisibility)}>
-          {bookingVisibilitySelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          <SelectOptions options={bookingVisibilitySelectOptions(copy)} />
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>
