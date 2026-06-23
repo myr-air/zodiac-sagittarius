@@ -2,7 +2,7 @@ import type { AccountSession, AccountSettings, AccountTripStats } from "@/src/ac
 import { Badge } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PanelHeading } from "../primitives/account-panel-heading";
-import { PortalStatSkeleton, Stat } from "./account-portal-primitives";
+import { PortalStatSkeleton, Stat } from "./primitives/account-portal-primitives";
 
 interface PortalDashboardSectionClassNames {
   avatar: string;

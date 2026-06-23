@@ -8,7 +8,7 @@ import {
   accountPortalTodoDetail,
 } from "./account-portal-todo-list-item.model";
 import { PanelHeading } from "../../primitives/account-panel-heading";
-import { PortalEmptyState, PortalListSkeleton } from "../account-portal-primitives";
+import { PortalEmptyState, PortalListSkeleton } from "../primitives/account-portal-primitives";
 
 export function PortalTodosSection({
   className,

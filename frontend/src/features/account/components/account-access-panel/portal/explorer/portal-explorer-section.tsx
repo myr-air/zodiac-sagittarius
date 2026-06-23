@@ -9,7 +9,7 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { cn } from "@/src/lib/cn";
 import { PortalList, PortalListRow } from "../lists/account-portal-list";
 import { PanelHeading } from "../../primitives/account-panel-heading";
-import { PortalEmptyState, PortalListSkeleton, SettingLine } from "../account-portal-primitives";
+import { PortalEmptyState, PortalListSkeleton, SettingLine } from "../primitives/account-portal-primitives";
 import {
   accountPortalExplorerPinStyle,
   buildAccountPortalExplorerTrips,
