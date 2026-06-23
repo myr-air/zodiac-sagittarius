@@ -11,13 +11,10 @@ import { PortalList, PortalListRow } from "../lists/account-portal-list";
 import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton, SettingLine } from "../primitives/account-portal-primitives";
 import {
-  accountPortalExplorerPinStyle,
+  buildAccountPortalExplorerMapPins,
+  buildAccountPortalExplorerTripRows,
   buildAccountPortalExplorerTrips,
 } from "./account-portal-explorer-model";
-import {
-  accountPortalTripBadgeTone,
-  accountPortalTripDetail,
-} from "../lists/account-portal-trip-list-item.model";
 import {
   portalMapPinClassName,
   portalMapPreviewClassName,
@@ -44,6 +41,11 @@ export function PortalExplorerSection({
   const { t } = useI18n();
   const [explorerQuery, setExplorerQuery] = useState("");
   const explorerTrips = buildAccountPortalExplorerTrips(trips, explorerQuery);
+  const explorerPins = buildAccountPortalExplorerMapPins(explorerTrips);
+  const explorerRows = buildAccountPortalExplorerTripRows(explorerTrips, {
+    owned: t.access.portal.explorerSearch.owned,
+    shared: t.access.portal.explorerSearch.shared,
+  });
 
   return (
     <section className={cn(classNames.section, "portal-explorer-card")} id="portal-explorer">
@@ -70,12 +72,12 @@ export function PortalExplorerSection({
         />
       </div>
       <div className={portalMapPreviewClassName} aria-label={t.access.portal.explorerSearch.mapPreviewLabel}>
-        {explorerTrips.slice(0, 4).map((trip, index) => (
+        {explorerPins.map((pin) => (
           <span
             className={portalMapPinClassName}
-            key={trip.id}
-            style={accountPortalExplorerPinStyle(index)}
-            title={`${trip.name}, ${trip.destinationLabel}`}
+            key={pin.id}
+            style={pin.style}
+            title={pin.title}
           >
             <Icon name="location" />
           </span>
@@ -83,13 +85,13 @@ export function PortalExplorerSection({
       </div>
       {explorerTrips.length ? (
         <PortalList>
-          {explorerTrips.map((trip) => (
+          {explorerRows.map((trip) => (
             <PortalListRow
               key={trip.id}
               icon="map"
-              title={trip.name}
-              detail={accountPortalTripDetail(trip)}
-              badge={<Badge tone={accountPortalTripBadgeTone(trip)}>{trip.isOwner ? t.access.portal.explorerSearch.owned : t.access.portal.explorerSearch.shared}</Badge>}
+              title={trip.title}
+              detail={trip.detail}
+              badge={<Badge tone={trip.badgeTone}>{trip.badgeLabel}</Badge>}
             />
           ))}
         </PortalList>
