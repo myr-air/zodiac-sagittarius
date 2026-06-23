@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { findById } from "..";
+import { findById, mapById } from "..";
 
 describe("findById", () => {
   const items = [
@@ -17,5 +17,9 @@ describe("findById", () => {
     expect(findById(items, "")).toBeNull();
     expect(findById(items, null)).toBeNull();
     expect(findById(items, undefined)).toBeNull();
+  });
+
+  it("indexes items by id for shared collection replacement flows", () => {
+    expect(mapById(items).get("item-2")).toEqual({ id: "item-2", label: "Second" });
   });
 });

@@ -9,3 +9,9 @@ export function findById<TItem extends IdSource>(
   if (!itemId) return null;
   return items.find((item) => item.id === itemId) ?? null;
 }
+
+export function mapById<TItem extends IdSource>(
+  items: readonly TItem[],
+): Map<string, TItem> {
+  return new Map(items.map((item) => [item.id, item]));
+}

@@ -1,3 +1,4 @@
+import { mapById } from "@/src/shared/collection";
 import type {
   ItineraryItem,
   Trip,
@@ -43,9 +44,7 @@ export function mergeCreatedItineraryItemIntoTrip(
     pathName: placement.item.pathName,
     pathRole: placement.item.pathRole,
   };
-  const patchedBranchItemsById = new Map(
-    patchedBranchItems.map((item) => [item.id, item]),
-  );
+  const patchedBranchItemsById = mapById(patchedBranchItems);
 
   return {
     ...trip,
@@ -64,16 +63,12 @@ export function mergeUpdatedItineraryBranchIntoTrip(
   placement: ItineraryItemPlacement,
   patchedBranchItems: ItineraryItem[],
 ): Trip {
-  const patchedBranchItemsById = new Map(
-    patchedBranchItems.map((item) => [item.id, item]),
-  );
+  const patchedBranchItemsById = mapById(patchedBranchItems);
   const changedItemIds = new Set(
     placement.changedExistingItems.map((item) => item.id),
   );
-  const branchPlacementItemsById = new Map(
-    placement.trip.itineraryItems
-      .filter((item) => changedItemIds.has(item.id))
-      .map((item) => [item.id, item]),
+  const branchPlacementItemsById = mapById(
+    placement.trip.itineraryItems.filter((item) => changedItemIds.has(item.id)),
   );
 
   return {
@@ -99,7 +94,7 @@ export function replaceItineraryItems(
   current: Trip,
   updatedItems: ItineraryItem[],
 ): Trip {
-  const updatedItemsById = new Map(updatedItems.map((item) => [item.id, item]));
+  const updatedItemsById = mapById(updatedItems);
   return {
     ...current,
     itineraryItems: current.itineraryItems.map((item) =>

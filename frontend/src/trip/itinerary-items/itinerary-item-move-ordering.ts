@@ -1,3 +1,4 @@
+import { mapById } from "@/src/shared/collection";
 import { compareItineraryItemsWithinDay } from "./itinerary-item-ordering";
 import type { ItineraryItem } from "../types";
 
@@ -30,6 +31,6 @@ export function mergeItineraryDayItems(
   items: ItineraryItem[],
   dayItems: ItineraryItem[],
 ): ItineraryItem[] {
-  const nextItemsById = new Map(dayItems.map((item) => [item.id, item]));
+  const nextItemsById = mapById(dayItems);
   return items.map((item) => nextItemsById.get(item.id) ?? item);
 }

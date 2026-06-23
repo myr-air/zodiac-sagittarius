@@ -4,6 +4,7 @@ export {
 export {
   findById,
   type IdSource,
+  mapById,
 } from "./find-by-id";
 export {
   toggleId,
