@@ -1,5 +1,8 @@
 import { fn } from "storybook/test";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import { pathIdMain } from "@/src/features/itinerary/testing";
 import {
@@ -37,8 +40,7 @@ export const pageRequestedPlanExampleItems: ItineraryItem[] =
 export const pageStressPathItems: ItineraryItem[] =
   pagePathScenarioItems.stressPathItems;
 export const pageOverlapConflictItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
+  buildTripFixtureItineraryItem({
     id: "overlap-peak-tram",
     day: tripFixture.trip.startDate,
     startTime: "09:00",
@@ -47,9 +49,8 @@ export const pageOverlapConflictItems: ItineraryItem[] = [
     pathId: pathIdMain,
     pathName: pathNameMain,
     pathRole: "main",
-  },
-  {
-    ...tripFixture.planItems[1],
+  }),
+  buildTripFixtureItineraryItem({
     id: "overlap-dim-sum",
     day: tripFixture.trip.startDate,
     startTime: "09:30",
@@ -58,7 +59,7 @@ export const pageOverlapConflictItems: ItineraryItem[] = [
     pathId: pathIdMain,
     pathName: pathNameMain,
     pathRole: "main",
-  },
+  }),
 ];
 
 export function buildPageOverflowItems(): ItineraryItem[] {

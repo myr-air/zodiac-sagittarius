@@ -1,4 +1,6 @@
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
   buildPrefixedPathScenarioItems,
@@ -22,8 +24,7 @@ export const stressPathItems: ItineraryItem[] =
 export const denseTemplateItems = denseTripFixture.itineraryItems;
 
 export const hierarchyBlockItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
+  buildTripFixtureItineraryItem({
     id: "story-flight-block",
     activity: "Flight to Hong Kong",
     activityType: "travel",
@@ -37,9 +38,8 @@ export const hierarchyBlockItems: ItineraryItem[] = [
     status: "confirmed",
     priority: "must",
     sortOrder: 100,
-  },
-  {
-    ...tripFixture.planItems[1],
+  }),
+  buildTripFixtureItineraryItem({
     id: "story-flight-checkin",
     activity: "Check in",
     activityType: "travel",
@@ -52,9 +52,8 @@ export const hierarchyBlockItems: ItineraryItem[] = [
     status: "planned",
     priority: "normal",
     sortOrder: 200,
-  },
-  {
-    ...tripFixture.planItems[2],
+  }),
+  buildTripFixtureItineraryItem({
     id: "story-flight-immigration",
     activity: "Immigration",
     activityType: "travel",
@@ -67,12 +66,11 @@ export const hierarchyBlockItems: ItineraryItem[] = [
     status: "planned",
     priority: "high",
     sortOrder: 300,
-  },
+  }),
 ];
 
 export const hierarchyWarningItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
+  buildTripFixtureItineraryItem({
     id: "story-plain-parent",
     activity: "Plain parent",
     isPlanBlock: false,
@@ -82,9 +80,8 @@ export const hierarchyWarningItems: ItineraryItem[] = [
     endTime: "10:00",
     durationMinutes: 60,
     sortOrder: 100,
-  },
-  {
-    ...tripFixture.planItems[1],
+  }),
+  buildTripFixtureItineraryItem({
     id: "story-child-under-plain-parent",
     activity: "Child under plain parent",
     parentItemId: "story-plain-parent",
@@ -93,9 +90,8 @@ export const hierarchyWarningItems: ItineraryItem[] = [
     endTime: "09:45",
     durationMinutes: 30,
     sortOrder: 200,
-  },
-  {
-    ...tripFixture.planItems[2],
+  }),
+  buildTripFixtureItineraryItem({
     id: "story-window-block",
     activity: "Window block",
     isPlanBlock: true,
@@ -105,9 +101,8 @@ export const hierarchyWarningItems: ItineraryItem[] = [
     endTime: "11:00",
     durationMinutes: 60,
     sortOrder: 300,
-  },
-  {
-    ...tripFixture.planItems[3],
+  }),
+  buildTripFixtureItineraryItem({
     id: "story-child-outside-window",
     activity: "Child outside window",
     parentItemId: "story-window-block",
@@ -116,7 +111,7 @@ export const hierarchyWarningItems: ItineraryItem[] = [
     endTime: "11:30",
     durationMinutes: 120,
     sortOrder: 400,
-  },
+  }),
 ];
 
 export function buildTemplateOverflowItems(): ItineraryItem[] {
