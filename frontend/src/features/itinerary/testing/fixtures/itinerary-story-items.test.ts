@@ -5,6 +5,7 @@ import {
   buildOverflowStoryItems,
   withStoryPrefix,
 } from "./itinerary-story-items";
+import { defaultSmartItineraryPathOptions, pathOptionsForDay } from "./itinerary-items";
 import { itineraryFixtureDay } from "./path-options";
 
 describe("itinerary story item builders", () => {
@@ -85,6 +86,21 @@ describe("itinerary story item builders", () => {
       id: "source-item",
       activity: "Boarding",
       place: "Airport",
+    });
+  });
+
+  it("normalizes day-scoped path options for story dates without mutating defaults", () => {
+    const [mainOption, tripOption, dayOption] = pathOptionsForDay(
+      defaultSmartItineraryPathOptions,
+      "2026-07-04",
+    );
+
+    expect(mainOption).toBe(defaultSmartItineraryPathOptions[0]);
+    expect(tripOption).toBe(defaultSmartItineraryPathOptions[1]);
+    expect(dayOption).toMatchObject({ day: "2026-07-04", scope: "day" });
+    expect(defaultSmartItineraryPathOptions[2]).toMatchObject({
+      day: itineraryFixtureDay,
+      scope: "day",
     });
   });
 });

@@ -4,6 +4,7 @@ export {
   defaultDayPathOptions,
   defaultPathOptionsForPanel,
   defaultSmartItineraryPathOptions,
+  pathOptionsForDay,
 } from "./fixtures/itinerary-items";
 export {
   buildItineraryStoryItem,

@@ -31,6 +31,15 @@ export const defaultDayPathOptions = [
   pathOptionStoryPlanA,
 ] as const satisfies ReadonlyArray<ItineraryPathOption>;
 
+export function pathOptionsForDay(
+  pathOptions: ReadonlyArray<ItineraryPathOption>,
+  day: string,
+): ItineraryPathOption[] {
+  return pathOptions.map((option) =>
+    option.scope === "day" ? { ...option, day } : option,
+  );
+}
+
 export function buildBookingDoc(
   overrides: Partial<BookingDoc> & Pick<BookingDoc, "id" | "type" | "title">,
 ): BookingDoc {

@@ -5,6 +5,7 @@ import {
   buildOverflowStoryItems,
   defaultSmartItineraryPathOptions,
   itineraryFixtureDay,
+  pathOptionsForDay,
   pathIdStoryRain,
   withStoryPrefix,
 } from "@/src/features/itinerary/testing";
@@ -35,9 +36,7 @@ export {
 const noop = () => {};
 
 export const defaultPathOptions = [
-  ...defaultSmartItineraryPathOptions.map((option) =>
-    option.scope === "day" ? { ...option, day } : option,
-  ),
+  ...pathOptionsForDay(defaultSmartItineraryPathOptions, day),
 ] satisfies ReadonlyArray<ItineraryPathOption>;
 
 export const ownerStoryArgs: SmartItineraryStoryArgs = {
