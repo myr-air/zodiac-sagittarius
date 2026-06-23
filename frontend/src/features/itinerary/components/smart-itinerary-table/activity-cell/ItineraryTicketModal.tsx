@@ -13,13 +13,11 @@ import {
   ticketModalTitleClassName,
 } from "../smart-itinerary-table.styles";
 import { ActivityCellModalHeader } from "./ActivityCellModalHeader";
+import { ExistingTicketList } from "./ExistingTicketList";
 import { ItineraryTicketModalFooter } from "./ItineraryTicketModalFooter";
-import {
-  ExistingTicketList,
-  LinkedActivitiesPicker,
-  TicketFieldGrid,
-  TicketModeToggle,
-} from "./ItineraryTicketModalSections";
+import { LinkedActivitiesPicker } from "./LinkedActivitiesPicker";
+import { TicketFieldGrid } from "./TicketFieldGrid";
+import { TicketModeToggle } from "./TicketModeToggle";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import { ActivityCellModalPortal } from "./ActivityCellModalPortal";
 import { useItineraryTicketModalModel } from "./use-itinerary-ticket-modal-model";
