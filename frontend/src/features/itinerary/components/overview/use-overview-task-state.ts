@@ -1,23 +1,21 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { TripTask } from "@/src/trip/types";
 import type {
   TaskScopeFilter,
   TaskStatusFilter,
 } from "./overview-role-panels.types";
 import {
-  applyOverviewTaskSubmission,
   closeOverviewTaskDialog,
   initialOverviewTaskUiState,
   openOverviewTaskDialog,
-  setOverviewUndoTask,
   updateOverviewTaskUiFilterState,
   updateOverviewTaskUiFormState,
 } from "./overview-task-state";
 import {
-  buildOverviewTaskSubmission,
   countOverviewOpenTasks,
   visibleOverviewTasks,
 } from "./overview-task-derivation";
+import { useOverviewTaskActions } from "./use-overview-task-actions";
 
 interface UseOverviewTaskStateArgs {
   currentMemberId: string;
@@ -69,31 +67,15 @@ export function useOverviewTaskState({
     );
   }
 
-  function submitTask(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const submission = buildOverviewTaskSubmission(taskState.newTaskFormState);
-    if (!submission) return;
-    onCreateTask({
-      title: submission.title,
-      visibility: submission.visibility,
-      assigneeId: submission.assigneeId,
-    });
-    setTaskState((current) => applyOverviewTaskSubmission(current, submission));
-  }
+  const { submitTask, toggleTask, undoTaskToggle } = useOverviewTaskActions({
+    onCreateTask,
+    onToggleTaskStatus,
+    setTaskState,
+    taskState,
+  });
 
   function closeTaskDialog() {
     setTaskState((current) => closeOverviewTaskDialog(current));
-  }
-
-  function toggleTask(task: TripTask) {
-    onToggleTaskStatus(task.id);
-    setTaskState((current) => setOverviewUndoTask(current, task));
-  }
-
-  function undoTaskToggle() {
-    if (!taskState.undoTask) return;
-    onToggleTaskStatus(taskState.undoTask.id);
-    setTaskState((current) => setOverviewUndoTask(current, null));
   }
 
   return {

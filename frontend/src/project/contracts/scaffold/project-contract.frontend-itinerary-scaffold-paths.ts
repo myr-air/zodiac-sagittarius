@@ -102,6 +102,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/overview/OverviewTaskLayer.tsx",
   "src/features/itinerary/components/overview/OverviewWeatherBriefing.tsx",
   "src/features/itinerary/components/overview/overview-role-panels.types.ts",
+  "src/features/itinerary/components/overview/use-overview-task-actions.ts",
   "src/features/itinerary/components/overview/use-overview-task-state.ts",
   "src/features/itinerary/components/overview/overview-task-derivation.ts",
   "src/features/itinerary/components/overview/overview-task-state.ts",
