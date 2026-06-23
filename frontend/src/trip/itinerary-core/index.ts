@@ -38,15 +38,20 @@ export type {
 export {
   buildItineraryItemDraft,
   buildUpdatedItineraryItem,
-  getNextChildSortOrder,
-  getNextSortOrder,
-  normalizeStopHierarchyValues,
 } from "./itinerary-drafts";
 export type {
   BuildItineraryItemDraftInput,
   BuildItineraryItemDraftOptions,
   BuildUpdatedItineraryItemOptions,
 } from "./itinerary-drafts";
+export {
+  getNextChildSortOrder,
+  getNextSortOrder,
+} from "./itinerary-draft-ordering";
+export {
+  itineraryItemDraftPathFields,
+  normalizeStopHierarchyValues,
+} from "./itinerary-draft-path-fields";
 export {
   getTripDates,
 } from "./itinerary-dates";

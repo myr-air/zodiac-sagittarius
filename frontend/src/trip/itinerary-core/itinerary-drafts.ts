@@ -2,7 +2,13 @@ import type {
   ItineraryItem,
   Trip,
 } from "../types";
-import { itineraryItemPathFieldsForTarget } from "../itinerary-paths";
+import {
+  getNextChildSortOrder,
+  getNextSortOrder,
+} from "./itinerary-draft-ordering";
+import {
+  itineraryItemDraftPathFields,
+} from "./itinerary-draft-path-fields";
 
 export type BuildItineraryItemDraftInput = Pick<
   ItineraryItem,
@@ -46,34 +52,6 @@ export interface BuildUpdatedItineraryItemOptions {
   updatedAt: string;
 }
 
-export function getNextSortOrder(items: ItineraryItem[], day: string): number {
-  const dayOrders = items
-    .filter((item) => item.day === day)
-    .map((item) => item.sortOrder);
-  /* v8 ignore next */
-  return dayOrders.length ? Math.max(...dayOrders) + 100 : 100;
-}
-
-export function getNextChildSortOrder(
-  items: ItineraryItem[],
-  parentItem: ItineraryItem,
-): number {
-  const siblingOrders = items
-    .filter(
-      (item) =>
-        item.day === parentItem.day && item.parentItemId === parentItem.id,
-    )
-    .map((item) => item.sortOrder);
-  if (siblingOrders.length) return Math.max(...siblingOrders) + 10;
-  return parentItem.sortOrder + 10;
-}
-
-export function normalizeStopHierarchyValues<
-  T extends { parentItemId?: string | null; isPlanBlock?: boolean },
->(values: T): T {
-  return values.parentItemId ? { ...values, isPlanBlock: false } : values;
-}
-
 export function buildItineraryItemDraft(
   input: BuildItineraryItemDraftInput,
   options: BuildItineraryItemDraftOptions,
@@ -84,18 +62,12 @@ export function buildItineraryItemDraft(
   const sortOrder = parentItem
     ? getNextChildSortOrder(options.planItems, parentItem)
     : getNextSortOrder(options.planItems, input.day);
-  const pathFields = parentItem
-    ? {
-        pathGroupId: parentItem.pathGroupId,
-        pathId: parentItem.pathId,
-        pathName: parentItem.pathName,
-        pathRole: parentItem.pathRole ?? "main",
-      }
-    : itineraryItemPathFieldsForTarget(
-        `path-group-${options.nextItemId}`,
-        options.pathId,
-        options.pathName,
-      );
+  const pathFields = itineraryItemDraftPathFields({
+    nextItemId: options.nextItemId,
+    parentItem,
+    pathId: options.pathId,
+    pathName: options.pathName,
+  });
 
   return {
     id: options.nextItemId,

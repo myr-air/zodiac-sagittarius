@@ -54,6 +54,8 @@ export const frontendTripDomainItineraryPlanningScaffoldPathsPresent = [
   "src/trip/itinerary-core/index.ts",
   "src/trip/itinerary-core/itinerary-commitments.ts",
   "src/trip/itinerary-core/itinerary-dates.ts",
+  "src/trip/itinerary-core/itinerary-draft-ordering.ts",
+  "src/trip/itinerary-core/itinerary-draft-path-fields.ts",
   "src/trip/itinerary-core/itinerary-drafts.ts",
   "src/trip/itinerary-core/itinerary-field-validation.ts",
   "src/trip/itinerary-core/itinerary-hierarchy-validation.ts",
