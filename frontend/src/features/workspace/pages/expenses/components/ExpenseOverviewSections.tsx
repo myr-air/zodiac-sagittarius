@@ -6,6 +6,7 @@ import {
   categorySpendDisplay,
   scopeAuditExpenseDisplay,
 } from "../model/expense-overview-display";
+import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 
 interface ExpenseCategorySpendSectionProps {
   categorySpend: Array<[Expense["category"], number]>;
@@ -30,10 +31,7 @@ export function ExpenseCategorySpendSection({
           });
           return (
             <div className={expenseStyles.balanceRowClassName} key={category}>
-              <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: display.tone.background, borderColor: display.tone.border, color: display.tone.text }}>
-                <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: display.tone.dot }} aria-hidden="true" />
-                {display.category}
-              </span>
+              <ExpenseCategoryBadge category={display.category} tone={display.tone} />
               <strong className={expenseStyles.amountClassName}>
                 {display.amountLabel}
               </strong>

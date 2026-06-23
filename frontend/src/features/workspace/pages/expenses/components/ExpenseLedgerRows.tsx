@@ -7,8 +7,8 @@ import {
   expenseLedgerPayerDisplay,
   expenseLedgerRowDisplay,
 } from "../model/expense-ledger-display";
-import { categoryTone } from "../model/expense-page-options";
 import type { DuplicateExpenseAsEstimateHandler } from "../model/expense-page-types";
+import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 
 interface ExpenseLedgerRowsProps {
   canEditExpenses: boolean;
@@ -59,15 +59,11 @@ export function ExpenseLedgerRows({
           expense,
           settlementCurrency,
         );
-        const tone = categoryTone(expense.category);
         return (
           <tr key={expense.id}>
             <td className={expenseStyles.tableTitleClassName}>
               <strong>{expense.title}</strong>
-              <span className={expenseStyles.categoryBadgeClassName} style={{ backgroundColor: tone.background, borderColor: tone.border, color: tone.text }}>
-                <span className={expenseStyles.categoryDotClassName} style={{ backgroundColor: tone.dot }} aria-hidden="true" />
-                {expense.category}
-              </span>
+              <ExpenseCategoryBadge category={expense.category} />
             </td>
             <td><span className={expenseStyles.ledgerAmountClassName}>{display.amountLabel}</span></td>
             <td>
