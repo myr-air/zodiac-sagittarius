@@ -1,9 +1,6 @@
-import { StopDialog } from "@/src/features/itinerary/components";
-import { deriveManualActivityPathOptions } from "@/src/trip/itinerary-paths";
 import type {
   ItineraryImportApplyTarget,
   ItineraryPathOption,
-  ManualActivityPathOption,
 } from "@/src/trip/itinerary-paths";
 import type {
   ItineraryItem,
@@ -16,6 +13,7 @@ import { TripWorkspaceDeleteDialog } from "@/src/trip/workspace/TripWorkspaceDel
 import { TripWorkspaceImportDialog } from "@/src/trip/workspace/TripWorkspaceImportDialog";
 import type { PendingItineraryImport } from "@/src/trip/workspace/itinerary-import-model";
 import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
+import { WorkspaceStopDialog } from "./WorkspaceStopDialog";
 
 export interface WorkspaceDialogsProps {
   applyPendingItineraryImport: (target: ItineraryImportApplyTarget) => Promise<void>;
@@ -74,48 +72,18 @@ export function WorkspaceDialogs({
 }: WorkspaceDialogsProps) {
   return (
     <>
-      {dialogState ? (
-        <StopDialog
-          key={
-            dialogState.mode === "edit"
-              ? `edit-${dialogState.item.id}`
-              : "create-stop"
-          }
-          mode={dialogState.mode}
-          startDate={trip.startDate}
-          endDate={trip.endDate}
-          initialItem={
-            dialogState.mode === "edit" ? dialogState.item : undefined
-          }
-          initialDay={
-            dialogState.mode === "create"
-              ? (dialogState.day ?? selectedDay)
-              : undefined
-          }
-          initialParentItemId={
-            dialogState.mode === "create"
-              ? dialogState.parentItemId
-              : undefined
-          }
-          manualPathOptions={manualPathOptionsForDialog(trip, dialogState)}
-          onClose={() => {
-            setStopPlaceResolution({ state: "idle", candidates: [] });
-            setDialogState(null);
-          }}
-          onDelete={
-            dialogState.mode === "edit" ? deleteSelectedStop : undefined
-          }
-          onPromoteFoodRecommendation={
-            dialogState.mode === "edit"
-              ? () => void promoteFoodRecommendation(dialogState.item)
-              : undefined
-          }
-          onSubmit={
-            dialogState.mode === "edit" ? updateSelectedStop : createStop
-          }
-          placeResolution={stopPlaceResolution}
-        />
-      ) : null}
+      <WorkspaceStopDialog
+        createStop={createStop}
+        deleteSelectedStop={deleteSelectedStop}
+        dialogState={dialogState}
+        promoteFoodRecommendation={promoteFoodRecommendation}
+        selectedDay={selectedDay}
+        setDialogState={setDialogState}
+        setStopPlaceResolution={setStopPlaceResolution}
+        stopPlaceResolution={stopPlaceResolution}
+        trip={trip}
+        updateSelectedStop={updateSelectedStop}
+      />
       {pendingItineraryImport ? (
         <TripWorkspaceImportDialog
           currentTripPathId={selectedTripPathId}
@@ -144,12 +112,4 @@ export function WorkspaceDialogs({
       />
     </>
   );
-}
-
-function manualPathOptionsForDialog(
-  trip: Trip,
-  dialogState: ItineraryDialogState,
-): ManualActivityPathOption[] | undefined {
-  if (dialogState?.mode !== "edit") return undefined;
-  return deriveManualActivityPathOptions(trip, dialogState.item.id);
 }
