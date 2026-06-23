@@ -4,10 +4,9 @@ import { DateTimePickerField } from "@/src/shared/components/date-time-pickers";
 import { Select } from "@/src/ui";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import {
-  bookingStatuses,
-  bookingTypes,
-  bookingVisibilities,
-  formatEnumLabel,
+  bookingStatusSelectOptions,
+  bookingTypeSelectOptions,
+  bookingVisibilitySelectOptions,
 } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import type { BookingDialogState } from "../hooks/useBookingDialogState";
@@ -27,19 +26,19 @@ export function BookingDialogFields({ copy, state }: BookingDialogFieldsProps) {
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.typeField}</span>
         <Select value={state.type} onChange={(event) => state.setType(event.target.value as BookingDocType)}>
-          {bookingTypes.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}
+          {bookingTypeSelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.statusField}</span>
         <Select value={state.status} onChange={(event) => state.setStatus(event.target.value as BookingDocStatus)}>
-          {bookingStatuses.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}
+          {bookingStatusSelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>
         <span>{copy.visibilityField}</span>
         <Select value={state.visibility} onChange={(event) => state.setVisibility(event.target.value as BookingDocVisibility)}>
-          {bookingVisibilities.map((item) => <option key={item} value={item}>{formatEnumLabel(item, copy)}</option>)}
+          {bookingVisibilitySelectOptions(copy).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
         </Select>
       </label>
       <label className={bookingStyles.fieldClassName}>

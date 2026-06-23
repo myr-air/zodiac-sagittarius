@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import { bookingCopy } from "../../content/BookingsDocsPage.copy";
 import {
   bookingStatusFilterValues,
+  bookingStatusSelectOptions,
   bookingStatuses,
+  bookingTypeSelectOptions,
   bookingTypes,
+  bookingVisibilitySelectOptions,
   bookingVisibilities,
   formatEnumLabel,
 } from "../booking-options";
@@ -34,5 +37,18 @@ describe("booking options", () => {
     expect(formatEnumLabel("needs_action", bookingCopy.en)).toBe("Needs Action");
     expect(formatEnumLabel("flight", bookingCopy.th)).toBe(bookingCopy.th.enumLabels.flight);
     expect(formatEnumLabel("needs_action", bookingCopy.th)).toBe(bookingCopy.th.enumLabels.needs_action);
+  });
+
+  it("builds dialog select options from the shared enum labels", () => {
+    expect(bookingTypeSelectOptions(bookingCopy.en)[0]).toEqual({ value: "flight", label: "Flight" });
+    expect(bookingStatusSelectOptions(bookingCopy.en)).toContainEqual({
+      value: "needs_action",
+      label: "Needs Action",
+    });
+    expect(bookingVisibilitySelectOptions(bookingCopy.th)).toEqual([
+      { value: "shared", label: bookingCopy.th.enumLabels.shared },
+      { value: "sensitive", label: bookingCopy.th.enumLabels.sensitive },
+      { value: "private", label: bookingCopy.th.enumLabels.private },
+    ]);
   });
 });
