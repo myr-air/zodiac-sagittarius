@@ -6,7 +6,13 @@ use time::Date;
 use uuid::Uuid;
 
 use crate::domain::errors::ServiceError;
+use crate::domain::expense_patch_rules::{
+    validate_amount_minor, validate_comments, validate_exchange_rate, validate_expense_category,
+    validate_line_items, validate_splits,
+};
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
+
+pub(crate) use crate::domain::expense_patch_rules::validate_expense_splits_total;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1302,72 +1308,6 @@ fn validate_unique_booking_doc_external_link_ids(
     Ok(())
 }
 
-fn validate_amount_minor(value: i32) -> Result<(), ServiceError> {
-    if value < 0 {
-        return Err(ServiceError::InvalidRequest(
-            "amount_minor must be zero or greater",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_exchange_rate(value: Option<f64>) -> Result<(), ServiceError> {
-    let Some(rate) = value else {
-        return Ok(());
-    };
-    if !rate.is_finite() || rate <= 0.0 {
-        return Err(ServiceError::InvalidRequest(
-            "expense exchange rate must be greater than zero",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_expense_category(value: &str) -> Result<(), ServiceError> {
-    match value {
-        "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement" => Ok(()),
-        _ => Err(ServiceError::InvalidRequest("expense category is invalid")),
-    }
-}
-
-fn validate_splits(value: &Value) -> Result<(), ServiceError> {
-    if !value.is_object() {
-        return Err(ServiceError::InvalidRequest(
-            "expense splits must be an object",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_line_items(value: Option<&Value>) -> Result<(), ServiceError> {
-    let Some(value) = value else {
-        return Ok(());
-    };
-    if !value.is_array() {
-        return Err(ServiceError::InvalidRequest(
-            "expense line items must be an array",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_comments(value: Option<&Value>) -> Result<(), ServiceError> {
-    let Some(value) = value else {
-        return Ok(());
-    };
-    if !value.is_array() {
-        return Err(ServiceError::InvalidRequest(
-            "expense comments must be an array",
-        ));
-    }
-
-    Ok(())
-}
-
 fn validate_optional_details(value: Option<&Value>) -> Result<(), ServiceError> {
     let Some(value) = value else {
         return Ok(());
@@ -1377,45 +1317,6 @@ fn validate_optional_details(value: Option<&Value>) -> Result<(), ServiceError> 
     }
 
     Ok(())
-}
-
-pub(crate) fn validate_expense_splits_total(
-    value: &Value,
-    amount_minor: i32,
-) -> Result<(), ServiceError> {
-    validate_splits(value)?;
-    let mut total_minor = 0_i64;
-    for (member_id, share) in value.as_object().expect("validated splits object") {
-        if Uuid::parse_str(member_id).is_err() {
-            return Err(ServiceError::InvalidRequest(
-                "expense split member is invalid",
-            ));
-        }
-        let Some(share_minor) = split_share_minor(share) else {
-            return Err(ServiceError::InvalidRequest(
-                "expense split amount must be numeric",
-            ));
-        };
-        if share_minor < 0 {
-            return Err(ServiceError::InvalidRequest(
-                "expense split amount must be zero or greater",
-            ));
-        }
-        total_minor += share_minor;
-    }
-    if total_minor != i64::from(amount_minor) {
-        return Err(ServiceError::InvalidRequest(
-            "expense splits must equal amount_minor",
-        ));
-    }
-
-    Ok(())
-}
-
-fn split_share_minor(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_f64().map(|number| number.round() as i64))
 }
 
 fn validate_plan_status_input(
