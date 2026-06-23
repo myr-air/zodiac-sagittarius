@@ -1,7 +1,7 @@
 import { findPhotoAlbumRelations, safePhotoAlbumCoverHref, safePhotoAlbumHref } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
-import { Badge, Button, IconButton } from "@/src/ui";
+import { Badge, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
@@ -10,6 +10,7 @@ import {
   photoAccessLabel,
   photoProviderLabel,
 } from "../model/photo-page-options";
+import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
 
 interface PhotoAlbumCardProps {
   album: TripPhotoAlbumLink;
@@ -59,13 +60,14 @@ export function PhotoAlbumCard({
         {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        {href ? (
-          <Button asChild variant="ghost" className="w-auto">
-            <a href={href} target="_blank" rel="noreferrer">{copy.openAlbumTitle(album.title)}<Icon name="external" /></a>
-          </Button>
-        ) : (
-          <Button type="button" variant="ghost" className="w-auto" disabled>{copy.openBlocked}</Button>
-        )}
+        <PhotoAlbumExternalLinkAction
+          blockedLabel={copy.openBlocked}
+          blockedMode="button"
+          buttonClassName="w-auto"
+          href={href}
+          openLabel={copy.openAlbumTitle(album.title)}
+          variant="ghost"
+        />
         {canEdit ? (
           <span className="flex gap-1">
             <IconButton type="button" aria-label={copy.editAlbum} onClick={onEdit}><Icon name="edit" /></IconButton>

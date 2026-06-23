@@ -1,7 +1,7 @@
 import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-albums";
 import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
-import { Badge, Button, WorkspaceSurface } from "@/src/ui";
+import { Badge, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
@@ -12,6 +12,7 @@ import {
 } from "../model/photo-page-options";
 import { photoAlbumLinkHost } from "../model/photo-page-selectors";
 import { PhotoCopyFeedback } from "./PhotoCopyFeedback";
+import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
 
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
@@ -58,13 +59,13 @@ export function PhotoAlbumInspector({
         {copyState !== "idle" ? (
           <PhotoCopyFeedback copy={copy} copyState={copyState} />
         ) : null}
-        {href ? (
-          <Button asChild className="w-full">
-            <a href={href} target="_blank" rel="noreferrer">{copy.openAlbum}<Icon name="external" /></a>
-          </Button>
-        ) : (
-          <strong className="text-[#b91c1c]">{copy.unsafeLinkBlocked}</strong>
-        )}
+        <PhotoAlbumExternalLinkAction
+          blockedLabel={copy.unsafeLinkBlocked}
+          blockedMode="notice"
+          buttonClassName="w-full"
+          href={href}
+          openLabel={copy.openAlbum}
+        />
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
