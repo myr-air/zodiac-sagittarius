@@ -1,10 +1,10 @@
-import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
 import { overviewNextStopClassName } from "./overview.styles";
 import { cn } from "@/src/lib/cn";
+import { OverviewPanelTitle } from "./OverviewPanelTitle";
 import { OverviewFocusList } from "./OverviewSections";
-import { overviewPanelClassName, overviewPanelTitleClassName, overviewPanelWideClassName } from "./overview-page.styles";
+import { overviewPanelClassName, overviewPanelWideClassName } from "./overview-page.styles";
 import { formatOverviewStopScheduleWithPlace } from "@/src/features/itinerary/domain/overview-stop-labels";
 import { TripCompletedPostcard } from "./TripCompletedPostcard";
 
@@ -41,10 +41,7 @@ export function OverviewFocusSection({
 }: OverviewFocusSectionProps) {
   return (
     <section className={cn(overviewPanelClassName, overviewPanelWideClassName)} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="route" />
-        <h2>{heading}</h2>
-      </div>
+      <OverviewPanelTitle icon="route" title={heading} />
 
       {isCompleted ? (
         <TripCompletedPostcard trip={trip} items={items} groupSpendLabel={groupSpendLabel} locale={locale} />

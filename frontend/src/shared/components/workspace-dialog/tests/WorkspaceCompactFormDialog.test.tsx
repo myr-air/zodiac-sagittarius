@@ -23,6 +23,7 @@ describe("WorkspaceCompactFormDialog", () => {
     expect(dialog).toHaveClass("import-options-dialog");
     expect(dialog).toHaveClass("grid");
     expect(dialog).toHaveAttribute("aria-labelledby", "import-options-title");
+    expect(dialog.querySelector("form")).not.toHaveAttribute("role", "dialog");
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Import itinerary" }));
 

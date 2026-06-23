@@ -8,6 +8,7 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const viewerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/ViewerOverviewPanels.tsx");
     const managerChecklist = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerChecklistPanel.tsx");
     const snapshotPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx");
+    const overviewPanelTitle = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPanelTitle.tsx");
     const rolePanelTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-role-panels.types.ts");
 
     expect(managerRolePanels).toContain("./ManagerChecklistPanel");
@@ -19,7 +20,12 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(travelerRolePanels).not.toContain("interface TravelerOverviewPanelsProps");
     expect(viewerRolePanels).not.toContain("interface ViewerOverviewPanelsProps");
     expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
+    expect(managerChecklist).toContain("./OverviewPanelTitle");
+    expect(managerChecklist).not.toContain("overviewPanelTitleClassName");
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
+    expect(snapshotPanels).toContain("./OverviewPanelTitle");
+    expect(overviewPanelTitle).toContain("export function OverviewPanelTitle");
+    expect(overviewPanelTitle).toContain("overviewPanelTitleClassName");
     expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");
   });
 

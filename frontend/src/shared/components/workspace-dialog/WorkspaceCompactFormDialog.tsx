@@ -26,21 +26,22 @@ export function WorkspaceCompactFormDialog({
 }: WorkspaceCompactFormDialogProps) {
   return (
     <div className={workspaceDialogBackdropClassName} role="presentation">
-      <form
+      <section
         className={cn(workspaceCompactDialogPanelClassName, className)}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onSubmit={onSubmit}
       >
-        <h2 className={workspaceCompactDialogTitleClassName} id={titleId}>
-          {title}
-        </h2>
-        {children}
-        <div className={workspaceCompactDialogActionsClassName}>
-          {actions}
-        </div>
-      </form>
+        <form className="contents" onSubmit={onSubmit}>
+          <h2 className={workspaceCompactDialogTitleClassName} id={titleId}>
+            {title}
+          </h2>
+          {children}
+          <div className={workspaceCompactDialogActionsClassName}>
+            {actions}
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

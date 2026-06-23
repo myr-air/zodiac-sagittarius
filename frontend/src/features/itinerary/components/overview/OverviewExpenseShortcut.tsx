@@ -1,5 +1,5 @@
-import { Icon } from "@/src/ui/icons";
-import { overviewPanelButtonClassName, overviewPanelClassName, overviewPanelTitleClassName } from "./overview-page.styles";
+import { OverviewPanelTitle } from "./OverviewPanelTitle";
+import { overviewPanelButtonClassName, overviewPanelClassName } from "./overview-page.styles";
 
 interface OverviewExpenseShortcutProps {
   icon: "wallet" | "plus";
@@ -27,10 +27,7 @@ export function OverviewExpenseShortcut({
       aria-label={ariaLabel}
       onClick={onClick}
     >
-      <div className={overviewPanelTitleClassName}>
-        <Icon name={icon} />
-        <h2 id={titleId}>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon={icon} title={title} titleId={titleId} />
       <strong>{value}</strong>
       <span>{detail}</span>
     </button>

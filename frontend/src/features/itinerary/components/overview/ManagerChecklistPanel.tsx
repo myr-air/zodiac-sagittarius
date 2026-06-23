@@ -1,13 +1,12 @@
-import { Icon } from "@/src/ui/icons";
 import { SegmentedControl } from "@/src/ui";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
+import { OverviewPanelTitle } from "./OverviewPanelTitle";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
 import { OverviewTaskStatusFilterControl } from "./OverviewTaskStatusFilterControl";
 import {
   overviewHealthGridClassName,
   overviewPanelClassName,
   overviewPanelHealthClassName,
-  overviewPanelTitleClassName,
   overviewTaskAddButtonClassName,
   overviewTaskFilterActiveClassName,
   overviewTaskFiltersClassName,
@@ -43,10 +42,7 @@ export function ManagerReadinessPanel({
 }: ManagerReadinessPanelProps) {
   return (
     <section className={`${overviewPanelClassName} ${overviewPanelHealthClassName}`} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="check" />
-        <h2>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon="check" title={title} />
       <div className={overviewHealthGridClassName}>
         <span><strong>{myOpenTasks}</strong> {myChecklistLabel}</span>
         <span><strong>{sharedOpenTasks}</strong> {sharedChecklistLabel}</span>
@@ -117,10 +113,7 @@ export function ManagerTaskChecklistPanel({
 
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="check" />
-        <h2>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon="check" title={title} />
       <div className={overviewTaskToolbarClassName}>
         <SegmentedControl
           aria-label={scopeFilterLabel}

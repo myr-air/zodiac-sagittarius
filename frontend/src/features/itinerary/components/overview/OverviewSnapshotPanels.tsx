@@ -1,10 +1,9 @@
-import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryItem } from "@/src/trip/types";
+import { OverviewPanelTitle } from "./OverviewPanelTitle";
 import { OverviewStopList, ViewerNextStopPanel } from "./OverviewSections";
 import {
   overviewPanelClassName,
-  overviewPanelTitleClassName,
   overviewPanelWideClassName,
 } from "./overview-page.styles";
 
@@ -27,10 +26,7 @@ export function OverviewHighlightsPanel({
 }: OverviewHighlightsPanelProps) {
   return (
     <section className={`${overviewPanelClassName} ${overviewPanelWideClassName}`} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="location" />
-        <h2>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon="location" title={title} />
       <OverviewStopList items={items} startDate={startDate} locale={locale} emptyMessage={emptyMessage} />
     </section>
   );
@@ -57,10 +53,7 @@ export function ViewerNextStopSection({
 }: ViewerNextStopSectionProps) {
   return (
     <section className={overviewPanelClassName} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="route" />
-        <h2>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon="route" title={title} />
       <ViewerNextStopPanel
         item={item}
         startDate={startDate}

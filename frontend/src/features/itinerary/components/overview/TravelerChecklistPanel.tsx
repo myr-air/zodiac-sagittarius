@@ -1,11 +1,10 @@
 import type { FormEvent } from "react";
-import { Icon } from "@/src/ui/icons";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
+import { OverviewPanelTitle } from "./OverviewPanelTitle";
 import { OverviewTaskList, type OverviewTaskListLabels } from "./OverviewTaskList";
 import { OverviewTaskStatusFilterControl } from "./OverviewTaskStatusFilterControl";
 import {
   overviewPanelClassName,
-  overviewPanelTitleClassName,
   overviewTaskPanelClassName,
   overviewTaskToolbarClassName,
   personalTaskFormClassName,
@@ -59,10 +58,7 @@ export function TravelerChecklistPanel({
 }) {
   return (
     <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
-      <div className={overviewPanelTitleClassName}>
-        <Icon name="check" />
-        <h2>{title}</h2>
-      </div>
+      <OverviewPanelTitle icon="check" title={title} />
       <div className={overviewTaskToolbarClassName}>
         <OverviewTaskStatusFilterControl
           allLabel={allLabel}
