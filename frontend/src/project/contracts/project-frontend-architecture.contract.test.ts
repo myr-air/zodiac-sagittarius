@@ -8,6 +8,9 @@ describe("Sagittarius frontend architecture contracts", () => {
     const uiIndex = readFileSync(join(frontendRoot, "src/ui/index.ts"), "utf8");
     const primitives = readFileSync(join(frontendRoot, "src/ui/primitives.tsx"), "utf8");
     const primitiveStyles = readFileSync(join(frontendRoot, "src/ui/primitive-styles.ts"), "utf8");
+    const primitiveButtonStyles = readFileSync(join(frontendRoot, "src/ui/primitive-button-styles.ts"), "utf8");
+    const primitiveBadgeStyles = readFileSync(join(frontendRoot, "src/ui/primitive-badge-styles.ts"), "utf8");
+    const primitiveControlStyles = readFileSync(join(frontendRoot, "src/ui/primitive-control-styles.ts"), "utf8");
     const workspacePrimitiveStyles = readFileSync(join(frontendRoot, "src/ui/workspace-primitive-styles.ts"), "utf8");
     const workspacePrimitives = readFileSync(join(frontendRoot, "src/ui/workspace-primitives.tsx"), "utf8");
 
@@ -17,11 +20,15 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(primitives).toContain("export function Badge");
     expect(primitives).toContain("./primitive-styles");
     expect(primitives).not.toContain("const buttonBaseClassName");
-    expect(primitiveStyles).toContain("export const buttonBaseClassName");
-    expect(primitiveStyles).toContain("export const badgeBaseClassName");
-    expect(primitiveStyles).toContain("export type ButtonVariant = keyof typeof buttonVariantClassNames");
-    expect(primitiveStyles).toContain("export type BadgeTone = keyof typeof badgeToneClassNames");
-    expect(primitiveStyles).toContain("export type ActionBarAlign = keyof typeof actionBarAlignClassNames");
+    expect(primitiveStyles).toContain("./primitive-button-styles");
+    expect(primitiveStyles).toContain("./primitive-badge-styles");
+    expect(primitiveStyles).toContain("./primitive-control-styles");
+    expect(primitiveStyles).not.toContain("export const buttonBaseClassName");
+    expect(primitiveButtonStyles).toContain("export const buttonBaseClassName");
+    expect(primitiveButtonStyles).toContain("export type ButtonVariant = keyof typeof buttonVariantClassNames");
+    expect(primitiveBadgeStyles).toContain("export const badgeBaseClassName");
+    expect(primitiveBadgeStyles).toContain("export type BadgeTone = keyof typeof badgeToneClassNames");
+    expect(primitiveControlStyles).toContain("export type ActionBarAlign = keyof typeof actionBarAlignClassNames");
     expect(primitiveStyles).not.toContain('export type ButtonVariant = "');
     expect(primitiveStyles).not.toContain('export type BadgeTone = "');
     expect(primitiveStyles).not.toContain('export type ActionBarAlign = "');
