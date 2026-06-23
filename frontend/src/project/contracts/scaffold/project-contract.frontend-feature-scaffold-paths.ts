@@ -107,6 +107,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/portal/storybook/account-portal-primitives.stories.plays.ts",
   "src/features/account/components/account-access-panel/portal/use-account-portal-data.ts",
   "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
+  "src/features/account/components/account-access-panel/portal/usePortalNewTripSectionActions.ts",
+  "src/features/account/components/account-access-panel/portal/tests/usePortalNewTripSectionActions.test.ts",
   "src/features/account/components/account-access-panel/portal/usePortalVaultSectionActions.ts",
   "src/features/account/components/account-access-panel/portal/tests/usePortalVaultSectionActions.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",

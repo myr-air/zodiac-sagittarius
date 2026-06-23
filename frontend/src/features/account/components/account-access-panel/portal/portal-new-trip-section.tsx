@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import type { AccountApiClient, AccountSession, AccountSettings, AccountTripCreateRequest } from "@/src/account/api-client";
+import type { AccountApiClient, AccountSession, AccountSettings } from "@/src/account/api-client";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
 import { Badge, Button } from "@/src/ui";
@@ -12,18 +11,11 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import { errorMessage } from "../auth";
 import {
-  defaultTripForm,
-  normalizedTripForm,
   PortalCreatedTripShare,
   PortalTripWizard,
-  type CreatedTripShare,
 } from "../trip-wizard";
-import {
-  buildPortalCreatedTripShare,
-  resolvePortalCreatedTripInviteToken,
-} from "./portal-new-trip-section-state";
+import { usePortalNewTripSectionActions } from "./usePortalNewTripSectionActions";
 
 interface PortalNewTripSectionClassNames {
   card: string;
@@ -52,38 +44,24 @@ export function PortalNewTripSection({
 }) {
   const { t } = useI18n();
   const defaultOwnerDisplayName = settings?.profile.displayName ?? t.access.dashboard.fallbackName;
-  const [tripForm, setTripForm] = useState(() => defaultTripForm(settings?.profile.displayName, settings?.profile));
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdTripShare, setCreatedTripShare] = useState<CreatedTripShare | null>(null);
   const {
     copyText,
     hasCopied: hasCopiedCreatedInvite,
     resetCopyState,
   } = useCopyFeedbackState();
-
-  async function submitTrip(overrideForm?: AccountTripCreateRequest) {
-    setIsSubmitting(true);
-    try {
-      const normalizedForm = normalizedTripForm(overrideForm ?? tripForm, defaultOwnerDisplayName);
-      const response = await accountClient.createTrip(accountSession.sessionToken, normalizedForm);
-      const inviteToken = await resolvePortalCreatedTripInviteToken(apiClient, response);
-      setCreatedTripShare(buildPortalCreatedTripShare(response, inviteToken));
-      resetCopyState();
-      await onCreatedTrip(response.memberSession, { openTrip: false });
-      setTripForm(defaultTripForm(settings?.profile.displayName, settings?.profile));
-      onMessage(t.access.dashboard.createTrip.success);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.dashboard.createTrip.error, t.access.messages));
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function copyCreatedInviteLink() {
-    if (!createdTripShare) return;
-    await copyText(createdTripShare.inviteLink);
-  }
+  const actions = usePortalNewTripSectionActions({
+    accountClient,
+    accountSession,
+    apiClient,
+    copyText,
+    defaultOwnerDisplayName,
+    messages: t.access,
+    onCreatedTrip,
+    onError,
+    onMessage,
+    resetCopyState,
+    settings,
+  });
 
   return (
     <section className={cn(classNames.historyCard, classNames.card)} id="portal-new-trip">
@@ -104,20 +82,20 @@ export function PortalNewTripSection({
           <Badge tone="neutral">{t.access.dashboard.createTrip.wizard.statusDraft}</Badge>
         </div>
       </div>
-      {createdTripShare ? (
+      {actions.createdTripShare ? (
         <PortalCreatedTripShare
           copy={t.access.dashboard.createTrip.share}
           hasCopiedInvite={hasCopiedCreatedInvite}
-          share={createdTripShare}
-          onCopyInvite={() => void copyCreatedInviteLink()}
+          share={actions.createdTripShare}
+          onCopyInvite={() => void actions.copyCreatedInviteLink()}
         />
       ) : null}
       <PortalTripWizard
         defaultOwnerDisplayName={defaultOwnerDisplayName}
-        isSubmitting={isSubmitting}
-        tripForm={tripForm}
-        onChange={setTripForm}
-        onSubmit={submitTrip}
+        isSubmitting={actions.isSubmitting}
+        tripForm={actions.tripForm}
+        onChange={actions.setTripForm}
+        onSubmit={actions.submitTrip}
       />
     </section>
   );
