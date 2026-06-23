@@ -11,10 +11,8 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
-import {
-  PortalCreatedTripShare,
-  PortalTripWizard,
-} from "../../trip-wizard";
+import { PortalTripWizard } from "../../trip-wizard/portal-trip-wizard";
+import { PortalCreatedTripShare } from "../../trip-wizard/share/portal-created-trip-share";
 import { usePortalNewTripSectionActions } from "./usePortalNewTripSectionActions";
 
 interface PortalNewTripSectionClassNames {

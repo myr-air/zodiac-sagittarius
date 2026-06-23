@@ -20,6 +20,7 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-dates.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-form.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-form.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/index.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-credentials.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-credentials.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/account-trip-wizard-steps.ts",

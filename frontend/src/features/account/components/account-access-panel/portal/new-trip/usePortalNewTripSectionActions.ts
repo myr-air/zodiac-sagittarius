@@ -9,11 +9,8 @@ import type { Messages } from "@/src/i18n/messages";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
 import { errorMessage } from "../../auth";
-import {
-  defaultTripForm,
-  normalizedTripForm,
-  type CreatedTripShare,
-} from "../../trip-wizard";
+import { defaultTripForm, normalizedTripForm } from "../../trip-wizard/model/account-trip-form";
+import type { CreatedTripShare } from "../../trip-wizard/share/portal-created-trip-share";
 import {
   buildPortalCreatedTripShare,
   resolvePortalCreatedTripInviteToken,
