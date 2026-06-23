@@ -2,6 +2,7 @@ import { cn } from "@/src/lib/cn";
 import { ActionBar, Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as memberStyles from "../TripMembersPage.styles";
+import { MemberCopyFeedback } from "./MemberCopyFeedback";
 import type { MemberInviteActionsProps } from "./member-management.types";
 
 export function MemberInviteActions({
@@ -59,9 +60,7 @@ export function MemberInviteActions({
           </Button>
         </>
       ) : (
-        <span className={memberStyles.copyFeedbackClassName} data-state={copyState} role="status">
-          {labels.members.copy.readOnly}
-        </span>
+        <MemberCopyFeedback copyState={copyState} labels={labels} readOnly />
       )}
     </ActionBar>
   );

@@ -2,6 +2,7 @@ import { WorkspaceSurface } from "@/src/ui";
 import type { MemberRoleFilter, MemberStatusFilter } from "../model/member-page-options";
 import * as memberStyles from "../TripMembersPage.styles";
 import { MemberCreatePanel } from "./MemberCreatePanel";
+import { MemberCopyFeedback } from "./MemberCopyFeedback";
 import { MemberFilterControls } from "./MemberFilterControls";
 import { MemberInviteActions } from "./MemberInviteActions";
 import type { MemberCopyState, MemberCreatePanelProps, MemberLabels } from "./member-management.types";
@@ -79,13 +80,7 @@ export function MemberManagementControls({
         {canManagePeople ? (
           <div className={memberStyles.memberCommandMetaClassName}>
             <code>{inviteLink}</code>
-            <span className={memberStyles.copyFeedbackClassName} data-state={copyState} role="status">
-              {copyState === "copied"
-                ? labels.common.status.copied
-                : copyState === "error"
-                  ? labels.common.status.copyFailed
-                  : labels.members.copy.ready}
-            </span>
+            <MemberCopyFeedback copyState={copyState} labels={labels} />
           </div>
         ) : null}
       </WorkspaceSurface>

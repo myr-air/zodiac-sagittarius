@@ -26,10 +26,10 @@ describe("workspace copy feedback styles", () => {
 
   it("keeps text-only success and error state styling in one shared class", () => {
     expect(workspaceCopyFeedbackTextStatusClassName).toContain(
-      "data-[state=copied]:text-(--color-success)",
+      "data-[state=copied]:text-(--color-success-strong)",
     );
     expect(workspaceCopyFeedbackTextStatusClassName).toContain(
-      "data-[state=error]:text-(--color-danger)",
+      "data-[state=error]:text-[#b91c1c]",
     );
   });
 
