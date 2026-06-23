@@ -1,12 +1,7 @@
 import type { TripDailyBriefing } from "@/src/trip/types";
-import {
-  formatSolarTime,
-  formatWeatherTemp,
-  weatherGraphicLabel,
-  weatherIconForCondition,
-} from "@/src/trip/weather";
+import { weatherIconForCondition } from "@/src/trip/weather";
 import { Icon } from "@/src/ui/icons";
-import { buildWeatherTooltip } from "@/src/features/itinerary/domain/weather-summary";
+import { buildWeatherChipDisplay } from "@/src/features/itinerary/domain/weather-summary";
 import {
   dayWeatherChipClassName,
   dayWeatherSolarClassName,
@@ -21,50 +16,33 @@ export function DayWeatherChip({
 }) {
   if (!briefing) return null;
   const weather = briefing.weather;
-  const condition = weatherGraphicLabel(weather?.conditionCode);
-  const high = weather?.temperatureMaxCelsius;
-  const low = weather?.temperatureMinCelsius;
-  const sunrise = formatSolarTime(weather?.sunrise);
-  const sunset = formatSolarTime(weather?.sunset);
-  const hasForecastTemps = typeof high === "number" && typeof low === "number";
-  const hasSolarTimes = Boolean(sunrise && sunset);
-  if (!hasForecastTemps && !hasSolarTimes) return null;
-  const hasCondition = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
-  const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
-  const weatherLabel = [
-    hasForecastTemps
-      ? `${condition} ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}`
-      : hasCondition
-        ? condition
-        : "",
-    solarLabel,
-  ].filter(Boolean).join(" ");
-  const tooltipLabel = buildWeatherTooltip(weather, weatherLabel, sunrise, sunset);
+  const display = buildWeatherChipDisplay(briefing);
+  if (!display) return null;
 
   return (
     <span
       className={dayWeatherChipClassName}
-      aria-label={`Weather for ${dayLabel}: ${tooltipLabel.replace(/\n/g, ", ")}`}
-      title={tooltipLabel}
+      aria-label={`Weather for ${dayLabel}: ${display.tooltip.replace(/\n/g, ", ")}`}
+      title={display.tooltip}
     >
       <span aria-hidden="true">
         <Icon name={weatherIconForCondition(weather?.conditionCode)} />
       </span>{" "}
-      {hasForecastTemps ? (
+      {display.hasForecastTemps ? (
         <>
-          <strong>{formatWeatherTemp(high)}</strong>{" "}
-          <span>{formatWeatherTemp(low)}</span>
+          <strong>{display.highLabel}</strong>{" "}
+          <span>{display.lowLabel}</span>
         </>
-      ) : hasCondition ? <span>{condition}</span> : null}
-      {hasSolarTimes ? (
+      ) : display.hasCondition ? <span>{display.condition}</span> : null}
+      {display.hasSolarTimes ? (
         <>
           <span className={dayWeatherSolarClassName}>
             <Icon name="sunrise" />
-            {sunrise}
+            {display.sunrise}
           </span>
           <span className={dayWeatherSolarClassName}>
             <Icon name="sunset" />
-            {sunset}
+            {display.sunset}
           </span>
         </>
       ) : null}

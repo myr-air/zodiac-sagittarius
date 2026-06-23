@@ -111,6 +111,57 @@ export function buildWeatherTooltip(
   return [summary, ...details].filter(Boolean).join("\n");
 }
 
+export interface WeatherChipDisplay {
+  condition: string;
+  hasCondition: boolean;
+  hasForecastTemps: boolean;
+  hasSolarTimes: boolean;
+  highLabel: string;
+  lowLabel: string;
+  sunrise: string | null;
+  sunset: string | null;
+  tooltip: string;
+}
+
+export function buildWeatherChipDisplay(
+  briefing: TripDailyBriefing,
+): WeatherChipDisplay | null {
+  const weather = briefing.weather;
+  const condition = weatherGraphicLabel(weather?.conditionCode);
+  const high = weather?.temperatureMaxCelsius;
+  const low = weather?.temperatureMinCelsius;
+  const sunrise = formatSolarTime(weather?.sunrise);
+  const sunset = formatSolarTime(weather?.sunset);
+  const hasForecastTemps = typeof high === "number" && typeof low === "number";
+  const hasSolarTimes = Boolean(sunrise && sunset);
+  if (!hasForecastTemps && !hasSolarTimes) return null;
+
+  const hasCondition = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
+  const highLabel = formatWeatherTemp(high);
+  const lowLabel = formatWeatherTemp(low);
+  const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
+  const weatherLabel = [
+    hasForecastTemps
+      ? `${condition} ${highLabel} ${lowLabel}`
+      : hasCondition
+        ? condition
+        : "",
+    solarLabel,
+  ].filter(Boolean).join(" ");
+
+  return {
+    condition,
+    hasCondition,
+    hasForecastTemps,
+    hasSolarTimes,
+    highLabel,
+    lowLabel,
+    sunrise,
+    sunset,
+    tooltip: buildWeatherTooltip(weather, weatherLabel, sunrise, sunset),
+  };
+}
+
 export function buildWeatherSummary(
   briefing: TripDailyBriefing,
   dayLabel: string,
