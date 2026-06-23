@@ -1,14 +1,11 @@
 import { useState } from "react";
-import type {
-  Member,
-  TripMemberAccessStatus,
-} from "@/src/trip/types";
+import type { Member, TripMemberAccessStatus } from "@/src/trip/types";
 import {
   initialMemberTaskDialogFormState,
-  openMemberTaskDialogState,
   updateMemberTaskDialogPasswordValue,
 } from "../model/member-task-dialog-state";
 import { useMemberTaskDialogActions } from "./useMemberTaskDialogActions";
+import { useMemberTaskDialogOpenActions } from "./useMemberTaskDialogOpenActions";
 
 interface MemberTaskDialogLabels {
   disable: string;
@@ -40,50 +37,6 @@ export function useMemberTaskDialogState({
     initialMemberTaskDialogFormState,
   );
 
-  function findVisibleMember(memberId: string) {
-    return visibleMembers.find((candidate) => candidate.id === memberId);
-  }
-
-  function confirmResetClaim(memberId: string) {
-    const member = findVisibleMember(memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setDialogState(openMemberTaskDialogState({ kind: "reset", member }));
-  }
-
-  function confirmChangeAccessStatus(
-    memberId: string,
-    accessStatus: TripMemberAccessStatus,
-  ) {
-    const member = findVisibleMember(memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    const actionLabel =
-      accessStatus === "disabled" ? labels.disable : labels.enable;
-    setDialogState(
-      openMemberTaskDialogState({
-        kind: "access",
-        member,
-        accessStatus,
-        actionLabel,
-      }),
-    );
-  }
-
-  function confirmTransferOwnership(memberId: string) {
-    const member = findVisibleMember(memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setDialogState(openMemberTaskDialogState({ kind: "transfer", member }));
-  }
-
-  function promptChangePassword(memberId: string) {
-    const member = findVisibleMember(memberId);
-    /* v8 ignore next */
-    if (!member) return;
-    setDialogState(openMemberTaskDialogState({ kind: "password", member }));
-  }
-
   function setPasswordValue(passwordValue: string) {
     setDialogState((current) =>
       updateMemberTaskDialogPasswordValue(current, passwordValue),
@@ -101,6 +54,16 @@ export function useMemberTaskDialogState({
     onResetMemberClaim,
     onTransferOwnership,
     setDialogState,
+  });
+  const {
+    confirmChangeAccessStatus,
+    confirmResetClaim,
+    confirmTransferOwnership,
+    promptChangePassword,
+  } = useMemberTaskDialogOpenActions({
+    labels,
+    setDialogState,
+    visibleMembers,
   });
 
   return {

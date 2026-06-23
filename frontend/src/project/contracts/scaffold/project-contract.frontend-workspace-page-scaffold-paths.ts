@@ -123,6 +123,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/members/hooks/useMemberPageDerivedState.ts",
   "src/features/workspace/pages/members/hooks/useMemberPageFilters.ts",
   "src/features/workspace/pages/members/hooks/useMemberTaskDialogActions.ts",
+  "src/features/workspace/pages/members/hooks/useMemberTaskDialogOpenActions.ts",
   "src/features/workspace/pages/members/hooks/useMemberTaskDialogState.ts",
   "src/features/workspace/pages/members/model/member-task-dialog-state.ts",
   "src/features/workspace/pages/members/model/tests/member-task-dialog-state.test.ts",

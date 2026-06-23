@@ -25,6 +25,9 @@ describe("members page state structure", () => {
     const taskDialogActionsSource = readMembersPageSource(
       "hooks/useMemberTaskDialogActions.ts",
     );
+    const taskDialogOpenActionsSource = readMembersPageSource(
+      "hooks/useMemberTaskDialogOpenActions.ts",
+    );
     const createFormSource = readMembersPageSource(
       "hooks/useMemberCreateFormState.ts",
     );
@@ -92,8 +95,14 @@ describe("members page state structure", () => {
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
     expect(taskDialogSource).toContain("../model/member-task-dialog-state");
     expect(taskDialogSource).toContain("./useMemberTaskDialogActions");
+    expect(taskDialogSource).toContain("./useMemberTaskDialogOpenActions");
     expect(taskDialogSource).toContain("useMemberTaskDialogActions");
+    expect(taskDialogSource).toContain("useMemberTaskDialogOpenActions");
     expect(taskDialogSource).not.toContain("function submitMemberDialog");
+    expect(taskDialogSource).not.toContain("function confirmResetClaim");
+    expect(taskDialogSource).not.toContain("function confirmChangeAccessStatus");
+    expect(taskDialogSource).not.toContain("function confirmTransferOwnership");
+    expect(taskDialogSource).not.toContain("function promptChangePassword");
     expect(taskDialogSource).not.toContain("const [memberDialog, setMemberDialog]");
     expect(taskDialogSource).not.toContain("const [passwordValue, setPasswordValue]");
     expect(taskDialogSource).not.toContain("const [passwordError, setPasswordError]");
@@ -101,6 +110,12 @@ describe("members page state structure", () => {
     expect(taskDialogActionsSource).toContain("function submitMemberDialog");
     expect(taskDialogActionsSource).toContain("buildMemberTaskDialogSubmission");
     expect(taskDialogActionsSource).toContain("closeMemberTaskDialogState");
+    expect(taskDialogOpenActionsSource).toContain("export function useMemberTaskDialogOpenActions");
+    expect(taskDialogOpenActionsSource).toContain("function confirmResetClaim");
+    expect(taskDialogOpenActionsSource).toContain("function confirmChangeAccessStatus");
+    expect(taskDialogOpenActionsSource).toContain("function confirmTransferOwnership");
+    expect(taskDialogOpenActionsSource).toContain("function promptChangePassword");
+    expect(taskDialogOpenActionsSource).toContain("openMemberTaskDialogState");
     expect(memberTaskDialogSource).toContain("WorkspaceCompactFormDialog");
     expect(memberTaskDialogSource).not.toContain("memberDialogBackdropClassName");
     expect(memberTaskDialogSource).not.toContain("memberDialogActionsClassName");
