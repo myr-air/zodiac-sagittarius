@@ -1,6 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { StopDialog } from "../StopDialog";
 import { renderStopDialogEn as renderEn } from "../testing/support/stop-dialog-render";
 
@@ -10,13 +10,12 @@ describe("StopDialog sub-activity handling", () => {
     renderEn(
       <StopDialog
         mode="edit"
-        initialItem={{
-          ...tripFixture.planItems[1],
+        initialItem={buildItineraryItem({
           id: "child-checkin",
           activity: "Check in",
           parentItemId: "block-flight",
           isPlanBlock: true,
-        }}
+        })}
         onClose={vi.fn()}
         onSubmit={onSubmit}
       />,

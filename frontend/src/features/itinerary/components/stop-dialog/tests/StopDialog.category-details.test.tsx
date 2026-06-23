@@ -1,6 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { StopDialog } from "../StopDialog";
 import { renderStopDialogEn as renderEn } from "../testing/support/stop-dialog-render";
 
@@ -67,8 +67,7 @@ describe("StopDialog category details", () => {
     renderEn(
       <StopDialog
         mode="edit"
-        initialItem={{
-          ...tripFixture.planItems[0],
+        initialItem={buildItineraryItem({
           activity: "DMK -> HKG",
           activityType: "travel",
           place: "",
@@ -81,7 +80,7 @@ describe("StopDialog category details", () => {
             ticketRef: "FD ticket",
             costNote: "Prepaid group fare",
           },
-        }}
+        })}
         onClose={vi.fn()}
         onSubmit={vi.fn()}
       />,
