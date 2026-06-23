@@ -1,7 +1,7 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import type { UntypedStoryPlay } from "./support/story-play-types";
 
-type OverviewRolePanelsPlay = NonNullable<StoryObj["play"]>;
+type OverviewRolePanelsPlay = UntypedStoryPlay;
 
 export const travelerPlay: OverviewRolePanelsPlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /traveler highlights/i })).toBeInTheDocument();

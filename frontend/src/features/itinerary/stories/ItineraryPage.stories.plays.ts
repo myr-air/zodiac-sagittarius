@@ -1,4 +1,3 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { SmartItineraryTable } from "@/src/features/itinerary/components";
 import { pathIdStoryPlanA, pathIdStoryPlanB } from "@/src/features/itinerary/testing";
@@ -16,8 +15,9 @@ import {
   onStoryToggleShowAllPaths,
 } from "./ItineraryPage.stories.support";
 import { expectItineraryResponsiveContract } from "./support/itinerary-story-assertions";
+import type { StoryPlay } from "./support/story-play-types";
 
-type ItineraryPagePlay = NonNullable<StoryObj<typeof SmartItineraryTable>["play"]>;
+type ItineraryPagePlay = StoryPlay<typeof SmartItineraryTable>;
 
 export const ownerPlay: ItineraryPagePlay = async ({ canvas, canvasElement }) => {
   await expectItineraryResponsiveContract(canvasElement);

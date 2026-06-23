@@ -1,8 +1,8 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import type { ContextRailSuggestionsSection } from "@/src/features/itinerary/components/context-rail/ContextRailSuggestionsSection";
+import type { StoryPlay } from "./support/story-play-types";
 
-type ContextRailSuggestionsSectionPlay = NonNullable<StoryObj<typeof ContextRailSuggestionsSection>["play"]>;
+type ContextRailSuggestionsSectionPlay = StoryPlay<typeof ContextRailSuggestionsSection>;
 
 export const editablePlay: ContextRailSuggestionsSectionPlay = async ({ canvas }) => {
   await expect(

@@ -1,9 +1,9 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { RouteMapView } from "@/src/features/itinerary/components";
+import type { StoryPlay } from "../support/story-play-types";
 import { expectMapResponsiveContract } from "./MapPage.stories.support";
 
-type MapPagePlay = NonNullable<StoryObj<typeof RouteMapView>["play"]>;
+type MapPagePlay = StoryPlay<typeof RouteMapView>;
 
 export const ownerThaiPlay: MapPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /แผนที่เส้นทาง/i })).toHaveClass("route-map-panel");

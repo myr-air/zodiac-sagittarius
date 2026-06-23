@@ -1,8 +1,8 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import type { ContextRail } from "@/src/features/itinerary/components";
+import type { StoryPlay } from "./support/story-play-types";
 
-type ContextRailPlay = NonNullable<StoryObj<typeof ContextRail>["play"]>;
+type ContextRailPlay = StoryPlay<typeof ContextRail>;
 
 export const notesOpenPlay: ContextRailPlay = async ({ canvas }) => {
   await expect(canvas.getByRole("complementary", { name: /Planning context/i })).toHaveClass("context-rail--open");

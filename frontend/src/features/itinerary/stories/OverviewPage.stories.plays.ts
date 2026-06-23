@@ -1,9 +1,9 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent } from "storybook/test";
 import type { OverviewPage } from "@/src/features/itinerary/components";
 import { expectOverviewStructure } from "./OverviewPage.stories.support";
+import type { StoryPlay } from "./support/story-play-types";
 
-type OverviewPagePlay = NonNullable<StoryObj<typeof OverviewPage>["play"]>;
+type OverviewPagePlay = StoryPlay<typeof OverviewPage>;
 
 export const ownerPlay: OverviewPagePlay = async ({ canvas, canvasElement }) => {
   await expectOverviewStructure(canvasElement);

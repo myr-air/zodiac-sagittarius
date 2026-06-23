@@ -1,9 +1,9 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { TimelineView } from "@/src/features/itinerary/components";
 import { expectTimelineStructure } from "./TimelinePage.stories.support";
+import type { StoryPlay } from "./support/story-play-types";
 
-type TimelinePagePlay = NonNullable<StoryObj<typeof TimelineView>["play"]>;
+type TimelinePagePlay = StoryPlay<typeof TimelineView>;
 
 export const ownerThaiPlay: TimelinePagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /ไทม์ไลน์ทริป/i })).toHaveClass("timeline-panel");

@@ -1,8 +1,8 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { RouteMapView } from "@/src/features/itinerary/components";
+import type { StoryPlay } from "../support/story-play-types";
 
-type MapTemplatePlay = NonNullable<StoryObj<typeof RouteMapView>["play"]>;
+type MapTemplatePlay = StoryPlay<typeof RouteMapView>;
 
 export const ownerThaiPlay: MapTemplatePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /แผนที่เส้นทาง/i })).toBeVisible();

@@ -1,8 +1,8 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { StopDialog } from "@/src/features/itinerary/components";
+import type { StoryPlay } from "./support/story-play-types";
 
-type StopDialogPlay = NonNullable<StoryObj<typeof StopDialog>["play"]>;
+type StopDialogPlay = StoryPlay<typeof StopDialog>;
 
 export const createPlay: StopDialogPlay = async ({ canvas }) => {
   await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");

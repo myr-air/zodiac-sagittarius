@@ -1,4 +1,3 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { SmartItineraryTable } from "@/src/features/itinerary/components";
 import {
@@ -8,8 +7,9 @@ import {
   pathNamePlanC,
 } from "./support/itinerary-story-fixtures";
 import { expectItineraryResponsiveContract } from "./support/itinerary-story-assertions";
+import type { StoryPlay } from "./support/story-play-types";
 
-type ItineraryTemplatePlay = NonNullable<StoryObj<typeof SmartItineraryTable>["play"]>;
+type ItineraryTemplatePlay = StoryPlay<typeof SmartItineraryTable>;
 
 export const ownerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();

@@ -1,8 +1,8 @@
-import type { StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 import type { OverviewPage } from "@/src/features/itinerary/components";
+import type { StoryPlay } from "../support/story-play-types";
 
-type OverviewTemplatePlay = NonNullable<StoryObj<typeof OverviewPage>["play"]>;
+type OverviewTemplatePlay = StoryPlay<typeof OverviewPage>;
 
 export const ownerThaiPlay: OverviewTemplatePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i })).toBeVisible();
