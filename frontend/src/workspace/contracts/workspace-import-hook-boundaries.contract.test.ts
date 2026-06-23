@@ -50,8 +50,9 @@ describe("Sagittarius workspace import hook source boundaries", () => {
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-item-api-requests");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");
+    expect(apiImportApplyCommand).toContain("@/src/trip/workspace/itinerary-import-api-records");
     expect(importHook).toContain("@/src/trip/workspace/itinerary-import-model");
-    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-api");
+    expect(importHook).toContain("@/src/trip/workspace/itinerary-import-api-requests");
     expect(workspaceRecordsHook).toContain("@/src/trip/workspace/trip-plan-records");
   });
 });

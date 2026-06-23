@@ -1,5 +1,5 @@
 import type { TripApiClient } from "@/src/trip/api-client";
-import { createImportedPlanRecordsViaApi } from "@/src/trip/workspace/itinerary-import-api";
+import { createImportedPlanRecordsViaApi } from "@/src/trip/workspace/itinerary-import-api-records";
 import { buildImportedItineraryItemCreateRequest } from "@/src/trip/workspace/itinerary-import-item-api-requests";
 import {
   emptyItineraryExportRecords,

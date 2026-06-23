@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { parseItineraryImportDocument } from "@/src/trip/itinerary-import-export";
-import { buildImportItineraryRequest } from "@/src/trip/workspace/itinerary-import-api";
+import { buildImportItineraryRequest } from "@/src/trip/workspace/itinerary-import-api-requests";
 import {
   pendingItineraryImportFromDocument,
   shouldUseApiItineraryImport,
