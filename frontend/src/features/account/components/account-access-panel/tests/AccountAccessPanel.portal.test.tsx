@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { TripApiError } from "@/src/trip/api-client";
 import {
   optionalTrailingSlashPattern,
@@ -9,7 +10,6 @@ import {
 import {
   createAccountClient,
   createTrustedAccountSession,
-  installLocalStorageStub,
   renderAccountAccessPanel,
 } from "../testing/account-access-panel-test-utils";
 

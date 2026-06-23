@@ -1,11 +1,11 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { TripApiError } from "@/src/trip/api-client";
 import {
   createAccountClient,
   fillAccountPasswordFields,
-  installLocalStorageStub,
   renderAccountAccessPanel,
 } from "../testing/account-access-panel-test-utils";
 

@@ -179,6 +179,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessTestUtils).toContain("./account-access-panel-render-utils");
     expect(accountAccessTestUtils).toContain("./account-access-panel-test-clients");
     expect(accountAccessTestUtils).toContain("./account-access-panel-passkey-test-utils");
+    expect(accountAccessTestUtils).not.toContain("installLocalStorageStub");
     expect(accountAccessTestUtils).not.toContain("../AccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("../AccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("export function renderAccountAccessPanel");

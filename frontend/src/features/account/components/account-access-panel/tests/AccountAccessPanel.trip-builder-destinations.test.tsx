@@ -1,8 +1,8 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import {
-  installLocalStorageStub,
   renderTripBuilder,
   selectDestinationCity,
 } from "../testing/account-access-panel-test-utils";

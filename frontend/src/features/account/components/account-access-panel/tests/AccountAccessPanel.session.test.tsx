@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
 import {
   optionalTrailingSlashPattern,
@@ -10,7 +11,6 @@ import { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   createAccountClient,
   createTrustedAccountSession,
-  installLocalStorageStub,
   render,
   renderAccountAccessPanel,
   switchToThai,

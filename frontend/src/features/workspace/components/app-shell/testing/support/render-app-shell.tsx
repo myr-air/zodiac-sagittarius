@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { vi } from "vitest";
 import type { Locale } from "@/src/i18n/types";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
 import { AppShell } from "../../AppShell";
 import type { AppShellProps } from "../../app-shell.types";

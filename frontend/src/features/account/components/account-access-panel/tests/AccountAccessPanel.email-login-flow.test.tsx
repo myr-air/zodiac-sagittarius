@@ -1,6 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import {
   optionalTrailingSlashPattern,
   portalRoutes,
@@ -8,7 +9,6 @@ import {
 import {
   AccountHarness,
   createAccountClient,
-  installLocalStorageStub,
   render,
 } from "../testing/account-access-panel-test-utils";
 

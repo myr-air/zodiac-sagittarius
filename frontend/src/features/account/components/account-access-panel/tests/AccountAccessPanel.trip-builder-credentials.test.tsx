@@ -1,9 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  installLocalStorageStub,
-  renderTripBuilder,
-} from "../testing/account-access-panel-test-utils";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
+import { renderTripBuilder } from "../testing/account-access-panel-test-utils";
 
 describe("AccountAccessPanel trip builder credentials", () => {
   beforeEach(() => {

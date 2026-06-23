@@ -1,11 +1,11 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import {
   authForm,
   bytes,
   createAccountClient,
-  installLocalStorageStub,
   renderAccountAccessPanel,
   stubCredentials,
 } from "../testing/account-access-panel-test-utils";
