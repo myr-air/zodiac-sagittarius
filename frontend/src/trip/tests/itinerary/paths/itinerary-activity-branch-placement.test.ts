@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { mapById } from "@/src/shared/collection";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { applyItemToActivityBranch } from "../../../itinerary-paths";
 import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
@@ -13,7 +14,7 @@ describe("itinerary activity branch placement", () => {
 
     const withMiddle = applyItemToActivityBranch(trip, middleItem).trip;
     const withLate = applyItemToActivityBranch(withMiddle, lateItem).trip;
-    const itemsById = new Map(withLate.itineraryItems.map((item) => [item.id, item]));
+    const itemsById = mapById(withLate.itineraryItems);
 
     expect(itemsById.get("item-main-long")).toMatchObject({ pathRole: undefined });
     expect(itemsById.get("item-main-long")?.pathGroupId).toBeUndefined();

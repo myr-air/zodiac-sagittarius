@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { mapById } from "@/src/shared/collection";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   applyItemToActivityBranch,
@@ -23,7 +24,7 @@ describe("manual itinerary activity path assignment", () => {
 
     const planATrip = applyManualActivityPath(flatTrip, "item-late", pathIdPlanA).trip;
     const planBTrip = applyManualActivityPath(planATrip, "item-main-long", pathIdPlanB).trip;
-    const itemsById = new Map(planBTrip.itineraryItems.map((item) => [item.id, item]));
+    const itemsById = mapById(planBTrip.itineraryItems);
 
     expect(itemsById.get("item-middle")).toMatchObject({
       pathGroupId: "path-group-item-main-long",
@@ -48,7 +49,7 @@ describe("manual itinerary activity path assignment", () => {
     const flatTrip = applyItemToActivityBranch({ ...tripFixture.trip, itineraryItems: [mainItem] }, middleItem).trip;
 
     const next = applyManualActivityPath(flatTrip, "item-main-long", pathIdPlanB).trip;
-    const itemsById = new Map(next.itineraryItems.map((item) => [item.id, item]));
+    const itemsById = mapById(next.itineraryItems);
 
     expect(itemsById.get("item-main-long")).toMatchObject({
       pathId: pathIdPlanB,
@@ -106,7 +107,7 @@ describe("manual itinerary activity path assignment", () => {
     };
 
     const placement = applyManualActivityPath(trip, "item-flight-block", pathIdPlanA);
-    const itemsById = new Map(placement.trip.itineraryItems.map((item) => [item.id, item]));
+    const itemsById = mapById(placement.trip.itineraryItems);
 
     expect(itemsById.get("item-flight-block")).toMatchObject({
       pathGroupId: "path-group-item-flight-block",

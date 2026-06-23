@@ -1,3 +1,4 @@
+import { mapById } from "@/src/shared/collection";
 import type { ItineraryItem, Trip } from "../types";
 
 export interface ItineraryActivityBranchPlacement {
@@ -10,9 +11,7 @@ export function cascadePathFieldsToSubActivities(
   allItems: ItineraryItem[],
   branchItems: ItineraryItem[],
 ): ItineraryItem[] {
-  const nextItemsById = new Map(
-    branchItems.map((branchItem) => [branchItem.id, branchItem]),
-  );
+  const nextItemsById = mapById(branchItems);
   for (const branchItem of branchItems) {
     const subActivities = allItems.filter(
       (item) => item.parentItemId === branchItem.id,
@@ -36,15 +35,11 @@ export function buildActivityBranchPlacement(
   branchItems: ItineraryItem[],
   inputItems: ItineraryItem[],
 ): ItineraryActivityBranchPlacement {
-  const branchItemsById = new Map(
-    branchItems.map((branchItem) => [branchItem.id, branchItem]),
-  );
+  const branchItemsById = mapById(branchItems);
   const nextItems = inputItems.map(
     (candidate) => branchItemsById.get(candidate.id) ?? candidate,
   );
-  const existingItemsById = new Map(
-    trip.itineraryItems.map((candidate) => [candidate.id, candidate]),
-  );
+  const existingItemsById = mapById(trip.itineraryItems);
   const changedExistingItems = nextItems.filter((candidate) => {
     const existing = existingItemsById.get(candidate.id);
     return existing ? !samePathFields(existing, candidate) : false;
