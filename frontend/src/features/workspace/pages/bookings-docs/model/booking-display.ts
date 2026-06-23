@@ -34,6 +34,27 @@ export function bookingConfirmationDisplay(
   return confirmationCode ? `${copy.confirmation}: ${confirmationCode}` : copy.noConfirmation;
 }
 
+export function bookingLinkedContextDisplay(
+  linkedContext: string,
+  copy: Pick<BookingCopy, "noLinkedStop">,
+): string {
+  return linkedContext || copy.noLinkedStop;
+}
+
+export function bookingNotesDisplay(
+  notes: string | null | undefined,
+  copy: Pick<BookingCopy, "noNotes">,
+): string {
+  return notes ?? copy.noNotes;
+}
+
+export function bookingTravelerNamesDisplay(
+  travelers: readonly { displayName: string }[],
+  copy: Pick<BookingCopy, "noTravelers">,
+): string {
+  return travelers.map((member) => member.displayName).join(", ") || copy.noTravelers;
+}
+
 export function bookingTypeIcon(type: BookingDocType): IconName {
   if (type === "flight" || type === "train" || type === "public_transport") return "route";
   if (type === "hotel") return "home";

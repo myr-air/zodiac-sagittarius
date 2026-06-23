@@ -8,7 +8,9 @@ import * as bookingStyles from "../BookingsDocsPage.styles";
 import {
   bookingConfirmationDisplay,
   bookingDateDisplay,
+  bookingNotesDisplay,
   bookingProviderDisplay,
+  bookingTravelerNamesDisplay,
 } from "../model/booking-display";
 import { BookingExternalLinkAction } from "./BookingExternalLinkAction";
 import { BookingStatusBadge } from "./BookingStatusBadge";
@@ -56,7 +58,7 @@ export function BookingInspector({
       <div className="grid gap-1">
         <BookingStatusBadge copy={copy} status={booking.status} />
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>
-        <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{booking.notes ?? copy.noNotes}</p>
+        <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{bookingNotesDisplay(booking.notes, copy)}</p>
         {canEdit ? (
           <div className="mt-1 flex gap-1.5">
             <Button type="button" variant="secondary" onClick={onEdit}><Icon name="edit" /> {copy.editBooking}</Button>
@@ -91,7 +93,7 @@ export function BookingInspector({
         <span>{copy.todos(relations.tasks.length)}</span>
         <span>{copy.expenses(relations.expenses.length)}</span>
         <span>{copy.notes(relations.notes.length)}</span>
-        <span>{relations.travelers.map((member) => member.displayName).join(", ") || copy.noTravelers}</span>
+        <span>{bookingTravelerNamesDisplay(relations.travelers, copy)}</span>
       </div>
     </WorkspaceSurface>
   );

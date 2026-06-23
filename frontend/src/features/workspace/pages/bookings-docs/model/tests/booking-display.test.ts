@@ -3,7 +3,10 @@ import { bookingCopy } from "../../content/BookingsDocsPage.copy";
 import {
   bookingConfirmationDisplay,
   bookingDateDisplay,
+  bookingLinkedContextDisplay,
+  bookingNotesDisplay,
   bookingProviderDisplay,
+  bookingTravelerNamesDisplay,
   bookingTypeIcon,
   formatDateTime,
   statusBadgeClassName,
@@ -24,6 +27,15 @@ describe("booking display helpers", () => {
     expect(bookingProviderDisplay("Cathay Travel", bookingCopy.en)).toBe("Cathay Travel");
     expect(bookingConfirmationDisplay(null, bookingCopy.en)).toBe("No confirmation");
     expect(bookingConfirmationDisplay("QR349-HK", bookingCopy.en)).toBe("Confirmation: QR349-HK");
+    expect(bookingLinkedContextDisplay("", bookingCopy.en)).toBe("No linked stop");
+    expect(bookingLinkedContextDisplay("Day 2 · Ferry", bookingCopy.en)).toBe("Day 2 · Ferry");
+    expect(bookingNotesDisplay(null, bookingCopy.en)).toBe(bookingCopy.en.noNotes);
+    expect(bookingNotesDisplay("Print tickets", bookingCopy.en)).toBe("Print tickets");
+    expect(bookingTravelerNamesDisplay([], bookingCopy.en)).toBe(bookingCopy.en.noTravelers);
+    expect(bookingTravelerNamesDisplay([
+      { displayName: "Aom" },
+      { displayName: "Beam" },
+    ], bookingCopy.en)).toBe("Aom, Beam");
   });
 
   it("keeps selection and visual token helpers centralized", () => {

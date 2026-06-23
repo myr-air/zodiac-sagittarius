@@ -8,6 +8,7 @@ import { bookingDocLinkedContext } from "../model/booking-list";
 import {
   bookingConfirmationDisplay,
   bookingDateDisplay,
+  bookingLinkedContextDisplay,
   bookingProviderDisplay,
 } from "../model/booking-display";
 import { BookingExternalLinkAction } from "./BookingExternalLinkAction";
@@ -26,7 +27,7 @@ interface BookingFileRowProps {
 }
 
 export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, onEdit, onDelete }: BookingFileRowProps) {
-  const linkedStop = bookingDocLinkedContext(doc, trip) || copy.noLinkedStop;
+  const linkedStop = bookingLinkedContextDisplay(bookingDocLinkedContext(doc, trip), copy);
   const provider = bookingProviderDisplay(doc.providerName, copy);
   const confirmation = doc.confirmationCode ? ` · ${bookingConfirmationDisplay(doc.confirmationCode, copy)}` : "";
 
