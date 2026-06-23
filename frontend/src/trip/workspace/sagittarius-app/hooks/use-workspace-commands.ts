@@ -145,3 +145,5 @@ export function useWorkspaceCommands({
     ...participantSessionActions,
   };
 }
+
+export type WorkspaceCommands = ReturnType<typeof useWorkspaceCommands>;

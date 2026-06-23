@@ -120,3 +120,5 @@ export function useWorkspaceSetupContext({
     setSelectedTripPlanId,
   };
 }
+
+export type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;

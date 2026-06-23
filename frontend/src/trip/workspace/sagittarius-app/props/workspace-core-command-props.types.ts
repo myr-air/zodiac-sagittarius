@@ -1,10 +1,8 @@
-import type { useWorkspaceCommands } from "../hooks/use-workspace-commands";
-import type { useWorkspaceSetupContext } from "../hooks/use-workspace-setup-context";
 import type { BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
 
-export type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;
+export type { WorkspaceCommands } from "../hooks/use-workspace-commands";
 export type { WorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
-export type WorkspaceCommands = ReturnType<typeof useWorkspaceCommands>;
+export type { WorkspaceSetupContext } from "../hooks/use-workspace-setup-context";
 
 export type WorkspaceCoreSetupCommandProps = Pick<
   BuildWorkspaceFramePropsInput,
