@@ -42,8 +42,8 @@ describe("Sagittarius workspace source boundaries", () => {
       workspaceDialogs,
       appShellStorySupport,
     } = readWorkspaceBoundarySources(frontendRoot);
-    expect(workspaceFacade).toContain("./sagittarius-app");
-    expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app");
+    expect(workspaceFacade).toContain("./sagittarius-app/SagittariusAppCore");
+    expect(appFacade).toContain("@/src/trip/workspace/sagittarius-app/SagittariusAppCore");
     expect(appFacade).not.toContain('"use client"');
     const sagittariusApp = sagaCore;
     expect(sagittariusApp).toContain("./WorkspaceAppFrame");

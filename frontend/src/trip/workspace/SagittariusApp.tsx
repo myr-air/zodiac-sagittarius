@@ -1,1 +1,1 @@
-export { SagittariusApp } from "./sagittarius-app";
+export { SagittariusApp } from "./sagittarius-app/SagittariusAppCore";

@@ -1,1 +1,1 @@
-export { SagittariusApp } from "@/src/trip/workspace/sagittarius-app";
+export { SagittariusApp } from "@/src/trip/workspace/sagittarius-app/SagittariusAppCore";

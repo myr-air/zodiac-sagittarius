@@ -14,7 +14,6 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/trip-workspace-import-dialog-state.ts",
   "src/trip/workspace/use-trip-workspace-import-dialog-actions.ts",
   "src/trip/workspace/SagittariusApp.tsx",
-  "src/trip/workspace/sagittarius-app/index.ts",
   "src/trip/workspace/sagittarius-app/access-gate.tsx",
   "src/trip/workspace/sagittarius-app/types.ts",
   "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx",
