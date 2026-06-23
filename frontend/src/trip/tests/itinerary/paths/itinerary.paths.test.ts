@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
-import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  getTripFixtureItineraryItem,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   groupItemsByDay,
 } from "../../../itinerary-core";
@@ -54,30 +57,27 @@ describe("itinerary path domain", () => {
 
   it("does not collapse imported main rows that accidentally share one path group", () => {
     const items = [
-      {
-        ...seedTrip.itineraryItems[0],
+      buildTripFixtureItineraryItem({
         id: "imported-main-flight",
         day: "2026-06-18",
         sortOrder: 100,
         pathGroupId: "path-group-import-batch",
         pathRole: "main" as const,
-      },
-      {
-        ...seedTrip.itineraryItems[1],
+      }),
+      buildTripFixtureItineraryItem({
         id: "imported-main-hotel",
         day: "2026-06-18",
         sortOrder: 200,
         pathGroupId: "path-group-import-batch",
         pathRole: "main" as const,
-      },
-      {
-        ...seedTrip.itineraryItems[2],
+      }),
+      buildTripFixtureItineraryItem({
         id: "imported-main-breakfast",
         day: "2026-06-19",
         sortOrder: 100,
         pathGroupId: "path-group-import-batch",
         pathRole: "main" as const,
-      },
+      }),
     ];
 
     const visible = resolveItineraryPathItems(items, { tripPathId: "main" });
@@ -126,12 +126,11 @@ describe("itinerary path domain", () => {
   });
 
   it("can show all main and alternative path items for inspection", () => {
-    const mainItem = {
-      ...seedTrip.itineraryItems[0],
+    const mainItem = buildTripFixtureItineraryItem({
       id: "main-route",
       pathGroupId: "group-route",
       pathRole: "main" as const,
-    };
+    });
     const alternativeItem = {
       ...mainItem,
       id: "slow-route",
