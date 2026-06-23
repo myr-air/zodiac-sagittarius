@@ -226,6 +226,7 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-dispatch.tsx",
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-labels.ts",
+  "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-content.tsx",
   "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-labels.ts",
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-meta.ts",
   "src/features/account/components/account-access-panel/email-login/account-email-login-step-meta.test.ts",

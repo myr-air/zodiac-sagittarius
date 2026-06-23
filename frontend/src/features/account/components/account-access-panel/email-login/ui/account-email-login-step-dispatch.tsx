@@ -9,11 +9,11 @@ import {
 } from "../model/account-email-login-step-labels";
 import {
   EmailLoginCredentialsStep,
-  EmailLoginMethodsStep,
-  EmailLoginOtpStep,
-  EmailLoginPasswordStep,
-  EmailLoginSetupStep,
-} from "./account-email-login-step-content";
+} from "../steps/account-email-login-credentials-step";
+import { EmailLoginMethodsStep } from "../steps/account-email-login-methods-step";
+import { EmailLoginOtpStep } from "../steps/account-email-login-otp-step";
+import { EmailLoginPasswordStep } from "../steps/account-email-login-password-step";
+import { EmailLoginSetupStep } from "../steps/account-email-login-setup-step";
 import type { EmailLoginStepContentProps } from "./account-email-login-step.types";
 import { buildEmailLoginStepDisabledState } from "../model/email-login-step-disabled-state";
 

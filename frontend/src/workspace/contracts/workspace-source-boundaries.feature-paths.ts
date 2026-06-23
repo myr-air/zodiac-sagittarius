@@ -139,7 +139,6 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/portal/settings/portal-settings-section.tsx",
   accountPortalSettingsPasskeyActions:
     "src/features/account/components/account-access-panel/portal/settings/usePortalSettingsPasskeyActions.ts",
-  emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-content.tsx",
   tripJoinGate: "src/features/account/components/trip-join-gate/TripJoinGate.tsx",
   tripJoinGateChrome: "src/features/account/components/trip-join-gate/composition/TripJoinGateChrome.tsx",
   tripJoinGateVisual: "src/features/account/components/trip-join-gate/composition/TripJoinGateVisual.tsx",

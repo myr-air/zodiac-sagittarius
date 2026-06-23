@@ -38,6 +38,12 @@ describe("account email login structure", () => {
     expect(dispatchSource).toContain("export function EmailLoginStepContent");
     expect(dispatchSource).toContain("./account-email-login-step.types");
     expect(dispatchSource).toContain("../model/account-email-login-step-labels");
+    expect(dispatchSource).toContain("../steps/account-email-login-credentials-step");
+    expect(dispatchSource).toContain("../steps/account-email-login-methods-step");
+    expect(dispatchSource).toContain("../steps/account-email-login-otp-step");
+    expect(dispatchSource).toContain("../steps/account-email-login-password-step");
+    expect(dispatchSource).toContain("../steps/account-email-login-setup-step");
+    expect(dispatchSource).not.toContain("./account-email-login-step-content");
     expect(dispatchSource).not.toContain("interface EmailLoginStepContentProps");
     expect(dispatchSource).toContain("EmailLoginOtpStep");
     expect(dispatchSource).toContain("EmailLoginCredentialsStep");

@@ -45,7 +45,6 @@ describe("Sagittarius account source boundaries", () => {
       accountAuthSupport,
       accountPasskeySupport,
       accountPasskeyLoginInput,
-      emailLoginStepContent,
       tripJoinGate,
       tripJoinGateChrome,
       tripJoinGateVisual,
@@ -344,13 +343,13 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginRegistrationActions).toContain("finishEmailRegistrationSetup");
     expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
     expect(emailLoginResendCooldown).toContain("window.setInterval");
-    expect(emailLoginStepContent).toContain("../steps/account-email-login-credentials-step");
-    expect(emailLoginStepContent).toContain("../steps/account-email-login-methods-step");
-    expect(emailLoginStepContent).toContain("../steps/account-email-login-otp-step");
-    expect(emailLoginStepContent).toContain("../steps/account-email-login-password-step");
-    expect(emailLoginStepContent).toContain("../steps/account-email-login-setup-step");
-    expect(emailLoginStepDispatch).toContain("./account-email-login-step-content");
+    expect(emailLoginStepDispatch).toContain("../steps/account-email-login-credentials-step");
+    expect(emailLoginStepDispatch).toContain("../steps/account-email-login-methods-step");
+    expect(emailLoginStepDispatch).toContain("../steps/account-email-login-otp-step");
+    expect(emailLoginStepDispatch).toContain("../steps/account-email-login-password-step");
+    expect(emailLoginStepDispatch).toContain("../steps/account-email-login-setup-step");
     expect(emailLoginStepDispatch).toContain("../model/account-email-login-step-labels");
+    expect(emailLoginStepDispatch).not.toContain("./account-email-login-step-content");
     expect(emailLoginStepDispatch).not.toContain("interface EmailLoginCredentialsStepProps");
     expect(emailLoginStepDispatch).not.toContain("function EmailLoginCredentialsStep");
     expect(emailLoginPanel).toContain("EmailLoginPanelForm");
@@ -363,9 +362,6 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginStepStage).toContain("export function EmailLoginStepStage");
     expect(emailLoginStepStage).toContain("EmailLoginStepContent");
     expect(emailLoginStepStage).not.toContain("EmailLoginCredentialsStep");
-    expect(emailLoginStepContent).toContain("EmailLoginCredentialsStep");
-    expect(emailLoginStepContent).not.toContain("function EmailLoginOtpStep");
-    expect(emailLoginStepContent).not.toContain("function EmailLoginPasswordStep");
 
     expect(tripJoinGate).toContain("./model/trip-join-response-mapper");
     expect(tripJoinGate).toContain("composition/TripJoinGateChrome");
