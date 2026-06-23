@@ -14,7 +14,7 @@ import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import {
   PortalCreatedTripShare,
   PortalTripWizard,
-} from "../trip-wizard";
+} from "../../trip-wizard";
 import { usePortalNewTripSectionActions } from "./usePortalNewTripSectionActions";
 
 interface PortalNewTripSectionClassNames {

@@ -91,11 +91,11 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountPortalDashboardClassNames:
     "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
   accountPortalNewTripSection:
-    "src/features/account/components/account-access-panel/portal/portal-new-trip-section.tsx",
+    "src/features/account/components/account-access-panel/portal/new-trip/portal-new-trip-section.tsx",
   accountPortalNewTripActions:
-    "src/features/account/components/account-access-panel/portal/usePortalNewTripSectionActions.ts",
+    "src/features/account/components/account-access-panel/portal/new-trip/usePortalNewTripSectionActions.ts",
   accountPortalNewTripState:
-    "src/features/account/components/account-access-panel/portal/portal-new-trip-section-state.ts",
+    "src/features/account/components/account-access-panel/portal/new-trip/portal-new-trip-section-state.ts",
   accountPortalVaultSection:
     "src/features/account/components/account-access-panel/portal/vault/portal-vault-section.tsx",
   accountPortalVaultActions:

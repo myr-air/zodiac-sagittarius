@@ -8,12 +8,12 @@ import type {
 import type { Messages } from "@/src/i18n/messages";
 import type { TripApiClient } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
-import { errorMessage } from "../auth";
+import { errorMessage } from "../../auth";
 import {
   defaultTripForm,
   normalizedTripForm,
   type CreatedTripShare,
-} from "../trip-wizard";
+} from "../../trip-wizard";
 import {
   buildPortalCreatedTripShare,
   resolvePortalCreatedTripInviteToken,

@@ -15,7 +15,7 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import type { TripParticipantSession } from "@/src/trip/types";
 import { PortalDashboardSection } from "./portal-dashboard-section";
 import { PortalExplorerSection } from "./explorer/portal-explorer-section";
-import { PortalNewTripSection } from "./portal-new-trip-section";
+import { PortalNewTripSection } from "./new-trip/portal-new-trip-section";
 import { PortalSettingsSection } from "./settings/portal-settings-section";
 import { PortalSignOutSection } from "./portal-sign-out-section";
 import { PortalTodosSection } from "./portal-todos-section";

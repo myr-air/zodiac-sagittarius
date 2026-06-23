@@ -7,8 +7,8 @@ import {
   createAccountClient,
   createTrustedAccountSession,
   createTripApiClient,
-} from "../../testing/account-access-panel-test-clients";
-import { defaultTripForm } from "../../trip-wizard";
+} from "../../../testing/account-access-panel-test-clients";
+import { defaultTripForm } from "../../../trip-wizard";
 import { usePortalNewTripSectionActions } from "../usePortalNewTripSectionActions";
 
 const defaultOwnerDisplayName = "Aom";

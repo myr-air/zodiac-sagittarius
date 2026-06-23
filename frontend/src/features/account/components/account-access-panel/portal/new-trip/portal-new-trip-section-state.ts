@@ -1,7 +1,7 @@
 import type { AccountTripCreateResponse } from "@/src/account/api-client";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type { CreatedTripShare } from "../trip-wizard";
-import { buildInviteLink } from "../trip-wizard";
+import type { CreatedTripShare } from "../../trip-wizard";
+import { buildInviteLink } from "../../trip-wizard";
 
 export function buildPortalCreatedTripShare(
   response: AccountTripCreateResponse,
