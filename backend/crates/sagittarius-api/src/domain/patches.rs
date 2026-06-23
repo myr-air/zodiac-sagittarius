@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::Date;
 use uuid::Uuid;
@@ -9,6 +9,10 @@ use crate::domain::errors::ServiceError;
 use crate::domain::expense_patch_rules::{
     validate_amount_minor, validate_comments, validate_exchange_rate, validate_expense_category,
     validate_line_items, validate_splits,
+};
+use crate::domain::patch_serde::{
+    deserialize_non_null_option, deserialize_nullable_f64_patch, deserialize_nullable_i32_patch,
+    deserialize_nullable_string_patch, deserialize_nullable_uuid_patch,
 };
 use crate::domain::plan_status::{
     effective_plan_status, legacy_kind_for_plan_status, reject_main_plan_status,
@@ -1381,48 +1385,6 @@ fn validate_coordinates(latitude: Option<f64>, longitude: Option<f64>) -> Result
         return Err(ServiceError::InvalidRequest("coordinates are out of range"));
     }
     Ok(())
-}
-
-fn deserialize_nullable_string_patch<'de, D>(
-    deserializer: D,
-) -> Result<Option<Option<String>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<String>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_f64_patch<'de, D>(deserializer: D) -> Result<Option<Option<f64>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<f64>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_i32_patch<'de, D>(deserializer: D) -> Result<Option<Option<i32>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<i32>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_uuid_patch<'de, D>(
-    deserializer: D,
-) -> Result<Option<Option<Uuid>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<Uuid>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_non_null_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de>,
-{
-    Option::<T>::deserialize(deserializer)?
-        .map(Some)
-        .ok_or_else(|| serde::de::Error::custom("field cannot be null"))
 }
 
 #[cfg(test)]
