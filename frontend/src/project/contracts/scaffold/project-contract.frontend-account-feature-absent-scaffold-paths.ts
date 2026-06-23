@@ -7,6 +7,8 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/portal/account-portal-primitives.stories.tsx",
   "src/features/account/components/account-access-panel/portal/account-portal-primitives.stories.plays.ts",
   "src/features/account/components/account-access-panel/portal/account-portal-primitives.tsx",
+  "src/features/account/components/account-access-panel/portal/storybook/account-portal-primitives.stories.tsx",
+  "src/features/account/components/account-access-panel/portal/storybook/account-portal-primitives.stories.plays.ts",
   "src/features/account/components/account-access-panel/portal/tests/account-portal-primitives.styles.test.ts",
   "src/features/account/components/account-access-panel/portal/tests/account-portal-primitives.test.tsx",
   "src/features/account/components/account-access-panel/account-trip-destinations.ts",
