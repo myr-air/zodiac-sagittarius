@@ -28,6 +28,9 @@ describe("members page state structure", () => {
     const createFormSource = readMembersPageSource(
       "hooks/useMemberCreateFormState.ts",
     );
+    const createFormActionsSource = readMembersPageSource(
+      "hooks/useMemberCreateFormActions.ts",
+    );
     const pageFiltersSource = readMembersPageSource(
       "hooks/useMemberPageFilters.ts",
     );
@@ -65,7 +68,13 @@ describe("members page state structure", () => {
     expect(createFormSource).toContain("initialMemberCreateFormState");
     expect(createFormSource).toContain("updateMemberCreateFormState");
     expect(createFormSource).toContain("setMemberCreatePanelOpenState");
-    expect(createFormSource).toContain("buildCreateMemberInput");
+    expect(createFormSource).toContain("useMemberCreateFormActions");
+    expect(createFormSource).not.toContain("buildCreateMemberInput");
+    expect(createFormSource).not.toContain("function submitNewMember");
+    expect(createFormActionsSource).toContain("export function useMemberCreateFormActions");
+    expect(createFormActionsSource).toContain("function submitNewMember");
+    expect(createFormActionsSource).toContain("buildCreateMemberInput");
+    expect(createFormActionsSource).toContain("initialMemberCreateFormState");
     expect(pageFiltersSource).toContain("initialMemberFilterState");
     expect(pageFiltersSource).toContain("updateMemberFilterState");
     expect(pageFiltersSource).toContain("const [filterState, setFilterState]");

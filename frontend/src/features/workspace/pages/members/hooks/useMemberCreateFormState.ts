@@ -1,12 +1,12 @@
-import { type FormEvent, type SetStateAction, useState } from "react";
+import { type SetStateAction, useState } from "react";
 import type { TripRole } from "@/src/trip/types";
-import { buildCreateMemberInput } from "../model/member-create-input";
 import {
   initialMemberCreateFormState,
   setMemberCreatePanelOpenState,
   updateMemberCreateFormState,
   type MemberCreateFormState,
 } from "../model/member-page-state";
+import { useMemberCreateFormActions } from "./useMemberCreateFormActions";
 
 interface UseMemberCreateFormStateInput {
   canManagePeople: boolean;
@@ -38,17 +38,12 @@ export function useMemberCreateFormState({
     );
   }
 
-  function submitNewMember(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const input = buildCreateMemberInput({
-      canManagePeople,
-      displayName: createFormState.name,
-      role: createFormState.role,
-    });
-    if (!input) return;
-    onCreateMember(input);
-    setCreateFormState(initialMemberCreateFormState);
-  }
+  const { submitNewMember } = useMemberCreateFormActions({
+    canManagePeople,
+    createFormState,
+    onCreateMember,
+    setCreateFormState,
+  });
 
   return {
     createPanelOpen: createFormState.isOpen,
