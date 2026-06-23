@@ -19,6 +19,7 @@ export const enAccountPortalPortalMessages = {
     },
     explorer: {
       title: "Explorer",
+      detail: "Find shared trips from people in your system.",
     },
     todos: {
       title: "Trip To-dos",
@@ -39,6 +40,13 @@ export const enAccountPortalPortalMessages = {
     upcoming: "Upcoming trips",
     destinations: "Destinations",
     nextTrip: "Next trip",
+  },
+  explorerSearch: {
+    label: "Search shared trips",
+    mapPreviewLabel: "Shared trip map preview",
+    owned: "Owned",
+    placeholder: "Search city, trip, or role",
+    shared: "Shared",
   },
   emptyStates: {
     trips: {

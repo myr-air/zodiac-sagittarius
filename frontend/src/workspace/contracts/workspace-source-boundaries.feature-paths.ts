@@ -71,7 +71,11 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountPortalNavItems: "src/features/account/components/account-access-panel/portal/account-portal-nav-items.ts",
   accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
   accountPortalDataLoaders: "src/features/account/components/account-access-panel/portal/account-portal-data-loaders.ts",
+  accountPortalExplorerSection:
+    "src/features/account/components/account-access-panel/portal/portal-explorer-section.tsx",
   accountPortalExplorerModel: "src/features/account/components/account-access-panel/portal/account-portal-explorer-model.ts",
+  accountPortalMessagesEn: "src/i18n/messages/en.account-portal.portal.ts",
+  accountPortalMessagesTh: "src/i18n/messages/th.account-portal.portal.ts",
   accountPortalDashboardClassNames:
     "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
   accountPortalNewTripSection:

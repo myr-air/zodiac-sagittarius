@@ -45,7 +45,7 @@ export function PortalExplorerSection({
 
   return (
     <section className={cn(classNames.section, "portal-explorer-card")} id="portal-explorer">
-      <PanelHeading icon="map" title={t.access.portal.sections.explorer.title} detail="Find shared trips from people in your system." />
+      <PanelHeading icon="map" title={t.access.portal.sections.explorer.title} detail={t.access.portal.sections.explorer.detail} />
       {isLoading && !explorer ? <PortalListSkeleton rows={1} compact /> : (
         <div className={classNames.settingsGrid}>
           <SettingLine label={t.access.portal.explorerStats.upcoming} value={`${explorer?.upcomingTrips ?? 0}`} />
@@ -61,13 +61,13 @@ export function PortalExplorerSection({
       <div className={portalSearchClassName}>
         <Icon name="map" />
         <input
-          aria-label="Search shared trips"
-          placeholder="Search city, trip, or role"
+          aria-label={t.access.portal.explorerSearch.label}
+          placeholder={t.access.portal.explorerSearch.placeholder}
           value={explorerQuery}
           onChange={(event) => setExplorerQuery(event.target.value)}
         />
       </div>
-      <div className={portalMapPreviewClassName} aria-label="Shared trip map preview">
+      <div className={portalMapPreviewClassName} aria-label={t.access.portal.explorerSearch.mapPreviewLabel}>
         {explorerTrips.slice(0, 4).map((trip, index) => (
           <span
             className={portalMapPinClassName}
@@ -87,7 +87,7 @@ export function PortalExplorerSection({
               icon="map"
               title={trip.name}
               detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
-              badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? "Owned" : "Shared"}</Badge>}
+              badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.portal.explorerSearch.owned : t.access.portal.explorerSearch.shared}</Badge>}
             />
           ))}
         </PortalList>

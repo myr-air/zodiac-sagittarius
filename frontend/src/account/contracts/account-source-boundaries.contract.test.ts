@@ -15,7 +15,10 @@ describe("Sagittarius account source boundaries", () => {
       accountPortalNavItems,
       accountPortalDataCache,
       accountPortalDataLoaders,
+      accountPortalExplorerSection,
       accountPortalExplorerModel,
+      accountPortalMessagesEn,
+      accountPortalMessagesTh,
       accountPortalDashboardClassNames,
       accountPortalNewTripSection,
       accountPortalNewTripActions,
@@ -105,8 +108,15 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountPortalDataLoaders).toContain("export async function loadAccountPortalData");
     expect(accountPortalDataLoaders).toContain("export function mergeAccountPortalDataResults");
     expect(accountPortalDataLoaders).toContain("Promise.allSettled");
+    expect(accountPortalExplorerSection).toContain("t.access.portal.explorerSearch");
+    expect(accountPortalExplorerSection).not.toContain("Search city, trip, or role");
+    expect(accountPortalExplorerSection).not.toContain("Find shared trips from people in your system.");
     expect(accountPortalExplorerModel).toContain("export function buildAccountPortalExplorerTrips");
     expect(accountPortalExplorerModel).toContain("export function accountPortalExplorerPinStyle");
+    expect(accountPortalMessagesEn).toContain("explorerSearch");
+    expect(accountPortalMessagesEn).toContain("Search city, trip, or role");
+    expect(accountPortalMessagesTh).toContain("explorerSearch");
+    expect(accountPortalMessagesTh).toContain("ค้นหา city, trip หรือ role");
     expect(accountPortalDashboardClassNames).toContain("export const accountPortalDashboardClassNames");
     expect(accountPortalDashboardClassNames).toContain("accountStepSummaryClassName");
     expect(accountPortalNewTripSection).toContain("usePortalNewTripSectionActions");
