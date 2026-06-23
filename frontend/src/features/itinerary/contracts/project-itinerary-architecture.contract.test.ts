@@ -422,6 +422,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps weather briefing drawer formatting split from render", () => {
     const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
     const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-model.ts");
+    const drawerCopy = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-copy.ts");
 
     expect(drawer).toContain("./model/weather-briefing-drawer-model");
     expect(drawer).not.toContain("function formatWeatherSummary");
@@ -429,6 +430,9 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(drawer).not.toContain("function weatherDrawerCopy");
     expect(drawerModel).toContain("export function formatWeatherSummary");
     expect(drawerModel).toContain("export function buildWeatherDetailLines");
-    expect(drawerModel).toContain("export function weatherDrawerCopy");
+    expect(drawerModel).toContain("./weather-briefing-drawer-copy");
+    expect(drawerModel).not.toContain('regionLabel: "Weather briefing"');
+    expect(drawerCopy).toContain("export function weatherDrawerCopy");
+    expect(drawerCopy).toContain("export function emptyText");
   });
 });

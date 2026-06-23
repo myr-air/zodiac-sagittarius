@@ -2,11 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import {
   buildWeatherDetailLines,
-  emptyText,
   formatFullDate,
   formatWeatherSummary,
-  weatherDrawerCopy,
 } from "./weather-briefing-drawer-model";
+import { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
 
 const weather: NonNullable<TripDailyBriefing["weather"]> = {
   apparentTemperatureMaxCelsius: 38,

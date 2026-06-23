@@ -218,6 +218,7 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/travel-motifs/tests/TravelMotifs.test.tsx",
   "src/shared/components/travel-motifs/storybook/TravelMotifs.stories.tsx",
   "src/shared/components/travel-motifs/storybook/TravelMotifs.stories.plays.ts",
+  "src/shared/components/weather/model/weather-briefing-drawer-copy.ts",
   "src/shared/components/weather/model/weather-briefing-drawer-model.ts",
   "src/shared/components/weather/storybook/WeatherBriefingDrawer.stories.plays.ts",
   "src/shared/components/weather/storybook/WeatherForecastStrip.stories.plays.ts",
