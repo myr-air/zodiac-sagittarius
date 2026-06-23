@@ -6,7 +6,7 @@ import type {
   AccountVaultItemSummary,
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
-import { errorMessage } from "../auth";
+import { errorMessage } from "../../auth";
 import {
   buildPortalVaultCreateRequest,
   createEmptyPortalVaultForm,

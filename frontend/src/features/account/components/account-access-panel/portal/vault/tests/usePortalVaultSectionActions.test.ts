@@ -7,7 +7,7 @@ import { messages } from "@/src/i18n/messages";
 import {
   createAccountClient,
   createTrustedAccountSession,
-} from "../../testing/account-access-panel-test-clients";
+} from "../../../testing/account-access-panel-test-clients";
 import { createEmptyPortalVaultForm } from "../portal-vault-section-state";
 import { usePortalVaultSectionActions } from "../usePortalVaultSectionActions";
 

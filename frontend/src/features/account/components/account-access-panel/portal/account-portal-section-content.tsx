@@ -20,7 +20,7 @@ import { PortalSettingsSection } from "./portal-settings-section";
 import { PortalSignOutSection } from "./portal-sign-out-section";
 import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
-import { PortalVaultSection } from "./portal-vault-section";
+import { PortalVaultSection } from "./vault/portal-vault-section";
 import type { AccountPortalDashboardClassNames } from "./account-portal-dashboard.types";
 import {
   accountPortalDashboardSectionClassNames,
