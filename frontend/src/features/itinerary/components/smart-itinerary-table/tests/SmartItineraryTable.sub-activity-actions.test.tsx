@@ -1,7 +1,6 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   buildItineraryItem,
   createDragDataTransfer,
@@ -16,8 +15,17 @@ describe("SmartItineraryTable sub-activity actions", () => {
   it("renders add activity rows for expanded days", async () => {
     const user = userEvent.setup();
     const onAddStop = vi.fn();
+    const item = buildItineraryItem({
+      id: "add-stop-day-row",
+      day: "2026-06-18",
+    });
 
-    renderTable({ onAddStop });
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onAddStop,
+    });
 
     const addActivityButtons = screen.getAllByRole("button", {
       name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop/i,
@@ -25,7 +33,7 @@ describe("SmartItineraryTable sub-activity actions", () => {
     expect(addActivityButtons.length).toBeGreaterThan(0);
 
     await user.click(addActivityButtons[0]);
-    expect(onAddStop).toHaveBeenCalledWith(tripFixture.planItems[0].day);
+    expect(onAddStop).toHaveBeenCalledWith(item.day);
   });
 
   it("shows an add sub-activity row for a selected activity with no sub-activities", async () => {

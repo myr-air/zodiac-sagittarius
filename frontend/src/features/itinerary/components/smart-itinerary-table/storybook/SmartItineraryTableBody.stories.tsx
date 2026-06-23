@@ -1,10 +1,31 @@
 import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { messages } from "@/src/i18n/messages";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { mainPathOption, storyRainDisplayPathOption } from "@/src/features/itinerary/testing";
+import {
+  buildItineraryItem,
+  mainPathOption,
+  storyRainDisplayPathOption,
+} from "@/src/features/itinerary/testing";
 import { SmartItineraryTableBody } from "../SmartItineraryTableBody";
 import { SmartItineraryStoryFrame } from "./smart-itinerary-story-frame";
+
+const storyStartDate = "2026-06-18";
+const storyItems = [
+  buildItineraryItem({
+    id: "table-body-story-checkin",
+    day: storyStartDate,
+    activity: "Hotel check-in",
+    place: "Central hotel",
+    sortOrder: 100,
+  }),
+  buildItineraryItem({
+    id: "table-body-story-dinner",
+    day: storyStartDate,
+    activity: "Dinner plan",
+    place: "Harbour restaurant",
+    sortOrder: 200,
+  }),
+];
 
 const meta = {
   title: "Features/Itinerary/SmartItineraryTableBody",
@@ -15,8 +36,8 @@ const meta = {
     collapsedDays: [],
     groups: [
       {
-        day: tripFixture.trip.startDate,
-        items: tripFixture.planItems.slice(0, 2),
+        day: storyStartDate,
+        items: storyItems,
         warningCount: 0,
       },
     ],
@@ -29,10 +50,10 @@ const meta = {
     graphColumnWidth: 164,
     itineraryLabels: messages.en.itinerary,
     locale: "en",
-    startDate: tripFixture.trip.startDate,
-    selectedItemId: tripFixture.planItems[0].id,
+    startDate: storyStartDate,
+    selectedItemId: storyItems[0].id,
     bookingDocs: [],
-    bookingLinkItems: tripFixture.planItems,
+    bookingLinkItems: storyItems,
     onAddStop: () => {},
     onOpenItemDetails: () => {},
     onSelectItem: () => {},
