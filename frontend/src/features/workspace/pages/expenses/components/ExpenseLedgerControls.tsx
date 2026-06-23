@@ -8,6 +8,7 @@ import type {
   ExpenseCopyState,
   ExpensePageLabels,
 } from "../model/expense-page-types";
+import { ExpenseCopyFeedback } from "./ExpenseCopyFeedback";
 
 interface ExpenseLedgerControlsProps {
   canEditExpenses: boolean;
@@ -78,9 +79,7 @@ export function ExpenseLedgerControls({
         <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
           <Icon name="plus" /> {t.expenses.actions.addExpense}
         </Button>
-        <span className={expenseStyles.copyFeedbackClassName} data-state={copyState} role="status" aria-label={t.expenses.copy.statusLabel}>
-          {copyState === "copied" ? t.common.status.copied : copyState === "error" ? t.common.status.copyFailed : t.expenses.copy.ready}
-        </span>
+        <ExpenseCopyFeedback copyState={copyState} t={t} />
       </div>
     </div>
   );
