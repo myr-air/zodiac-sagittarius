@@ -156,5 +156,7 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/workspace/pages/trip-settings/model/trip-settings-form-model.ts",
   tripSettingsDateImpact:
     "src/features/workspace/pages/trip-settings/model/trip-settings-date-impact.ts",
+  tripSettingsFormActions:
+    "src/features/workspace/pages/trip-settings/hooks/use-trip-settings-form-actions.ts",
   tripSettingsFormState: "src/features/workspace/pages/trip-settings/hooks/use-trip-settings-form-state.ts",
 } as const;

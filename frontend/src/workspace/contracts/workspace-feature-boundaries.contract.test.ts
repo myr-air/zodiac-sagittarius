@@ -18,6 +18,7 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsStateKey,
       tripSettingsFormModel,
       tripSettingsDateImpact,
+      tripSettingsFormActions,
       tripSettingsFormState,
       selectedTripPlanHookTest,
       selectedTripPlanTest,
@@ -84,8 +85,14 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(tripSettingsFormModel).toContain("export function canSubmitTripSettings");
     expect(tripSettingsDateImpact).toContain("@/src/trip/itinerary-core");
     expect(tripSettingsDateImpact).toContain("export function countStopsOutsideSettingsRange");
+    expect(tripSettingsFormActions).toContain("useTripSettingsFormActions");
+    expect(tripSettingsFormActions).toContain("normalizeTripSettingsForm");
+    expect(tripSettingsFormActions).toContain("savingTripSettingsFormState");
+    expect(tripSettingsFormActions).toContain("savedTripSettingsFormState");
+    expect(tripSettingsFormActions).toContain("failedTripSettingsFormState");
     expect(tripSettingsFormState).toContain("useTripSettingsFormState");
-    expect(tripSettingsFormState).toContain("normalizeTripSettingsForm");
+    expect(tripSettingsFormState).toContain("useTripSettingsFormActions");
+    expect(tripSettingsFormState).not.toContain("normalizeTripSettingsForm");
     expect(tripSettingsFormState).toContain("initialTripSettingsFormState");
     expect(tripSettingsFormState).toContain("const [state, setState]");
     expect(tripSettingsFormState).not.toContain("const [form, setForm]");

@@ -1,19 +1,16 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import type { Trip } from "@/src/trip/types";
 import {
   canSubmitTripSettings,
   hasInvalidTripSettingsDateRange,
-  normalizeTripSettingsForm,
 } from "../model/trip-settings-form-model";
 import {
-  failedTripSettingsFormState,
   initialTripSettingsFormState,
-  savedTripSettingsFormState,
-  savingTripSettingsFormState,
   tripSettingsFormValueState,
 } from "../model/trip-settings-form-state";
 import { countStopsOutsideSettingsRange } from "../model/trip-settings-date-impact";
 import type { TripSettingsFormValues } from "../TripSettingsPage.types";
+import { useTripSettingsFormActions } from "./use-trip-settings-form-actions";
 
 interface TripSettingsFormStateInput {
   canEdit: boolean;
@@ -41,19 +38,13 @@ export function useTripSettingsFormState({
     status: state.status,
   });
 
-  async function submitSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canSubmit) return;
-    setState(savingTripSettingsFormState);
-    try {
-      await onSave(normalizeTripSettingsForm(state.form));
-      setState(savedTripSettingsFormState);
-    } catch {
-      setState((current) =>
-        failedTripSettingsFormState(current, saveFailedMessage),
-      );
-    }
-  }
+  const { submitSettings } = useTripSettingsFormActions({
+    canSubmit,
+    onSave,
+    saveFailedMessage,
+    setState,
+    state,
+  });
 
   return {
     canSubmit,
