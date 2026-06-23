@@ -5,10 +5,7 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/routes/app-routes";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import {
-  accountPortalTripBadgeTone,
-  accountPortalTripDetail,
-} from "./account-portal-trip-list-item.model";
+import { buildAccountPortalTripListRows } from "./account-portal-trip-list-item.model";
 import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton } from "../primitives/account-portal-primitives";
 
@@ -27,6 +24,10 @@ export function PortalTripsSection({
   trips: AccountTripSummary[];
 }) {
   const { t } = useI18n();
+  const tripRows = buildAccountPortalTripListRows(trips, {
+    owner: t.access.dashboard.history.owner,
+    roles: t.appShell.roles,
+  });
 
   return (
     <section className={classNames.section} id="portal-trips">
@@ -39,7 +40,7 @@ export function PortalTripsSection({
         <Button asChild>
           <Link href={appRoutes.portalNewTrip()}>
             <Icon name="plus" />
-            Create trip
+            {t.access.portal.emptyStates.trips.action}
           </Link>
         </Button>
       </div>
@@ -47,18 +48,18 @@ export function PortalTripsSection({
         <PortalListSkeleton rows={2} />
       ) : trips.length ? (
         <PortalList>
-          {trips.map((trip) => (
+          {tripRows.map((trip) => (
             <PortalListRow
               key={trip.id}
               icon="location"
-              title={trip.name}
-              detail={accountPortalTripDetail(trip)}
-              badge={<Badge tone={accountPortalTripBadgeTone(trip)}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>}
+              title={trip.title}
+              detail={trip.detail}
+              badge={<Badge tone={trip.badgeTone}>{trip.badgeLabel}</Badge>}
               action={
                 <Button asChild variant="secondary">
-                  <Link href={appRoutes.tripOverview(trip.id)}>
+                  <Link href={trip.href}>
                     <Icon name="chevronRight" />
-                    Open
+                    {trip.openLabel}
                   </Link>
                 </Button>
               }
