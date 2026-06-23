@@ -40,6 +40,11 @@ export const workspaceFeatureBoundarySourcePaths = {
   stopDialogModel: "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts",
   stopDialogDraftHook: "src/features/itinerary/components/stop-dialog/use-stop-dialog-draft-state.ts",
   stopDialogDraftState: "src/features/itinerary/components/stop-dialog/stop-dialog-draft-state.ts",
+  stopDialogDraftTypes: "src/features/itinerary/components/stop-dialog/stop-dialog-draft.types.ts",
+  stopDialogDraftInitialState:
+    "src/features/itinerary/components/stop-dialog/stop-dialog-draft-initial-state.ts",
+  stopDialogDraftUpdaters: "src/features/itinerary/components/stop-dialog/stop-dialog-draft-updaters.ts",
+  stopDialogDraftSubmit: "src/features/itinerary/components/stop-dialog/stop-dialog-draft-submit.ts",
   stopFormModel: "src/features/itinerary/domain/stop-form-model.ts",
   stopFormTimeFields: "src/features/itinerary/domain/stop-form-time-fields.ts",
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",

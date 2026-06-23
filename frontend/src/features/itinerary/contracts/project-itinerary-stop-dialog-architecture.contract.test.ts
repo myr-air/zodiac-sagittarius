@@ -9,6 +9,10 @@ describe("Sagittarius itinerary stop-dialog architecture contracts", () => {
     const stopDialogActions = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-actions.ts");
     const stopDialogDraftHook = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/use-stop-dialog-draft-state.ts");
     const stopDialogDraftState = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft-state.ts");
+    const stopDialogDraftTypes = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft.types.ts");
+    const stopDialogDraftInitialState = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft-initial-state.ts");
+    const stopDialogDraftUpdaters = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft-updaters.ts");
+    const stopDialogDraftSubmit = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog-draft-submit.ts");
     const stopDialogTypes = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/stop-dialog.types.ts");
     const stopDialogCopy = readItineraryArchitectureSource("src/features/itinerary/domain/stop-dialog-copy.ts");
     const stopDialogTimeWindow = readItineraryArchitectureSource("src/features/itinerary/components/stop-dialog/StopDialogTimeWindow.tsx");
@@ -52,8 +56,13 @@ describe("Sagittarius itinerary stop-dialog architecture contracts", () => {
     expect(stopDialogDraftHook).toContain("const [draftState, setDraftState]");
     expect(stopDialogDraftHook).toContain("function updateActivity");
     expect(stopDialogDraftHook).toContain("buildStopDialogDraftSubmitValues");
-    expect(stopDialogDraftState).toContain("export interface StopDialogDraftState");
-    expect(stopDialogDraftState).toContain("@/src/features/itinerary/domain/stop-form-model");
+    expect(stopDialogDraftState).toContain("./stop-dialog-draft.types");
+    expect(stopDialogDraftState).toContain("./stop-dialog-draft-updaters");
+    expect(stopDialogDraftTypes).toContain("export interface StopDialogDraftState");
+    expect(stopDialogDraftInitialState).toContain("buildInitialStopFormValues");
+    expect(stopDialogDraftUpdaters).toContain("applyStopActivityInput");
+    expect(stopDialogDraftSubmit).toContain("buildStopSubmitValues");
+    expect(stopDialogDraftState).not.toContain("@/src/features/itinerary/domain/stop-form-model");
     expect(stopDialogDraftState).toContain("buildStopDialogDraftSubmitValues");
     expect(stopDialogDraftState).toContain("updateStopDialogActivity");
     expect(stopDialogModel).not.toContain("./stop-dialog.form");
