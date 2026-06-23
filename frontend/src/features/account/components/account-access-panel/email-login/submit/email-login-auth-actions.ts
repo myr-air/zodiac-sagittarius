@@ -8,6 +8,7 @@ import {
   buildPasskeyLoginFinishInput,
   getPasskeyCredential,
 } from "../../auth";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../model/account-profile-defaults";
 
 const deviceLabel = "";
 
@@ -85,7 +86,7 @@ export async function finishEmailRegistrationSetup({
   });
   await accountClient.updateSettings(session.sessionToken, {
     displayName: displayName.trim() || normalizedEmail.split("@")[0] || fallbackName,
-    avatarColor: "#c2410c",
+    avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
     locale,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../../model/account-profile-defaults";
 import {
   accountSettings,
   accountStats,
@@ -16,7 +17,7 @@ const labels = messages.en.access.dashboard;
 describe("account portal dashboard section model", () => {
   it("builds profile display data from loaded account settings", () => {
     expect(buildAccountPortalDashboardProfile(accountSettings, labels)).toEqual({
-      avatarColor: "#c2410c",
+      avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
       avatarInitial: "A",
       displayName: "Aom",
       email: "aom@example.test",
@@ -25,7 +26,7 @@ describe("account portal dashboard section model", () => {
 
   it("falls back to default profile display data before settings load", () => {
     expect(buildAccountPortalDashboardProfile(null, labels)).toEqual({
-      avatarColor: "#c2410c",
+      avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
       avatarInitial: "A",
       displayName: "Account",
       email: "No email loaded",

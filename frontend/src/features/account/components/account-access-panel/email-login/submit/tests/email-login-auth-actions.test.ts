@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AccountApiClient } from "@/src/account/api-client";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../../model/account-profile-defaults";
 import {
   finishEmailCodeLogin,
   finishEmailPasswordLogin,
@@ -96,7 +97,7 @@ describe("email login auth actions", () => {
     });
     expect(client.updateSettings).toHaveBeenCalledWith(session.sessionToken, {
       displayName: "aom",
-      avatarColor: "#c2410c",
+      avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
       locale: "th-TH",
       timezone: expect.any(String),
     });

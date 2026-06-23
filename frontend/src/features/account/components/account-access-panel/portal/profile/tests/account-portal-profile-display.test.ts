@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../../model/account-profile-defaults";
 import {
-  ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR,
   accountPortalProfileEmail,
   buildAccountPortalProfileDisplay,
 } from "../account-portal-profile-display";
@@ -31,7 +31,7 @@ describe("account portal profile display", () => {
         noEmail: "No email loaded",
       }),
     ).toEqual({
-      avatarColor: ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR,
+      avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
       avatarInitial: "A",
       displayName: "",
       email: "No email loaded",

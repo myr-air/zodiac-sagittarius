@@ -3,12 +3,13 @@ import type {
   AccountTripStats,
   AccountTripSummary,
 } from "@/src/account/api-client";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../model/account-profile-defaults";
 
 export const accountSettings: AccountSettings = {
   profile: {
     id: "user-aom",
     displayName: "Aom",
-    avatarColor: "#c2410c",
+    avatarColor: ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
     locale: "th-TH",
     timezone: "Asia/Bangkok",
     primaryEmail: "aom@example.test",

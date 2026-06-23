@@ -1,4 +1,4 @@
-export const ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR = "#c2410c";
+import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../model/account-profile-defaults";
 
 export interface AccountPortalProfileDisplay {
   avatarColor: string;
@@ -25,7 +25,7 @@ export function buildAccountPortalProfileDisplay({
   noEmail,
 }: AccountPortalProfileDisplayInput): AccountPortalProfileDisplay {
   return {
-    avatarColor: avatarColor ?? ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR,
+    avatarColor: avatarColor ?? ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR,
     avatarInitial: displayName.slice(0, 1) || "A",
     displayName,
     email: accountPortalProfileEmail(email, noEmail),
