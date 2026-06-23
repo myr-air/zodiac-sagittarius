@@ -150,8 +150,6 @@ export const workspaceFeatureBoundarySourcePaths = {
   tripJoinResponseMapper: "src/features/account/components/trip-join-gate/model/trip-join-response-mapper.ts",
   tripJoinErrorMessage: "src/features/account/components/trip-join-gate/model/trip-join-error-message.ts",
   tripJoinGateStyles: "src/features/account/components/trip-join-gate/layout/trip-join-gate.styles.ts",
-  tripWizardFormSections:
-    "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
   tripJoinGateStory: "src/features/account/components/trip-join-gate/storybook/TripJoinGate.stories.tsx",
   itineraryStoryFixtures: "src/features/itinerary/stories/support/itinerary-story-fixtures.ts",
   itineraryStoryPathScenarios: "src/features/itinerary/stories/support/itinerary-story-path-scenarios.ts",

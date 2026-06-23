@@ -55,7 +55,6 @@ describe("Sagittarius account source boundaries", () => {
       tripJoinResponseMapper,
       tripJoinErrorMessage,
       tripJoinGateStyles,
-      tripWizardFormSections,
       accountAccessStory,
       accountAccessStoryClients,
       accountAccessStorySupport,
@@ -404,12 +403,11 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinResponseMapper).toContain("assertMainPlanPointerAliasesMatch");
     expect(tripJoinErrorMessage).toContain("export function errorMessage");
     expect(tripJoinErrorMessage).toContain("function friendlyErrorText");
-    expect(tripWizardFormSections).toContain("./portal-trip-wizard-invite-review");
-    expect(tripWizardFormSections).toContain("./portal-trip-wizard-dates-step");
-    expect(tripWizardFormSections).toContain("./portal-trip-wizard-destination-step");
-    expect(tripWizardFormSections).not.toContain("interface TripWizardDestinationStepProps");
-    expect(tripWizardFormSections).not.toContain("interface TripWizardDatesStepProps");
-    expect(tripWizardFormSections).not.toContain("function TripWizardInviteStep");
-    expect(tripWizardFormSections).not.toContain("function TripWizardReviewSummary");
+    expect(portalTripWizardMainPanel).toContain("../steps/portal-trip-wizard-dates-step");
+    expect(portalTripWizardMainPanel).toContain("../steps/portal-trip-wizard-destination-step");
+    expect(portalTripWizardMainPanel).toContain("../steps/portal-trip-wizard-invite-review");
+    expect(portalTripWizardMainPanel).toContain("../steps/portal-trip-wizard-review-summary");
+    expect(portalTripWizardMainPanel).toContain("../steps/portal-trip-wizard-trip-step");
+    expect(portalTripWizardMainPanel).not.toContain("../steps/portal-trip-wizard-form-sections");
   });
 });

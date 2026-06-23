@@ -172,7 +172,6 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-date-fields.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/steps/tests/portal-trip-wizard-date-fields.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-destination-search.tsx",
-  "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-generated-access.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/model/portal-trip-wizard-credentials.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/tests/portal-trip-wizard-credentials.test.ts",

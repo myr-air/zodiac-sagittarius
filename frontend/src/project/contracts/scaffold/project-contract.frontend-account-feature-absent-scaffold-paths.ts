@@ -41,6 +41,7 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-search.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-form-sections.tsx",
+  "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-form-sections.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-generated-access.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-invite-review.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-created-trip-share.tsx",

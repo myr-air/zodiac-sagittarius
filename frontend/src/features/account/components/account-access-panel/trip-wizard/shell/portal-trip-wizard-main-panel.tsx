@@ -1,13 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { cn } from "@/src/lib/cn";
-import {
-  TripWizardDatesStep,
-  TripWizardDestinationStep,
-  TripWizardInviteStep,
-  TripWizardReviewSummary,
-  TripWizardTripStep,
-} from "../steps/portal-trip-wizard-form-sections";
+import { TripWizardDatesStep } from "../steps/portal-trip-wizard-dates-step";
+import { TripWizardDestinationStep } from "../steps/portal-trip-wizard-destination-step";
+import { TripWizardInviteStep } from "../steps/portal-trip-wizard-invite-review";
+import { TripWizardReviewSummary } from "../steps/portal-trip-wizard-review-summary";
+import { TripWizardTripStep } from "../steps/portal-trip-wizard-trip-step";
 import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 import type { PortalTripWizardModel } from "../state/use-portal-trip-wizard-model";
 
