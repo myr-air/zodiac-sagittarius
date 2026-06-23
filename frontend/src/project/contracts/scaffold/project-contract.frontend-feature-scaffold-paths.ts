@@ -140,6 +140,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/portal/settings/account-trusted-devices-list.model.ts",
   "src/features/account/components/account-access-panel/portal/settings/account-trusted-devices-list.tsx",
   "src/features/account/components/account-access-panel/portal/settings/tests/account-trusted-devices-list.model.test.ts",
+  "src/features/account/components/account-access-panel/portal/settings/account-settings-profile-form.model.ts",
+  "src/features/account/components/account-access-panel/portal/settings/tests/account-settings-profile-form.model.test.ts",
   "src/features/account/components/account-access-panel/portal/settings/tests/account-trusted-devices-list.test.tsx",
   "src/features/account/components/account-access-panel/portal/lists/account-portal-trip-list-item.model.ts",
   "src/features/account/components/account-access-panel/portal/lists/tests/account-portal-trip-list-item.model.test.ts",

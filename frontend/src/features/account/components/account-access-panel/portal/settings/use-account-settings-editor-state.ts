@@ -8,7 +8,8 @@ import type {
   AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
-import { errorMessage, profileToForm } from "../../auth";
+import { errorMessage } from "../../auth";
+import { accountSettingsProfileToForm } from "./account-settings-profile-form.model";
 
 interface AccountSettingsEditorStateInput {
   accountClient: AccountApiClient;
@@ -32,7 +33,7 @@ export function useAccountSettingsEditorState({
   settings,
 }: AccountSettingsEditorStateInput) {
   const [form, setForm] = useState<AccountSettingsUpdateRequest>(() =>
-    profileToForm(settings),
+    accountSettingsProfileToForm(settings),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export function useAccountSettingsEditorState({
         form,
       );
       onSettingsChanged(nextSettings);
-      setForm(profileToForm(nextSettings));
+      setForm(accountSettingsProfileToForm(nextSettings));
       onMessage(labels.settings.messages.saved);
       onError(null);
     } catch (caught) {

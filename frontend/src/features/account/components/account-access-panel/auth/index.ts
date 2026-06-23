@@ -21,7 +21,6 @@ export {
   isUnauthenticated,
   localizeAccessError,
   passwordLoginErrorMessage,
-  profileToForm,
   rawErrorMessage,
 } from "./account-auth-support";
 export { StatusMessage } from "./account-status-message";

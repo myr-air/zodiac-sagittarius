@@ -177,6 +177,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountAccessStorySupport:
     "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.support.ts",
   accountSettingsEditor: "src/features/account/components/account-access-panel/portal/settings/account-settings-editor.tsx",
+  accountSettingsProfileFormModel:
+    "src/features/account/components/account-access-panel/portal/settings/account-settings-profile-form.model.ts",
   accountSettingsEditorState:
     "src/features/account/components/account-access-panel/portal/settings/use-account-settings-editor-state.ts",
   emailLoginState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts",

@@ -68,6 +68,7 @@ describe("Sagittarius account source boundaries", () => {
       accountPortalSettingsSection,
       accountPortalSettingsPasskeyActions,
       accountSettingsEditor,
+      accountSettingsProfileFormModel,
       accountSettingsEditorState,
       emailLoginState,
       emailLoginEntryActions,
@@ -94,7 +95,9 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
-    expect(accountAccessPanelContent).toContain("./portal/account-access-panel-portal-content");
+    expect(accountAccessPanelContent).toContain('from "../portal"');
+    expect(accountAccessPanelContent).toContain("AccountAccessPanelPortalContent");
+    expect(accountAccessPanelContent).toContain("AccountPortalLoadingFrame");
     expect(accountAccessPanelContent).toContain("./account-email-login-panel-content");
     expect(accountAccessPanelContent).not.toContain('from "../email-login"');
     expect(accountEmailLoginPanelContent).toContain("../email-login");
@@ -271,12 +274,16 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountSettingsEditor).toContain("useAccountSettingsEditorState");
     expect(accountSettingsEditor).not.toContain("profileToForm");
     expect(accountSettingsEditor).not.toContain("function submitSettings");
+    expect(accountSettingsProfileFormModel).toContain("export function accountSettingsProfileToForm");
+    expect(accountSettingsProfileFormModel).toContain("homeCity: settings.profile.homeCity ??");
     expect(accountSettingsEditorState).toContain("export function useAccountSettingsEditorState");
-    expect(accountSettingsEditorState).toContain("profileToForm");
+    expect(accountSettingsEditorState).toContain("accountSettingsProfileToForm");
+    expect(accountSettingsEditorState).not.toContain("homeCity: settings.profile.homeCity ??");
     expect(accountSettingsEditorState).toContain("function submitSettings");
     expect(accountAuthSupport).toContain("./account-access-error-codes");
     expect(accountAuthSupport).toContain("./account-passkey-support");
     expect(accountAuthSupport).toContain("buildPasskeyLoginFinishInput");
+    expect(accountAuthSupport).not.toContain("profileToForm");
     expect(accountAuthSupport).not.toContain("accountLoadFailed:");
     expect(accountAuthSupport).not.toContain("function createPasskeyCredential");
     expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
@@ -326,11 +333,11 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginRegistrationActions).toContain("finishEmailRegistrationSetup");
     expect(emailLoginResendCooldown).toContain("export function useEmailLoginResendCooldown");
     expect(emailLoginResendCooldown).toContain("window.setInterval");
-    expect(emailLoginStepContent).toContain("./account-email-login-credentials-step");
-    expect(emailLoginStepContent).toContain("./account-email-login-methods-step");
-    expect(emailLoginStepContent).toContain("./account-email-login-otp-step");
-    expect(emailLoginStepContent).toContain("./account-email-login-password-step");
-    expect(emailLoginStepContent).toContain("./account-email-login-setup-step");
+    expect(emailLoginStepContent).toContain("../steps/account-email-login-credentials-step");
+    expect(emailLoginStepContent).toContain("../steps/account-email-login-methods-step");
+    expect(emailLoginStepContent).toContain("../steps/account-email-login-otp-step");
+    expect(emailLoginStepContent).toContain("../steps/account-email-login-password-step");
+    expect(emailLoginStepContent).toContain("../steps/account-email-login-setup-step");
     expect(emailLoginStepContent).not.toContain("interface EmailLoginCredentialsStepProps");
     expect(emailLoginStepContent).not.toContain("function EmailLoginCredentialsStep");
     expect(emailLoginPanel).toContain("EmailLoginPanelForm");
