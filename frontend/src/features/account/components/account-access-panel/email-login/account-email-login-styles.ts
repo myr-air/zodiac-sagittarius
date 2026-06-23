@@ -1,7 +1,6 @@
 import { cn } from "@/src/lib/cn";
 import type { AuthTransitionDirection } from "./state/use-email-login-step-navigation";
 
-export const accountEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const accountCheckClassName =
   "account-check grid grid-cols-[auto_minmax(0,1fr)] items-center [&_input]:min-h-[18px] [&_input]:w-[18px]";
 export const accountFieldClassName = "account-field grid gap-1.5";
