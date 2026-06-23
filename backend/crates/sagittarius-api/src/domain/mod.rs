@@ -1,6 +1,7 @@
 pub mod capabilities;
 pub mod errors;
 pub mod expense_patch_rules;
+pub(crate) mod money_values;
 pub mod patch_serde;
 pub mod patches;
 pub mod plan_status;
