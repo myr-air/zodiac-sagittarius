@@ -6,7 +6,7 @@ import type {
   AccountSettings,
 } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { SettingLine } from "./account-portal-primitives";
+import { SettingLine } from "../account-portal-primitives";
 import { AccountSettingsProfileForm } from "./account-settings-profile-form";
 import { AccountTrustedDevicesList } from "./account-trusted-devices-list";
 import { useAccountSettingsEditorState } from "./use-account-settings-editor-state";

@@ -8,7 +8,7 @@ import {
   arrayBufferToBase64Url,
   createPasskeyCredential,
   errorMessage,
-} from "../auth";
+} from "../../auth";
 
 interface UsePortalSettingsPasskeyActionsInput {
   accountClient: AccountApiClient;

@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { messages } from "@/src/i18n/messages";
-import { accountSettings } from "../../testing/account-access-panel-test-clients";
+import { accountSettings } from "../../../testing/account-access-panel-test-clients";
 import { AccountTrustedDevicesList } from "../account-trusted-devices-list";
 
 const classNames = {

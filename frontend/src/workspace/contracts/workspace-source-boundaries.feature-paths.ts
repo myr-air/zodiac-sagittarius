@@ -128,9 +128,9 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-credential-sync.ts",
   accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
   accountPortalSettingsSection:
-    "src/features/account/components/account-access-panel/portal/portal-settings-section.tsx",
+    "src/features/account/components/account-access-panel/portal/settings/portal-settings-section.tsx",
   accountPortalSettingsPasskeyActions:
-    "src/features/account/components/account-access-panel/portal/usePortalSettingsPasskeyActions.ts",
+    "src/features/account/components/account-access-panel/portal/settings/usePortalSettingsPasskeyActions.ts",
   emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
   tripJoinGate: "src/features/account/components/trip-join-gate/TripJoinGate.tsx",
   tripJoinGateChrome: "src/features/account/components/trip-join-gate/composition/TripJoinGateChrome.tsx",
@@ -171,8 +171,9 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/testing/account-access-panel-passkey-test-utils.ts",
   accountAccessStorySupport:
     "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.support.ts",
-  accountSettingsEditor: "src/features/account/components/account-access-panel/portal/account-settings-editor.tsx",
-  accountSettingsEditorState: "src/features/account/components/account-access-panel/portal/use-account-settings-editor-state.ts",
+  accountSettingsEditor: "src/features/account/components/account-access-panel/portal/settings/account-settings-editor.tsx",
+  accountSettingsEditorState:
+    "src/features/account/components/account-access-panel/portal/settings/use-account-settings-editor-state.ts",
   emailLoginState: "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts",
   emailLoginEntryActions:
     "src/features/account/components/account-access-panel/email-login/state/use-email-login-entry-actions.ts",

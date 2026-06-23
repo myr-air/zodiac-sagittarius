@@ -1,7 +1,7 @@
 import type { AccountSettings } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import { formatDateTime } from "../auth";
+import { formatDateTime } from "../../auth";
 
 type TrustedDevice = AccountSettings["trustedDevices"][number];
 

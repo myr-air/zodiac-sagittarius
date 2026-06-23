@@ -8,7 +8,7 @@ import type {
   AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
-import { errorMessage, profileToForm } from "../auth";
+import { errorMessage, profileToForm } from "../../auth";
 
 interface AccountSettingsEditorStateInput {
   accountClient: AccountApiClient;

@@ -5,11 +5,11 @@ import {
   accountSettings,
   createAccountClient,
   createTrustedAccountSession,
-} from "../../testing/account-access-panel-test-clients";
+} from "../../../testing/account-access-panel-test-clients";
 import {
   bytes,
   stubCredentials,
-} from "../../testing/account-access-panel-passkey-test-utils";
+} from "../../../testing/account-access-panel-passkey-test-utils";
 import { usePortalSettingsPasskeyActions } from "../usePortalSettingsPasskeyActions";
 
 function createHook(options: { settings?: typeof accountSettings | null } = {}) {

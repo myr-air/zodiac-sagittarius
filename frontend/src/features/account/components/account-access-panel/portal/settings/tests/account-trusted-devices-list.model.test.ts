@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { messages } from "@/src/i18n/messages";
-import { accountSettings } from "../../testing/account-access-panel-test-clients";
+import { accountSettings } from "../../../testing/account-access-panel-test-clients";
 import { trustedDeviceSummary } from "../account-trusted-devices-list.model";
 
 describe("account trusted devices list model", () => {

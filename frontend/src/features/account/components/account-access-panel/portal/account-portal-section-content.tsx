@@ -16,7 +16,7 @@ import type { TripParticipantSession } from "@/src/trip/types";
 import { PortalDashboardSection } from "./portal-dashboard-section";
 import { PortalExplorerSection } from "./portal-explorer-section";
 import { PortalNewTripSection } from "./portal-new-trip-section";
-import { PortalSettingsSection } from "./portal-settings-section";
+import { PortalSettingsSection } from "./settings/portal-settings-section";
 import { PortalSignOutSection } from "./portal-sign-out-section";
 import { PortalTodosSection } from "./portal-todos-section";
 import { PortalTripsSection } from "./portal-trips-section";
