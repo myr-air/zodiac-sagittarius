@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
-import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
+import type { AuthTransitionDirection } from "../model/account-email-login-step-meta";
 import { useEmailLoginResendCooldown } from "./use-email-login-resend-cooldown";
 
 export function useEmailLoginChallengeState({

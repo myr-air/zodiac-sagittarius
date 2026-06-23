@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EmailLoginAuthStep } from "../model/account-email-login-step-meta";
-
-export const authTransitionDirectionValues = ["forward", "back", "mode"] as const;
-export type AuthTransitionDirection = (typeof authTransitionDirectionValues)[number];
+import type { AuthTransitionDirection, EmailLoginAuthStep } from "../model/account-email-login-step-meta";
 
 export function useEmailLoginStepNavigation() {
   const [authStep, setAuthStep] = useState<EmailLoginAuthStep>("email");

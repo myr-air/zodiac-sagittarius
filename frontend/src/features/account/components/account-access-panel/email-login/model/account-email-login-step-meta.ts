@@ -16,6 +16,9 @@ export const emailLoginVisualStepValues = [
 ] as const;
 export type EmailLoginVisualStep = (typeof emailLoginVisualStepValues)[number];
 
+export const authTransitionDirectionValues = ["forward", "back", "mode"] as const;
+export type AuthTransitionDirection = (typeof authTransitionDirectionValues)[number];
+
 export function resolveEmailLoginVisualStep(authStep: EmailLoginAuthStep, hasChallenge: boolean): EmailLoginVisualStep {
   return hasChallenge ? "otp" : authStep;
 }

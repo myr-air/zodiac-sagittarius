@@ -116,6 +116,7 @@ describe("email login state structure", () => {
   it("keeps step transition state out of styles and the main login panel hook", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
     const entryActions = readEmailLoginSource("state/use-email-login-entry-actions.ts");
+    const stepMeta = readEmailLoginSource("model/account-email-login-step-meta.ts");
     const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
     const stepTypes = readEmailLoginSource("ui/account-email-login-step.types.ts");
     const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
@@ -129,18 +130,23 @@ describe("email login state structure", () => {
     expect(entryActions).toContain("export function useEmailLoginEntryActions");
     expect(entryActions).toContain("window.history.replaceState");
     expect(entryActions).toContain("appRoutes.register()");
-    expect(stepNavigation).toContain("export const authTransitionDirectionValues");
-    expect(stepNavigation).toContain('["forward", "back", "mode"] as const');
-    expect(stepNavigation).toContain("export type AuthTransitionDirection");
+    expect(stepMeta).toContain("export const authTransitionDirectionValues");
+    expect(stepMeta).toContain('["forward", "back", "mode"] as const');
+    expect(stepMeta).toContain("export type AuthTransitionDirection");
+    expect(stepNavigation).toContain("../model/account-email-login-step-meta");
+    expect(stepNavigation).not.toContain("export const authTransitionDirectionValues");
+    expect(stepNavigation).not.toContain("export type AuthTransitionDirection");
     expect(stepNavigation).toContain("export function useEmailLoginStepNavigation");
     expect(stepNavigation).toContain("function goToStep");
-    expect(styles).toContain("../state/use-email-login-step-navigation");
+    expect(styles).toContain("../model/account-email-login-step-meta");
+    expect(styles).not.toContain("../state/use-email-login-step-navigation");
     expect(styles).not.toContain("export type AuthTransitionDirection");
     expect(styles).not.toContain("accountStepSummaryClassName");
     expect(styles).not.toContain("buildAccountAuthCardClassName");
     expect(stepTypes).toContain(
-      "../state/use-email-login-step-navigation",
+      "../model/account-email-login-step-meta",
     );
+    expect(stepTypes).not.toContain("../state/use-email-login-step-navigation");
     expect(readEmailLoginSource("ui/account-email-login-step-stage.tsx")).not.toContain(
       "../state/use-email-login-step-navigation",
     );

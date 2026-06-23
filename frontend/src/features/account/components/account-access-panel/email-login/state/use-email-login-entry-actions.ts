@@ -4,7 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import type { AuthFlow } from "../../auth";
-import type { AuthTransitionDirection } from "./use-email-login-step-navigation";
+import type { AuthTransitionDirection } from "../model/account-email-login-step-meta";
 
 interface UseEmailLoginEntryActionsOptions {
   activeFlow: AuthFlow;

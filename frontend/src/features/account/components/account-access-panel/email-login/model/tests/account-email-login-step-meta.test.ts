@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AuthFlow } from "../../../auth";
 import {
+  authTransitionDirectionValues,
   buildEmailLoginStepMeta,
   emailLoginAuthStepValues,
   emailLoginStepHeading,
@@ -43,6 +44,10 @@ describe("email login step metadata", () => {
       "setup",
       "otp",
     ]);
+  });
+
+  it("keeps transition directions in canonical order", () => {
+    expect(authTransitionDirectionValues).toEqual(["forward", "back", "mode"]);
   });
 
   it("uses the OTP visual step while a challenge is active", () => {
