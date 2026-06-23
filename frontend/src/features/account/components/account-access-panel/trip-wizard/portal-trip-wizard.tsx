@@ -4,10 +4,10 @@ import { type Dispatch, type SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
 import { cn } from "@/src/lib/cn";
-import { PortalTripWizardActions } from "./portal-trip-wizard-actions";
-import { PortalTripWizardMainPanel } from "./portal-trip-wizard-main-panel";
-import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./portal-trip-wizard-mobile-controls";
-import { PortalTripWizardPreview } from "./portal-trip-wizard-preview";
+import { PortalTripWizardActions } from "./shell/portal-trip-wizard-actions";
+import { PortalTripWizardMainPanel } from "./shell/portal-trip-wizard-main-panel";
+import { TripWizardMobileStepActions, TripWizardWorkflowNav } from "./shell/portal-trip-wizard-mobile-controls";
+import { PortalTripWizardPreview } from "./shell/portal-trip-wizard-preview";
 import * as wizardStyles from "./layout/portal-trip-wizard-styles";
 import { usePortalTripWizardModel } from "./state/use-portal-trip-wizard-model";
 

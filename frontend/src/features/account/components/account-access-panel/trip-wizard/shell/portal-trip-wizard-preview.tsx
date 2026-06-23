@@ -10,11 +10,11 @@ import {
   destinationRouteCode,
   tripCityFromFormOrigin,
   type TripDestinationCard,
-} from "./model/account-trip-destinations";
-import { tripWizardSteps, type TripWizardStepId } from "./model/account-trip-wizard-steps";
-import { DestinationCardMeta } from "./steps/destination-card-meta";
-import { TripPreviewLiveMap } from "./map";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
+} from "../model/account-trip-destinations";
+import { tripWizardSteps, type TripWizardStepId } from "../model/account-trip-wizard-steps";
+import { DestinationCardMeta } from "../steps/destination-card-meta";
+import { TripPreviewLiveMap } from "../map";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface PortalTripWizardPreviewProps {
   activeMobileStep: TripWizardStepId;

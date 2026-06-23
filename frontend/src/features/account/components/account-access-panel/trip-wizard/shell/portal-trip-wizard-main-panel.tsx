@@ -7,9 +7,9 @@ import {
   TripWizardInviteStep,
   TripWizardReviewSummary,
   TripWizardTripStep,
-} from "./steps/portal-trip-wizard-form-sections";
-import * as wizardStyles from "./layout/portal-trip-wizard-styles";
-import type { PortalTripWizardModel } from "./state/use-portal-trip-wizard-model";
+} from "../steps/portal-trip-wizard-form-sections";
+import * as wizardStyles from "../layout/portal-trip-wizard-styles";
+import type { PortalTripWizardModel } from "../state/use-portal-trip-wizard-model";
 
 interface PortalTripWizardMainPanelProps {
   defaultOwnerDisplayName: string;

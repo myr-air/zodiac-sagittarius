@@ -110,7 +110,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountTripWizardSteps:
     "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.ts",
   portalTripWizard: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard.tsx",
-  portalTripWizardMainPanel: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-main-panel.tsx",
+  portalTripWizardMainPanel: "src/features/account/components/account-access-panel/trip-wizard/shell/portal-trip-wizard-main-panel.tsx",
   portalTripWizardModel:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-model.ts",
   portalTripWizardModelActions:
@@ -121,7 +121,7 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-mobile-state.ts",
   portalTripWizardDerivedState:
     "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-derived-state.ts",
-  portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-actions.tsx",
+  portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/shell/portal-trip-wizard-actions.tsx",
   portalTripWizardDateActions:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-date-actions.ts",
   portalTripWizardAccessActions:
