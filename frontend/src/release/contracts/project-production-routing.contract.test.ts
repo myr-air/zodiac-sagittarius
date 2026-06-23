@@ -18,7 +18,9 @@ describe("Sagittarius production and routing contracts", () => {
     const homeLandingStyles = readFileSync(join(frontendRoot, "src/features/public-site/pages/home/HomeLanding.styles.ts"), "utf8");
     const languageSwitch = readFileSync(join(frontendRoot, "src/i18n/LanguageSwitch.tsx"), "utf8");
     const languageSwitchMenu = readFileSync(join(frontendRoot, "src/i18n/LanguageSwitchMenu.tsx"), "utf8");
-    const languageSwitchSupport = readFileSync(join(frontendRoot, "src/i18n/language-switch.support.ts"), "utf8");
+    const languageSwitchOptions = readFileSync(join(frontendRoot, "src/i18n/language-switch-options.ts"), "utf8");
+    const languageSwitchStorage = readFileSync(join(frontendRoot, "src/i18n/language-switch-storage.ts"), "utf8");
+    const languageSwitchStyles = readFileSync(join(frontendRoot, "src/i18n/language-switch.styles.ts"), "utf8");
     const languageSwitchState = readFileSync(join(frontendRoot, "src/i18n/use-language-switch-state.ts"), "utf8");
     expect(homeLandingSections).toContain("LanguageSwitch");
     expect(homeLanding).toContain("./HomeLandingPreview");
@@ -39,7 +41,8 @@ describe("Sagittarius production and routing contracts", () => {
     expect(homeLandingMeta).toContain("previewDayKeys");
     expect(homeLandingStyles).toContain("homePageClassName");
     expect(homeLandingStyles).toContain("workflowToneClassNames");
-    expect(languageSwitch).toContain("./language-switch.support");
+    expect(languageSwitch).toContain("./language-switch.styles");
+    expect(languageSwitch).toContain("./language-switch-storage");
     expect(languageSwitch).toContain("./LanguageSwitchMenu");
     expect(languageSwitch).toContain("./use-language-switch-state");
     expect(languageSwitch).not.toContain("useEffect");
@@ -47,10 +50,13 @@ describe("Sagittarius production and routing contracts", () => {
     expect(languageSwitch).not.toContain("majorCurrencyOptions");
     expect(languageSwitch).not.toContain("const triggerClassName");
     expect(languageSwitchMenu).toContain("majorCurrencyOptions");
+    expect(languageSwitchMenu).toContain("./language-switch-options");
     expect(languageSwitchState).toContain("readStoredCurrency");
     expect(languageSwitchState).toContain("window.localStorage.setItem(currencyStorageKey");
-    expect(languageSwitchSupport).toContain("export const triggerClassName");
-    expect(languageSwitchSupport).toContain("export function readStoredCurrency");
+    expect(languageSwitchOptions).toContain("export const languageOptions");
+    expect(languageSwitchStorage).toContain("export function readStoredCurrency");
+    expect(languageSwitchStyles).toContain("export const triggerClassName");
+    expect(languageSwitchStyles).not.toContain("export function readStoredCurrency");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages/en.home.ts"), "utf8")).toContain("Plan trips with friends");
     expect(readFileSync(join(frontendRoot, "src/i18n/messages/th.home.ts"), "utf8")).toContain("วางแผนทริปกับเพื่อน");
     expect(existsSync(join(frontendRoot, "app/access/page.tsx"))).toBe(true);

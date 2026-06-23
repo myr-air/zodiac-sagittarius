@@ -5,10 +5,10 @@ import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { useI18n } from "./I18nProvider";
 import {
-  currencyStorageKey,
   rootClassName,
   triggerClassName,
-} from "./language-switch.support";
+} from "./language-switch.styles";
+import { currencyStorageKey } from "./language-switch-storage";
 import { LanguageSwitchMenu } from "./LanguageSwitchMenu";
 import { useLanguageSwitchState } from "./use-language-switch-state";
 

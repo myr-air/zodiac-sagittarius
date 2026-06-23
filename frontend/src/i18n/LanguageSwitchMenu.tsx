@@ -8,7 +8,6 @@ import {
   activeCurrencyIconClassName,
   activeOptionClassName,
   checkClassName,
-  languageOptions,
   menuClassName,
   menuHeaderClassName,
   menuSummaryClassName,
@@ -19,7 +18,8 @@ import {
   optionMetaClassName,
   sectionClassName,
   sectionLabelClassName,
-} from "./language-switch.support";
+} from "./language-switch.styles";
+import { languageOptions } from "./language-switch-options";
 
 interface LanguageSwitchMenuProps {
   activeLanguage: { label: string };

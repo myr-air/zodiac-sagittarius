@@ -9,14 +9,13 @@ import {
 } from "react";
 import type { MajorCurrencyCode } from "@/src/trip/currencies";
 import type { Locale } from "./types";
+import { languageOptions } from "./language-switch-options";
 import {
-  currencyStorageKey,
-  languageOptions,
   MENU_GAP,
   MENU_WIDTH,
-  readStoredCurrency,
   VIEWPORT_MARGIN,
-} from "./language-switch.support";
+} from "./language-switch.styles";
+import { currencyStorageKey, readStoredCurrency } from "./language-switch-storage";
 
 interface UseLanguageSwitchStateInput {
   locale: Locale;

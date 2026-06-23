@@ -14,6 +14,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/i18n/LanguageSwitch.stories.tsx",
   "src/i18n/LanguageSwitch.stories.plays.ts",
   "src/i18n/I18nProvider.test.tsx",
+  "src/i18n/language-switch.support.ts",
   "src/i18n/messages.test.ts",
   "src/i18n/messages/account-portal.test.ts",
   "src/i18n/messages/workspace-pages.test.ts",

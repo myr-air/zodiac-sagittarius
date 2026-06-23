@@ -1,13 +1,3 @@
-import { normalizeCurrencyCode, type MajorCurrencyCode } from "@/src/trip/currencies";
-import type { Locale } from "./types";
-
-export const currencyStorageKey = "sagittarius-currency";
-
-export const languageOptions: Array<{ locale: Locale; label: string; detail: string; shortLabel: string }> = [
-  { locale: "en", label: "English", detail: "English", shortLabel: "EN" },
-  { locale: "th", label: "ภาษาไทย", detail: "Thai", shortLabel: "TH" },
-];
-
 export const rootClassName = [
   "language-switch",
   "relative",
@@ -117,12 +107,3 @@ export const activeCurrencyIconClassName = "language-switch-option-meta text-(--
 export const MENU_WIDTH = 320;
 export const MENU_GAP = 8;
 export const VIEWPORT_MARGIN = 12;
-
-export function readStoredCurrency(): MajorCurrencyCode {
-  try {
-    const stored = window.localStorage.getItem(currencyStorageKey);
-    return stored ? normalizeCurrencyCode(stored) : "HKD";
-  } catch {
-    return "HKD";
-  }
-}
