@@ -7,42 +7,43 @@ import {
 } from "./storybook.contract.test-support";
 
 describe("Storybook access route contracts", () => {
+  const routeStoriesPath =
+    "src/trip/workspace/sagittarius-app/support/storybook-route-stories.ts";
+
   it("documents split account and trip access routes", () => {
     const stories = storyText();
+    const routeStories = readProjectFile(routeStoriesPath);
     requiredAccessRouteStoryStates.forEach((stateName) => {
       expect(stories).toContain(`export const ${stateName}`);
     });
-    expect(stories).toContain('accessMode: "account-login"');
-    expect(stories).toContain('accessMode: "account-register"');
-    expect(stories).toContain('accessMode: "account-portal"');
-    expect(stories).toContain('accessMode: "trip-access"');
-    expect(stories).toContain('portalSection: "trips"');
-    expect(stories).toContain('portalSection: "new-trip"');
-    expect(stories).toContain('portalSection: "explorer"');
-    expect(stories).toContain('portalSection: "todos"');
-    expect(stories).toContain('portalSection: "vault"');
-    expect(stories).toContain('portalSection: "settings"');
-    expect(stories).toContain('portalSection: "sign-out"');
-    expect(stories).toContain('initialJoinCode: seedTripJoinId');
-    expect(stories).toContain("pathname: appRoutes.join()");
-    expect(stories).toContain("pathname: appRoutes.join(seedTripJoinId)");
+    expect(routeStories).toContain('accessMode: "account-login"');
+    expect(routeStories).toContain('accessMode: "account-register"');
+    expect(routeStories).toContain('accessMode: "account-portal"');
+    expect(routeStories).toContain('accessMode: "trip-access"');
+    expect(routeStories).toContain('portalSection: "trips"');
+    expect(routeStories).toContain('portalSection: "new-trip"');
+    expect(routeStories).toContain('portalSection: "explorer"');
+    expect(routeStories).toContain('portalSection: "todos"');
+    expect(routeStories).toContain('portalSection: "vault"');
+    expect(routeStories).toContain('portalSection: "settings"');
+    expect(routeStories).toContain('portalSection: "sign-out"');
+    expect(routeStories).toContain('initialJoinCode: seedTripJoinId');
+    expect(routeStories).toContain("appRoutes.join()");
+    expect(routeStories).toContain("appRoutes.join(seedTripJoinId)");
     expect(stories).toContain('title: "Pages/Account Access"');
     expect(stories).toContain("export const NewTripBuilder");
     expect(stories).toContain("export const NewTripMobile");
   });
 
   it("requires access-gated app stories to declare an explicit access mode", () => {
-    const appStories = readProjectFile(
-      "src",
-      ...appStoryPaths.sagittariusApp.split("/"),
-    );
-    const gatedStoryLines = appStories
-      .split("\n")
-      .filter((line) => line.includes("requireJoin: true"));
+    const appStories = readProjectFile("src", ...appStoryPaths.sagittariusApp.split("/"));
+    const routeStories = readProjectFile(routeStoriesPath);
 
-    expect(gatedStoryLines.length).toBeGreaterThan(0);
-    gatedStoryLines.forEach((line) => {
-      expect(line).toContain("accessMode:");
-    });
+    expect(appStories).toContain("appRouteStories");
+    expect(routeStories).toContain("type ApiRouteStoryArgs = Pick<");
+    expect(routeStories).toContain('| "accessMode"');
+    expect(routeStories).toContain(
+      '{ ...args, requireJoin: true, dataSource: "api" }',
+    );
   });
 });

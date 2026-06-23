@@ -3,7 +3,7 @@ import type { SagittariusApp } from "@/src/app/SagittariusApp";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { SagittariusAppProps } from "@/src/trip/workspace/sagittarius-app/types";
 
-type SagittariusAppStory = StoryObj<typeof SagittariusApp>;
+export type SagittariusAppStory = StoryObj<typeof SagittariusApp>;
 type SagittariusAppPlay = NonNullable<SagittariusAppStory["play"]>;
 type SagittariusViewport = "mobile320" | "tablet768" | "desktop1024" | "desktop1440";
 

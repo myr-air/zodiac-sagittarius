@@ -73,6 +73,13 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-fixtures.ts"),
       "utf8",
     );
+    const storyRouteStories = readFileSync(
+      join(
+        frontendRoot,
+        "src/trip/workspace/sagittarius-app/support/storybook-route-stories.ts",
+      ),
+      "utf8",
+    );
     const storyBuilders = readFileSync(
       join(
         frontendRoot,
@@ -88,8 +95,8 @@ describe("Sagittarius project scaffold", () => {
       join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/use-workspace-itinerary-import.ts"),
       "utf8",
     );
-    expect(stories).toContain("@/src/routes/app-routes");
-    expect(stories).toContain(
+    expect(stories).not.toContain("@/src/routes/app-routes");
+    expect(stories).not.toContain(
       "@/src/trip/workspace/sagittarius-app/support/route-patterns",
     );
     expect(stories).toContain(
@@ -99,10 +106,18 @@ describe("Sagittarius project scaffold", () => {
       "@/src/trip/workspace/sagittarius-app/support/storybook-fixtures",
     );
     expect(stories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/storybook-route-stories",
+    );
+    expect(stories).toContain(
       "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders",
     );
     expect(storyFixtures).toContain("export const storyTripId");
     expect(storyFixtures).toContain("seedTripJoinId");
+    expect(storyRouteStories).toContain("@/src/routes/app-routes");
+    expect(storyRouteStories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/route-patterns",
+    );
+    expect(storyRouteStories).toContain("export const tripOverviewAccessStory");
     expect(storyBuilders).toContain("export function appViewportStory");
     expect(storyExpectations).toContain("export async function expectWorkspaceView");
     expect(sagittariusAppCore).toContain(

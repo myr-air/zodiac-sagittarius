@@ -94,6 +94,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/support/workspace-api-command.test.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-expectations.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-fixtures.ts",
+  "src/trip/workspace/sagittarius-app/support/storybook-route-stories.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-story-builders.ts",
   "src/trip/workspace/sagittarius-app/hooks/use-workspace-photo-albums.ts",
   "src/trip/workspace/sagittarius-app/hooks/photo-albums/use-workspace-api-photo-album-commands.ts",
