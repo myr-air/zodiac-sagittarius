@@ -1,14 +1,8 @@
 import type {
-  Expense,
   ExpenseSummary,
   Member,
-  SettlementSuggestion,
   Trip,
 } from "@/src/trip/types";
-import {
-  buildRefundExpenseInput,
-  buildSettlementExpenseInput,
-} from "../model/expense-page-actions";
 import type {
   CreateExpenseHandler,
   RecordPaybackReminderHandler,
@@ -18,6 +12,7 @@ import { useExpenseDialogTargetState } from "./useExpenseDialogTargetState";
 import { useExpenseLedgerActions } from "./useExpenseLedgerActions";
 import { useExpensePageDerivedState } from "./useExpensePageDerivedState";
 import { useExpensePageFilters } from "./useExpensePageFilters";
+import { useExpenseSettlementActions } from "./useExpenseSettlementActions";
 
 interface UseTripExpensesPageStateArgs {
   currentMember: Member;
@@ -85,23 +80,15 @@ export function useTripExpensesPageState({
     statement,
     trip,
   });
-
-  function recordSettlement(suggestion: SettlementSuggestion) {
-    onCreateExpense(buildSettlementExpenseInput({
-      members: trip.members,
-      settlementCurrency,
-      suggestion,
-    }));
-  }
-
-  function recordRefund(expense: Expense) {
-    const input = buildRefundExpenseInput({
-      expense,
-      selectedTripPlanId,
-      settlementCurrency,
-    });
-    if (input) onCreateExpense(input);
-  }
+  const {
+    recordRefund,
+    recordSettlement,
+  } = useExpenseSettlementActions({
+    onCreateExpense,
+    selectedTripPlanId,
+    settlementCurrency,
+    trip,
+  });
 
   return {
     categoryFilter,

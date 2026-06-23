@@ -100,6 +100,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/expenses/hooks/useExpensePageFilters.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseComments.ts",
   "src/features/workspace/pages/expenses/hooks/useExpenseLedgerActions.ts",
+  "src/features/workspace/pages/expenses/hooks/useExpenseSettlementActions.ts",
+  "src/features/workspace/pages/expenses/hooks/tests/use-trip-expenses-page-state.test.ts",
   "src/features/workspace/pages/members/hooks/use-trip-members-page-state.ts",
   srcStoryPath(workspaceStoryPaths.membersPage),
   srcStoryPath(workspaceStoryPaths.membersTemplate),

@@ -9,6 +9,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expensePageFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpensePageFilters.ts");
     const expensePageDerivedState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpensePageDerivedState.ts");
     const expenseActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-actions.ts");
+    const expenseSettlementActions = readItineraryArchitectureSource("src/features/workspace/pages/expenses/hooks/useExpenseSettlementActions.ts");
     const expenseFilters = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filters.ts");
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
     const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
@@ -48,7 +49,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensesState).toContain("./useExpenseDialogTargetState");
     expect(expensesState).toContain("./useExpensePageFilters");
     expect(expensesState).toContain("./useExpensePageDerivedState");
-    expect(expensesState).toContain("../model/expense-page-actions");
+    expect(expensesState).toContain("./useExpenseSettlementActions");
+    expect(expensesState).not.toContain("../model/expense-page-actions");
     expect(expensesState).toContain("./useExpenseLedgerActions");
     expect(expensesState).toContain("export function useTripExpensesPageState");
     expect(expensesState).not.toContain("const [filterState, setFilterState]");
@@ -69,6 +71,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensePageFilters).toContain("const [filterState, setFilterState]");
     expect(expensePageFilters).toContain("export function useExpensePageFilters");
     expect(expensesState).not.toContain("buildExpenseCsv");
+    expect(expensesState).not.toContain("buildSettlementExpenseInput");
+    expect(expensesState).not.toContain("buildRefundExpenseInput");
     expect(expensesState).not.toContain("function filterExpenses");
     expect(expensesState).not.toContain("refundSplits");
     expect(expensesState).not.toContain("sumShares");
@@ -108,6 +112,10 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseFilterState).toContain("initialExpensePageFilterState");
     expect(expenseFilterState).toContain("clearedExpensePageFilterState");
     expect(expenseActions).toContain("export function buildSettlementExpenseInput");
+    expect(expenseSettlementActions).toContain("../model/expense-page-actions");
+    expect(expenseSettlementActions).toContain("buildSettlementExpenseInput");
+    expect(expenseSettlementActions).toContain("buildRefundExpenseInput");
+    expect(expenseSettlementActions).toContain("export function useExpenseSettlementActions");
     expect(expenseActions).toContain("export function buildRefundExpenseInput");
     expect(expenseActions).toContain("refundSplits");
     expect(expenseActions).toContain("sumShares");
@@ -131,7 +139,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerActions).toContain("export function useExpenseLedgerActions");
     expect(expenseLedgerActions).toContain("buildExpenseCsv");
     expect(expenseLedgerActions).toContain("buildPaybackReminder");
-    expect(expensesState).toContain("function recordRefund");
+    expect(expensesState).not.toContain("function recordRefund");
+    expect(expenseSettlementActions).toContain("function recordRefund");
+    expect(expenseSettlementActions).toContain("function recordSettlement");
     expect(expenseDialog).toContain("../hooks/useExpenseDialogState");
     expect(expenseDialog).toContain("./ExpenseDialogFormContent");
     expect(expenseDialog).not.toContain("useState");
