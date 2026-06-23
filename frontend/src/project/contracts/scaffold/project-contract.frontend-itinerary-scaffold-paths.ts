@@ -265,6 +265,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/route-map/tests/RouteMapView.live-map.test.tsx",
   "src/features/itinerary/components/route-map/tests/RouteMapView.summary.test.tsx",
   "src/features/itinerary/components/route-map/tests/RouteMapView.unresolved.test.tsx",
+  "src/features/itinerary/components/route-map/tests/route-map.live-layers.test.ts",
   "src/features/itinerary/components/route-map/tests/route-map.live-markers.test.ts",
   "src/features/itinerary/components/route-map/tests/route-map.live-status.test.ts",
   "src/features/itinerary/components/route-map/tests/route-map.live.test.ts",
@@ -274,5 +275,6 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/route-map/use-route-live-map-mount.ts",
   "src/features/itinerary/components/route-map/use-route-live-map-sync.ts",
   "src/features/itinerary/components/route-map/use-route-live-map.ts",
+  "src/features/itinerary/components/route-map/route-map.live-layers.ts",
   "src/features/itinerary/components/route-map/route-map.live-status.ts",
 ] as const;

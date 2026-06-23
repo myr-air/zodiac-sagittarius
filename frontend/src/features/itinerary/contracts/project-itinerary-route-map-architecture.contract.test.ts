@@ -14,6 +14,7 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     const routeLiveMapRefs = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-refs.ts");
     const routeLiveMapSync = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-sync.ts");
     const routeMapLive = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live.ts");
+    const routeMapLiveLayers = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live-layers.ts");
     const routeLiveMapState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-live-map-state.ts");
     const routeMapTypes = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.types.ts");
 
@@ -56,6 +57,10 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     expect(routeLiveMap).not.toContain("cleanupRouteLayers(mapRef.current");
     expect(routeMapLive).toContain("export function cleanupLiveRouteMap");
     expect(routeMapLive).toContain("cleanupRouteLayers(map, sourceIds)");
+    expect(routeMapLive).not.toContain("map.addLayer");
+    expect(routeMapLiveLayers).toContain("export function synchronizeRouteLayers");
+    expect(routeMapLiveLayers).toContain("export function cleanupRouteLayers");
+    expect(routeMapLiveLayers).toContain("routeOpacity");
     expect(routeLiveMap).toContain("const [liveMapLifecycleState, setLiveMapLifecycleState]");
     expect(routeLiveMap).not.toContain("const [autoLiveMapState, setAutoLiveMapState]");
     expect(routeLiveMap).not.toContain("const [liveMapRetryKey, setLiveMapRetryKey]");
