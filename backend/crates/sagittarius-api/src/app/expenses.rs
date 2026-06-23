@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events, trips};
+use crate::app::{auth, events, mutation_guard, trips};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{ExpenseReminderRecord, NewExpense, NewExpenseReminder};
@@ -212,9 +212,10 @@ pub async fn patch_expense(
         return Err(ServiceError::VersionConflict);
     }
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(ExpenseItemSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest expense could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            ExpenseItemSummary::from(existing),
+            "latest expense could not be serialized",
+        ));
     }
     let next_itinerary_item_id = request
         .itinerary_item_id

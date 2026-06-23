@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 use uuid::Uuid;
 
-use crate::app::{auth, bookings, events, photo_albums, plan_checks};
+use crate::app::{auth, bookings, events, mutation_guard, photo_albums, plan_checks};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{ExpenseReminderRecord, ExpenseSplitRecord};
@@ -166,9 +166,10 @@ pub async fn patch_trip(
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(TripSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest trip could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            TripSummary::from(existing),
+            "latest trip could not be serialized",
+        ));
     }
     let start_date = request.start_date.unwrap_or(existing.start_date);
     let end_date = request.end_date.unwrap_or(existing.end_date);

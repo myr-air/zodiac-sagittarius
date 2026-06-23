@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::domain::capabilities::can;
@@ -98,12 +98,10 @@ pub async fn patch_plan_variant(
     .await?;
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(PlanVariantSummary::from_record_for_main_pointer(
-            existing,
-            main_trip_plan_id,
-        ))
-        .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            PlanVariantSummary::from_record_for_main_pointer(existing, main_trip_plan_id),
+            "latest variant could not be serialized",
+        ));
     }
 
     let mut updated_record = db::queries::update_plan_variant(

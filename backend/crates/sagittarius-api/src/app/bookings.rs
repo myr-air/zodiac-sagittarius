@@ -4,7 +4,7 @@ use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{BookingDocRecord, NewBookingDoc};
@@ -197,10 +197,10 @@ pub async fn patch_booking_doc(
 
     let existing_summary = load_booking_doc_summary(pool, &existing).await?;
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(existing_summary).map_err(|_| {
-            ServiceError::InvalidRequest("latest booking doc could not be serialized")
-        })?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            existing_summary,
+            "latest booking doc could not be serialized",
+        ));
     }
 
     validate_patch_references(&mut tx, trip_id, &request.patch).await?;

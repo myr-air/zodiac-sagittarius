@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::domain::capabilities::can;
@@ -53,9 +53,10 @@ pub async fn patch_itinerary_item(
     }
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(ItineraryItemSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest item could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            ItineraryItemSummary::from(existing),
+            "latest item could not be serialized",
+        ));
     }
 
     let mut patch = request.patch.clone();

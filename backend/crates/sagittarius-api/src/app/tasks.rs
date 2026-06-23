@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::NewTripTask;
@@ -129,9 +129,10 @@ pub async fn patch_task(
     }
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(TripTaskSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest task could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            TripTaskSummary::from(existing),
+            "latest task could not be serialized",
+        ));
     }
 
     let next_trip_plan_id =

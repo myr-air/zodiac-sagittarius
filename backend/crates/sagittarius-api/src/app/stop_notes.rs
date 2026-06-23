@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::NewStopNote;
@@ -122,10 +122,10 @@ pub async fn patch_stop_note(
         return Err(ServiceError::VersionConflict);
     }
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(StopNoteSummary::from(existing)).map_err(|_| {
-            ServiceError::InvalidRequest("latest stop note could not be serialized")
-        })?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            StopNoteSummary::from(existing),
+            "latest stop note could not be serialized",
+        ));
     }
     let trip_plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(
         &mut tx,
