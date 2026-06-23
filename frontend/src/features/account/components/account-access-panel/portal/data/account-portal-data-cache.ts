@@ -29,6 +29,20 @@ export function createEmptyAccountPortalDataCache(): AccountPortalDataCache {
   };
 }
 
+export function buildAccountPortalDisplayedData(
+  currentData: AccountPortalDataCache,
+  cachedData: AccountPortalDataCache | null,
+): AccountPortalDataCache {
+  return {
+    explorer: currentData.explorer ?? cachedData?.explorer ?? null,
+    settings: currentData.settings ?? cachedData?.settings ?? null,
+    stats: currentData.stats ?? cachedData?.stats ?? null,
+    todos: currentData.todos.length ? currentData.todos : cachedData?.todos ?? [],
+    trips: currentData.trips.length ? currentData.trips : cachedData?.trips ?? [],
+    vaultItems: currentData.vaultItems.length ? currentData.vaultItems : cachedData?.vaultItems ?? [],
+  };
+}
+
 export function getAccountPortalDataCache(sessionToken: string): AccountPortalDataCache | null {
   if (accountPortalDataCache?.sessionToken !== sessionToken) return null;
   return accountPortalDataCache;

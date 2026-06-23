@@ -10,6 +10,7 @@ import type {
   AccountVaultItemSummary,
 } from "@/src/account/api-client";
 import {
+  buildAccountPortalDisplayedData,
   cacheAccountPortalData,
   clearAccountPortalDataCache,
   getAccountPortalDataCache,
@@ -46,6 +47,17 @@ export function useAccountPortalData({
   const [todos, setTodos] = useState<AccountTodoSummary[]>(() => initialPortalData?.todos ?? []);
   const [vaultItems, setVaultItems] = useState<AccountVaultItemSummary[]>(() => initialPortalData?.vaultItems ?? []);
   const currentPortalCache = accountSession ? getAccountPortalDataCache(accountSession.sessionToken) : null;
+  const displayedPortalData = buildAccountPortalDisplayedData(
+    {
+      explorer,
+      settings,
+      stats,
+      todos,
+      trips,
+      vaultItems,
+    },
+    currentPortalCache,
+  );
 
   useEffect(() => {
     if (!accountSession || isAccountEntry) {
@@ -110,12 +122,12 @@ export function useAccountPortalData({
   }
 
   return {
-    displayedExplorer: explorer ?? currentPortalCache?.explorer ?? null,
-    displayedSettings: settings ?? currentPortalCache?.settings ?? null,
-    displayedStats: stats ?? currentPortalCache?.stats ?? null,
-    displayedTodos: todos.length ? todos : currentPortalCache?.todos ?? [],
-    displayedTrips: trips.length ? trips : currentPortalCache?.trips ?? [],
-    displayedVaultItems: vaultItems.length ? vaultItems : currentPortalCache?.vaultItems ?? [],
+    displayedExplorer: displayedPortalData.explorer,
+    displayedSettings: displayedPortalData.settings,
+    displayedStats: displayedPortalData.stats,
+    displayedTodos: displayedPortalData.todos,
+    displayedTrips: displayedPortalData.trips,
+    displayedVaultItems: displayedPortalData.vaultItems,
     refreshAccount,
     setSettings,
     setVaultItems,
