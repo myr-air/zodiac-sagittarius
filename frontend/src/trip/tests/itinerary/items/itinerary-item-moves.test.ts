@@ -136,4 +136,19 @@ describe("itinerary item moves", () => {
     expect(moveTripItem(trip, planBlock.id, child.id, planVariantId, updatedAt)).toBeNull();
     expect(moveTripItemIntoPlanBlock(trip, planBlock.id, child.id, planVariantId, updatedAt)).toBeNull();
   });
+
+  it("stops descendant checks when bad parent data contains an unrelated cycle", () => {
+    const firstItem = {
+      ...getTripFixtureItineraryItem("item-dimdim"),
+      id: "item-cycle-a",
+      parentItemId: "item-cycle-b",
+    };
+    const secondItem = {
+      ...getTripFixtureItineraryItem("item-victoria-peak"),
+      id: "item-cycle-b",
+      parentItemId: firstItem.id,
+    };
+
+    expect(hasDescendantItem([firstItem, secondItem], "item-unrelated", firstItem.id)).toBe(false);
+  });
 });

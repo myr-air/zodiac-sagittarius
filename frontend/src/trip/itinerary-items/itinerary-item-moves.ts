@@ -3,6 +3,8 @@ import {
   renumberItineraryDayItems,
   sortedTargetDayItemsExcluding,
 } from "./itinerary-item-move-ordering";
+import { findItineraryItemById } from "./itinerary-item-lookup";
+import { mapById } from "@/src/shared/collection";
 import type {
   ItineraryItem,
   Trip,
@@ -15,12 +17,8 @@ export function moveTripItem(
   planVariantId: string,
   updatedAt: string,
 ): Trip | null {
-  const draggedItem = current.itineraryItems.find(
-    (item) => item.id === draggedItemId,
-  );
-  const targetItem = current.itineraryItems.find(
-    (item) => item.id === targetItemId,
-  );
+  const draggedItem = findItineraryItemById(current.itineraryItems, draggedItemId);
+  const targetItem = findItineraryItemById(current.itineraryItems, targetItemId);
 
   if (
     !draggedItem ||
@@ -74,9 +72,7 @@ export function moveTripItemToDay(
   planVariantId: string,
   updatedAt: string,
 ): Trip | null {
-  const draggedItem = current.itineraryItems.find(
-    (item) => item.id === draggedItemId,
-  );
+  const draggedItem = findItineraryItemById(current.itineraryItems, draggedItemId);
   if (!draggedItem || draggedItem.planVariantId !== planVariantId) return null;
 
   const targetDayItems = sortedTargetDayItemsExcluding(
@@ -109,12 +105,8 @@ export function moveTripItemIntoPlanBlock(
   planVariantId: string,
   updatedAt: string,
 ): Trip | null {
-  const draggedItem = current.itineraryItems.find(
-    (item) => item.id === draggedItemId,
-  );
-  const planBlock = current.itineraryItems.find(
-    (item) => item.id === planBlockItemId,
-  );
+  const draggedItem = findItineraryItemById(current.itineraryItems, draggedItemId);
+  const planBlock = findItineraryItemById(current.itineraryItems, planBlockItemId);
   if (
     !draggedItem ||
     !planBlock ||
@@ -164,10 +156,14 @@ export function hasDescendantItem(
   parentItemId: string,
   candidateItemId: string,
 ): boolean {
-  let currentItem = items.find((item) => item.id === candidateItemId);
+  const itemsById = mapById(items);
+  const visitedItemIds = new Set<string>();
+  let currentItem = itemsById.get(candidateItemId) ?? null;
   while (currentItem?.parentItemId) {
     if (currentItem.parentItemId === parentItemId) return true;
-    currentItem = items.find((item) => item.id === currentItem?.parentItemId);
+    if (visitedItemIds.has(currentItem.id)) return false;
+    visitedItemIds.add(currentItem.id);
+    currentItem = itemsById.get(currentItem.parentItemId) ?? null;
   }
   return false;
 }
