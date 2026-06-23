@@ -7,6 +7,7 @@ import type {
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "./types";
+import { shouldRenderWorkspaceAccessLoadingFrame } from "./access-gate-state";
 import type { ReactNode } from "react";
 
 export interface WorkspaceAccessBoundaryProps {
@@ -62,19 +63,21 @@ export function WorkspaceAccessBoundary({
   onCockpitLoaded,
   onTripChange,
 }: WorkspaceAccessBoundaryProps) {
-  if (
-    isAccountTripAccessPending ||
-    isTripLoading ||
-    shouldRedirectUnauthenticatedTripRoute
-  ) {
+  if (shouldRenderWorkspaceAccessLoadingFrame({
+    accessMode,
+    canAccessPanel,
+    isAccountTripAccessPending,
+    isTripLoading,
+    requireJoin,
+    routeTripId,
+    sessionMember,
+    sessionRestored,
+    shouldRedirectUnauthenticatedTripRoute,
+  })) {
     return <TripAccessLoadingFrame />;
   }
 
   if (canAccessPanel) {
-    if (routeTripId && accessMode === "trip-access" && !sessionRestored) {
-      return <TripAccessLoadingFrame />;
-    }
-
     return (
       <TripWorkspaceAccessPanel
         accessMode={accessMode}
@@ -94,10 +97,6 @@ export function WorkspaceAccessBoundary({
         onTripChange={onTripChange}
       />
     );
-  }
-
-  if (requireJoin && !sessionMember && routeTripId) {
-    return <TripAccessLoadingFrame />;
   }
 
   return children;
