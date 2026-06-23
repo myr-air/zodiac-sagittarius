@@ -23,6 +23,9 @@ describe("bookings docs page state structure", () => {
     const bookingModalStateSource = readBookingsDocsPageSource(
       "hooks/useBookingModalState.ts",
     );
+    const bookingModalActionsSource = readBookingsDocsPageSource(
+      "hooks/useBookingModalActions.ts",
+    );
 
     expect(pageStateSource).toContain("useBookingBrowserState");
     expect(pageStateSource).toContain("useBookingModalState");
@@ -40,9 +43,13 @@ describe("bookings docs page state structure", () => {
     expect(bookingBrowserStateSource).toContain("const [browserState, setBrowserState]");
     expect(bookingModalStateSource).toContain("initialBookingModalState");
     expect(bookingModalStateSource).toContain("updateBookingModalState");
+    expect(bookingModalStateSource).toContain("useBookingModalActions");
     expect(bookingModalStateSource).toContain("const [modalState, setModalState]");
-    expect(bookingModalStateSource).toContain("async function submitBooking");
-    expect(bookingModalStateSource).toContain("async function confirmDelete");
+    expect(bookingModalStateSource).not.toContain("async function submitBooking");
+    expect(bookingModalStateSource).not.toContain("async function confirmDelete");
+    expect(bookingModalActionsSource).toContain("async function submitBooking");
+    expect(bookingModalActionsSource).toContain("async function confirmDelete");
+    expect(bookingModalActionsSource).toContain("BookingModalState");
     expect(bookingPageStateSource).toContain("export interface BookingBrowserState");
     expect(bookingPageStateSource).toContain("export interface BookingModalState");
     expect(bookingPageStateSource).toContain(

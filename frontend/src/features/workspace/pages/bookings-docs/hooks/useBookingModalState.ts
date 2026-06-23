@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { BookingDoc } from "@/src/trip/types";
 import type {
-  BookingDocInput,
   CreateBookingDocHandler,
   DeleteBookingDocHandler,
   UpdateBookingDocHandler,
@@ -11,6 +10,7 @@ import {
   updateBookingModalState,
   type BookingModalState,
 } from "../model/booking-page-state";
+import { useBookingModalActions } from "./useBookingModalActions";
 
 interface UseBookingModalStateInput {
   onCreateBookingDoc: CreateBookingDocHandler;
@@ -34,20 +34,13 @@ export function useBookingModalState({
     setModalState((current) => updateBookingModalState(current, field, value));
   }
 
-  async function submitBooking(input: BookingDocInput) {
-    if (modalState.dialogBooking === "new") {
-      await onCreateBookingDoc(input);
-    } else if (modalState.dialogBooking) {
-      await onUpdateBookingDoc(modalState.dialogBooking.id, input);
-    }
-    updateModalState("dialogBooking", null);
-  }
-
-  async function confirmDelete() {
-    if (!modalState.deleteBooking) return;
-    await onDeleteBookingDoc(modalState.deleteBooking.id);
-    updateModalState("deleteBooking", null);
-  }
+  const { confirmDelete, submitBooking } = useBookingModalActions({
+    modalState,
+    onCreateBookingDoc,
+    onDeleteBookingDoc,
+    onUpdateBookingDoc,
+    updateModalState,
+  });
 
   return {
     confirmDelete,
