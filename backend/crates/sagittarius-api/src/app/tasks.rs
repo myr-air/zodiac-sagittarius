@@ -34,16 +34,13 @@ pub async fn create_task(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         session.trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let assignee_id = if request.visibility == "private" {
         Some(session.member_id)
@@ -117,16 +114,13 @@ pub async fn patch_task(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         existing.trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     if existing.version != request.expected_version {
         return Err(mutation_guard::version_conflict_with_latest(

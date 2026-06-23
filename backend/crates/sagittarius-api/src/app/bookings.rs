@@ -69,16 +69,13 @@ pub async fn create_booking_doc(
     if !can(session.role, Capability::EditBookings) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_create_references(&mut tx, trip_id, &request).await?;
     let trip_plan_id = resolve_booking_trip_plan_id(&mut tx, trip_id, &request).await?;
@@ -184,16 +181,13 @@ pub async fn patch_booking_doc(
     if !can(session.role, Capability::EditBookings) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let existing_summary = load_booking_doc_summary(pool, &existing).await?;
     if existing.version != request.expected_version {

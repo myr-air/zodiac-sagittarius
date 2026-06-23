@@ -58,16 +58,13 @@ pub async fn create_photo_album_link(
     if !can(session.role, Capability::ManagePhotoAlbums) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_owner(&mut tx, trip_id, request.owner_member_id).await?;
     validate_itinerary_items(&mut tx, trip_id, &request.related_itinerary_item_ids).await?;
@@ -145,16 +142,13 @@ pub async fn patch_photo_album_link(
     if !can(session.role, Capability::ManagePhotoAlbums) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let existing_summary = load_photo_album_summary(pool, &existing).await?;
     if existing.version != request.expected_version {

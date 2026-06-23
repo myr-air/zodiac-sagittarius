@@ -41,16 +41,13 @@ pub async fn patch_itinerary_item(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         existing.trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     if existing.version != request.expected_version {
         return Err(mutation_guard::version_conflict_with_latest(
@@ -173,16 +170,13 @@ pub async fn create_itinerary_item(
     if !can(session.role, Capability::EditItinerary) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     if !db::queries::plan_variant_exists_for_trip(&mut tx, trip_id, request.plan_variant_id).await?
     {
         return Err(ServiceError::NotFound);
@@ -577,16 +571,13 @@ pub async fn reorder_itinerary_items(
     if !can(session.role, Capability::EditItinerary) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_reorder_scope(&mut tx, trip_id, &request).await?;
 

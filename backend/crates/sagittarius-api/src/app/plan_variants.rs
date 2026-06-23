@@ -28,7 +28,7 @@ pub async fn create_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -89,7 +89,7 @@ pub async fn patch_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -169,7 +169,7 @@ pub async fn publish_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -255,26 +255,6 @@ fn legacy_kind_for_plan_status(status: &str) -> &'static str {
         "backup" => "backup",
         _ => "draft",
     }
-}
-
-async fn reject_duplicate_mutation(
-    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    trip_id: Uuid,
-    member_id: Uuid,
-    client_mutation_id: &str,
-) -> Result<(), ServiceError> {
-    if db::queries::realtime_event_exists_for_client_mutation(
-        tx,
-        trip_id,
-        member_id,
-        client_mutation_id,
-    )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
-
-    Ok(())
 }
 
 async fn insert_variant_event(

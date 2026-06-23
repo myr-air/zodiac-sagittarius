@@ -1,6 +1,28 @@
 use serde::Serialize;
+use uuid::Uuid;
 
+use crate::db;
 use crate::domain::errors::ServiceError;
+
+pub async fn reject_duplicate_mutation(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    member_id: Uuid,
+    client_mutation_id: &str,
+) -> Result<(), ServiceError> {
+    if db::queries::realtime_event_exists_for_client_mutation(
+        tx,
+        trip_id,
+        member_id,
+        client_mutation_id,
+    )
+    .await?
+    {
+        return Err(ServiceError::VersionConflict);
+    }
+
+    Ok(())
+}
 
 pub fn version_conflict_with_latest<T>(latest: T, serialization_error: &'static str) -> ServiceError
 where

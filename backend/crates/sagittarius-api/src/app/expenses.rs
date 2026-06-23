@@ -56,16 +56,13 @@ pub async fn create_expense(
     if !can(session.role, Capability::EditExpenses) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     let trip_plan_id = resolve_expense_trip_plan_id(
         &mut tx,
         trip_id,
@@ -132,16 +129,13 @@ pub async fn record_expense_reminder(
     if !can(session.role, Capability::ViewExpenses) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     if !db::queries::trip_member_exists(&mut tx, trip_id, request.from).await?
         || !db::queries::trip_member_exists(&mut tx, trip_id, request.to).await?
     {
@@ -201,16 +195,13 @@ pub async fn patch_expense(
     if !can(session.role, Capability::EditExpenses) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     if existing.version != request.expected_version {
         return Err(mutation_guard::version_conflict_with_latest(
             ExpenseItemSummary::from(existing),
