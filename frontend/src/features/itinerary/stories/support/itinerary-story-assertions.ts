@@ -69,3 +69,9 @@ export async function expectAddStopActionsAvailable(canvas: StoryCanvas) {
     canvas.getAllByRole("button", { name: /Add stop or activity/i }).length,
   ).toBeGreaterThan(0);
 }
+
+export async function expectDimSumInlineEditUnavailable(canvas: StoryCanvas) {
+  await expect(
+    canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i }),
+  ).toHaveLength(0);
+}

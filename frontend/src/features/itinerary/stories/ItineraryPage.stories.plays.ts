@@ -17,6 +17,7 @@ import {
 import {
   expectAddStopActionsAvailable,
   expectDayActivityPathGraph,
+  expectDimSumInlineEditUnavailable,
   expectItineraryResponsiveContract,
   expectPathGraphNode,
   expectSelectedPathGraphNode,
@@ -34,7 +35,7 @@ export const ownerPlay: ItineraryPagePlay = async ({ canvas, canvasElement }) =>
   await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
   await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
   await expectAddStopActionsAvailable(canvas);
-  await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
+  await expectDimSumInlineEditUnavailable(canvas);
 };
 
 export const inlineQuickEditPlay: ItineraryPagePlay = async ({ canvas, canvasElement }) => {
@@ -62,7 +63,7 @@ export const travelerPlay: ItineraryPagePlay = async ({ canvas }) => {
   await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
   await expectTripPlanControlsEnabled(canvas);
   await expectAddStopActionsAvailable(canvas);
-  await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
+  await expectDimSumInlineEditUnavailable(canvas);
 };
 
 export const overlapConflictWarningPlay: ItineraryPagePlay = async ({ canvas, canvasElement }) => {
