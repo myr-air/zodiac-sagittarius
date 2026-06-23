@@ -14,7 +14,7 @@ import { tripStepComplete, type TripWizardStepId } from "../model/account-trip-w
 import {
   buildPortalTripWizardCredentials,
   isValidPortalTripWizardJoinPassword,
-} from "../portal-trip-wizard-credentials";
+} from "../model/portal-trip-wizard-credentials";
 
 interface BuildPortalTripWizardDerivedStateInput {
   accessSalt: string;
