@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { AccountPortalNav } from "../account-portal-nav";
+import { PortalList, PortalListRow } from "../account-portal-list";
 import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton, PortalStatSkeleton, SettingLine, Stat } from "../account-portal-primitives";
 import { overviewPlay } from "./account-portal-primitives.stories.plays";
@@ -27,6 +28,14 @@ export const Overview: Story = {
       <div className="grid grid-cols-2 gap-2.5">
         <PortalStatSkeleton />
       </div>
+      <PortalList>
+        <PortalListRow
+          badge={<span className="badge">Ready</span>}
+          detail="Shared workspace"
+          icon="calendar"
+          title="Hong Kong Sprint"
+        />
+      </PortalList>
       <PortalListSkeleton rows={2} />
       <SettingLine label="Trusted devices" value="2" />
       <PortalEmptyState
