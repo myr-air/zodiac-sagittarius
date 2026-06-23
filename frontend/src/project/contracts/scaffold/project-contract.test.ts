@@ -87,6 +87,13 @@ describe("Sagittarius project scaffold", () => {
       ),
       "utf8",
     );
+    const storyViewportStories = readFileSync(
+      join(
+        frontendRoot,
+        "src/trip/workspace/sagittarius-app/support/storybook-viewport-stories.ts",
+      ),
+      "utf8",
+    );
     const sagittariusAppCore = readFileSync(
       join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"),
       "utf8",
@@ -119,6 +126,11 @@ describe("Sagittarius project scaffold", () => {
     );
     expect(storyRouteStories).toContain("export const tripOverviewAccessStory");
     expect(storyBuilders).toContain("export function appViewportStory");
+    expect(stories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/storybook-viewport-stories",
+    );
+    expect(storyViewportStories).toContain("export const appViewportStories");
+    expect(storyViewportStories).toContain("expectDesktopOverviewWorkspace");
     expect(storyExpectations).toContain("export async function expectWorkspaceView");
     expect(sagittariusAppCore).toContain(
       "./hooks/use-sagittarius-workspace-contexts",

@@ -1,19 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import {
-  expectBookingsView,
-  expectDesktopOverviewWorkspace,
-  expectExpensesView,
   expectItineraryView,
-  expectMapView,
-  expectMembersView,
   expectOverviewView,
   expectOwnerWorkspace,
-  expectPhotosView,
   expectReadOnlyItineraryWorkspace,
-  expectSettingsView,
   expectThaiOwnerWorkspace,
-  expectTimelineView,
 } from "@/src/trip/workspace/sagittarius-app/support/storybook-expectations";
 import {
   denseTrip,
@@ -22,10 +14,8 @@ import {
   viewerMemberId,
 } from "@/src/trip/workspace/sagittarius-app/support/storybook-fixtures";
 import { appRouteStories } from "@/src/trip/workspace/sagittarius-app/support/storybook-route-stories";
-import {
-  appViewportStory,
-  appViewStory,
-} from "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders";
+import { appViewStory } from "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders";
+import { appViewportStories } from "@/src/trip/workspace/sagittarius-app/support/storybook-viewport-stories";
 
 const meta = {
   title: "Sagittarius/App",
@@ -79,28 +69,24 @@ export const Viewer: Story = {
   args: { initialView: "itinerary", initialMemberId: viewerMemberId },
   play: expectReadOnlyItineraryWorkspace,
 };
-export const Desktop1024Overview: Story = appViewportStory(
-  "overview",
-  "desktop1024",
-  expectDesktopOverviewWorkspace,
-);
-export const Desktop1440Overview: Story = appViewportStory("overview", "desktop1440", expectDesktopOverviewWorkspace);
-export const Desktop1024Itinerary: Story = appViewportStory("itinerary", "desktop1024", expectItineraryView);
-export const Desktop1440Itinerary: Story = appViewportStory("itinerary", "desktop1440", expectItineraryView);
-export const Desktop1024Timeline: Story = appViewportStory("timeline", "desktop1024", expectTimelineView);
-export const Desktop1440Timeline: Story = appViewportStory("timeline", "desktop1440", expectTimelineView);
-export const Desktop1024Map: Story = appViewportStory("map", "desktop1024", expectMapView);
-export const Desktop1440Map: Story = appViewportStory("map", "desktop1440", expectMapView);
-export const Desktop1024Members: Story = appViewportStory("members", "desktop1024", expectMembersView);
-export const Desktop1440Members: Story = appViewportStory("members", "desktop1440", expectMembersView);
-export const Desktop1024Expenses: Story = appViewportStory("expenses", "desktop1024", expectExpensesView);
-export const Desktop1440Expenses: Story = appViewportStory("expenses", "desktop1440", expectExpensesView);
-export const Desktop1024Bookings: Story = appViewportStory("bookings", "desktop1024", expectBookingsView);
-export const Desktop1440Bookings: Story = appViewportStory("bookings", "desktop1440", expectBookingsView);
-export const Desktop1024Photos: Story = appViewportStory("photos", "desktop1024", expectPhotosView);
-export const Desktop1440Photos: Story = appViewportStory("photos", "desktop1440", expectPhotosView);
-export const Desktop1024Settings: Story = appViewportStory("settings", "desktop1024", expectSettingsView);
-export const Desktop1440Settings: Story = appViewportStory("settings", "desktop1440", expectSettingsView);
+export const Desktop1024Overview: Story = appViewportStories.desktop1024Overview;
+export const Desktop1440Overview: Story = appViewportStories.desktop1440Overview;
+export const Desktop1024Itinerary: Story = appViewportStories.desktop1024Itinerary;
+export const Desktop1440Itinerary: Story = appViewportStories.desktop1440Itinerary;
+export const Desktop1024Timeline: Story = appViewportStories.desktop1024Timeline;
+export const Desktop1440Timeline: Story = appViewportStories.desktop1440Timeline;
+export const Desktop1024Map: Story = appViewportStories.desktop1024Map;
+export const Desktop1440Map: Story = appViewportStories.desktop1440Map;
+export const Desktop1024Members: Story = appViewportStories.desktop1024Members;
+export const Desktop1440Members: Story = appViewportStories.desktop1440Members;
+export const Desktop1024Expenses: Story = appViewportStories.desktop1024Expenses;
+export const Desktop1440Expenses: Story = appViewportStories.desktop1440Expenses;
+export const Desktop1024Bookings: Story = appViewportStories.desktop1024Bookings;
+export const Desktop1440Bookings: Story = appViewportStories.desktop1440Bookings;
+export const Desktop1024Photos: Story = appViewportStories.desktop1024Photos;
+export const Desktop1440Photos: Story = appViewportStories.desktop1440Photos;
+export const Desktop1024Settings: Story = appViewportStories.desktop1024Settings;
+export const Desktop1440Settings: Story = appViewportStories.desktop1440Settings;
 export const Itinerary: Story = appViewStory("itinerary", expectItineraryView);
 export const Timeline: Story = appViewStory("timeline");
 export const Map: Story = appViewStory("map");
@@ -113,21 +99,21 @@ export const Empty: Story = {
   args: { initialTrip: emptyTrip, initialView: "overview" },
   play: expectOverviewView,
 };
-export const TabletOverview: Story = appViewportStory("overview", "tablet768", expectOverviewView);
-export const MobileOverview: Story = appViewportStory("overview", "mobile320", expectOverviewView);
-export const TabletItinerary: Story = appViewportStory("itinerary", "tablet768", expectItineraryView);
-export const MobileItinerary: Story = appViewportStory("itinerary", "mobile320", expectItineraryView);
-export const TabletTimeline: Story = appViewportStory("timeline", "tablet768", expectTimelineView);
-export const MobileTimeline: Story = appViewportStory("timeline", "mobile320", expectTimelineView);
-export const TabletMap: Story = appViewportStory("map", "tablet768", expectMapView);
-export const MobileMap: Story = appViewportStory("map", "mobile320", expectMapView);
-export const TabletMembers: Story = appViewportStory("members", "tablet768", expectMembersView);
-export const MobileMembers: Story = appViewportStory("members", "mobile320", expectMembersView);
-export const TabletExpenses: Story = appViewportStory("expenses", "tablet768", expectExpensesView);
-export const MobileExpenses: Story = appViewportStory("expenses", "mobile320", expectExpensesView);
-export const TabletBookings: Story = appViewportStory("bookings", "tablet768", expectBookingsView);
-export const MobileBookings: Story = appViewportStory("bookings", "mobile320", expectBookingsView);
-export const TabletPhotos: Story = appViewportStory("photos", "tablet768", expectPhotosView);
-export const MobilePhotos: Story = appViewportStory("photos", "mobile320", expectPhotosView);
-export const TabletSettings: Story = appViewportStory("settings", "tablet768", expectSettingsView);
-export const MobileSettings: Story = appViewportStory("settings", "mobile320", expectSettingsView);
+export const TabletOverview: Story = appViewportStories.tabletOverview;
+export const MobileOverview: Story = appViewportStories.mobileOverview;
+export const TabletItinerary: Story = appViewportStories.tabletItinerary;
+export const MobileItinerary: Story = appViewportStories.mobileItinerary;
+export const TabletTimeline: Story = appViewportStories.tabletTimeline;
+export const MobileTimeline: Story = appViewportStories.mobileTimeline;
+export const TabletMap: Story = appViewportStories.tabletMap;
+export const MobileMap: Story = appViewportStories.mobileMap;
+export const TabletMembers: Story = appViewportStories.tabletMembers;
+export const MobileMembers: Story = appViewportStories.mobileMembers;
+export const TabletExpenses: Story = appViewportStories.tabletExpenses;
+export const MobileExpenses: Story = appViewportStories.mobileExpenses;
+export const TabletBookings: Story = appViewportStories.tabletBookings;
+export const MobileBookings: Story = appViewportStories.mobileBookings;
+export const TabletPhotos: Story = appViewportStories.tabletPhotos;
+export const MobilePhotos: Story = appViewportStories.mobilePhotos;
+export const TabletSettings: Story = appViewportStories.tabletSettings;
+export const MobileSettings: Story = appViewportStories.mobileSettings;
