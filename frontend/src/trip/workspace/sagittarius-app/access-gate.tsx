@@ -1,4 +1,4 @@
-import { AccountAccessPanel } from "@/src/features/account/components/account-access-panel";
+import { AccountAccessPanel } from "@/src/features/account/components/account-access-panel/AccountAccessPanel";
 import { TripAccessLoadingFrame } from "@/src/trip/workspace/TripAccessLoadingFrame";
 import type {
   Trip,
