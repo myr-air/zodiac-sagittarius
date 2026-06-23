@@ -1,6 +1,11 @@
 import { expect } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildDenseTripFixture,
+  buildEmptyTripFixture,
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { TimelineViewProps } from "@/src/features/itinerary/components";
 import { planABAlternativeItemsBase, withStoryPrefix } from "./support/itinerary-story-fixtures";
@@ -25,18 +30,16 @@ export const timelinePlanABAlternativeItems = withStoryPrefix(
   "timeline",
 );
 export const timelineAdvisoryItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
+  buildTripFixtureItineraryItem({
     id: "timeline-advisory-main",
     activity: "Peak tram timed entry",
     advisories: [{ code: "ticket-window", label: "Book timed ticket", severity: "warning" }],
-  },
-  {
-    ...tripFixture.planItems[1],
+  }),
+  buildTripFixtureItineraryItem({
     id: "timeline-advisory-followup",
     activity: "Harbour transfer buffer",
     advisories: [],
-  },
+  }),
 ];
 
 export async function expectTimelineStructure(canvasElement: HTMLElement) {

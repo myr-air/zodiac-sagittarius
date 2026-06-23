@@ -1,5 +1,10 @@
 import { expect } from "storybook/test";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildDenseTripFixture,
+  buildEmptyTripFixture,
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { RouteMapViewProps } from "@/src/features/itinerary/components";
 import { planABAlternativeItemsBase, withStoryPrefix } from "../support/itinerary-story-fixtures";
@@ -18,19 +23,17 @@ export const denseMapItems = buildDenseTripFixture().itineraryItems;
 export const emptyMapItems = buildEmptyTripFixture().itineraryItems;
 export const mapPlanABAlternativeItems = withStoryPrefix(planABAlternativeItemsBase, "map");
 export const mapStopsWithoutCoordinatesItems: ItineraryItem[] = [
-  {
-    ...tripFixture.planItems[0],
+  buildTripFixtureItineraryItem({
     id: "map-unresolved-dinner",
     activity: "Unresolved dinner venue",
     place: "Confirm after local friend replies",
     coordinates: undefined,
-  },
-  {
-    ...tripFixture.planItems[1],
+  }),
+  buildTripFixtureItineraryItem({
     id: "map-resolved-fallback-stop",
     activity: "Resolved harbour checkpoint",
     coordinates: { lat: 22.2939, lng: 114.1698 },
-  },
+  }),
 ];
 
 export async function expectMapResponsiveContract(canvasElement: HTMLElement) {
