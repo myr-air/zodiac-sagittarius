@@ -1,8 +1,8 @@
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import type { Expense, ItineraryItem, Trip, TripPlan } from "@/src/trip/types";
 import {
-  buildItineraryItemOptions,
-  buildMemberOptions,
+  buildItineraryItemSelectOptions,
+  buildMemberSelectOptions,
 } from "@/src/features/workspace/model/related-checkbox-options";
 import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
@@ -63,7 +63,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.paidBy}</span>
         <Select value={paidBy} onChange={(event) => onPaidByChange(event.target.value)}>
-          {buildMemberOptions(trip.members).map((member) => <option key={member.id} value={member.id}>{member.label}</option>)}
+          <SelectOptions options={buildMemberSelectOptions(trip.members)} />
         </Select>
       </label>
       <label className={expenseStyles.fieldClassName}>
@@ -87,7 +87,7 @@ export function ExpenseLinkingFields({
         <span>{copy.fields.linkedStop}</span>
         <Select value={itemId} onChange={(event) => onItemIdChange(event.target.value)}>
           <option value="">{copy.fields.noLinkedStop}</option>
-          {buildItineraryItemOptions(trip.itineraryItems).map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+          <SelectOptions options={buildItineraryItemSelectOptions(trip.itineraryItems)} />
         </Select>
       </label>
       <label className={expenseStyles.fieldClassName}>

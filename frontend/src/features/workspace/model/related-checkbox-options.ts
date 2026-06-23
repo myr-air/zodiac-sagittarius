@@ -5,6 +5,11 @@ export interface WorkspaceRelatedOption {
   label: string;
 }
 
+export interface WorkspaceRelatedSelectOption {
+  value: string;
+  label: string;
+}
+
 type MemberOptionSource = Pick<Member, "id" | "displayName">;
 type ItineraryItemOptionSource = Pick<ItineraryItem, "id" | "day" | "activity">;
 type TaskOptionSource = Pick<TripTask, "id" | "title">;
@@ -15,8 +20,16 @@ export function buildMemberOptions(members: MemberOptionSource[]): WorkspaceRela
   return members.map((member) => ({ id: member.id, label: member.displayName }));
 }
 
+export function buildMemberSelectOptions(members: MemberOptionSource[]): WorkspaceRelatedSelectOption[] {
+  return buildMemberOptions(members).map((member) => ({ value: member.id, label: member.label }));
+}
+
 export function buildItineraryItemOptions(items: ItineraryItemOptionSource[]): WorkspaceRelatedOption[] {
   return items.map((item) => ({ id: item.id, label: `${item.day} · ${item.activity}` }));
+}
+
+export function buildItineraryItemSelectOptions(items: ItineraryItemOptionSource[]): WorkspaceRelatedSelectOption[] {
+  return buildItineraryItemOptions(items).map((item) => ({ value: item.id, label: item.label }));
 }
 
 export function buildTaskOptions(tasks: TaskOptionSource[]): WorkspaceRelatedOption[] {

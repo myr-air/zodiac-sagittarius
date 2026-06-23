@@ -1,4 +1,4 @@
-import { buildMemberOptions } from "@/src/features/workspace/model/related-checkbox-options";
+import { buildMemberSelectOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import { SelectOptions } from "@/src/shared/components/select-options";
 import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
@@ -62,7 +62,7 @@ export function ExpenseLedgerControls({
           <span>{t.expenses.filters.payer}</span>
           <Select value={payerFilter} onChange={(event) => onPayerFilterChange(event.target.value)}>
             <option value="all">{t.expenses.filters.allPayers}</option>
-            {buildMemberOptions(members).map((member) => <option key={member.id} value={member.id}>{member.label}</option>)}
+            <SelectOptions options={buildMemberSelectOptions(members)} />
           </Select>
         </label>
         <Button type="button" variant="ghost" onClick={onClearFilters}>{t.expenses.actions.clearFilters}</Button>

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildExpenseOptions,
   buildItineraryItemOptions,
+  buildItineraryItemSelectOptions,
   buildMemberOptions,
+  buildMemberSelectOptions,
   buildStopNoteOptions,
   buildTaskOptions,
 } from "../related-checkbox-options";
@@ -27,5 +29,14 @@ describe("workspace related checkbox options", () => {
     expect(buildStopNoteOptions([{ id: "note-1", body: "Meet at gate A" }])).toEqual([
       { id: "note-1", label: "Meet at gate A" },
     ]);
+  });
+
+  it("builds select options from the same shared relation labels", () => {
+    expect(buildMemberSelectOptions([{ id: "member-1", displayName: "Aom" }])).toEqual([
+      { value: "member-1", label: "Aom" },
+    ]);
+    expect(buildItineraryItemSelectOptions([
+      { id: "item-1", day: "Day 2", activity: "Ferry to Macau" },
+    ])).toEqual([{ value: "item-1", label: "Day 2 · Ferry to Macau" }]);
   });
 });
