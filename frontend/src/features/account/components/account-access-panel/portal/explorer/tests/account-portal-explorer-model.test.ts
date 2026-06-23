@@ -3,7 +3,7 @@ import {
   accountTravelerTrip,
   accountTrip,
   accountTrips,
-} from "../../testing/account-access-panel-test-clients";
+} from "../../../testing/account-access-panel-test-clients";
 import {
   accountPortalExplorerPinStyle,
   buildAccountPortalExplorerTrips,
