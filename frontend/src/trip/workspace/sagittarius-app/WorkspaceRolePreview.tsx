@@ -1,5 +1,7 @@
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
 import type { Trip } from "@/src/trip/types";
+import { buildWorkspaceRolePreviewOptions } from "./workspace-role-preview-options";
 
 export interface WorkspaceRolePreviewProps {
   currentMemberId: string;
@@ -19,11 +21,7 @@ export function WorkspaceRolePreview({
         value={currentMemberId}
         onChange={(event) => onChangeMember(event.target.value)}
       >
-        {members.map((member) => (
-          <option key={member.id} value={member.id}>
-            {member.displayName} ({member.role})
-          </option>
-        ))}
+        <SelectOptions options={buildWorkspaceRolePreviewOptions(members)} />
       </Select>
     </label>
   );
