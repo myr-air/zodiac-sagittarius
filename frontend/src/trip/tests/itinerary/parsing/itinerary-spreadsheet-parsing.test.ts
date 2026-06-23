@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   detectDelimiter,
   parseDelimitedRows,
+} from "../../../itinerary-import-export/itinerary-delimited-rows";
+import { parseSpreadsheetDate } from "../../../itinerary-import-export/itinerary-spreadsheet-dates";
+import {
   parseDurationMinutes,
-  parseSpreadsheetDate,
   parseTimeWindow,
-} from "../../../itinerary-import-export/itinerary-spreadsheet-parsing";
+} from "../../../itinerary-import-export/itinerary-spreadsheet-time";
 
 describe("itinerary spreadsheet parsing", () => {
   it("detects tab-delimited spreadsheets and parses quoted CSV cells", () => {

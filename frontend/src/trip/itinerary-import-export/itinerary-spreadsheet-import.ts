@@ -3,10 +3,7 @@ import {
   findSpreadsheetHeader,
   readSpreadsheetTitle,
 } from "./itinerary-spreadsheet-columns";
-import {
-  detectDelimiter,
-  parseDelimitedRows,
-} from "./itinerary-spreadsheet-parsing";
+import { detectDelimiter, parseDelimitedRows } from "./itinerary-delimited-rows";
 import { parseSpreadsheetRows } from "./itinerary-spreadsheet-row-parser";
 import type {
   ItineraryExportDocument,

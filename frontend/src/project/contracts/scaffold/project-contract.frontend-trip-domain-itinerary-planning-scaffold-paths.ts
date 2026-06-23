@@ -79,7 +79,6 @@ export const frontendTripDomainItineraryPlanningScaffoldPathsPresent = [
   "src/trip/itinerary-import-export/itinerary-delimited-rows.ts",
   "src/trip/itinerary-import-export/itinerary-spreadsheet-columns.ts",
   "src/trip/itinerary-import-export/itinerary-spreadsheet-dates.ts",
-  "src/trip/itinerary-import-export/itinerary-spreadsheet-parsing.ts",
   "src/trip/tests/itinerary/parsing/itinerary-spreadsheet-parsing.test.ts",
   "src/trip/itinerary-import-export/itinerary-spreadsheet-import.ts",
   "src/trip/itinerary-import-export/itinerary-spreadsheet-records.ts",
