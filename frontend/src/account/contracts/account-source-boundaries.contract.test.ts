@@ -42,7 +42,7 @@ describe("Sagittarius account source boundaries", () => {
       portalTripWizardDateActions,
       portalTripWizardAccessActions,
       portalTripWizardCredentialSync,
-      accountAuthSupport,
+      accountAuthDateTime,
       accountPasskeySupport,
       accountPasskeyLoginInput,
       tripJoinGate,
@@ -284,15 +284,18 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountSettingsEditorState).toContain("accountSettingsProfileToForm");
     expect(accountSettingsEditorState).not.toContain("homeCity: settings.profile.homeCity ??");
     expect(accountSettingsEditorState).toContain("function submitSettings");
-    expect(accountAuthSupport).toContain("./account-access-error-codes");
-    expect(accountAuthSupport).toContain("./account-passkey-support");
-    expect(accountAuthSupport).toContain("buildPasskeyLoginFinishInput");
-    expect(accountAuthSupport).not.toContain("profileToForm");
-    expect(accountAuthSupport).not.toContain("accountLoadFailed:");
-    expect(accountAuthSupport).not.toContain("function createPasskeyCredential");
-    expect(accountAuthSupport).not.toContain("function getPasskeyCredential");
-    expect(accountAuthSupport).not.toContain("function base64UrlToArrayBuffer");
-    expect(accountAuthSupport).not.toContain("function arrayBufferToBase64Url");
+    expect(accountAuthDateTime).toContain("formatDisplayDateTime");
+    expect(accountAuthDateTime).toContain("displayDateTimeLocaleCode");
+    expect(accountAuthDateTime).toContain("export function formatDateTime");
+    expect(accountAuthDateTime).not.toContain("./account-access-error-codes");
+    expect(accountAuthDateTime).not.toContain("./account-passkey-support");
+    expect(accountAuthDateTime).not.toContain("buildPasskeyLoginFinishInput");
+    expect(accountAuthDateTime).not.toContain("profileToForm");
+    expect(accountAuthDateTime).not.toContain("accountLoadFailed:");
+    expect(accountAuthDateTime).not.toContain("function createPasskeyCredential");
+    expect(accountAuthDateTime).not.toContain("function getPasskeyCredential");
+    expect(accountAuthDateTime).not.toContain("function base64UrlToArrayBuffer");
+    expect(accountAuthDateTime).not.toContain("function arrayBufferToBase64Url");
     expect(accountPasskeySupport).toContain("export async function createPasskeyCredential");
     expect(accountPasskeySupport).toContain("export async function getPasskeyCredential");
     expect(accountPasskeySupport).toContain("./account-passkey-login-input");

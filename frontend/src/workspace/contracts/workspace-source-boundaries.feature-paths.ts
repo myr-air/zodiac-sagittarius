@@ -130,7 +130,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   tripPreviewMap: "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map.tsx",
   tripPreviewLiveMapHook:
     "src/features/account/components/account-access-panel/trip-wizard/map/use-trip-preview-live-map.ts",
-  accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
+  accountAuthDateTime: "src/features/account/components/account-access-panel/auth/account-auth-date-time.ts",
   accountPasskeySupport: "src/features/account/components/account-access-panel/auth/account-passkey-support.ts",
   accountPasskeyLoginInput:
     "src/features/account/components/account-access-panel/auth/account-passkey-login-input.ts",

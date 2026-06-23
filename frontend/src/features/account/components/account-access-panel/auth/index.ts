@@ -17,7 +17,7 @@ export {
   passwordLoginErrorMessage,
   rawErrorMessage,
 } from "./account-auth-errors";
-export { formatDateTime } from "./account-auth-support";
+export { formatDateTime } from "./account-auth-date-time";
 export {
   arrayBufferToBase64Url,
   base64UrlToArrayBuffer,
