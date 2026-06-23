@@ -97,18 +97,20 @@ export {
   validateItemFields,
 } from "./itinerary-validation";
 export {
-  buildInlineItineraryItemPatch,
   daysBetweenIsoDates,
   durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   itineraryDateTime,
   minutesToTime,
   normalizeDurationMinutes,
-  normalizeInlineTimePatch,
   parseTime,
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
 } from "./itinerary-time";
+export {
+  buildInlineItineraryItemPatch,
+  normalizeInlineTimePatch,
+} from "./itinerary-inline-time-patch";
 export type {
   InlineItineraryTimePatch,
-} from "./itinerary-time";
+} from "./itinerary-inline-time-patch";
