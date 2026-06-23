@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import {
   toggleIdFieldState,
   updateFieldState,
@@ -8,13 +8,13 @@ import type {
   Trip,
   TripPhotoAlbumLink,
 } from "@/src/trip/types";
-import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
 import {
-  buildPhotoAlbumDialogSubmitInput,
   initialPhotoAlbumDialogFields,
   type PhotoAlbumDialogFields,
   photoAlbumDialogDayOptions,
 } from "../model/photo-album-dialog-fields";
+import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
+import { usePhotoAlbumDialogActions } from "./usePhotoAlbumDialogActions";
 
 interface PhotoAlbumDialogStateInput {
   album: TripPhotoAlbumLink | null;
@@ -47,13 +47,11 @@ export function usePhotoAlbumDialogState({
     );
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await onSubmit(buildPhotoAlbumDialogSubmitInput({
-      album,
-      fields: formFields,
-    }));
-  }
+  const { submit } = usePhotoAlbumDialogActions({
+    album,
+    formFields,
+    onSubmit,
+  });
 
   return {
     access: formFields.access,

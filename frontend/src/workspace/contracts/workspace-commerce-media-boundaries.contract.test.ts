@@ -18,6 +18,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       workspaceEmptyState,
       photoAlbumBrowser,
       photoAlbumDialog,
+      photoAlbumDialogActions,
       photoAlbumDialogRelatedItems,
       photoAlbumDialogState,
       photoPageOptions,
@@ -84,7 +85,11 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(photoAlbumDialogState).toContain("export type PhotoAlbumDialogState");
     expect(photoAlbumDialogState).toContain("@/src/shared/form-state");
     expect(photoAlbumDialogState).toContain("function toggleRelatedItem");
-    expect(photoAlbumDialogState).toContain("async function submit");
+    expect(photoAlbumDialogState).toContain("usePhotoAlbumDialogActions");
+    expect(photoAlbumDialogState).not.toContain("async function submit");
+    expect(photoAlbumDialogActions).toContain("export function usePhotoAlbumDialogActions");
+    expect(photoAlbumDialogActions).toContain("async function submit");
+    expect(photoAlbumDialogActions).toContain("buildPhotoAlbumDialogSubmitInput");
     expect(photoPageOptions).toContain("export const photoProviderOptions");
     expect(photoPageOptions).toContain("export function photoProviderLabel");
     expect(photoPageSelectors).toContain("export function countPhotoProviders");

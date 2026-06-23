@@ -53,6 +53,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   photoAlbumBrowser: "src/features/workspace/pages/photos/components/PhotoAlbumBrowser.tsx",
   photoAlbumDialog: "src/features/workspace/pages/photos/components/PhotoAlbumDialog.tsx",
   photoAlbumDialogRelatedItems: "src/features/workspace/pages/photos/components/PhotoAlbumDialogRelatedItems.tsx",
+  photoAlbumDialogActions: "src/features/workspace/pages/photos/hooks/usePhotoAlbumDialogActions.ts",
   photoAlbumDialogState: "src/features/workspace/pages/photos/hooks/usePhotoAlbumDialogState.ts",
   accountAccessPanel: "src/features/account/components/account-access-panel/AccountAccessPanel.tsx",
   accountAccessPanelContent:
