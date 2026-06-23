@@ -6,11 +6,6 @@ import {
   tripRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
 import {
-  appRouteStory,
-  appViewportStory,
-  appViewStory,
-  denseTrip,
-  emptyTrip,
   expectBookingsView,
   expectDesktopOverviewWorkspace,
   expectExpensesView,
@@ -24,11 +19,20 @@ import {
   expectSettingsView,
   expectThaiOwnerWorkspace,
   expectTimelineView,
+} from "@/src/trip/workspace/sagittarius-app/support/storybook-expectations";
+import {
+  denseTrip,
+  emptyTrip,
   seedTripJoinId,
   storyTripId,
   travelerMemberId,
   viewerMemberId,
-} from "@/src/trip/workspace/sagittarius-app/support/storybook-support";
+} from "@/src/trip/workspace/sagittarius-app/support/storybook-fixtures";
+import {
+  appRouteStory,
+  appViewportStory,
+  appViewStory,
+} from "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders";
 
 const meta = {
   title: "Sagittarius/App",

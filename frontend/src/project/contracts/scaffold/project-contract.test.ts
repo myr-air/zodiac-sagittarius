@@ -54,16 +54,12 @@ describe("Sagittarius project scaffold", () => {
     expect(readFileSync(join(frontendRoot, ".storybook/main.ts"), "utf8")).toContain("@storybook/nextjs-vite");
   });
 
-  it("splits Sagittarius story fixtures and asserts via shared storybook support", () => {
+  it("splits Sagittarius story fixtures and assertions into focused storybook support modules", () => {
     const stories = readFileSync(
       join(
         frontendRoot,
         ...srcStoryPath(appStoryPaths.sagittariusApp).split("/"),
       ),
-      "utf8",
-    );
-    const storySupport = readFileSync(
-      join(frontendRoot, "src/trip/workspace/sagittarius-app/support/storybook-support.ts"),
       "utf8",
     );
     const storyExpectations = readFileSync(
@@ -103,15 +99,18 @@ describe("Sagittarius project scaffold", () => {
 
     expect(stories).toContain("@/src/trip/workspace/sagittarius-app/support");
     expect(stories).toContain(
-      "@/src/trip/workspace/sagittarius-app/support/storybook-support",
+      "@/src/trip/workspace/sagittarius-app/support/storybook-expectations",
+    );
+    expect(stories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/storybook-fixtures",
+    );
+    expect(stories).toContain(
+      "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders",
     );
     expect(supportIndex).toContain('export * from "@/src/routes/app-routes"');
     expect(supportIndex).toContain('export { portalRoutes, tripRoutes } from "./route-patterns"');
     expect(supportIndex).toContain("route-matchers");
     expect(supportIndex).toContain("portalRoutes");
-    expect(storySupport).toContain('export * from "./storybook-expectations"');
-    expect(storySupport).toContain('export * from "./storybook-fixtures"');
-    expect(storySupport).toContain('export * from "./storybook-story-builders"');
     expect(storyFixtures).toContain("export const storyTripId");
     expect(storyFixtures).toContain("seedTripJoinId");
     expect(storyBuilders).toContain("export function appViewportStory");

@@ -97,7 +97,6 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/support/workspace-api-conflict-retry.test.ts",
   "src/trip/workspace/sagittarius-app/support/workspace-api-command.ts",
   "src/trip/workspace/sagittarius-app/support/workspace-api-command.test.ts",
-  "src/trip/workspace/sagittarius-app/support/storybook-support.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-expectations.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-fixtures.ts",
   "src/trip/workspace/sagittarius-app/support/storybook-story-builders.ts",
