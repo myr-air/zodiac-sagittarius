@@ -1,7 +1,7 @@
 export const workspacePlatformBoundarySourcePaths = {
   checkboxGroup: "src/shared/components/checkbox-group/CheckboxGroup.tsx",
   workspaceEmptyState: "src/shared/components/workspace-empty-state/WorkspaceEmptyState.tsx",
-  dateTimePickers: "src/shared/components/date-time-pickers/DateTimePickers.tsx",
+  dateTimePickers: "src/shared/components/date-time-pickers/index.ts",
   storyBuilders: "src/shared/storybook/story-builders.ts",
   languageSwitchStory: "src/i18n/storybook/LanguageSwitch.stories.tsx",
   uiPrimitivesStory: "src/ui/storybook/ui.stories.tsx",

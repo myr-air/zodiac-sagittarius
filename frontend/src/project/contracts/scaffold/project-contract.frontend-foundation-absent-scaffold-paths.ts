@@ -109,6 +109,7 @@ export const frontendFoundationScaffoldPathsAbsent = [
   "src/shared/components/date-time-pickers/DateTimePickers.stories.plays.ts",
   "src/shared/components/date-time-pickers/DateTimePickers.stories.support.tsx",
   "src/shared/components/date-time-pickers/DateTimePickers.stories.tsx",
+  "src/shared/components/date-time-pickers/DateTimePickers.tsx",
   "src/shared/components/date-time-pickers/DateTimePickersStorySupport.test.tsx",
   "src/shared/components/date-time-pickers/date-time-picker-model.ts",
   "src/shared/components/date-time-pickers/date-time-picker-model.test.ts",
