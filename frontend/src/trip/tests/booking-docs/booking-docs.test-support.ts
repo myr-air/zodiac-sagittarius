@@ -1,5 +1,8 @@
 import type { BookingDoc, Expense, ItineraryItem, Member, StopNote, Trip } from "../../types";
-import { buildItineraryItem } from "../../testing/fixtures/trip-fixtures";
+import {
+  buildBookingDoc,
+  buildItineraryItem,
+} from "../../testing/fixtures/trip-fixtures";
 
 export const bookingDocTestMembers: Member[] = [
   { id: "member-owner", displayName: "Owner", role: "owner", presence: "online", color: "#0f766e" },
@@ -52,33 +55,15 @@ export const bookingDocTestDocs: BookingDoc[] = [
 export function createBookingDocFixture(
   input: Partial<BookingDoc> = {},
 ): BookingDoc {
-  return {
-    id: "booking",
+  const { id = "booking", title = "Booking", type = "other", ...overrides } = input;
+  return buildBookingDoc({
+    id,
+    title,
+    type,
     tripId: "trip-1",
-    title: "Booking",
-    type: "other",
-    status: "draft",
-    visibility: "shared",
-    ownerMemberId: null,
-    providerName: null,
-    confirmationCode: null,
-    startsAt: null,
-    endsAt: null,
-    timezone: null,
-    priceAmount: null,
-    currency: null,
-    travelerIds: [],
-    externalLinks: [],
-    relatedItineraryItemIds: [],
-    relatedTaskIds: [],
-    relatedExpenseIds: [],
-    noteIds: [],
-    notes: null,
     createdBy: "member-owner",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-    version: 1,
-    ...input,
-  };
+    ...overrides,
+  });
 }
 
 export function createBookingDocTripFixture(bookingDocs: BookingDoc[]): Trip {
