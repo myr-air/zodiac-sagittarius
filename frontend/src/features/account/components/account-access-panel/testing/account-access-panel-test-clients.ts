@@ -9,8 +9,8 @@ import type { TripApiClient } from "@/src/trip/api-client";
 import {
   accountSettings,
   accountStats,
-  accountTravelerTrip,
   accountTrip,
+  accountTrips,
 } from "../fixtures/account-access-panel-fixtures";
 
 export {
@@ -18,6 +18,7 @@ export {
   accountStats,
   accountTravelerTrip,
   accountTrip,
+  accountTrips,
 } from "../fixtures/account-access-panel-fixtures";
 
 export function createTrustedAccountSession(overrides: Partial<AccountSession> = {}): AccountSession {
@@ -47,7 +48,7 @@ export function createAccountClient(): AccountApiClient {
         },
       }),
     ),
-    listTrips: vi.fn().mockResolvedValue([accountTrip, accountTravelerTrip]),
+    listTrips: vi.fn().mockResolvedValue(accountTrips),
     loadStats: vi.fn().mockResolvedValue(accountStats),
     loadExplorer: vi.fn().mockResolvedValue({
       upcomingTrips: 1,

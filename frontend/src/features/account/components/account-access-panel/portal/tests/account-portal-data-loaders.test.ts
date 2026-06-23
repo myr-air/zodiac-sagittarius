@@ -10,8 +10,8 @@ import {
 import {
   accountSettings,
   accountStats,
-  accountTravelerTrip,
   accountTrip,
+  accountTrips,
   createAccountClient,
 } from "../../testing/account-access-panel-test-clients";
 
@@ -85,7 +85,7 @@ describe("account portal data loaders", () => {
     ).resolves.toEqual({
       settings: accountSettings,
       stats: accountStats,
-      trips: [accountTrip, accountTravelerTrip],
+      trips: accountTrips,
     });
 
     expect(accountClient.loadSettings).toHaveBeenCalledWith(sessionToken);

@@ -58,6 +58,11 @@ export const accountTravelerTrip: AccountTripSummary = {
   isOwner: false,
 };
 
+export const accountTrips: AccountTripSummary[] = [
+  accountTrip,
+  accountTravelerTrip,
+];
+
 export const accountStats: AccountTripStats = {
   tripsTotal: 2,
   tripsOwned: 1,
