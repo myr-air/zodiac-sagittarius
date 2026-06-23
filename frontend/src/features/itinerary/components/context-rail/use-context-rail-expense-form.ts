@@ -1,10 +1,9 @@
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent } from "react";
 import { useState } from "react";
 import type { Expense } from "@/src/trip/types";
 import {
   type ContextRailExpenseFormValues,
   initialContextRailExpenseFormState,
-  resetContextRailExpenseFormAfterSubmit,
   startContextRailExpenseEdit,
   updateContextRailExpenseFormValue,
 } from "./context-rail-expense-form-state";
@@ -12,6 +11,7 @@ import type {
   ContextRailCreateExpenseInput,
   ContextRailUpdateExpenseInput,
 } from "./context-rail.types";
+import { useContextRailExpenseFormActions } from "./use-context-rail-expense-form-actions";
 
 interface UseContextRailExpenseFormOptions {
   selectedItemId?: string;
@@ -29,6 +29,13 @@ export function useContextRailExpenseForm({
   const [state, setState] = useState(() =>
     initialContextRailExpenseFormState(defaultPaidBy),
   );
+  const { submitExpense } = useContextRailExpenseFormActions({
+    onCreateExpense,
+    onUpdateExpense,
+    selectedItemId,
+    setState,
+    state,
+  });
 
   function updateFormValue<Field extends keyof ContextRailExpenseFormValues>(
     field: Field,
@@ -37,31 +44,6 @@ export function useContextRailExpenseForm({
     setState((current) =>
       updateContextRailExpenseFormValue(current, field, value),
     );
-  }
-
-  function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const title = state.formValues.title.trim();
-    const amount = Number(state.formValues.amount);
-    if (!title || !Number.isFinite(amount) || amount < 0) return;
-    if (state.editingExpenseId) {
-      onUpdateExpense({
-        expenseId: state.editingExpenseId,
-        title,
-        amount,
-        paidBy: state.formValues.paidBy,
-        category: state.formValues.category,
-      });
-    } else {
-      onCreateExpense({
-        itemId: selectedItemId ?? null,
-        title,
-        amount,
-        paidBy: state.formValues.paidBy,
-        category: state.formValues.category,
-      });
-    }
-    setState((current) => resetContextRailExpenseFormAfterSubmit(current));
   }
 
   function startEditingExpense(expense: Expense) {

@@ -38,6 +38,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseCommentsSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseCommentsSection.tsx");
     const expenseCommentsState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-comments-state.ts");
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
+    const contextRailExpenseFormActions = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form-actions.ts");
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
 
     expect(expensesPage).toContain("./hooks/use-trip-expenses-page-state");
@@ -206,14 +207,22 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseCommentsSection).not.toContain("findMemberById");
     expect(expenseCommentsState).toContain("export function expenseCommentDisplay");
     expect(contextRailExpenseForm).toContain("./context-rail-expense-form-state");
+    expect(contextRailExpenseForm).toContain("./use-context-rail-expense-form-actions");
     expect(contextRailExpenseForm).toContain("const [state, setState]");
     expect(contextRailExpenseForm).toContain("function updateFormValue");
+    expect(contextRailExpenseForm).not.toContain("function submitExpense");
+    expect(contextRailExpenseFormActions).toContain("export function useContextRailExpenseFormActions");
+    expect(contextRailExpenseFormActions).toContain("function submitExpense");
+    expect(contextRailExpenseFormActions).toContain("buildContextRailExpenseSubmission");
+    expect(contextRailExpenseFormActions).toContain("resetContextRailExpenseFormAfterSubmit");
     expect(contextRailExpenseForm).not.toContain("interface ContextRailExpenseFormState");
     expect(contextRailExpenseForm).not.toContain("const [editingExpenseId, setEditingExpenseId]");
     expect(contextRailExpenseForm).not.toContain("const [formValues, setFormValues]");
     expect(contextRailExpenseForm).not.toContain("const [expenseTitle, setExpenseTitle]");
     expect(contextRailExpenseForm).not.toContain("const [expenseAmount, setExpenseAmount]");
     expect(contextRailExpenseFormState).toContain("export interface ContextRailExpenseFormState");
+    expect(contextRailExpenseFormState).toContain("export interface ContextRailExpenseSubmission");
+    expect(contextRailExpenseFormState).toContain("export function buildContextRailExpenseSubmission");
     expect(contextRailExpenseFormState).toContain("contextRailExpenseCategoryOptions");
     expect(contextRailExpenseFormState).toContain("startContextRailExpenseEdit");
   });

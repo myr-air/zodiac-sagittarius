@@ -1,8 +1,17 @@
 import type { ChangeEvent, FormEvent } from "react";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Expense } from "@/src/trip/types";
 import { useContextRailExpenseForm } from "../use-context-rail-expense-form";
+
+const contextRailDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+function readContextRailSource(fileName: string) {
+  return readFileSync(join(contextRailDir, fileName), "utf8");
+}
 
 function createHook(options: { selectedItemId?: string } = {}) {
   const onCreateExpense = vi.fn();
@@ -28,6 +37,20 @@ function submit(result: ReturnType<typeof createHook>["result"]) {
 }
 
 describe("useContextRailExpenseForm", () => {
+  it("keeps expense form state and submit actions in separate hooks", () => {
+    const formSource = readContextRailSource("use-context-rail-expense-form.ts");
+    const actionsSource = readContextRailSource(
+      "use-context-rail-expense-form-actions.ts",
+    );
+
+    expect(formSource).toContain("useContextRailExpenseFormActions");
+    expect(formSource).not.toContain("function submitExpense");
+    expect(formSource).not.toContain("buildContextRailExpenseSubmission");
+    expect(actionsSource).toContain("function submitExpense");
+    expect(actionsSource).toContain("buildContextRailExpenseSubmission");
+    expect(actionsSource).toContain("resetContextRailExpenseFormAfterSubmit");
+  });
+
   it("creates expenses with normalized form values", () => {
     const { result, onCreateExpense, onUpdateExpense } = createHook({
       selectedItemId: "item-dimdim",

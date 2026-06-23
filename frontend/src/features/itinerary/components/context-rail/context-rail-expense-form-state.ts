@@ -13,6 +13,14 @@ export interface ContextRailExpenseFormState {
   formValues: ContextRailExpenseFormValues;
 }
 
+export interface ContextRailExpenseSubmission {
+  amount: number;
+  category: Expense["category"];
+  expenseId: string | null;
+  paidBy: string;
+  title: string;
+}
+
 export const contextRailExpenseCategoryOptions = expenseCategoryValues;
 
 export function initialContextRailExpenseFormState(
@@ -70,5 +78,20 @@ export function resetContextRailExpenseFormAfterSubmit(
       amount: "",
       title: "",
     },
+  };
+}
+
+export function buildContextRailExpenseSubmission(
+  state: ContextRailExpenseFormState,
+): ContextRailExpenseSubmission | null {
+  const title = state.formValues.title.trim();
+  const amount = Number(state.formValues.amount);
+  if (!title || !Number.isFinite(amount) || amount < 0) return null;
+  return {
+    amount,
+    category: state.formValues.category,
+    expenseId: state.editingExpenseId,
+    paidBy: state.formValues.paidBy,
+    title,
   };
 }
