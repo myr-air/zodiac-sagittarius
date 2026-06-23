@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "@/src/ui/icons";
+import { InlineOptionPickerOptionContent } from "./InlineOptionPickerOptionContent";
 import { inlineOptionPickerSideMenuPosition } from "./model/inline-option-picker-position";
 import type { InlineOptionPickerMenuProps } from "./inline-option-picker.types";
 
@@ -98,17 +98,16 @@ export function InlineOptionPickerMenu({
               commitOption(option);
             }}
           >
-            <span className="flex min-w-0 items-center gap-2">
-              {option.icon ? <Icon name={option.icon} className="size-3.5" /> : null}
-              <span className="min-w-0 truncate">{option.label}</span>
-            </span>
-            <span aria-hidden="true">
-              {subOptionsByValue?.[option.value]?.length
-                ? "›"
-                : option.value === value
-                  ? "✓"
-                  : ""}
-            </span>
+            <InlineOptionPickerOptionContent
+              option={option}
+              trailingMarker={
+                subOptionsByValue?.[option.value]?.length
+                  ? "›"
+                  : option.value === value
+                    ? "✓"
+                    : ""
+              }
+            />
           </div>
         ))}
       </div>
@@ -131,11 +130,10 @@ export function InlineOptionPickerMenu({
                 commitSubOption(activeOption, option);
               }}
             >
-              <span className="flex min-w-0 items-center gap-2">
-                {option.icon ? <Icon name={option.icon} className="size-3.5" /> : null}
-                <span className="min-w-0 truncate">{option.label}</span>
-              </span>
-              <span aria-hidden="true">{option.value === selectedSubValue ? "✓" : ""}</span>
+              <InlineOptionPickerOptionContent
+                option={option}
+                trailingMarker={option.value === selectedSubValue ? "✓" : ""}
+              />
             </button>
           ))}
         </div>

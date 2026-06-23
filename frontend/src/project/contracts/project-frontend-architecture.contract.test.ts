@@ -90,6 +90,10 @@ describe("Sagittarius frontend architecture contracts", () => {
       join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx"),
       "utf8",
     );
+    const pickerOptionContent = readFileSync(
+      join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPickerOptionContent.tsx"),
+      "utf8",
+    );
     const pickerPosition = readFileSync(
       join(
         frontendRoot,
@@ -112,8 +116,13 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(picker).not.toContain("window.innerHeight - rect.bottom");
     expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
     expect(pickerMenu).toContain("createPortal");
+    expect(pickerMenu).toContain("./InlineOptionPickerOptionContent");
     expect(pickerMenu).toContain("./model/inline-option-picker-position");
+    expect(pickerMenu).not.toContain("option.icon ? <Icon");
     expect(pickerMenu).not.toContain("function sideMenuFloatingLeft");
+    expect(pickerOptionContent).toContain("export function InlineOptionPickerOptionContent");
+    expect(pickerOptionContent).toContain("option.icon");
+    expect(pickerOptionContent).toContain("trailingMarker");
     expect(pickerPosition).toContain("export function inlineOptionPickerMenuPosition");
     expect(pickerPosition).toContain("export function inlineOptionPickerSideMenuPosition");
     expect(pickerStory).toContain("InlineOptionPickerProps");
