@@ -85,8 +85,11 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.linkedStop}</span>
         <Select value={itemId} onChange={(event) => onItemIdChange(event.target.value)}>
-          <option value="">{copy.fields.noLinkedStop}</option>
-          <SelectOptions options={buildItineraryItemSelectOptions(trip.itineraryItems)} />
+          <SelectOptions
+            options={buildItineraryItemSelectOptions(trip.itineraryItems, {
+              leadingOption: { value: "", label: copy.fields.noLinkedStop },
+            })}
+          />
         </Select>
       </label>
       <label className={expenseStyles.fieldClassName}>

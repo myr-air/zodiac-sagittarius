@@ -39,4 +39,26 @@ describe("workspace related checkbox options", () => {
       { id: "item-1", day: "Day 2", activity: "Ferry to Macau" },
     ])).toEqual([{ value: "item-1", label: "Day 2 · Ferry to Macau" }]);
   });
+
+  it("can prepend caller-owned placeholder options", () => {
+    expect(
+      buildMemberSelectOptions(
+        [{ id: "member-1", displayName: "Aom" }],
+        { leadingOption: { value: "all", label: "All payers" } },
+      ),
+    ).toEqual([
+      { value: "all", label: "All payers" },
+      { value: "member-1", label: "Aom" },
+    ]);
+
+    expect(
+      buildItineraryItemSelectOptions(
+        [{ id: "item-1", day: "Day 2", activity: "Ferry to Macau" }],
+        { leadingOption: { value: "", label: "No linked stop" } },
+      ),
+    ).toEqual([
+      { value: "", label: "No linked stop" },
+      { value: "item-1", label: "Day 2 · Ferry to Macau" },
+    ]);
+  });
 });

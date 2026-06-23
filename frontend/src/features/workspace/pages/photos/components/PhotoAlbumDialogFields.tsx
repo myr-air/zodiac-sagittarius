@@ -47,8 +47,11 @@ export function PhotoAlbumDialogFields({
       <label className={photoStyles.fieldClassName}>
         <span>{copy.ownerField}</span>
         <Select value={state.ownerMemberId} onChange={(event) => state.setOwnerMemberId(event.target.value)}>
-          <option value="">{copy.noOwner}</option>
-          <SelectOptions options={buildMemberSelectOptions(trip.members)} />
+          <SelectOptions
+            options={buildMemberSelectOptions(trip.members, {
+              leadingOption: { value: "", label: copy.noOwner },
+            })}
+          />
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>
@@ -58,8 +61,12 @@ export function PhotoAlbumDialogFields({
       <label className={photoStyles.fieldClassName}>
         <span>{copy.dayField}</span>
         <Select value={state.day} onChange={(event) => state.setDay(event.target.value)}>
-          <option value="">{copy.tripLevel}</option>
-          <SelectOptions options={photoAlbumDialogDaySelectOptions(trip)} />
+          <SelectOptions
+            options={photoAlbumDialogDaySelectOptions(trip, {
+              value: "",
+              label: copy.tripLevel,
+            })}
+          />
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>

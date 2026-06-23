@@ -61,8 +61,14 @@ export function ExpenseLedgerControls({
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.payer}</span>
           <Select value={payerFilter} onChange={(event) => onPayerFilterChange(event.target.value)}>
-            <option value="all">{t.expenses.filters.allPayers}</option>
-            <SelectOptions options={buildMemberSelectOptions(members)} />
+            <SelectOptions
+              options={buildMemberSelectOptions(members, {
+                leadingOption: {
+                  value: "all",
+                  label: t.expenses.filters.allPayers,
+                },
+              })}
+            />
           </Select>
         </label>
         <Button type="button" variant="ghost" onClick={onClearFilters}>{t.expenses.actions.clearFilters}</Button>
