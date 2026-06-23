@@ -1,5 +1,6 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { ManagerReadinessPanel, ManagerTaskChecklistPanel } from "./ManagerChecklistPanel";
+import { ManagerReadinessPanel } from "./ManagerReadinessPanel";
+import { ManagerTaskChecklistPanel } from "./ManagerTaskChecklistPanel";
 import { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 import { OverviewFocusSection } from "./OverviewFocusSection";
 import type { ManagerOverviewPanelsProps } from "./overview-role-panels.types";
