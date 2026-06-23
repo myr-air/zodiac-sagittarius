@@ -7,6 +7,8 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     const travelerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/TravelerOverviewPanels.tsx");
     const viewerRolePanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/ViewerOverviewPanels.tsx");
     const managerChecklist = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerChecklistPanel.tsx");
+    const managerReadiness = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerReadinessPanel.tsx");
+    const managerTaskChecklist = readItineraryArchitectureSource("src/features/itinerary/components/overview/ManagerTaskChecklistPanel.tsx");
     const snapshotPanels = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewSnapshotPanels.tsx");
     const overviewPanelTitle = readItineraryArchitectureSource("src/features/itinerary/components/overview/OverviewPanelTitle.tsx");
     const rolePanelTypes = readItineraryArchitectureSource("src/features/itinerary/components/overview/overview-role-panels.types.ts");
@@ -19,8 +21,14 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(managerRolePanels).not.toContain("SegmentedControl");
     expect(travelerRolePanels).not.toContain("interface TravelerOverviewPanelsProps");
     expect(viewerRolePanels).not.toContain("interface ViewerOverviewPanelsProps");
-    expect(managerChecklist).toContain("export function ManagerTaskChecklistPanel");
-    expect(managerChecklist).toContain("./OverviewPanelTitle");
+    expect(managerChecklist).toContain("./ManagerReadinessPanel");
+    expect(managerChecklist).toContain("./ManagerTaskChecklistPanel");
+    expect(managerChecklist).not.toContain("export function ManagerTaskChecklistPanel");
+    expect(managerReadiness).toContain("export function ManagerReadinessPanel");
+    expect(managerReadiness).toContain("./OverviewPanelTitle");
+    expect(managerTaskChecklist).toContain("export function ManagerTaskChecklistPanel");
+    expect(managerTaskChecklist).toContain("SegmentedControl");
+    expect(managerTaskChecklist).toContain("./OverviewTaskList");
     expect(managerChecklist).not.toContain("overviewPanelTitleClassName");
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
     expect(snapshotPanels).toContain("./OverviewPanelTitle");
