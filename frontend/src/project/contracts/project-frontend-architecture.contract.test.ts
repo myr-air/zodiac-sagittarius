@@ -46,16 +46,16 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(workspacePrimitiveStyles).not.toContain('export type WorkspaceSurfaceDensity = "');
   });
 
-  it("keeps AppShell split into component, styles, and support logic", () => {
+  it("keeps AppShell split into component, styles, and routing logic", () => {
     const appShell = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8");
     const appShellMemberCard = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellMemberCard.tsx"), "utf8");
     const appShellMemberCardActions = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/useAppShellMemberCardActions.ts"), "utf8");
     const appShellStyles = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"), "utf8");
-    const appShellSupport = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"), "utf8");
+    const appShellRouting = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell-routing.ts"), "utf8");
 
     expect(appShell).toContain("./AppShell.styles");
     expect(appShell).toContain("./AppShellMemberCard");
-    expect(appShell).toContain("./app-shell.support");
+    expect(appShell).not.toContain("resolveViewFromPath");
     expect(appShell).not.toContain("const appLayoutClassName");
     expect(appShell).not.toContain("identityDialogOpen");
     expect(appShell).not.toContain("function roleLabel");
@@ -77,8 +77,8 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(appShellStyles).toContain("export const identityDialogClassName");
     expect(appShellStyles).not.toContain("workspaceCompactDialogActionsClassName");
     expect(appShellStyles).not.toContain("identityDialogBackdropClassName");
-    expect(appShellSupport).toContain("export function resolveViewFromPath");
-    expect(appShellSupport).not.toContain("export function roleLabel");
+    expect(appShellRouting).toContain("export function resolveViewFromPath");
+    expect(appShellRouting).not.toContain("export function roleLabel");
   });
 
   it("keeps inline option picker menu rendering split from trigger state", () => {

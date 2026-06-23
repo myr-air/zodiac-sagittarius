@@ -28,8 +28,6 @@ import {
 } from "./AppShell.styles";
 import { AppShellMemberCard } from "./AppShellMemberCard";
 
-export { resolveViewFromPath } from "./app-shell.support";
-
 export function AppShell({ activeView, children, collapsed, currentMember, onLeaveParticipantSession, onNavigateView, trip, onToggleCollapsed }: AppShellProps) {
   const { t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

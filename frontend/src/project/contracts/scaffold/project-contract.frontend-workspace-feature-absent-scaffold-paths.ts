@@ -83,6 +83,7 @@ export const frontendWorkspaceFeatureScaffoldPathsAbsent = [
   "src/features/workspace/components/app-shell/AppShell.navigation.test.tsx",
   "src/features/workspace/components/app-shell/AppShell.routing.test.ts",
   "src/features/workspace/components/app-shell/AppShell.test-support.tsx",
+  "src/features/workspace/components/app-shell/app-shell.support.ts",
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.tsx",
   "src/features/workspace/components/summary-stat/index.ts",
   "src/features/workspace/components/summary-stat/WorkspaceSummaryStat.test.tsx",

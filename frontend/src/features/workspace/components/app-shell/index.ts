@@ -1,4 +1,5 @@
-export { AppShell, resolveViewFromPath } from "./AppShell";
+export { AppShell } from "./AppShell";
+export { resolveViewFromPath } from "./app-shell-routing";
 export type {
   AppShellLeaveSessionHandler,
   AppShellMemberCardProps,

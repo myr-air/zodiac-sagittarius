@@ -23,7 +23,7 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/trip-settings/hooks/use-trip-settings-form-state.ts",
   "src/features/workspace/pages/trip-settings/hooks/tests/use-trip-settings-form-state.test.ts",
   "src/features/workspace/components/app-shell/AppShell.styles.ts",
-  "src/features/workspace/components/app-shell/app-shell.support.ts",
+  "src/features/workspace/components/app-shell/app-shell-routing.ts",
   "src/features/workspace/components/app-shell/useAppShellMemberCardActions.ts",
   "src/features/workspace/components/app-shell/testing/support/render-app-shell.tsx",
   "src/features/workspace/components/app-shell/tests/AppShell.layout.test.tsx",
