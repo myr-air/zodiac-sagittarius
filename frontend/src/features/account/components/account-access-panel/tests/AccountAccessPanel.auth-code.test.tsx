@@ -5,9 +5,11 @@ import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { TripApiError } from "@/src/trip/api-client";
 import {
   createAccountClient,
+} from "../testing/account-access-panel-test-clients";
+import {
   fillAccountPasswordFields,
   renderAccountAccessPanel,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel email code auth", () => {
   beforeEach(() => {

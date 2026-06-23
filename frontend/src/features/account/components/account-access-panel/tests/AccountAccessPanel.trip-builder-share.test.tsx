@@ -2,11 +2,11 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
+import { createTripApiClient } from "../testing/account-access-panel-test-clients";
 import {
-  createTripApiClient,
   renderTripBuilder,
   selectDestinationCity,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel trip builder share preview", () => {
   beforeEach(() => {

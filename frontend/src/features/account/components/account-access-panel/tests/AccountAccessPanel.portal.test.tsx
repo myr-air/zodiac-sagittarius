@@ -10,8 +10,8 @@ import {
 import {
   createAccountClient,
   createTrustedAccountSession,
-  renderAccountAccessPanel,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-test-clients";
+import { renderAccountAccessPanel } from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel portal pages", () => {
   beforeEach(() => {

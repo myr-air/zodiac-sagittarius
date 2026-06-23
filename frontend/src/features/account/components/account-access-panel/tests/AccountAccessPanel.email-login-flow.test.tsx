@@ -6,11 +6,11 @@ import {
   optionalTrailingSlashPattern,
   portalRoutes,
 } from "@/src/trip/workspace/sagittarius-app/support";
+import { createAccountClient } from "../testing/account-access-panel-test-clients";
 import {
   AccountHarness,
-  createAccountClient,
   render,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel email login flow", () => {
   beforeEach(() => {

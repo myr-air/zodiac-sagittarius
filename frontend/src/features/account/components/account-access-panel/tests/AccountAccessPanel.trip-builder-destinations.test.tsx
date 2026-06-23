@@ -5,7 +5,7 @@ import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import {
   renderTripBuilder,
   selectDestinationCity,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel trip builder destinations", () => {
   beforeEach(() => {

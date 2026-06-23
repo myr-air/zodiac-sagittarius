@@ -60,7 +60,6 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessStorySupport,
       accountAccessBaseFixtures,
       accountAccessApiFixtures,
-      accountAccessTestUtils,
       accountAccessRenderTestUtils,
       accountAccessTestClients,
       accountAccessPasskeyTestUtils,
@@ -176,11 +175,6 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStoryClients).toContain("accountExplorerSummary");
     expect(accountAccessStoryClients).not.toContain('challengeId: "passkey-challenge"');
     expect(accountAccessStoryClients).not.toContain('id: "vault-1"');
-    expect(accountAccessTestUtils).toContain("./account-access-panel-render-utils");
-    expect(accountAccessTestUtils).toContain("./account-access-panel-test-clients");
-    expect(accountAccessTestUtils).toContain("./account-access-panel-passkey-test-utils");
-    expect(accountAccessTestUtils).not.toContain("installLocalStorageStub");
-    expect(accountAccessTestUtils).not.toContain("../AccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("../AccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("export function renderAccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("export function renderTripBuilder");

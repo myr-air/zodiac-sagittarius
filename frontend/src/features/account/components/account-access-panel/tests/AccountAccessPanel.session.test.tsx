@@ -11,10 +11,12 @@ import { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   createAccountClient,
   createTrustedAccountSession,
+} from "../testing/account-access-panel-test-clients";
+import {
   render,
   renderAccountAccessPanel,
   switchToThai,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel session", () => {
   beforeEach(() => {

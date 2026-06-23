@@ -3,11 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import {
-  authForm,
   createAccountClient,
   createTrustedAccountSession,
+} from "../testing/account-access-panel-test-clients";
+import {
+  authForm,
   renderAccountAccessPanel,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel auth routes", () => {
   beforeEach(() => {

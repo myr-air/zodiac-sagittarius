@@ -2,13 +2,15 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
+import { createAccountClient } from "../testing/account-access-panel-test-clients";
+import {
+  bytes,
+  stubCredentials,
+} from "../testing/account-access-panel-passkey-test-utils";
 import {
   authForm,
-  bytes,
-  createAccountClient,
   renderAccountAccessPanel,
-  stubCredentials,
-} from "../testing/account-access-panel-test-utils";
+} from "../testing/account-access-panel-render-utils";
 
 describe("AccountAccessPanel passkey login", () => {
   beforeEach(() => {
