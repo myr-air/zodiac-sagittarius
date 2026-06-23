@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   clearItineraryBookingTicketDetails,
   syncItineraryDetailsWithBookingTicket,
-  uniqueStringIds,
 } from "../../booking-docs";
 import { createItineraryItemFixture as itineraryItem } from "./booking-docs.test-support";
 
@@ -36,6 +35,5 @@ describe("booking doc itinerary ticket helpers", () => {
     expect(
       clearItineraryBookingTicketDetails({ ...item, details }),
     ).not.toHaveProperty("bookingRef");
-    expect(uniqueStringIds(["a", "b", "a", ""])).toEqual(["a", "b"]);
   });
 });

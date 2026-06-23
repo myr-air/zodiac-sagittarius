@@ -65,7 +65,6 @@ export {
   bookingTypeForItineraryItem,
   clearItineraryBookingTicketDetails,
   syncItineraryDetailsWithBookingTicket,
-  uniqueStringIds,
 } from "./booking-doc-itinerary";
 export {
   bookingDocInputForExpenseEstimate,

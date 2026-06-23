@@ -1,5 +1,4 @@
 import { itineraryDateTime, shiftIsoDate } from "../itinerary-core";
-import { uniqueIds } from "@/src/shared/collection";
 import { readItineraryDetailString } from "../itinerary-items";
 import type {
   BookingDocType,
@@ -76,10 +75,6 @@ export function clearItineraryBookingTicketDetails(
   delete nextDetails.ticketStartsAt;
   delete nextDetails.ticketEndsAt;
   return nextDetails;
-}
-
-export function uniqueStringIds(ids: string[]): string[] {
-  return uniqueIds(ids);
 }
 
 export function bookingTypeForBookingTemplate(

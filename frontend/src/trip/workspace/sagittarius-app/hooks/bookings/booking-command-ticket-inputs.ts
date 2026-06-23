@@ -3,8 +3,8 @@ import {
   type ItineraryBookingTicketInputLike,
   findBookingDocById,
   findDuplicateBookingDoc,
-  uniqueStringIds,
 } from "@/src/trip/booking-docs";
+import { uniqueIds } from "@/src/shared/collection";
 import type { BookingDoc, Member } from "@/src/trip/types";
 
 interface BookingTicketInputContext {
@@ -33,7 +33,7 @@ export function buildItineraryBookingTicketDocInput(
     members,
   }: BookingTicketInputContext,
 ): BookingDocInputLike {
-  const relatedItineraryItemIds = uniqueStringIds([
+  const relatedItineraryItemIds = uniqueIds([
     ...input.relatedItineraryItemIds,
     input.itemId,
   ]);
