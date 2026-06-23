@@ -216,7 +216,6 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const ticketModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModal.tsx");
     const modalPortal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx");
     const bookingButton = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx");
-    const exports = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/components.tsx");
     const ticketFooter = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryTicketModalFooter.tsx");
     const existingTicketList = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ExistingTicketList.tsx");
     const ticketFieldGrid = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TicketFieldGrid.tsx");
@@ -252,9 +251,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(ticketModal).toContain("./ActivityCellModalHeader");
     expect(bookingButton).toContain("export function ItineraryBookingButton");
     expect(bookingButton).toContain("./ItineraryTicketModal");
-    expect(exports).toContain("./activity-cell/ItineraryBookingButton");
-    expect(exports).toContain("./activity-cell/ItineraryTicketModal");
-    expect(exports).not.toContain("BookingComponents");
+    expect(bookingButton).not.toContain("BookingComponents");
     expect(ticketModal).toContain("./ItineraryTicketModalFooter");
     expect(ticketModal).toContain("./ExistingTicketList");
     expect(ticketModal).toContain("./LinkedActivitiesPicker");

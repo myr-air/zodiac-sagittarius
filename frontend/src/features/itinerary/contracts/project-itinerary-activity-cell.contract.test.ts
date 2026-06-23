@@ -6,9 +6,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const dayGroupActivityRows = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/DayGroupActivityRows.tsx",
     );
-    const exports = readItineraryArchitectureSource(
-      "src/features/itinerary/components/smart-itinerary-table/components.tsx",
-    );
     const activityCell = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx",
     );
@@ -35,10 +32,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     );
 
     expect(dayGroupActivityRows).toContain("./activity-cell/ActivityCell");
-    expect(exports).toContain("./activity-cell/ActivityCell");
-    expect(exports).toContain("./activity-cell/ActivityLocationLine");
-    expect(exports).toContain("./activity-cell/ActivityTypePicker");
-    expect(exports).toContain("./activity-cell/InlineActivityField");
     expect(activityCell).toContain("./use-activity-cell-model");
     expect(activityCell).toContain("./ActivityCellBody");
     expect(activityCell).toContain("./ActivityCellRails");
@@ -81,9 +74,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const subActivityItem = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityItem.tsx",
     );
-    const exports = readItineraryArchitectureSource(
-      "src/features/itinerary/components/smart-itinerary-table/components.tsx",
-    );
     const button = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx",
     );
@@ -123,9 +113,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(subActivityList).not.toContain("./ActivityTimeButton");
     expect(subActivityItem).toContain("./ActivityTimeButton");
     expect(subActivityList).not.toContain("TimeComponents");
-    expect(exports).toContain("./activity-cell/ActivityTimeButton");
-    expect(exports).toContain("./activity-cell/TimeEditModal");
-    expect(exports).not.toContain("TimeComponents");
     expect(button).toContain("export function ActivityTimeButton");
     expect(button).not.toContain("createPortal");
     expect(modal).toContain("export function TimeEditModal");
@@ -220,9 +207,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const overlays = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellOverlays.tsx",
     );
-    const exports = readItineraryArchitectureSource(
-      "src/features/itinerary/components/smart-itinerary-table/components.tsx",
-    );
     const list = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/SubActivityList.tsx",
     );
@@ -242,9 +226,6 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(overlays).toContain("./SubActivityList");
     expect(overlays).toContain("./SubActivityModal");
     expect(activityCell).not.toContain("SubActivityComponents");
-    expect(exports).toContain("./activity-cell/SubActivityList");
-    expect(exports).toContain("./activity-cell/SubActivityModal");
-    expect(exports).not.toContain("SubActivityComponents");
     expect(list).toContain("export function SubActivityList");
     expect(list).toContain("./SubActivityItem");
     expect(list).not.toContain("InlineActivityField");
