@@ -4,16 +4,19 @@ import {
   mergeUpdatedItineraryBranchIntoTrip,
 } from "../../../itinerary-items";
 import { seedTrip } from "../../../seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary API merge helpers", () => {
   it("merges API-created itinerary items with placement path fields and patched branch items", () => {
+    const existingItem = getTripFixtureItineraryItem("item-dimdim");
+    const creationBaseItem = getTripFixtureItineraryItem("item-victoria-peak");
     const patchedExistingItem = {
-      ...seedTrip.itineraryItems[0],
+      ...existingItem,
       activity: "Patched branch item",
-      version: seedTrip.itineraryItems[0].version + 1,
+      version: existingItem.version + 1,
     };
     const placementItem = {
-      ...seedTrip.itineraryItems[1],
+      ...creationBaseItem,
       id: "item-created-draft",
       pathGroupId: "path-group-created",
       pathId: "path-created",
@@ -53,13 +56,15 @@ describe("itinerary API merge helpers", () => {
   });
 
   it("merges updated itinerary branch placement with patched API items first", () => {
+    const editableItem = getTripFixtureItineraryItem("item-dimdim");
+    const branchItem = getTripFixtureItineraryItem("item-victoria-peak");
     const editedItem = {
-      ...seedTrip.itineraryItems[0],
+      ...editableItem,
       activity: "Edited item",
       pathId: "path-edited",
     };
     const branchChangedItem = {
-      ...seedTrip.itineraryItems[1],
+      ...branchItem,
       activity: "Branch placement change",
       pathId: "path-branch",
     };

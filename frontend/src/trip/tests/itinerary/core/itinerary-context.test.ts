@@ -12,7 +12,10 @@ import {
   getTripDates,
 } from "../../../itinerary-core";
 import { seedTrip } from "../../../seed";
-import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureItineraryItem,
+  getTripFixtureItineraryItem,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary warnings, dates, and on-trip context", () => {
   it("keeps invalid field warning totals stable in shared derive", () => {
@@ -56,13 +59,12 @@ describe("itinerary warnings, dates, and on-trip context", () => {
   });
 
   it("reports invalid timing and missing movement details", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       startTime: "24:99",
       durationMinutes: 0,
       mapLink: " ",
       transportation: "",
-    };
+    });
 
     expect(validateItineraryItem(item, [item]).map((warning) => warning.code)).toEqual([
       "invalid-start-time",
