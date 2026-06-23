@@ -78,6 +78,8 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/account-auth-support.ts",
   "src/features/account/components/account-access-panel/account-auth-chrome.tsx",
   "src/features/account/components/account-access-panel/email-login/state/email-login-panel-derived-state.test.ts",
+  "src/features/account/components/account-access-panel/email-login/state/email-login-panel-derived-state.ts",
+  "src/features/account/components/account-access-panel/email-login/state/tests/email-login-panel-derived-state.test.ts",
   "src/features/account/components/account-access-panel/layout/account-access-panel-shell-classes.test.ts",
   "src/features/account/components/account-access-panel/model/account-access-modes.test.ts",
   "src/features/account/components/account-access-panel/auth/account-auth-chrome.test.ts",

@@ -4,7 +4,7 @@ import {
   isEmailLoginOtpReady,
   isEmailLoginPasswordReady,
   normalizeEmailLoginEmail,
-} from "../model/email-login-validation";
+} from "./email-login-validation";
 
 export interface EmailLoginPanelDerivedState {
   codeHintId: string;

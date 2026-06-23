@@ -30,7 +30,7 @@ describe("email login state structure", () => {
   it("keeps form field state and code normalization out of the main login panel hook", () => {
     const panelState = readEmailLoginSource("state/use-email-login-panel-state.ts");
     const formState = readEmailLoginSource("state/use-email-login-form-state.ts");
-    const derivedState = readEmailLoginSource("state/email-login-panel-derived-state.ts");
+    const derivedState = readEmailLoginSource("model/email-login-panel-derived-state.ts");
     const validation = readEmailLoginSource("model/email-login-validation.ts");
     const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
 
@@ -42,7 +42,7 @@ describe("email login state structure", () => {
     expect(formState).toContain("export function useEmailLoginFormState");
     expect(formState).toContain("function updateCode");
     expect(formState).toContain("resetEntryFields");
-    expect(derivedState).toContain("../model/email-login-validation");
+    expect(derivedState).toContain("./email-login-validation");
     expect(derivedState).toContain("normalizeEmailLoginEmail");
     expect(derivedState).toContain("isEmailLoginEmailValid");
     expect(derivedState).toContain("isEmailLoginOtpReady");
