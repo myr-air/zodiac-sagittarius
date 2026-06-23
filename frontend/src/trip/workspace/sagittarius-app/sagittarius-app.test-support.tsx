@@ -28,12 +28,15 @@ export {
 } from "./testing/support/sagittarius-app-account-api";
 
 export {
+  dailyBriefingFixture,
+} from "./testing/fixtures/sagittarius-app-briefing-fixtures";
+
+export {
   apiSeedTrip,
   apiTripWithPlans,
-  dailyBriefingFixture,
   tripWithPlans,
   tripWithPlansAndPlanScopedRecords,
-} from "./sagittarius-app.test-fixtures";
+} from "./testing/fixtures/sagittarius-app-plan-fixtures";
 
 export {
   installLocalStorageStub,
