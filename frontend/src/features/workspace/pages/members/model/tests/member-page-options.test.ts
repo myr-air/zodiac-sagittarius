@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { enMessages } from "@/src/i18n/messages/en";
 import {
+  memberRoleFilterLabel,
   memberRoleFilterValues,
+  memberStatusFilterLabel,
   memberStatusFilterValues,
 } from "../member-page-options";
 
@@ -20,5 +23,14 @@ describe("member page options", () => {
       "claimed",
       "pending",
     ]);
+  });
+
+  it("centralizes member filter labels beside filter values", () => {
+    expect(memberRoleFilterLabel("all", enMessages)).toBe("All roles");
+    expect(memberRoleFilterLabel("owner", enMessages)).toBe("Owner");
+    expect(memberStatusFilterLabel("all", enMessages)).toBe("All statuses");
+    expect(memberStatusFilterLabel("active", enMessages)).toBe("Active");
+    expect(memberStatusFilterLabel("claimed", enMessages)).toBe(enMessages.join.memberStatus.claimed);
+    expect(memberStatusFilterLabel("pending", enMessages)).toBe("Pending");
   });
 });

@@ -1,6 +1,8 @@
 import { FieldLabel, Select, TextInput } from "@/src/ui";
 import {
+  memberRoleFilterLabel,
   memberRoleFilterValues,
+  memberStatusFilterLabel,
   memberStatusFilterValues,
   type MemberRoleFilter,
   type MemberStatusFilter,
@@ -17,21 +19,6 @@ export function MemberFilterControls({
   roleFilter,
   statusFilter,
 }: MemberFilterControlProps) {
-  const roleFilterLabels: Record<MemberRoleFilter, string> = {
-    all: labels.members.filters.allRoles,
-    organizer: labels.appShell.roles.organizer,
-    owner: labels.appShell.roles.owner,
-    traveler: labels.appShell.roles.traveler,
-    viewer: labels.appShell.roles.viewer,
-  };
-  const statusFilterLabels: Record<MemberStatusFilter, string> = {
-    active: labels.common.status.active,
-    all: labels.members.filters.allStatuses,
-    claimed: labels.join.memberStatus.claimed,
-    disabled: labels.common.status.disabled,
-    pending: labels.common.status.pending,
-  };
-
   return (
     <div className={memberStyles.memberCommandFieldsClassName}>
       <FieldLabel>
@@ -49,7 +36,7 @@ export function MemberFilterControls({
           onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}
         >
           {memberRoleFilterValues.map((role) => (
-            <option key={role} value={role}>{roleFilterLabels[role]}</option>
+            <option key={role} value={role}>{memberRoleFilterLabel(role, labels)}</option>
           ))}
         </Select>
       </FieldLabel>
@@ -60,7 +47,7 @@ export function MemberFilterControls({
           onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}
         >
           {memberStatusFilterValues.map((status) => (
-            <option key={status} value={status}>{statusFilterLabels[status]}</option>
+            <option key={status} value={status}>{memberStatusFilterLabel(status, labels)}</option>
           ))}
         </Select>
       </FieldLabel>
