@@ -11,6 +11,11 @@ import {
   importDialogFieldsClassName,
   workspaceDialogBodyClassName,
 } from "./TripWorkspaceDialog.styles";
+import {
+  tripWorkspaceImportModeOptions,
+  tripWorkspaceImportRecordModeOptions,
+  tripWorkspaceImportScopeOptions,
+} from "./trip-workspace-import-dialog-options";
 
 interface TripWorkspaceImportDialogSummaryProps {
   importedItems: ItineraryExportItem[];
@@ -101,8 +106,7 @@ export function TripWorkspaceImportDialogFields({
             onScopeChange(event.target.value as ItineraryImportApplyTarget["scope"])
           }
         >
-          <option value="trip">Whole trip</option>
-          <option value="day">This day only</option>
+          <SelectOptions options={tripWorkspaceImportScopeOptions} />
         </Select>
       </label>
       {scope === "day" ? (
@@ -119,8 +123,7 @@ export function TripWorkspaceImportDialogFields({
             onModeChange(event.target.value as ItineraryImportApplyTarget["mode"])
           }
         >
-          <option value="replace-target">Replace target path</option>
-          <option value="keep-alternatives">Keep both as alternatives</option>
+          <SelectOptions options={tripWorkspaceImportModeOptions} />
         </Select>
       </label>
       {recordCount > 0 ? (
@@ -134,8 +137,7 @@ export function TripWorkspaceImportDialogFields({
               )
             }
           >
-            <option value="clone-linked">Clone linked records</option>
-            <option value="activities-only">Activities only</option>
+            <SelectOptions options={tripWorkspaceImportRecordModeOptions} />
           </Select>
         </label>
       ) : null}
