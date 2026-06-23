@@ -237,6 +237,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/stop-dialog/tests/stop-dialog-field-ids.test.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-field-ids.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog.types.ts",
+  "src/features/itinerary/components/stop-dialog/use-stop-dialog-actions.ts",
   "src/features/itinerary/components/stop-dialog/use-stop-dialog-draft-state.ts",
   "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts",
   "src/features/itinerary/stories/StopDialog.stories.support.ts",

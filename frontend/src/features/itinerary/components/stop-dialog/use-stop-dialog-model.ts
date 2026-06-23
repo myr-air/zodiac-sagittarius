@@ -1,13 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { StopFormValues } from "@/src/features/itinerary/domain/stop-form-values";
 import {
-  beginStopDialogSubmit,
   clearStopDialogSubmitError,
-  completeStopDialogSubmit,
-  failStopDialogSubmit,
   initialStopDialogSubmitState,
 } from "./stop-dialog-submit-state";
+import { useStopDialogActions } from "./use-stop-dialog-actions";
 import { useStopDialogDraftState } from "./use-stop-dialog-draft-state";
 
 interface UseStopDialogModelArgs {
@@ -36,41 +34,24 @@ export function useStopDialogModel({
       setSubmitState((current) => clearStopDialogSubmitError(current)),
     startDate,
   });
-
-  async function submitValues(saveUnresolved: boolean) {
-    setSubmitState(beginStopDialogSubmit());
-    try {
-      await onSubmit(draftState.buildSubmitValues(saveUnresolved));
-    } catch {
-      setSubmitState(failStopDialogSubmit(saveFailedMessage));
-      return;
-    } finally {
-      setSubmitState((current) =>
-        current.isSubmitting ? completeStopDialogSubmit() : current,
-      );
-    }
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void submitValues(false);
-  }
-
-  function submitUnresolved() {
-    void submitValues(true);
-  }
+  const actions = useStopDialogActions({
+    buildSubmitValues: draftState.buildSubmitValues,
+    onSubmit,
+    saveFailedMessage,
+    setSubmitState,
+  });
 
   return {
     derivedDuration: draftState.derivedDuration,
     detailType: draftState.detailType,
     detailValues: draftState.detailValues,
-    handleSubmit,
+    handleSubmit: actions.handleSubmit,
     isSubActivity: draftState.isSubActivity,
     isSubmitting: submitState.isSubmitting,
     selectedCandidate: draftState.selectedCandidate,
     setSelectedCandidate: draftState.setSelectedCandidate,
     submitError: submitState.submitError,
-    submitUnresolved,
+    submitUnresolved: actions.submitUnresolved,
     toggleNextDayEnd: draftState.toggleNextDayEnd,
     update: draftState.update,
     updateActivity: draftState.updateActivity,
