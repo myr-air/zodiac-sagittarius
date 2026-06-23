@@ -2,78 +2,27 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
-  buildBookingDoc,
+  buildBusTravelItineraryItem,
+  buildFlightTravelItineraryItem,
+  buildSharedFlightBookingDoc,
   getItineraryItemRow,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 const renderTable = renderSmartItineraryTable;
-
-function flightTravelItem() {
-  return {
-    ...tripFixture.planItems[0],
-    id: "travel-flight-row",
-    activity: "Airport transfer",
-    activityType: "travel" as const,
-    place: "HKG",
-    startTime: "09:00",
-    endTime: "11:30",
-    details: {
-      ...tripFixture.planItems[0].details,
-      from: "BKK",
-      mode: "flight",
-      to: "HKG",
-    },
-  };
-}
-
-function busTravelItem() {
-  return {
-    ...tripFixture.planItems[1],
-    id: "bus-leg-row",
-    activity: "Terminal shuttle",
-    activityType: "travel" as const,
-    details: {
-      ...tripFixture.planItems[1].details,
-      mode: "bus",
-    },
-  };
-}
-
-function sharedFlightBookingDoc(relatedItineraryItemIds: string[]) {
-  return buildBookingDoc({
-    id: "booking-shared-flight",
-    tripId: tripFixture.trip.id,
-    tripPlanId: tripFixture.trip.activePlanVariantId,
-    type: "flight",
-    title: "CX shared flight ticket",
-    status: "booked",
-    ownerMemberId: tripFixture.trip.members[0].id,
-    providerName: "Cathay Pacific",
-    confirmationCode: "CX1234",
-    startsAt: "2026-06-19T09:00:00",
-    endsAt: "2026-06-19T11:30:00",
-    timezone: tripFixture.trip.defaultTimezone,
-    travelerIds: [tripFixture.trip.members[0].id],
-    relatedItineraryItemIds,
-    notes: "Shared ticket",
-    createdBy: tripFixture.trip.members[0].id,
-  });
-}
 
 describe("SmartItineraryTable activity ticket modal", () => {
   it("opens a ticket modal from the mode icon and reuses an existing ticket", async () => {
     const user = userEvent.setup();
     const onSaveBookingForItem = vi.fn();
-    const flightItem = flightTravelItem();
-    const busItem = busTravelItem();
+    const flightItem = buildFlightTravelItineraryItem();
+    const busItem = buildBusTravelItineraryItem();
 
     renderTable({
       items: [flightItem, busItem],
       graphItems: [flightItem, busItem],
       selectedItemId: flightItem.id,
-      bookingDocs: [sharedFlightBookingDoc([busItem.id])],
+      bookingDocs: [buildSharedFlightBookingDoc([busItem.id])],
       onSaveBookingForItem,
     });
 
@@ -128,14 +77,14 @@ describe("SmartItineraryTable activity ticket modal", () => {
     const user = userEvent.setup();
     const onSaveBookingForItem = vi.fn();
     const onUnlinkBookingForItem = vi.fn();
-    const flightItem = flightTravelItem();
-    const busItem = busTravelItem();
+    const flightItem = buildFlightTravelItineraryItem();
+    const busItem = buildBusTravelItineraryItem();
 
     renderTable({
       items: [flightItem, busItem],
       graphItems: [flightItem, busItem],
       selectedItemId: flightItem.id,
-      bookingDocs: [sharedFlightBookingDoc([flightItem.id, busItem.id])],
+      bookingDocs: [buildSharedFlightBookingDoc([flightItem.id, busItem.id])],
       onSaveBookingForItem,
       onUnlinkBookingForItem,
     });

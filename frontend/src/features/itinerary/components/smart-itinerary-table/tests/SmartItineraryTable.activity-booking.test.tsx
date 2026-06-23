@@ -1,8 +1,8 @@
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildFlightTravelItineraryItem,
   getItineraryItemRow,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
@@ -13,20 +13,7 @@ describe("SmartItineraryTable", () => {
   it("shows travel from/to details and creates booking drafts from the mode icon", async () => {
     const user = userEvent.setup();
     const onAddBookingForItem = vi.fn();
-    const item = {
-      ...tripFixture.planItems[0],
-      id: "travel-flight-row",
-      activity: "Airport transfer",
-      activityType: "travel" as const,
-      place: "HKG",
-      transportation: "",
-      details: {
-        ...tripFixture.planItems[0].details,
-        from: "BKK",
-        mode: "flight",
-        to: "HKG",
-      },
-    };
+    const item = buildFlightTravelItineraryItem();
 
     renderTable({
       items: [item],

@@ -1,6 +1,9 @@
 export {
   buildBookingDoc,
+  buildBusTravelItineraryItem,
+  buildFlightTravelItineraryItem,
   buildItineraryItem,
+  buildSharedFlightBookingDoc,
   defaultDayPathOptions,
   defaultPathOptionsForPanel,
   defaultSmartItineraryPathOptions,

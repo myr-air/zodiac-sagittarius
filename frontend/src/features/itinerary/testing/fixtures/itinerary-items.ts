@@ -110,3 +110,72 @@ export function buildItineraryItem(overrides: Partial<ItineraryItem> = {}): Itin
     ...overrides,
   };
 }
+
+export function buildFlightTravelItineraryItem(
+  overrides: Partial<ItineraryItem> = {},
+): ItineraryItem {
+  const base = buildItineraryItem({
+    id: "travel-flight-row",
+    activity: "Airport transfer",
+    activityType: "travel",
+    itemKind: "travel",
+    place: "HKG",
+    transportation: "",
+    startTime: "09:00",
+    endTime: "11:30",
+    details: {
+      from: "BKK",
+      mode: "flight",
+      to: "HKG",
+    },
+  });
+  return {
+    ...base,
+    ...overrides,
+    details: {
+      ...base.details,
+      ...overrides.details,
+    },
+  };
+}
+
+export function buildBusTravelItineraryItem(
+  overrides: Partial<ItineraryItem> = {},
+): ItineraryItem {
+  const base = buildItineraryItem({
+    id: "bus-leg-row",
+    activity: "Terminal shuttle",
+    activityType: "travel",
+    itemKind: "travel",
+    details: {
+      mode: "bus",
+    },
+  });
+  return {
+    ...base,
+    ...overrides,
+    details: {
+      ...base.details,
+      ...overrides.details,
+    },
+  };
+}
+
+export function buildSharedFlightBookingDoc(
+  relatedItineraryItemIds: string[],
+  overrides: Partial<BookingDoc> = {},
+): BookingDoc {
+  return buildBookingDoc({
+    id: "booking-shared-flight",
+    type: "flight",
+    title: "CX shared flight ticket",
+    status: "booked",
+    providerName: "Cathay Pacific",
+    confirmationCode: "CX1234",
+    startsAt: "2026-06-19T09:00:00",
+    endsAt: "2026-06-19T11:30:00",
+    relatedItineraryItemIds,
+    notes: "Shared ticket",
+    ...overrides,
+  });
+}
