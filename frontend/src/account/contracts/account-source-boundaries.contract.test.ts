@@ -96,7 +96,9 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPanel).not.toContain("appRoutes.home()");
     expect(accountAccessShellClasses).toContain("export function accountAccessPanelPageClassName");
     expect(accountAccessShellClasses).toContain("accountEntryPageClassName");
-    expect(accountAccessPanelContent).toContain('from "../portal"');
+    expect(accountAccessPanelContent).toContain("../portal/entry/account-access-panel-portal-content");
+    expect(accountAccessPanelContent).toContain("../portal/dashboard/account-portal-loading-frame");
+    expect(accountAccessPanelContent).not.toContain('from "../portal"');
     expect(accountAccessPanelContent).toContain("AccountAccessPanelPortalContent");
     expect(accountAccessPanelContent).toContain("AccountPortalLoadingFrame");
     expect(accountAccessPanelContent).toContain("./account-email-login-panel-content");

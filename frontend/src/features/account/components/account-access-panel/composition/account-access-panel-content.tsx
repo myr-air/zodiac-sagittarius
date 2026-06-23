@@ -8,10 +8,8 @@ import { TripJoinGate } from "@/src/features/account/components/trip-join-gate/T
 import type { Messages } from "@/src/i18n/messages";
 import type { PortalSection } from "@/src/shared/portal";
 import { StatusMessage, type AuthFlow } from "../auth";
-import {
-  AccountAccessPanelPortalContent,
-  AccountPortalLoadingFrame,
-} from "../portal";
+import { AccountPortalLoadingFrame } from "../portal/dashboard/account-portal-loading-frame";
+import { AccountAccessPanelPortalContent } from "../portal/entry/account-access-panel-portal-content";
 import {
   accountDashboardClassName,
   portalContentClassName,

@@ -16,7 +16,7 @@ import {
   localizeAccessError,
   type AuthFlow,
 } from "../auth";
-import { useAccountPortalData } from "../portal";
+import { useAccountPortalData } from "../portal/data/use-account-portal-data";
 
 interface UseAccountAccessPanelStateArgs {
   accessMessages: Messages["access"]["messages"];
