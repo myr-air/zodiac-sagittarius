@@ -3,7 +3,14 @@ import {
   buildPortalVaultCreateRequest,
   createEmptyPortalVaultForm,
   portalVaultCloudProviders,
+  portalVaultItemBadgeTone,
+  portalVaultItemDetail,
+  portalVaultItemIcon,
 } from "../portal-vault-section-state";
+import {
+  accountVaultItem,
+  createdAccountVaultItem,
+} from "../../fixtures/account-access-panel-fixtures";
 
 describe("portal vault section state", () => {
   it("creates the default note form state", () => {
@@ -60,5 +67,19 @@ describe("portal vault section state", () => {
         externalUrl: "https://example.com",
       }),
     ).toBeNull();
+  });
+
+  it("formats vault item rows with trip or personal ownership context", () => {
+    expect(portalVaultItemIcon(accountVaultItem)).toBe("note");
+    expect(portalVaultItemBadgeTone(accountVaultItem)).toBe("success");
+    expect(portalVaultItemDetail(accountVaultItem, "Personal")).toBe(
+      "Seoul Spring · Keep copies ready",
+    );
+
+    expect(portalVaultItemIcon(createdAccountVaultItem)).toBe("document");
+    expect(portalVaultItemBadgeTone(createdAccountVaultItem)).toBe("neutral");
+    expect(portalVaultItemDetail(createdAccountVaultItem, "Personal")).toBe(
+      "Personal · PDF link",
+    );
   });
 });

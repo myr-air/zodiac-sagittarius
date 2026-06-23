@@ -14,7 +14,12 @@ import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalListSkeleton } from "./account-portal-primitives";
 import { PortalVaultCloudProviderPanel } from "./portal-vault-cloud-provider-panel";
-import { createEmptyPortalVaultForm } from "./portal-vault-section-state";
+import {
+  createEmptyPortalVaultForm,
+  portalVaultItemBadgeTone,
+  portalVaultItemDetail,
+  portalVaultItemIcon,
+} from "./portal-vault-section-state";
 import { usePortalVaultSectionActions } from "./usePortalVaultSectionActions";
 
 interface PortalVaultSectionClassNames {
@@ -98,10 +103,10 @@ export function PortalVaultSection({
           {vaultItems.map((item) => (
             <PortalListRow
               key={`${item.source}-${item.id}`}
-              icon={item.kind === "file" ? "document" : "note"}
+              icon={portalVaultItemIcon(item)}
               title={item.title}
-              detail={`${item.tripName ?? t.access.portal.vaultCreate.personal} · ${item.detail}`}
-              badge={<Badge tone={item.kind === "file" ? "neutral" : "success"}>{item.kind}</Badge>}
+              detail={portalVaultItemDetail(item, t.access.portal.vaultCreate.personal)}
+              badge={<Badge tone={portalVaultItemBadgeTone(item)}>{item.kind}</Badge>}
             />
           ))}
         </PortalList>
