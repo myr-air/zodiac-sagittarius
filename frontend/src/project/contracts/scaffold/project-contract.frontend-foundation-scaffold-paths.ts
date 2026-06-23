@@ -144,6 +144,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/components/inline-option-picker/InlineOptionPicker.tsx",
   "src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx",
   "src/shared/components/inline-option-picker/InlineOptionPickerOptionContent.tsx",
+  "src/shared/components/inline-option-picker/use-inline-option-picker-state.ts",
   "src/shared/components/inline-option-picker/model/inline-option-picker-position.ts",
   "src/shared/components/inline-option-picker/model/inline-option-picker-position.test.ts",
   "src/shared/components/inline-option-picker/storybook/InlineOptionPicker.stories.tsx",

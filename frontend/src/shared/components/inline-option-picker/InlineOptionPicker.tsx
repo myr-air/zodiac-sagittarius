@@ -1,13 +1,9 @@
-import { type ReactElement, useEffect, useRef, useState } from "react";
-import { useDismissOnOutside } from "@/src/shared/hooks/use-dismiss-on-outside";
+import { type ReactElement } from "react";
 import { Icon } from "@/src/ui/icons";
 import { cn } from "@/src/lib/cn";
 import { InlineOptionPickerMenu } from "./InlineOptionPickerMenu";
-import { inlineOptionPickerMenuPosition } from "./model/inline-option-picker-position";
-import type {
-  InlineOptionPickerOption,
-  InlineOptionPickerProps,
-} from "./inline-option-picker.types";
+import { useInlineOptionPickerState } from "./use-inline-option-picker-state";
+import type { InlineOptionPickerProps } from "./inline-option-picker.types";
 
 const inlineFieldClassName =
   "inline-row-field min-h-[24px] w-full min-w-0 rounded-(--radius-sm) border border-transparent bg-transparent px-1.5 py-0 text-xs leading-4 text-(--color-text) outline-none transition-[background,border-color,box-shadow] duration-150 placeholder:text-(--color-text-subtle) hover:not-read-only:border-(--color-border) hover:not-read-only:bg-(--color-surface) focus:border-(--color-route-border) focus:bg-(--color-surface) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] read-only:cursor-pointer read-only:truncate read-only:px-0 read-only:font-semibold disabled:cursor-not-allowed disabled:text-(--color-text-muted)";
@@ -29,78 +25,29 @@ export function InlineOptionPicker({
   subOptionsByValue,
   value,
 }: InlineOptionPickerProps): ReactElement {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const sideMenuRef = useRef<HTMLDivElement>(null);
-  const selectedIndex = Math.max(
-    0,
-    options.findIndex((option) => option.value === value),
-  );
-  const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(selectedIndex);
-  const [position, setPosition] = useState<{
-    left: number;
-    top: number;
-    width: number;
-  }>({ left: 0, top: 0, width: 180 });
-  const selectedOption = options.find((option) => option.value === value) ?? options[0];
-  const activeOption = options[activeIndex] ?? selectedOption;
-  const activeSubOptions = activeOption ? subOptionsByValue?.[activeOption.value] ?? [] : [];
-
-  useEffect(() => {
-    if (!open) return;
-    function updatePosition() {
-      const rect = buttonRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setPosition(
-        inlineOptionPickerMenuPosition({
-          anchorRect: rect,
-          optionCount: options.length,
-          viewport: {
-            height: window.innerHeight,
-            width: window.innerWidth,
-          },
-        }),
-      );
-    }
-
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [open, options.length]);
-
-  useDismissOnOutside({
-    enabled: open,
-    onDismiss: () => setOpen(false),
-    triggerRefs: [buttonRef, menuRef, sideMenuRef],
+  const {
+    activeIndex,
+    activeOption,
+    activeSubOptions,
+    buttonRef,
+    commitOption,
+    commitSubOption,
+    menuRef,
+    open,
+    openMenu,
+    position,
+    selectedOption,
+    setActiveIndex,
+    setOpen,
+    sideMenuRef,
+  } = useInlineOptionPickerState({
+    disabled,
+    onCommit,
+    onCommitSubOption,
+    options,
+    subOptionsByValue,
+    value,
   });
-
-  useEffect(() => {
-    if (!open) return;
-    requestAnimationFrame(() => menuRef.current?.focus());
-  }, [open]);
-
-  function openMenu() {
-    if (disabled) return;
-    setActiveIndex(selectedIndex);
-    setOpen(true);
-  }
-
-  function commitOption(option: InlineOptionPickerOption) {
-    if (option.value !== value) void onCommit(option.value);
-    setOpen(false);
-    buttonRef.current?.focus();
-  }
-
-  function commitSubOption(parentOption: InlineOptionPickerOption, option: InlineOptionPickerOption) {
-    void onCommitSubOption?.(parentOption.value, option.value);
-    setOpen(false);
-    buttonRef.current?.focus();
-  }
 
   return (
     <>

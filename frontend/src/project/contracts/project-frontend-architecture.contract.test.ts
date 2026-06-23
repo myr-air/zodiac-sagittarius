@@ -90,6 +90,10 @@ describe("Sagittarius frontend architecture contracts", () => {
       join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPickerMenu.tsx"),
       "utf8",
     );
+    const pickerState = readFileSync(
+      join(frontendRoot, "src/shared/components/inline-option-picker/use-inline-option-picker-state.ts"),
+      "utf8",
+    );
     const pickerOptionContent = readFileSync(
       join(frontendRoot, "src/shared/components/inline-option-picker/InlineOptionPickerOptionContent.tsx"),
       "utf8",
@@ -110,10 +114,15 @@ describe("Sagittarius frontend architecture contracts", () => {
     );
 
     expect(picker).toContain("./InlineOptionPickerMenu");
-    expect(picker).toContain("./model/inline-option-picker-position");
+    expect(picker).toContain("./use-inline-option-picker-state");
+    expect(picker).not.toContain("./model/inline-option-picker-position");
     expect(picker).not.toContain("createPortal");
     expect(picker).not.toContain("floatingOptionMenuClassName");
     expect(picker).not.toContain("window.innerHeight - rect.bottom");
+    expect(picker).not.toContain("useDismissOnOutside");
+    expect(pickerState).toContain("export function useInlineOptionPickerState");
+    expect(pickerState).toContain("./model/inline-option-picker-position");
+    expect(pickerState).toContain("useDismissOnOutside");
     expect(pickerMenu).toContain("export function InlineOptionPickerMenu");
     expect(pickerMenu).toContain("createPortal");
     expect(pickerMenu).toContain("./InlineOptionPickerOptionContent");
