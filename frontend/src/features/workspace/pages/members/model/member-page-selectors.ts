@@ -3,6 +3,7 @@ import {
   textMatchesSearchQuery,
 } from "@/src/shared/text-search";
 import {
+  isTripMemberActive,
   isTripMemberJoined,
   visibleTripMembers as domainVisibleTripMembers,
 } from "@/src/trip/members";
@@ -22,7 +23,7 @@ export function visibleTripMembers(members: Member[]): Member[] {
 }
 
 export function memberSummaryCounts(members: Member[], currentMemberId: string): MemberSummaryCounts {
-  const active = members.filter((member) => member.accessStatus !== "disabled").length;
+  const active = members.filter(isTripMemberActive).length;
   const joined = members.filter((member) => isTripMemberJoined(member, currentMemberId)).length;
   return {
     active,
@@ -54,8 +55,8 @@ export function filterTripMembers({
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "active" && member.accessStatus !== "disabled") ||
-      (statusFilter === "disabled" && member.accessStatus === "disabled") ||
+      (statusFilter === "active" && isTripMemberActive(member)) ||
+      (statusFilter === "disabled" && !isTripMemberActive(member)) ||
       (statusFilter === "claimed" && isTripMemberJoined(member, currentMemberId)) ||
       (statusFilter === "pending" && !isTripMemberJoined(member, currentMemberId));
 

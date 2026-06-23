@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   assignableTripMembers,
   isSyntheticViewerMember,
+  isTripMemberActive,
   isTripMemberJoined,
   visibleTripMembers,
 } from "../../members";
@@ -18,6 +19,9 @@ describe("member visibility", () => {
   });
 
   it("returns only active visible members for assignment flows", () => {
+    expect(isTripMemberActive({ accessStatus: "active" })).toBe(true);
+    expect(isTripMemberActive({ accessStatus: "disabled" })).toBe(false);
+
     expect(
       assignableTripMembers([
         { id: "member-viewer", accessStatus: "active" },

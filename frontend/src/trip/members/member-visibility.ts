@@ -12,12 +12,16 @@ export function visibleTripMembers<TMember extends Pick<Member, "id">>(
   return members.filter((member) => !isSyntheticViewerMember(member));
 }
 
+export function isTripMemberActive(
+  member: Pick<Member, "accessStatus">,
+): boolean {
+  return member.accessStatus !== "disabled";
+}
+
 export function assignableTripMembers<
   TMember extends Pick<Member, "id" | "accessStatus">,
 >(members: readonly TMember[]): TMember[] {
-  return visibleTripMembers(members).filter(
-    (member) => member.accessStatus !== "disabled",
-  );
+  return visibleTripMembers(members).filter(isTripMemberActive);
 }
 
 export function isTripMemberJoined(
