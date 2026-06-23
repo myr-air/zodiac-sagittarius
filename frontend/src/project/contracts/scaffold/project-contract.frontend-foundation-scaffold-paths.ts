@@ -104,6 +104,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/project/contracts/project-backend-data.contract.test.ts",
   "src/account/contracts/project-account-architecture.contract.test.ts",
   "src/features/itinerary/contracts/project-itinerary-activity-cell.contract.test.ts",
+  "src/features/itinerary/contracts/project-itinerary-activity-modal-architecture.contract.test.ts",
   "src/features/itinerary/contracts/project-itinerary-architecture.contract.test.ts",
   "src/features/itinerary/contracts/project-itinerary-weather-architecture.contract.test.ts",
   "src/features/itinerary/contracts/project-itinerary-overview-architecture.contract.test.ts",
