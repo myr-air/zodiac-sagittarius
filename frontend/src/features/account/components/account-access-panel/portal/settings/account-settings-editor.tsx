@@ -8,6 +8,7 @@ import type {
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { SettingLine } from "../primitives/account-portal-primitives";
 import { AccountSettingsProfileForm } from "./account-settings-profile-form";
+import { accountSettingsProfilePreview } from "./account-settings-profile-form.model";
 import { AccountTrustedDevicesList } from "./account-trusted-devices-list";
 import { useAccountSettingsEditorState } from "./use-account-settings-editor-state";
 
@@ -59,16 +60,21 @@ export function AccountSettingsEditor({
     onSettingsChanged,
     settings,
   });
+  const profilePreview = accountSettingsProfilePreview(
+    form,
+    settings,
+    t.access.dashboard,
+  );
 
   return (
     <>
       <div className={classNames.profilePreview}>
-        <span className={classNames.avatar} style={{ backgroundColor: form.avatarColor }} aria-hidden="true">
-          {form.displayName.slice(0, 1) || "A"}
+        <span className={classNames.avatar} style={{ backgroundColor: profilePreview.avatarColor }} aria-hidden="true">
+          {profilePreview.avatarInitial}
         </span>
         <div>
-          <strong>{form.displayName}</strong>
-          <span>{settings.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
+          <strong>{profilePreview.displayName}</strong>
+          <span>{profilePreview.email}</span>
         </div>
       </div>
       <AccountSettingsProfileForm

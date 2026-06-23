@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { accountSettings } from "../../../testing/account-access-panel-test-clients";
 import {
   accountSettingsLocaleSelectOptions,
+  accountSettingsProfilePreview,
   accountSettingsProfileToForm,
 } from "../account-settings-profile-form.model";
 
@@ -38,5 +39,47 @@ describe("account settings profile form model", () => {
       { value: "th-TH", label: "Thai" },
       { value: "en-US", label: "English" },
     ]);
+  });
+
+  it("builds profile preview display values from the editable form", () => {
+    expect(
+      accountSettingsProfilePreview(
+        {
+          avatarColor: "#0f766e",
+          displayName: "May",
+        },
+        accountSettings,
+        { noEmail: "No email loaded" },
+      ),
+    ).toEqual({
+      avatarColor: "#0f766e",
+      avatarInitial: "M",
+      displayName: "May",
+      email: "aom@example.test",
+    });
+  });
+
+  it("falls back profile preview initial and email when fields are blank", () => {
+    expect(
+      accountSettingsProfilePreview(
+        {
+          avatarColor: "#0f766e",
+          displayName: "",
+        },
+        {
+          ...accountSettings,
+          profile: {
+            ...accountSettings.profile,
+            primaryEmail: null,
+          },
+        },
+        { noEmail: "No email loaded" },
+      ),
+    ).toEqual({
+      avatarColor: "#0f766e",
+      avatarInitial: "A",
+      displayName: "",
+      email: "No email loaded",
+    });
   });
 });
