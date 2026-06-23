@@ -1,11 +1,15 @@
 import type { ChangeEvent, FormEvent } from "react";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Button, Select } from "@/src/ui";
 import type { Expense, Member } from "@/src/trip/types";
 import {
-  detailButtonClassName,
   expenseFormClassName,
+  detailButtonClassName,
 } from "./context-rail.styles";
-import { contextRailExpenseCategoryOptions } from "./context-rail-expense-form-state";
+import {
+  contextRailExpenseCategorySelectOptions,
+  contextRailMemberSelectOptions,
+} from "./context-rail-select-options";
 
 interface ContextRailExpenseFormProps {
   canEditExpenses: boolean;
@@ -75,11 +79,7 @@ export function ContextRailExpenseForm({
           disabled={!canEditExpenses}
           onChange={(event) => onPaidByChange(event.target.value)}
         >
-          {members.map((member) => (
-            <option value={member.id} key={member.id}>
-              {member.displayName}
-            </option>
-          ))}
+          <SelectOptions options={contextRailMemberSelectOptions(members)} />
         </Select>
       </label>
       <label>
@@ -91,11 +91,7 @@ export function ContextRailExpenseForm({
             onCategoryChange(event.target.value as Expense["category"])
           }
         >
-          {contextRailExpenseCategoryOptions.map((category) => (
-            <option value={category} key={category}>
-              {category}
-            </option>
-          ))}
+          <SelectOptions options={contextRailExpenseCategorySelectOptions()} />
         </Select>
       </label>
       <Button

@@ -1,7 +1,6 @@
 import type { ChangeEvent, KeyboardEvent } from "react";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
-import { formatBookingDocTypeLabel } from "@/src/features/itinerary/domain/itinerary-booking-display";
-import { bookingDocTypeOptions } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 import type { BookingDoc, BookingDocType } from "@/src/trip/types";
 import {
   bookingDocClassName,
@@ -18,6 +17,7 @@ import {
   bookingDocQuickFieldPatchFromDraft,
   shouldCommitBookingDocQuickField,
 } from "./context-rail-booking-doc-item-model";
+import { contextRailBookingDocTypeSelectOptions } from "./context-rail-select-options";
 import type {
   ContextRailBookingDocQuickFieldsChangeHandler,
   ContextRailBookingDocTypeChangeHandler,
@@ -88,11 +88,7 @@ export function ContextRailBookingDocItem({
             )
           }
         >
-          {bookingDocTypeOptions.map((type) => (
-            <option key={type} value={type}>
-              {formatBookingDocTypeLabel(type)}
-            </option>
-          ))}
+          <SelectOptions options={contextRailBookingDocTypeSelectOptions()} />
         </Select>
       </label>
       {bookingDocQuickFieldKeys.map((key) => {
