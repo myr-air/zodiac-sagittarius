@@ -12,6 +12,7 @@ import {
   photoAccessSelectOptions,
   photoProviderSelectOptions,
 } from "../model/photo-page-options";
+import { photoAlbumDialogDaySelectOptions } from "../model/photo-album-dialog-fields";
 import type { PhotoAlbumDialogState } from "../hooks/usePhotoAlbumDialogState";
 
 interface PhotoAlbumDialogFieldsProps {
@@ -58,7 +59,7 @@ export function PhotoAlbumDialogFields({
         <span>{copy.dayField}</span>
         <Select value={state.day} onChange={(event) => state.setDay(event.target.value)}>
           <option value="">{copy.tripLevel}</option>
-          {state.days.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
+          <SelectOptions options={photoAlbumDialogDaySelectOptions(trip)} />
         </Select>
       </label>
       <label className={photoStyles.fieldClassName}>

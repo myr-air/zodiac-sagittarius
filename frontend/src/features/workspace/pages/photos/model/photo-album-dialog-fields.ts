@@ -44,6 +44,10 @@ export function photoAlbumDialogDayOptions(trip: Trip): string[] {
   return uniqueStrings(trip.itineraryItems.map((item) => item.day)).sort();
 }
 
+export function photoAlbumDialogDaySelectOptions(trip: Trip): Array<{ value: string; label: string }> {
+  return photoAlbumDialogDayOptions(trip).map((day) => ({ value: day, label: day }));
+}
+
 export function buildPhotoAlbumDialogSubmitInput({
   album,
   fields,

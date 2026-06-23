@@ -5,13 +5,11 @@ import {
 } from "@/src/shared/form-state";
 import type {
   Member,
-  Trip,
   TripPhotoAlbumLink,
 } from "@/src/trip/types";
 import {
   initialPhotoAlbumDialogFields,
   type PhotoAlbumDialogFields,
-  photoAlbumDialogDayOptions,
 } from "../model/photo-album-dialog-fields";
 import type { SubmitPhotoAlbumHandler } from "../TripPhotosPage.types";
 import { usePhotoAlbumDialogActions } from "./usePhotoAlbumDialogActions";
@@ -19,20 +17,17 @@ import { usePhotoAlbumDialogActions } from "./usePhotoAlbumDialogActions";
 interface PhotoAlbumDialogStateInput {
   album: TripPhotoAlbumLink | null;
   currentMember: Member;
-  trip: Trip;
   onSubmit: SubmitPhotoAlbumHandler;
 }
 
 export function usePhotoAlbumDialogState({
   album,
   currentMember,
-  trip,
   onSubmit,
 }: PhotoAlbumDialogStateInput) {
   const initialFields = initialPhotoAlbumDialogFields({ album, currentMember });
   const [formFields, setFormFields] =
     useState<PhotoAlbumDialogFields>(initialFields);
-  const days = photoAlbumDialogDayOptions(trip);
 
   function updateFormField<Field extends keyof PhotoAlbumDialogFields>(
     field: Field,
@@ -57,7 +52,6 @@ export function usePhotoAlbumDialogState({
     access: formFields.access,
     accessNote: formFields.accessNote,
     day: formFields.day,
-    days,
     description: formFields.description,
     ownerMemberId: formFields.ownerMemberId,
     provider: formFields.provider,

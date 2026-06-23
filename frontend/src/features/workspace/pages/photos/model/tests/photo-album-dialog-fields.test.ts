@@ -5,6 +5,7 @@ import {
   buildPhotoAlbumDialogSubmitInput,
   initialPhotoAlbumDialogFields,
   photoAlbumDialogDayOptions,
+  photoAlbumDialogDaySelectOptions,
 } from "../photo-album-dialog-fields";
 
 const currentMember = seedTrip.members[0];
@@ -28,7 +29,7 @@ describe("photo album dialog fields", () => {
   });
 
   it("derives sorted unique itinerary day options", () => {
-    expect(photoAlbumDialogDayOptions({
+    const trip = {
       ...seedTrip,
       itineraryItems: [
         { ...seedTrip.itineraryItems[0]!, day: "2026-06-20" },
@@ -36,7 +37,13 @@ describe("photo album dialog fields", () => {
         { ...seedTrip.itineraryItems[2]!, day: "2026-06-20" },
         { ...seedTrip.itineraryItems[0]!, day: "" },
       ],
-    })).toEqual(["2026-06-18", "2026-06-20"]);
+    };
+
+    expect(photoAlbumDialogDayOptions(trip)).toEqual(["2026-06-18", "2026-06-20"]);
+    expect(photoAlbumDialogDaySelectOptions(trip)).toEqual([
+      { value: "2026-06-18", label: "2026-06-18" },
+      { value: "2026-06-20", label: "2026-06-20" },
+    ]);
   });
 
   it("builds trimmed submit input for new albums", () => {

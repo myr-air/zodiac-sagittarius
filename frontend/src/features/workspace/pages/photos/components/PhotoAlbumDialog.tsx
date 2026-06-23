@@ -28,7 +28,6 @@ export function PhotoAlbumDialog({
   const state = usePhotoAlbumDialogState({
     album,
     currentMember,
-    trip,
     onSubmit,
   });
   const title = album ? copy.editAlbumDialog : copy.addAlbumDialog;
