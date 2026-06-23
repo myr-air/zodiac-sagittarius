@@ -9,9 +9,9 @@ import {
   type StopDetailType,
   type StopDetailValues,
 } from "@/src/features/itinerary/domain/stop-details";
+import { buildInitialStopDialogDraftState } from "./stop-dialog-draft-initial-state";
+import { buildStopDialogDraftSubmitValues } from "./stop-dialog-draft-submit";
 import {
-  buildInitialStopDialogDraftState,
-  buildStopDialogDraftSubmitValues,
   selectStopDialogPlaceCandidate,
   toggleStopDialogNextDayEnd,
   updateStopDialogActivity,
@@ -21,7 +21,7 @@ import {
   updateStopDialogStartTime,
   updateStopDialogTimeMode,
   updateStopDialogValue,
-} from "./stop-dialog-draft-state";
+} from "./stop-dialog-draft-updaters";
 
 interface UseStopDialogDraftStateArgs {
   initialDay?: string;

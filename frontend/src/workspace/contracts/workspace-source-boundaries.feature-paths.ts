@@ -40,7 +40,6 @@ export const workspaceFeatureBoundarySourcePaths = {
   stopDialogTypes: "src/features/itinerary/components/stop-dialog/stop-dialog.types.ts",
   stopDialogModel: "src/features/itinerary/components/stop-dialog/use-stop-dialog-model.ts",
   stopDialogDraftHook: "src/features/itinerary/components/stop-dialog/use-stop-dialog-draft-state.ts",
-  stopDialogDraftState: "src/features/itinerary/components/stop-dialog/stop-dialog-draft-state.ts",
   stopDialogDraftTypes: "src/features/itinerary/components/stop-dialog/stop-dialog-draft.types.ts",
   stopDialogDraftInitialState:
     "src/features/itinerary/components/stop-dialog/stop-dialog-draft-initial-state.ts",

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { PlaceResolutionCandidate } from "@/src/trip/types";
 import { emptyStopDetailValues } from "@/src/features/itinerary/domain/stop-details";
+import { buildInitialStopDialogDraftState } from "../stop-dialog-draft-initial-state";
+import { buildStopDialogDraftSubmitValues } from "../stop-dialog-draft-submit";
 import {
-  buildInitialStopDialogDraftState,
-  buildStopDialogDraftSubmitValues,
   selectStopDialogPlaceCandidate,
   toggleStopDialogNextDayEnd,
   updateStopDialogActivity,
@@ -13,7 +13,7 @@ import {
   updateStopDialogStartTime,
   updateStopDialogTimeMode,
   updateStopDialogValue,
-} from "../stop-dialog-draft-state";
+} from "../stop-dialog-draft-updaters";
 
 const candidate: PlaceResolutionCandidate = {
   address: "Austin Road West, Hong Kong",

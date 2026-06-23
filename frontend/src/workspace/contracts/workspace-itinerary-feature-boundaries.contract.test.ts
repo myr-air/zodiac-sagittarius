@@ -36,7 +36,6 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       stopDialogTypes,
       stopDialogModel,
       stopDialogDraftHook,
-      stopDialogDraftState,
       stopDialogDraftTypes,
       stopDialogDraftInitialState,
       stopDialogDraftUpdaters,
@@ -123,10 +122,10 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
 
     expect(stopDialogModel).toContain("./use-stop-dialog-draft-state");
     expect(stopDialogModel).not.toContain("applyStopActivityInput");
-    expect(stopDialogDraftHook).toContain("./stop-dialog-draft-state");
+    expect(stopDialogDraftHook).toContain("./stop-dialog-draft-initial-state");
+    expect(stopDialogDraftHook).toContain("./stop-dialog-draft-submit");
+    expect(stopDialogDraftHook).toContain("./stop-dialog-draft-updaters");
     expect(stopDialogDraftHook).toContain("export function useStopDialogDraftState");
-    expect(stopDialogDraftState).toContain("./stop-dialog-draft-updaters");
-    expect(stopDialogDraftState).not.toContain("applyStopActivityInput");
     expect(stopDialogDraftTypes).toContain("export interface StopDialogDraftState");
     expect(stopDialogDraftInitialState).toContain("buildInitialStopFormValues");
     expect(stopDialogDraftUpdaters).toContain("applyStopActivityInput");
@@ -145,7 +144,8 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(stopFormValues).toContain("export interface StopFormValues");
     expect(stopDialogTypes).toContain("../../domain/stop-form-values");
     expect(stopDialogTypes).not.toContain("export interface StopFormValues");
-    expect(stopDialogDraftState).not.toContain("@/src/features/itinerary/domain/stop-form-model");
+    expect(stopDialogDraftHook).not.toContain("@/src/features/itinerary/domain/stop-form-model");
+    expect(stopDialogDraftUpdaters).toContain("@/src/features/itinerary/domain/stop-form-model");
     expect(stopFormModel).toContain("./stop-form-time-fields");
     expect(stopFormModel).not.toContain("durationBetweenTimes");
     expect(stopFormModel).toContain("export function applyStopActivityInput");

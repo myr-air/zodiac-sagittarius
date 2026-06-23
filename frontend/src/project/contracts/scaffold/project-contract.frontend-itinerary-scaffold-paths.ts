@@ -250,6 +250,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/stop-dialog/tests/StopDialog.place-resolution.test.tsx",
   "src/features/itinerary/components/stop-dialog/tests/StopDialog.sub-activity.test.tsx",
   "src/features/itinerary/components/stop-dialog/tests/StopDialog.time-window-ui.test.tsx",
+  "src/features/itinerary/components/stop-dialog/tests/stop-dialog-draft-model.test.ts",
   "src/features/itinerary/components/stop-dialog/tests/stop-dialog-field-ids.test.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog-field-ids.ts",
   "src/features/itinerary/components/stop-dialog/stop-dialog.types.ts",
