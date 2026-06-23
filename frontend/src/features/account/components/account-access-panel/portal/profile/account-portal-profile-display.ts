@@ -14,6 +14,10 @@ interface AccountPortalProfileDisplayInput {
   noEmail: string;
 }
 
+export function accountPortalProfileEmail(email: string | null | undefined, noEmail: string): string {
+  return email ?? noEmail;
+}
+
 export function buildAccountPortalProfileDisplay({
   avatarColor,
   displayName,
@@ -24,6 +28,6 @@ export function buildAccountPortalProfileDisplay({
     avatarColor: avatarColor ?? ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR,
     avatarInitial: displayName.slice(0, 1) || "A",
     displayName,
-    email: email ?? noEmail,
+    email: accountPortalProfileEmail(email, noEmail),
   };
 }

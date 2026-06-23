@@ -23,6 +23,7 @@ import {
   accountPortalTransitionDirection,
 } from "./account-portal-dashboard-state";
 import { AccountPortalNav } from "../nav/account-portal-nav";
+import { accountPortalProfileEmail } from "../profile/account-portal-profile-display";
 import { AccountPortalSectionContent } from "./account-portal-section-content";
 
 interface AccountPortalDashboardProps {
@@ -85,7 +86,10 @@ export function AccountPortalDashboard({
 
   return (
     <div className={classNames.dashboard} id="account-portal" data-transition-direction={transitionDirection}>
-      <AccountPortalNav activeSection={activePortalSection} email={settings?.profile.primaryEmail ?? t.access.dashboard.noEmail} />
+      <AccountPortalNav
+        activeSection={activePortalSection}
+        email={accountPortalProfileEmail(settings?.profile.primaryEmail, t.access.dashboard.noEmail)}
+      />
 
       <div className={classNames.portalContent}>
         <AccountPortalSectionContent

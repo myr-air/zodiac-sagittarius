@@ -9,6 +9,7 @@ import {
 } from "@/src/shared/components/portal-skeleton";
 import { getLatestAccountPortalDataCache } from "../data/account-portal-data-cache";
 import { AccountPortalNav } from "../nav/account-portal-nav";
+import { accountPortalProfileEmail } from "../profile/account-portal-profile-display";
 
 export interface AccountPortalLoadingFrameClassNames {
   dashboard: string;
@@ -24,7 +25,10 @@ export function AccountPortalLoadingFrame({
   portalSection: PortalSection;
 }) {
   const { t } = useI18n();
-  const cachedEmail = getLatestAccountPortalDataCache()?.settings?.profile.primaryEmail ?? t.access.dashboard.noEmail;
+  const cachedEmail = accountPortalProfileEmail(
+    getLatestAccountPortalDataCache()?.settings?.profile.primaryEmail,
+    t.access.dashboard.noEmail,
+  );
 
   return (
     <div className={classNames.dashboard} id="account-portal" aria-busy="true">

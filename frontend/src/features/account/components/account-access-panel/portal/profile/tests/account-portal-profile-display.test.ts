@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_PORTAL_PROFILE_FALLBACK_AVATAR_COLOR,
+  accountPortalProfileEmail,
   buildAccountPortalProfileDisplay,
 } from "../account-portal-profile-display";
 
@@ -35,5 +36,11 @@ describe("account portal profile display", () => {
       displayName: "",
       email: "No email loaded",
     });
+  });
+
+  it("normalizes portal email labels consistently", () => {
+    expect(accountPortalProfileEmail("may@example.test", "No email loaded")).toBe("may@example.test");
+    expect(accountPortalProfileEmail(null, "No email loaded")).toBe("No email loaded");
+    expect(accountPortalProfileEmail(undefined, "No email loaded")).toBe("No email loaded");
   });
 });
