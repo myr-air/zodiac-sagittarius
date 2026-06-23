@@ -57,6 +57,8 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessStory,
       accountAccessStorySupport,
       accountAccessFixtures,
+      accountAccessTestUtils,
+      accountAccessRenderTestUtils,
       accountAccessTestClients,
       accountAccessPasskeyTestUtils,
       accountPortalSettingsSection,
@@ -145,6 +147,14 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessFixtures).toContain("export const accountSettings");
     expect(accountAccessFixtures).toContain("export const accountTrip");
     expect(accountAccessFixtures).toContain("export const accountTrips");
+    expect(accountAccessTestUtils).toContain("./account-access-panel-render-utils");
+    expect(accountAccessTestUtils).toContain("./account-access-panel-test-clients");
+    expect(accountAccessTestUtils).toContain("./account-access-panel-passkey-test-utils");
+    expect(accountAccessTestUtils).not.toContain("../AccountAccessPanel");
+    expect(accountAccessRenderTestUtils).toContain("../AccountAccessPanel");
+    expect(accountAccessRenderTestUtils).toContain("export function renderAccountAccessPanel");
+    expect(accountAccessRenderTestUtils).toContain("export function renderTripBuilder");
+    expect(accountAccessRenderTestUtils).toContain("./account-access-panel-test-clients");
     expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-fixtures");
     expect(accountAccessTestClients).toContain("export function createAccountClient");
     expect(accountAccessTestClients).not.toContain("export const accountSettings");
