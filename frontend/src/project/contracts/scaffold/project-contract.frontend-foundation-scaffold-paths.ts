@@ -103,6 +103,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/account/contracts/account-email-login-source-boundaries.contract.test.ts",
   "src/account/contracts/account-settings-source-boundaries.contract.test.ts",
   "src/account/contracts/account-trip-join-source-boundaries.contract.test.ts",
+  "src/account/contracts/account-trip-wizard-source-boundaries.contract.test.ts",
   "src/project/contracts/project-backend-data.contract.test.ts",
   "src/account/contracts/project-account-architecture.contract.test.ts",
   "src/features/itinerary/contracts/project-itinerary-activity-cell.contract.test.ts",
