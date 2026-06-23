@@ -14,6 +14,13 @@ import {
   clearAccountPortalDataCache,
   getAccountPortalDataCache,
 } from "./account-portal-data-cache";
+import {
+  accountPortalDataFailures,
+  type AccountPortalDataLoadResults,
+  loadAccountPortalCoreData,
+  loadAccountPortalData,
+  mergeAccountPortalDataResults,
+} from "./account-portal-data-loaders";
 import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "../auth";
 
 interface UseAccountPortalDataOptions {
@@ -48,32 +55,28 @@ export function useAccountPortalData({
     let cancelled = false;
     const cachedData = getAccountPortalDataCache(accountSession.sessionToken);
 
-    Promise.allSettled([
-      accountClient.loadSettings(accountSession.sessionToken),
-      accountClient.listTrips(accountSession.sessionToken),
-      accountClient.loadStats(accountSession.sessionToken),
-      accountClient.loadExplorer(accountSession.sessionToken),
-      accountClient.listToDos(accountSession.sessionToken),
-      accountClient.listVault(accountSession.sessionToken),
-    ])
+    loadAccountPortalData(accountClient, accountSession.sessionToken)
       .then(([nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]) => {
         if (cancelled) return;
-        const failures = [nextSettings, nextTrips, nextStats, nextExplorer, nextTodos, nextVaultItems]
-          .filter((result) => result.status === "rejected");
+        const results: AccountPortalDataLoadResults = [
+          nextSettings,
+          nextTrips,
+          nextStats,
+          nextExplorer,
+          nextTodos,
+          nextVaultItems,
+        ];
+        const failures = accountPortalDataFailures(results);
         if (nextSettings.status === "fulfilled") setSettings(nextSettings.value);
         if (nextTrips.status === "fulfilled") setTrips(nextTrips.value);
         if (nextStats.status === "fulfilled") setStats(nextStats.value);
         if (nextExplorer.status === "fulfilled") setExplorer(nextExplorer.value);
         if (nextTodos.status === "fulfilled") setTodos(nextTodos.value);
         if (nextVaultItems.status === "fulfilled") setVaultItems(nextVaultItems.value);
-        cacheAccountPortalData(accountSession.sessionToken, {
-          settings: nextSettings.status === "fulfilled" ? nextSettings.value : cachedData?.settings ?? null,
-          trips: nextTrips.status === "fulfilled" ? nextTrips.value : cachedData?.trips ?? [],
-          stats: nextStats.status === "fulfilled" ? nextStats.value : cachedData?.stats ?? null,
-          explorer: nextExplorer.status === "fulfilled" ? nextExplorer.value : cachedData?.explorer ?? null,
-          todos: nextTodos.status === "fulfilled" ? nextTodos.value : cachedData?.todos ?? [],
-          vaultItems: nextVaultItems.status === "fulfilled" ? nextVaultItems.value : cachedData?.vaultItems ?? [],
-        });
+        cacheAccountPortalData(
+          accountSession.sessionToken,
+          mergeAccountPortalDataResults(results, cachedData),
+        );
         if (failures.some((result) => isUnauthenticated(result.reason))) {
           clearAccountPortalDataCache(accountSession.sessionToken);
           onAccountSessionChange(null);
@@ -92,18 +95,14 @@ export function useAccountPortalData({
   }, [accountClient, accountSession, isAccountEntry, onAccountSessionChange, onError]);
 
   async function refreshAccount(sessionToken: string) {
-    const [nextSettings, nextTrips, nextStats] = await Promise.all([
-      accountClient.loadSettings(sessionToken),
-      accountClient.listTrips(sessionToken),
-      accountClient.loadStats(sessionToken),
-    ]);
-    setSettings(nextSettings);
-    setTrips(nextTrips);
-    setStats(nextStats);
+    const coreData = await loadAccountPortalCoreData(accountClient, sessionToken);
+    setSettings(coreData.settings);
+    setTrips(coreData.trips);
+    setStats(coreData.stats);
     cacheAccountPortalData(sessionToken, {
-      settings: nextSettings,
-      trips: nextTrips,
-      stats: nextStats,
+      settings: coreData.settings,
+      trips: coreData.trips,
+      stats: coreData.stats,
       explorer,
       todos,
       vaultItems,

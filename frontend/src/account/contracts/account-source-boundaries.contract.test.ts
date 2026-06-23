@@ -14,6 +14,7 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessModes,
       accountPortalNavItems,
       accountPortalDataCache,
+      accountPortalDataLoaders,
       accountPortalDashboardClassNames,
       accountPortalNewTripSection,
       accountPortalNewTripActions,
@@ -100,6 +101,9 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountPortalNavItems).toContain("appRoutes.portal()");
     expect(accountPortalDataCache).toContain("export function cacheAccountPortalData");
     expect(accountPortalDataCache).toContain("export function getLatestAccountPortalDataCache");
+    expect(accountPortalDataLoaders).toContain("export async function loadAccountPortalData");
+    expect(accountPortalDataLoaders).toContain("export function mergeAccountPortalDataResults");
+    expect(accountPortalDataLoaders).toContain("Promise.allSettled");
     expect(accountPortalDashboardClassNames).toContain("export const accountPortalDashboardClassNames");
     expect(accountPortalDashboardClassNames).toContain("accountStepSummaryClassName");
     expect(accountPortalNewTripSection).toContain("usePortalNewTripSectionActions");

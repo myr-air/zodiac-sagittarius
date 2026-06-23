@@ -70,6 +70,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   accountAccessModes: "src/features/account/components/account-access-panel/model/account-access-modes.ts",
   accountPortalNavItems: "src/features/account/components/account-access-panel/portal/account-portal-nav-items.ts",
   accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
+  accountPortalDataLoaders: "src/features/account/components/account-access-panel/portal/account-portal-data-loaders.ts",
   accountPortalDashboardClassNames:
     "src/features/account/components/account-access-panel/portal/account-portal-dashboard-classnames.ts",
   accountPortalNewTripSection:
