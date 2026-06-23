@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
   activityCellActionsExpandedState,
   activityCellNoteTargetState,
@@ -8,7 +8,7 @@ import {
   initialActivityCellUiState,
 } from "../activity-cell-ui-state";
 
-const item = tripFixture.planItems[0];
+const item = buildItineraryItem();
 
 describe("activity cell ui state", () => {
   it("centralizes the default activity cell ui state", () => {

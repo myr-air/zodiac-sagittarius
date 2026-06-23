@@ -1,8 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { ItineraryNoteModal } from "../ItineraryNoteModal";
+
+const noteItem = buildItineraryItem();
 
 describe("ItineraryNoteModal", () => {
   it("submits a note body", async () => {
@@ -11,7 +13,7 @@ describe("ItineraryNoteModal", () => {
 
     render(
       <ItineraryNoteModal
-        item={tripFixture.planItems[0]}
+        item={noteItem}
         locale="en"
         onClose={vi.fn()}
         onSave={onSave}
@@ -30,7 +32,7 @@ describe("ItineraryNoteModal", () => {
 
     render(
       <ItineraryNoteModal
-        item={tripFixture.planItems[0]}
+        item={noteItem}
         locale="en"
         onClose={onClose}
         onSave={vi.fn()}

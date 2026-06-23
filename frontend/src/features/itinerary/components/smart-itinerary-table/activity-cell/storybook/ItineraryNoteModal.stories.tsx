@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { ItineraryNoteModal } from "../ItineraryNoteModal";
+
+const noteItem = buildItineraryItem();
 
 const meta = {
   title: "Features/Itinerary/ItineraryNoteModal",
   component: ItineraryNoteModal,
   parameters: { layout: "centered" },
   args: {
-    item: tripFixture.planItems[0],
+    item: noteItem,
     locale: "en",
     onClose: () => {},
     onSave: () => {},
