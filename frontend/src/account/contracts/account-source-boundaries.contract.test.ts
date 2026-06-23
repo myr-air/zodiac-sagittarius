@@ -363,7 +363,6 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginStepStage).toContain("EmailLoginStepContent");
     expect(emailLoginStepStage).not.toContain("EmailLoginCredentialsStep");
 
-    expect(tripJoinGate).toContain("./model/trip-join-response-mapper");
     expect(tripJoinGate).toContain("composition/TripJoinGateChrome");
     expect(tripJoinGate).not.toContain("TripJoinGateVisual");
     expect(tripJoinGate).toContain("TripJoinRoomForm");
@@ -395,6 +394,8 @@ describe("Sagittarius account source boundaries", () => {
     expect(tripJoinGateVisual).toContain("export function TripJoinGateVisual");
     expect(tripJoinGateVisual).toContain("tripAccessPhotoKrabiClassName");
     expect(tripJoinGateStyles).toContain("tripAccessRightColumnClassName");
+    expect(tripJoinGate).not.toContain("./model/trip-join-response-mapper");
+    expect(tripJoinGate).not.toContain("export { tripFromJoinResponse }");
     expect(tripJoinGate).not.toContain("function tripFromJoinResponse");
     expect(tripJoinGate).not.toContain("function friendlyErrorText");
     expect(tripJoinGate).not.toContain("assertMainPlanPointerAliasesMatch");

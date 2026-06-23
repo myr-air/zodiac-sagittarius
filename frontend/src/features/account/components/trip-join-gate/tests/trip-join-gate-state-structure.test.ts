@@ -10,6 +10,15 @@ function readTripJoinGateSource(fileName: string) {
 }
 
 describe("trip join gate state structure", () => {
+  it("keeps response mapping out of the public gate component surface", () => {
+    const gateSource = readTripJoinGateSource("TripJoinGate.tsx");
+    const responseMapperSource = readTripJoinGateSource("model/trip-join-response-mapper.ts");
+
+    expect(gateSource).not.toContain("./model/trip-join-response-mapper");
+    expect(gateSource).not.toContain("export { tripFromJoinResponse }");
+    expect(responseMapperSource).toContain("export function tripFromJoinResponse");
+  });
+
   it("keeps invite-token resolution out of the main join gate state hook", () => {
     const stateSource = readTripJoinGateSource("state/use-trip-join-gate-state.ts");
     const inviteTokenSource = readTripJoinGateSource("state/use-trip-join-invite-token-resolution.ts");
