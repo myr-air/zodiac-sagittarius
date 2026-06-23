@@ -6,7 +6,7 @@ import type {
 import type { Messages } from "@/src/i18n/messages";
 import {
   clearAccountPortalDataCache,
-} from "../portal/account-portal-data-cache";
+} from "../portal/data/account-portal-data-cache";
 import {
   isAccountEntryMode,
   type AccountAccessMode,

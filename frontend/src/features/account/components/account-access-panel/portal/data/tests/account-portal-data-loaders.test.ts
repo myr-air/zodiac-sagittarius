@@ -16,7 +16,7 @@ import {
   accountTrip,
   accountTrips,
   createAccountClient,
-} from "../../testing/account-access-panel-test-clients";
+} from "../../../testing/account-access-panel-test-clients";
 
 const sessionToken = "account-session";
 

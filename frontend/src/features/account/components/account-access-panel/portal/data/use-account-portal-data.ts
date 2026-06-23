@@ -21,7 +21,7 @@ import {
   loadAccountPortalData,
   mergeAccountPortalDataResults,
 } from "./account-portal-data-loaders";
-import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "../auth";
+import { ACCESS_ERROR_CODES, isUnauthenticated, rawErrorMessage } from "../../auth";
 
 interface UseAccountPortalDataOptions {
   accountClient: AccountApiClient;

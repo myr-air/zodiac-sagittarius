@@ -80,8 +80,8 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/portal/account-access-panel-portal-content.tsx",
   accountAccessModes: "src/features/account/components/account-access-panel/model/account-access-modes.ts",
   accountPortalNavItems: "src/features/account/components/account-access-panel/portal/account-portal-nav-items.ts",
-  accountPortalDataCache: "src/features/account/components/account-access-panel/portal/account-portal-data-cache.ts",
-  accountPortalDataLoaders: "src/features/account/components/account-access-panel/portal/account-portal-data-loaders.ts",
+  accountPortalDataCache: "src/features/account/components/account-access-panel/portal/data/account-portal-data-cache.ts",
+  accountPortalDataLoaders: "src/features/account/components/account-access-panel/portal/data/account-portal-data-loaders.ts",
   accountPortalExplorerSection:
     "src/features/account/components/account-access-panel/portal/portal-explorer-section.tsx",
   accountPortalExplorerModel: "src/features/account/components/account-access-panel/portal/account-portal-explorer-model.ts",
