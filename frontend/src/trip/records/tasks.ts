@@ -2,6 +2,7 @@ import type {
   CreateTaskApiRequest,
   PatchTaskApiRequest,
 } from "../api-client";
+import { findById } from "@/src/shared/collection";
 import type { TripTask } from "../types";
 
 export interface TaskCreateInputLike {
@@ -117,6 +118,13 @@ export function replaceTask(tasks: TripTask[], task: TripTask): TripTask[] {
   return tasks.map((candidate) =>
     candidate.id === task.id ? task : candidate,
   );
+}
+
+export function findTaskById(
+  tasks: readonly TripTask[],
+  taskId: string | null | undefined,
+): TripTask | null {
+  return findById(tasks, taskId);
 }
 
 export function toggledTaskStatus(task: Pick<TripTask, "status">): TripTask["status"] {

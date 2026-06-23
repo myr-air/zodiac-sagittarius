@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { nextClientMutationId } from "@/src/trip/identity";
 import {
   buildToggleTaskStatusRequest,
+  findTaskById,
   replaceTask,
   toggleLocalTaskStatus,
 } from "@/src/trip/records";
@@ -21,7 +22,7 @@ export function useToggleWorkspaceTaskStatusCommand({
   return useCallback(
     async (taskId) => {
       if (isApiMode && resolveApiClient && participantSession) {
-        const task = tasks.find((candidate) => candidate.id === taskId);
+        const task = findTaskById(tasks, taskId);
         if (!task) return;
         const nextTask = await resolveApiClient.patchTask(
           trip.id,

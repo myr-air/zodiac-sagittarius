@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { findDuplicateBookingDoc } from "@/src/trip/booking-docs";
+import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { buildItineraryBookingDraftInput } from "./booking-command-draft-inputs";
 import type {
   CreateItineraryBookingDraftCommand,
@@ -29,7 +30,7 @@ export function useCreateItineraryBookingDraftCommand({
   return useCallback(
     async (itemId, template = "recommended") => {
       if (!canEditBookings) return;
-      const item = trip.itineraryItems.find((candidate) => candidate.id === itemId);
+      const item = findItineraryItemById(trip.itineraryItems, itemId);
       if (!item) return;
       const bookingDocInput = buildItineraryBookingDraftInput({
         currentMemberId,

@@ -4,6 +4,7 @@ import {
   buildTaskCreateDraft,
   createLocalTask,
   createLocalTaskInList,
+  findTaskById,
   replaceTask,
   toggledTaskStatus,
   toggleLocalTaskStatus,
@@ -71,6 +72,12 @@ describe("task local mutations", () => {
       expect.objectContaining({ id: "task-existing", title: "Updated hotel" }),
       expect.objectContaining({ id: "task-local-2", title: "Book ferry" }),
     ]);
+
+    expect(findTaskById(created, "task-local-2")).toEqual(
+      expect.objectContaining({ id: "task-local-2", title: "Book ferry" }),
+    );
+    expect(findTaskById(created, "missing-task")).toBeNull();
+    expect(findTaskById(created, null)).toBeNull();
   });
 
   it("toggles task status for one local task", () => {
