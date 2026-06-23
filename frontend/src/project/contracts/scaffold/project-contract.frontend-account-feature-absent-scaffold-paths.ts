@@ -206,6 +206,7 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder-submit.test.tsx",
   "src/features/account/components/account-access-panel/AccountAccessPanel.trip-builder.test.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/trip-preview-map.tsx",
+  "src/features/account/components/account-access-panel/trip-wizard/map/index.ts",
   "src/features/account/components/account-access-panel/trip-wizard/trip-preview-map-fallback.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/trip-preview-map-fallback.test.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/map/trip-preview-map-fallback.test.tsx",
