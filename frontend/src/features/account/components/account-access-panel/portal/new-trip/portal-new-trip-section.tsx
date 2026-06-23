@@ -13,6 +13,7 @@ import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import { appRoutes } from "@/src/routes/app-routes";
 import { PortalTripWizard } from "../../trip-wizard/portal-trip-wizard";
 import { PortalCreatedTripShare } from "../../trip-wizard/share/portal-created-trip-share";
+import { accountPortalProfileDisplayName } from "../profile/account-portal-profile-display";
 import { usePortalNewTripSectionActions } from "./usePortalNewTripSectionActions";
 
 interface PortalNewTripSectionClassNames {
@@ -41,7 +42,10 @@ export function PortalNewTripSection({
   settings: AccountSettings | null;
 }) {
   const { t } = useI18n();
-  const defaultOwnerDisplayName = settings?.profile.displayName ?? t.access.dashboard.fallbackName;
+  const defaultOwnerDisplayName = accountPortalProfileDisplayName(
+    settings?.profile.displayName,
+    t.access.dashboard.fallbackName,
+  );
   const {
     copyText,
     hasCopied: hasCopiedCreatedInvite,

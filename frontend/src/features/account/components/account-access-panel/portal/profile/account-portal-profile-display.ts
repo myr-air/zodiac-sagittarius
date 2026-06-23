@@ -18,6 +18,10 @@ export function accountPortalProfileEmail(email: string | null | undefined, noEm
   return email ?? noEmail;
 }
 
+export function accountPortalProfileDisplayName(displayName: string | null | undefined, fallbackName: string): string {
+  return displayName ?? fallbackName;
+}
+
 export function buildAccountPortalProfileDisplay({
   avatarColor,
   displayName,

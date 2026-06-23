@@ -4,6 +4,7 @@ import type {
   AccountTripStats,
 } from "@/src/account/api-client";
 import {
+  accountPortalProfileDisplayName,
   buildAccountPortalProfileDisplay,
   type AccountPortalProfileDisplay,
 } from "../profile/account-portal-profile-display";
@@ -39,7 +40,7 @@ export function buildAccountPortalDashboardProfile(
   settings: AccountSettings | null,
   labels: Pick<AccountPortalDashboardLabels, "fallbackName" | "noEmail">,
 ): AccountPortalDashboardProfile {
-  const displayName = settings?.profile.displayName ?? labels.fallbackName;
+  const displayName = accountPortalProfileDisplayName(settings?.profile.displayName, labels.fallbackName);
   return buildAccountPortalProfileDisplay({
     avatarColor: settings?.profile.avatarColor,
     displayName,

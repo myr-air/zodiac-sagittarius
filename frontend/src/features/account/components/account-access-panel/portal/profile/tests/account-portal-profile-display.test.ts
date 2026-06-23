@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../../model/account-profile-defaults";
 import {
+  accountPortalProfileDisplayName,
   accountPortalProfileEmail,
   buildAccountPortalProfileDisplay,
 } from "../account-portal-profile-display";
@@ -42,5 +43,11 @@ describe("account portal profile display", () => {
     expect(accountPortalProfileEmail("may@example.test", "No email loaded")).toBe("may@example.test");
     expect(accountPortalProfileEmail(null, "No email loaded")).toBe("No email loaded");
     expect(accountPortalProfileEmail(undefined, "No email loaded")).toBe("No email loaded");
+  });
+
+  it("normalizes portal display names consistently", () => {
+    expect(accountPortalProfileDisplayName("May", "Account")).toBe("May");
+    expect(accountPortalProfileDisplayName(null, "Account")).toBe("Account");
+    expect(accountPortalProfileDisplayName(undefined, "Account")).toBe("Account");
   });
 });
