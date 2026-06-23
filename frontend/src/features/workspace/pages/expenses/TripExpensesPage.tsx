@@ -1,10 +1,8 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
-import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { ExpenseDialog } from "./components/ExpenseDialog";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
+import { ExpensePageHeader } from "./components/ExpensePageHeader";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { TripExpensesPageProps } from "./model/expense-page-types";
@@ -72,17 +70,11 @@ export function TripExpensesPage({
 
   return (
     <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
-      <PageHeader
-        title={t.expenses.title}
-        subtitle={trip.name}
-        meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-            <span><Icon name="users" /> {t.dates.memberCount({ count: trip.members.length })}</span>
-            <span><Icon name="wallet" /> {canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</span>
-          </>
-        )}
-        motif={<TravelMotif tone="route" />}
+      <ExpensePageHeader
+        canEditExpenses={canEditExpenses}
+        locale={locale}
+        t={t}
+        trip={trip}
       />
 
       <ExpenseSummaryStats

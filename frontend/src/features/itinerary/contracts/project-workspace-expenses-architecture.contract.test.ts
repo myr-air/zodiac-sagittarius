@@ -15,6 +15,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
     const expenseLedgerRows = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerRows.tsx");
     const expenseLedgerDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-ledger-display.ts");
+    const expensePageHeader = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpensePageHeader.tsx");
     const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
     const expenseOverviewSections = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewSections.tsx");
     const expenseOverviewDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-overview-display.ts");
@@ -42,6 +43,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
 
     expect(expensesPage).toContain("./hooks/use-trip-expenses-page-state");
+    expect(expensesPage).toContain("./components/ExpensePageHeader");
+    expect(expensesPage).not.toContain("formatTripRange");
+    expect(expensesPage).not.toContain("TravelMotif");
     expect(expensesPage).not.toContain("useState");
     expect(expensesPage).not.toContain("useMemo");
     expect(expensesPage).not.toContain("buildExpenseCsv");
@@ -71,6 +75,10 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensePageFilters).toContain("../model/expense-page-filter-state");
     expect(expensePageFilters).toContain("const [filterState, setFilterState]");
     expect(expensePageFilters).toContain("export function useExpensePageFilters");
+    expect(expensePageHeader).toContain("export function ExpensePageHeader");
+    expect(expensePageHeader).toContain("PageHeader");
+    expect(expensePageHeader).toContain("formatTripRange");
+    expect(expensePageHeader).toContain("TravelMotif");
     expect(expensesState).not.toContain("buildExpenseCsv");
     expect(expensesState).not.toContain("buildSettlementExpenseInput");
     expect(expensesState).not.toContain("buildRefundExpenseInput");
