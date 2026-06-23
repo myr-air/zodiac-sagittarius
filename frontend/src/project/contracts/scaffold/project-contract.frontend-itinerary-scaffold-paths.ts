@@ -190,6 +190,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityTimeButton.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/TimeEditModal.tsx",
+  "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-time-edit-modal-actions.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-time-edit-modal-model.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/tests/ItineraryNoteModal.test.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/time-components.types.ts",

@@ -1,15 +1,15 @@
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 
 import { buildTimeEditModalModel } from "@/src/features/itinerary/domain/time-edit-modal-model";
 
 import type { TimeEditModalProps } from "./time-components.types";
 import {
   initialTimeEditModalFormState,
-  setTimeEditModalSaving,
   toggleTimeEditModalEndOffsetDays,
   updateTimeEditModalEndTime,
   updateTimeEditModalStartTime,
 } from "./time-edit-modal-state";
+import { useTimeEditModalActions } from "./use-time-edit-modal-actions";
 
 export function useTimeEditModalModel({
   item,
@@ -26,6 +26,13 @@ export function useTimeEditModalModel({
     locale,
     startTime: state.startTime,
   });
+  const actions = useTimeEditModalActions({
+    model,
+    onClose,
+    onSave,
+    setState,
+    state,
+  });
 
   function updateStartTime(nextStartTime: string) {
     setState((current) =>
@@ -37,29 +44,11 @@ export function useTimeEditModalModel({
     setState((current) => updateTimeEditModalEndTime(current, nextEndTime));
   }
 
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (state.saving || model.errorMessage) return;
-    const trimmedEndTime = state.endTime.trim();
-    setState((current) => setTimeEditModalSaving(current, true));
-    try {
-      await onSave({
-        startTime: state.startTime.trim(),
-        endTime: trimmedEndTime || null,
-        endOffsetDays: trimmedEndTime ? state.endOffsetDays : 0,
-        durationMinutes: trimmedEndTime ? model.derivedDuration : null,
-      });
-      onClose();
-    } finally {
-      setState((current) => setTimeEditModalSaving(current, false));
-    }
-  }
-
   return {
     endOffsetDays: state.endOffsetDays,
     endTime: state.endTime,
     model,
-    save,
+    save: actions.save,
     saving: state.saving,
     startTime: state.startTime,
     toggleEndOffsetDays: () =>

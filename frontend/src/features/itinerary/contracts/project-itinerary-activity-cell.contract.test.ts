@@ -86,6 +86,9 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     const hook = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-time-edit-modal-model.ts",
     );
+    const actions = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-time-edit-modal-actions.ts",
+    );
     const modalPortal = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalPortal.tsx",
     );
@@ -134,10 +137,16 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(hook).toContain("export function useTimeEditModalModel");
     expect(hook).toContain("@/src/features/itinerary/domain/time-edit-modal-model");
     expect(hook).toContain("./time-edit-modal-state");
+    expect(hook).toContain("./use-time-edit-modal-actions");
     expect(hook).toContain("const [state, setState]");
+    expect(hook).toContain("const actions = useTimeEditModalActions");
+    expect(hook).not.toContain("async function save");
     expect(hook).not.toContain("const [startTime, setStartTime]");
     expect(hook).not.toContain("const [endTime, setEndTime]");
     expect(hook).not.toContain("const [endOffsetDays, setEndOffsetDays]");
+    expect(actions).toContain("export function useTimeEditModalActions");
+    expect(actions).toContain("export function buildTimeEditModalSavePatch");
+    expect(actions).toContain("async function save");
     expect(timeEditState).toContain("export interface TimeEditModalFormState");
     expect(timeEditState).toContain("initialTimeEditModalFormState");
     expect(timeEditState).toContain("endOffsetDaysBetweenTimes");
