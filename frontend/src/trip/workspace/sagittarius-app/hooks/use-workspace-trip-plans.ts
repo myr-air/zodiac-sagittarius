@@ -117,3 +117,7 @@ export function useWorkspaceTripPlanCommands({
     renameTripPlan,
   };
 }
+
+export type WorkspaceTripPlanCommands = ReturnType<
+  typeof useWorkspaceTripPlanCommands
+>;

@@ -143,3 +143,7 @@ export function useWorkspacePlanningRecordsContext({
     updateStopNote,
   };
 }
+
+export type WorkspacePlanningRecordsContext = ReturnType<
+  typeof useWorkspacePlanningRecordsContext
+>;

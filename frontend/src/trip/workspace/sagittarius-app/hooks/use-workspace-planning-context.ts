@@ -6,6 +6,7 @@ import {
 import { useWorkspaceApiCockpitEffects } from "./use-workspace-api-cockpit-effects";
 import { useWorkspaceCockpitReplacement } from "./use-workspace-cockpit-replacement";
 import { useWorkspacePlanningRecordsContext } from "./use-workspace-planning-records-context";
+import { buildWorkspacePlanningContextOutput } from "./workspace-planning-context-output";
 import type { UseWorkspacePlanningContextParams } from "./use-workspace-planning-context-params";
 import { useWorkspaceSelectedTripPlanSync } from "./use-workspace-selected-trip-plan";
 import { useWorkspaceTripPlanCommands } from "./use-workspace-trip-plans";
@@ -75,19 +76,7 @@ export function useWorkspacePlanningContext({
     trip,
   });
   const {
-    createItineraryNote,
-    createStopNote,
-    createTask,
-    deleteStopNote,
     replaceWorkspaceRecords,
-    reviewSuggestion,
-    setStopNotes,
-    setTasks,
-    stopNotes,
-    suggestSelectedStop,
-    tasks,
-    toggleTaskStatus,
-    updateStopNote,
   } = records;
 
   const replaceCockpitFromApi = useWorkspaceCockpitReplacement({
@@ -97,13 +86,7 @@ export function useWorkspacePlanningContext({
     setTripState,
   });
 
-  const {
-    createTripPlan,
-    selectTripPlan,
-    setMainTripPlan,
-    updateTripPlanStatus,
-    renameTripPlan,
-  } = useWorkspaceTripPlanCommands({
+  const tripPlanCommands = useWorkspaceTripPlanCommands({
     canManageTripPlans,
     isApiMode,
     latestTripRef,
@@ -139,35 +122,11 @@ export function useWorkspacePlanningContext({
     updateApiTrip,
   });
 
-  return {
-    createItineraryNote,
-    createStopNote,
-    createTask,
-    createTripPlan,
-    deleteStopNote,
-    expenseSummary: records.expenseSummary,
-    itineraryView: records.itineraryView,
-    mainItineraryView: records.mainItineraryView,
-    renameTripPlan,
+  return buildWorkspacePlanningContextOutput({
+    records,
     replaceCockpitFromApi,
-    reviewSuggestion,
-    scopedSuggestions: records.scopedSuggestions,
-    scopedTripForRecords: records.scopedTripForRecords,
-    scopedTripPlanRecords: records.scopedTripPlanRecords,
-    selectTripPlan,
-    selectedDay: records.selectedDay,
-    selectedItem: records.selectedItem,
-    selectedItemIdForView: records.selectedItemIdForView,
-    setMainTripPlan,
-    setStopNotes,
-    setTasks,
-    stopNotes,
-    suggestSelectedStop,
-    tasks,
-    toggleTaskStatus,
-    updateStopNote,
-    updateTripPlanStatus,
-  };
+    tripPlanCommands,
+  });
 }
 
 export type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
