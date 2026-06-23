@@ -11,6 +11,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
       bookingDialog,
       bookingDialogFields,
       bookingFilePanel,
+      bookingFileList,
       bookingDialogLinks,
       bookingDialogState,
       checkboxGroup,
@@ -52,8 +53,11 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(bookingDialogLinks).toContain("@/src/shared/components/checkbox-group");
     expect(checkboxGroup).toContain("export function CheckboxGroup");
     expect(workspaceEmptyState).toContain("export function WorkspaceEmptyState");
-    expect(bookingFilePanel).toContain("@/src/shared/components/workspace-empty-state");
+    expect(bookingFilePanel).toContain("./BookingFileList");
+    expect(bookingFilePanel).not.toContain("@/src/shared/components/workspace-empty-state");
+    expect(bookingFileList).toContain("@/src/shared/components/workspace-empty-state");
     expect(bookingFilePanel).not.toContain("grid max-w-[360px] gap-1");
+    expect(bookingFileList).not.toContain("grid max-w-[360px] gap-1");
     expect(bookingDialogState).toContain("export function useBookingDialogState");
     expect(bookingDialogState).toContain("export type BookingDialogState");
     expect(bookingDialogState).not.toContain("@/src/features/itinerary/lib/itinerary-time");
