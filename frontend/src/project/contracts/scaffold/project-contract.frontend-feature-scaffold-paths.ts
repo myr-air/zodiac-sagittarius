@@ -27,6 +27,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/portal/tests/account-portal-data-cache.test.ts",
   "src/features/account/components/account-access-panel/portal/account-portal-data-loaders.ts",
   "src/features/account/components/account-access-panel/portal/tests/account-portal-data-loaders.test.ts",
+  "src/features/account/components/account-access-panel/portal/account-portal-explorer-model.ts",
+  "src/features/account/components/account-access-panel/portal/tests/account-portal-explorer-model.test.ts",
   "src/features/account/components/account-access-panel/layout/account-access-panel-layout.ts",
   "src/features/account/components/account-access-panel/layout/account-access-panel-shell-classes.ts",
   "src/features/account/components/account-access-panel/layout/tests/account-access-panel-shell-classes.test.ts",

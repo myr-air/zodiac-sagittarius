@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useState } from "react";
+import { useState } from "react";
 import type { AccountExplorerSummary, AccountTripSummary } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -10,6 +10,10 @@ import { cn } from "@/src/lib/cn";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton, SettingLine } from "./account-portal-primitives";
+import {
+  accountPortalExplorerPinStyle,
+  buildAccountPortalExplorerTrips,
+} from "./account-portal-explorer-model";
 
 interface PortalExplorerSectionClassNames {
   section: string;
@@ -37,12 +41,7 @@ export function PortalExplorerSection({
 }) {
   const { t } = useI18n();
   const [explorerQuery, setExplorerQuery] = useState("");
-  const sharedTrips = trips.filter((trip) => !trip.isOwner);
-  const explorerTrips = (sharedTrips.length ? sharedTrips : trips).filter((trip) => {
-    const query = explorerQuery.trim().toLocaleLowerCase();
-    if (!query) return true;
-    return `${trip.name} ${trip.destinationLabel} ${trip.role}`.toLocaleLowerCase().includes(query);
-  });
+  const explorerTrips = buildAccountPortalExplorerTrips(trips, explorerQuery);
 
   return (
     <section className={cn(classNames.section, "portal-explorer-card")} id="portal-explorer">
@@ -73,7 +72,7 @@ export function PortalExplorerSection({
           <span
             className={portalMapPinClassName}
             key={trip.id}
-            style={{ "--pin-x": `${22 + index * 17}%`, "--pin-y": `${32 + (index % 2) * 26}%` } as CSSProperties}
+            style={accountPortalExplorerPinStyle(index)}
             title={`${trip.name}, ${trip.destinationLabel}`}
           >
             <Icon name="location" />
