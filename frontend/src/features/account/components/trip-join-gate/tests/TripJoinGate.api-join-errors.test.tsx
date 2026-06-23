@@ -2,12 +2,10 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { TripApiError } from "@/src/trip/api-client";
 import { TripJoinGate } from "../TripJoinGate";
-import {
-  createApiClient,
-  installLocalStorageStub,
-} from "../testing/support/trip-join-gate-test-utils";
+import { createApiClient } from "../testing/support/trip-join-gate-test-utils";
 
 const render = renderWithI18n;
 

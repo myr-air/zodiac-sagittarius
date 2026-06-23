@@ -1,7 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-export { installLocalStorageStub } from "@/src/testing/browser-storage";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { TripRole } from "@/src/trip/types";

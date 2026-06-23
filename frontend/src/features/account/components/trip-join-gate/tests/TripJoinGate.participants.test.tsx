@@ -2,13 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { claimTripParticipant } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "../TripJoinGate";
-import {
-  enterTripRoom,
-  installLocalStorageStub,
-} from "../testing/support/trip-join-gate-test-utils";
+import { enterTripRoom } from "../testing/support/trip-join-gate-test-utils";
 
 const render = renderWithI18n;
 

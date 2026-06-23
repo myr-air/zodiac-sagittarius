@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TripApiClient, TripCockpit } from "@/src/trip/api-client";
 import { renderWithI18n } from "@/src/i18n/test-utils";
+import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
 import { TripJoinGate } from "../TripJoinGate";
-import { installLocalStorageStub } from "../testing/support/trip-join-gate-test-utils";
 
 const render = renderWithI18n;
 
