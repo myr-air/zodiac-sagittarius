@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
   buildInitialStopDetailValues,
   buildInitialStopFormValues,
@@ -26,12 +26,11 @@ describe("stop dialog form defaults", () => {
   });
 
   it("builds edit defaults from the selected item", () => {
-    const initialItem = {
-      ...tripFixture.planItems[0],
+    const initialItem = buildItineraryItem({
       endTime: null,
       durationMinutes: 75,
       startTime: "10:00",
-    };
+    });
 
     expect(buildInitialStopFormValues({ initialItem })).toMatchObject({
       activity: initialItem.activity,
@@ -43,11 +42,12 @@ describe("stop dialog form defaults", () => {
 
   it("prefills structured detail values with transportation fallback", () => {
     expect(
-      buildInitialStopDetailValues({
-        ...tripFixture.planItems[0],
-        transportation: "Plane",
-        details: { kind: "transportation", origin: "DMK", destination: "HKG" },
-      }),
+      buildInitialStopDetailValues(
+        buildItineraryItem({
+          transportation: "Plane",
+          details: { kind: "transportation", origin: "DMK", destination: "HKG" },
+        }),
+      ),
     ).toEqual({
       ...emptyStopDetailValues,
       origin: "DMK",

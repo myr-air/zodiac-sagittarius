@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import {
   buildStructuredStopDetails,
   detailKeysForType,
@@ -46,25 +46,28 @@ describe("stop details model", () => {
 
   it("resolves detail type from current item activity kind", () => {
     expect(
-      detailTypeFromItem({
-        ...tripFixture.planItems[0],
-        activityType: "travel",
-        details: {},
-      }),
+      detailTypeFromItem(
+        buildItineraryItem({
+          activityType: "travel",
+          details: {},
+        }),
+      ),
     ).toBe("transportation");
     expect(
-      detailTypeFromItem({
-        ...tripFixture.planItems[0],
-        activityType: "stay",
-        details: {},
-      }),
+      detailTypeFromItem(
+        buildItineraryItem({
+          activityType: "stay",
+          details: {},
+        }),
+      ),
     ).toBe("stay");
     expect(
-      detailTypeFromItem({
-        ...tripFixture.planItems[0],
-        activityType: "experience",
-        details: {},
-      }),
+      detailTypeFromItem(
+        buildItineraryItem({
+          activityType: "experience",
+          details: {},
+        }),
+      ),
     ).toBe("experience");
   });
 
