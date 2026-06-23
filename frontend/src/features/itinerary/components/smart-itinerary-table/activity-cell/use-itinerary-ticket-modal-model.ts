@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import type { Locale } from "@/src/i18n/types";
 import type { ItineraryBookingTicketInput } from "@/src/trip/booking-docs";
 import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
@@ -7,21 +7,17 @@ import {
   bookingTemplateForItem,
 } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import {
-  buildTicketSubmitInput,
   findLinkedTicket,
   findTicketCandidates,
 } from "@/src/features/itinerary/domain/booking-ticket-form";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
 import {
-  beginItineraryTicketModalViewSave,
-  beginItineraryTicketModalViewUnlink,
   buildInitialItineraryTicketModalViewState,
-  completeItineraryTicketModalViewSubmit,
-  isItineraryTicketModalViewSubmitting,
   selectExistingItineraryTicket,
   selectExistingItineraryTicketMode,
   selectNewItineraryTicketMode,
 } from "./itinerary-ticket-modal-view-state";
+import { useItineraryTicketModalActions } from "./use-itinerary-ticket-modal-actions";
 import { useItineraryTicketFormValues } from "./use-itinerary-ticket-form-values";
 
 interface UseItineraryTicketModalModelOptions {
@@ -90,46 +86,18 @@ export function useItineraryTicketModalModel({
     hydrateTicketFields(booking);
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedTitle = formValues.title.trim();
-    if (isItineraryTicketModalViewSubmitting(viewState) || !trimmedTitle) return;
-    setViewState((current) => beginItineraryTicketModalViewSave(current));
-    try {
-      await onSave(
-        buildTicketSubmitInput({
-          item,
-          mode: viewState.mode,
-          selectedBooking,
-          selectedBookingId: viewState.selectedBookingId,
-          template,
-          type,
-          values: {
-            ...formValues,
-            title: trimmedTitle,
-          },
-        }),
-      );
-    } finally {
-      setViewState((current) => completeItineraryTicketModalViewSubmit(current));
-    }
-  }
-
-  async function unlinkCurrentBooking() {
-    if (
-      !currentLinkedBooking ||
-      !onUnlink ||
-      isItineraryTicketModalViewSubmitting(viewState)
-    ) {
-      return;
-    }
-    setViewState((current) => beginItineraryTicketModalViewUnlink(current));
-    try {
-      await onUnlink(currentLinkedBooking.id);
-    } finally {
-      setViewState((current) => completeItineraryTicketModalViewSubmit(current));
-    }
-  }
+  const { submit, unlinkCurrentBooking } = useItineraryTicketModalActions({
+    currentLinkedBooking,
+    formValues,
+    item,
+    onSave,
+    onUnlink,
+    selectedBooking,
+    setViewState,
+    template,
+    type,
+    viewState,
+  });
 
   return {
     confirmationCode: formValues.confirmationCode,

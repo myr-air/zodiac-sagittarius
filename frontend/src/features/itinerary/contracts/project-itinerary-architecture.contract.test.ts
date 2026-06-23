@@ -197,6 +197,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const ticketFieldGrid = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/TicketFieldGrid.tsx");
     const linkedActivitiesPicker = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/LinkedActivitiesPicker.tsx");
     const ticketModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-model.ts");
+    const ticketActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-modal-actions.ts");
     const ticketFormValues = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-ticket-form-values.ts");
     const ticketViewState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/itinerary-ticket-modal-view-state.ts");
     const ticketForm = readItineraryArchitectureSource("src/features/itinerary/domain/booking-ticket-form.ts");
@@ -242,9 +243,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(linkedActivitiesPicker).toContain("toggleId");
     expect(ticketModel).toContain("export function useItineraryTicketModalModel");
     expect(ticketModel).toContain("@/src/features/itinerary/domain/booking-ticket-form");
+    expect(ticketModel).toContain("./use-itinerary-ticket-modal-actions");
     expect(ticketModel).toContain("./use-itinerary-ticket-form-values");
     expect(ticketModel).toContain("./itinerary-ticket-modal-view-state");
     expect(ticketModel).toContain("const [viewState, setViewState]");
+    expect(ticketModel).not.toContain("buildTicketSubmitInput");
+    expect(ticketModel).not.toContain("beginItineraryTicketModalViewSave");
+    expect(ticketActions).toContain("export function useItineraryTicketModalActions");
+    expect(ticketActions).toContain("buildTicketSubmitInput");
+    expect(ticketActions).toContain("beginItineraryTicketModalViewSave");
+    expect(ticketActions).toContain("beginItineraryTicketModalViewUnlink");
     expect(ticketModel).not.toContain("type TicketFormValues");
     expect(ticketModel).not.toContain("const [formValues, setFormValues]");
     expect(ticketModel).not.toContain("@/src/shared/form-state");
