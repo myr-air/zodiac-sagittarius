@@ -1,4 +1,5 @@
 pub mod account;
+pub mod account_email;
 pub mod account_mappers;
 pub mod auth;
 pub mod bookings;
