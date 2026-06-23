@@ -8,6 +8,7 @@ use crate::domain::errors::ServiceError;
 use crate::domain::patches::{
     CreatePlanVariantRequest, PatchPlanVariantRequest, PublishPlanVariantRequest,
 };
+use crate::domain::plan_status::legacy_kind_for_plan_status;
 use crate::domain::types::{Capability, PlanVariantSummary, TripSummary};
 use crate::realtime::RealtimeHub;
 
@@ -246,15 +247,6 @@ pub async fn publish_plan_variant(
     realtime.publish(event).await;
 
     Ok(summary)
-}
-
-fn legacy_kind_for_plan_status(status: &str) -> &'static str {
-    match status {
-        "proposal" => "split",
-        "main" => "main",
-        "backup" => "backup",
-        _ => "draft",
-    }
 }
 
 async fn insert_variant_event(

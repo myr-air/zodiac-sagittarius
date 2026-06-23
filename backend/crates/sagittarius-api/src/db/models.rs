@@ -2,6 +2,7 @@ use sqlx::{FromRow, types::Json};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
+use crate::domain::plan_status::legacy_kind_for_plan_status;
 use crate::domain::types::{
     AccountSessionKind, ClaimableMember, ExpenseItemSummary, ItineraryCoordinates,
     ItineraryItemSummary, LocalizedText, PlanCheckSummary, PlanSuggestionSummary,
@@ -448,15 +449,6 @@ impl PlanVariantSummary {
             summary.status = "backup".to_string();
         }
         summary
-    }
-}
-
-fn legacy_kind_for_plan_status(status: &str) -> &'static str {
-    match status {
-        "main" => "main",
-        "backup" => "backup",
-        "proposal" => "split",
-        _ => "draft",
     }
 }
 
