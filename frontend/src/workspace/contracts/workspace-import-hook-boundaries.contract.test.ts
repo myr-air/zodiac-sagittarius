@@ -40,7 +40,8 @@ describe("Sagittarius workspace import hook source boundaries", () => {
     expect(itineraryImportRecordMapping).toContain("export function buildImportedPlanRecordsForTripPlan");
     expect(itineraryImportRecordMerge).toContain("export function mergeImportedRecordsIntoTripPlan");
     expect(itineraryImportRecordMerge).toContain("export function mergeApiImportedPlanRecordsIntoTrip");
-    expect(itineraryImportRecordMerge).toContain("export function upsertById");
+    expect(itineraryImportRecordMerge).toContain("@/src/shared/collection");
+    expect(itineraryImportRecordMerge).not.toContain("function upsertById");
     expect(importApplyCommand).toContain("./command-inputs/workspace-itinerary-import-apply-inputs");
     expect(importApplyCommand).not.toContain("@/src/trip/workspace/itinerary-import-record-mapping");
     expect(importApplyCommand).toContain("@/src/trip/workspace/itinerary-import-record-merge");

@@ -5,6 +5,7 @@ export {
   findById,
   type IdSource,
   mapById,
+  upsertById,
 } from "./find-by-id";
 export {
   toggleId,

@@ -13,7 +13,6 @@ export {
   mergeImportedRecordsIntoTripPlan,
   mergeImportedStopNotes,
   mergeImportedTasks,
-  upsertById,
 } from "./itinerary-import-record-merge";
 
 export interface PendingItineraryImport {

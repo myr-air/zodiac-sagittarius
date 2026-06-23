@@ -1,3 +1,4 @@
+import { upsertById } from "@/src/shared/collection";
 import type {
   ItineraryItem,
   StopNote,
@@ -58,18 +59,4 @@ export function mergeImportedStopNotes(
   records: Pick<ImportedPlanRecords, "stopNotes">,
 ): StopNote[] {
   return upsertById(currentStopNotes, records.stopNotes);
-}
-
-export function upsertById<T extends { id: string }>(
-  current: T[],
-  next: T[],
-): T[] {
-  if (next.length === 0) return current;
-  const nextById = new Map(next.map((item) => [item.id, item]));
-  const merged = current.map((item) => nextById.get(item.id) ?? item);
-  const currentIds = new Set(current.map((item) => item.id));
-  for (const item of next) {
-    if (!currentIds.has(item.id)) merged.push(item);
-  }
-  return merged;
 }
