@@ -5,6 +5,7 @@ import {
   activityTimeStartClassName,
 } from "../smart-itinerary-table.styles";
 import { formatTimeTooltip } from "@/src/features/itinerary/domain/itinerary-item-editing";
+import { formatInlineTimeLabels } from "@/src/features/itinerary/domain/itinerary-time-display";
 import { TimeEditModal } from "./TimeEditModal";
 import type { ActivityTimeButtonProps } from "./time-components.types";
 
@@ -17,10 +18,7 @@ export function ActivityTimeButton({
 }: ActivityTimeButtonProps) {
   const [timeEditOpen, setTimeEditOpen] = useState(false);
   const timeTooltip = formatTimeTooltip(item, locale);
-  const startLabel = item.startTime?.trim() || "--:--";
-  const endLabel = item.endTime?.trim()
-    ? `${item.endTime.trim()}${item.endOffsetDays ? ` +${item.endOffsetDays}` : ""}`
-    : "--:--";
+  const { endLabel, startLabel } = formatInlineTimeLabels(item);
 
   return (
     <>

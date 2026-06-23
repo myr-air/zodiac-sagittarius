@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatDuration,
   formatEndTime,
+  formatInlineTimeLabels,
   formatTimeRangeLabel,
   formatTimeWindow,
 } from "../itinerary-time-display";
@@ -24,5 +25,20 @@ describe("itinerary time display", () => {
     expect(formatTimeWindow({ startTime: "23:00", endTime: "02:00", endOffsetDays: 1 })).toBe("23:00-02:00⁺¹");
     expect(formatTimeWindow({ startTime: "09:00", endTime: null, endOffsetDays: 0 })).toBe("09:00");
     expect(formatTimeWindow({ startTime: "", endTime: "22:00", endOffsetDays: 0 })).toBe("22:00");
+  });
+
+  it("formats inline time labels for editable table controls", () => {
+    expect(formatInlineTimeLabels({ startTime: " 09:00 ", endTime: " 10:30 ", endOffsetDays: 0 })).toEqual({
+      startLabel: "09:00",
+      endLabel: "10:30",
+    });
+    expect(formatInlineTimeLabels({ startTime: "", endTime: "07:30", endOffsetDays: 1 })).toEqual({
+      startLabel: "--:--",
+      endLabel: "07:30 +1",
+    });
+    expect(formatInlineTimeLabels({ startTime: "", endTime: null, endOffsetDays: 0 })).toEqual({
+      startLabel: "--:--",
+      endLabel: "--:--",
+    });
   });
 });

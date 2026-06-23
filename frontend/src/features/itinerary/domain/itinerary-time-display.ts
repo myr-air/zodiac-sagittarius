@@ -23,6 +23,19 @@ export function formatTimeRangeLabel(startTime: string, endTime: string, endOffs
   return `${startTime || "--:--"} - ${endTime}${endOffset}`;
 }
 
+export function formatInlineTimeLabels(
+  item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">,
+): { endLabel: string; startLabel: string } {
+  const startLabel = item.startTime?.trim() || "--:--";
+  const endTime = item.endTime?.trim();
+  return {
+    startLabel,
+    endLabel: endTime
+      ? `${endTime}${item.endOffsetDays ? ` +${item.endOffsetDays}` : ""}`
+      : "--:--",
+  };
+}
+
 export function formatTimeWindow(item: Pick<ItineraryItem, "startTime" | "endTime" | "endOffsetDays">): string {
   const startTime = item.startTime?.trim();
   const endTime = item.endTime?.trim();
