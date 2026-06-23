@@ -1,3 +1,4 @@
+import { CopyFeedback } from "@/src/shared/components/copy-feedback";
 import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberCopyState, MemberLabels } from "./member-management.types";
 
@@ -28,12 +29,10 @@ export function MemberCopyFeedback({
   readOnly,
 }: MemberCopyFeedbackProps) {
   return (
-    <span
+    <CopyFeedback
       className={memberStyles.copyFeedbackClassName}
-      data-state={copyState}
-      role="status"
-    >
-      {memberCopyFeedbackLabel({ copyState, labels, readOnly })}
-    </span>
+      state={copyState}
+      label={memberCopyFeedbackLabel({ copyState, labels, readOnly })}
+    />
   );
 }

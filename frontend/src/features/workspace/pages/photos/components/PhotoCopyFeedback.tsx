@@ -1,4 +1,4 @@
-import type { CopyFeedbackState } from "@/src/shared/components/copy-feedback";
+import { CopyFeedback, type CopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 
@@ -19,13 +19,11 @@ interface PhotoCopyFeedbackProps {
 
 export function PhotoCopyFeedback({ copy, copyState }: PhotoCopyFeedbackProps) {
   return (
-    <span
+    <CopyFeedback
       className={photoStyles.copyFeedbackClassName}
-      data-state={copyState}
-      role="status"
+      state={copyState}
       aria-label={copy.copyStatusLabel}
-    >
-      {photoCopyFeedbackLabel({ copy, copyState })}
-    </span>
+      label={photoCopyFeedbackLabel({ copy, copyState })}
+    />
   );
 }

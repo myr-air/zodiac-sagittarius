@@ -1,3 +1,4 @@
+export { CopyFeedback } from "./CopyFeedback";
 export {
   workspaceCopyFeedbackCompactBadgeClassName,
   workspaceCopyFeedbackFrameClassName,

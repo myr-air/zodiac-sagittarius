@@ -1,3 +1,4 @@
+import { CopyFeedback } from "@/src/shared/components/copy-feedback";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type { ExpenseCopyState, ExpensePageLabels } from "../model/expense-page-types";
 
@@ -20,13 +21,11 @@ interface ExpenseCopyFeedbackProps {
 
 export function ExpenseCopyFeedback({ copyState, t }: ExpenseCopyFeedbackProps) {
   return (
-    <span
+    <CopyFeedback
       className={expenseStyles.copyFeedbackClassName}
-      data-state={copyState}
-      role="status"
+      state={copyState}
       aria-label={t.expenses.copy.statusLabel}
-    >
-      {expenseCopyFeedbackLabel({ copyState, t })}
-    </span>
+      label={expenseCopyFeedbackLabel({ copyState, t })}
+    />
   );
 }
