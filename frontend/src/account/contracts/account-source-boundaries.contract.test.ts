@@ -84,6 +84,7 @@ describe("Sagittarius account source boundaries", () => {
       emailLoginResendCooldown,
       emailLoginPanel,
       emailLoginPanelForm,
+      emailLoginStepDispatch,
       emailLoginStepStage,
     } = readWorkspaceBoundarySources(frontendRoot);
 
@@ -348,8 +349,10 @@ describe("Sagittarius account source boundaries", () => {
     expect(emailLoginStepContent).toContain("../steps/account-email-login-otp-step");
     expect(emailLoginStepContent).toContain("../steps/account-email-login-password-step");
     expect(emailLoginStepContent).toContain("../steps/account-email-login-setup-step");
-    expect(emailLoginStepContent).not.toContain("interface EmailLoginCredentialsStepProps");
-    expect(emailLoginStepContent).not.toContain("function EmailLoginCredentialsStep");
+    expect(emailLoginStepDispatch).toContain("./account-email-login-step-content");
+    expect(emailLoginStepDispatch).toContain("../model/account-email-login-step-labels");
+    expect(emailLoginStepDispatch).not.toContain("interface EmailLoginCredentialsStepProps");
+    expect(emailLoginStepDispatch).not.toContain("function EmailLoginCredentialsStep");
     expect(emailLoginPanel).toContain("EmailLoginPanelForm");
     expect(emailLoginPanel).toContain("useEmailLoginPanelState");
     expect(emailLoginPanel).not.toContain("EmailLoginStepStage");

@@ -6,7 +6,7 @@ import {
   emailLoginOtpLabels,
   emailLoginPasswordLabels,
   emailLoginSetupLabels,
-} from "./account-email-login-step-labels";
+} from "../model/account-email-login-step-labels";
 import {
   EmailLoginCredentialsStep,
   EmailLoginMethodsStep,

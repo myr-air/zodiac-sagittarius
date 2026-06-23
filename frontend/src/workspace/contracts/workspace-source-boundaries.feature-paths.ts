@@ -203,6 +203,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
   emailLoginPanelForm:
     "src/features/account/components/account-access-panel/email-login/ui/account-email-login-panel-form.tsx",
+  emailLoginStepDispatch:
+    "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-dispatch.tsx",
   emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-stage.tsx",
   tripSettingsPage: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsStateKey:
