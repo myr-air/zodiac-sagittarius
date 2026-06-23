@@ -19,6 +19,7 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestSupport).toContain("./testing/fixtures/sagittarius-app-briefing-fixtures");
     expect(sagittariusAppTestSupport).toContain("./testing/fixtures/sagittarius-app-plan-fixtures");
     expect(sagittariusAppTestSupport).toContain("./testing/support/sagittarius-app-storage");
+    expect(sagittariusAppTestSupport).toContain("@/src/testing/browser-storage");
     expect(sagittariusAppTestSupport).toContain("export function resetSagittariusAppTestEnvironment");
     expect(sagittariusAppTestSupport).toContain("window.history.pushState(null, \"\", appRoutes.home())");
     expect(sagittariusAppTestSupport).toContain("export function mockWindowLocation");
@@ -47,14 +48,12 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestPlanFixtures).toContain("export function apiTripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
-    expect(sagittariusAppTestStorage).toContain("installLocalStorageStub");
-    expect(sagittariusAppTestStorage).toContain("installSessionStorageStub");
     expect(sagittariusAppTestStorage).toContain("export function loadPersistedTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistTripParticipantSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTrustedAccountSession");
-    expect(sagittariusAppTestStorage).toContain("@/src/testing/browser-storage");
+    expect(sagittariusAppTestStorage).not.toContain("@/src/testing/browser-storage");
     expect(sagittariusAppTestStorage).not.toContain("Object.defineProperty(window");
     expect(sagittariusAppTestStorage).not.toContain("createMemoryStorage");
   });

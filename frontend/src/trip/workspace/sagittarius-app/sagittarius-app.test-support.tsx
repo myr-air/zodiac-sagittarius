@@ -8,10 +8,12 @@ import { vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { renderWithI18n } from "@/src/i18n/test-utils";
-import { appRoutes } from "./support";
 import {
   installLocalStorageStub,
   installSessionStorageStub,
+} from "@/src/testing/browser-storage";
+import { appRoutes } from "./support";
+import {
   persistTripParticipantSession as persistTripParticipantSessionForApi,
 } from "./testing/support/sagittarius-app-storage";
 import type { SagittariusAppProps } from "./types";
@@ -41,6 +43,9 @@ export {
 export {
   installLocalStorageStub,
   installSessionStorageStub,
+} from "@/src/testing/browser-storage";
+
+export {
   loadPersistedTripDraft,
   persistAccountSession,
   persistTripDraft,

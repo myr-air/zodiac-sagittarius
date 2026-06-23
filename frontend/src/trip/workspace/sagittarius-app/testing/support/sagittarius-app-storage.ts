@@ -1,8 +1,4 @@
 import { accountSessionStorageKey } from "@/src/account/session-storage";
-export {
-  installLocalStorageStub,
-  installSessionStorageStub,
-} from "@/src/testing/browser-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { tripStorageKey } from "@/src/trip/persistence";
 import { seedTrip } from "@/src/trip/seed";
