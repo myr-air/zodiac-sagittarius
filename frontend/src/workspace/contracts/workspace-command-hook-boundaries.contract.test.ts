@@ -3,7 +3,7 @@ import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
 
 describe("Sagittarius workspace command hook source boundaries", () => {
-  it("keeps workspace commands, administration, planning, itinerary, and bookings split by responsibility", () => {
+  it("keeps workspace command orchestration, administration, planning, and itinerary commands split by responsibility", () => {
     const {
       sagaCore,
       workspaceContextsHook,
@@ -15,7 +15,6 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       memberPatchActions,
       accountClaimActions,
       tripSettingsActions,
-      itineraryBookingCommands,
       itineraryMoveCommands,
       itineraryMoveCommandTypes,
       itineraryBlockMoveCommand,
@@ -28,24 +27,8 @@ describe("Sagittarius workspace command hook source boundaries", () => {
       itineraryStopCommandTypes,
       itineraryStopCreateCommand,
       itineraryStopUpdateCommand,
-      bookingDocCommands,
-      bookingCommandCreateInputs,
-      bookingCommandDraftInputs,
-      bookingCommandTicketInputs,
       planningCommandsHook,
       planningCommandsParams,
-      itineraryBookingCommandTypes,
-      createItineraryBookingDraftCommand,
-      saveItineraryBookingTicketCommand,
-      unlinkItineraryBookingCommand,
-      bookingDocUpdateCommands,
-      bookingDocCommandTypes,
-      createBookingDocCommand,
-      deleteBookingDocCommand,
-      bookingDocUpdateCommandTypes,
-      bookingDocUpdateRunner,
-      bookingDocTypeCommand,
-      bookingDocQuickFieldCommand,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(sagaCore).not.toContain("useWorkspacePhotoAlbums");
@@ -94,16 +77,6 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(planningCommandsHook).toContain("useWorkspaceItineraryImport");
     expect(planningCommandsHook).not.toContain("type BookingParams");
     expect(planningCommandsParams).toContain("type BookingParams");
-    expect(itineraryBookingCommands).toContain("useCreateItineraryBookingDraftCommand");
-    expect(itineraryBookingCommands).toContain("useSaveItineraryBookingTicketCommand");
-    expect(itineraryBookingCommands).toContain("useUnlinkItineraryBookingCommand");
-    expect(itineraryBookingCommands).not.toContain("resolveItineraryBookingTicketCommandInput");
-    expect(itineraryBookingCommands).not.toContain("syncItineraryDetailsWithBookingTicket");
-    expect(itineraryBookingCommands).not.toContain("bookingDocInputFromRecord");
-    expect(itineraryBookingCommands).not.toContain(
-      "buildItineraryBookingTicketDocInput",
-    );
-    expect(itineraryBookingCommandTypes).toContain("UseWorkspaceItineraryBookingCommandsOptions");
     expect(itineraryMoveCommands).toContain("useWorkspaceItineraryReorderCommand");
     expect(itineraryMoveCommands).toContain(
       "useWorkspaceItineraryBlockMoveCommand",
@@ -178,45 +151,5 @@ describe("Sagittarius workspace command hook source boundaries", () => {
     expect(itineraryStopUpdateCommand).not.toContain(
       "interface UseWorkspaceItineraryStopUpdateCommandParams",
     );
-    expect(createItineraryBookingDraftCommand).toContain("buildItineraryBookingDraftInput");
-    expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
-    expect(saveItineraryBookingTicketCommand).toContain(
-      "resolveItineraryBookingTicketCommandInput",
-    );
-    expect(saveItineraryBookingTicketCommand).toContain("syncItineraryDetailsWithBookingTicket");
-    expect(unlinkItineraryBookingCommand).toContain("bookingDocInputFromRecord");
-    expect(unlinkItineraryBookingCommand).toContain("clearItineraryBookingTicketDetails");
-    expect(bookingDocCommands).toContain("useCreateBookingDocCommand");
-    expect(bookingDocCommands).toContain("useDeleteBookingDocCommand");
-    expect(bookingDocCommands).toContain("useWorkspaceBookingDocUpdateCommands");
-    expect(bookingDocCommands).not.toContain("buildWorkspaceBookingDocCreateInput");
-    expect(bookingDocCommands).not.toContain("removeBookingDocFromTrip");
-    expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
-    expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
-    expect(bookingDocCommandTypes).toContain("UseWorkspaceBookingDocCommandsOptions");
-    expect(createBookingDocCommand).toContain("buildWorkspaceBookingDocCreateInput");
-    expect(createBookingDocCommand).toContain("buildCreateBookingDocRequest");
-    expect(createBookingDocCommand).toContain("createLocalBookingDoc");
-    expect(deleteBookingDocCommand).toContain("removeBookingDocFromTrip");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocUpdateRunner");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocTypeCommand");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocQuickFieldCommand");
-    expect(bookingDocUpdateCommands).not.toContain("runWorkspaceVersionConflictRetry");
-    expect(bookingDocUpdateCommands).not.toContain("bookingDocInputFromRecord");
-    expect(bookingDocUpdateCommands).not.toContain("bookingDocQuickFieldsInputFromRecord");
-    expect(bookingDocUpdateCommandTypes).toContain("UseWorkspaceBookingDocUpdateCommandsOptions");
-    expect(bookingDocUpdateRunner).toContain("runWorkspaceVersionConflictRetry");
-    expect(bookingDocUpdateRunner).toContain("queueKeyedUpdate");
-    expect(bookingDocUpdateRunner).toContain("updateLocalBookingDocInTrip");
-    expect(bookingDocTypeCommand).toContain("bookingDocInputFromRecord");
-    expect(bookingDocQuickFieldCommand).toContain("bookingDocQuickFieldsInputFromRecord");
-    expect(bookingCommandCreateInputs).toContain("buildWorkspaceBookingDocCreateInput");
-    expect(bookingCommandCreateInputs).toContain("normalizeBookingDocTitle");
-    expect(bookingCommandCreateInputs).toContain("resolveBookingDocCreateTripPlanId");
-    expect(bookingCommandDraftInputs).toContain("buildItineraryBookingDraftInput");
-    expect(bookingCommandDraftInputs).toContain("bookingDraftTitleForItineraryItem");
-    expect(bookingCommandTicketInputs).toContain("buildItineraryBookingTicketDocInput");
-    expect(bookingCommandTicketInputs).toContain("resolveItineraryBookingTicketCommandInput");
-    expect(bookingCommandTicketInputs).toContain("findDuplicateBookingDoc");
   });
 });

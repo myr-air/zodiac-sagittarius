@@ -191,6 +191,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/workspace/contracts/workspace-commerce-media-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-itinerary-feature-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-feature-story-boundaries.contract.test.ts",
+  "src/workspace/contracts/workspace-booking-command-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-command-hook-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-media-expense-command-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-record-command-boundaries.contract.test.ts",
