@@ -3,15 +3,11 @@ import { cn } from "@/src/lib/cn";
 import { IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import { formatEnumLabel } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { bookingDocLinkedContext } from "../model/booking-list";
-import {
-  bookingTypeIcon,
-  formatDateTime,
-  typeIconClassName,
-} from "../model/booking-display";
+import { formatDateTime } from "../model/booking-display";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { BookingTypeLabel, BookingTypeMark } from "./BookingTypeDisplay";
 
 interface BookingFileRowProps {
   doc: BookingDoc;
@@ -31,13 +27,11 @@ export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, o
   return (
     <article className={cn(bookingStyles.fileRowClassName, selected && bookingStyles.selectedFileRowClassName)}>
       <button type="button" className="grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2 text-left max-[1199px]:col-start-1 max-[1199px]:row-start-1" onClick={onSelect} aria-label={copy.select(doc.title)}>
-        <span className={cn("grid size-8 place-items-center rounded-(--radius-sm) border", typeIconClassName(doc.type))}>
-          <Icon name={bookingTypeIcon(doc.type)} />
-        </span>
+        <BookingTypeMark type={doc.type} />
         <span className="min-w-0">
           <strong className="block truncate text-sm font-black text-(--color-text)">{doc.title}</strong>
           <span className="block truncate text-[11px] font-bold text-(--color-text-muted)">
-            {formatEnumLabel(doc.type, copy)}{doc.confirmationCode ? ` · ${copy.confirmation}: ${doc.confirmationCode}` : ""}
+            <BookingTypeLabel copy={copy} type={doc.type} />{doc.confirmationCode ? ` · ${copy.confirmation}: ${doc.confirmationCode}` : ""}
           </span>
         </span>
       </button>

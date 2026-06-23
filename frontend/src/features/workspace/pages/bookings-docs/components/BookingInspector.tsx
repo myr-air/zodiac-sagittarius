@@ -4,10 +4,10 @@ import { cn } from "@/src/lib/cn";
 import { Button, IconButton, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import { formatEnumLabel } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { formatDateTime } from "../model/booking-display";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { BookingTypeLabel } from "./BookingTypeDisplay";
 
 interface BookingInspectorProps {
   booking: BookingDoc | null;
@@ -62,7 +62,7 @@ export function BookingInspector({
 
       <div className={bookingStyles.inspectorSectionClassName}>
         <strong>{copy.quickFacts}</strong>
-        <span>{formatEnumLabel(booking.type, copy)}</span>
+        <BookingTypeLabel copy={copy} type={booking.type} />
         <span>{booking.startsAt ? formatDateTime(booking.startsAt) : copy.noDate}</span>
         <span>{booking.providerName ?? copy.noProvider}</span>
         <span>{booking.confirmationCode ? `${copy.confirmation}: ${booking.confirmationCode}` : copy.noConfirmation}</span>

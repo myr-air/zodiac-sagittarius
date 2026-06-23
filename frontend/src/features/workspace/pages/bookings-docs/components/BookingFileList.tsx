@@ -2,9 +2,9 @@ import type { BookingDoc, Trip } from "@/src/trip/types";
 import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import { formatEnumLabel } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 import { BookingFileRow } from "./BookingFileRow";
+import { BookingTypeLabel } from "./BookingTypeDisplay";
 
 interface BookingFileListProps {
   canEditBookings: boolean;
@@ -64,7 +64,7 @@ export function BookingFileList({
           <span className="inline-flex items-center gap-2 font-extrabold text-(--color-text-muted)">
             <Icon name="eyeOff" /> {copy.lockedSensitiveRecord}
           </span>
-          <span className="text-xs font-bold text-(--color-text-muted)">{formatEnumLabel(doc.type, copy)}</span>
+          <BookingTypeLabel className="text-xs font-bold text-(--color-text-muted)" copy={copy} type={doc.type} />
         </div>
       ))}
     </div>
