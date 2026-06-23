@@ -4,6 +4,7 @@ import {
   photoAccessBadgeTone,
   photoAccessLabel,
   photoAccessOptions,
+  photoProviderIcon,
   photoProviderLabel,
   photoProviderOptions,
   photoProviders,
@@ -31,6 +32,13 @@ describe("photo page options", () => {
     expect(photoProviderLabel("all", photoCopy.en)).toBe("All albums");
     expect(photoProviderLabel("google_drive", photoCopy.th)).toBe("Google Drive");
     expect(photoAccessLabel("upload_request", photoCopy.en)).toBe("Upload request");
+  });
+
+  it("keeps provider icons centralized for provider picker surfaces", () => {
+    expect(photoProviderIcon("all")).toBe("layout");
+    expect(photoProviderIcon("dropbox")).toBe("import");
+    expect(photoProviderIcon("google_photos")).toBe("cloud");
+    expect(photoProviderIcon("custom")).toBe("cloud");
   });
 
   it("keeps access badge tones centralized for album surfaces", () => {

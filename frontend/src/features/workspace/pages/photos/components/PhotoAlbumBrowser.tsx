@@ -7,6 +7,7 @@ import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 import * as photoStyles from "../TripPhotosPage.styles";
 import {
   type PhotoProviderFilter,
+  photoProviderIcon,
   photoProviderLabel,
   photoProviders,
 } from "../model/photo-page-options";
@@ -58,7 +59,7 @@ export function PhotoAlbumBrowser({
           >
             <span className="flex items-center justify-between gap-2">
               <span className="grid size-9 place-items-center rounded-(--radius-md) border border-(--color-primary-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
-                <Icon name={provider === "all" ? "layout" : provider === "dropbox" ? "import" : "cloud"} />
+                <Icon name={photoProviderIcon(provider)} />
               </span>
               <strong className="tabular-nums text-sm text-(--color-text)">{providerCounts[provider] ?? 0}</strong>
             </span>
