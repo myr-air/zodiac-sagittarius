@@ -108,16 +108,3 @@ export function RouteMapView({
     </section>
   );
 }
-
-export {
-  activeDayLabel,
-  dayColorFor,
-} from "@/src/features/itinerary/domain/route-map-model";
-export {
-  fallbackRouteViewport,
-  getRouteCenter,
-} from "./route-map.viewport";
-export {
-  applyRouteMapTheme,
-  fitLiveRoute,
-} from "./route-map.live";

@@ -1,13 +1,19 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   activeDayLabel,
-  applyRouteMapTheme,
   dayColorFor,
-  fallbackRouteViewport,
+} from "@/src/features/itinerary/domain/route-map-model";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  applyRouteMapTheme,
   fitLiveRoute,
+} from "../route-map.live";
+import {
+  fallbackRouteViewport,
   getRouteCenter,
+} from "../route-map.viewport";
+import {
   RouteMapView,
 } from "../RouteMapView";
 import { liveMapStatusText } from "../route-map.live-status";
