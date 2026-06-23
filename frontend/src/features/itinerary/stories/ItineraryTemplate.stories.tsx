@@ -35,6 +35,7 @@ import {
   ownerArgsStory,
   viewportStory,
 } from "@/src/shared/storybook/story-builders";
+import { buildVisiblePathStoryArgs } from "./support/itinerary-path-story-args";
 
 const meta = {
   title: "Templates/Itinerary",
@@ -78,44 +79,23 @@ export const TableOverflow: Story = viewportStoryForOwner(
   "mobile320",
   tableOverflowPlay,
   {
-    items: buildTemplateOverflowItems(),
-    graphItems: stressPathItems,
-    selectedItemId: "overflow-stress-0800-main",
-    showAllPaths: true,
+    ...buildVisiblePathStoryArgs(buildTemplateOverflowItems(), "overflow-stress-0800-main", stressPathOptions, {
+      graphItems: stressPathItems,
+    }),
   },
 );
 export const BranchGraph: Story = ownerStory(Owner.args, {
-  items: branchGraphItems,
-  graphItems: branchGraphItems,
-  selectedItemId: "story-graph-main",
-  showAllPaths: true,
-  pathOptions: branchGraphPathOptions,
+  ...buildVisiblePathStoryArgs(branchGraphItems, "story-graph-main", branchGraphPathOptions),
 }, branchGraphPlay);
 export const PlanAExample: Story = ownerStory(Owner.args, {
-  items: planAExampleItems,
-  graphItems: planAExampleItems,
-  selectedItemId: "story-plan-a-main-breakfast",
-  showAllPaths: true,
-  pathOptions: planAPathOptions,
+  ...buildVisiblePathStoryArgs(planAExampleItems, "story-plan-a-main-breakfast", planAPathOptions),
 }, planAExamplePlay);
 export const PlanABAlternatives: Story = ownerStory(Owner.args, {
-  items: planABAlternativeItems,
-  graphItems: planABAlternativeItems,
-  selectedItemId: "story-plan-ab-main-breakfast",
-  showAllPaths: true,
-  pathOptions: planABPathOptions,
+  ...buildVisiblePathStoryArgs(planABAlternativeItems, "story-plan-ab-main-breakfast", planABPathOptions),
 }, planABAlternativesPlay);
 export const RequestedPlanExample: Story = ownerStory(Owner.args, {
-  items: requestedPlanExampleItems,
-  graphItems: requestedPlanExampleItems,
-  selectedItemId: "story-requested-main-0800",
-  showAllPaths: true,
-  pathOptions: planAPathOptions,
+  ...buildVisiblePathStoryArgs(requestedPlanExampleItems, "story-requested-main-0800", planAPathOptions),
 }, requestedPlanExamplePlay);
 export const StressPaths: Story = ownerStory(Owner.args, {
-  items: stressPathItems,
-  graphItems: stressPathItems,
-  selectedItemId: "story-stress-0800-main",
-  showAllPaths: true,
-  pathOptions: stressPathOptions,
+  ...buildVisiblePathStoryArgs(stressPathItems, "story-stress-0800-main", stressPathOptions),
 }, stressPathsPlay);
