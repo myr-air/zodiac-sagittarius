@@ -3,10 +3,7 @@ import { Badge } from "@/src/ui";
 import { appRoutes } from "@/src/routes/app-routes";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PortalList, PortalListRow } from "./account-portal-list";
-import {
-  accountPortalTodoBadgeTone,
-  accountPortalTodoDetail,
-} from "./account-portal-todo-list-item.model";
+import { buildAccountPortalTodoListRows } from "./account-portal-todo-list-item.model";
 import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton } from "../primitives/account-portal-primitives";
 
@@ -20,6 +17,7 @@ export function PortalTodosSection({
   todos: AccountTodoSummary[];
 }) {
   const { t } = useI18n();
+  const todoRows = buildAccountPortalTodoListRows(todos);
 
   return (
     <section className={className} id="portal-to-dos">
@@ -28,13 +26,13 @@ export function PortalTodosSection({
         <PortalListSkeleton rows={1} />
       ) : todos.length ? (
         <PortalList>
-          {todos.map((todo) => (
+          {todoRows.map((todo) => (
             <PortalListRow
               key={todo.id}
               icon="list"
               title={todo.title}
-              detail={accountPortalTodoDetail(todo)}
-              badge={<Badge tone={accountPortalTodoBadgeTone(todo)}>{todo.status}</Badge>}
+              detail={todo.detail}
+              badge={<Badge tone={todo.badgeTone}>{todo.badgeLabel}</Badge>}
             />
           ))}
         </PortalList>
