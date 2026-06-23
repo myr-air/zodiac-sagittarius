@@ -33,6 +33,7 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-destinations.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-form.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-steps.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-support.ts",
   "src/features/account/components/account-access-panel/trip-wizard/model/account-trip-wizard-support.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-styles.ts",
   "src/features/account/components/account-access-panel/trip-wizard/destination-card-meta.tsx",

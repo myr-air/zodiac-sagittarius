@@ -28,8 +28,8 @@ describe("Sagittarius account source boundaries", () => {
       accountPortalVaultActions,
       accountPortalVaultState,
       accountTripDates,
+      accountTripCredentials,
       accountTripForm,
-      accountTripWizardSupport,
       accountTripWizardSteps,
       portalTripWizard,
       portalTripWizardMainPanel,
@@ -203,27 +203,23 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessPasskeyTestUtils).toContain("export function stubCredentials");
     expect(accountAccessPasskeyTestUtils).toContain('navigator, "credentials"');
 
-    expect(accountTripWizardSupport).toContain("@/src/routes/invite-links");
-    expect(accountTripWizardSupport).toContain("./account-trip-credentials");
-    expect(accountTripWizardSupport).not.toContain("@/src/trip/trip-destinations");
-    expect(accountTripWizardSupport).not.toContain("./account-trip-dates");
-    expect(accountTripWizardSupport).not.toContain("./account-trip-form");
-    expect(accountTripWizardSupport).not.toContain("function buildInviteLink");
-    expect(accountTripWizardSupport).not.toContain("function buildInviteEmailHref");
-    expect(accountTripWizardSupport).not.toContain("function routeCalendarDays");
-    expect(accountTripWizardSupport).not.toContain("function tripNightCount");
-    expect(accountTripWizardSupport).not.toContain("function applyTripCalendarDate");
-    expect(accountTripWizardSupport).not.toContain("function normalizedTripForm");
-    expect(accountTripWizardSupport).not.toContain("function applyTripDestinationCities");
-    expect(accountTripWizardSupport).not.toContain("const tripCountryOptions");
-    expect(accountTripWizardSupport).not.toContain("const tripCityOptions");
-    expect(accountTripWizardSupport).not.toContain("function tripDestinationCards");
-    expect(accountTripWizardSupport).not.toContain("function destinationRouteCode");
-    expect(accountTripWizardSupport).not.toContain("function generateJoinIdForTrip");
-    expect(accountTripWizardSupport).not.toContain("function generateJoinPassword");
-    expect(accountTripWizardSupport).not.toContain("function randomToken");
-    expect(accountTripWizardSupport).not.toContain("const tripWizardSteps");
-    expect(accountTripWizardSupport).not.toContain("function tripStepComplete");
+    expect(accountTripCredentials).toContain("@/src/trip/auth");
+    expect(accountTripCredentials).toContain("@/src/trip/metadata");
+    expect(accountTripCredentials).toContain("export function generateJoinIdForTrip");
+    expect(accountTripCredentials).not.toContain("@/src/routes/invite-links");
+    expect(accountTripCredentials).not.toContain("./account-trip-dates");
+    expect(accountTripCredentials).not.toContain("./account-trip-form");
+    expect(accountTripCredentials).not.toContain("function buildInviteLink");
+    expect(accountTripCredentials).not.toContain("function buildInviteEmailHref");
+    expect(accountTripCredentials).not.toContain("function routeCalendarDays");
+    expect(accountTripCredentials).not.toContain("function tripNightCount");
+    expect(accountTripCredentials).not.toContain("function applyTripCalendarDate");
+    expect(accountTripCredentials).not.toContain("function normalizedTripForm");
+    expect(accountTripCredentials).not.toContain("function applyTripDestinationCities");
+    expect(accountTripCredentials).not.toContain("const tripCountryOptions");
+    expect(accountTripCredentials).not.toContain("const tripCityOptions");
+    expect(accountTripCredentials).not.toContain("const tripWizardSteps");
+    expect(accountTripCredentials).not.toContain("function tripStepComplete");
     expect(accountTripForm).toContain("export const defaultTripForm");
     expect(accountTripForm).toContain("export function normalizedTripForm");
     expect(accountTripForm).toContain("export function applyTripDestinationCities");

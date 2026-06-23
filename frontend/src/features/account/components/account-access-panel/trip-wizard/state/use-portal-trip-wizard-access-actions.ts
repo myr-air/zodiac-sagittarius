@@ -4,7 +4,7 @@ import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
 import {
   generateJoinPassword,
   randomToken,
-} from "../model/account-trip-wizard-support";
+} from "../model/account-trip-credentials";
 import { applyRegeneratedPortalTripWizardCredentials } from "./portal-trip-wizard-model-actions";
 
 export function usePortalTripWizardAccessActions({
