@@ -1,5 +1,4 @@
 import { cn } from "@/src/lib/cn";
-import { buildAccountAuthCardClassName } from "../email-login/account-email-login-styles";
 
 export const accountAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
 export const accountToastStackClassName =
@@ -40,6 +39,8 @@ export const accountEntryBrandTaglineClassName =
   "account-entry-brand-tagline m-0 text-[13px] font-bold leading-[18px] text-(--color-primary-strong)";
 export const accountCardClassName =
   "account-card grid gap-3.5 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[var(--shadow-soft)]";
+export const accountStepSummaryClassName =
+  "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
 export const portalLoadingCardClassName = cn(accountCardClassName, "portal-loading-card col-span-2 min-h-[220px] max-[767px]:col-auto");
 export const accountModeTabsClassName =
   "account-mode-tabs inline-grid w-[min(100%,420px)] grid-cols-2 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-1";
@@ -72,4 +73,8 @@ export const accountFormClassName =
 export const accountTwoColClassName =
   "account-two-col grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1 [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 export const accountSettingsFormClassName = cn(accountFormClassName, "account-settings-form grid gap-3");
-export const accountAuthCardClassName = buildAccountAuthCardClassName(accountCardClassName, accountFormClassName);
+export const accountAuthCardClassName = cn(
+  accountCardClassName,
+  "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none [&_.button]:min-h-11 [&_.button]:w-full",
+  accountFormClassName,
+);

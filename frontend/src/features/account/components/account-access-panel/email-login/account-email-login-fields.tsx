@@ -4,9 +4,9 @@ import {
   accountCheckClassName,
   accountFieldClassName,
   accountFieldHintClassName,
-  accountStepSummaryClassName,
   accountTertiaryActionClassName,
 } from "./account-email-login-styles";
+import { accountStepSummaryClassName } from "../layout/account-access-panel-layout";
 
 export function AccountStepSummary({ label, value }: { label: string; value: string }) {
   return (

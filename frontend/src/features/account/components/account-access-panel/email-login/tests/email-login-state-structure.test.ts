@@ -132,6 +132,8 @@ describe("email login state structure", () => {
     expect(stepNavigation).toContain("function goToStep");
     expect(styles).toContain("./state/use-email-login-step-navigation");
     expect(styles).not.toContain("export type AuthTransitionDirection");
+    expect(styles).not.toContain("accountStepSummaryClassName");
+    expect(styles).not.toContain("buildAccountAuthCardClassName");
     expect(stepTypes).toContain(
       "./state/use-email-login-step-navigation",
     );

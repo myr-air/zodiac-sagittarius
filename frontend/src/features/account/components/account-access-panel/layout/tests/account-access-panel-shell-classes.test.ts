@@ -3,6 +3,10 @@ import {
   accountAccessPanelPageClassName,
   accountAccessPanelShellClassName,
 } from "../account-access-panel-shell-classes";
+import {
+  accountAuthCardClassName,
+  accountStepSummaryClassName,
+} from "../account-access-panel-layout";
 
 describe("account access panel shell classes", () => {
   it("adds account-entry page and shell modifiers", () => {
@@ -41,5 +45,11 @@ describe("account access panel shell classes", () => {
     expect(accountAccessPanelPageClassName(options)).toContain("account-page--trip-access");
     expect(accountAccessPanelPageClassName(options)).not.toContain("account-page--entry");
     expect(accountAccessPanelShellClassName(options)).toContain("w-[min(100%,1120px)]");
+  });
+
+  it("owns shared account card and step summary class tokens", () => {
+    expect(accountAuthCardClassName).toContain("account-auth-card");
+    expect(accountAuthCardClassName).toContain("account-form");
+    expect(accountStepSummaryClassName).toContain("account-step-summary");
   });
 });

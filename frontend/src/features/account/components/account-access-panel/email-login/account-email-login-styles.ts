@@ -1,4 +1,3 @@
-import { cn } from "@/src/lib/cn";
 import type { AuthTransitionDirection } from "./state/use-email-login-step-navigation";
 
 export const accountCheckClassName =
@@ -16,16 +15,6 @@ export const accountStepStageDirectionClassNames = {
   forward: "account-step-stage--forward animate-[account-step-in-forward]",
   mode: "account-step-stage--mode animate-[account-step-in-mode] [animation-duration:190ms] [animation-timing-function:cubic-bezier(0.16,0.72,0.24,1)]",
 } satisfies Record<AuthTransitionDirection, string>;
-export const accountStepSummaryClassName =
-  "account-step-summary grid gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-primary-soft) p-3 text-[13px] font-[750] text-(--color-text-muted) [&_strong]:min-w-0 [&_strong]:[overflow-wrap:anywhere] [&_strong]:text-[15px] [&_strong]:text-(--color-primary-strong)";
 export const accountAlternateActionsClassName = "account-alternate-actions flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-[13px] font-[800] max-[520px]:grid max-[520px]:grid-cols-1";
 export const accountTertiaryActionClassName =
   "account-tertiary-action inline-flex min-h-11 items-center justify-center gap-1.5 rounded-(--radius-sm) border-0 bg-transparent px-2 py-1 text-[13px] font-[850] text-(--color-primary-strong) underline-offset-4 transition-colors duration-150 hover:enabled:underline focus-visible:underline disabled:cursor-not-allowed disabled:text-(--color-text-subtle) [&_.icon]:size-4";
-
-export function buildAccountAuthCardClassName(accountCardClassName: string, accountFormClassName: string) {
-  return cn(
-    accountCardClassName,
-    "account-auth-card !gap-4 !overflow-visible !border-0 !bg-transparent !p-0 !shadow-none [&_.button]:min-h-11 [&_.button]:w-full",
-    accountFormClassName,
-  );
-}
