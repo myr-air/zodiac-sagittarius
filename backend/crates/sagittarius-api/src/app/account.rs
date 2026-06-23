@@ -4,25 +4,28 @@ use p256::ecdsa::{Signature, VerifyingKey};
 use rand::RngCore;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
+use crate::app::account_mappers::{
+    account_profile_from_record, account_todo_from_record, account_trip_from_record,
+    account_trip_stats_from_record, account_vault_item_from_record, format_timestamp,
+    passkey_summary_from_record, trusted_device_summary_from_record,
+};
 use crate::db::models::{
-    AccountProfileRecord, AccountTodoRecord, AccountTripRecord, AccountTripStatsRecord,
-    AccountVaultItemRecord, NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip,
-    NewAccountTripOwnerMember, NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice, NewUser,
-    NewUserEmail, NewUserSession, PasskeyRecord, TrustedDeviceRecord,
+    NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember,
+    NewAccountVaultItem, NewEmailLoginOutbox, NewTrustedDevice, NewUser, NewUserEmail,
+    NewUserSession,
 };
 use crate::db::{self, PgPool};
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{
-    AccountExplorerSummary, AccountMemberClaimResponse, AccountProfile, AccountSession,
-    AccountSessionKind, AccountSettings, AccountTodoSummary, AccountTripCreateResponse,
-    AccountTripStats, AccountTripSummary, AccountVaultItemSummary, EmailLoginStartResponse,
-    MemberSession, OwnerTransferResponse, PasskeyChallengeResponse, PasskeyCredentialDescriptor,
+    AccountExplorerSummary, AccountMemberClaimResponse, AccountSession, AccountSessionKind,
+    AccountSettings, AccountTodoSummary, AccountTripCreateResponse, AccountTripStats,
+    AccountTripSummary, AccountVaultItemSummary, EmailLoginStartResponse, MemberSession,
+    OwnerTransferResponse, PasskeyChallengeResponse, PasskeyCredentialDescriptor,
     PasskeyLoginStartResponse, PasskeySummary, TripCity, TripMemberAccessStatus, TripRole,
-    TripSummary, TrustedDeviceSummary,
+    TripSummary,
 };
 
 const CHALLENGE_TTL: Duration = Duration::minutes(10);
@@ -1900,107 +1903,6 @@ fn map_passkey_insert_error(error: sqlx::Error) -> ServiceError {
     } else {
         ServiceError::Database(error)
     }
-}
-
-fn account_profile_from_record(record: AccountProfileRecord) -> AccountProfile {
-    AccountProfile {
-        id: record.id,
-        display_name: record.display_name,
-        avatar_color: record.avatar_color,
-        locale: record.locale,
-        timezone: record.timezone,
-        home_city: record.home_city,
-        home_country: record.home_country,
-        primary_email: record.primary_email,
-    }
-}
-
-fn trusted_device_summary_from_record(record: TrustedDeviceRecord) -> TrustedDeviceSummary {
-    TrustedDeviceSummary {
-        id: record.id,
-        label: record.label,
-        user_agent: record.user_agent,
-        created_at: format_timestamp(record.created_at),
-        last_seen_at: record.last_seen_at.map(format_timestamp),
-    }
-}
-
-fn account_trip_from_record(record: AccountTripRecord) -> AccountTripSummary {
-    let is_owner = record.member_id == record.owner_member_id;
-
-    AccountTripSummary {
-        id: record.id,
-        name: record.name,
-        origin_label: record.origin_label,
-        origin_city: record.origin_city,
-        origin_country: record.origin_country,
-        origin_country_code: record.origin_country_code,
-        destination_label: record.destination_label,
-        destination_cities: record.destination_cities.0,
-        countries: record.countries,
-        party_size: record.party_size,
-        default_timezone: record.default_timezone,
-        start_date: record.start_date,
-        end_date: record.end_date,
-        role: record.role,
-        member_id: record.member_id,
-        owner_member_id: record.owner_member_id,
-        joined_at: format_timestamp(record.joined_at),
-        is_owner,
-    }
-}
-
-fn account_trip_stats_from_record(record: AccountTripStatsRecord) -> AccountTripStats {
-    AccountTripStats {
-        trips_total: record.trips_total,
-        trips_owned: record.trips_owned,
-        active_trips: record.active_trips,
-        temp_claims_completed: record.temp_claims_completed,
-    }
-}
-
-fn account_todo_from_record(record: AccountTodoRecord) -> AccountTodoSummary {
-    AccountTodoSummary {
-        id: record.id,
-        trip_id: record.trip_id,
-        trip_name: record.trip_name,
-        title: record.title,
-        status: record.status,
-        visibility: record.visibility,
-        kind: record.kind,
-        assignee_id: record.assignee_id,
-        related_item_id: record.related_item_id,
-        version: record.version,
-    }
-}
-
-fn account_vault_item_from_record(record: AccountVaultItemRecord) -> AccountVaultItemSummary {
-    AccountVaultItemSummary {
-        id: record.id,
-        trip_id: record.trip_id,
-        trip_name: record.trip_name,
-        kind: record.kind,
-        title: record.title,
-        detail: record.detail,
-        external_url: record.external_url,
-        source: record.source,
-        created_at: format_timestamp(record.created_at),
-    }
-}
-
-fn passkey_summary_from_record(record: PasskeyRecord) -> PasskeySummary {
-    PasskeySummary {
-        id: record.id,
-        nickname: record.nickname,
-        created_at: format_timestamp(record.created_at),
-        last_used_at: record.last_used_at.map(format_timestamp),
-    }
-}
-
-fn format_timestamp(timestamp: OffsetDateTime) -> String {
-    timestamp
-        .format(&Rfc3339)
-        .expect("rfc3339 timestamp should format")
 }
 
 #[cfg(test)]
