@@ -9,8 +9,8 @@ import {
   accountPortalTripBadgeTone,
   accountPortalTripDetail,
 } from "./account-portal-trip-list-item.model";
-import { PanelHeading } from "../primitives/account-panel-heading";
-import { PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
+import { PanelHeading } from "../../primitives/account-panel-heading";
+import { PortalEmptyState, PortalListSkeleton } from "../account-portal-primitives";
 
 interface PortalTripsSectionClassNames {
   section: string;

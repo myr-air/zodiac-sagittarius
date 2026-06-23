@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   accountTravelerTrip,
   accountTrip,
-} from "../../testing/account-access-panel-test-clients";
+} from "../../../testing/account-access-panel-test-clients";
 import {
   accountPortalTripBadgeTone,
   accountPortalTripDetail,

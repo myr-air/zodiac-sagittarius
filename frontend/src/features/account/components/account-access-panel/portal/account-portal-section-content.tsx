@@ -18,8 +18,8 @@ import { PortalExplorerSection } from "./explorer/portal-explorer-section";
 import { PortalNewTripSection } from "./new-trip/portal-new-trip-section";
 import { PortalSettingsSection } from "./settings/portal-settings-section";
 import { PortalSignOutSection } from "./portal-sign-out-section";
-import { PortalTodosSection } from "./portal-todos-section";
-import { PortalTripsSection } from "./portal-trips-section";
+import { PortalTodosSection } from "./lists/portal-todos-section";
+import { PortalTripsSection } from "./lists/portal-trips-section";
 import { PortalVaultSection } from "./vault/portal-vault-section";
 import type { AccountPortalDashboardClassNames } from "./account-portal-dashboard.types";
 import {
