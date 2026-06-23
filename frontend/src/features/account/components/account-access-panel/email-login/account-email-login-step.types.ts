@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { Messages } from "@/src/i18n/messages";
 import type { IconName } from "@/src/ui/icons";
 import type { AuthFlow } from "../auth";
-import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./account-email-login-step-meta";
+import type { EmailLoginAuthStep, EmailLoginVisualStep } from "./model/account-email-login-step-meta";
 import type { AuthTransitionDirection } from "./state/use-email-login-step-navigation";
 
 export interface EmailLoginStepContentProps {

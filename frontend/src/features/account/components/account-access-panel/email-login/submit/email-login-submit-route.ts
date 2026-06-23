@@ -1,4 +1,4 @@
-import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
+import type { EmailLoginAuthStep } from "../model/account-email-login-step-meta";
 
 export const emailLoginSubmitRouteValues = [
   "setup",

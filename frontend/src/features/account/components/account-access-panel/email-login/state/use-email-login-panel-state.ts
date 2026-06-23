@@ -3,7 +3,7 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import {
   buildEmailLoginStepMeta,
-} from "../account-email-login-step-meta";
+} from "../model/account-email-login-step-meta";
 import { buildEmailLoginPanelDerivedState } from "./email-login-panel-derived-state";
 import { useEmailLoginChallengeState } from "./use-email-login-challenge-state";
 import { useEmailLoginEntryActions } from "./use-email-login-entry-actions";

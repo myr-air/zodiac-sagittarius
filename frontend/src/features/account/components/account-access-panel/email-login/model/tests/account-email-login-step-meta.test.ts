@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AuthFlow } from "../../auth";
+import type { AuthFlow } from "../../../auth";
 import {
   buildEmailLoginStepMeta,
   emailLoginAuthStepValues,

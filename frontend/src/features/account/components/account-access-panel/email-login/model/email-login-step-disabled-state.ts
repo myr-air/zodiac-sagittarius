@@ -1,4 +1,4 @@
-import type { AuthFlow } from "../auth";
+import type { AuthFlow } from "../../auth";
 
 interface EmailLoginStepDisabledStateInput {
   activeFlow: AuthFlow;

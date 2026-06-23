@@ -6,7 +6,7 @@ import type {
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import type { AuthFlow } from "../../auth";
-import type { EmailLoginAuthStep } from "../account-email-login-step-meta";
+import type { EmailLoginAuthStep } from "../model/account-email-login-step-meta";
 
 export interface UseEmailLoginSubmitActionsProps {
   accountClient: AccountApiClient;

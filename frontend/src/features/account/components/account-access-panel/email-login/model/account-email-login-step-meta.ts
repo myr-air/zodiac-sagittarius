@@ -1,6 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatDateTime } from "../auth";
-import type { AuthFlow } from "../auth";
+import { formatDateTime } from "../../auth";
+import type { AuthFlow } from "../../auth";
 
 export const emailLoginAuthStepValues = [
   "email",
