@@ -1,8 +1,17 @@
 import type { FormEvent } from "react";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { StopNote } from "@/src/trip/types";
 import { useContextRailNoteForm } from "../use-context-rail-note-form";
+
+const contextRailDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+function readContextRailSource(fileName: string) {
+  return readFileSync(join(contextRailDir, fileName), "utf8");
+}
 
 function createHook(options: { itemId?: string } = {}) {
   const onCreateNote = vi.fn();
@@ -35,6 +44,25 @@ function submitEdit(result: ReturnType<typeof createHook>["result"]) {
 }
 
 describe("useContextRailNoteForm", () => {
+  it("keeps note form state and submit actions in separate hooks", () => {
+    const formSource = readContextRailSource("use-context-rail-note-form.ts");
+    const actionsSource = readContextRailSource(
+      "use-context-rail-note-form-actions.ts",
+    );
+
+    expect(formSource).toContain("useContextRailNoteFormActions");
+    expect(formSource).not.toContain("buildContextRailNoteCreateSubmission");
+    expect(formSource).not.toContain("buildContextRailNoteEditSubmission");
+    expect(formSource).not.toContain("function submitNote(");
+    expect(formSource).not.toContain("function submitNoteEdit");
+    expect(actionsSource).toContain("function submitNote(");
+    expect(actionsSource).toContain("function submitNoteEdit");
+    expect(actionsSource).toContain("buildContextRailNoteCreateSubmission");
+    expect(actionsSource).toContain("buildContextRailNoteEditSubmission");
+    expect(actionsSource).toContain("clearContextRailNoteBody");
+    expect(actionsSource).toContain("clearContextRailEditingNote");
+  });
+
   it("creates notes with trimmed body and resets the create form", () => {
     const { result, onCreateNote, onUpdateNote } = createHook({
       itemId: "item-dimdim",

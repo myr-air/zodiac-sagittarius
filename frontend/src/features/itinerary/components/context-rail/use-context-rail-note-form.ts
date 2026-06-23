@@ -1,4 +1,3 @@
-import type { FormEvent } from "react";
 import { useState } from "react";
 import type { ItineraryItem, StopNote } from "@/src/trip/types";
 import type {
@@ -6,16 +5,13 @@ import type {
   ContextRailUpdateNoteInput,
 } from "./context-rail.types";
 import {
-  buildContextRailNoteCreateSubmission,
-  buildContextRailNoteEditSubmission,
   cancelContextRailEditingNote,
-  clearContextRailEditingNote,
-  clearContextRailNoteBody,
   initialContextRailNoteFormState,
   startContextRailEditingNote,
   updateContextRailEditingNoteBody,
   updateContextRailNoteBody,
 } from "./context-rail-note-form-state";
+import { useContextRailNoteFormActions } from "./use-context-rail-note-form-actions";
 
 interface UseContextRailNoteFormOptions {
   itemId: ItineraryItem["id"] | undefined;
@@ -29,14 +25,13 @@ export function useContextRailNoteForm({
   onUpdateNote,
 }: UseContextRailNoteFormOptions) {
   const [state, setState] = useState(initialContextRailNoteFormState);
-
-  function submitNote(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const submission = buildContextRailNoteCreateSubmission(state);
-    if (!submission || !itemId) return;
-    onCreateNote({ itemId, body: submission.body });
-    setState((current) => clearContextRailNoteBody(current));
-  }
+  const { submitNote, submitNoteEdit } = useContextRailNoteFormActions({
+    itemId,
+    onCreateNote,
+    onUpdateNote,
+    setState,
+    state,
+  });
 
   function startEditingNote(note: StopNote) {
     setState((current) => startContextRailEditingNote(current, note));
@@ -44,14 +39,6 @@ export function useContextRailNoteForm({
 
   function cancelEditingNote() {
     setState((current) => cancelContextRailEditingNote(current));
-  }
-
-  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const submission = buildContextRailNoteEditSubmission(state);
-    if (!submission) return;
-    onUpdateNote(submission);
-    setState((current) => clearContextRailEditingNote(current));
   }
 
   return {
