@@ -146,6 +146,8 @@ export const workspaceFeatureBoundarySourcePaths = {
   aboutAppPageStory: "src/features/public-site/pages/about/storybook/AboutAppPage.stories.tsx",
   accountAccessStory:
     "src/features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",
+  accountAccessStoryClients:
+    "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.clients.ts",
   accountAccessFixtures:
     "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
   accountAccessTestUtils: "src/features/account/components/account-access-panel/testing/account-access-panel-test-utils.tsx",

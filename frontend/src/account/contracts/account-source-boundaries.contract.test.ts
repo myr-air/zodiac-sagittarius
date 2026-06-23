@@ -56,6 +56,7 @@ describe("Sagittarius account source boundaries", () => {
       tripJoinGateStyles,
       tripWizardFormSections,
       accountAccessStory,
+      accountAccessStoryClients,
       accountAccessStorySupport,
       accountAccessFixtures,
       accountAccessTestUtils,
@@ -154,6 +155,16 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessFixtures).toContain("export const accountSettings");
     expect(accountAccessFixtures).toContain("export const accountTrip");
     expect(accountAccessFixtures).toContain("export const accountTrips");
+    expect(accountAccessFixtures).toContain("export function createTrustedAccountSession");
+    expect(accountAccessFixtures).toContain("export const accountExplorerSummary");
+    expect(accountAccessFixtures).toContain("export const accountTodos");
+    expect(accountAccessFixtures).toContain("export const accountVaultItems");
+    expect(accountAccessFixtures).toContain("export function createAccountTripCreateResponse");
+    expect(accountAccessStoryClients).toContain("../fixtures/account-access-panel-fixtures");
+    expect(accountAccessStoryClients).toContain("createTrustedAccountSession");
+    expect(accountAccessStoryClients).toContain("accountExplorerSummary");
+    expect(accountAccessStoryClients).not.toContain('challengeId: "passkey-challenge"');
+    expect(accountAccessStoryClients).not.toContain('id: "vault-1"');
     expect(accountAccessTestUtils).toContain("./account-access-panel-render-utils");
     expect(accountAccessTestUtils).toContain("./account-access-panel-test-clients");
     expect(accountAccessTestUtils).toContain("./account-access-panel-passkey-test-utils");
@@ -164,8 +175,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessRenderTestUtils).toContain("./account-access-panel-test-clients");
     expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-fixtures");
     expect(accountAccessTestClients).toContain("export function createAccountClient");
+    expect(accountAccessTestClients).toContain("accountExplorerSummary");
+    expect(accountAccessTestClients).toContain("createAccountTripCreateResponse");
     expect(accountAccessTestClients).not.toContain("export const accountSettings");
     expect(accountAccessTestClients).not.toContain("export const accountTrip");
+    expect(accountAccessTestClients).not.toContain('id: "vault-1"');
+    expect(accountAccessTestClients).not.toContain('challengeId: "passkey-challenge"');
     expect(accountAccessTestClients).not.toContain("navigator.credentials");
     expect(accountAccessTestClients).not.toContain("export function stubCredentials");
     expect(accountAccessPasskeyTestUtils).toContain("export function stubCredentials");
