@@ -109,8 +109,6 @@ export function RouteMapView({
   );
 }
 
-export { liveMapStatusText } from "./route-map.live-status";
-
 export {
   activeDayLabel,
   dayColorFor,

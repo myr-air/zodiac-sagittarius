@@ -8,9 +8,9 @@ import {
   fallbackRouteViewport,
   fitLiveRoute,
   getRouteCenter,
-  liveMapStatusText,
   RouteMapView,
 } from "../RouteMapView";
+import { liveMapStatusText } from "../route-map.live-status";
 import {
   routeMapItems,
 } from "../testing/fixtures/route-map-fixtures";
