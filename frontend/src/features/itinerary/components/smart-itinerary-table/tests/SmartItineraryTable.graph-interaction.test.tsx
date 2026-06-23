@@ -1,8 +1,8 @@
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildItineraryItem,
   defaultDayPathOptions,
   getItineraryItemRow,
   pathIdStoryPlanA,
@@ -15,24 +15,22 @@ describe("SmartItineraryTable graph interaction", () => {
   it("keeps graph nodes selectable while activity cells remain independent", async () => {
     const user = userEvent.setup();
     const onSelectItem = vi.fn();
-    const mainItem = {
-      ...tripFixture.planItems[0],
+    const mainItem = buildItineraryItem({
       id: "graph-main",
       day: "2026-06-19",
       activity: "Graph main",
       pathGroupId: "path-group-graph",
-      pathRole: "main" as const,
-    };
-    const alternativeItem = {
-      ...tripFixture.planItems[1],
+      pathRole: "main",
+    });
+    const alternativeItem = buildItineraryItem({
       id: "graph-plan-a",
       day: "2026-06-19",
       activity: "Graph plan A",
       pathId: pathIdStoryPlanA,
       pathName: "Plan A",
-      pathRole: "alternative" as const,
+      pathRole: "alternative",
       sortOrder: mainItem.sortOrder + 10,
-    };
+    });
 
     renderTable({
       items: [mainItem, alternativeItem],
@@ -62,14 +60,13 @@ describe("SmartItineraryTable graph interaction", () => {
   it("allows keyboard graph path mutation and disables it for read-only roles", async () => {
     const user = userEvent.setup();
     const onMoveItemToPath = vi.fn();
-    const mainItem = {
-      ...tripFixture.planItems[0],
+    const mainItem = buildItineraryItem({
       id: "graph-main",
       day: "2026-06-19",
       activity: "Graph main",
       pathGroupId: "path-group-graph",
-      pathRole: "main" as const,
-    };
+      pathRole: "main",
+    });
 
     renderTable({
       items: [mainItem],
