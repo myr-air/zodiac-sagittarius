@@ -16,11 +16,9 @@ import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalListSkeleton } from "../primitives/account-portal-primitives";
 import { PortalVaultCloudProviderPanel } from "./portal-vault-cloud-provider-panel";
 import {
+  buildPortalVaultItemRows,
   createEmptyPortalVaultForm,
   portalVaultKindSelectOptions,
-  portalVaultItemBadgeTone,
-  portalVaultItemDetail,
-  portalVaultItemIcon,
 } from "./portal-vault-section-state";
 import { usePortalVaultSectionActions } from "./usePortalVaultSectionActions";
 
@@ -64,6 +62,9 @@ export function PortalVaultSection({
     setVaultForm,
     vaultForm,
   });
+  const vaultRows = buildPortalVaultItemRows(vaultItems, {
+    personal: t.access.portal.vaultCreate.personal,
+  });
 
   return (
     <section className={classNames.section} id="portal-vault">
@@ -103,13 +104,13 @@ export function PortalVaultSection({
         <PortalListSkeleton rows={1} />
       ) : vaultItems.length ? (
         <PortalList>
-          {vaultItems.map((item) => (
+          {vaultRows.map((item) => (
             <PortalListRow
-              key={`${item.source}-${item.id}`}
-              icon={portalVaultItemIcon(item)}
+              key={item.id}
+              icon={item.icon}
               title={item.title}
-              detail={portalVaultItemDetail(item, t.access.portal.vaultCreate.personal)}
-              badge={<Badge tone={portalVaultItemBadgeTone(item)}>{item.kind}</Badge>}
+              detail={item.detail}
+              badge={<Badge tone={item.badgeTone}>{item.badgeLabel}</Badge>}
             />
           ))}
         </PortalList>

@@ -14,6 +14,15 @@ export interface PortalVaultKindSelectOption {
   label: string;
 }
 
+export interface PortalVaultItemRow {
+  badgeLabel: string;
+  badgeTone: ReturnType<typeof portalVaultItemBadgeTone>;
+  detail: string;
+  icon: IconName;
+  id: string;
+  title: string;
+}
+
 export function portalVaultKindSelectOptions(labels: {
   file: string;
   note: string;
@@ -57,4 +66,18 @@ export function portalVaultItemBadgeTone(
   item: AccountVaultItemSummary,
 ): "neutral" | "success" {
   return item.kind === "file" ? "neutral" : "success";
+}
+
+export function buildPortalVaultItemRows(
+  vaultItems: readonly AccountVaultItemSummary[],
+  labels: { personal: string },
+): PortalVaultItemRow[] {
+  return vaultItems.map((item) => ({
+    badgeLabel: item.kind,
+    badgeTone: portalVaultItemBadgeTone(item),
+    detail: portalVaultItemDetail(item, labels.personal),
+    icon: portalVaultItemIcon(item),
+    id: `${item.source}-${item.id}`,
+    title: item.title,
+  }));
 }

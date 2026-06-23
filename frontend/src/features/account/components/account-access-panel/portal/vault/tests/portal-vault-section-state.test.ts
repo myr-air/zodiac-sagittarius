@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPortalVaultItemRows,
   buildPortalVaultCreateRequest,
   createEmptyPortalVaultForm,
   portalVaultCloudProviders,
@@ -94,5 +95,30 @@ describe("portal vault section state", () => {
     expect(portalVaultItemDetail(createdAccountVaultItem, "Personal")).toBe(
       "Personal · PDF link",
     );
+  });
+
+  it("builds vault list rows from centralized icon, detail, and badge rules", () => {
+    expect(
+      buildPortalVaultItemRows([accountVaultItem, createdAccountVaultItem], {
+        personal: "Personal",
+      }),
+    ).toEqual([
+      {
+        badgeLabel: "note",
+        badgeTone: "success",
+        detail: "Seoul Spring · Keep copies ready",
+        icon: "note",
+        id: "vault-vault-1",
+        title: "Passport note",
+      },
+      {
+        badgeLabel: "file",
+        badgeTone: "neutral",
+        detail: "Personal · PDF link",
+        icon: "document",
+        id: "vault-vault-created",
+        title: "Tickets",
+      },
+    ]);
   });
 });
