@@ -423,17 +423,30 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
     const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-model.ts");
     const drawerCopy = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-copy.ts");
+    const textBlock = readItineraryArchitectureSource("src/shared/components/weather/WeatherTextBlock.tsx");
+    const sourceMeta = readItineraryArchitectureSource("src/shared/components/weather/WeatherSourceMeta.tsx");
+    const overrideForm = readItineraryArchitectureSource("src/shared/components/weather/WeatherOrganizerOverrideForm.tsx");
 
     expect(drawer).toContain("./model/weather-briefing-drawer-model");
+    expect(drawer).toContain("./WeatherTextBlock");
+    expect(drawer).toContain("./WeatherSourceMeta");
+    expect(drawer).toContain("./WeatherOrganizerOverrideForm");
     expect(drawer).not.toContain("function formatWeatherSummary");
     expect(drawer).not.toContain("function buildWeatherDetailLines");
     expect(drawer).not.toContain("function weatherDrawerCopy");
+    expect(drawer).not.toContain("function TextBlock");
+    expect(drawer).not.toContain("function SourceMeta");
+    expect(drawer).not.toContain("function OrganizerOverrideForm");
     expect(drawerModel).toContain("export function formatWeatherSummary");
     expect(drawerModel).toContain("export function buildWeatherDetailLines");
     expect(drawerModel).toContain("./weather-briefing-drawer-copy");
     expect(drawerModel).not.toContain('regionLabel: "Weather briefing"');
     expect(drawerCopy).toContain("export function weatherDrawerCopy");
     expect(drawerCopy).toContain("export function emptyText");
+    expect(textBlock).toContain("export function WeatherTextBlock");
+    expect(textBlock).toContain("./WeatherSourceMeta");
+    expect(sourceMeta).toContain("export function WeatherSourceMeta");
+    expect(overrideForm).toContain("export function WeatherOrganizerOverrideForm");
   });
 
   it("keeps weather forecast strip formatting split from render", () => {
