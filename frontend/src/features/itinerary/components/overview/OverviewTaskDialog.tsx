@@ -1,7 +1,12 @@
 import type { FormEvent } from "react";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import type { Trip, TripTask } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import { Button, Select, TextInput } from "@/src/ui";
+import {
+  overviewTaskAssigneeSelectOptions,
+  overviewTaskVisibilitySelectOptions,
+} from "./overview-task-dialog-options";
 import {
   dialogFieldWideClassName,
   modalBackdropClassName,
@@ -70,17 +75,23 @@ export function OverviewTaskDialog({
             <label>
               <span>{labels.visibilityLabel}</span>
               <Select value={visibility} onChange={(event) => onVisibilityChange(event.target.value as TripTask["visibility"])}>
-                <option value="private">{labels.private}</option>
-                <option value="shared">{labels.shared}</option>
+                <SelectOptions
+                  options={overviewTaskVisibilitySelectOptions({
+                    private: labels.private,
+                    shared: labels.shared,
+                  })}
+                />
               </Select>
             </label>
             <label>
               <span>{labels.assigneeLabel}</span>
               <Select value={assigneeId} disabled={visibility === "private"} onChange={(event) => onAssigneeChange(event.target.value)}>
-                <option value="">{labels.noAssignee}</option>
-                {assignableMembers.map((member) => (
-                  <option key={member.id} value={member.id}>{member.displayName}</option>
-                ))}
+                <SelectOptions
+                  options={overviewTaskAssigneeSelectOptions(
+                    assignableMembers,
+                    labels.noAssignee,
+                  )}
+                />
               </Select>
             </label>
           </div>
