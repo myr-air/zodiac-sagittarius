@@ -435,4 +435,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(drawerCopy).toContain("export function weatherDrawerCopy");
     expect(drawerCopy).toContain("export function emptyText");
   });
+
+  it("keeps weather forecast strip formatting split from render", () => {
+    const strip = readItineraryArchitectureSource("src/shared/components/weather/WeatherForecastStrip.tsx");
+    const stripModel = readItineraryArchitectureSource("src/shared/components/weather/model/weather-forecast-strip-model.ts");
+
+    expect(strip).toContain("./model/weather-forecast-strip-model");
+    expect(strip).not.toContain("function formatDayLabel");
+    expect(strip).not.toContain("function weatherStripCopy");
+    expect(strip).not.toContain("displayDateTimeLocaleCode");
+    expect(stripModel).toContain("export function formatWeatherStripDayLabel");
+    expect(stripModel).toContain("export function weatherStripCopy");
+  });
 });
