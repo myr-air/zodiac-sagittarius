@@ -18,6 +18,17 @@ export interface AccountPortalDataCache {
 
 let accountPortalDataCache: (AccountPortalDataCache & { sessionToken: string }) | null = null;
 
+export function createEmptyAccountPortalDataCache(): AccountPortalDataCache {
+  return {
+    explorer: null,
+    settings: null,
+    stats: null,
+    todos: [],
+    trips: [],
+    vaultItems: [],
+  };
+}
+
 export function getAccountPortalDataCache(sessionToken: string): AccountPortalDataCache | null {
   if (accountPortalDataCache?.sessionToken !== sessionToken) return null;
   return accountPortalDataCache;

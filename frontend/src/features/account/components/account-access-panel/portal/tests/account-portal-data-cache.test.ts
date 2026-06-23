@@ -2,23 +2,25 @@ import { describe, expect, it } from "vitest";
 import {
   cacheAccountPortalData,
   clearAccountPortalDataCache,
+  createEmptyAccountPortalDataCache,
   getAccountPortalDataCache,
   getLatestAccountPortalDataCache,
-  type AccountPortalDataCache,
 } from "../account-portal-data-cache";
 
-const emptyPortalData: AccountPortalDataCache = {
-  explorer: null,
-  settings: null,
-  stats: null,
-  todos: [],
-  trips: [],
-  vaultItems: [],
-};
-
 describe("account portal data cache", () => {
+  it("creates the default empty portal data shape", () => {
+    expect(createEmptyAccountPortalDataCache()).toEqual({
+      explorer: null,
+      settings: null,
+      stats: null,
+      todos: [],
+      trips: [],
+      vaultItems: [],
+    });
+  });
+
   it("keeps cached portal data isolated by session token", () => {
-    cacheAccountPortalData("session-a", emptyPortalData);
+    cacheAccountPortalData("session-a", createEmptyAccountPortalDataCache());
 
     expect(getAccountPortalDataCache("session-a")).toMatchObject({ trips: [] });
     expect(getLatestAccountPortalDataCache()).toMatchObject({ trips: [] });

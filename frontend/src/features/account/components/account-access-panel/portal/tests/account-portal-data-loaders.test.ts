@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AccountPortalDataCache } from "../account-portal-data-cache";
+import {
+  createEmptyAccountPortalDataCache,
+  type AccountPortalDataCache,
+} from "../account-portal-data-cache";
 import {
   accountPortalDataFailures,
   loadAccountPortalCoreData,
@@ -111,5 +114,20 @@ describe("account portal data loaders", () => {
       trips: cachedData.trips,
       vaultItems: cachedData.vaultItems,
     });
+  });
+
+  it("uses the shared empty cache shape when no cached fallback exists", () => {
+    const results: AccountPortalDataLoadResults = [
+      { reason: new Error("settings unavailable"), status: "rejected" },
+      { reason: new Error("trips unavailable"), status: "rejected" },
+      { reason: new Error("stats unavailable"), status: "rejected" },
+      { reason: new Error("explorer unavailable"), status: "rejected" },
+      { reason: new Error("todos unavailable"), status: "rejected" },
+      { reason: new Error("vault unavailable"), status: "rejected" },
+    ];
+
+    expect(mergeAccountPortalDataResults(results, null)).toEqual(
+      createEmptyAccountPortalDataCache(),
+    );
   });
 });

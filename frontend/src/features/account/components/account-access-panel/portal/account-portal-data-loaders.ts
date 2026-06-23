@@ -7,7 +7,10 @@ import type {
   AccountTripSummary,
   AccountVaultItemSummary,
 } from "@/src/account/api-client";
-import type { AccountPortalDataCache } from "./account-portal-data-cache";
+import {
+  createEmptyAccountPortalDataCache,
+  type AccountPortalDataCache,
+} from "./account-portal-data-cache";
 
 export type AccountPortalDataLoadResults = [
   PromiseSettledResult<AccountSettings>,
@@ -72,18 +75,20 @@ export function mergeAccountPortalDataResults(
   ]: AccountPortalDataLoadResults,
   cachedData: AccountPortalDataCache | null,
 ): AccountPortalDataCache {
+  const fallbackData = cachedData ?? createEmptyAccountPortalDataCache();
+
   return {
     explorer: explorer.status === "fulfilled"
       ? explorer.value
-      : cachedData?.explorer ?? null,
+      : fallbackData.explorer,
     settings: settings.status === "fulfilled"
       ? settings.value
-      : cachedData?.settings ?? null,
-    stats: stats.status === "fulfilled" ? stats.value : cachedData?.stats ?? null,
-    todos: todos.status === "fulfilled" ? todos.value : cachedData?.todos ?? [],
-    trips: trips.status === "fulfilled" ? trips.value : cachedData?.trips ?? [],
+      : fallbackData.settings,
+    stats: stats.status === "fulfilled" ? stats.value : fallbackData.stats,
+    todos: todos.status === "fulfilled" ? todos.value : fallbackData.todos,
+    trips: trips.status === "fulfilled" ? trips.value : fallbackData.trips,
     vaultItems: vaultItems.status === "fulfilled"
       ? vaultItems.value
-      : cachedData?.vaultItems ?? [],
+      : fallbackData.vaultItems,
   };
 }
