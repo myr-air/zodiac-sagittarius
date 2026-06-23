@@ -1,8 +1,6 @@
-import type {
-  useWorkspaceCommands,
-  useWorkspacePlanningContext,
-  useWorkspaceSetupContext,
-} from "../hooks";
+import type { useWorkspaceCommands } from "../hooks/use-workspace-commands";
+import type { useWorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
+import type { useWorkspaceSetupContext } from "../hooks/use-workspace-setup-context";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "../types";
 import { buildWorkspaceFrameProps, type BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
 import { buildWorkspaceCoreCommandProps } from "./workspace-core-command-props";

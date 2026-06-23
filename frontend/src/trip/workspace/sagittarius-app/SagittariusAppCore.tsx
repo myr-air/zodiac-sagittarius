@@ -1,7 +1,7 @@
 "use client";
 
 import { seedTrip } from "@/src/trip/seed";
-import { useSagittariusWorkspaceContexts } from "./hooks";
+import { useSagittariusWorkspaceContexts } from "./hooks/use-sagittarius-workspace-contexts";
 import { WorkspaceAppFrame } from "./WorkspaceAppFrame";
 import { buildWorkspaceCoreFrameProps } from "./props/workspace-core-frame-props";
 import type { SagittariusAppProps } from "./types";

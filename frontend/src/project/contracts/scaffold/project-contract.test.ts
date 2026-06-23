@@ -80,8 +80,8 @@ describe("Sagittarius project scaffold", () => {
       ),
       "utf8",
     );
-    const hooksIndex = readFileSync(
-      join(frontendRoot, "src/trip/workspace/sagittarius-app/hooks/index.ts"),
+    const sagittariusAppCore = readFileSync(
+      join(frontendRoot, "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx"),
       "utf8",
     );
     const workspaceItineraryImportHook = readFileSync(
@@ -110,15 +110,9 @@ describe("Sagittarius project scaffold", () => {
     expect(storyFixtures).toContain("seedTripJoinId");
     expect(storyBuilders).toContain("export function appViewportStory");
     expect(storyExpectations).toContain("export async function expectWorkspaceView");
-    expect(hooksIndex).toContain("useWorkspaceItineraryImport");
-    expect(hooksIndex).toContain("useWorkspaceAdministration");
-    expect(hooksIndex).toContain("useWorkspaceCommands");
-    expect(hooksIndex).toContain("useWorkspaceSession");
-    expect(hooksIndex).toContain("useWorkspaceAccessGate");
-    expect(hooksIndex).toContain("useWorkspaceUiState");
-    expect(hooksIndex).toContain("useWorkspaceCockpitReplacement");
-    expect(hooksIndex).not.toContain("useWorkspaceRecordActions");
-    expect(hooksIndex).not.toContain("useWorkspaceRecordState");
+    expect(sagittariusAppCore).toContain(
+      "./hooks/use-sagittarius-workspace-contexts",
+    );
     expect(workspaceItineraryImportHook).toContain(
       "export function useWorkspaceItineraryImport",
     );
