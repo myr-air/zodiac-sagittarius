@@ -82,7 +82,6 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/tests/AccountAccessPanel.trip-builder-share.test.tsx",
   "src/features/account/components/account-access-panel/tests/AccountAccessPanel.trip-builder-submit.test.tsx",
   "src/features/account/components/account-access-panel/state/use-account-access-panel-state.ts",
-  "src/features/account/components/account-access-panel/email-login/index.ts",
   "src/features/account/components/account-access-panel/email-login/steps/account-email-login-credentials-step.tsx",
   "src/features/account/components/account-access-panel/email-login/steps/account-email-login-methods-step.tsx",
   "src/features/account/components/account-access-panel/email-login/steps/account-email-login-otp-step.tsx",

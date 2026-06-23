@@ -69,7 +69,8 @@ describe("Sagittarius account architecture contracts", () => {
     expect(accountPanelContent).not.toContain('from "../email-login"');
     expect(accountPanelContent).toContain("@/src/features/account/components/trip-join-gate/TripJoinGate");
     expect(accountPanelContent).toContain("../portal");
-    expect(accountEmailLoginPanelContent).toContain("../email-login");
+    expect(accountEmailLoginPanelContent).toContain("../email-login/account-email-login-panel");
+    expect(accountEmailLoginPanelContent).not.toContain('from "../email-login"');
     expect(accountEmailLoginPanelContent).toContain("accountAuthCardClassName");
     expect(accountPanelState).toContain("export function useAccountAccessPanelState");
     expect(accountPanelState).toContain("useAccountPortalData");
