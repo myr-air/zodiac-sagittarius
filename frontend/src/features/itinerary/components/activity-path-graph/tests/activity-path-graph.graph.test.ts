@@ -4,6 +4,7 @@ import { buildItineraryItem } from "@/src/features/itinerary/testing";
 import { laneColors } from "../activity-path-graph.styles";
 import type { ItineraryItem } from "@/src/trip/types";
 import {
+  activityPathGraphPathSelectOptions,
   buildEdgePath,
   buildGraphEdges,
   buildLaneXByPathId,
@@ -30,6 +31,18 @@ const itemForNode = (
   }) as ItineraryItem;
 
 describe("activity-path-graph.graph", () => {
+  it("builds path select options from graph path metadata order", () => {
+    expect(
+      activityPathGraphPathSelectOptions(new Map([
+        ["main", { color: "blue", name: "Main" }],
+        ["plan-a", { color: "green", name: "Plan A" }],
+      ])),
+    ).toEqual([
+      { value: "main", label: "Main" },
+      { value: "plan-a", label: "Plan A" },
+    ]);
+  });
+
   it("builds path metadata with visible day-trip filtering", () => {
     const pathOptions: ItineraryPathOption[] = [
       { id: "main", name: "Main", scope: "trip" },

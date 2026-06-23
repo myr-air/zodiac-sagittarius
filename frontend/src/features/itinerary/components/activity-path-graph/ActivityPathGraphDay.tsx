@@ -1,8 +1,17 @@
 import { type CSSProperties, useMemo, useRef } from "react";
 import { cn } from "@/src/lib/cn";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import type { ActivityPathGraphDayProps } from "./activity-path-graph.types";
 import { Select } from "@/src/ui";
-import { buildGraphEdges, buildEdgePath, buildGraphNodes, buildLaneXByPathId, buildPathMetaForDay, buildVisibleLanePathIds } from "./activity-path-graph.graph";
+import {
+  activityPathGraphPathSelectOptions,
+  buildGraphEdges,
+  buildEdgePath,
+  buildGraphNodes,
+  buildLaneXByPathId,
+  buildPathMetaForDay,
+  buildVisibleLanePathIds,
+} from "./activity-path-graph.graph";
 import { buildFallbackGraphLayout, useRenderedGraphLayout } from "./activity-path-graph.layout";
 import {
   anchorClassName,
@@ -92,9 +101,7 @@ export function ActivityPathGraphDay({
             value={sourcePathId}
             onChange={(event) => onMoveItemToPath?.(item.id, event.target.value)}
           >
-            {[...pathMetaById].map(([id, option]) => (
-              <option key={id} value={id}>{option.name}</option>
-            ))}
+            <SelectOptions options={activityPathGraphPathSelectOptions(pathMetaById)} />
           </Select>
         </span>
       ))}

@@ -1,4 +1,5 @@
 import { parseTime } from "@/src/trip/itinerary-core";
+import type { SelectOptionItem } from "@/src/shared/components/select-options";
 import {
   humanizePathId,
   itineraryItemPathId,
@@ -17,6 +18,15 @@ export { buildGraphEdges } from "./activity-path-graph.edges";
 export interface PathMeta {
   name: string;
   color: string;
+}
+
+export function activityPathGraphPathSelectOptions(
+  pathMetaById: ReadonlyMap<string, PathMeta>,
+): Array<SelectOptionItem<string>> {
+  return Array.from(pathMetaById, ([id, option]) => ({
+    value: id,
+    label: option.name,
+  }));
 }
 
 export function buildPathMetaForDay(
