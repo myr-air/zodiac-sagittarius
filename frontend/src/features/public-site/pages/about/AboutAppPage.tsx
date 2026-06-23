@@ -6,6 +6,14 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { Icon } from "@/src/ui/icons";
 import {
+  type AboutDetailRowModel,
+  type AboutVersionPanelModel,
+  type ApiVersionState,
+  buildAboutDetailRows,
+  buildAboutStatusModel,
+  buildAboutVersionPanels,
+} from "./AboutAppPage.model";
+import {
   detailGridClassName,
   detailRowClassName,
   detailValueClassName,
@@ -38,11 +46,6 @@ interface AboutAppPageProps {
   webVersion: WebVersionInfo;
 }
 
-type ApiVersionState =
-  | { status: "loading" }
-  | { status: "ready"; value: ApiVersionInfo }
-  | { status: "unavailable" };
-
 export function AboutAppPage({ webVersion }: AboutAppPageProps) {
   const { t } = useI18n();
   const [apiVersion, setApiVersion] = useState<ApiVersionState>({ status: "loading" });
@@ -68,9 +71,18 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
     };
   }, [webVersion.apiVersionUrl]);
 
-  const apiValue = apiVersion.status === "ready" ? apiVersion.value : null;
-  const statusLabel = apiVersion.status === "ready" ? t.aboutApp.status.connected : apiVersion.status === "loading" ? t.aboutApp.status.checking : t.aboutApp.status.unavailable;
-  const statusClassName = apiVersion.status === "ready" ? statusPillReadyClassName : apiVersion.status === "loading" ? statusPillLoadingClassName : statusPillUnavailableClassName;
+  const status = buildAboutStatusModel(apiVersion, t.aboutApp);
+  const statusClassName = status.tone === "ready" ? statusPillReadyClassName : status.tone === "loading" ? statusPillLoadingClassName : statusPillUnavailableClassName;
+  const versionPanels = buildAboutVersionPanels({
+    apiVersion,
+    labels: t.aboutApp,
+    webVersion,
+  });
+  const detailRows = buildAboutDetailRows({
+    apiVersion,
+    labels: t.aboutApp,
+    webVersion,
+  });
 
   return (
     <main className={pageClassName}>
@@ -83,8 +95,8 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
               {t.aboutApp.subtitle}
             </p>
             <span className={cn(statusPillClassName, statusClassName)}>
-              <Icon name={apiVersion.status === "ready" ? "check" : apiVersion.status === "loading" ? "clock" : "warning"} />
-              {statusLabel}
+              <Icon name={status.icon} />
+              {status.label}
             </span>
           </div>
           <div className={heroVisualClassName} aria-hidden="true">
@@ -104,35 +116,18 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
         <section className={sectionClassName} aria-labelledby="version-heading">
           <h2 className={sectionTitleClassName} id="version-heading">{t.aboutApp.versionsTitle}</h2>
           <div className={versionGridClassName}>
-            <VersionPanel
-              label={t.aboutApp.webVersion}
-              icon="layout"
-              value={`${webVersion.service} v${webVersion.version}`}
-              details={[
-                [t.aboutApp.buildSha, webVersion.buildSha],
-                [t.aboutApp.buildTime, webVersion.buildTime],
-              ]}
-            />
-            <VersionPanel
-              label={t.aboutApp.apiVersion}
-              icon="cloud"
-              value={apiValue ? `${apiValue.service} v${apiValue.version}` : apiVersion.status === "loading" ? t.aboutApp.checkingApiVersion : t.aboutApp.apiVersionUnavailable}
-              muted={!apiValue}
-              details={[
-                [t.aboutApp.buildSha, apiValue?.buildSha ?? t.aboutApp.unavailableValue],
-                [t.aboutApp.buildTime, apiValue?.buildTime ?? t.aboutApp.unavailableValue],
-              ]}
-            />
+            {versionPanels.map((panel) => (
+              <VersionPanel key={panel.label} {...panel} />
+            ))}
           </div>
         </section>
 
         <section className={sectionClassName} aria-labelledby="details-heading">
           <h2 className={sectionTitleClassName} id="details-heading">{t.aboutApp.detailsTitle}</h2>
           <div className={detailGridClassName}>
-            <DetailRow label={t.aboutApp.environment} value={apiValue?.environment ?? webVersion.environment} />
-            <DetailRow label={t.aboutApp.runtimeMode} value={webVersion.runtimeMode} />
-            <DetailRow label={t.aboutApp.apiHost} value={webVersion.apiHost} />
-            <DetailRow label={t.aboutApp.schemaVersion} value={apiValue?.schemaVersion ?? webVersion.schemaVersion} />
+            {detailRows.map((row) => (
+              <DetailRow key={row.label} {...row} />
+            ))}
           </div>
         </section>
       </div>
@@ -140,15 +135,7 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
   );
 }
 
-interface VersionPanelProps {
-  details: Array<[string, string]>;
-  icon: "cloud" | "layout";
-  label: string;
-  muted?: boolean;
-  value: string;
-}
-
-function VersionPanel({ details, icon, label, muted = false, value }: VersionPanelProps) {
+function VersionPanel({ details, icon, label, muted = false, value }: AboutVersionPanelModel) {
   return (
     <article className={panelClassName}>
       <div className={panelHeaderClassName}>
@@ -167,7 +154,7 @@ function VersionPanel({ details, icon, label, muted = false, value }: VersionPan
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: AboutDetailRowModel) {
   return (
     <div className={detailRowClassName}>
       <span className={labelClassName}>{label}</span>
