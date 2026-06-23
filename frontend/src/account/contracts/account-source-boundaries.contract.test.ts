@@ -54,6 +54,8 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessFixtures,
       accountAccessTestClients,
       accountAccessPasskeyTestUtils,
+      accountPortalSettingsSection,
+      accountPortalSettingsPasskeyActions,
       accountSettingsEditor,
       accountSettingsEditorState,
       emailLoginState,
@@ -200,6 +202,12 @@ describe("Sagittarius account source boundaries", () => {
     expect(portalTripWizardActions).toContain("appRoutes.portalMyTrips()");
     expect(portalTripWizardActions).toContain("tripWizardActionsClassName");
 
+    expect(accountPortalSettingsSection).toContain("usePortalSettingsPasskeyActions");
+    expect(accountPortalSettingsSection).not.toContain("createPasskeyCredential");
+    expect(accountPortalSettingsSection).not.toContain("arrayBufferToBase64Url");
+    expect(accountPortalSettingsPasskeyActions).toContain("export function usePortalSettingsPasskeyActions");
+    expect(accountPortalSettingsPasskeyActions).toContain("createPasskeyCredential");
+    expect(accountPortalSettingsPasskeyActions).toContain("finishPasskeyRegistration");
     expect(accountSettingsEditor).toContain("useAccountSettingsEditorState");
     expect(accountSettingsEditor).not.toContain("profileToForm");
     expect(accountSettingsEditor).not.toContain("function submitSettings");

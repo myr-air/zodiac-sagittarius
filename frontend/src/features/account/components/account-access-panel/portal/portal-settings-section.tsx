@@ -4,13 +4,9 @@ import type { AccountApiClient, AccountSession, AccountSettings } from "@/src/ac
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import {
-  arrayBufferToBase64Url,
-  createPasskeyCredential,
-  errorMessage,
-} from "../auth";
 import { AccountSettingsEditor } from "./account-settings-editor";
 import { PanelHeading } from "../primitives/account-panel-heading";
+import { usePortalSettingsPasskeyActions } from "./usePortalSettingsPasskeyActions";
 
 interface PortalSettingsSectionClassNames {
   avatar: string;
@@ -44,29 +40,15 @@ export function PortalSettingsSection({
   settings: AccountSettings | null;
 }) {
   const { t } = useI18n();
-
-  async function registerPasskey() {
-    if (!settings) return;
-    try {
-      const registrationStart = await accountClient.startPasskeyRegistration(accountSession.sessionToken);
-      const credential = await createPasskeyCredential(registrationStart.challenge, settings);
-      const passkey = await accountClient.finishPasskeyRegistration(accountSession.sessionToken, {
-        challengeId: registrationStart.challengeId,
-        credentialId: arrayBufferToBase64Url(credential.rawId),
-        clientDataJson: arrayBufferToBase64Url(credential.response.clientDataJSON),
-        attestationObject: arrayBufferToBase64Url(credential.response.attestationObject),
-        nickname: `${settings.profile.displayName} passkey`,
-      });
-      onSettingsChanged({
-        ...settings,
-        passkeys: [passkey, ...settings.passkeys.filter((candidate) => candidate.id !== passkey.id)],
-      });
-      onMessage(t.access.settings.messages.passkeyCreated);
-      onError(null);
-    } catch (caught) {
-      onError(errorMessage(caught, t.access.settings.messages.passkeyFailed, t.access.messages));
-    }
-  }
+  const actions = usePortalSettingsPasskeyActions({
+    accountClient,
+    accountSession,
+    labels: t.access,
+    onError,
+    onMessage,
+    onSettingsChanged,
+    settings,
+  });
 
   return (
     <section className={classNames.section} id="portal-settings">
@@ -98,7 +80,7 @@ export function PortalSettingsSection({
         type="button"
         variant="secondary"
         disabled={!settings}
-        onClick={() => void registerPasskey()}
+        onClick={() => void actions.registerPasskey()}
       >
         <Icon name="key" />
         {t.access.settings.startPasskeySetup}

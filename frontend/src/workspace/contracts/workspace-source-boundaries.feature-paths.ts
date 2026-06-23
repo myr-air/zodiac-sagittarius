@@ -110,6 +110,10 @@ export const workspaceFeatureBoundarySourcePaths = {
   portalTripWizardCredentialSync:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-credential-sync.ts",
   accountAuthSupport: "src/features/account/components/account-access-panel/auth/account-auth-support.ts",
+  accountPortalSettingsSection:
+    "src/features/account/components/account-access-panel/portal/portal-settings-section.tsx",
+  accountPortalSettingsPasskeyActions:
+    "src/features/account/components/account-access-panel/portal/usePortalSettingsPasskeyActions.ts",
   emailLoginStepContent: "src/features/account/components/account-access-panel/email-login/account-email-login-step-content.tsx",
   tripJoinGate: "src/features/account/components/trip-join-gate/TripJoinGate.tsx",
   tripJoinGateChrome: "src/features/account/components/trip-join-gate/composition/TripJoinGateChrome.tsx",
