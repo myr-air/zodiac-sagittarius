@@ -10,6 +10,11 @@ import {
   photoAccessLabel,
   photoProviderLabel,
 } from "../model/photo-page-options";
+import {
+  photoAlbumAccessNoteDisplay,
+  photoAlbumHostDisplay,
+  photoAlbumOwnerDisplay,
+} from "../model/photo-album-display";
 import { photoAlbumLinkHost } from "../model/photo-page-selectors";
 import { PhotoCopyFeedback } from "./PhotoCopyFeedback";
 import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
@@ -45,7 +50,7 @@ export function PhotoAlbumInspector({
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <div className="flex min-w-0 items-center justify-between gap-2">
-          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{linkHost ?? copy.blockedLink}</span>
+          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{photoAlbumHostDisplay(linkHost, copy)}</span>
           {href ? (
             <button
               type="button"
@@ -70,11 +75,11 @@ export function PhotoAlbumInspector({
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
         <span>{photoAccessLabel(album.access, copy)}</span>
-        <span className="text-(--color-text-muted)">{album.accessNote || copy.noAccessNote}</span>
+        <span className="text-(--color-text-muted)">{photoAlbumAccessNoteDisplay(album, copy)}</span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.owner}</strong>
-        <span>{relations?.owner?.displayName ?? copy.noOwnerAssigned}</span>
+        <span>{photoAlbumOwnerDisplay(relations?.owner, copy.noOwnerAssigned)}</span>
         <span className="text-xs text-(--color-text-muted)">{copy.createdBy(relations?.createdBy?.displayName ?? album.createdBy)}</span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>

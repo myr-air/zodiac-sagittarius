@@ -10,6 +10,11 @@ import {
   photoAccessLabel,
   photoProviderLabel,
 } from "../model/photo-page-options";
+import {
+  photoAlbumDayDisplay,
+  photoAlbumOwnerDisplay,
+  photoAlbumSummaryDisplay,
+} from "../model/photo-album-display";
 import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
 
 interface PhotoAlbumCardProps {
@@ -51,12 +56,12 @@ export function PhotoAlbumCard({
         </span>
         <span className="grid gap-1">
           <strong className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-black text-(--color-text)">{album.title}</strong>
-          <span className="line-clamp-2 text-xs font-semibold leading-5 text-(--color-text-muted)">{album.accessNote || album.description || copy.defaultAccessNote}</span>
+          <span className="line-clamp-2 text-xs font-semibold leading-5 text-(--color-text-muted)">{photoAlbumSummaryDisplay(album, copy)}</span>
         </span>
       </button>
       <div className="grid gap-2 text-xs font-bold text-(--color-text-muted)">
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {relations.owner?.displayName ?? copy.noOwner}</span>
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="calendar" /> {album.day ?? copy.tripLevel}</span>
+        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {photoAlbumOwnerDisplay(relations.owner, copy.noOwner)}</span>
+        <span className="flex min-w-0 items-center gap-1.5"><Icon name="calendar" /> {photoAlbumDayDisplay(album.day, copy)}</span>
         {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
