@@ -7,19 +7,21 @@ import {
   pathNamePlanC,
 } from "./support/itinerary-story-fixtures";
 import {
+  expectAddStopActionsAvailable,
   expectDayActivityPathGraph,
   expectItineraryResponsiveContract,
   expectPathGraphNode,
   expectSelectedPathGraphNode,
+  expectTripPlanControlsEnabled,
 } from "./support/itinerary-story-assertions";
 import type { StoryPlay } from "./support/story-play-types";
 
 type ItineraryTemplatePlay = StoryPlay<typeof SmartItineraryTable>;
 
 export const ownerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+  await expectTripPlanControlsEnabled(canvas);
   await expectDayActivityPathGraph(canvas);
-  await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+  await expectAddStopActionsAvailable(canvas);
 };
 
 export const ownerThaiPlay: ItineraryTemplatePlay = async ({ canvas }) => {
@@ -29,8 +31,8 @@ export const ownerThaiPlay: ItineraryTemplatePlay = async ({ canvas }) => {
 };
 
 export const travelerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-  await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+  await expectTripPlanControlsEnabled(canvas);
+  await expectAddStopActionsAvailable(canvas);
 };
 
 export const hierarchyBlocksPlay: ItineraryTemplatePlay = async ({ canvas }) => {

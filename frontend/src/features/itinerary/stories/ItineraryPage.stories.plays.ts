@@ -15,10 +15,13 @@ import {
   onStoryToggleShowAllPaths,
 } from "./ItineraryPage.stories.support";
 import {
+  expectAddStopActionsAvailable,
   expectDayActivityPathGraph,
   expectItineraryResponsiveContract,
   expectPathGraphNode,
   expectSelectedPathGraphNode,
+  expectTripPlanControlsEnabled,
+  getTripPlanControlsButton,
 } from "./support/itinerary-story-assertions";
 import type { StoryPlay } from "./support/story-play-types";
 
@@ -26,10 +29,10 @@ type ItineraryPagePlay = StoryPlay<typeof SmartItineraryTable>;
 
 export const ownerPlay: ItineraryPagePlay = async ({ canvas, canvasElement }) => {
   await expectItineraryResponsiveContract(canvasElement);
-  await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
+  await expectTripPlanControlsEnabled(canvas);
   await expect(canvas.queryByRole("button", { name: /^Import$/i })).toBeNull();
   await expect(canvas.queryByRole("button", { name: /^Export$/i })).toBeNull();
-  await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+  await expectAddStopActionsAvailable(canvas);
   await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
 };
 
@@ -58,8 +61,8 @@ export const viewerPlay: ItineraryPagePlay = async ({ canvas }) => {
 
 export const travelerPlay: ItineraryPagePlay = async ({ canvas }) => {
   await expect(canvas.queryByText(/Editing requires organizer access/i)).toBeNull();
-  await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-  await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
+  await expectTripPlanControlsEnabled(canvas);
+  await expectAddStopActionsAvailable(canvas);
   await expect(canvas.queryAllByRole("button", { name: /Edit Dim Dim Sum/i })).toHaveLength(0);
 };
 
@@ -97,7 +100,7 @@ export const pathAndDurationInteractionsPlay: ItineraryPagePlay = async ({ canva
   await userEvent.click(within(dayPathMenu).getByRole("option", { name: pathNamePlanB }));
   await expect(onStoryChangeDayPath).toHaveBeenCalledWith(itineraryStoryDay, pathIdStoryPlanB);
 
-  await userEvent.click(canvas.getByRole("button", { name: "Trip Plan controls" }));
+  await userEvent.click(getTripPlanControlsButton(canvas));
   await userEvent.click(canvas.getByRole("checkbox", { name: /Show all paths/i }));
   await expect(onStoryToggleShowAllPaths).toHaveBeenCalledWith(true);
 

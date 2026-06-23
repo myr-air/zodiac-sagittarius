@@ -43,3 +43,17 @@ export async function expectPathGraphNode(
 ) {
   await expect(canvas.getByRole("button", { name })).toBeInTheDocument();
 }
+
+export function getTripPlanControlsButton(canvas: StoryCanvas) {
+  return canvas.getByRole("button", { name: "Trip Plan controls" });
+}
+
+export async function expectTripPlanControlsEnabled(canvas: StoryCanvas) {
+  await expect(getTripPlanControlsButton(canvas)).toBeEnabled();
+}
+
+export async function expectAddStopActionsAvailable(canvas: StoryCanvas) {
+  await expect(
+    canvas.getAllByRole("button", { name: /Add stop or activity/i }).length,
+  ).toBeGreaterThan(0);
+}
