@@ -1,4 +1,5 @@
 import type { BookingDoc, Expense, ItineraryItem, Member, StopNote, Trip } from "../../types";
+import { buildItineraryItem } from "../../testing/fixtures/trip-fixtures";
 
 export const bookingDocTestMembers: Member[] = [
   { id: "member-owner", displayName: "Owner", role: "owner", presence: "online", color: "#0f766e" },
@@ -114,7 +115,7 @@ export function createBookingDocTripFixture(bookingDocs: BookingDoc[]): Trip {
 }
 
 export function createItineraryItemFixture(id: string, activity: string, day: string): ItineraryItem {
-  return {
+  return buildItineraryItem({
     id,
     tripId: "trip-1",
     planVariantId: "plan-main",
@@ -133,5 +134,5 @@ export function createItineraryItemFixture(id: string, activity: string, day: st
     createdBy: "member-owner",
     updatedAt: "2026-06-01T00:00:00.000Z",
     version: 1,
-  };
+  });
 }

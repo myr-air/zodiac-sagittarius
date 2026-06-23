@@ -1,4 +1,5 @@
 import type { ItineraryItem, Member, Trip, TripPhotoAlbumLink } from "../../types";
+import { buildItineraryItem } from "../../testing/fixtures/trip-fixtures";
 
 export const photoAlbumTestMembers: Member[] = [
   { id: "member-owner", displayName: "Aom", role: "owner", presence: "online", color: "#0f766e" },
@@ -68,7 +69,7 @@ export function createPhotoAlbumFixture(
 export function createItineraryItemFixture(
   input: Pick<ItineraryItem, "id" | "day" | "activity" | "place">,
 ): ItineraryItem {
-  return {
+  return buildItineraryItem({
     tripId: "trip-1",
     planVariantId: "plan-main",
     sortOrder: 10,
@@ -84,7 +85,7 @@ export function createItineraryItemFixture(
     updatedAt: "2026-06-08T00:00:00.000Z",
     version: 1,
     ...input,
-  };
+  });
 }
 
 export function createPhotoAlbumTripFixture(photoAlbumLinks: TripPhotoAlbumLink[]): Trip {
