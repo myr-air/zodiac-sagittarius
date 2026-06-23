@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { applyImportedItemsToItineraryPath } from "../../../itinerary-paths";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { importItem } from "./itinerary-path-imports.test-support";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
@@ -8,13 +11,26 @@ describe("itinerary path import placement", () => {
   it("keeps main items and adds imported rows as an alternative path", () => {
     const trip = {
       ...tripFixture.trip,
-      itineraryItems: tripFixture.planItems.slice(0, 2).map((item, index) => ({
-        ...item,
-        day: "2026-06-19",
-        startTime: index === 0 ? "08:30" : "11:00",
-        sortOrder: (index + 1) * 100,
-        pathRole: "main" as const,
-      })),
+      itineraryItems: [
+        buildItineraryItem({
+          id: "existing-main-early",
+          tripId: tripFixture.trip.id,
+          planVariantId: tripFixture.trip.activePlanVariantId,
+          day: "2026-06-19",
+          startTime: "08:30",
+          sortOrder: 100,
+          pathRole: "main" as const,
+        }),
+        buildItineraryItem({
+          id: "existing-main-late",
+          tripId: tripFixture.trip.id,
+          planVariantId: tripFixture.trip.activePlanVariantId,
+          day: "2026-06-19",
+          startTime: "11:00",
+          sortOrder: 200,
+          pathRole: "main" as const,
+        }),
+      ],
     };
 
     const next = applyImportedItemsToItineraryPath(trip, [importItem], {
@@ -50,12 +66,13 @@ describe("itinerary path import placement", () => {
   });
 
   it("remaps imported sub-activity parents when imported ids collide with existing rows", () => {
-    const existingItem = {
-      ...tripFixture.planItems[0],
+    const existingItem = buildItineraryItem({
       id: "import-flight-block",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       sortOrder: 100,
-    };
+    });
     const importedBlock = {
       ...importItem,
       id: "import-flight-block",
@@ -101,9 +118,10 @@ describe("itinerary path import placement", () => {
   });
 
   it("imports overlapping rows into main without synthesizing alternative paths", () => {
-    const existingMain = {
-      ...tripFixture.planItems[0],
+    const existingMain = buildItineraryItem({
       id: "existing-main",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       startTime: "08:00",
       durationMinutes: 90,
@@ -112,7 +130,7 @@ describe("itinerary path import placement", () => {
       pathId: undefined,
       pathName: undefined,
       pathRole: "main" as const,
-    };
+    });
     const overlappingImport = {
       ...importItem,
       id: "import-overlap-main",

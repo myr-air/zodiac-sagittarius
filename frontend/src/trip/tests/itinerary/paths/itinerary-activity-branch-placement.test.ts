@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { mapById } from "@/src/shared/collection";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { applyItemToActivityBranch } from "../../../itinerary-paths";
 import { overlappingActivityItems } from "@/src/trip/testing/fixtures/itinerary-activity-branch-fixtures";
 
@@ -27,18 +30,22 @@ describe("itinerary activity branch placement", () => {
   it("keeps non-overlapping created activities on the main path", () => {
     const trip = {
       ...tripFixture.trip,
-      itineraryItems: [{
-        ...tripFixture.planItems[0],
-        id: "item-main",
-        day: "2026-06-19",
-        startTime: "08:00",
-        durationMinutes: 45,
-        sortOrder: 100,
-      }],
+      itineraryItems: [
+        buildItineraryItem({
+          id: "item-main",
+          tripId: tripFixture.trip.id,
+          planVariantId: tripFixture.trip.activePlanVariantId,
+          day: "2026-06-19",
+          startTime: "08:00",
+          durationMinutes: 45,
+          sortOrder: 100,
+        }),
+      ],
     };
-    const nextItem = {
-      ...tripFixture.planItems[1],
+    const nextItem = buildItineraryItem({
       id: "item-later",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       startTime: "10:00",
       durationMinutes: 45,
@@ -47,7 +54,7 @@ describe("itinerary activity branch placement", () => {
       pathId: undefined,
       pathName: undefined,
       pathRole: undefined,
-    };
+    });
 
     const next = applyItemToActivityBranch(trip, nextItem).trip;
 

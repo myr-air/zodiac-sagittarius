@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { mapById } from "@/src/shared/collection";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   applyItemToActivityBranch,
   applyManualActivityPath,
@@ -63,9 +66,10 @@ describe("manual itinerary activity path assignment", () => {
   });
 
   it("moves sub-activities with their parent activity block when assigning an explicit path", () => {
-    const block = {
-      ...tripFixture.planItems[0],
+    const block = buildItineraryItem({
       id: "item-flight-block",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       startTime: "04:00",
       durationMinutes: 540,
@@ -75,10 +79,11 @@ describe("manual itinerary activity path assignment", () => {
       pathId: undefined,
       pathName: undefined,
       pathRole: undefined,
-    };
-    const child = {
-      ...tripFixture.planItems[1],
+    });
+    const child = buildItineraryItem({
       id: "item-flight-checkin",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       parentItemId: "item-flight-block",
       day: "2026-06-19",
       startTime: "06:00",
@@ -88,10 +93,11 @@ describe("manual itinerary activity path assignment", () => {
       pathId: undefined,
       pathName: undefined,
       pathRole: undefined,
-    };
-    const overlap = {
-      ...tripFixture.planItems[2],
+    });
+    const overlap = buildItineraryItem({
       id: "item-hotel-breakfast",
+      tripId: tripFixture.trip.id,
+      planVariantId: tripFixture.trip.activePlanVariantId,
       day: "2026-06-19",
       startTime: "06:30",
       durationMinutes: 45,
@@ -100,7 +106,7 @@ describe("manual itinerary activity path assignment", () => {
       pathId: undefined,
       pathName: undefined,
       pathRole: undefined,
-    };
+    });
     const trip = {
       ...tripFixture.trip,
       itineraryItems: [block, child, overlap],
