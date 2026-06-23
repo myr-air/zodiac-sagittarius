@@ -3,6 +3,11 @@ import { Badge } from "@/src/ui";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PanelHeading } from "../../primitives/account-panel-heading";
 import { PortalStatSkeleton, Stat } from "../primitives/account-portal-primitives";
+import {
+  buildAccountPortalDashboardProfile,
+  buildAccountPortalDashboardSessionBadge,
+  buildAccountPortalDashboardStatRows,
+} from "./account-portal-dashboard-section.model";
 
 interface PortalDashboardSectionClassNames {
   avatar: string;
@@ -25,30 +30,34 @@ export function PortalDashboardSection({
   stats: AccountTripStats | null;
 }) {
   const { t } = useI18n();
-  const sessionKindLabel = accountSession.kind === "trusted" ? t.access.dashboard.sessionKinds.trusted : t.access.dashboard.sessionKinds.temporary;
+  const profile = buildAccountPortalDashboardProfile(settings, t.access.dashboard);
+  const sessionBadge = buildAccountPortalDashboardSessionBadge(
+    accountSession,
+    t.access.dashboard,
+  );
+  const statRows = buildAccountPortalDashboardStatRows(stats, t.access.dashboard);
 
   return (
     <section className={classNames.section} id="portal-dashboard">
       <PanelHeading icon="home" title={t.access.portal.sections.dashboard.title} detail={t.access.portal.sections.dashboard.detail} />
       <div className={classNames.profileRow}>
-        <span className={classNames.avatar} style={{ backgroundColor: settings?.profile.avatarColor ?? "#c2410c" }} aria-hidden="true">
-          {(settings?.profile.displayName ?? t.access.dashboard.fallbackName).slice(0, 1)}
+        <span className={classNames.avatar} style={{ backgroundColor: profile.avatarColor }} aria-hidden="true">
+          {profile.avatarInitial}
         </span>
         <div>
-          <strong>{settings?.profile.displayName ?? t.access.dashboard.fallbackName}</strong>
-          <span>{settings?.profile.primaryEmail ?? t.access.dashboard.noEmail}</span>
+          <strong>{profile.displayName}</strong>
+          <span>{profile.email}</span>
         </div>
-        <Badge tone={accountSession.kind === "trusted" ? "success" : "warning"}>{sessionKindLabel}</Badge>
+        <Badge tone={sessionBadge.tone}>{sessionBadge.label}</Badge>
       </div>
       <div className={classNames.statGrid}>
         {isLoading && !stats ? (
           <PortalStatSkeleton />
         ) : (
           <>
-            <Stat label={t.access.dashboard.stats.trips} value={stats?.tripsTotal ?? 0} />
-            <Stat label={t.access.dashboard.stats.owned} value={stats?.tripsOwned ?? 0} />
-            <Stat label={t.access.dashboard.stats.active} value={stats?.activeTrips ?? 0} />
-            <Stat label={t.access.dashboard.stats.claims} value={stats?.tempClaimsCompleted ?? 0} />
+            {statRows.map((stat) => (
+              <Stat key={stat.label} label={stat.label} value={stat.value} />
+            ))}
           </>
         )}
       </div>
