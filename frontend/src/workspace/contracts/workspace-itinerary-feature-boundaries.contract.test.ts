@@ -42,6 +42,9 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       stopDialogDraftSubmit,
       stopFormModel,
       stopFormTimeFields,
+      contextRailTypes,
+      contextRailActionTypes,
+      contextRailPanelTypes,
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(overviewPage).toContain("OverviewSummaryBand");
@@ -144,5 +147,16 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(stopFormTimeFields).toContain("export function applyStopStartTime");
     expect(stopFormTimeFields).toContain("export function applyStopEndTime");
     expect(stopFormTimeFields).toContain("export function applyStopTimeMode");
+
+    expect(contextRailTypes).toContain("./context-rail-actions.types");
+    expect(contextRailTypes).toContain("./context-rail-panel.types");
+    expect(contextRailTypes).not.toContain("export interface ContextRailProps");
+    expect(contextRailTypes).not.toContain("@/src/trip/booking-docs");
+    expect(contextRailActionTypes).toContain("ContextRailCreateNoteInput");
+    expect(contextRailActionTypes).toContain("ContextRailBookingDocHandlers");
+    expect(contextRailActionTypes).not.toContain("ContextRailSelectedStopPanelProps");
+    expect(contextRailPanelTypes).toContain("export interface ContextRailProps");
+    expect(contextRailPanelTypes).toContain("ContextRailSelectedStopPanelProps");
+    expect(contextRailPanelTypes).toContain("./context-rail-actions.types");
   });
 });

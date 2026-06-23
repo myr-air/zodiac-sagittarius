@@ -47,6 +47,9 @@ export const workspaceFeatureBoundarySourcePaths = {
   stopDialogDraftSubmit: "src/features/itinerary/components/stop-dialog/stop-dialog-draft-submit.ts",
   stopFormModel: "src/features/itinerary/domain/stop-form-model.ts",
   stopFormTimeFields: "src/features/itinerary/domain/stop-form-time-fields.ts",
+  contextRailTypes: "src/features/itinerary/components/context-rail/context-rail.types.ts",
+  contextRailActionTypes: "src/features/itinerary/components/context-rail/context-rail-actions.types.ts",
+  contextRailPanelTypes: "src/features/itinerary/components/context-rail/context-rail-panel.types.ts",
   tripSettingsPageSource: "src/features/workspace/pages/trip-settings/TripSettingsPage.tsx",
   tripSettingsTypesSource:
     "src/features/workspace/pages/trip-settings/model/trip-settings-form-model.ts",
