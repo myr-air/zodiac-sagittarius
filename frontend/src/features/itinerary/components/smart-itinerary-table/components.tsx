@@ -1,9 +1,7 @@
-export {
-  ActivityCell,
-  ActivityLocationLine,
-  ActivityTypePicker,
-  InlineActivityField,
-} from "./activity-cell";
+export { ActivityCell } from "./activity-cell/ActivityCell";
+export { ActivityLocationLine } from "./activity-cell/ActivityLocationLine";
+export { ActivityTypePicker } from "./activity-cell/ActivityTypePicker";
+export { InlineActivityField } from "./activity-cell/InlineActivityField";
 
 export { ItineraryNoteModal } from "./activity-cell/ItineraryNoteModal";
 

@@ -1,6 +1,6 @@
 import type { ItineraryItem } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
-import { ActivityCell } from "./activity-cell";
+import { ActivityCell } from "./activity-cell/ActivityCell";
 import type { DayGroupProps } from "./day-group.types";
 import {
   addStopInlineButtonClassName,

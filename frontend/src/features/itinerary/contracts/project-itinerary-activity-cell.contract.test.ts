@@ -3,8 +3,11 @@ import { readItineraryArchitectureSource } from "./project-itinerary-architectur
 
 describe("Sagittarius itinerary activity-cell architecture", () => {
   it("keeps ActivityCell split into render, model, meta, and typed props", () => {
-    const activityCellBarrel = readItineraryArchitectureSource(
-      "src/features/itinerary/components/smart-itinerary-table/activity-cell.ts",
+    const dayGroupActivityRows = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/DayGroupActivityRows.tsx",
+    );
+    const exports = readItineraryArchitectureSource(
+      "src/features/itinerary/components/smart-itinerary-table/components.tsx",
     );
     const activityCell = readItineraryArchitectureSource(
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCell.tsx",
@@ -31,7 +34,11 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
       "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts",
     );
 
-    expect(activityCellBarrel).toContain("./activity-cell/ActivityCell");
+    expect(dayGroupActivityRows).toContain("./activity-cell/ActivityCell");
+    expect(exports).toContain("./activity-cell/ActivityCell");
+    expect(exports).toContain("./activity-cell/ActivityLocationLine");
+    expect(exports).toContain("./activity-cell/ActivityTypePicker");
+    expect(exports).toContain("./activity-cell/InlineActivityField");
     expect(activityCell).toContain("./use-activity-cell-model");
     expect(activityCell).toContain("./ActivityCellBody");
     expect(activityCell).toContain("./ActivityCellRails");
