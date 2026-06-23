@@ -3,7 +3,7 @@ import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseCategoryFilterValues } from "../model/expense-page-options";
+import { expenseCategoryFilterSelectOptions } from "../model/expense-page-options";
 import type {
   ExpenseCategoryFilter,
   ExpenseCopyState,
@@ -54,9 +54,9 @@ export function ExpenseLedgerControls({
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.category}</span>
           <Select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as ExpenseCategoryFilter)}>
-            {expenseCategoryFilterValues.map((category) => (
-              <option key={category} value={category}>
-                {category === "all" ? t.expenses.filters.allCategories : category}
+            {expenseCategoryFilterSelectOptions(t.expenses.filters.allCategories).map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
               </option>
             ))}
           </Select>

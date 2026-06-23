@@ -6,7 +6,10 @@ import {
 } from "@/src/features/workspace/model/related-checkbox-options";
 import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
-import { expenseCategories, expenseSplitModes } from "../model/expense-page-options";
+import {
+  expenseCategorySelectOptions,
+  expenseSplitModeSelectOptions,
+} from "../model/expense-page-options";
 
 interface ExpenseLinkingFieldsProps {
   category: Expense["category"];
@@ -65,7 +68,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.category}</span>
         <Select value={category} onChange={(event) => onCategoryChange(event.target.value as Expense["category"])}>
-          {expenseCategories.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}
+          {expenseCategorySelectOptions().map((candidate) => <option key={candidate.value} value={candidate.value}>{candidate.label}</option>)}
         </Select>
       </label>
       <div className="grid gap-1.5">
@@ -89,7 +92,7 @@ export function ExpenseLinkingFields({
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.splitMode}</span>
         <Select value={splitMode} onChange={(event) => onSplitModeChange(event.target.value as ExpenseSplitMode)}>
-          {expenseSplitModes.map((mode) => <option key={mode} value={mode}>{copy.splitModes[mode]}</option>)}
+          {expenseSplitModeSelectOptions(copy.splitModes).map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
         </Select>
       </label>
     </>
