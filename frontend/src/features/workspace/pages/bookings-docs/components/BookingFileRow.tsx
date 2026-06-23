@@ -9,9 +9,9 @@ import { bookingDocLinkedContext } from "../model/booking-list";
 import {
   bookingTypeIcon,
   formatDateTime,
-  statusBadgeClassName,
   typeIconClassName,
 } from "../model/booking-display";
+import { BookingStatusBadge } from "./BookingStatusBadge";
 
 interface BookingFileRowProps {
   doc: BookingDoc;
@@ -44,7 +44,11 @@ export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, o
       <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{doc.startsAt ? formatDateTime(doc.startsAt) : copy.noDate}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-3 max-[1199px]:pl-[42px]">{provider}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:hidden">{linkedStop}</span>
-      <span className={cn(bookingStyles.badgeClassName, statusBadgeClassName(doc.status), "max-[1199px]:col-start-2 max-[1199px]:row-start-1 max-[1199px]:justify-self-end")}>{formatEnumLabel(doc.status, copy)}</span>
+      <BookingStatusBadge
+        className="max-[1199px]:col-start-2 max-[1199px]:row-start-1 max-[1199px]:justify-self-end"
+        copy={copy}
+        status={doc.status}
+      />
       <span className="inline-flex justify-end gap-1 max-[1199px]:hidden">
         {doc.externalLinks[0] ? (
           <a className="grid size-8 place-items-center rounded-(--radius-sm) text-(--color-primary-strong) hover:bg-(--color-primary-soft)" href={doc.externalLinks[0].url} target="_blank" rel="noreferrer" aria-label={copy.openLink(doc.externalLinks[0].label)}>

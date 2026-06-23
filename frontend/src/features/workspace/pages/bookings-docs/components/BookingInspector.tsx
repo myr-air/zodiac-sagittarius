@@ -6,7 +6,8 @@ import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import { formatEnumLabel } from "../model/booking-options";
 import * as bookingStyles from "../BookingsDocsPage.styles";
-import { formatDateTime, statusBadgeClassName } from "../model/booking-display";
+import { formatDateTime } from "../model/booking-display";
+import { BookingStatusBadge } from "./BookingStatusBadge";
 
 interface BookingInspectorProps {
   booking: BookingDoc | null;
@@ -48,7 +49,7 @@ export function BookingInspector({
         <IconButton type="button" aria-label={copy.closeBookingPreview} onClick={onClose}><Icon name="x" /></IconButton>
       </div>
       <div className="grid gap-1">
-        <span className={cn(bookingStyles.badgeClassName, statusBadgeClassName(booking.status))}>{formatEnumLabel(booking.status, copy)}</span>
+        <BookingStatusBadge copy={copy} status={booking.status} />
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>
         <p className="m-0 text-sm font-medium leading-6 text-(--color-text-muted)">{booking.notes ?? copy.noNotes}</p>
         {canEdit ? (

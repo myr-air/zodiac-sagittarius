@@ -31,6 +31,6 @@ export function typeIconClassName(type: BookingDocType): string {
 export function statusBadgeClassName(status: BookingDocStatus): string {
   if (status === "needs_action") return "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)";
   if (status === "paid" || status === "confirmed") return "border-(--color-success-border) bg-(--color-success-soft) text-(--color-success-strong)";
-  if (status === "cancelled" || status === "expired") return "border-(--color-danger-border) bg-(--color-danger-soft) text-(--color-danger)";
+  if (status === "cancelled" || status === "expired") return "border-(--color-danger-border) bg-(--color-danger-soft) text-[#b91c1c]";
   return "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route)";
 }

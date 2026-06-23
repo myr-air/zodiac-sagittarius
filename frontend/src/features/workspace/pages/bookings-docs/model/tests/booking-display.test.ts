@@ -17,6 +17,6 @@ describe("booking display helpers", () => {
     expect(bookingTypeIcon("hotel")).toBe("home");
     expect(typeIconClassName("passport")).toContain("text-(--color-primary-strong)");
     expect(statusBadgeClassName("needs_action")).toContain("text-(--color-warning-strong)");
-    expect(statusBadgeClassName("expired")).toContain("text-(--color-danger)");
+    expect(statusBadgeClassName("expired")).toContain("text-[#b91c1c]");
   });
 });
