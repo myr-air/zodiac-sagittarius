@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes, encodeReturnTo, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
+import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 import {
   createApiClientForTrip,
   installApiSession,

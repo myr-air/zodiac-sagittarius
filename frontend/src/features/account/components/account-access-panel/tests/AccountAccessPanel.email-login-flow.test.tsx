@@ -2,10 +2,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
-import {
-  optionalTrailingSlashPattern,
-  portalRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { portalRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
 import { createAccountClient } from "../testing/account-access-panel-test-clients";
 import {
   AccountHarness,

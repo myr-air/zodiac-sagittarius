@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
+import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 import { resolveViewFromPath } from "../app-shell-routing";
 
 describe("AppShell routing", () => {

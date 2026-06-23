@@ -2,7 +2,7 @@ import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import {
   createApiClientForTrip,
   installApiSession,

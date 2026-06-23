@@ -2,11 +2,8 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { TripApiError } from "@/src/trip/api-client";
-import {
-  optionalTrailingSlashPattern,
-  portalRoutes,
-  tripRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
 import {
   createAccountClient,
   createTrustedAccountSession,

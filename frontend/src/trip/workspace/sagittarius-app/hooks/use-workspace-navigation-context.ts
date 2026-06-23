@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import { workspaceViewSupportsContextRail } from "@/src/trip/workspace/planning-view";
 import { useWorkspaceNavigation } from "@/src/trip/workspace/use-workspace-navigation";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 
 interface UseWorkspaceNavigationContextParams {
   initialView: PlanningView;

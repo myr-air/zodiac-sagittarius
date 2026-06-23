@@ -11,7 +11,7 @@ import {
   pixelPerfectPlay,
   thaiPlay,
 } from "./HomeLanding.stories.plays";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 
 const meta = {
   title: "Pages/Home Landing",

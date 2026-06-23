@@ -1,4 +1,4 @@
-import { appRoutes, decodeReturnTo } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes, decodeReturnTo } from "@/src/routes/app-routes";
 import { decodeTripId } from "@/src/trip/identity";
 
 interface ResolveParticipantPostAuthHrefOptions {

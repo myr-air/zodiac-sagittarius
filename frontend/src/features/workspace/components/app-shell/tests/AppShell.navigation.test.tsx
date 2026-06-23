@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
 import { getTripFixtureMember } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { renderAppShell } from "../testing/support/render-app-shell";
 
 describe("AppShell navigation", () => {

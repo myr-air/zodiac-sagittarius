@@ -6,7 +6,7 @@ import {
   type AccountApiClient,
   type AccountSession,
 } from "./api-client";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import {
   type TripApiClient,
 } from "@/src/trip/api-client";

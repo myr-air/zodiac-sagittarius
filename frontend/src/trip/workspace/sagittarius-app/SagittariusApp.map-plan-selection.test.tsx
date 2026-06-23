@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 import {
   render,
   resetSagittariusAppTestEnvironment,

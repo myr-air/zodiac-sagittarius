@@ -5,7 +5,7 @@ import type { AccountExplorerSummary, AccountTripSummary } from "@/src/account/a
 import { Badge } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { cn } from "@/src/lib/cn";
 import { PortalList, PortalListRow } from "../lists/account-portal-list";
 import { PanelHeading } from "../../primitives/account-panel-heading";

@@ -9,10 +9,7 @@ import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
-import {
-  appRoutes,
-  encodeReturnTo,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
 import {
   createApiClientForTrip,
   installLocalStorageStub,

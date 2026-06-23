@@ -12,7 +12,7 @@ import {
   installLocalStorageStub,
   installSessionStorageStub,
 } from "@/src/testing/browser-storage";
-import { appRoutes } from "./support";
+import { appRoutes } from "@/src/routes/app-routes";
 import {
   persistTripParticipantSession as persistTripParticipantSessionForApi,
 } from "./testing/support/sagittarius-app-storage";

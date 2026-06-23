@@ -8,7 +8,7 @@ import {
 import { tripWithPlans } from "../testing/fixtures/selected-trip-plan-fixtures";
 import { tripHasPlan } from "@/src/trip/trip-plans";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 
 describe("selected trip plan workspace state", () => {
   beforeEach(() => {

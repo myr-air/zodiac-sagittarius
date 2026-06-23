@@ -7,7 +7,7 @@ import { accountApiRoutes } from "@/src/account/api-routes";
 import { accountSessionStorageKey } from "@/src/account/session-storage";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import {
   createApiClientForTrip,
   installLocalStorageStub,

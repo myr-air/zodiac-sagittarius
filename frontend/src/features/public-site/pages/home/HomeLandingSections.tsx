@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import type { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { Icon } from "@/src/ui/icons";
 import { workflowStepMeta } from "./HomeLanding.meta";
 import {

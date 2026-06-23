@@ -1,6 +1,6 @@
 import type { AccountTodoSummary } from "@/src/account/api-client";
 import { Badge } from "@/src/ui";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import {

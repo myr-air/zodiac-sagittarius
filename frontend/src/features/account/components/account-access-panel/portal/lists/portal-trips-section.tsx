@@ -3,7 +3,7 @@ import type { AccountTripSummary } from "@/src/account/api-client";
 import { Badge, Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { PortalList, PortalListRow } from "./account-portal-list";
 import {
   accountPortalTripBadgeTone,

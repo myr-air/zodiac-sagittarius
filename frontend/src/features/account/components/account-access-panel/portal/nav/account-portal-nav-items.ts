@@ -1,5 +1,5 @@
 import type { Messages } from "@/src/i18n/messages";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 
 export function getPortalNavItems(t: Messages) {
   return [

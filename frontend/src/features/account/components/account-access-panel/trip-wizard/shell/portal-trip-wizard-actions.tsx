@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as wizardStyles from "../layout/portal-trip-wizard-styles";

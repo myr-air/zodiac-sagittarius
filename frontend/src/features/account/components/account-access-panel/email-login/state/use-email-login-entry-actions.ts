@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import type { AccountSession, EmailLoginStartResponse } from "@/src/account/api-client";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import type { AuthFlow } from "../../auth";
 import type { AuthTransitionDirection } from "../model/account-email-login-step-meta";
 

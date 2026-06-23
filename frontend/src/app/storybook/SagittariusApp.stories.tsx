@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import {
-  portalRoutes,
-  appRoutes,
-  tripRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
+import { portalRoutes, tripRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
 import {
   expectBookingsView,
   expectDesktopOverviewWorkspace,

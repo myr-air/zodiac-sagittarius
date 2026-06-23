@@ -8,10 +8,8 @@ import {
 } from "@/src/app/SagittariusApp";
 import { accountSessionStorageKey } from "@/src/account/session-storage";
 import { seedTrip } from "@/src/trip/seed";
-import {
-  optionalTrailingSlashPattern,
-  portalRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { portalRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
 import {
   createApiClientForTrip,
   installLocalStorageStub,

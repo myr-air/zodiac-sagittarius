@@ -3,10 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installLocalStorageStub } from "@/src/testing/browser-storage";
 import { seedTrip } from "@/src/trip/seed";
-import {
-  optionalTrailingSlashPattern,
-  portalRoutes,
-} from "@/src/trip/workspace/sagittarius-app/support";
+import { portalRoutes } from "@/src/trip/workspace/sagittarius-app/support/route-patterns";
+import { optionalTrailingSlashPattern } from "@/src/trip/workspace/sagittarius-app/support/route-matchers";
 import { AccountAccessPanel } from "../AccountAccessPanel";
 import {
   createAccountClient,

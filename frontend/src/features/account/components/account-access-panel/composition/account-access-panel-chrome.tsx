@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Messages } from "@/src/i18n/messages";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes } from "@/src/routes/app-routes";
 import type { PortalSection } from "@/src/shared/portal";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { cn } from "@/src/lib/cn";

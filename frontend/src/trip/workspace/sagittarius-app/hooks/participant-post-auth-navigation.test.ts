@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encodeReturnTo } from "@/src/routes/app-routes";
-import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
+import { appRoutes, encodeReturnTo } from "@/src/routes/app-routes";
 import {
   resolveJoinPostAuthReturnTo,
   resolveParticipantPostAuthHref,
