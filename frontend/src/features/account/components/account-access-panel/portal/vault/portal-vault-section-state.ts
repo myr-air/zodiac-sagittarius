@@ -5,6 +5,24 @@ import type {
 import type { IconName } from "@/src/ui/icons";
 
 export const portalVaultCloudProviders = ["Google Drive", "iCloud", "Dropbox", "OneDrive"] as const;
+type PortalVaultKind = AccountVaultItemCreateRequest["kind"];
+
+export const portalVaultKindValues = ["note", "file"] as const satisfies readonly PortalVaultKind[];
+
+export interface PortalVaultKindSelectOption {
+  value: PortalVaultKind;
+  label: string;
+}
+
+export function portalVaultKindSelectOptions(labels: {
+  file: string;
+  note: string;
+}): PortalVaultKindSelectOption[] {
+  return portalVaultKindValues.map((value) => ({
+    value,
+    label: labels[value],
+  }));
+}
 
 export function createEmptyPortalVaultForm(): AccountVaultItemCreateRequest {
   return { kind: "note", title: "", detail: "", externalUrl: "" };

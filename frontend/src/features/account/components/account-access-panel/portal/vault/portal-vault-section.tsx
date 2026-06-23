@@ -7,6 +7,7 @@ import type {
   AccountVaultItemCreateRequest,
   AccountVaultItemSummary,
 } from "@/src/account/api-client";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Badge, Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
@@ -16,6 +17,7 @@ import { PortalListSkeleton } from "../primitives/account-portal-primitives";
 import { PortalVaultCloudProviderPanel } from "./portal-vault-cloud-provider-panel";
 import {
   createEmptyPortalVaultForm,
+  portalVaultKindSelectOptions,
   portalVaultItemBadgeTone,
   portalVaultItemDetail,
   portalVaultItemIcon,
@@ -72,8 +74,9 @@ export function PortalVaultSection({
           <label>
             <span>{t.access.portal.vaultCreate.kind}</span>
             <Select value={vaultForm.kind} onChange={(event) => setVaultForm((current) => ({ ...current, kind: event.target.value as "note" | "file" }))}>
-              <option value="note">{t.access.portal.vaultCreate.note}</option>
-              <option value="file">{t.access.portal.vaultCreate.file}</option>
+              <SelectOptions
+                options={portalVaultKindSelectOptions(t.access.portal.vaultCreate)}
+              />
             </Select>
           </label>
           <label>

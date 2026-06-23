@@ -3,6 +3,8 @@ import {
   buildPortalVaultCreateRequest,
   createEmptyPortalVaultForm,
   portalVaultCloudProviders,
+  portalVaultKindSelectOptions,
+  portalVaultKindValues,
   portalVaultItemBadgeTone,
   portalVaultItemDetail,
   portalVaultItemIcon,
@@ -24,6 +26,17 @@ describe("portal vault section state", () => {
 
   it("keeps the supported provider labels stable", () => {
     expect(portalVaultCloudProviders).toEqual(["Google Drive", "iCloud", "Dropbox", "OneDrive"]);
+  });
+
+  it("keeps vault kind options centralized for the create form", () => {
+    expect(portalVaultKindValues).toEqual(["note", "file"]);
+    expect(portalVaultKindSelectOptions({
+      file: "File",
+      note: "Note",
+    })).toEqual([
+      { value: "note", label: "Note" },
+      { value: "file", label: "File" },
+    ]);
   });
 
   it("normalizes a vault create request before submitting", () => {

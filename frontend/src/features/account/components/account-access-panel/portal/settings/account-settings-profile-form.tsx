@@ -3,8 +3,10 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import type { AccountSettingsUpdateRequest } from "@/src/account/api-client";
 import type { Messages } from "@/src/i18n/messages";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import { accountSettingsLocaleSelectOptions } from "./account-settings-profile-form.model";
 
 interface AccountSettingsProfileFormClassNames {
   settingsForm: string;
@@ -46,8 +48,7 @@ export function AccountSettingsProfileForm({
         <label>
           <span>{labels.locale}</span>
           <Select value={form.locale} onChange={(event) => setForm((current) => ({ ...current, locale: event.target.value }))} required>
-            <option value="th-TH">Thai</option>
-            <option value="en-US">English</option>
+            <SelectOptions options={accountSettingsLocaleSelectOptions} />
           </Select>
         </label>
         <label>

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { accountSettings } from "../../../testing/account-access-panel-test-clients";
-import { accountSettingsProfileToForm } from "../account-settings-profile-form.model";
+import {
+  accountSettingsLocaleSelectOptions,
+  accountSettingsProfileToForm,
+} from "../account-settings-profile-form.model";
 
 describe("account settings profile form model", () => {
   it("maps account profile settings into editable form fields", () => {
@@ -28,5 +31,12 @@ describe("account settings profile form model", () => {
       homeCity: "",
       homeCountry: "",
     });
+  });
+
+  it("keeps locale select options centralized", () => {
+    expect(accountSettingsLocaleSelectOptions).toEqual([
+      { value: "th-TH", label: "Thai" },
+      { value: "en-US", label: "English" },
+    ]);
   });
 });
