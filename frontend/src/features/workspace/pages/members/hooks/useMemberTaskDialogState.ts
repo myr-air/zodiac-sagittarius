@@ -1,15 +1,14 @@
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import type {
   Member,
   TripMemberAccessStatus,
 } from "@/src/trip/types";
 import {
-  buildMemberTaskDialogSubmission,
-  closeMemberTaskDialogState,
   initialMemberTaskDialogFormState,
   openMemberTaskDialogState,
   updateMemberTaskDialogPasswordValue,
 } from "../model/member-task-dialog-state";
+import { useMemberTaskDialogActions } from "./useMemberTaskDialogActions";
 
 interface MemberTaskDialogLabels {
   disable: string;
@@ -85,48 +84,24 @@ export function useMemberTaskDialogState({
     setDialogState(openMemberTaskDialogState({ kind: "password", member }));
   }
 
-  function closeMemberDialog() {
-    setDialogState(closeMemberTaskDialogState());
-  }
-
   function setPasswordValue(passwordValue: string) {
     setDialogState((current) =>
       updateMemberTaskDialogPasswordValue(current, passwordValue),
     );
   }
 
-  function submitMemberDialog(event?: FormEvent<HTMLFormElement>) {
-    event?.preventDefault();
-    const submission = buildMemberTaskDialogSubmission(
-      dialogState,
-      labels.passwordTooShort,
-    );
-    if (submission.kind === "none") return;
-    if (submission.kind === "invalidPassword") {
-      setDialogState(submission.state);
-      return;
-    }
-    if (submission.kind === "reset") {
-      onResetMemberClaim(submission.memberId);
-      closeMemberDialog();
-      return;
-    }
-    if (submission.kind === "access") {
-      onChangeMemberAccessStatus(
-        submission.memberId,
-        submission.accessStatus,
-      );
-      closeMemberDialog();
-      return;
-    }
-    if (submission.kind === "transfer") {
-      onTransferOwnership?.(submission.memberId);
-      closeMemberDialog();
-      return;
-    }
-    onChangeMemberPassword(submission.memberId, submission.password);
-    closeMemberDialog();
-  }
+  const {
+    closeMemberDialog,
+    submitMemberDialog,
+  } = useMemberTaskDialogActions({
+    dialogState,
+    labels,
+    onChangeMemberAccessStatus,
+    onChangeMemberPassword,
+    onResetMemberClaim,
+    onTransferOwnership,
+    setDialogState,
+  });
 
   return {
     closeMemberDialog,

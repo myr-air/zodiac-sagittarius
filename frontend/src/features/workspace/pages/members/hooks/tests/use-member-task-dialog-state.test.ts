@@ -22,6 +22,9 @@ describe("members page state structure", () => {
     const taskDialogSource = readMembersPageSource(
       "hooks/useMemberTaskDialogState.ts",
     );
+    const taskDialogActionsSource = readMembersPageSource(
+      "hooks/useMemberTaskDialogActions.ts",
+    );
     const createFormSource = readMembersPageSource(
       "hooks/useMemberCreateFormState.ts",
     );
@@ -79,10 +82,16 @@ describe("members page state structure", () => {
     expect(taskDialogSource).toContain("export function useMemberTaskDialogState");
     expect(taskDialogSource).toContain("const [dialogState, setDialogState]");
     expect(taskDialogSource).toContain("../model/member-task-dialog-state");
-    expect(taskDialogSource).toContain("function submitMemberDialog");
+    expect(taskDialogSource).toContain("./useMemberTaskDialogActions");
+    expect(taskDialogSource).toContain("useMemberTaskDialogActions");
+    expect(taskDialogSource).not.toContain("function submitMemberDialog");
     expect(taskDialogSource).not.toContain("const [memberDialog, setMemberDialog]");
     expect(taskDialogSource).not.toContain("const [passwordValue, setPasswordValue]");
     expect(taskDialogSource).not.toContain("const [passwordError, setPasswordError]");
+    expect(taskDialogActionsSource).toContain("export function useMemberTaskDialogActions");
+    expect(taskDialogActionsSource).toContain("function submitMemberDialog");
+    expect(taskDialogActionsSource).toContain("buildMemberTaskDialogSubmission");
+    expect(taskDialogActionsSource).toContain("closeMemberTaskDialogState");
     expect(memberTaskDialogSource).toContain("WorkspaceCompactFormDialog");
     expect(memberTaskDialogSource).not.toContain("memberDialogBackdropClassName");
     expect(memberTaskDialogSource).not.toContain("memberDialogActionsClassName");
