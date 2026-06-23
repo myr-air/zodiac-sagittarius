@@ -1,7 +1,6 @@
 import { cn } from "@/src/lib/cn";
 import {
-  workspaceCopyFeedbackFrameClassName,
-  workspaceCopyFeedbackTextStatusClassName,
+  workspaceCopyFeedbackPillClassName,
 } from "@/src/shared/components/copy-feedback";
 import { workspaceCompactFieldGroupClassName } from "@/src/shared/components/workspace-form-field";
 import {
@@ -22,7 +21,7 @@ export const memberCommandMetaClassName = "member-command-meta grid min-w-0 grid
 export const memberResetButtonClassName = "member-filter-reset border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) max-[767px]:w-full";
 export const inviteCopyButtonClassName = "invite-copy-button border-(--color-primary) bg-(--color-primary) text-white hover:-translate-y-px hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.18)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
 export const memberCreateButtonClassName = "member-create-button border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong) hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.12)] disabled:cursor-not-allowed disabled:border-(--color-border) disabled:bg-(--color-surface-muted) disabled:text-(--color-text-muted) disabled:shadow-none";
-export const copyFeedbackClassName = `copy-feedback min-h-8 rounded-full bg-(--color-surface-subtle) px-3 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackTextStatusClassName}`;
+export const copyFeedbackClassName = `copy-feedback ${workspaceCopyFeedbackPillClassName}`;
 export const memberCreatePanelClassName = `member-create-panel grid min-w-0 gap-3 rounded-(--radius-lg) border border-(--color-primary-border) bg-[linear-gradient(135deg,var(--color-primary-soft)_0%,rgb(255_255_255)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:grid-cols-1 ${workspaceResponsiveInlinePanelResetClassName} max-[1199px]:p-3`;
 export const memberCreateFormClassName = cn("member-create-form grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto] items-end gap-3 max-[1199px]:grid-cols-1", workspaceCompactFieldGroupClassName);
 export const memberDialogClassName = cn("member-task-dialog w-[min(460px,100%)] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]", workspaceCompactFieldGroupClassName);

@@ -1,6 +1,9 @@
 export {
+  workspaceCopyFeedbackCompactBadgeClassName,
   workspaceCopyFeedbackFrameClassName,
+  workspaceCopyFeedbackPillClassName,
   workspaceCopyFeedbackStatusClassName,
+  workspaceCopyFeedbackSubtleBadgeClassName,
   workspaceCopyFeedbackTextStatusClassName,
 } from "./copy-feedback.styles";
 export {

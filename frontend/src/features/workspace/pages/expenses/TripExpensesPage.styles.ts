@@ -1,6 +1,5 @@
 import {
-  workspaceCopyFeedbackFrameClassName,
-  workspaceCopyFeedbackStatusClassName,
+  workspaceCopyFeedbackSubtleBadgeClassName,
 } from "@/src/shared/components/copy-feedback";
 import { workspaceFieldClassName } from "@/src/shared/components/workspace-form-field";
 import {
@@ -35,7 +34,7 @@ export const summaryValueToneClassNames = {
 export const commandBarClassName = `expenses-command-bar grid content-start gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(135deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_54%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} max-[1199px]:p-3`;
 export const filterGridClassName = "grid grid-cols-[minmax(180px,1fr)_minmax(150px,220px)_minmax(150px,220px)_auto] items-end gap-2 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
 export const commandActionsClassName = "expenses-command-actions flex flex-wrap items-center gap-2 max-[767px]:[&>*]:flex-[1_1_180px]";
-export const copyFeedbackClassName = `expense-copy-feedback min-h-9 rounded-(--radius-sm) bg-(--color-surface-subtle) px-3 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackStatusClassName}`;
+export const copyFeedbackClassName = `expense-copy-feedback ${workspaceCopyFeedbackSubtleBadgeClassName}`;
 export const fieldClassName = workspaceFieldClassName;
 export const tableWrapClassName = `expenses-table-wrap min-h-0 overflow-auto rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_42%,var(--color-border))] bg-(--color-surface) p-2 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsiveInlinePanelResetClassName} max-[1199px]:p-0`;
 export const tableClassName = "expense-ledger-table w-full min-w-[780px] border-separate border-spacing-y-2 text-left text-sm";

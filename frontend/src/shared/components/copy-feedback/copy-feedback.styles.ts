@@ -6,3 +6,12 @@ export const workspaceCopyFeedbackStatusClassName =
 
 export const workspaceCopyFeedbackTextStatusClassName =
   "data-[state=copied]:text-(--color-success) data-[state=error]:text-(--color-danger)";
+
+export const workspaceCopyFeedbackCompactBadgeClassName =
+  `min-h-8 rounded-(--radius-sm) bg-(--color-surface) px-2 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackStatusClassName}`;
+
+export const workspaceCopyFeedbackSubtleBadgeClassName =
+  `min-h-9 rounded-(--radius-sm) bg-(--color-surface-subtle) px-3 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackStatusClassName}`;
+
+export const workspaceCopyFeedbackPillClassName =
+  `min-h-8 rounded-full bg-(--color-surface-subtle) px-3 ${workspaceCopyFeedbackFrameClassName} ${workspaceCopyFeedbackTextStatusClassName}`;

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  workspaceCopyFeedbackCompactBadgeClassName,
   workspaceCopyFeedbackFrameClassName,
+  workspaceCopyFeedbackPillClassName,
   workspaceCopyFeedbackStatusClassName,
+  workspaceCopyFeedbackSubtleBadgeClassName,
   workspaceCopyFeedbackTextStatusClassName,
 } from "../copy-feedback.styles";
 
@@ -28,5 +31,14 @@ describe("workspace copy feedback styles", () => {
     expect(workspaceCopyFeedbackTextStatusClassName).toContain(
       "data-[state=error]:text-(--color-danger)",
     );
+  });
+
+  it("keeps page copy feedback variants on shared frame and status styles", () => {
+    expect(workspaceCopyFeedbackCompactBadgeClassName).toContain(workspaceCopyFeedbackFrameClassName);
+    expect(workspaceCopyFeedbackCompactBadgeClassName).toContain(workspaceCopyFeedbackStatusClassName);
+    expect(workspaceCopyFeedbackSubtleBadgeClassName).toContain(workspaceCopyFeedbackFrameClassName);
+    expect(workspaceCopyFeedbackSubtleBadgeClassName).toContain(workspaceCopyFeedbackStatusClassName);
+    expect(workspaceCopyFeedbackPillClassName).toContain(workspaceCopyFeedbackFrameClassName);
+    expect(workspaceCopyFeedbackPillClassName).toContain(workspaceCopyFeedbackTextStatusClassName);
   });
 });
