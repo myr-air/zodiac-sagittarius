@@ -7,14 +7,18 @@ import {
   workspaceResponsivePanelResetClassName,
 } from "@/src/shared/components/workspace-surface";
 import {
+  workspaceSummaryGridFourClassName,
+  workspaceSummaryStatPrimaryAccentClassName,
+} from "@/src/shared/components/workspace-summary-stat";
+import {
   workspaceDialogActionsClassName,
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
 } from "@/src/shared/components/workspace-dialog";
 
 export const expensesPageClassName = "expenses-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
-export const expensesSummaryClassName = "expenses-summary grid grid-cols-4 gap-3 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[767px]:grid-cols-1";
-export const statClassName = `expense-stat grid min-h-[104px] gap-1 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-primary-border)_52%,var(--color-border))] bg-[linear-gradient(145deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-primary-soft)_42%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} [&_.icon]:text-(--color-primary) [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-2xl [&>strong]:font-extrabold [&>strong]:tabular-nums [&>strong]:text-(--color-text)`;
+export const expensesSummaryClassName = `expenses-summary ${workspaceSummaryGridFourClassName}`;
+export const statClassName = `expense-stat ${workspaceSummaryStatPrimaryAccentClassName}`;
 export const contentGridClassName = "expenses-content grid min-h-0 grid-cols-[332px_minmax(0,1fr)] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 export const panelClassName = `expenses-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_48%,var(--color-border))] bg-[linear-gradient(180deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_30%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName}`;
 export const panelHeadingClassName = "m-0 flex items-center gap-2 text-[14px] font-extrabold leading-5 text-(--color-text)";
