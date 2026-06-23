@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accountTodo } from "../../../fixtures/account-access-panel-fixtures";
+import { accountTodo } from "../../../fixtures/account-access-panel-api-fixtures";
 import {
   accountPortalTodoBadgeTone,
   accountPortalTodoDetail,

@@ -12,24 +12,28 @@ import {
   accountPasskey,
   accountPasskeyLoginChallenge,
   accountPasskeyRegistrationChallenge,
-  accountSettings,
-  accountStats,
-  accountTrips,
   accountTodos,
   accountVaultItems,
   createAccountTripCreateResponse,
   createdAccountVaultItem,
   createTrustedAccountSession,
-} from "../fixtures/account-access-panel-fixtures";
+} from "../fixtures/account-access-panel-api-fixtures";
+import {
+  accountSettings,
+  accountStats,
+  accountTrips,
+} from "../fixtures/account-access-panel-base-fixtures";
 
+export {
+  createTrustedAccountSession,
+} from "../fixtures/account-access-panel-api-fixtures";
 export {
   accountSettings,
   accountStats,
   accountTravelerTrip,
   accountTrip,
   accountTrips,
-  createTrustedAccountSession,
-} from "../fixtures/account-access-panel-fixtures";
+} from "../fixtures/account-access-panel-base-fixtures";
 
 export function createAccountClient(): AccountApiClient {
   return {

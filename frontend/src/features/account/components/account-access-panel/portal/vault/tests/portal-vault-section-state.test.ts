@@ -10,7 +10,7 @@ import {
 import {
   accountVaultItem,
   createdAccountVaultItem,
-} from "../../../fixtures/account-access-panel-fixtures";
+} from "../../../fixtures/account-access-panel-api-fixtures";
 
 describe("portal vault section state", () => {
   it("creates the default note form state", () => {

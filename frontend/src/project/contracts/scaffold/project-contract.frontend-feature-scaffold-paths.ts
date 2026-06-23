@@ -54,7 +54,6 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/auth/account-passkey-support.ts",
   "src/features/account/components/account-access-panel/auth/account-auth-date-time.ts",
   "src/features/account/components/account-access-panel/auth/account-auth-chrome.tsx",
-  "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
   "src/features/account/components/account-access-panel/fixtures/account-access-panel-base-fixtures.ts",
   "src/features/account/components/account-access-panel/fixtures/account-access-panel-api-fixtures.ts",
   "src/features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",

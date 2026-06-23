@@ -58,7 +58,6 @@ describe("Sagittarius account source boundaries", () => {
       accountAccessStory,
       accountAccessStoryClients,
       accountAccessStorySupport,
-      accountAccessFixtures,
       accountAccessBaseFixtures,
       accountAccessApiFixtures,
       accountAccessTestUtils,
@@ -161,23 +160,18 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStorySupport).not.toContain("Parameters<typeof AccountAccessPanel>");
     expect(accountAccessStorySupport).toContain("export const accountLoginStoryArgs");
     expect(accountAccessStorySupport).toContain("export const portalDashboardStoryArgs");
-    expect(accountAccessFixtures).toContain("./account-access-panel-base-fixtures");
-    expect(accountAccessFixtures).toContain("./account-access-panel-api-fixtures");
     expect(accountAccessBaseFixtures).toContain("export const accountSettings");
     expect(accountAccessBaseFixtures).toContain("export const accountTrip");
     expect(accountAccessBaseFixtures).toContain("export const accountTrips");
     expect(accountAccessBaseFixtures).not.toContain("./account-access-panel-api-fixtures");
-    expect(accountAccessFixtures).not.toContain("export function createTrustedAccountSession");
-    expect(accountAccessFixtures).not.toContain("export const accountExplorerSummary");
-    expect(accountAccessFixtures).not.toContain("export const accountVaultItems");
-    expect(accountAccessFixtures).not.toContain('challengeId: "passkey-challenge"');
     expect(accountAccessApiFixtures).toContain("./account-access-panel-base-fixtures");
     expect(accountAccessApiFixtures).toContain("export function createTrustedAccountSession");
     expect(accountAccessApiFixtures).toContain("export const accountExplorerSummary");
     expect(accountAccessApiFixtures).toContain("export const accountTodos");
     expect(accountAccessApiFixtures).toContain("export const accountVaultItems");
     expect(accountAccessApiFixtures).toContain("export function createAccountTripCreateResponse");
-    expect(accountAccessStoryClients).toContain("../fixtures/account-access-panel-fixtures");
+    expect(accountAccessStoryClients).toContain("../fixtures/account-access-panel-api-fixtures");
+    expect(accountAccessStoryClients).toContain("../fixtures/account-access-panel-base-fixtures");
     expect(accountAccessStoryClients).toContain("createTrustedAccountSession");
     expect(accountAccessStoryClients).toContain("accountExplorerSummary");
     expect(accountAccessStoryClients).not.toContain('challengeId: "passkey-challenge"');
@@ -190,7 +184,8 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessRenderTestUtils).toContain("export function renderAccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("export function renderTripBuilder");
     expect(accountAccessRenderTestUtils).toContain("./account-access-panel-test-clients");
-    expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-fixtures");
+    expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-api-fixtures");
+    expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-base-fixtures");
     expect(accountAccessTestClients).toContain("export function createAccountClient");
     expect(accountAccessTestClients).toContain("accountExplorerSummary");
     expect(accountAccessTestClients).toContain("createAccountTripCreateResponse");

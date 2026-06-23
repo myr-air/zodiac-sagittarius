@@ -161,8 +161,6 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/storybook/AccountAccessPanel.stories.tsx",
   accountAccessStoryClients:
     "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.clients.ts",
-  accountAccessFixtures:
-    "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
   accountAccessBaseFixtures:
     "src/features/account/components/account-access-panel/fixtures/account-access-panel-base-fixtures.ts",
   accountAccessApiFixtures:

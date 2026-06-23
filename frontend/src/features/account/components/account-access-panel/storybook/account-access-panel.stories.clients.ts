@@ -11,16 +11,18 @@ import {
   accountPasskey,
   accountPasskeyLoginChallenge,
   accountPasskeyRegistrationChallenge,
-  accountSettings,
-  accountStats,
-  accountTravelerTrip,
-  accountTrip,
   accountTodos,
   accountVaultItems,
   createAccountTripCreateResponse,
   createdAccountVaultItem,
   createTrustedAccountSession,
-} from "../fixtures/account-access-panel-fixtures";
+} from "../fixtures/account-access-panel-api-fixtures";
+import {
+  accountSettings,
+  accountStats,
+  accountTravelerTrip,
+  accountTrip,
+} from "../fixtures/account-access-panel-base-fixtures";
 
 export const trustedStorySession = createTrustedAccountSession();
 
