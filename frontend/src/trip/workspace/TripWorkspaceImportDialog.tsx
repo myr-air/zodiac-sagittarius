@@ -1,8 +1,6 @@
-import { type FormEvent } from "react";
 import { WorkspaceCompactFormDialog } from "@/src/shared/components/workspace-dialog";
 import { Button } from "@/src/ui";
 import {
-  mainItineraryPathName,
   type ItineraryPathOption,
   type ItineraryImportApplyTarget,
 } from "@/src/trip/itinerary-paths";
@@ -11,8 +9,8 @@ import type {
   ItineraryExportRecords,
 } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
-import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
 import { useTripWorkspaceImportDialogState } from "./trip-workspace-import-dialog-state";
+import { useTripWorkspaceImportDialogActions } from "./use-trip-workspace-import-dialog-actions";
 import {
   TripWorkspaceImportDialogFields,
   TripWorkspaceImportDialogSummary,
@@ -51,6 +49,13 @@ export function TripWorkspaceImportDialog({
     records.bookingDocs.length +
     records.stopNotes.length +
     records.tasks.length;
+  const importDialogState = useTripWorkspaceImportDialogState({
+    currentTripPathId,
+    importedItems,
+    pathOptions,
+    startDate,
+    tripPlanId,
+  });
   const {
     day,
     mode,
@@ -64,32 +69,13 @@ export function TripWorkspaceImportDialog({
     setScope,
     setTargetTripPlanId,
     targetTripPlanId,
-  } = useTripWorkspaceImportDialogState({
-    currentTripPathId,
-    importedItems,
+  } = importDialogState;
+  const { submitImport } = useTripWorkspaceImportDialogActions({
+    memberId,
+    onApply,
     pathOptions,
-    startDate,
-    tripPlanId,
+    state: importDialogState,
   });
-
-  function submitImport(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const pathName = pathNameInput.trim() || mainItineraryPathName;
-    const targetDay = scope === "day" ? day.trim() : undefined;
-    if (scope === "day" && !targetDay) return;
-    onApply(
-      buildItineraryImportApplyTarget({
-        day: targetDay,
-        memberId,
-        mode,
-        pathName,
-        pathOptions,
-        recordMode,
-        scope,
-        tripPlanId: targetTripPlanId,
-      }),
-    );
-  }
 
   return (
     <WorkspaceCompactFormDialog

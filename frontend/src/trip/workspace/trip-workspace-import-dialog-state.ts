@@ -7,6 +7,7 @@ import {
 } from "@/src/trip/itinerary-paths";
 import type { ItineraryExportItem } from "@/src/trip/itinerary-import-export";
 import type { PlanVariant } from "@/src/trip/types";
+import { buildItineraryImportApplyTarget } from "./itinerary-import-target";
 
 export interface TripWorkspaceImportDialogState {
   day: string;
@@ -42,6 +43,30 @@ export function initialTripWorkspaceImportDialogState({
     scope: "trip",
     targetTripPlanId: tripPlanId,
   };
+}
+
+export function buildTripWorkspaceImportApplyTarget({
+  memberId,
+  pathOptions,
+  state,
+}: {
+  memberId: string;
+  pathOptions: ItineraryPathOption[];
+  state: TripWorkspaceImportDialogState;
+}): ItineraryImportApplyTarget | null {
+  const pathName = state.pathNameInput.trim() || mainItineraryPathName;
+  const targetDay = state.scope === "day" ? state.day.trim() : undefined;
+  if (state.scope === "day" && !targetDay) return null;
+  return buildItineraryImportApplyTarget({
+    day: targetDay,
+    memberId,
+    mode: state.mode,
+    pathName,
+    pathOptions,
+    recordMode: state.recordMode,
+    scope: state.scope,
+    tripPlanId: state.targetTripPlanId,
+  });
 }
 
 export function useTripWorkspaceImportDialogState({

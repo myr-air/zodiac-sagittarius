@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { mainItineraryPathName } from "@/src/trip/itinerary-paths";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
-import { initialTripWorkspaceImportDialogState } from "../trip-workspace-import-dialog-state";
+import {
+  buildTripWorkspaceImportApplyTarget,
+  initialTripWorkspaceImportDialogState,
+} from "../trip-workspace-import-dialog-state";
 
 describe("initialTripWorkspaceImportDialogState", () => {
   it("uses the selected path name and first imported item day", () => {
@@ -55,5 +58,48 @@ describe("initialTripWorkspaceImportDialogState", () => {
       day: "2026-06-18",
       pathNameInput: mainItineraryPathName,
     }));
+  });
+
+  it("builds import apply targets from dialog state", () => {
+    expect(
+      buildTripWorkspaceImportApplyTarget({
+        memberId: "member-aom",
+        pathOptions: [
+          { id: "main", name: "Main", scope: "trip" },
+          { id: pathIdRain, name: "Rain Route", scope: "trip" },
+        ],
+        state: {
+          day: " 2026-06-20 ",
+          mode: "replace-target",
+          pathNameInput: "Rain Route",
+          recordMode: "clone-linked",
+          scope: "day",
+          targetTripPlanId: "plan-rain",
+        },
+      }),
+    ).toEqual({
+      day: "2026-06-20",
+      memberId: "member-aom",
+      mode: "replace-target",
+      pathId: pathIdRain,
+      pathName: "Rain Route",
+      recordMode: "clone-linked",
+      scope: "day",
+      tripPlanId: "plan-rain",
+    });
+    expect(
+      buildTripWorkspaceImportApplyTarget({
+        memberId: "member-aom",
+        pathOptions: [],
+        state: {
+          day: "   ",
+          mode: "replace-target",
+          pathNameInput: "",
+          recordMode: "clone-linked",
+          scope: "day",
+          targetTripPlanId: "plan-rain",
+        },
+      }),
+    ).toBeNull();
   });
 });
