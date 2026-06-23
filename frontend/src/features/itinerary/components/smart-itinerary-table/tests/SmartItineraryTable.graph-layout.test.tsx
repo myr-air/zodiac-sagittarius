@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildItineraryItem,
   layoutRect,
   renderSmartItineraryTable,
 } from "@/src/features/itinerary/testing";
@@ -22,23 +22,21 @@ describe("SmartItineraryTable graph layout", () => {
   });
 
   it("aligns graph dots with measured blank activity rows", async () => {
-    const firstItem = {
-      ...tripFixture.planItems[0],
+    const firstItem = buildItineraryItem({
       id: "graph-measured-first",
       day: "2026-06-19",
       activity: "Graph measured first",
       pathGroupId: "path-group-measured-height",
-      pathRole: "main" as const,
-    };
-    const secondItem = {
-      ...tripFixture.planItems[1],
+      pathRole: "main",
+    });
+    const secondItem = buildItineraryItem({
       id: "graph-measured-second",
       day: "2026-06-19",
       activity: "Graph measured second",
       pathGroupId: "path-group-measured-height",
-      pathRole: "main" as const,
+      pathRole: "main",
       sortOrder: firstItem.sortOrder + 10,
-    };
+    });
     const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function mockRect(this: HTMLElement) {
       if (this.classList.contains("activity-path-graph")) return layoutRect(100, 284, 76);
       if (this.tagName === "TR" && this.querySelector(".activity-path-graph")) return layoutRect(100, 60);
