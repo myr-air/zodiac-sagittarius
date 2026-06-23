@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { tripStepComplete, tripWizardSteps } from "../account-trip-wizard-steps";
+import {
+  getTripWizardStepNavigation,
+  tripStepComplete,
+  tripWizardSteps,
+} from "../account-trip-wizard-steps";
 
 describe("account trip wizard steps", () => {
   it("keeps trip wizard steps in canonical flow order", () => {
@@ -25,5 +29,28 @@ describe("account trip wizard steps", () => {
     expect(tripStepComplete("dates", state)).toBe(false);
     expect(tripStepComplete("invite", state)).toBe(false);
     expect(tripStepComplete("preview", state)).toBe(true);
+  });
+
+  it("derives active, previous, and next mobile step navigation", () => {
+    expect(getTripWizardStepNavigation("trip")).toMatchObject({
+      activeIndex: 0,
+      activeStep: { id: "trip" },
+      nextStep: { id: "place" },
+      previousStep: null,
+    });
+
+    expect(getTripWizardStepNavigation("dates")).toMatchObject({
+      activeIndex: 2,
+      activeStep: { id: "dates" },
+      nextStep: { id: "invite" },
+      previousStep: { id: "place" },
+    });
+
+    expect(getTripWizardStepNavigation("preview")).toMatchObject({
+      activeIndex: 4,
+      activeStep: { id: "preview" },
+      nextStep: null,
+      previousStep: { id: "invite" },
+    });
   });
 });

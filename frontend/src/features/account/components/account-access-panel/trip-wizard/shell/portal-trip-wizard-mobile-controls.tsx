@@ -4,7 +4,11 @@ import type { RefObject } from "react";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { tripWizardSteps, type TripWizardStepId } from "../model/account-trip-wizard-steps";
+import {
+  getTripWizardStepNavigation,
+  tripWizardSteps,
+  type TripWizardStepId,
+} from "../model/account-trip-wizard-steps";
 import * as wizardStyles from "../layout/portal-trip-wizard-styles";
 
 interface TripWizardWorkflowNavProps {
@@ -20,8 +24,7 @@ export function TripWizardWorkflowNav({
 }: TripWizardWorkflowNavProps) {
   const { t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
-  const activeMobileStepIndex = Math.max(0, tripWizardSteps.findIndex((step) => step.id === activeMobileStep));
-  const activeMobileStepMeta = tripWizardSteps[activeMobileStepIndex] ?? tripWizardSteps[0];
+  const { activeStep } = getTripWizardStepNavigation(activeMobileStep);
 
   return (
     <nav className={wizardStyles.tripWorkflowNavClassName} aria-label="Trip creation workflow">
@@ -43,7 +46,7 @@ export function TripWizardWorkflowNav({
           </li>
         ))}
       </ol>
-      <p>{wizard.workflow[activeMobileStepMeta.id]}</p>
+      <p>{wizard.workflow[activeStep.id]}</p>
     </nav>
   );
 }
@@ -61,29 +64,31 @@ export function TripWizardMobileStepActions({
 }: TripWizardMobileStepActionsProps) {
   const { t } = useI18n();
   const wizard = t.access.dashboard.createTrip.wizard;
-  const activeMobileStepIndex = Math.max(0, tripWizardSteps.findIndex((step) => step.id === activeMobileStep));
-  const previousMobileStep = tripWizardSteps[activeMobileStepIndex - 1] ?? null;
-  const nextMobileStep = tripWizardSteps[activeMobileStepIndex + 1] ?? null;
+  const {
+    activeIndex,
+    nextStep,
+    previousStep,
+  } = getTripWizardStepNavigation(activeMobileStep);
 
   return (
     <div className={wizardStyles.tripMobileStepActionsClassName} aria-label="Mobile step controls">
       <Button
         type="button"
         variant="secondary"
-        disabled={!previousMobileStep}
-        aria-label={previousMobileStep ? `${wizard.actions.back}: ${wizard.stepNames[previousMobileStep.id]}` : wizard.actions.back}
-        onClick={() => previousMobileStep ? onActiveMobileStepChange(previousMobileStep.id) : undefined}
+        disabled={!previousStep}
+        aria-label={previousStep ? `${wizard.actions.back}: ${wizard.stepNames[previousStep.id]}` : wizard.actions.back}
+        onClick={() => previousStep ? onActiveMobileStepChange(previousStep.id) : undefined}
       >
         <Icon name="chevronLeft" />
         {wizard.actions.back}
       </Button>
-      <span>{activeMobileStepIndex + 1} / {tripWizardSteps.length}</span>
+      <span>{activeIndex + 1} / {tripWizardSteps.length}</span>
       <Button
         type="button"
         variant="secondary"
-        disabled={!nextMobileStep || !currentStepComplete}
-        aria-label={nextMobileStep ? `${wizard.actions.next}: ${wizard.stepNames[nextMobileStep.id]}` : wizard.actions.next}
-        onClick={() => nextMobileStep ? onActiveMobileStepChange(nextMobileStep.id) : undefined}
+        disabled={!nextStep || !currentStepComplete}
+        aria-label={nextStep ? `${wizard.actions.next}: ${wizard.stepNames[nextStep.id]}` : wizard.actions.next}
+        onClick={() => nextStep ? onActiveMobileStepChange(nextStep.id) : undefined}
       >
         {wizard.actions.next}
         <Icon name="chevronRight" />

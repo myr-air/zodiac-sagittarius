@@ -6,6 +6,14 @@ export const tripWizardSteps = [
   { id: "preview", label: "Preview", regionLabel: "Preview step", nextCopy: "Review before create" },
 ] as const satisfies ReadonlyArray<{ id: string; label: string; regionLabel: string; nextCopy: string }>;
 export type TripWizardStepId = (typeof tripWizardSteps)[number]["id"];
+export type TripWizardStep = (typeof tripWizardSteps)[number];
+
+export interface TripWizardStepNavigation {
+  activeIndex: number;
+  activeStep: TripWizardStep;
+  nextStep: TripWizardStep | null;
+  previousStep: TripWizardStep | null;
+}
 
 export function tripStepComplete(step: TripWizardStepId, state: { tripNameComplete: boolean; destinationComplete: boolean; datesComplete: boolean; accessComplete: boolean }): boolean {
   if (step === "trip") return state.tripNameComplete;
@@ -13,4 +21,20 @@ export function tripStepComplete(step: TripWizardStepId, state: { tripNameComple
   if (step === "dates") return state.datesComplete;
   if (step === "invite") return state.accessComplete;
   return true;
+}
+
+export function getTripWizardStepNavigation(
+  activeStepId: TripWizardStepId,
+): TripWizardStepNavigation {
+  const activeIndex = Math.max(
+    0,
+    tripWizardSteps.findIndex((step) => step.id === activeStepId),
+  );
+
+  return {
+    activeIndex,
+    activeStep: tripWizardSteps[activeIndex] ?? tripWizardSteps[0],
+    nextStep: tripWizardSteps[activeIndex + 1] ?? null,
+    previousStep: tripWizardSteps[activeIndex - 1] ?? null,
+  };
 }
