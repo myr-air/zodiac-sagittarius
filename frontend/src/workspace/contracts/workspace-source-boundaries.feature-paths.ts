@@ -120,7 +120,7 @@ export const workspaceFeatureBoundarySourcePaths = {
   portalTripWizardMobileState:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-mobile-state.ts",
   portalTripWizardDerivedState:
-    "src/features/account/components/account-access-panel/trip-wizard/state/portal-trip-wizard-derived-state.ts",
+    "src/features/account/components/account-access-panel/trip-wizard/model/portal-trip-wizard-derived-state.ts",
   portalTripWizardActions: "src/features/account/components/account-access-panel/trip-wizard/shell/portal-trip-wizard-actions.tsx",
   portalTripWizardDateActions:
     "src/features/account/components/account-access-panel/trip-wizard/state/use-portal-trip-wizard-date-actions.ts",

@@ -1,7 +1,7 @@
 import { type Dispatch, type FormEvent, type SetStateAction } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { buildPortalTripWizardDerivedState } from "./portal-trip-wizard-derived-state";
+import { buildPortalTripWizardDerivedState } from "../model/portal-trip-wizard-derived-state";
 import { buildPortalTripWizardSubmitForm } from "./portal-trip-wizard-model-actions";
 import { buildPortalTripWizardSummary } from "./portal-trip-wizard-summary";
 import { usePortalTripWizardAccessActions } from "./use-portal-trip-wizard-access-actions";
