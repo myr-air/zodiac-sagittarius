@@ -171,6 +171,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellOverlays.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellTitleLine.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryBookingButton.tsx",
+  "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-actions.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-model.ts",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellMeta.tsx",
   "src/features/itinerary/components/smart-itinerary-table/activity-cell/activity-cell.types.ts",

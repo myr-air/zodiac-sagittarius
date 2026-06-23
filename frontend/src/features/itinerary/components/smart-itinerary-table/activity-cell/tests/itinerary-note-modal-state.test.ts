@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildItineraryNoteModalSubmission,
   initialItineraryNoteModalState,
   setItineraryNoteModalSaving,
   updateItineraryNoteModalBody,
@@ -42,5 +43,26 @@ describe("itinerary note modal state", () => {
       body: "Bring passports",
       saving: true,
     });
+  });
+
+  it("builds trimmed note submissions only when not saving", () => {
+    expect(
+      buildItineraryNoteModalSubmission({
+        body: "  Meet at exit A  ",
+        saving: false,
+      }),
+    ).toEqual({ body: "Meet at exit A" });
+    expect(
+      buildItineraryNoteModalSubmission({
+        body: "   ",
+        saving: false,
+      }),
+    ).toBeNull();
+    expect(
+      buildItineraryNoteModalSubmission({
+        body: "Already saving",
+        saving: true,
+      }),
+    ).toBeNull();
   });
 });

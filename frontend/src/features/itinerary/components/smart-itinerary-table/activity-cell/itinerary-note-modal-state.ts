@@ -3,6 +3,10 @@ export interface ItineraryNoteModalState {
   saving: boolean;
 }
 
+export interface ItineraryNoteModalSubmission {
+  body: string;
+}
+
 export const initialItineraryNoteModalState: ItineraryNoteModalState = {
   body: "",
   saving: false,
@@ -26,4 +30,11 @@ export function setItineraryNoteModalSaving(
     ...state,
     saving,
   };
+}
+
+export function buildItineraryNoteModalSubmission(
+  state: ItineraryNoteModalState,
+): ItineraryNoteModalSubmission | null {
+  const body = state.body.trim();
+  return body && !state.saving ? { body } : null;
 }

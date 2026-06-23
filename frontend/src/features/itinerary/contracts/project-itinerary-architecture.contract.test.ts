@@ -192,6 +192,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps itinerary ticket modal form state split from modal render", () => {
     const noteModal = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ItineraryNoteModal.tsx");
     const noteModel = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-model.ts");
+    const noteActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/use-itinerary-note-modal-actions.ts");
+    const noteState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/itinerary-note-modal-state.ts");
     const noteDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/itinerary-note-display.ts");
     const modalHeader = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalHeader.tsx");
     const modalActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/activity-cell/ActivityCellModalActions.tsx");
@@ -216,7 +218,14 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(noteModel).toContain("export function useItineraryNoteModalModel");
     expect(noteModel).toContain("@/src/features/itinerary/domain/itinerary-note-display");
     expect(noteModel).toContain("./itinerary-note-modal-state");
+    expect(noteModel).toContain("./use-itinerary-note-modal-actions");
     expect(noteModel).toContain("const [state, setState]");
+    expect(noteModel).not.toContain("async function submit");
+    expect(noteActions).toContain("export function useItineraryNoteModalActions");
+    expect(noteActions).toContain("async function submit");
+    expect(noteActions).toContain("buildItineraryNoteModalSubmission");
+    expect(noteActions).toContain("setItineraryNoteModalSaving");
+    expect(noteState).toContain("export function buildItineraryNoteModalSubmission");
     expect(noteModel).not.toContain('locale === "th"');
     expect(noteModel).not.toContain("Close note modal");
     expect(noteModel).not.toContain("const [body, setBody]");
