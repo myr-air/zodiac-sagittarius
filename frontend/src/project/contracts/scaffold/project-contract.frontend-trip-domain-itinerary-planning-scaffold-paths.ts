@@ -74,6 +74,7 @@ export const frontendTripDomainItineraryPlanningScaffoldPathsPresent = [
   "src/trip/itinerary-items/itinerary-item-placement-api-requests.ts",
   "src/trip/itinerary-import-export/index.ts",
   "src/trip/itinerary-import-export/itinerary-export-builders.ts",
+  "src/trip/itinerary-import-export/itinerary-export-records.ts",
   "src/trip/itinerary-import-export/itinerary-import-export-schema.ts",
   "src/trip/itinerary-import-export/itinerary-import-export-types.ts",
   "src/trip/itinerary-import-export/itinerary-import-hierarchy.ts",
