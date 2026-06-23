@@ -1,7 +1,5 @@
-import type { useWorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
+import type { WorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
 import type { BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
-
-type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
 
 type WorkspaceCoreRecordProps = Pick<
   BuildWorkspaceFramePropsInput,

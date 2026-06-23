@@ -1,5 +1,5 @@
 import type { useWorkspaceCommands } from "../hooks/use-workspace-commands";
-import type { useWorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
+import type { WorkspacePlanningContext } from "../hooks/use-workspace-planning-context";
 import type { useWorkspaceSetupContext } from "../hooks/use-workspace-setup-context";
 import type { SagittariusAccessMode, SagittariusPortalSection } from "../types";
 import { buildWorkspaceFrameProps, type BuildWorkspaceFramePropsInput } from "./workspace-frame-props";
@@ -7,7 +7,6 @@ import { buildWorkspaceCoreCommandProps } from "./workspace-core-command-props";
 import { buildWorkspaceCoreRecordProps } from "./workspace-core-record-props";
 
 type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;
-type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
 type WorkspaceCommands = ReturnType<typeof useWorkspaceCommands>;
 
 interface BuildWorkspaceCoreFramePropsInput {

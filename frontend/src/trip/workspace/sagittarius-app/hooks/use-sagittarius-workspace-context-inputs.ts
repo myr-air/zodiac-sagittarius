@@ -1,11 +1,10 @@
 import { nextClientMutationId } from "@/src/trip/identity";
 import type { UseWorkspaceCommandsParams } from "./use-workspace-commands-params";
 import type { UseWorkspacePlanningContextParams } from "./use-workspace-planning-context-params";
-import type { useWorkspacePlanningContext } from "./use-workspace-planning-context";
+import type { WorkspacePlanningContext } from "./use-workspace-planning-context";
 import type { useWorkspaceSetupContext } from "./use-workspace-setup-context";
 
 type WorkspaceSetupContext = ReturnType<typeof useWorkspaceSetupContext>;
-type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
 
 interface BuildWorkspacePlanningContextParamsOptions {
   initialTrip: UseWorkspacePlanningContextParams["initialTrip"];

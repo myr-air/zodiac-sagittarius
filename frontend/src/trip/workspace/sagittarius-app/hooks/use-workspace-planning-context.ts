@@ -169,3 +169,5 @@ export function useWorkspacePlanningContext({
     updateTripPlanStatus,
   };
 }
+
+export type WorkspacePlanningContext = ReturnType<typeof useWorkspacePlanningContext>;
