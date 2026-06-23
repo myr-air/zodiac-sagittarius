@@ -1,6 +1,5 @@
-import { formatDayLabel } from "@/src/trip/itinerary-core";
+import { SelectOptions } from "@/src/shared/components/select-options";
 import { Select } from "@/src/ui";
-import { formatThaiDate } from "@/src/features/itinerary/lib/itinerary-display";
 import type { Locale } from "@/src/i18n/types";
 import {
   type StopDetailType,
@@ -11,6 +10,11 @@ import {
 } from "./stop-dialog.styles";
 import type { StopFormValues, StopManualPathOption } from "./stop-dialog.types";
 import { stopDialogFieldIds } from "./stop-dialog-field-ids";
+import {
+  stopDialogDaySelectOptions,
+  stopDialogDetailTypeSelectOptions,
+  stopDialogPathSelectOptions,
+} from "./stop-dialog-select-options";
 
 export function StopDialogContextFields({
   dayLabel,
@@ -58,11 +62,13 @@ export function StopDialogContextFields({
             value={values.day}
             onChange={(event) => onUpdate("day", event.target.value)}
           >
-            {dayOptions.map((day) => (
-              <option value={day} key={day}>
-                {formatDayLabel(day, startDate ?? day, locale)} · {formatThaiDate(day, locale)}
-              </option>
-            ))}
+            <SelectOptions
+              options={stopDialogDaySelectOptions({
+                days: dayOptions,
+                locale,
+                startDate,
+              })}
+            />
           </Select>
         </label>
       ) : null}
@@ -74,9 +80,7 @@ export function StopDialogContextFields({
             value={values.pathId ?? "main"}
             onChange={(event) => onUpdate("pathId", event.target.value)}
           >
-            {manualPathOptions.map((option) => (
-              <option value={option.id} key={option.id}>{option.name}</option>
-            ))}
+            <SelectOptions options={stopDialogPathSelectOptions(manualPathOptions)} />
           </Select>
         </label>
       ) : null}
@@ -89,9 +93,12 @@ export function StopDialogContextFields({
             onUpdateDetailType(event.target.value as StopDetailType)
           }
         >
-          {detailTypeOptions.map((option) => (
-            <option value={option} key={option}>{detailLabels.types[option]}</option>
-          ))}
+          <SelectOptions
+            options={stopDialogDetailTypeSelectOptions({
+              detailLabels,
+              detailTypeOptions,
+            })}
+          />
         </Select>
       </label>
     </>
