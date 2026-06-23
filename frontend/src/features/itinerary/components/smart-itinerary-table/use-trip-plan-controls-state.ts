@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type SetStateAction } from "react";
+import { useState, type SetStateAction } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import { findTripPlanOptionById } from "@/src/trip/trip-plans";
@@ -6,15 +6,13 @@ import { tripPlanStatus } from "./smart-itinerary-table-trip-plan-labels";
 import {
   changeTripPlanEditedNameDraft,
   changeTripPlanNewNameDraft,
-  clearTripPlanDraftError,
   closeTripPlanCreateMode,
-  failTripPlanDraft,
   initialTripPlanControlDraftState,
-  markTripPlanRenamed,
   resetTripPlanSelectionDraft,
   resolveEditedTripPlanName,
   setTripPlanCreateMode,
 } from "./trip-plan-controls-draft-state";
+import { useTripPlanControlsActions } from "./use-trip-plan-controls-actions";
 import type { TripPlanMutationResult } from "./trip-plan-controls.types";
 
 interface TripPlanControlsStateInput {
@@ -105,36 +103,18 @@ export function useTripPlanControlsState({
     );
   }
 
-  async function submitNewTripPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isTripPlanBusy || !canManageTripPlans) return;
-    const name = draftState.newName.trim();
-    if (!name) {
-      setDraftState((current) => failTripPlanDraft(current, emptyNameMessage));
-      return;
-    }
-    setDraftState((current) => clearTripPlanDraftError(current));
-    const created = await onCreateTripPlan(name);
-    if (created === false) return;
-    closeCreateMode();
-  }
-
-  async function submitRenameTripPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isTripPlanBusy || !canManageTripPlans || !selectedTripPlan) return;
-    const name = editedTripPlanName.trim();
-    if (!name) {
-      setDraftState((current) => failTripPlanDraft(current, emptyNameMessage));
-      return;
-    }
-    if (name === selectedTripPlan.name) return;
-    setDraftState((current) => clearTripPlanDraftError(current));
-    const renamed = await onRenameTripPlan(selectedTripPlan.id, name);
-    if (renamed === false) return;
-    setDraftState((current) =>
-      markTripPlanRenamed(current, selectedTripPlan.id, name),
-    );
-  }
+  const { submitNewTripPlan, submitRenameTripPlan } =
+    useTripPlanControlsActions({
+      canManageTripPlans,
+      draftState,
+      editedTripPlanName,
+      emptyNameMessage,
+      isTripPlanBusy,
+      onCreateTripPlan,
+      onRenameTripPlan,
+      selectedTripPlan,
+      setDraftState,
+    });
 
   return {
     changeEditedTripPlanName,

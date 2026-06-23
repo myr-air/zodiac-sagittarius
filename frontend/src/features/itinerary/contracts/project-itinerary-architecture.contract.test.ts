@@ -39,6 +39,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
   it("keeps trip plan controls state split from control rendering", () => {
     const controls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableTripPlanControls.tsx");
     const controlsState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-state.ts");
+    const controlsActions = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/use-trip-plan-controls-actions.ts");
     const controlsDraftState = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/trip-plan-controls-draft-state.ts");
     const headerControls = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableHeaderControls.tsx");
     const headerControlsHook = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/hooks/useSmartItineraryHeaderControls.ts");
@@ -52,9 +53,16 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(controls).not.toContain("tripPlanStatus(");
     expect(controlsState).toContain("export function useTripPlanControlsState");
     expect(controlsState).toContain("./trip-plan-controls-draft-state");
+    expect(controlsState).toContain("./use-trip-plan-controls-actions");
     expect(controlsState).toContain("const [draftState, setDraftState]");
-    expect(controlsState).toContain("function submitNewTripPlan");
+    expect(controlsState).not.toContain("function submitNewTripPlan");
+    expect(controlsState).not.toContain("function submitRenameTripPlan");
     expect(controlsState).toContain("tripPlanStatus(");
+    expect(controlsActions).toContain("export function useTripPlanControlsActions");
+    expect(controlsActions).toContain("function submitNewTripPlan");
+    expect(controlsActions).toContain("function submitRenameTripPlan");
+    expect(controlsActions).toContain("clearTripPlanDraftError");
+    expect(controlsActions).toContain("markTripPlanRenamed");
     expect(controlsState).not.toContain("interface TripPlanControlDraftState");
     expect(controlsState).not.toContain("const [isCreatingTripPlan, setIsCreatingTripPlan]");
     expect(controlsState).not.toContain("const [newTripPlanName, setNewTripPlanName]");
