@@ -49,6 +49,7 @@ describe("Sagittarius frontend architecture contracts", () => {
   it("keeps AppShell split into component, styles, and support logic", () => {
     const appShell = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8");
     const appShellMemberCard = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellMemberCard.tsx"), "utf8");
+    const appShellMemberCardActions = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/useAppShellMemberCardActions.ts"), "utf8");
     const appShellStyles = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.styles.ts"), "utf8");
     const appShellSupport = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell.support.ts"), "utf8");
 
@@ -62,7 +63,12 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(appShellMemberCard).toContain("@/src/trip/members");
     expect(appShellMemberCard).toContain("WorkspaceConfirmDialog");
     expect(appShellMemberCard).toContain("roleLabel");
-    expect(appShellMemberCard).toContain("identityDialogOpen");
+    expect(appShellMemberCard).toContain("useAppShellMemberCardActions");
+    expect(appShellMemberCard).not.toContain("useState");
+    expect(appShellMemberCard).not.toContain("function confirmLeaveParticipantSession");
+    expect(appShellMemberCardActions).toContain("export function useAppShellMemberCardActions");
+    expect(appShellMemberCardActions).toContain("identityDialogOpen");
+    expect(appShellMemberCardActions).toContain("function confirmLeaveParticipantSession");
     expect(appShellMemberCard).not.toContain("identityDialogBackdropClassName");
     expect(appShellMemberCard).not.toContain("identityDialogActionsClassName");
     expect(appShellMemberCard).not.toContain("identityDialogPrimaryButtonClassName");

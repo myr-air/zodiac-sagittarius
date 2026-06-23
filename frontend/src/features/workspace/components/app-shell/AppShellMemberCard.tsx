@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
@@ -19,20 +18,13 @@ import {
   memberFallbackIconClassName,
   memberSwitchButtonClassName,
 } from "./AppShell.styles";
+import { useAppShellMemberCardActions } from "./useAppShellMemberCardActions";
 
 export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipantSession }: AppShellMemberCardProps) {
   const { t } = useI18n();
-  const [identityDialogOpen, setIdentityDialogOpen] = useState(false);
-
-  function openLeaveParticipantSessionDialog() {
-    if (!onLeaveParticipantSession) return;
-    setIdentityDialogOpen(true);
-  }
-
-  function confirmLeaveParticipantSession() {
-    setIdentityDialogOpen(false);
-    onLeaveParticipantSession?.();
-  }
+  const actions = useAppShellMemberCardActions({
+    onLeaveParticipantSession,
+  });
 
   return (
     <>
@@ -48,7 +40,7 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
                 <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
               </div>
             </div>
-            <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
+            <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={actions.openLeaveParticipantSessionDialog}>
               {t.appShell.switchIdentity}
             </button>
           </>
@@ -62,7 +54,7 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
               <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
             </div>
             {onLeaveParticipantSession ? (
-              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={openLeaveParticipantSessionDialog}>
+              <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={actions.openLeaveParticipantSessionDialog}>
                 {t.appShell.switchIdentity}
               </button>
             ) : (
@@ -72,15 +64,15 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
         )}
       </div>
 
-      {identityDialogOpen ? (
+      {actions.identityDialogOpen ? (
         <WorkspaceConfirmDialog
           body={t.appShell.confirmSwitchIdentity({ name: currentMember.displayName })}
           cancelLabel={t.common.actions.cancel}
           className={identityDialogClassName}
           confirmLabel={t.appShell.switchIdentity}
           confirmVariant="primary"
-          onCancel={() => setIdentityDialogOpen(false)}
-          onConfirm={confirmLeaveParticipantSession}
+          onCancel={actions.closeLeaveParticipantSessionDialog}
+          onConfirm={actions.confirmLeaveParticipantSession}
           title={t.appShell.switchIdentity}
           titleId="identity-switch-title"
         />
