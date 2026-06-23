@@ -10,6 +10,7 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     const routeMapViewState = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-map-view-state.ts");
     const routeMapViewStateModel = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map-view-state.ts");
     const routeLiveMap = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map.ts");
+    const routeLiveMapMount = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-mount.ts");
     const routeLiveMapRefs = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-refs.ts");
     const routeLiveMapSync = readItineraryArchitectureSource("src/features/itinerary/components/route-map/use-route-live-map-sync.ts");
     const routeMapLive = readItineraryArchitectureSource("src/features/itinerary/components/route-map/route-map.live.ts");
@@ -33,8 +34,14 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     expect(routeMapViewStateModel).toContain("export interface RouteMapViewState");
     expect(routeMapViewStateModel).toContain("initialRouteMapViewState");
     expect(routeLiveMap).toContain("./route-live-map-state");
+    expect(routeLiveMap).toContain("./use-route-live-map-mount");
     expect(routeLiveMap).toContain("./use-route-live-map-refs");
     expect(routeLiveMap).toContain("./use-route-live-map-sync");
+    expect(routeLiveMap).not.toContain("async function mountLiveMap");
+    expect(routeLiveMapMount).toContain("export function useRouteLiveMapMount");
+    expect(routeLiveMapMount).toContain("async function mountLiveMap");
+    expect(routeLiveMapMount).toContain("applyRouteMapTheme");
+    expect(routeLiveMapMount).toContain("removeMapChromeFromTabOrder");
     expect(routeLiveMap).not.toContain("cleanupLiveRouteMap");
     expect(routeLiveMapRefs).toContain("cleanupLiveRouteMap");
     expect(routeLiveMapRefs).toContain("export function useRouteLiveMapRefs");
