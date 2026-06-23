@@ -6,14 +6,19 @@ import {
   pathNamePlanB,
   pathNamePlanC,
 } from "./support/itinerary-story-fixtures";
-import { expectItineraryResponsiveContract } from "./support/itinerary-story-assertions";
+import {
+  expectDayActivityPathGraph,
+  expectItineraryResponsiveContract,
+  expectPathGraphNode,
+  expectSelectedPathGraphNode,
+} from "./support/itinerary-story-assertions";
 import type { StoryPlay } from "./support/story-play-types";
 
 type ItineraryTemplatePlay = StoryPlay<typeof SmartItineraryTable>;
 
 export const ownerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("button", { name: "Trip Plan controls" })).toBeEnabled();
-  await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
+  await expectDayActivityPathGraph(canvas);
   await expect(canvas.getAllByRole("button", { name: /Add stop or activity/i }).length).toBeGreaterThan(0);
 };
 
@@ -29,7 +34,7 @@ export const travelerPlay: ItineraryTemplatePlay = async ({ canvas }) => {
 };
 
 export const hierarchyBlocksPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: new RegExp(`Flight to Hong Kong on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+  await expectSelectedPathGraphNode(canvas, new RegExp(`Flight to Hong Kong on ${pathNameMain}`));
   await expect(canvas.queryByLabelText("Structure for Flight to Hong Kong")).toBeNull();
 };
 
@@ -44,31 +49,31 @@ export const tableOverflowPlay: ItineraryTemplatePlay = async ({ canvasElement }
 };
 
 export const branchGraphPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("group", { name: /Activity path graph for Day 2/i })).toHaveClass("activity-path-graph");
-  await expect(canvas.getByRole("button", { name: new RegExp(`Dim Sum morning on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
+  await expectDayActivityPathGraph(canvas);
+  await expectSelectedPathGraphNode(canvas, new RegExp(`Dim Sum morning on ${pathNameMain}`));
 };
 
 export const planAExamplePlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`) })).toBeInTheDocument();
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`) })).toBeInTheDocument();
+  await expectSelectedPathGraphNode(canvas, new RegExp(`Harbour breakfast on ${pathNameMain}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanA} museum stop on ${pathNamePlanA}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanA} cafe backup on ${pathNamePlanA}`));
 };
 
 export const planABAlternativesPlay: ItineraryTemplatePlay = async ({ canvas, canvasElement }) => {
-  await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`) })).toBeInTheDocument();
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`) })).toBeInTheDocument();
+  await expectSelectedPathGraphNode(canvas, new RegExp(`Harbour breakfast on ${pathNameMain}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanA} gallery route on ${pathNamePlanA}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanB} harbour route on ${pathNamePlanB}`));
   await expect(canvasElement.querySelector(".data-row--path-overlap")).not.toBeInTheDocument();
 };
 
 export const requestedPlanExamplePlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`) })).toBeInTheDocument();
-  await expect(canvas.getByRole("button", { name: new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`) })).toBeInTheDocument();
+  await expectSelectedPathGraphNode(canvas, new RegExp(`${pathNameMain} 08:00 block on ${pathNameMain}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanA} 09:00 branch on ${pathNamePlanA}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNamePlanA} 12:30 branch on ${pathNamePlanA}`));
+  await expectPathGraphNode(canvas, new RegExp(`${pathNameMain} 16:00 block on ${pathNameMain}`));
 };
 
 export const stressPathsPlay: ItineraryTemplatePlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("button", { name: new RegExp(`Harbour breakfast on ${pathNameMain}`) })).toHaveClass("activity-path-graph-node--selected");
-  await expect(canvas.getByRole("button", { name: new RegExp(`Quiet park break on ${pathNamePlanC}`) })).toBeInTheDocument();
+  await expectSelectedPathGraphNode(canvas, new RegExp(`Harbour breakfast on ${pathNameMain}`));
+  await expectPathGraphNode(canvas, new RegExp(`Quiet park break on ${pathNamePlanC}`));
 };
