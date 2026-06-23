@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "../../../seed";
+import {
+  buildTripFixtureItineraryItem,
+  tripFixture,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   completeItineraryPathOptions,
   deriveItineraryPathOptions,
@@ -16,7 +19,7 @@ describe("itinerary path options", () => {
   it("derives main and named path options from metadata and item fields", () => {
     const rainPath = {
       id: pathIdRain,
-      tripId: seedTrip.id,
+      tripId: tripFixture.trip.id,
       name: pathNameRain,
       scope: "day" as const,
       day: "2025-05-16",
@@ -24,12 +27,11 @@ describe("itinerary path options", () => {
       createdAt: "2026-06-04T00:00:00.000Z",
       updatedAt: "2026-06-04T00:00:00.000Z",
     };
-    const slowItem = {
-      ...seedTrip.itineraryItems[0],
+    const slowItem = buildTripFixtureItineraryItem({
       pathId: "path-slow",
       pathName: "Slow morning",
       pathRole: "alternative" as const,
-    };
+    });
 
     expect(deriveItineraryPathOptions([slowItem], [rainPath])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
@@ -39,14 +41,13 @@ describe("itinerary path options", () => {
   });
 
   it("derives generated activity sub plans as day-scoped path options", () => {
-    const planAItem = {
-      ...seedTrip.itineraryItems[0],
+    const planAItem = buildTripFixtureItineraryItem({
       day: "2026-06-19",
       pathGroupId: "path-group-morning",
       pathId: pathIdPlanA,
       pathName: pathNamePlanA,
       pathRole: "alternative" as const,
-    };
+    });
 
     expect(deriveItineraryPathOptions([planAItem])).toEqual([
       { id: "main", name: "Main", scope: "trip" },
@@ -55,13 +56,12 @@ describe("itinerary path options", () => {
   });
 
   it("completes existing path options from item paths without rebuilding labels in UI code", () => {
-    const customItem = {
-      ...seedTrip.itineraryItems[0],
+    const customItem = buildTripFixtureItineraryItem({
       day: "2026-06-20",
       pathId: "path-custom",
       pathName: "Custom",
       pathRole: "alternative" as const,
-    };
+    });
 
     expect(
       completeItineraryPathOptions(
