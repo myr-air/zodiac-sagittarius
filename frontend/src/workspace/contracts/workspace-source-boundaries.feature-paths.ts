@@ -150,6 +150,10 @@ export const workspaceFeatureBoundarySourcePaths = {
     "src/features/account/components/account-access-panel/storybook/account-access-panel.stories.clients.ts",
   accountAccessFixtures:
     "src/features/account/components/account-access-panel/fixtures/account-access-panel-fixtures.ts",
+  accountAccessBaseFixtures:
+    "src/features/account/components/account-access-panel/fixtures/account-access-panel-base-fixtures.ts",
+  accountAccessApiFixtures:
+    "src/features/account/components/account-access-panel/fixtures/account-access-panel-api-fixtures.ts",
   accountAccessTestUtils: "src/features/account/components/account-access-panel/testing/account-access-panel-test-utils.tsx",
   accountAccessRenderTestUtils:
     "src/features/account/components/account-access-panel/testing/account-access-panel-render-utils.tsx",
