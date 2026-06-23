@@ -1,8 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildItineraryItem,
   getItineraryItemRow,
   getSubItineraryItemLine,
   queryItineraryItemRow,
@@ -15,27 +15,24 @@ describe("SmartItineraryTable sub-activities", () => {
   it("lets sub-activities switch from travel to another type and default", async () => {
     const user = userEvent.setup();
     const onUpdateItemInline = vi.fn();
-    const parent = {
-      ...tripFixture.planItems[0],
+    const parent = buildItineraryItem({
       id: "parent-type-switch",
       activity: "Parent route",
       day: "2026-06-19",
       sortOrder: 10,
-    };
-    const child = {
-      ...tripFixture.planItems[1],
+    });
+    const child = buildItineraryItem({
       id: "child-type-switch",
       parentItemId: "parent-type-switch",
       activity: "Airport transfer",
       activityType: "travel" as const,
       activitySubtype: "bus" as const,
       details: {
-        ...tripFixture.planItems[1].details,
         mode: "bus",
       },
       day: "2026-06-19",
       sortOrder: 11,
-    };
+    });
 
     renderTable({
       items: [parent, child],
@@ -80,25 +77,22 @@ describe("SmartItineraryTable sub-activities", () => {
   it("renders sub-activities inside their parent activity cell", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
-    const parent = {
-      ...tripFixture.planItems[0],
+    const parent = buildItineraryItem({
       id: "parent-activity",
       activity: "Parent route",
       place: "",
       day: "2026-06-19",
       sortOrder: 10,
-    };
-    const child = {
-      ...tripFixture.planItems[1],
+    });
+    const child = buildItineraryItem({
       id: "child-activity",
       parentItemId: "parent-activity",
       activity: "Buy Octopus card",
       place: "Airport station",
       day: "2026-06-19",
       sortOrder: 11,
-    };
-    const childWithoutPlace = {
-      ...tripFixture.planItems[2],
+    });
+    const childWithoutPlace = buildItineraryItem({
       id: "child-without-place",
       parentItemId: "parent-activity",
       activity: "Check stored value",
@@ -106,7 +100,7 @@ describe("SmartItineraryTable sub-activities", () => {
       place: "",
       day: "2026-06-19",
       sortOrder: 12,
-    };
+    });
 
     renderTable({
       items: [parent, child, childWithoutPlace],

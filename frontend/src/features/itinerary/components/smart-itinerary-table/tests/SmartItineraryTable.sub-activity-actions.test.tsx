@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
+  buildItineraryItem,
   createDragDataTransfer,
   getItineraryItemRow,
   getSubItineraryItemLine,
@@ -30,13 +31,12 @@ describe("SmartItineraryTable sub-activity actions", () => {
   it("shows an add sub-activity row for a selected activity with no sub-activities", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
-    const parent = {
-      ...tripFixture.planItems[0],
+    const parent = buildItineraryItem({
       id: "empty-sub-parent",
       activity: "Harbour transfer",
       day: "2026-06-19",
       sortOrder: 10,
-    };
+    });
 
     renderTable({
       items: [parent],
@@ -59,20 +59,18 @@ describe("SmartItineraryTable sub-activity actions", () => {
   it("shows an add sub-activity row after expanding an unselected empty activity", async () => {
     const user = userEvent.setup();
     const onAddSubActivity = vi.fn();
-    const selectedSibling = {
-      ...tripFixture.planItems[0],
+    const selectedSibling = buildItineraryItem({
       id: "selected-sibling",
       activity: "Selected sibling",
       day: "2026-06-19",
       sortOrder: 10,
-    };
-    const parent = {
-      ...tripFixture.planItems[1],
+    });
+    const parent = buildItineraryItem({
       id: "unselected-empty-sub-parent",
       activity: "Bus to Shenzhen",
       day: "2026-06-19",
       sortOrder: 20,
-    };
+    });
 
     renderTable({
       items: [selectedSibling, parent],
@@ -99,44 +97,39 @@ describe("SmartItineraryTable sub-activity actions", () => {
   });
 
   it("renders sub-activities without inline drag and drop controls", () => {
-    const parentA = {
-      ...tripFixture.planItems[0],
+    const parentA = buildItineraryItem({
       id: "parent-a",
       activity: "Parent A",
       day: "2026-06-19",
       sortOrder: 10,
-    };
-    const parentB = {
-      ...tripFixture.planItems[0],
+    });
+    const parentB = buildItineraryItem({
       id: "parent-b",
       activity: "Parent B",
       day: "2026-06-19",
       sortOrder: 30,
-    };
-    const childA1 = {
-      ...tripFixture.planItems[1],
+    });
+    const childA1 = buildItineraryItem({
       id: "child-a-1",
       parentItemId: "parent-a",
       activity: "Child A1",
       day: "2026-06-19",
       sortOrder: 11,
-    };
-    const childA2 = {
-      ...tripFixture.planItems[2],
+    });
+    const childA2 = buildItineraryItem({
       id: "child-a-2",
       parentItemId: "parent-a",
       activity: "Child A2",
       day: "2026-06-19",
       sortOrder: 12,
-    };
-    const childB1 = {
-      ...tripFixture.planItems[3],
+    });
+    const childB1 = buildItineraryItem({
       id: "child-b-1",
       parentItemId: "parent-b",
       activity: "Child B1",
       day: "2026-06-19",
       sortOrder: 31,
-    };
+    });
 
     renderTable({
       items: [parentA, childA1, childA2, parentB, childB1],
