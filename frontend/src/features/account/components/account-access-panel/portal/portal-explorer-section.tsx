@@ -15,6 +15,10 @@ import {
   buildAccountPortalExplorerTrips,
 } from "./account-portal-explorer-model";
 import {
+  accountPortalTripBadgeTone,
+  accountPortalTripDetail,
+} from "./account-portal-trip-list-item.model";
+import {
   portalMapPinClassName,
   portalMapPreviewClassName,
   portalSearchClassName,
@@ -84,8 +88,8 @@ export function PortalExplorerSection({
               key={trip.id}
               icon="map"
               title={trip.name}
-              detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
-              badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.portal.explorerSearch.owned : t.access.portal.explorerSearch.shared}</Badge>}
+              detail={accountPortalTripDetail(trip)}
+              badge={<Badge tone={accountPortalTripBadgeTone(trip)}>{trip.isOwner ? t.access.portal.explorerSearch.owned : t.access.portal.explorerSearch.shared}</Badge>}
             />
           ))}
         </PortalList>

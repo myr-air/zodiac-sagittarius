@@ -5,6 +5,10 @@ import { Icon } from "@/src/ui/icons";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes } from "@/src/trip/workspace/sagittarius-app/support";
 import { PortalList, PortalListRow } from "./account-portal-list";
+import {
+  accountPortalTripBadgeTone,
+  accountPortalTripDetail,
+} from "./account-portal-trip-list-item.model";
 import { PanelHeading } from "../primitives/account-panel-heading";
 import { PortalEmptyState, PortalListSkeleton } from "./account-portal-primitives";
 
@@ -48,8 +52,8 @@ export function PortalTripsSection({
               key={trip.id}
               icon="location"
               title={trip.name}
-              detail={`${trip.destinationLabel} · ${trip.startDate} - ${trip.endDate}`}
-              badge={<Badge tone={trip.isOwner ? "success" : "neutral"}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>}
+              detail={accountPortalTripDetail(trip)}
+              badge={<Badge tone={accountPortalTripBadgeTone(trip)}>{trip.isOwner ? t.access.dashboard.history.owner : t.appShell.roles[trip.role]}</Badge>}
               action={
                 <Button asChild variant="secondary">
                   <Link href={appRoutes.tripOverview(trip.id)}>
