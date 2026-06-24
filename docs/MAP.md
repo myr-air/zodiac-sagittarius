@@ -98,6 +98,7 @@ Likely tests:
 ## QA And Release Docs
 
 - [docs/real-system-feature-qa.md](./real-system-feature-qa.md): real-system feature QA expectations.
+- [docs/frontend-refactor-roadmap.md](./frontend-refactor-roadmap.md): milestone checklist for ongoing frontend structure, SSoT, test, and Storybook refactors.
 - [docs/test-staging-verification-runbook.md](./test-staging-verification-runbook.md): staging verification flow.
 - [docs/production-freeze-checklist.md](./production-freeze-checklist.md): production freeze checks.
 - [docs/production-docker-cloudflare.md](./production-docker-cloudflare.md): production Docker and Cloudflare deployment.
