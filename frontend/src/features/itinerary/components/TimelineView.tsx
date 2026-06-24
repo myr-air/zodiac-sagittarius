@@ -103,7 +103,7 @@ export function TimelineView({
                 <strong>{formatDayLabel(group.day, startDate, locale)}</strong>
                 <span>{formatThaiDate(group.day, locale)}</span>
               </div>
-              <Badge tone="route">{dayRouteLabel(group.day, locale)}</Badge>
+              <Badge tone="route">{dayRouteLabel(group.day, locale, group.items)}</Badge>
             </header>
 
             <ol className={timelineStopListClassName}>

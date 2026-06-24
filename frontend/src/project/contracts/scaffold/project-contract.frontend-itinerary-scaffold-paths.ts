@@ -32,6 +32,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/stories/workspace/OverviewTemplate.stories.plays.ts",
   "src/features/itinerary/domain/itinerary-activity-types.ts",
   "src/features/itinerary/domain/tests/itinerary-activity-types.test.ts",
+  "src/features/itinerary/domain/itinerary-day-route-labels.ts",
+  "src/features/itinerary/domain/tests/itinerary-day-route-labels.test.ts",
   "src/features/itinerary/domain/booking-ticket-form.ts",
   "src/features/itinerary/domain/tests/booking-ticket-form.test.ts",
   "src/features/itinerary/domain/itinerary-booking-display.ts",

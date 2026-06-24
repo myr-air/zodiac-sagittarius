@@ -26,7 +26,7 @@ describe("TimelineView model", () => {
 
     expect(buildTimelineViewModel({ items, locale: "en" })).toMatchObject({
       groups: groupItemsByDay(items),
-      primaryRoute: "Bangkok -> Hong Kong / Trip day",
+      primaryRoute: "Test place / Test place",
       totalMinutes: 135,
       warningCount: 1,
     });

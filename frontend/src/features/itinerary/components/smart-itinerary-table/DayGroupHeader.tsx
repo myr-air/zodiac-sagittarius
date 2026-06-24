@@ -58,7 +58,7 @@ export function DayGroupHeader({
 }: DayGroupHeaderProps) {
   const dayLabel = formatDayLabel(group.day, startDate, locale);
   const dayA11yLabel = formatDayLabel(group.day, startDate, "en");
-  const defaultDayTitle = dayRouteLabel(group.day, locale);
+  const defaultDayTitle = dayRouteLabel(group.day, locale, group.items);
   const dayTitle = dailyBriefing?.manualOverrides.dayTitle?.trim() || defaultDayTitle;
   const dayPathOptions = itineraryPathOptionsForDay(pathOptions, group.day);
   const hasAlternativePathOptions = dayPathOptions.some(

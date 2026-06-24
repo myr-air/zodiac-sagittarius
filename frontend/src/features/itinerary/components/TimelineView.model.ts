@@ -25,7 +25,9 @@ export function buildTimelineViewModel({
   const groups = itineraryView?.dayGroups ?? groupItemsByDay(items);
   return {
     groups,
-    primaryRoute: groups.map((group) => dayRouteLabel(group.day, locale)).join(" / "),
+    primaryRoute: groups
+      .map((group) => dayRouteLabel(group.day, locale, group.items))
+      .join(" / "),
     totalMinutes: items.reduce(
       (total, item) => total + (item.durationMinutes ?? 0),
       0,
