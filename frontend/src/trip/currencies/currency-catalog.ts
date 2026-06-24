@@ -1,3 +1,8 @@
+import {
+  buildSelectOptionsFromItems,
+  type SelectOption,
+} from "@/src/shared/select-options";
+
 export type MajorCurrencyCode = (typeof majorCurrencyCodes)[number];
 
 export interface MajorCurrencyOption {
@@ -6,10 +11,7 @@ export interface MajorCurrencyOption {
   symbol: string;
 }
 
-export interface MajorCurrencySelectOption {
-  value: MajorCurrencyCode;
-  label: string;
-}
+export type MajorCurrencySelectOption = SelectOption<MajorCurrencyCode>;
 
 export const majorCurrencyCodes = [
   "HKD",
@@ -38,10 +40,11 @@ export const majorCurrencyOptions: MajorCurrencyOption[] = [
 ];
 
 export function majorCurrencySelectOptions(): MajorCurrencySelectOption[] {
-  return majorCurrencyOptions.map((option) => ({
-    value: option.code,
-    label: `${option.code} · ${option.label}`,
-  }));
+  return buildSelectOptionsFromItems(
+    majorCurrencyOptions,
+    (option) => option.code,
+    (option) => `${option.code} · ${option.label}`,
+  );
 }
 
 const majorCurrencySet = new Set<string>(majorCurrencyCodes);
