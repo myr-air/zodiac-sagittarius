@@ -1,5 +1,6 @@
 import type { Trip, TripTask } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
+import { PersonAvatar } from "@/src/shared/components/person-avatar";
 import { displayNameOrFallback } from "@/src/shared/text-parts";
 import { findMemberById } from "@/src/trip/members";
 import { overviewTaskMetaClassName } from "./overview.styles";
@@ -24,7 +25,6 @@ export function TaskAssigneeBadge({
   const member = findMemberById(trip.members, task.assigneeId) ?? null;
   const name = displayNameOrFallback(member, labels.tripMember);
   const color = member?.color ?? "var(--color-text-subtle)";
-  const initial = name.slice(0, 1).toUpperCase();
 
   return (
     <div className={overviewTaskMetaClassName}>
@@ -42,13 +42,12 @@ export function TaskAssigneeBadge({
       {task.visibility !== "private" &&
         (task.assigneeId ? (
           <div className="inline-flex items-center gap-1">
-            <span
+            <PersonAvatar
               className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white"
-              style={{ backgroundColor: color }}
+              color={color}
+              name={name}
               title={name}
-            >
-              {initial}
-            </span>
+            />
             <span className="text-[11px] font-bold text-(--color-text-muted) max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap">
               {name}
             </span>

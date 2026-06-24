@@ -166,7 +166,7 @@ describe("Sagittarius frontend architecture contracts", () => {
     expect(rowControls).toContain("PeoplePanelManagedRole");
     expect(rowStatus).toContain("export function PeoplePanelRowIdentity");
     expect(rowStatus).toContain("export function PeoplePanelPresencePill");
-    expect(rowStatus).toContain("memberInitial");
+    expect(rowStatus).toContain("PersonAvatar");
   });
 
   it("keeps date time picker popover layout logic split from popover rendering", () => {

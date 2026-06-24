@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/src/lib/cn";
+import { PersonAvatar } from "@/src/shared/components/person-avatar";
 import { Icon, type IconName } from "@/src/ui/icons";
 import {
   descriptionClassName,
@@ -69,9 +70,7 @@ interface PageUserCardProps {
 export function PageUserCard({ color, label, name }: PageUserCardProps) {
   return (
     <div className={userCardClassName}>
-      <span className={userAvatarClassName} style={{ backgroundColor: color }} aria-hidden="true">
-        {name.slice(0, 1)}
-      </span>
+      <PersonAvatar className={userAvatarClassName} color={color} name={name} />
       <div className={userCopyClassName}>
         <strong className={userNameClassName}>{name}</strong>
         <span className={userLabelClassName}>{label}</span>

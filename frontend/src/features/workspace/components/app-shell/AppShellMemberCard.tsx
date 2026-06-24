@@ -2,8 +2,9 @@
 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
+import { PersonAvatar } from "@/src/shared/components/person-avatar";
 import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
-import { memberInitial, roleLabel } from "@/src/trip/members";
+import { roleLabel } from "@/src/trip/members";
 import { Icon } from "@/src/ui/icons";
 import type { AppShellMemberCardProps } from "./app-shell.types";
 import {
@@ -32,9 +33,11 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
         {onLeaveParticipantSession && !collapsed ? (
           <>
             <div className="flex items-center gap-2.5 min-w-0 w-full">
-              <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-                {memberInitial(currentMember.displayName)}
-              </span>
+              <PersonAvatar
+                className={memberAvatarClassName}
+                color={currentMember.color}
+                name={currentMember.displayName}
+              />
               <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
                 <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
                 <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
@@ -46,9 +49,11 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
           </>
         ) : (
           <>
-            <span className={memberAvatarClassName} style={{ backgroundColor: currentMember.color }} aria-hidden="true">
-              {memberInitial(currentMember.displayName)}
-            </span>
+            <PersonAvatar
+              className={memberAvatarClassName}
+              color={currentMember.color}
+              name={currentMember.displayName}
+            />
             <div className={memberCardCopyClassName} data-collapsed={collapsed ? "true" : "false"}>
               <strong className={memberCardNameClassName}>{currentMember.displayName}</strong>
               <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>

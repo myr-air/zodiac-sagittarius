@@ -21,8 +21,9 @@ export const workspaceAccountAuthEmailBoundarySourcePaths = {
   emailLoginResendCooldown: "src/features/account/components/account-access-panel/email-login/state/use-email-login-resend-cooldown.ts",
   emailLoginPanel: "src/features/account/components/account-access-panel/email-login/account-email-login-panel.tsx",
   emailLoginPanelForm:
-    "src/features/account/components/account-access-panel/email-login/ui/account-email-login-panel-form.tsx",
+    "src/features/account/components/account-access-panel/email-login/components/account-email-login-panel-form.tsx",
   emailLoginStepDispatch:
-    "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-dispatch.tsx",
-  emailLoginStepStage: "src/features/account/components/account-access-panel/email-login/ui/account-email-login-step-stage.tsx",
+    "src/features/account/components/account-access-panel/email-login/components/account-email-login-step-dispatch.tsx",
+  emailLoginStepStage:
+    "src/features/account/components/account-access-panel/email-login/components/account-email-login-step-stage.tsx",
 } as const;

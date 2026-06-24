@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/cn";
-import { memberInitial } from "@/src/trip/members";
+import { PersonAvatar } from "@/src/shared/components/person-avatar";
 import {
   memberIdentityClassName,
   memberStatePillClassName,
@@ -35,9 +35,11 @@ export function PeoplePanelRowIdentity({
 }: PeoplePanelRowIdentityProps) {
   return (
     <>
-      <span className={personAvatarClassName} style={{ backgroundColor: member.color }} aria-hidden="true">
-        {memberInitial(member.displayName)}
-      </span>
+      <PersonAvatar
+        className={personAvatarClassName}
+        color={member.color}
+        name={member.displayName}
+      />
       <div className={memberIdentityClassName}>
         <strong>{member.displayName}{member.id === currentMemberId ? (locale === "th" ? " (คุณ)" : " (You)") : ""}</strong>
         <span>{roleLabel(member.role, locale)}</span>
