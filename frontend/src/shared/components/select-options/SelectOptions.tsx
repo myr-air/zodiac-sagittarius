@@ -1,10 +1,6 @@
-import type { ReactNode } from "react";
+import type { SelectOption } from "@/src/shared/select-options";
 
-export interface SelectOptionItem<Value extends string = string> {
-  value: Value;
-  label: ReactNode;
-  disabled?: boolean;
-}
+export type SelectOptionItem<Value extends string = string> = SelectOption<Value>;
 
 interface SelectOptionsProps<Value extends string = string> {
   options: readonly SelectOptionItem<Value>[];

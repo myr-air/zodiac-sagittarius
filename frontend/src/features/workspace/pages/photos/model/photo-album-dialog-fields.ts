@@ -1,4 +1,8 @@
 import { uniqueStrings } from "@/src/shared/collection";
+import {
+  prependSelectOption,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import type {
   Member,
   Trip,
@@ -46,13 +50,13 @@ export function photoAlbumDialogDayOptions(trip: Trip): string[] {
 
 export function photoAlbumDialogDaySelectOptions(
   trip: Trip,
-  leadingOption?: { value: string; label: string },
-): Array<{ value: string; label: string }> {
+  leadingOption?: SelectOption,
+): SelectOption[] {
   const options = photoAlbumDialogDayOptions(trip).map((day) => ({
     value: day,
     label: day,
   }));
-  return leadingOption ? [leadingOption, ...options] : options;
+  return prependSelectOption(options, leadingOption);
 }
 
 export function buildPhotoAlbumDialogSubmitInput({

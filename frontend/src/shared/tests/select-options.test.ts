@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSelectOptions,
   buildSelectOptionsFromItems,
+  prependSelectOption,
 } from "../select-options";
 
 describe("buildSelectOptions", () => {
@@ -28,6 +29,22 @@ describe("buildSelectOptions", () => {
     expect(options).toEqual([
       { value: "plan-main", label: "Main" },
       { value: "plan-rain", label: "Rain plan" },
+    ]);
+  });
+
+  it("prepends an optional caller-owned select option", () => {
+    expect(
+      prependSelectOption(
+        [{ value: "member-aom", label: "Aom" }],
+        { value: "", label: "No owner" },
+      ),
+    ).toEqual([
+      { value: "", label: "No owner" },
+      { value: "member-aom", label: "Aom" },
+    ]);
+
+    expect(prependSelectOption([{ value: "member-aom", label: "Aom" }])).toEqual([
+      { value: "member-aom", label: "Aom" },
     ]);
   });
 });

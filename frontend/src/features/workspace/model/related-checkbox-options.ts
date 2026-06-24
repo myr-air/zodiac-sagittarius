@@ -1,5 +1,6 @@
 import {
   buildSelectOptionsFromItems,
+  prependSelectOption,
   type SelectOption,
 } from "@/src/shared/select-options";
 import type { Expense, ItineraryItem, Member, StopNote, TripTask } from "@/src/trip/types";
@@ -34,9 +35,7 @@ function buildWorkspaceRelatedSelectOptions(
     (option) => option.id,
     (option) => option.label,
   );
-  return config.leadingOption
-    ? [config.leadingOption, ...selectOptions]
-    : selectOptions;
+  return prependSelectOption(selectOptions, config.leadingOption);
 }
 
 export function buildMemberSelectOptions(

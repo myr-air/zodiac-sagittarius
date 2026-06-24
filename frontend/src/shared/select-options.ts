@@ -1,6 +1,7 @@
 export interface SelectOption<Value extends string = string> {
   value: Value;
   label: string;
+  disabled?: boolean;
 }
 
 export function buildSelectOptions<Value extends string>(
@@ -19,4 +20,11 @@ export function buildSelectOptionsFromItems<Item, Value extends string>(
     value: valueForItem(item),
     label: labelForItem(item),
   }));
+}
+
+export function prependSelectOption<Value extends string>(
+  options: readonly SelectOption<Value>[],
+  leadingOption?: SelectOption<Value>,
+): SelectOption<Value>[] {
+  return leadingOption ? [leadingOption, ...options] : [...options];
 }
