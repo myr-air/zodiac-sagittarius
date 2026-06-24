@@ -14,8 +14,10 @@ export const conflictRowClassName =
 export const conflictSummaryClassName =
   "inline-flex items-center gap-1.5 [&_.icon]:text-(--color-warning)";
 export const moduleListClassName = "grid list-none gap-2 p-0 m-0";
+export const contextRailSurfaceItemClassName =
+  "rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5";
 export const noteItemClassName =
-  "stop-note-item grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] [&>p]:m-0 [&>p]:text-[11px] [&>p]:font-bold [&>p]:leading-4 [&>p]:text-(--color-text-muted) [&_strong]:text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text)";
+  `stop-note-item grid gap-1 py-[9px] ${contextRailSurfaceItemClassName} [&>p]:m-0 [&>p]:text-[11px] [&>p]:font-bold [&>p]:leading-4 [&>p]:text-(--color-text-muted) [&_strong]:text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text)`;
 export const noteHeaderClassName =
   "stop-note-header flex items-center justify-between gap-2";
 export const noteActionsClassName =
@@ -38,9 +40,9 @@ export const noteAuthorClassName =
 export const bookingAdvisoryClassName =
   "booking-advisory inline-flex w-fit items-center gap-1.5 rounded-full border border-(--color-warning-border) bg-(--color-warning-soft) px-2 py-1 text-[11px] font-black text-(--color-warning-strong) [&_.icon]:size-3.5";
 export const bookingTaskClassName =
-  "stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through";
+  `stop-booking-task grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 py-[9px] ${contextRailSurfaceItemClassName} data-[status=done]:[&_span]:text-(--color-text-muted) data-[status=done]:[&_span]:line-through`;
 export const bookingDocClassName =
-  "stop-booking-doc grid gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-[9px] text-xs [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)";
+  `stop-booking-doc grid gap-1 py-[9px] text-xs ${contextRailSurfaceItemClassName} [&_strong]:font-extrabold [&_strong]:leading-4 [&_strong]:text-(--color-text) [&_span]:text-[11px] [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted)`;
 export const bookingDocTypeSelectClassName =
   "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-text) outline-none focus:border-(--color-route-border) focus:shadow-[0_0_0_2px_rgb(191_219_254_/_0.55)] disabled:cursor-not-allowed disabled:opacity-60";
 export const bookingDocQuickFieldClassName =
@@ -54,7 +56,7 @@ export const expenseGridClassName =
 export const expenseFormClassName =
   "expense-form grid gap-2 [&_input]:min-h-8 [&_input]:rounded-(--radius-sm) [&_input]:border [&_input]:border-(--color-border) [&_input]:bg-(--color-surface) [&_input]:px-2 [&_input]:text-xs [&_select]:min-h-8 [&_select]:rounded-(--radius-sm) [&_select]:border [&_select]:border-(--color-border) [&_select]:bg-(--color-surface) [&_select]:px-2 [&_select]:text-xs [&_label]:grid [&_label]:gap-1 [&_label>span]:text-[11px] [&_label>span]:font-black [&_label>span]:text-(--color-text-muted)";
 export const expenseItemClassName =
-  "expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-2 text-xs";
+  `expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2 text-xs ${contextRailSurfaceItemClassName}`;
 export const contextRailClassName =
   "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[380px] max-w-[min(380px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-(--color-surface) opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
 export const contextRailOpenClassName =
