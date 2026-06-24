@@ -3,6 +3,7 @@ import {
   prependSelectOption,
   type SelectOption,
 } from "@/src/shared/select-options";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type {
   Member,
   Trip,
@@ -74,8 +75,8 @@ export function buildPhotoAlbumDialogSubmitInput({
     ownerMemberId: fields.ownerMemberId || null,
     relatedItineraryItemIds: fields.relatedItineraryItemIds,
     day: fields.day || null,
-    description: fields.description.trim() || null,
-    accessNote: fields.accessNote.trim() || null,
+    description: trimmedTextOrNull(fields.description),
+    accessNote: trimmedTextOrNull(fields.accessNote),
     coverUrl: album?.coverUrl ?? null,
   };
 }
