@@ -11,6 +11,7 @@ import {
   pathIdRainDay,
   pathNameRainDay,
 } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("itinerary draft builders", () => {
   it("builds new itinerary item drafts with target path fields", () => {
@@ -69,8 +70,9 @@ describe("itinerary draft builders", () => {
   });
 
   it("builds child itinerary item drafts by inheriting the parent path", () => {
+    const baseParentItem = getTripFixtureItineraryItem("item-dimdim");
     const parentItem = {
-      ...seedTrip.itineraryItems[0],
+      ...baseParentItem,
       pathGroupId: "path-group-parent",
       pathId: "path-parent",
       pathName: "Parent path",
@@ -78,7 +80,9 @@ describe("itinerary draft builders", () => {
     };
     const trip = {
       ...seedTrip,
-      itineraryItems: [parentItem, ...seedTrip.itineraryItems.slice(1)],
+      itineraryItems: seedTrip.itineraryItems.map((item) =>
+        item.id === parentItem.id ? parentItem : item,
+      ),
     };
     const child = buildItineraryItemDraft(
       {
@@ -127,7 +131,7 @@ describe("itinerary draft builders", () => {
   });
 
   it("builds updated itinerary items from local edit values", () => {
-    const item = seedTrip.itineraryItems[0];
+    const item = getTripFixtureItineraryItem("item-dimdim");
     const updated = buildUpdatedItineraryItem(
       item,
       {
