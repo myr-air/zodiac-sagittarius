@@ -1,5 +1,4 @@
-import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
+import { ExternalLinkAction } from "@/src/shared/components/external-link-action";
 import type { ButtonVariant } from "@/src/ui/primitive-styles";
 
 type BlockedMode = "button" | "notice";
@@ -23,24 +22,15 @@ export function PhotoAlbumExternalLinkAction({
   openLabel,
   variant,
 }: PhotoAlbumExternalLinkActionProps) {
-  if (href) {
-    return (
-      <Button asChild className={buttonClassName} variant={variant}>
-        <a href={href} target="_blank" rel="noreferrer">
-          {openLabel}
-          <Icon name="external" />
-        </a>
-      </Button>
-    );
-  }
-
-  if (blockedMode === "button") {
-    return (
-      <Button type="button" variant={variant} className={buttonClassName} disabled>
-        {blockedLabel}
-      </Button>
-    );
-  }
-
-  return <strong className={noticeClassName}>{blockedLabel}</strong>;
+  return (
+    <ExternalLinkAction
+      blockedLabel={blockedLabel}
+      blockedMode={blockedMode}
+      buttonVariant={variant}
+      className={buttonClassName}
+      href={href}
+      noticeClassName={noticeClassName}
+      openLabel={openLabel}
+    />
+  );
 }
