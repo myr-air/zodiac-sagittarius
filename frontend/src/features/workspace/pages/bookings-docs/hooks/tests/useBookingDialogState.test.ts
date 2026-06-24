@@ -19,9 +19,9 @@ describe("booking dialog state structure", () => {
     );
 
     expect(dialogStateSource).toContain("type BookingDialogFields");
-    expect(dialogStateSource).toContain("@/src/shared/form-state");
-    expect(dialogStateSource).toContain("const [formFields, setFormFields]");
-    expect(dialogStateSource).toContain("function updateFormField");
+    expect(dialogStateSource).toContain("@/src/shared/hooks/use-form-fields");
+    expect(dialogStateSource).toContain("useFormFields<BookingDialogFields>");
+    expect(dialogStateSource).toContain("updateField: updateFormField");
     expect(dialogStateSource).toContain("function toggleFormFieldId");
     expect(dialogStateSource).toContain("useBookingDialogActions");
     expect(dialogStateSource).not.toContain("buildBookingDialogSubmitInput");

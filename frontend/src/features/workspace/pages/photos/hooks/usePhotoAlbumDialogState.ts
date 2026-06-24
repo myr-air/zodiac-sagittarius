@@ -1,8 +1,5 @@
-import { useState } from "react";
-import {
-  toggleIdFieldState,
-  updateFieldState,
-} from "@/src/shared/form-state";
+import { toggleIdFieldState } from "@/src/shared/form-state";
+import { useFormFields } from "@/src/shared/hooks/use-form-fields";
 import type {
   Member,
   TripPhotoAlbumLink,
@@ -26,15 +23,11 @@ export function usePhotoAlbumDialogState({
   onSubmit,
 }: PhotoAlbumDialogStateInput) {
   const initialFields = initialPhotoAlbumDialogFields({ album, currentMember });
-  const [formFields, setFormFields] =
-    useState<PhotoAlbumDialogFields>(initialFields);
-
-  function updateFormField<Field extends keyof PhotoAlbumDialogFields>(
-    field: Field,
-    value: PhotoAlbumDialogFields[Field],
-  ) {
-    setFormFields((current) => updateFieldState(current, field, value));
-  }
+  const {
+    fields: formFields,
+    setFields: setFormFields,
+    updateField: updateFormField,
+  } = useFormFields<PhotoAlbumDialogFields>(initialFields);
 
   function toggleRelatedItem(itemId: string) {
     setFormFields((current) =>

@@ -1,8 +1,5 @@
-import { useState } from "react";
-import {
-  toggleIdFieldState,
-  updateFieldState,
-} from "@/src/shared/form-state";
+import { toggleIdFieldState } from "@/src/shared/form-state";
+import { useFormFields } from "@/src/shared/hooks/use-form-fields";
 import type {
   BookingDoc,
   Trip,
@@ -29,15 +26,11 @@ export function useBookingDialogState({
   onSubmit,
 }: BookingDialogStateInput) {
   const initialFields = initialBookingDialogFields({ booking, trip });
-  const [formFields, setFormFields] =
-    useState<BookingDialogFields>(initialFields);
-
-  function updateFormField<Field extends keyof BookingDialogFields>(
-    field: Field,
-    value: BookingDialogFields[Field],
-  ) {
-    setFormFields((current) => updateFieldState(current, field, value));
-  }
+  const {
+    fields: formFields,
+    setFields: setFormFields,
+    updateField: updateFormField,
+  } = useFormFields<BookingDialogFields>(initialFields);
 
   function toggleFormFieldId<Field extends keyof Pick<
     BookingDialogFields,

@@ -1,8 +1,5 @@
-import { useCallback, useState } from "react";
-import {
-  updateFieldsState,
-  updateFieldState,
-} from "@/src/shared/form-state";
+import { useCallback } from "react";
+import { useFormFields } from "@/src/shared/hooks/use-form-fields";
 import type { Expense } from "@/src/trip/types";
 import {
   expenseDialogCurrencyChangeFields,
@@ -26,28 +23,21 @@ export function useExpenseDialogFormValues({
     currentMemberId,
     expense,
   });
-  const [formValues, setFormValues] =
-    useState<ExpenseDialogInitialFields>(initialFields);
-
-  const updateFormValue = useCallback(
-    <Field extends keyof ExpenseDialogInitialFields>(
-      field: Field,
-      value: ExpenseDialogInitialFields[Field],
-    ) => {
-      setFormValues((current) => updateFieldState(current, field, value));
-    },
-    [],
-  );
+  const {
+    fields: formValues,
+    updateField: updateFormValue,
+    updateFields,
+  } = useFormFields<ExpenseDialogInitialFields>(initialFields);
 
   const changeCurrency = useCallback((nextCurrency: string) => {
     const nextFields = expenseDialogCurrencyChangeFields(nextCurrency);
-    setFormValues((current) => updateFieldsState(current, nextFields));
-  }, []);
+    updateFields(nextFields);
+  }, [updateFields]);
 
   const changeExchangeRate = useCallback((nextExchangeRate: string) => {
     const nextFields = expenseDialogManualExchangeRateFields(nextExchangeRate);
-    setFormValues((current) => updateFieldsState(current, nextFields));
-  }, []);
+    updateFields(nextFields);
+  }, [updateFields]);
 
   const setExchangeRate = useCallback((exchangeRate: string) => {
     updateFormValue("exchangeRate", exchangeRate);

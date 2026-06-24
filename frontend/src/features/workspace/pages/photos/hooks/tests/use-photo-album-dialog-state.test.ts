@@ -15,9 +15,9 @@ describe("photo album dialog state structure", () => {
     const dialogActionsSource = readPhotosHookSource("usePhotoAlbumDialogActions.ts");
 
     expect(dialogStateSource).toContain("type PhotoAlbumDialogFields");
-    expect(dialogStateSource).toContain("@/src/shared/form-state");
-    expect(dialogStateSource).toContain("const [formFields, setFormFields]");
-    expect(dialogStateSource).toContain("function updateFormField");
+    expect(dialogStateSource).toContain("@/src/shared/hooks/use-form-fields");
+    expect(dialogStateSource).toContain("useFormFields<PhotoAlbumDialogFields>");
+    expect(dialogStateSource).toContain("updateField: updateFormField");
     expect(dialogStateSource).toContain("usePhotoAlbumDialogActions");
     expect(dialogStateSource).not.toContain("buildPhotoAlbumDialogSubmitInput");
     expect(dialogStateSource).not.toContain("async function submit");
