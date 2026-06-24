@@ -30,5 +30,6 @@ describe("itinerary display formatting", () => {
   it("formats Thai dates with the actual month from the date", () => {
     expect(formatThaiDate("2025-06-02", "th")).toBe("2 มิ.ย.");
     expect(formatThaiDate("2025-12-31", "th")).toBe("31 ธ.ค.");
+    expect(formatThaiDate("not-a-date", "en")).toBe("not-a-date");
   });
 });
