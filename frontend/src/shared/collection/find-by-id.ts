@@ -10,6 +10,13 @@ export function findById<TItem extends IdSource>(
   return items.find((item) => item.id === itemId) ?? null;
 }
 
+export function findSelectedOrFirstById<TItem extends IdSource>(
+  items: readonly TItem[],
+  selectedId: string | null | undefined,
+): TItem | null {
+  return findById(items, selectedId) ?? items[0] ?? null;
+}
+
 export function mapById<TItem extends IdSource>(
   items: readonly TItem[],
 ): Map<string, TItem> {

@@ -1,6 +1,6 @@
+import { findSelectedOrFirstById } from "@/src/shared/collection";
 import {
   canViewBookingDoc,
-  findBookingDocById,
   findBookingDocRelations,
 } from "@/src/trip/booking-docs";
 import type { BookingDoc, Member, Trip, TripTask } from "@/src/trip/types";
@@ -49,7 +49,7 @@ export function selectedBookingPageDoc(
   docs: readonly BookingDoc[],
   selectedBookingId: string,
 ): BookingDoc | null {
-  return findBookingDocById(docs, selectedBookingId) ?? docs[0] ?? null;
+  return findSelectedOrFirstById(docs, selectedBookingId);
 }
 
 export function selectedBookingPageRelations({

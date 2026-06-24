@@ -1,8 +1,8 @@
-import { countMatchingOptions } from "@/src/shared/collection";
 import {
-  filterPhotoAlbumLinks,
-  findPhotoAlbumById,
-} from "@/src/trip/photo-albums";
+  countMatchingOptions,
+  findSelectedOrFirstById,
+} from "@/src/shared/collection";
+import { filterPhotoAlbumLinks } from "@/src/trip/photo-albums";
 import { safeExternalHost } from "@/src/trip/places";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { photoProviders, type PhotoProviderFilter } from "./photo-page-options";
@@ -26,7 +26,7 @@ export function selectedPhotoAlbum(
   albums: readonly TripPhotoAlbumLink[],
   selectedAlbumId: string,
 ): TripPhotoAlbumLink | null {
-  return findPhotoAlbumById(albums, selectedAlbumId) ?? albums[0] ?? null;
+  return findSelectedOrFirstById(albums, selectedAlbumId);
 }
 
 export function photoAlbumLinkHost(href: string | null): string | null {

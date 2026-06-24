@@ -3,6 +3,7 @@ export {
 } from "./count-matching-options";
 export {
   findById,
+  findSelectedOrFirstById,
   type IdSource,
   mapById,
   mapValueById,

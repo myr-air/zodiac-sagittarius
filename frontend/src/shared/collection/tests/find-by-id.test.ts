@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { findById, mapById, mapValueById, upsertById } from "..";
+import {
+  findById,
+  findSelectedOrFirstById,
+  mapById,
+  mapValueById,
+  upsertById,
+} from "..";
 
 describe("findById", () => {
   const items = [
@@ -17,6 +23,18 @@ describe("findById", () => {
     expect(findById(items, "")).toBeNull();
     expect(findById(items, null)).toBeNull();
     expect(findById(items, undefined)).toBeNull();
+  });
+
+  it("finds the selected id or falls back to the first item", () => {
+    expect(findSelectedOrFirstById(items, "item-2")).toEqual({
+      id: "item-2",
+      label: "Second",
+    });
+    expect(findSelectedOrFirstById(items, "missing-item")).toEqual({
+      id: "item-1",
+      label: "First",
+    });
+    expect(findSelectedOrFirstById([], "missing-item")).toBeNull();
   });
 
   it("indexes items by id for shared collection replacement flows", () => {
