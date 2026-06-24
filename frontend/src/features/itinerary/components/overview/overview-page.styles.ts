@@ -1,4 +1,5 @@
 import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/workspace-surface/workspace-surface.styles";
+import { workspacePanelHeadingOverviewClassName } from "@/src/shared/components/workspace-panel-heading";
 
 export const overviewPageClassName =
   "overview-page grid min-h-full min-w-0 max-w-full overflow-hidden gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:overflow-y-auto";
@@ -31,7 +32,7 @@ export const overviewPanelButtonClassName =
 export const overviewTaskPanelClassName =
   "overview-task-panel col-start-2 row-[1/span_2] min-h-0 self-start max-[1199px]:col-auto max-[1199px]:row-auto";
 export const overviewPanelTitleClassName =
-  "overview-panel-title inline-flex items-center gap-2 text-(--color-primary-strong) [&_h2]:m-0 [&_h2]:text-[15px] [&_h2]:font-extrabold [&_h2]:leading-[22px] [&_h2]:text-(--color-text)";
+  workspacePanelHeadingOverviewClassName;
 export const overviewHealthGridClassName =
   "overview-health-grid grid grid-cols-3 gap-2 max-[520px]:grid-cols-1 [&_span]:grid [&_span]:min-h-[58px] [&_span]:gap-0.5 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-(--color-border) [&_span]:bg-(--color-surface-subtle) [&_span]:p-2.5 [&_span]:text-xs [&_span]:font-bold [&_span]:leading-4 [&_span]:text-(--color-text-muted) [&_strong]:text-[22px] [&_strong]:font-extrabold [&_strong]:leading-[26px] [&_strong]:text-(--color-text)";
 export const overviewTaskToolbarClassName = "overview-task-toolbar flex flex-wrap items-center justify-between gap-2";

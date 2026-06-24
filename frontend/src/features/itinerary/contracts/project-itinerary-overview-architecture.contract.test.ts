@@ -29,7 +29,8 @@ describe("Sagittarius itinerary overview architecture contracts", () => {
     expect(snapshotPanels).toContain("export function OverviewHighlightsPanel");
     expect(snapshotPanels).toContain("./OverviewPanelTitle");
     expect(overviewPanelTitle).toContain("export function OverviewPanelTitle");
-    expect(overviewPanelTitle).toContain("overviewPanelTitleClassName");
+    expect(overviewPanelTitle).toContain("@/src/shared/components/workspace-panel-heading");
+    expect(overviewPanelTitle).toContain('variant="overview"');
     expect(rolePanelTypes).toContain("export interface ManagerOverviewPanelsProps");
   });
 

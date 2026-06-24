@@ -1,6 +1,6 @@
+import { WorkspacePanelHeading } from "@/src/shared/components/workspace-panel-heading";
 import type { Expense, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   categorySpendDisplay,
@@ -21,7 +21,11 @@ export function ExpenseCategorySpendSection({
 }: ExpenseCategorySpendSectionProps) {
   return (
     <section className={expenseStyles.panelClassName} aria-label={title}>
-      <h2 className={expenseStyles.panelHeadingClassName}><Icon name="list" /> {title}</h2>
+      <WorkspacePanelHeading
+        className={expenseStyles.panelHeadingClassName}
+        icon="list"
+        title={title}
+      />
       <div className={expenseStyles.balanceListClassName}>
         {categorySpend.map(([category, amount]) => {
           const display = categorySpendDisplay({
@@ -68,7 +72,11 @@ export function ExpenseScopeAuditSection({
 
   return (
     <section className={expenseStyles.panelClassName} aria-label={copy.label}>
-      <h2 className={expenseStyles.panelHeadingClassName}><Icon name="warning" /> {copy.title}</h2>
+      <WorkspacePanelHeading
+        className={expenseStyles.panelHeadingClassName}
+        icon="warning"
+        title={copy.title}
+      />
       <p className={expenseStyles.balanceMetaClassName}>{copy.summary({ count: inferredScopeExpenses.length })}</p>
       <div className={expenseStyles.scopeAuditListClassName}>
         {inferredScopeExpenses.map((expense) => {

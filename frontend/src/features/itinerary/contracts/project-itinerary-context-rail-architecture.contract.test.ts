@@ -43,12 +43,10 @@ describe("Sagittarius itinerary context rail architecture", () => {
       "src/features/itinerary/domain/itinerary-context-rail-display.ts",
     );
 
-    expect(bookingDocItem).toContain(
-      "@/src/features/itinerary/domain/itinerary-booking-display",
-    );
     expect(bookingDocItem).toContain("./context-rail-booking-doc-item-model");
     expect(bookingDocItem).not.toContain("function bookingDocQuickFieldCopy");
     expect(bookingDocItem).not.toContain("function getDraftValue");
+    expect(bookingDocItemModel).toContain("@/src/trip/booking-docs");
     expect(bookingDocItemModel).toContain("export function bookingDocQuickFieldCopy");
     expect(bookingDocItemModel).toContain("bookingDocQuickFieldPatchFromDraft");
     [noteItem, expenseItem].forEach((source) => {
@@ -65,13 +63,13 @@ describe("Sagittarius itinerary context rail architecture", () => {
       "ContextRailItemActionButtons",
     );
     expect(expenseSection).toContain("./ContextRailExpenseForm");
-    expect(expenseSection).not.toContain("contextRailExpenseCategoryOptions");
+    expect(expenseSection).not.toContain("contextRailExpenseCategorySelectOptions");
     expect(expenseSection).not.toContain("expenseFormClassName");
     expect(expenseForm).toContain("export function ContextRailExpenseForm");
-    expect(expenseForm).toContain("contextRailExpenseCategoryOptions");
+    expect(expenseForm).toContain("contextRailExpenseCategorySelectOptions");
     expect(expenseForm).toContain("expenseFormClassName");
     expect(contextRailItemActionButtonsStory).toContain("Disabled");
-    [bookingDocItem, bookingSection, noteItem, suggestionsSection].forEach(
+    [bookingSection, noteItem, suggestionsSection].forEach(
       (source) =>
         expect(source).toContain(
           "@/src/features/itinerary/domain/itinerary-context-rail-display",

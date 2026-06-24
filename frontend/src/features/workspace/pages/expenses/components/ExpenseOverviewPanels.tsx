@@ -1,3 +1,4 @@
+import { WorkspacePanelHeading } from "@/src/shared/components/workspace-panel-heading";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
@@ -42,7 +43,11 @@ export function ExpenseOverviewPanels({
   return (
     <div className="grid content-start gap-3">
       <section className={expenseStyles.panelClassName} aria-label={t.expenses.balanceLabel}>
-        <h2 className={expenseStyles.panelHeadingClassName}><Icon name="users" /> {t.expenses.panels.balances}</h2>
+        <WorkspacePanelHeading
+          className={expenseStyles.panelHeadingClassName}
+          icon="users"
+          title={t.expenses.panels.balances}
+        />
         <div className={expenseStyles.balanceListClassName}>
           {trip.members.map((member) => {
             const net = expenseSummary.netByMember[member.id] ?? 0;
@@ -75,7 +80,11 @@ export function ExpenseOverviewPanels({
       </section>
 
       <section className={expenseStyles.panelClassName} aria-label={t.expenses.panels.settle}>
-        <h2 className={expenseStyles.panelHeadingClassName}><Icon name="wallet" /> {t.expenses.panels.settle}</h2>
+        <WorkspacePanelHeading
+          className={expenseStyles.panelHeadingClassName}
+          icon="wallet"
+          title={t.expenses.panels.settle}
+        />
         {expenseSummary.settlementSuggestions.length ? (
           <div className={expenseStyles.balanceListClassName}>
             {expenseSummary.settlementSuggestions.map((suggestion) => {

@@ -15,13 +15,14 @@ import {
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
 } from "@/src/shared/components/workspace-dialog";
+import { workspacePanelHeadingCompactClassName } from "@/src/shared/components/workspace-panel-heading";
 
 export const expensesPageClassName = "expenses-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
 export const expensesSummaryClassName = `expenses-summary ${workspaceSummaryGridFourClassName}`;
 export const statClassName = `expense-stat ${workspaceSummaryStatPrimaryAccentClassName}`;
 export const contentGridClassName = "expenses-content grid min-h-0 grid-cols-[332px_minmax(0,1fr)] gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 export const panelClassName = `expenses-panel grid min-h-0 gap-3 rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--color-route-border)_48%,var(--color-border))] bg-[linear-gradient(180deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_30%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName}`;
-export const panelHeadingClassName = "m-0 flex items-center gap-2 text-[14px] font-extrabold leading-5 text-(--color-text)";
+export const panelHeadingClassName = workspacePanelHeadingCompactClassName;
 export const balanceListClassName = "grid gap-2";
 export const balanceRowClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-border)_78%,var(--color-route-border))] bg-[rgb(255_255_255_/_0.84)] px-2.5 py-2 text-xs shadow-[0_1px_0_rgb(15_23_42_/_0.035)]";
 export const settlementRowClassName = "grid grid-cols-1 items-start gap-2 rounded-(--radius-md) border border-(--color-warning-border) bg-(--color-warning-soft) px-2.5 py-2 text-xs";

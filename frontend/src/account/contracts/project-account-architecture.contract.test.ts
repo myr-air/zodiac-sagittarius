@@ -83,7 +83,7 @@ describe("Sagittarius account architecture contracts", () => {
     const panelState = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state.ts"), "utf8");
     const stepMeta = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/model/account-email-login-step-meta.ts"), "utf8");
     const stepNavigation = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/state/use-email-login-step-navigation.ts"), "utf8");
-    const styles = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/ui/account-email-login-styles.ts"), "utf8");
+    const styles = readFileSync(join(frontendRoot, "src/features/account/components/account-access-panel/email-login/components/account-email-login-styles.ts"), "utf8");
 
     expect(panelState).toContain("./use-email-login-step-navigation");
     expect(panelState).not.toContain("useState<EmailLoginAuthStep>");

@@ -1,5 +1,5 @@
-import { Icon, type IconName } from "@/src/ui/icons";
-import { overviewPanelTitleClassName } from "./overview-page.styles";
+import { WorkspacePanelHeading } from "@/src/shared/components/workspace-panel-heading";
+import type { IconName } from "@/src/ui/icons";
 
 interface OverviewPanelTitleProps {
   icon: IconName;
@@ -8,10 +8,5 @@ interface OverviewPanelTitleProps {
 }
 
 export function OverviewPanelTitle({ icon, title, titleId }: OverviewPanelTitleProps) {
-  return (
-    <div className={overviewPanelTitleClassName}>
-      <Icon name={icon} />
-      <h2 id={titleId}>{title}</h2>
-    </div>
-  );
+  return <WorkspacePanelHeading icon={icon} id={titleId} title={title} variant="overview" />;
 }
