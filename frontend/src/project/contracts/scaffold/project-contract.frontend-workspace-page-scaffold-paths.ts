@@ -143,6 +143,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/members/components/MemberCreatePanel.tsx",
   "src/features/workspace/pages/members/components/MemberFilterControls.tsx",
   "src/features/workspace/pages/members/components/MemberInviteActions.tsx",
+  "src/features/workspace/pages/members/components/MemberPageHeader.tsx",
+  "src/features/workspace/pages/members/components/tests/MemberPageHeader.test.tsx",
   "src/features/workspace/pages/members/components/member-management.types.ts",
   "src/features/workspace/pages/photos/hooks/use-trip-photos-page-state.ts",
   "src/features/workspace/pages/photos/model/photo-page-options.ts",

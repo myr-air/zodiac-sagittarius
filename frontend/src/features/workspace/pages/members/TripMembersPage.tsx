@@ -1,10 +1,8 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { PeoplePanel } from "@/src/shared/components/people-panel";
-import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { WorkspacePage } from "@/src/ui";
 import { MemberManagementControls } from "./components/MemberManagementControls";
+import { MemberPageHeader } from "./components/MemberPageHeader";
 import { MemberSummaryStats } from "./components/MemberSummaryStats";
 import { MemberTaskDialog } from "./components/MemberTaskDialog";
 import * as memberStyles from "./TripMembersPage.styles";
@@ -75,17 +73,18 @@ export function TripMembersPage({
   });
 
   return (
-    <WorkspacePage className={memberStyles.membersPageClassName} kind="workspace" aria-label={t.members.pageLabel}>
-      <PageHeader
-        title={t.members.title}
+    <WorkspacePage
+      className={memberStyles.membersPageClassName}
+      kind="workspace"
+      aria-label={t.members.pageLabel}
+    >
+      <MemberPageHeader
+        locale={locale}
+        memberCountLabel={t.dates.memberCount({ count: visibleMembers.length })}
         subtitle={trip.name}
-        meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-            <span><Icon name="users" /> {t.dates.memberCount({ count: visibleMembers.length })}</span>
-          </>
-        )}
-        motif={<TravelMotif tone="sunshine" />}
+        title={t.members.title}
+        tripEndDate={trip.endDate}
+        tripStartDate={trip.startDate}
       />
 
       <MemberSummaryStats
@@ -109,7 +108,9 @@ export function TripMembersPage({
         onNewMemberRoleChange={setNewMemberRole}
         onQueryChange={setQuery}
         onRoleFilterChange={setRoleFilter}
-        onRotateInviteToken={onRotateJoinInviteToken ? rotateInviteToken : undefined}
+        onRotateInviteToken={
+          onRotateJoinInviteToken ? rotateInviteToken : undefined
+        }
         onStatusFilterChange={setStatusFilter}
         onSubmitNewMember={submitNewMember}
         onToggleCreatePanel={() => setCreatePanelOpen((current) => !current)}
@@ -128,7 +129,9 @@ export function TripMembersPage({
         onChangeMemberRole={onChangeMemberRole}
         onResetFilters={resetFilters}
         onResetMemberClaim={confirmResetClaim}
-        onTransferOwnership={onTransferOwnership ? confirmTransferOwnership : undefined}
+        onTransferOwnership={
+          onTransferOwnership ? confirmTransferOwnership : undefined
+        }
       />
       {memberDialog ? (
         <MemberTaskDialog
