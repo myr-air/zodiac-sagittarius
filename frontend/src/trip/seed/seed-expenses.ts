@@ -155,6 +155,18 @@ export function createSeedExpenses(): Expense[] {
       splits: {
         "member-aom": 650,
       },
+      settlementAllocations: [
+        {
+          expenseId: "expense-hotel-deposit",
+          memberId: "member-beam",
+          amount: 600,
+        },
+        {
+          expenseId: "expense-dimsum",
+          memberId: "member-beam",
+          amount: 50,
+        },
+      ],
       category: "settlement",
     },
   ];

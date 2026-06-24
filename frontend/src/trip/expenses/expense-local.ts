@@ -45,6 +45,7 @@ export function appendLocalExpensesToTrip<
       receiptUrl: draft.receiptUrl ?? null,
       lineItems: draft.lineItems ?? [],
       comments: draft.comments ?? [],
+      settlementAllocations: draft.settlementAllocations ?? [],
       tripPlanId: options.resolveTripPlanId(
         trip,
         draft.itemId,
@@ -103,6 +104,7 @@ export function updateLocalExpenseInTrip<T extends Pick<Trip, "expenses">>(
             receiptUrl: draft.receiptUrl,
             lineItems: draft.lineItems,
             comments: draft.comments,
+            settlementAllocations: draft.settlementAllocations ?? expense.settlementAllocations ?? [],
             tripPlanId: draft.tripPlanId,
             paidBy: draft.paidBy,
             category: draft.category,

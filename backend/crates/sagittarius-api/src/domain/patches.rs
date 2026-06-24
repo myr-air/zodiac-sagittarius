@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::domain::errors::ServiceError;
 use crate::domain::expense_patch_rules::{
     validate_amount_minor, validate_comments, validate_exchange_rate, validate_expense_category,
-    validate_line_items, validate_splits,
+    validate_line_items, validate_settlement_allocations, validate_splits,
 };
 use crate::domain::patch_serde::{
     deserialize_non_null_option, deserialize_nullable_f64_patch, deserialize_nullable_i32_patch,
@@ -170,6 +170,7 @@ pub struct CreateExpenseRequest {
     pub receipt_url: Option<String>,
     pub line_items: Option<Value>,
     pub comments: Option<Value>,
+    pub settlement_allocations: Option<Value>,
     pub paid_by: Uuid,
     pub category: String,
     pub splits: Value,
@@ -190,6 +191,7 @@ pub struct PatchExpenseRequest {
     pub receipt_url: Option<String>,
     pub line_items: Option<Value>,
     pub comments: Option<Value>,
+    pub settlement_allocations: Option<Value>,
     pub paid_by: Option<Uuid>,
     pub category: Option<String>,
     pub splits: Option<Value>,
@@ -698,6 +700,7 @@ impl CreateExpenseRequest {
         validate_exchange_rate(self.exchange_rate_to_settlement_currency)?;
         validate_line_items(self.line_items.as_ref())?;
         validate_comments(self.comments.as_ref())?;
+        validate_settlement_allocations(self.settlement_allocations.as_ref())?;
         validate_expense_category(&self.category)?;
         validate_expense_splits_total(&self.splits, self.amount_minor)
     }
@@ -724,6 +727,7 @@ impl PatchExpenseRequest {
         validate_exchange_rate(self.exchange_rate_to_settlement_currency)?;
         validate_line_items(self.line_items.as_ref())?;
         validate_comments(self.comments.as_ref())?;
+        validate_settlement_allocations(self.settlement_allocations.as_ref())?;
         if let Some(category) = &self.category {
             validate_expense_category(category)?;
         }
@@ -742,6 +746,7 @@ impl PatchExpenseRequest {
             && self.receipt_url.is_none()
             && self.line_items.is_none()
             && self.comments.is_none()
+            && self.settlement_allocations.is_none()
             && self.paid_by.is_none()
             && self.category.is_none()
             && self.splits.is_none()
@@ -1568,6 +1573,7 @@ mod tests {
             receipt_url: None,
             line_items: None,
             comments: None,
+            settlement_allocations: None,
             paid_by: member,
             category: "food".to_string(),
             splits: json!({ member.to_string(): 10_000 }),
@@ -1598,6 +1604,7 @@ mod tests {
             receipt_url: None,
             line_items: None,
             comments: None,
+            settlement_allocations: None,
             paid_by: None,
             category: None,
             splits: Some(json!({ member.to_string(): 10_000 })),
@@ -1627,6 +1634,7 @@ mod tests {
             receipt_url: None,
             line_items: None,
             comments: None,
+            settlement_allocations: None,
             paid_by: member,
             category: "food".to_string(),
             splits: json!({ member.to_string(): 10_000 }),
@@ -1649,6 +1657,7 @@ mod tests {
             receipt_url: None,
             line_items: None,
             comments: None,
+            settlement_allocations: None,
             paid_by: None,
             category: None,
             splits: None,

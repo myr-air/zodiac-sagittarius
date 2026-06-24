@@ -98,6 +98,7 @@ export function buildImportedExpenseCreateRequest({
     receiptUrl: expense.receiptUrl ?? null,
     lineItems: expense.lineItems ?? [],
     comments: expense.comments ?? [],
+    settlementAllocations: expense.settlementAllocations ?? [],
     paidBy: expense.paidBy,
     category: expense.category,
     splits: expenseSplitsToMinor(expense.splits),

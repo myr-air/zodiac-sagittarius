@@ -21,11 +21,18 @@ export interface Expense {
   receiptUrl?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   paidBy: string;
   splits: Record<string, number>;
   category: ExpenseCategory;
   itineraryItemId?: string | null;
   version?: number;
+}
+
+export interface ExpenseSettlementAllocation {
+  expenseId: string;
+  memberId: string;
+  amount: number;
 }
 
 export interface ExpenseLineItem {

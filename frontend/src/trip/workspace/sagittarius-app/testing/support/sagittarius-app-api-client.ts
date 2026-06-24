@@ -112,6 +112,7 @@ export function createApiClientForTrip(
             receiptUrl: request.receiptUrl ?? null,
             lineItems: request.lineItems ?? [],
             comments: request.comments ?? [],
+            settlementAllocations: request.settlementAllocations ?? [],
             paidBy: request.paidBy,
             splits: normalizeExpenseSplitsFromMinor(request.splits || {}),
             category: request.category || "food",

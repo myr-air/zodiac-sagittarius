@@ -55,6 +55,7 @@ export function useExpenseSettlementActions({
         selectedTripPlanId,
         settlementCurrency,
         suggestion,
+        trip,
       }));
     } finally {
       setPendingSettlementKeys((current) => {

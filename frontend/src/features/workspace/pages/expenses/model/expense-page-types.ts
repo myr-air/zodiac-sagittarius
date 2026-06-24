@@ -4,6 +4,7 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSettlementAllocation,
   ExpenseSummary,
   Member,
   SettlementSuggestion,
@@ -27,6 +28,7 @@ export interface ExpenseInput {
   receiptUrl?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   repeatCount?: number;
   paidBy: string;
   category: Expense["category"];

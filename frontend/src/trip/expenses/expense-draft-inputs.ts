@@ -2,6 +2,7 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSettlementAllocation,
 } from "../types";
 
 export interface ExpenseInputLike {
@@ -17,6 +18,7 @@ export interface ExpenseInputLike {
   receiptUrl?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   repeatCount?: number;
   splits?: Record<string, number>;
 }
@@ -45,6 +47,7 @@ export interface ExpenseUpdateDraft {
   receiptUrl: string | null;
   lineItems: ExpenseLineItem[];
   comments: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   tripPlanId: string | null | undefined;
   paidBy: string;
   category: Expense["category"];

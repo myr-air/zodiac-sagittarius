@@ -34,6 +34,7 @@ export const cockpitResponseExpenses: TripCockpitResponse["expenses"] = [
         createdAt: "2026-06-05T12:00:00.000Z",
       },
     ],
+    settlementAllocations: [],
     paidBy: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
     category: "food",
     splits: { "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 24000 },

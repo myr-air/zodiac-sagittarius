@@ -16,6 +16,7 @@ export function mapExpense(expense: ExpenseResponse): Expense {
     receiptUrl: expense.receiptUrl,
     lineItems: expense.lineItems ?? [],
     comments: expense.comments ?? [],
+    settlementAllocations: expense.settlementAllocations ?? [],
     paidBy: expense.paidBy,
     splits: normalizeExpenseSplitsFromMinor(expense.splits),
     category: expense.category,

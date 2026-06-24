@@ -681,6 +681,7 @@ pub struct ExpenseItemSummary {
     pub receipt_url: Option<String>,
     pub line_items: Value,
     pub comments: Value,
+    pub settlement_allocations: Value,
     pub paid_by: Uuid,
     pub category: String,
     pub splits: Value,

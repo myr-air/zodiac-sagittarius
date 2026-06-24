@@ -68,6 +68,7 @@ export type {
   ExpenseCategory,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSettlementAllocation,
   ExpenseReminder,
   ExpenseSummary,
   SettlementSuggestion,

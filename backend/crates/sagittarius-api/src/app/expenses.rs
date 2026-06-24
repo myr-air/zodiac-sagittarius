@@ -88,6 +88,9 @@ pub async fn create_expense(
             receipt_url: request.receipt_url.as_deref().map(str::trim),
             line_items: request.line_items.unwrap_or_else(|| serde_json::json!([])),
             comments: request.comments.unwrap_or_else(|| serde_json::json!([])),
+            settlement_allocations: request
+                .settlement_allocations
+                .unwrap_or_else(|| serde_json::json!([])),
             paid_by: request.paid_by,
             category: request.category.as_str(),
             splits: request.splits,
