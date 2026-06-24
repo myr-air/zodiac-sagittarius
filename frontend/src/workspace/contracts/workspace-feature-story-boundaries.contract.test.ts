@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { frontendRoot } from "../../project/contracts/project-contract.helpers";
+import {
+  expectSourceNotToContain,
+  expectSourceToContain,
+} from "./workspace-source-boundaries.assertions";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
+
+function expectUsesStoryBuilder(storySource: string) {
+  expect(storySource).toContain("@/src/shared/storybook/story-builders");
+}
+
+function expectNoDefaultViewport(storySource: string) {
+  expect(storySource).not.toContain("defaultViewport:");
+}
+
+function expectNoOwnerArgs(storySource: string) {
+  expectSourceNotToContain(storySource, ["...Owner.args", "args: Owner.args"]);
+}
 
 describe("Sagittarius workspace feature story boundaries", () => {
   it("keeps itinerary story fixtures, builders, and plays split by responsibility", () => {
@@ -40,34 +56,43 @@ describe("Sagittarius workspace feature story boundaries", () => {
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(itineraryStoryFixtures).toContain("./itinerary-story-path-scenarios");
-    expect(itineraryStoryFixtures).not.toContain("buildItineraryStoryPathItems");
-    expect(itineraryStoryFixtures).not.toContain("const stressPathItemsBase");
-    expect(itineraryStoryPathScenarios).toContain("./fixtures/itinerary-story-path-items");
-    expect(itineraryStoryPathScenarios).toContain("./itinerary-story-path-options");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-alternative-items");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-branch-items");
-    expect(itineraryStoryPathItems).toContain("./itinerary-story-stress-items");
+    expectSourceNotToContain(itineraryStoryFixtures, [
+      "buildItineraryStoryPathItems",
+      "const stressPathItemsBase",
+    ]);
+    expectSourceToContain(itineraryStoryPathScenarios, [
+      "./fixtures/itinerary-story-path-items",
+      "./itinerary-story-path-options",
+    ]);
+    expectSourceToContain(itineraryStoryPathItems, [
+      "./itinerary-story-alternative-items",
+      "./itinerary-story-branch-items",
+      "./itinerary-story-stress-items",
+    ]);
     expect(itineraryStoryPathOptions).toContain("@/src/features/itinerary/testing");
     expect(itineraryStoryPathOptions).not.toContain("export const stressPathOptions");
-    expect(itineraryPageStory).toContain("@/src/shared/storybook/story-builders");
+    expectUsesStoryBuilder(itineraryPageStory);
     expect(itineraryPageStory).toContain("./ItineraryPage.stories.plays");
-    expect(itineraryPageStory).not.toContain("function ownerArgsStory");
-    expect(itineraryPageStory).not.toContain("args: Owner.args");
-    expect(itineraryTemplateStory).toContain("@/src/shared/storybook/story-builders");
-    expect(itineraryTemplateStory).not.toContain("...Owner.args");
-    expect(itineraryTemplateStory).not.toContain("args: Owner.args");
-    expect(storyBuilders).toContain("export function argsStory");
-    expect(storyBuilders).toContain("export function ownerArgsStory");
-    expect(storyBuilders).toContain("export function viewportStory");
-    expect(sagittariusAppStory).not.toContain("defaultViewport:");
+    expectSourceNotToContain(itineraryPageStory, [
+      "function ownerArgsStory",
+      "args: Owner.args",
+    ]);
+    expectUsesStoryBuilder(itineraryTemplateStory);
+    expectNoOwnerArgs(itineraryTemplateStory);
+    expectSourceToContain(storyBuilders, [
+      "export function argsStory",
+      "export function ownerArgsStory",
+      "export function viewportStory",
+    ]);
+    expectNoDefaultViewport(sagittariusAppStory);
     [
       languageSwitchStory,
       uiPrimitivesStory,
       weatherForecastStripStory,
       weatherBriefingDrawerStory,
     ].forEach((storySource) => {
-      expect(storySource).toContain("@/src/shared/storybook/story-builders");
-      expect(storySource).not.toContain("defaultViewport:");
+      expectUsesStoryBuilder(storySource);
+      expectNoDefaultViewport(storySource);
     });
     expect(itineraryPageStory).not.toContain("./itinerary-story-assertions");
     expect(itineraryPageStoryPlays).toContain("./support/itinerary-story-assertions");
@@ -83,32 +108,30 @@ describe("Sagittarius workspace feature story boundaries", () => {
       mapPageStory,
       mapTemplateStory,
     ].forEach((storySource) => {
-      expect(storySource).toContain("@/src/shared/storybook/story-builders");
-      expect(storySource).not.toContain("...Owner.args");
-      expect(storySource).not.toContain("args: Owner.args");
+      expectUsesStoryBuilder(storySource);
+      expectNoOwnerArgs(storySource);
     });
-    expect(appShellStory).not.toContain("defaultViewport:");
+    expectNoDefaultViewport(appShellStory);
     [homeLandingStory, aboutAppPageStory].forEach((storySource) => {
-      expect(storySource).toContain("@/src/shared/storybook/story-builders");
-      expect(storySource).not.toContain("defaultViewport:");
+      expectUsesStoryBuilder(storySource);
+      expectNoDefaultViewport(storySource);
     });
     [contextRailStory, stopDialogStory].forEach((storySource) => {
-      expect(storySource).toContain("@/src/shared/storybook/story-builders");
-      expect(storySource).not.toContain("defaultViewport:");
+      expectUsesStoryBuilder(storySource);
+      expectNoDefaultViewport(storySource);
     });
-    expect(tripSettingsPageStory).toContain("@/src/shared/storybook/story-builders");
-    expect(tripSettingsPageStory).not.toContain("defaultViewport:");
-    expect(bookingsDocsPageStory).toContain("@/src/shared/storybook/story-builders");
-    expect(bookingsDocsPageStory).not.toContain("defaultViewport:");
-    expect(expensesPageStory).toContain("@/src/shared/storybook/story-builders");
-    expect(expensesPageStory).not.toContain("defaultViewport:");
-    expect(membersPageStory).toContain("@/src/shared/storybook/story-builders");
-    expect(membersPageStory).not.toContain("defaultViewport:");
-    expect(membersTemplateStory).toContain("@/src/shared/storybook/story-builders");
+    [
+      tripSettingsPageStory,
+      bookingsDocsPageStory,
+      expensesPageStory,
+      membersPageStory,
+      photosPageStory,
+      tripJoinGateStory,
+    ].forEach((storySource) => {
+      expectUsesStoryBuilder(storySource);
+      expectNoDefaultViewport(storySource);
+    });
+    expectUsesStoryBuilder(membersTemplateStory);
     expect(membersTemplateStory).not.toContain("...Owner.args");
-    expect(photosPageStory).toContain("@/src/shared/storybook/story-builders");
-    expect(photosPageStory).not.toContain("defaultViewport:");
-    expect(tripJoinGateStory).toContain("@/src/shared/storybook/story-builders");
-    expect(tripJoinGateStory).not.toContain("defaultViewport:");
   });
 });
