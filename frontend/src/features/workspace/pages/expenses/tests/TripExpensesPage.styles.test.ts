@@ -4,9 +4,19 @@ import {
   balanceRowClassName,
   expenseOverviewRowClassName,
   expenseOverviewWarningRowClassName,
+  financeTabActiveClassName,
+  financeTabClassName,
+  financeTabsClassName,
+  ledgerWorkspaceClassName,
+  mobileLedgerCardClassName,
+  mobileLedgerCardSelectedClassName,
   scopeAuditListClassName,
   scopeAuditRowClassName,
+  settingsActionsClassName,
   settlementRowClassName,
+  transactionDetailActionsClassName,
+  transactionDetailClassName,
+  transactionDetailEmptyClassName,
 } from "../TripExpensesPage.styles";
 
 describe("TripExpensesPage styles", () => {
@@ -20,5 +30,31 @@ describe("TripExpensesPage styles", () => {
 
   it("keeps expense overview list spacing centralized", () => {
     expect(scopeAuditListClassName).toBe(balanceListClassName);
+  });
+
+  it("keeps finance navigation flat and stable", () => {
+    expect(financeTabsClassName).toContain("expense-finance-tabs");
+    expect(financeTabsClassName).toContain("bg-(--color-surface)");
+    expect(financeTabsClassName).toContain("max-[767px]:sticky");
+    expect(financeTabsClassName).not.toContain("linear-gradient");
+    expect(financeTabClassName).toContain("min-h-10");
+    expect(financeTabClassName).toContain("min-w-[104px]");
+    expect(financeTabActiveClassName).toContain("border-(--color-primary-border)");
+  });
+
+  it("keeps ledger detail layouts responsive without nested card chrome", () => {
+    expect(ledgerWorkspaceClassName).toContain("grid-cols-[minmax(0,1fr)_340px]");
+    expect(ledgerWorkspaceClassName).toContain("max-[1023px]:grid-cols-1");
+    expect(transactionDetailClassName).toContain("expense-transaction-detail");
+    expect(transactionDetailClassName).toContain("max-[767px]:fixed");
+    expect(transactionDetailClassName).not.toContain("backdrop-blur");
+    expect(transactionDetailEmptyClassName).toContain("border-dashed");
+    expect(transactionDetailActionsClassName).toContain("[&_button]:min-h-10");
+  });
+
+  it("keeps mobile feed and settings actions touch-safe", () => {
+    expect(mobileLedgerCardClassName).toContain("shadow-none");
+    expect(mobileLedgerCardSelectedClassName).toContain("bg-(--color-primary-soft)");
+    expect(settingsActionsClassName).toContain("[&>*]:min-h-10");
   });
 });

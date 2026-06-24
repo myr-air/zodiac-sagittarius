@@ -70,9 +70,11 @@ describe("TripExpensesPage exchange rates", () => {
     }));
     renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));
     await user.selectOptions(screen.getByLabelText(/สกุลเงินที่แสดง/i), "THB");
 
     await waitFor(() => expect(screen.getByLabelText(/เรท HKD เป็น THB/i)).toHaveValue("4.6"));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
     await user.click(screen.getByRole("button", { name: /ดูรายละเอียดบิลของ Dim Dim Sum brunch/i }));
     expect(screen.getByText(/HK\$512\.00 × 1 = HK\$512\.00 · HK\$512\.00 × 4\.6 = ฿2,355\.20/)).toBeInTheDocument();

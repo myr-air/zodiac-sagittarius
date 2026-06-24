@@ -8,19 +8,17 @@ import {
 import type {
   DuplicateExpenseAsEstimateHandler,
   ExpenseCategoryFilter,
-  ExpenseCopyState,
 } from "../model/expense-page-types";
 import { ExpenseLedgerControls } from "./ExpenseLedgerControls";
 import { ExpenseLedgerRows } from "./ExpenseLedgerRows";
 import { ExpenseMobileLedgerList } from "./ExpenseMobileLedgerList";
+import { ExpenseTransactionDetail } from "./ExpenseTransactionDetail";
 
 interface ExpenseLedgerSectionProps {
   canEditExpenses: boolean;
   categoryFilter: ExpenseCategoryFilter;
-  copyState: ExpenseCopyState;
   dayFilter: string;
   displayCurrency: string;
-  displayExchangeRate: string;
   displayExchangeRateNumber: number;
   filteredExpenses: Expense[];
   members: Member[];
@@ -28,12 +26,8 @@ interface ExpenseLedgerSectionProps {
   onAddPersonalExpense: () => void;
   onCategoryFilterChange: (category: ExpenseCategoryFilter) => void;
   onClearFilters: () => void;
-  onCopyStatement: () => void;
   onDayFilterChange: (day: string) => void;
   onDeleteExpense: (expenseId: string) => void;
-  onDisplayCurrencyChange: (currency: string) => void;
-  onDisplayExchangeRateChange: (rate: string) => void;
-  onDownloadCsv: () => void;
   onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
   onEditExpense: (expense: Expense) => void;
   onPayerFilterChange: (memberId: string) => void;
@@ -53,10 +47,8 @@ interface ExpenseLedgerSectionProps {
 export function ExpenseLedgerSection({
   canEditExpenses,
   categoryFilter,
-  copyState,
   dayFilter,
   displayCurrency,
-  displayExchangeRate,
   displayExchangeRateNumber,
   filteredExpenses,
   members,
@@ -64,12 +56,8 @@ export function ExpenseLedgerSection({
   onAddPersonalExpense,
   onCategoryFilterChange,
   onClearFilters,
-  onCopyStatement,
   onDayFilterChange,
   onDeleteExpense,
-  onDisplayCurrencyChange,
-  onDisplayExchangeRateChange,
-  onDownloadCsv,
   onDuplicateExpenseAsEstimate,
   onEditExpense,
   onPayerFilterChange,
@@ -86,6 +74,21 @@ export function ExpenseLedgerSection({
   onTripPlanChange,
 }: ExpenseLedgerSectionProps) {
   const isMobileLedger = useIsMobileLedger();
+  const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(
+    null,
+  );
+  const selectedExpense =
+    filteredExpenses.find((expense) => expense.id === selectedExpenseId) ??
+    (!isMobileLedger ? filteredExpenses[0] : null) ??
+    null;
+  const selectedLedgerExpenseId = selectedExpense?.id ?? null;
+  const tableCopy = {
+    actions: t.expenses.actions,
+    details: t.expenses.table.details,
+    empty: t.expenses.empty,
+    uncategorizedStop: t.expenses.uncategorizedStop,
+  };
+
   const dayGroups = expenseLedgerDayGroups({
     displayCurrency,
     displayExchangeRate: displayExchangeRateNumber,
@@ -94,107 +97,106 @@ export function ExpenseLedgerSection({
     settlementCurrency,
     unlinkedLabel: t.expenses.filters.unlinkedDay,
   });
+
   return (
     <section className={expenseStyles.ledgerSectionClassName} aria-label={t.expenses.ledgerLabel}>
       <ExpenseLedgerControls
         canEditExpenses={canEditExpenses}
         categoryFilter={categoryFilter}
-        copyState={copyState}
         dayFilter={dayFilter}
         dayFilterOptions={expenseDayFilterOptions({
           allDaysLabel: t.expenses.filters.allDays,
           itineraryItems: trip.itineraryItems,
           unlinkedLabel: t.expenses.filters.unlinkedDay,
         })}
-        displayCurrency={displayCurrency}
-        displayExchangeRate={displayExchangeRate}
         expenseCount={filteredExpenses.length}
         members={members}
         payerFilter={payerFilter}
         query={query}
         selectedTripPlanId={selectedTripPlanId}
-        settlementCurrency={settlementCurrency}
         t={t}
         tripPlanOptions={workspaceTrip.tripPlans ?? workspaceTrip.planVariants}
         onAddExpense={onAddExpense}
         onAddPersonalExpense={onAddPersonalExpense}
         onCategoryFilterChange={onCategoryFilterChange}
         onClearFilters={onClearFilters}
-        onCopyStatement={onCopyStatement}
         onDayFilterChange={onDayFilterChange}
-        onDisplayCurrencyChange={onDisplayCurrencyChange}
-        onDisplayExchangeRateChange={onDisplayExchangeRateChange}
-        onDownloadCsv={onDownloadCsv}
         onPayerFilterChange={onPayerFilterChange}
         onQueryChange={onQueryChange}
         onTripPlanChange={onTripPlanChange}
       />
 
-      {isMobileLedger ? (
-        <ExpenseMobileLedgerList
+      <div className={expenseStyles.ledgerWorkspaceClassName}>
+        {isMobileLedger ? (
+          <ExpenseMobileLedgerList
+            dayGroups={dayGroups}
+            displayCurrency={displayCurrency}
+            displayExchangeRate={displayExchangeRateNumber}
+            members={members}
+            onSelectExpense={(expense) => setSelectedExpenseId(expense.id)}
+            selectedExpenseId={selectedLedgerExpenseId}
+            settlementCurrency={settlementCurrency}
+            tableCopy={tableCopy}
+            trip={trip}
+          />
+        ) : (
+          <div className={expenseStyles.tableWrapClassName}>
+            <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
+              <colgroup>
+                <col className="w-[240px]" />
+                <col className="w-[140px]" />
+                <col className="w-[190px]" />
+                <col className="w-[120px]" />
+                <col className="w-[170px]" />
+                <col className="w-[104px]" />
+              </colgroup>
+              <thead className={expenseStyles.tableHeaderClassName}>
+                <tr>
+                  <th>{t.expenses.table.expense}</th>
+                  <th>{t.expenses.table.amount}</th>
+                  <th>{t.expenses.table.paidBy}</th>
+                  <th>{t.expenses.table.split}</th>
+                  <th>{t.expenses.table.linkedStop}</th>
+                  <th>{t.expenses.table.actions}</th>
+                </tr>
+              </thead>
+              <ExpenseLedgerRows
+                canEditExpenses={canEditExpenses}
+                dayGroups={dayGroups}
+                displayCurrency={displayCurrency}
+                displayExchangeRate={displayExchangeRateNumber}
+                members={members}
+                onEditExpense={onEditExpense}
+                onSelectExpense={(expense) => setSelectedExpenseId(expense.id)}
+                selectedExpenseId={selectedLedgerExpenseId}
+                settlementCurrency={settlementCurrency}
+                tableCopy={tableCopy}
+                trip={trip}
+              />
+            </table>
+          </div>
+        )}
+
+        {selectedExpense || !isMobileLedger ? (
+        <ExpenseTransactionDetail
           canEditExpenses={canEditExpenses}
-          dayGroups={dayGroups}
           displayCurrency={displayCurrency}
           displayExchangeRate={displayExchangeRateNumber}
+          expense={selectedExpense}
+          isMobile={isMobileLedger}
           members={members}
+          onClose={() => setSelectedExpenseId(null)}
           onDeleteExpense={onDeleteExpense}
           onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
           onEditExpense={onEditExpense}
           onRecordRefund={onRecordRefund}
           pendingRefundExpenseIds={pendingRefundExpenseIds}
           settlementCurrency={settlementCurrency}
-          tableCopy={{
-            actions: t.expenses.actions,
-            details: t.expenses.table.details,
-            empty: t.expenses.empty,
-            uncategorizedStop: t.expenses.uncategorizedStop,
-          }}
+          tableCopy={tableCopy}
           trip={trip}
         />
-      ) : (
-        <div className={expenseStyles.tableWrapClassName}>
-          <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
-            <colgroup>
-              <col className="w-[200px]" />
-              <col className="w-[120px]" />
-              <col className="w-[190px]" />
-              <col className="w-[120px]" />
-              <col className="w-[150px]" />
-              <col className="w-[190px]" />
-            </colgroup>
-            <thead className={expenseStyles.tableHeaderClassName}>
-              <tr>
-                <th>{t.expenses.table.expense}</th>
-                <th>{t.expenses.table.amount}</th>
-                <th>{t.expenses.table.paidBy}</th>
-                <th>{t.expenses.table.split}</th>
-                <th>{t.expenses.table.linkedStop}</th>
-                <th>{t.expenses.table.actions}</th>
-              </tr>
-            </thead>
-            <ExpenseLedgerRows
-              canEditExpenses={canEditExpenses}
-              dayGroups={dayGroups}
-              displayCurrency={displayCurrency}
-              displayExchangeRate={displayExchangeRateNumber}
-              members={members}
-              onDeleteExpense={onDeleteExpense}
-              onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
-              onEditExpense={onEditExpense}
-              onRecordRefund={onRecordRefund}
-              pendingRefundExpenseIds={pendingRefundExpenseIds}
-              settlementCurrency={settlementCurrency}
-              tableCopy={{
-                actions: t.expenses.actions,
-                details: t.expenses.table.details,
-                empty: t.expenses.empty,
-                uncategorizedStop: t.expenses.uncategorizedStop,
-              }}
-              trip={trip}
-            />
-          </table>
-        </div>
-      )}
+        ) : null}
+      </div>
     </section>
   );
 }

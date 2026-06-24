@@ -24,6 +24,7 @@ describe("TripExpensesPage edit dialog", () => {
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Hotel night");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "1800");
+    await user.click(within(dialog).getByRole("button", { name: /โน้ต.*ลิงก์ใบเสร็จ/i }));
     await user.type(within(dialog).getByLabelText(/โน้ต/i), "Room 1207, includes deposit.");
     await user.clear(within(dialog).getByLabelText(/ทำซ้ำ/i));
     await user.type(within(dialog).getByLabelText(/ทำซ้ำ/i), "3");
@@ -43,7 +44,7 @@ describe("TripExpensesPage edit dialog", () => {
 
     await user.click(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
-    expect(within(dialog).getByLabelText(/แบ่งแบบ/i)).toHaveValue("personal");
+    expect(within(dialog).getByRole("button", { name: /ส่วนตัว/i })).toHaveAttribute("aria-pressed", "true");
     expect(within(dialog).getByLabelText(/จ่ายโดย/i)).toHaveValue("member-beam");
 
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Personal coffee");
@@ -119,7 +120,8 @@ describe("TripExpensesPage edit dialog", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Dim sum receipt/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim sum receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     expect(dialog).toHaveTextContent("Receipt uploaded by Aom.");
     await user.type(within(dialog).getByLabelText(/เพิ่ม comment/i), "I'll transfer tonight.");
@@ -153,7 +155,8 @@ describe("TripExpensesPage edit dialog", () => {
     }));
     renderExpenses({ onUpdateExpense });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 

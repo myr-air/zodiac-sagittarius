@@ -49,6 +49,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกสรุปยอด/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
@@ -92,6 +93,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));
     await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));

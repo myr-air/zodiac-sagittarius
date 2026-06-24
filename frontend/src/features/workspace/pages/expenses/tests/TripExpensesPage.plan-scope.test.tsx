@@ -16,7 +16,8 @@ describe("TripExpensesPage plan scope", () => {
     const user = userEvent.setup();
     const props = renderExpenses({ selectedTripPlanId: "plan-main" });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.selectOptions(within(dialog).getByLabelText("Trip Plan"), "plan-rain");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
@@ -46,6 +47,7 @@ describe("TripExpensesPage plan scope", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
+    await user.click(screen.getByRole("tab", { name: /ประเภท/i }));
     const audit = screen.getByRole("region", { name: /ตรวจ scope ของเงินจริง/i });
     expect(audit).toHaveTextContent("Dim Dim Sum brunch");
     expect(audit).toHaveTextContent("scope ที่ระบบเดาไว้: แผนฝนตก");
@@ -80,7 +82,8 @@ describe("TripExpensesPage plan scope", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Arrival taxi receipt/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Arrival taxi receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     const planSelect = within(dialog).getByLabelText("Trip Plan");
 

@@ -1,29 +1,21 @@
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { IconButton } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
-import { useState } from "react";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   expenseLedgerPayerDisplay,
   expenseLedgerRowDisplay,
 } from "../model/expense-ledger-display";
 import type { ExpenseLedgerDayGroup } from "../model/expense-page-filters";
-import type { DuplicateExpenseAsEstimateHandler } from "../model/expense-page-types";
 import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 import { ExpenseMemberLine } from "./ExpenseMemberLine";
 
 interface ExpenseMobileLedgerListProps {
-  canEditExpenses: boolean;
   dayGroups: ExpenseLedgerDayGroup[];
   displayCurrency: string;
   displayExchangeRate: number;
   members: Member[];
-  onDeleteExpense: (expenseId: string) => void;
-  onDuplicateExpenseAsEstimate?: DuplicateExpenseAsEstimateHandler;
-  onEditExpense: (expense: Expense) => void;
-  onRecordRefund: (expense: Expense) => void;
-  pendingRefundExpenseIds: Set<string>;
+  onSelectExpense: (expense: Expense) => void;
+  selectedExpenseId: string | null;
   settlementCurrency: string;
   tableCopy: {
     actions: {
@@ -48,22 +40,16 @@ interface ExpenseMobileLedgerListProps {
 }
 
 export function ExpenseMobileLedgerList({
-  canEditExpenses,
   dayGroups,
   displayCurrency,
   displayExchangeRate,
   members,
-  onDeleteExpense,
-  onDuplicateExpenseAsEstimate,
-  onEditExpense,
-  onRecordRefund,
-  pendingRefundExpenseIds,
+  onSelectExpense,
+  selectedExpenseId,
   settlementCurrency,
   tableCopy,
   trip,
 }: ExpenseMobileLedgerListProps) {
-  const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
-
   return (
     <div className={expenseStyles.mobileLedgerListClassName}>
       {dayGroups.map((group) => (
@@ -90,12 +76,15 @@ export function ExpenseMobileLedgerList({
                 members,
               },
             );
-            const hasSourceDetails = Boolean(display.sourceLabel || display.calculationLabel || display.memberBreakdown?.length);
-            const expanded = expandedExpenseId === expense.id;
-            const detailId = `expense-mobile-ledger-detail-${expense.id}`;
+            const selected = selectedExpenseId === expense.id;
 
             return (
-              <article className={expenseStyles.mobileLedgerCardClassName} key={expense.id}>
+              <button
+                type="button"
+                className={selected ? `${expenseStyles.mobileLedgerCardClassName} ${expenseStyles.mobileLedgerCardSelectedClassName}` : expenseStyles.mobileLedgerCardClassName}
+                key={expense.id}
+                onClick={() => onSelectExpense(expense)}
+              >
                 <div className={expenseStyles.mobileLedgerCardTopClassName}>
                   <div className={expenseStyles.mobileLedgerCardTitleClassName}>
                     <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
@@ -116,57 +105,7 @@ export function ExpenseMobileLedgerList({
                 <span className={expenseStyles.ledgerStopPillClassName}>
                   {linkedItem?.activity ?? tableCopy.uncategorizedStop}
                 </span>
-                {expanded && hasSourceDetails ? (
-                  <div className={expenseStyles.ledgerDetailPanelClassName} id={detailId}>
-                    <strong>{tableCopy.details.sourceAndMath}</strong>
-                    {display.sourceLabel ? (
-                      <span>{tableCopy.details.source}: {display.sourceLabel}</span>
-                    ) : null}
-                    {display.calculationLabel ? (
-                      <span>{tableCopy.details.calculation}: {display.calculationLabel}</span>
-                    ) : null}
-                    {display.memberBreakdown?.length ? (
-                      <span>{tableCopy.details.memberMath}: {display.memberBreakdown.join(", ")}</span>
-                    ) : null}
-                  </div>
-                ) : null}
-                <div className={expenseStyles.mobileLedgerActionsClassName}>
-                  <IconButton
-                    type="button"
-                    aria-controls={hasSourceDetails ? detailId : undefined}
-                    aria-expanded={hasSourceDetails ? expanded : undefined}
-                    aria-label={expanded ? tableCopy.details.hideDetails({ title: expense.title }) : tableCopy.details.showDetails({ title: expense.title })}
-                    disabled={!hasSourceDetails}
-                    onClick={() => setExpandedExpenseId((current) => current === expense.id ? null : expense.id)}
-                  >
-                    <Icon name={expanded ? "eyeOff" : "eye"} />
-                  </IconButton>
-                  <span className="inline-flex items-center gap-1.5">
-                    <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onEditExpense(expense)}>
-                      <Icon name="edit" />
-                    </IconButton>
-                    <IconButton
-                      type="button"
-                      aria-label={tableCopy.actions.duplicateAsEstimate({ title: expense.title })}
-                      disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
-                      onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
-                    >
-                      <Icon name="copy" />
-                    </IconButton>
-                    <IconButton
-                      type="button"
-                      aria-label={tableCopy.actions.recordRefund({ title: expense.title })}
-                      disabled={!canEditExpenses || !display.canRecordRefund || pendingRefundExpenseIds.has(expense.id)}
-                      onClick={() => void onRecordRefund(expense)}
-                    >
-                      <Icon name="wallet" />
-                    </IconButton>
-                    <IconButton type="button" aria-label={tableCopy.actions.cancelExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
-                      <Icon name="trash" />
-                    </IconButton>
-                  </span>
-                </div>
-              </article>
+              </button>
             );
           })}
         </section>

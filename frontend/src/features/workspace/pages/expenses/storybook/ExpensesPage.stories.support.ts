@@ -1,4 +1,4 @@
-import { expect, fn, within } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import {
@@ -90,11 +90,21 @@ export const planScopeAuditExpensesStoryArgs = {
 export async function expectExpensesResponsiveContract(canvasElement: HTMLElement) {
   const canvas = within(canvasElement);
   await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
+  await expect(canvas.getByRole("navigation", { name: /Trip money sections|ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
   await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
+  await expect(canvasElement.querySelector(".expense-finance-tabs")).not.toBeNull();
+  const spendingTab = canvas.queryByRole("button", { name: /Spending|รายการใช้จ่าย/i });
+  if (spendingTab) {
+    await userEvent.click(spendingTab);
+  }
   const spendingLog = canvas.queryByRole("table", { name: /Spending log|บันทึกใช้จ่าย/i });
   if (spendingLog) {
     await expect(spendingLog).toHaveClass("expense-ledger-table");
   } else {
-    await expect(canvasElement.querySelector(".expense-mobile-ledger")).toBeVisible();
+    const mobileLedger = canvasElement.querySelector(".expense-mobile-ledger");
+    await expect(mobileLedger).not.toBeNull();
+    if (mobileLedger) {
+      await expect(mobileLedger).toBeVisible();
+    }
   }
 }

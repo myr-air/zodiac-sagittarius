@@ -16,6 +16,7 @@ describe("TripExpensesPage actual expense actions", () => {
       onDuplicateExpenseAsEstimate: vi.fn(),
     });
 
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
         name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
@@ -35,6 +36,7 @@ describe("TripExpensesPage actual expense actions", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
         name: /บันทึก refund ของ Dim Dim Sum brunch/i,
@@ -64,6 +66,7 @@ describe("TripExpensesPage actual expense actions", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", { name: /ยกเลิก Dim Dim Sum brunch/i }),
     );

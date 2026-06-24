@@ -25,7 +25,7 @@ describe("TripExpensesPage split forms", () => {
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "300");
     await user.selectOptions(within(dialog).getByLabelText(/จ่ายโดย/i), "member-beam");
-    await user.selectOptions(within(dialog).getByLabelText(/แบ่งแบบ/i), "exact");
+    await user.click(within(dialog).getByRole("button", { name: /จำนวนจริง/i }));
     expect(within(dialog).getByRole("heading", { name: /รายละเอียดการแบ่ง/i })).toBeInTheDocument();
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i));
     await user.type(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i), "150");
@@ -69,7 +69,7 @@ describe("TripExpensesPage split forms", () => {
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Itemized receipt");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "219.99");
-    await user.selectOptions(within(dialog).getByLabelText(/แบ่งแบบ/i), "itemized");
+    await user.click(within(dialog).getByRole("button", { name: /แยกรายการ/i }));
 
     const firstLine = within(dialog).getByRole("group", { name: /รายการ 1/i });
     await user.clear(within(firstLine).getByLabelText(/ชื่อรายการ/i));
@@ -117,7 +117,7 @@ describe("TripExpensesPage split forms", () => {
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Dim sum");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
-    await user.selectOptions(within(dialog).getByLabelText(/แบ่งแบบ/i), "percentage");
+    await user.click(within(dialog).getByRole("button", { name: /เปอร์เซ็นต์/i }));
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i));
     await user.type(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i), "33.333");
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Travel Mate/i));

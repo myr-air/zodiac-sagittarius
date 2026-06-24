@@ -7,6 +7,23 @@ export const enExpensesMessages = {
     ledgerLabel: "Spending log",
     canEdit: "Can manage money",
     readOnly: "Money view only",
+    tabs: {
+      label: "Trip money sections",
+      overview: "Overview",
+      spending: "Spending",
+      balances: "Balances",
+      categories: "Categories",
+      settings: "Settings",
+    },
+    settings: {
+      description: "Currency, exchange, and export tools stay here so the ledger stays clean.",
+    },
+    overview: {
+      nextActionTitle: "Next money action",
+      priorityTitle: "Recent high-value spend",
+      settlementNudge: ({ count }: { count: number }) => `${count} payback${count === 1 ? "" : "s"} need attention.`,
+      spendingNudge: "Add shared or personal spend as the trip changes.",
+    },
     stats: {
       tripSpend: "Trip spend",
       yourBalance: "Your balance",
@@ -51,6 +68,8 @@ export const enExpensesMessages = {
       day: "Day",
       displayCurrency: "Display currency",
       displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `${currency} to ${displayCurrency} rate`,
+      hideFilters: "Hide filters",
+      showFilters: "Filters",
       unlinkedDay: "No day",
     },
     table: {
@@ -63,10 +82,14 @@ export const enExpensesMessages = {
       actions: "Actions",
       details: {
         sourceAndMath: "Receipt details",
+        close: "Close expense details",
+        empty: "Select a spend to see the receipt, split, and follow-up actions.",
         source: "From",
         calculation: "Converted",
         memberMath: "Shared with",
         originalAmount: "Original",
+        paidBy: "Paid by",
+        split: "Split",
         showDetails: ({ title }: { title: string }) => `Show receipt details for ${title}`,
         hideDetails: ({ title }: { title: string }) => `Hide receipt details for ${title}`,
       },

@@ -7,6 +7,23 @@ export const thExpensesMessages = {
     ledgerLabel: "บันทึกใช้จ่าย",
     canEdit: "จัดการเงินได้",
     readOnly: "ดูเงินอย่างเดียว",
+    tabs: {
+      label: "ส่วนการเงินของทริป",
+      overview: "ภาพรวม",
+      spending: "รายการใช้จ่าย",
+      balances: "ยอดคงเหลือ",
+      categories: "ประเภท",
+      settings: "ตั้งค่า",
+    },
+    settings: {
+      description: "สกุลเงิน exchange และ export อยู่ตรงนี้ เพื่อให้รายการใช้จ่ายอ่านง่าย",
+    },
+    overview: {
+      nextActionTitle: "สิ่งที่ควรทำต่อ",
+      priorityTitle: "รายการใช้จ่ายสำคัญล่าสุด",
+      settlementNudge: ({ count }: { count: number }) => `มี ${count} รายการจ่ายคืนที่ควรจัดการ`,
+      spendingNudge: "เพิ่มค่าใช้จ่ายร่วม หรือค่าใช้จ่ายส่วนตัวเมื่อแผนทริปเปลี่ยน",
+    },
     stats: {
       tripSpend: "ค่าใช้จ่ายทริป",
       yourBalance: "ยอดของคุณ",
@@ -51,6 +68,8 @@ export const thExpensesMessages = {
       day: "วัน",
       displayCurrency: "สกุลเงินที่แสดง",
       displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `เรท ${currency} เป็น ${displayCurrency}`,
+      hideFilters: "ซ่อนตัวกรอง",
+      showFilters: "ตัวกรอง",
       unlinkedDay: "ไม่ผูกวัน",
     },
     table: {
@@ -63,10 +82,14 @@ export const thExpensesMessages = {
       actions: "คำสั่ง",
       details: {
         sourceAndMath: "รายละเอียดบิล",
+        close: "ปิดรายละเอียดค่าใช้จ่าย",
+        empty: "เลือกรายการใช้จ่ายเพื่อดูบิล การแบ่ง และคำสั่งที่เกี่ยวข้อง",
         source: "จาก",
         calculation: "แปลงเป็น",
         memberMath: "แชร์กับ",
         originalAmount: "ยอดตั้งต้น",
+        paidBy: "จ่ายโดย",
+        split: "การแบ่ง",
         showDetails: ({ title }: { title: string }) => `ดูรายละเอียดบิลของ ${title}`,
         hideDetails: ({ title }: { title: string }) => `ซ่อนรายละเอียดบิลของ ${title}`,
       },

@@ -103,7 +103,7 @@ export function ExpenseDetailsFields({
         <div className={expenseStyles.dialogSectionHeaderClassName}>
           <h3 id="expense-dialog-receipt-section">{copy.dialog.sections.receipt}</h3>
         </div>
-        <div className={expenseStyles.dialogGridClassName}>
+        <div className={expenseStyles.dialogStackClassName}>
           <ExpenseCoreFields
             amount={amount}
             copy={copy}
@@ -132,7 +132,7 @@ export function ExpenseDetailsFields({
         <div className={expenseStyles.dialogSectionHeaderClassName}>
           <h3 id="expense-dialog-routing-section">{copy.dialog.sections.routing}</h3>
         </div>
-        <div className={expenseStyles.dialogGridClassName}>
+        <div className={expenseStyles.dialogStackClassName}>
           <ExpenseLinkingFields
             category={category}
             copy={copy}
