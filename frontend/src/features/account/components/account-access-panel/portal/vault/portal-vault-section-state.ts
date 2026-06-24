@@ -2,6 +2,11 @@ import type {
   AccountVaultItemCreateRequest,
   AccountVaultItemSummary,
 } from "@/src/account/api-client";
+import {
+  buildSelectOptions,
+  type SelectOption,
+} from "@/src/shared/select-options";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type { IconName } from "@/src/ui/icons";
 
 export const portalVaultCloudProviders = ["Google Drive", "iCloud", "Dropbox", "OneDrive"] as const;
@@ -9,10 +14,7 @@ type PortalVaultKind = AccountVaultItemCreateRequest["kind"];
 
 export const portalVaultKindValues = ["note", "file"] as const satisfies readonly PortalVaultKind[];
 
-export interface PortalVaultKindSelectOption {
-  value: PortalVaultKind;
-  label: string;
-}
+export type PortalVaultKindSelectOption = SelectOption<PortalVaultKind>;
 
 export interface PortalVaultItemRow {
   badgeLabel: string;
@@ -27,10 +29,7 @@ export function portalVaultKindSelectOptions(labels: {
   file: string;
   note: string;
 }): PortalVaultKindSelectOption[] {
-  return portalVaultKindValues.map((value) => ({
-    value,
-    label: labels[value],
-  }));
+  return buildSelectOptions(portalVaultKindValues, (value) => labels[value]);
 }
 
 export function createEmptyPortalVaultForm(): AccountVaultItemCreateRequest {
@@ -47,7 +46,7 @@ export function buildPortalVaultCreateRequest(
     ...vaultForm,
     title,
     detail: vaultForm.detail.trim(),
-    externalUrl: vaultForm.externalUrl?.trim() || null,
+    externalUrl: trimmedTextOrNull(vaultForm.externalUrl),
   };
 }
 
