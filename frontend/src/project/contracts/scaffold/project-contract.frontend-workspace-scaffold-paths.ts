@@ -62,6 +62,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/sagittarius-app/testing/support/sagittarius-app-render.tsx",
   "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-briefing-fixtures.ts",
   "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-plan-fixtures.ts",
+  "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-plan-record-fixtures.ts",
   "src/trip/workspace/sagittarius-app/testing/support/sagittarius-app-storage.ts",
   "src/trip/workspace/sagittarius-app/sagittarius-app.test-support.tsx",
   "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx",

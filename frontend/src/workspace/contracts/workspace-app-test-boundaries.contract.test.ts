@@ -8,6 +8,8 @@ describe("Sagittarius workspace app test source boundaries", () => {
       sagittariusAppTestAccountApi,
       sagittariusAppTestBriefingFixtures,
       sagittariusAppTestPlanFixtures,
+      sagittariusAppTestPlanRecordFixtures,
+      sagittariusAppTestRender,
       sagittariusAppTestStorage,
       sagittariusAppTestSupport,
       sagittariusAppUiTest,
@@ -24,10 +26,11 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestSupport).toContain("window.history.pushState(null, \"\", appRoutes.home())");
     expect(sagittariusAppTestSupport).toContain("export function mockWindowLocation");
     expect(sagittariusAppTestSupport).toContain(".spyOn(window, \"location\", \"get\")");
-    expect(sagittariusAppTestSupport).toContain("export async function renderApiSagittariusApp");
-    expect(sagittariusAppTestSupport).toContain("export function renderApiTripAccessSagittariusApp");
-    expect(sagittariusAppTestSupport).toContain("dataSource=\"api\"");
-    expect(sagittariusAppTestSupport).toContain("await loginApiTrip(user)");
+    expect(sagittariusAppTestSupport).toContain("./testing/support/sagittarius-app-render");
+    expect(sagittariusAppTestRender).toContain("export async function renderApiSagittariusApp");
+    expect(sagittariusAppTestRender).toContain("export function renderApiTripAccessSagittariusApp");
+    expect(sagittariusAppTestRender).toContain("dataSource=\"api\"");
+    expect(sagittariusAppTestRender).toContain("await loginApiTrip(user)");
     [
       sagittariusAppUiTest,
       sagittariusAppAccessTest,
@@ -47,7 +50,13 @@ describe("Sagittarius workspace app test source boundaries", () => {
     expect(sagittariusAppTestPlanFixtures).toContain("export function apiSeedTrip");
     expect(sagittariusAppTestPlanFixtures).toContain("export function apiTripWithPlans");
     expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlans");
-    expect(sagittariusAppTestPlanFixtures).toContain("export function tripWithPlansAndPlanScopedRecords");
+    expect(sagittariusAppTestPlanFixtures).toContain("./sagittarius-app-plan-record-fixtures");
+    expect(sagittariusAppTestPlanRecordFixtures).toContain(
+      "export function tripWithPlansAndPlanScopedRecords",
+    );
+    expect(sagittariusAppTestPlanRecordFixtures).toContain(
+      "import { tripWithPlans } from \"./sagittarius-app-plan-fixtures\"",
+    );
     expect(sagittariusAppTestStorage).toContain("export function loadPersistedTripDraft");
     expect(sagittariusAppTestStorage).toContain("export function persistAccountSession");
     expect(sagittariusAppTestStorage).toContain("export function persistTripDraft");

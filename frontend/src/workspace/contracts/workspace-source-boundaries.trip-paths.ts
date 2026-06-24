@@ -38,6 +38,8 @@ export const workspaceTripBoundarySourcePaths = {
     "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-briefing-fixtures.ts",
   sagittariusAppTestPlanFixtures:
     "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-plan-fixtures.ts",
+  sagittariusAppTestPlanRecordFixtures:
+    "src/trip/workspace/sagittarius-app/testing/fixtures/sagittarius-app-plan-record-fixtures.ts",
   sagittariusAppTestStorage:
     "src/trip/workspace/sagittarius-app/testing/support/sagittarius-app-storage.ts",
   sagittariusAppTestRender:
