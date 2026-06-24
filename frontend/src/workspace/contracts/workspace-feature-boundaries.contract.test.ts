@@ -52,10 +52,12 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(workspaceFrameActionProps).toContain("onAddNoteForItem");
     expect(workspaceFrameActionProps).toContain("onTransferOwnership");
     expect(itineraryTimeLib).toContain("@/src/trip/itinerary-core");
+    expect(itineraryTimeLib).toContain("@/src/shared/date-time-local");
     expect(itineraryTimeLib).not.toContain("/^(\\d{2}):(\\d{2})$/");
-    expect(itineraryTimeLib).toContain("coreDurationBetweenTimes");
-    expect(itineraryTimeLib).toContain("coreEndOffsetDaysBetweenTimes");
-    expect(itineraryTimeLib).toContain("coreMinutesToTime");
+    expect(itineraryTimeLib).not.toContain("export function");
+    expect(itineraryTimeLib).not.toContain("coreDurationBetweenTimes");
+    expect(itineraryTimeLib).not.toContain("coreEndOffsetDaysBetweenTimes");
+    expect(itineraryTimeLib).not.toContain("coreMinutesToTime");
     expect(itineraryTimeLib).not.toContain("Math.max(1, duration)");
 
     expect(tripSettingsPageSource).not.toContain("export interface TripSettingsFormValues");

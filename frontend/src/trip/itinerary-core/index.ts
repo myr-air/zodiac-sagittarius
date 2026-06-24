@@ -101,9 +101,11 @@ export {
   durationBetweenTimes,
   endOffsetDaysBetweenTimes,
   itineraryDateTime,
+  itineraryDateTimeValue,
   minutesToTime,
   normalizeDurationMinutes,
   parseTime,
+  parseTimeToMinutes,
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
 } from "./itinerary-time";

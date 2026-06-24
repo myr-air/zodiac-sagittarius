@@ -6,9 +6,15 @@ export function parseTime(value: string): number | null {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
+export function parseTimeToMinutes(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return parseTime(trimmed);
+}
+
 export function endOffsetDaysBetweenTimes(startTime: string, endTime: string): number {
-  const start = parseTime(startTime);
-  const end = parseTime(endTime);
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
   if (start === null || end === null) return 0;
   return end <= start ? 1 : 0;
 }
@@ -18,8 +24,8 @@ export function durationBetweenTimes(
   endTime: string,
   endOffsetDays = endOffsetDaysBetweenTimes(startTime, endTime),
 ): number | null {
-  const start = parseTime(startTime);
-  const end = parseTime(endTime);
+  const start = parseTimeToMinutes(startTime);
+  const end = parseTimeToMinutes(endTime);
   if (start === null || end === null) return null;
   const duration = end + endOffsetDays * 24 * 60 - start;
   return Math.max(1, duration);
@@ -50,6 +56,11 @@ export function shiftIsoDate(value: string, days: number): string {
 
 export function itineraryDateTime(day: string, time: string): string {
   return `${day}T${time}:00`;
+}
+
+export function itineraryDateTimeValue(day: string, time: string | null | undefined): string | null {
+  const trimmed = time?.trim();
+  return trimmed ? `${day}T${trimmed}` : null;
 }
 
 export function shiftItineraryItemsToStartDate(

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   buildInlineItineraryItemPatch,
+  durationBetweenTimes,
+  endOffsetDaysBetweenTimes,
   daysBetweenIsoDates,
   itineraryDateTime,
+  itineraryDateTimeValue,
   normalizeDurationMinutes,
   normalizeInlineTimePatch,
+  parseTimeToMinutes,
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-core";
@@ -20,6 +24,25 @@ describe("itinerary time helpers", () => {
     expect(itineraryDateTime("2026-06-18", "09:30")).toBe(
       "2026-06-18T09:30:00",
     );
+    expect(itineraryDateTimeValue("2026-06-18", " 09:30 ")).toBe(
+      "2026-06-18T09:30",
+    );
+    expect(itineraryDateTimeValue("2026-06-18", "   ")).toBeNull();
+  });
+
+  it("parses HH:MM time input with whitespace normalization", () => {
+    expect(parseTimeToMinutes("09:30")).toBe(570);
+    expect(parseTimeToMinutes("09:30   ")).toBe(570);
+    expect(parseTimeToMinutes("09:60")).toBeNull();
+    expect(parseTimeToMinutes("24:00")).toBeNull();
+    expect(parseTimeToMinutes("9:30")).toBeNull();
+    expect(parseTimeToMinutes("   ")).toBeNull();
+  });
+
+  it("computes time windows with whitespace normalization", () => {
+    expect(endOffsetDaysBetweenTimes(" 23:00 ", " 01:00 ")).toBe(1);
+    expect(durationBetweenTimes(" 23:00 ", " 01:00 ", 1)).toBe(120);
+    expect(durationBetweenTimes("bad", "01:00")).toBeNull();
   });
 
   it("shifts itinerary item days when the trip start date changes", () => {
