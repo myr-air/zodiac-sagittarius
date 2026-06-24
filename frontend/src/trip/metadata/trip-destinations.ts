@@ -4,6 +4,11 @@ import {
   tripCountryOptions,
   type TripCityOption,
 } from "./trip-destination-options";
+import {
+  normalizeSearchQuery,
+  textEqualsNormalizedQuery,
+  valuesMatchSearchQuery,
+} from "@/src/shared/text-search";
 import type { TripCity } from "@/src/trip/types";
 
 export {
@@ -44,7 +49,10 @@ export function tripDestinationCards(selectedCountryNames: string[], selectedCit
 }
 
 function destinationCityMeta(cityName: string): string {
-  const city = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === cityName.toLocaleLowerCase());
+  const normalizedCityName = normalizeSearchQuery(cityName);
+  const city = tripCityOptions.find((option) =>
+    textEqualsNormalizedQuery(option.city, normalizedCityName),
+  );
   if (!city) return "";
   const currency = tripCountryOptions.find((country) => country.name === city.country)?.currency;
   return [city.timezone, currency].filter(Boolean).join(" · ");
@@ -60,21 +68,28 @@ function tripNightBadge(nights: number, locale: string): string {
 }
 
 function destinationCityCountryName(cityName: string): string | null {
-  return tripCountryOptions.find((country) => country.cities.some((city) => city.toLocaleLowerCase() === cityName.toLocaleLowerCase()))?.name ?? null;
+  const normalizedCityName = normalizeSearchQuery(cityName);
+  return tripCountryOptions.find((country) =>
+    country.cities.some((city) => textEqualsNormalizedQuery(city, normalizedCityName)),
+  )?.name ?? null;
 }
 
 function cityBelongsToCountry(cityName: string, countryName: string): boolean {
-  return destinationCityCountryName(cityName)?.toLocaleLowerCase() === countryName.toLocaleLowerCase();
+  return textEqualsNormalizedQuery(
+    destinationCityCountryName(cityName),
+    normalizeSearchQuery(countryName),
+  );
 }
 
 export function citySuggestions(query: string, selectedCities: TripCity[]): TripCityOption[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const normalizedQuery = normalizeSearchQuery(query);
   return tripCityOptions
     .filter((city) => !selectedCities.some((selected) => selected.city === city.city && selected.countryCode === city.countryCode))
     .filter((city) => {
-      if (!normalizedQuery) return true;
-      return [city.city, city.country, city.countryCode, city.airportCode]
-        .some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
+      return valuesMatchSearchQuery(
+        [city.city, city.country, city.countryCode, city.airportCode],
+        normalizedQuery,
+      );
     })
     .slice(0, normalizedQuery ? 8 : 6);
 }
@@ -91,7 +106,10 @@ export function tripCityFromOption(option: TripCityOption): TripCity {
 }
 
 export function customTripCity(city: string, fallback?: TripCity): TripCity {
-  const match = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === city.toLocaleLowerCase());
+  const normalizedCity = normalizeSearchQuery(city);
+  const match = tripCityOptions.find((option) =>
+    textEqualsNormalizedQuery(option.city, normalizedCity),
+  );
   if (match) return tripCityFromOption(match);
   return {
     city,
@@ -122,9 +140,15 @@ export function tripCityFromFormOrigin(form: {
 
 export function destinationRouteCode(destinations: string[]): string {
   const primary = destinations[destinations.length > 1 ? 1 : 0] ?? destinations[0] ?? "TRP";
-  const city = tripCityOptions.find((option) => option.city.toLocaleLowerCase() === primary.toLocaleLowerCase());
+  const normalizedPrimary = normalizeSearchQuery(primary);
+  const city = tripCityOptions.find((option) =>
+    textEqualsNormalizedQuery(option.city, normalizedPrimary),
+  );
   if (city) return city.airportCode;
-  const option = tripCountryOptions.find((country) => country.name === primary || country.cities.some((cityName) => cityName.toLocaleLowerCase() === primary.toLocaleLowerCase()));
+  const option = tripCountryOptions.find((country) =>
+    country.name === primary ||
+    country.cities.some((cityName) => textEqualsNormalizedQuery(cityName, normalizedPrimary)),
+  );
   if (option) return option.code;
   return primary.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).padEnd(3, "X").toUpperCase();
 }

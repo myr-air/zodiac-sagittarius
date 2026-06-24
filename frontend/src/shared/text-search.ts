@@ -11,6 +11,13 @@ export function textMatchesSearchQuery(
   );
 }
 
+export function textEqualsNormalizedQuery(
+  value: string | null | undefined,
+  normalizedQuery: string,
+): boolean {
+  return Boolean(value && value.toLocaleLowerCase() === normalizedQuery);
+}
+
 export function valuesMatchSearchQuery(
   values: readonly (string | null | undefined)[],
   normalizedQuery: string,
