@@ -144,3 +144,32 @@ export const personalMetricRowClassName = `${expenseOverviewRowClassName} grid-c
 export const settingsHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-black [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:text-sm [&_p]:font-bold [&_p]:text-(--color-text-muted) max-[767px]:grid-cols-1";
 export const settingsGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 export const settingsActionsClassName = "flex flex-wrap items-center gap-2 [&>*]:min-h-10";
+export const statementSectionClassName = "expense-statement grid min-w-0 gap-3";
+export const statementHeaderClassName = `grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 ${panelClassName} max-[767px]:grid-cols-1`;
+export const statementTitleClassName = "grid gap-1 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-black [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:text-sm [&_p]:font-bold [&_p]:text-(--color-text-muted)";
+export const statementSummaryClassName = "flex flex-wrap items-center justify-end gap-2 text-xs font-extrabold text-(--color-text-muted) max-[767px]:justify-start";
+export const statementFilterBarClassName = "flex flex-wrap items-center gap-2";
+export const statementFilterButtonClassName = "inline-flex min-h-10 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) transition hover:border-(--color-border-strong) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) max-[767px]:min-h-11";
+export const statementFilterButtonActiveClassName = "border-(--color-primary-border)! bg-(--color-primary-soft)! text-(--color-primary-strong)!";
+export const statementTableClassName = "expense-statement-table w-full min-w-[920px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
+export const statementTableBodyClassName = "[&_td]:border-b [&_td]:border-(--color-border) [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_tr:hover_td]:bg-[color-mix(in_srgb,var(--color-primary-soft)_22%,var(--color-surface))]";
+export const statementItemCellClassName = "grid min-w-0 gap-1 [&_strong]:truncate [&_strong]:font-black [&_strong]:text-(--color-text) [&_span]:truncate [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted)";
+export const statementMetaCellClassName = "text-xs font-bold leading-5 text-(--color-text-muted)";
+export const statementAmountCellClassName = "text-right font-black tabular-nums text-(--color-primary-strong) [&_span]:mt-1 [&_span]:block [&_span]:text-[11px] [&_span]:font-bold [&_span]:text-(--color-text-muted)";
+export const statementStatusCellClassName = "grid max-w-[220px] gap-1.5";
+export const statementStatusClassName = "inline-flex max-w-full justify-self-start items-center rounded-full border px-2.5 py-1 text-xs font-black leading-4";
+export const statementStatusReasonClassName = "text-[11px] font-bold leading-4 text-(--color-text-muted)";
+export const statementStatusToneClassNames = {
+  needsReview: "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)",
+  noPaybackNeeded: "border-(--color-success-border) bg-(--color-success-soft) text-[#166534]",
+  settlementRecorded: "border-(--color-success-border) bg-(--color-success-soft) text-[#166534]",
+  recorded: "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
+};
+export const statementMobileListClassName = `hidden gap-2.5 max-[767px]:grid ${workspaceResponsiveInlinePanelResetClassName}`;
+export const statementMobileRowClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left shadow-none";
+export const statementMobileTopClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3";
+export const statementMobileTitleClassName = "grid min-w-0 gap-1 [&_strong]:truncate [&_strong]:font-black [&_strong]:text-(--color-text) [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted)";
+export const statementMobileStatusReasonClassName = "m-0 text-xs font-bold leading-5 text-(--color-text-muted)";
+export const statementMobileMetaClassName = "grid gap-1 border-t border-(--color-border) pt-2 text-xs font-bold text-(--color-text-muted) [&_div]:grid [&_div]:grid-cols-[104px_minmax(0,1fr)] [&_div]:gap-2 [&_dd]:m-0 [&_dd]:text-(--color-text) [&_dt]:font-black";
+export const statementMobileReasonDisclosureClassName = "grid gap-1 [&_summary]:cursor-pointer [&_summary]:font-extrabold [&_span]:mt-1 [&_span]:block [&_span]:leading-5 [&_span]:text-(--color-text-muted)";
+export const statementEmptyClassName = `${panelClassName} min-h-[180px] place-items-center text-center text-sm font-bold text-(--color-text-muted)`;

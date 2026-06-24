@@ -54,7 +54,8 @@ describe("TripExpensesPage settlement exports", () => {
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Paybacks"));
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Family Member pays Travel Mate"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend pays Family Member"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Shenzhen hotel balance"));
     expect(screen.getByRole("status", { name: /สถานะการคัดลอกสรุปยอด/i })).toHaveTextContent("คัดลอกแล้ว");
   });
 

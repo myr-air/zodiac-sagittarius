@@ -93,6 +93,16 @@ export async function expectExpensesResponsiveContract(canvasElement: HTMLElemen
   await expect(canvas.getByRole("tablist", { name: /Trip money sections|ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
   await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
   await expect(canvasElement.querySelector(".expense-finance-tabs")).not.toBeNull();
+  const statementTab = canvas.queryByRole("tab", { name: /Statement|รายการละเอียด/i });
+  if (statementTab) {
+    await userEvent.click(statementTab);
+    const statementTable = canvas.queryByRole("table", { name: /Detailed trip money statement|รายการเงินทริปแบบละเอียด/i });
+    if (statementTable) {
+      await expect(statementTable).toHaveClass("expense-statement-table");
+    } else {
+      await expect(canvasElement.querySelector(".expense-statement")).not.toBeNull();
+    }
+  }
   const spendingTab = canvas.queryByRole("tab", { name: /Spending|รายการใช้จ่าย/i });
   if (spendingTab) {
     await userEvent.click(spendingTab);

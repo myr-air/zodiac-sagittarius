@@ -42,8 +42,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
-    const detailButtons = within(ledger).getAllByRole("button", { name: /ดูรายละเอียดบิล/i });
-    await user.click(detailButtons[0]);
+    await user.click(within(ledger).getByRole("button", { name: /ดูรายละเอียดบิลของ Dim Dim Sum brunch/i }));
     expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));

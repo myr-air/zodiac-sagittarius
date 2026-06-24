@@ -4,6 +4,7 @@ import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseMoneySettings } from "./components/ExpenseMoneySettings";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpensePageHeader } from "./components/ExpensePageHeader";
+import { ExpenseStatementSection } from "./components/ExpenseStatementSection";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 import * as expenseStyles from "./TripExpensesPage.styles";
@@ -22,7 +23,7 @@ export type {
   UpdateExpenseHandler,
 } from "./model/expense-page-types";
 
-type ExpenseFinanceView = "overview" | "spending" | "balances" | "categories" | "settings";
+type ExpenseFinanceView = "overview" | "spending" | "statement" | "balances" | "categories" | "settings";
 
 export function TripExpensesPage({
   trip,
@@ -90,7 +91,7 @@ export function TripExpensesPage({
   const pendingDeleteExpense = trip.expenses.find((expense) => expense.id === pendingDeleteExpenseId) ?? null;
   const activeTripPlanId =
     selectedTripPlanId ?? planSourceTrip.mainTripPlanId ?? planSourceTrip.activePlanVariantId ?? "";
-  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "balances", "categories", "settings"];
+  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "statement", "balances", "categories", "settings"];
   const focusFinanceTab = (view: ExpenseFinanceView) => {
     window.requestAnimationFrame(() => {
       document.getElementById(`trip-money-tab-${view}`)?.focus();
@@ -245,6 +246,22 @@ export function TripExpensesPage({
             pendingSettlementKeys={pendingSettlementKeys}
             onRecordSettlement={recordSettlement}
             onReviewExpense={setDialogExpense}
+          />
+      </div>
+
+      <div
+        id="trip-money-panel-statement"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-statement"
+        hidden={activeView !== "statement"}
+      >
+          <ExpenseStatementSection
+            displayCurrency={displayCurrency}
+            displayExchangeRateNumber={displayExchangeRateNumber}
+            locale={locale}
+            settlementCurrency={settlementCurrency}
+            t={t}
+            trip={trip}
           />
       </div>
 
