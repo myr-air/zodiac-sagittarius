@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react";
 import type { AccountTripSummary } from "@/src/account/api-client";
 import {
+  normalizeSearchQuery,
+  valuesMatchSearchQuery,
+} from "@/src/shared/text-search";
+import {
   accountPortalTripBadgeTone,
   accountPortalTripDetail,
 } from "../lists/account-portal-trip-list-item.model";
@@ -30,13 +34,14 @@ export function buildAccountPortalExplorerTrips(
 ): readonly AccountTripSummary[] {
   const sharedTrips = trips.filter((trip) => !trip.isOwner);
   const baseTrips = sharedTrips.length ? sharedTrips : trips;
-  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const normalizedQuery = normalizeSearchQuery(query);
   if (!normalizedQuery) return baseTrips;
 
   return baseTrips.filter((trip) =>
-    `${trip.name} ${trip.destinationLabel} ${trip.role}`
-      .toLocaleLowerCase()
-      .includes(normalizedQuery),
+    valuesMatchSearchQuery(
+      [trip.name, trip.destinationLabel, trip.role],
+      normalizedQuery,
+    ),
   );
 }
 
