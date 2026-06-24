@@ -11,6 +11,7 @@ import { useEmailLoginFormState } from "./use-email-login-form-state";
 import { useEmailLoginStepNavigation } from "./use-email-login-step-navigation";
 import { useEmailLoginSubmitActions } from "../submit/use-email-login-submit-actions";
 import type { UseEmailLoginPanelStateProps } from "./use-email-login-panel-state-params";
+import { buildEmailLoginPanelStateResult } from "./email-login-panel-state-result";
 
 export function useEmailLoginPanelState({
   accountClient,
@@ -20,165 +21,77 @@ export function useEmailLoginPanelState({
   onLoggedIn,
 }: UseEmailLoginPanelStateProps) {
   const { locale, t } = useI18n();
-  const {
-    code,
-    displayName,
-    email,
-    homeBase,
-    password,
-    trustDevice,
-    clearCodeAndPassword,
-    resetEntryFields,
-    setDisplayName,
-    setEmail,
-    setHomeBase,
-    setPassword,
-    setTrustDevice,
-    updateCode,
-  } = useEmailLoginFormState();
-  const {
-    authStep,
-    goToStep,
-    setTransitionDirection,
-    transitionDirection,
-  } = useEmailLoginStepNavigation();
-  const {
-    challenge,
-    resendCooldown,
-    resetResendCooldown,
-    setChallenge,
-    setSubmittedChallenge,
-    setVerifiedRegistrationSession,
-    startResendCooldown,
-    verifiedRegistrationSession,
-  } = useEmailLoginChallengeState({ setTransitionDirection });
-  const {
-    codeHintId,
-    codeInputId,
-    emailHintId,
-    emailInputId,
-    formErrorId,
-    isEmailInvalid,
-    isEmailValid,
-    isPasswordInvalid,
-    normalizedEmail,
-    otpReady,
-    passwordAutocomplete,
-    passwordHintId,
-    passwordInputId,
-    passwordReady,
-  } = buildEmailLoginPanelDerivedState({
+  const formState = useEmailLoginFormState();
+  const stepNavigation = useEmailLoginStepNavigation();
+  const challengeState = useEmailLoginChallengeState({
+    setTransitionDirection: stepNavigation.setTransitionDirection,
+  });
+  const derivedState = buildEmailLoginPanelDerivedState({
     activeFlow,
-    code,
-    email,
-    password,
+    code: formState.code,
+    email: formState.email,
+    password: formState.password,
   });
 
-  const {
-    isSubmitting,
-    requestEmailCode,
-    signInWithPasskey,
-    submitForm,
-  } = useEmailLoginSubmitActions({
+  const submitActions = useEmailLoginSubmitActions({
     accountClient,
     activeFlow,
-    authStep,
-    challenge,
-    code,
-    displayName,
+    authStep: stepNavigation.authStep,
+    challenge: challengeState.challenge,
+    code: formState.code,
+    displayName: formState.displayName,
     emailLoginMessages: t.access.emailLogin,
     fallbackName: t.access.dashboard.fallbackName,
-    isEmailValid,
+    isEmailValid: derivedState.isEmailValid,
     locale,
     messages: t.access.messages,
-    normalizedEmail,
+    normalizedEmail: derivedState.normalizedEmail,
     onError,
     onLoggedIn,
-    otpReady,
-    password,
-    passwordReady,
-    trustDevice,
-    verifiedRegistrationSession,
-    goToSetupStep: () => goToStep("setup"),
-    setChallenge: setSubmittedChallenge,
-    setVerifiedRegistrationSession,
-    startResendCooldown,
-    updateCode,
+    otpReady: derivedState.otpReady,
+    password: formState.password,
+    passwordReady: derivedState.passwordReady,
+    trustDevice: formState.trustDevice,
+    verifiedRegistrationSession: challengeState.verifiedRegistrationSession,
+    goToSetupStep: () => stepNavigation.goToStep("setup"),
+    setChallenge: challengeState.setSubmittedChallenge,
+    setVerifiedRegistrationSession: challengeState.setVerifiedRegistrationSession,
+    startResendCooldown: challengeState.startResendCooldown,
+    updateCode: formState.updateCode,
   });
 
-  const {
-    changeEmail,
-    chooseMethods,
-    resetChallenge,
-    showPasswordStep,
-    switchFlow,
-  } = useEmailLoginEntryActions({
+  const entryActions = useEmailLoginEntryActions({
     activeFlow,
-    clearCodeAndPassword,
-    goToStep,
+    clearCodeAndPassword: formState.clearCodeAndPassword,
+    goToStep: stepNavigation.goToStep,
     onError,
     onFlowChange,
-    resetEntryFields,
-    resetResendCooldown,
-    setChallenge,
-    setPassword,
-    setVerifiedRegistrationSession,
+    resetEntryFields: formState.resetEntryFields,
+    resetResendCooldown: challengeState.resetResendCooldown,
+    setChallenge: challengeState.setChallenge,
+    setPassword: formState.setPassword,
+    setVerifiedRegistrationSession: challengeState.setVerifiedRegistrationSession,
   });
 
   const stepMeta = buildEmailLoginStepMeta({
     activeFlow,
-    authStep,
-    challengeExpiresAt: challenge?.expiresAt,
+    authStep: stepNavigation.authStep,
+    challengeExpiresAt: challengeState.challenge?.expiresAt,
     locale,
     messages: t.access.emailLogin,
   });
 
-  return {
+  return buildEmailLoginPanelStateResult({
     activeFlow,
-    authStep,
-    challenge,
-    code,
-    codeHintId,
-    codeInputId,
-    displayName,
-    email,
-    emailHintId,
-    emailInputId,
+    challengeState,
+    derivedState,
     emailLoginMessages: t.access.emailLogin,
-    formErrorId,
-    homeBase,
-    isEmailInvalid,
-    isEmailValid,
-    isPasswordInvalid,
-    isSubmitting,
-    normalizedEmail,
-    otpReady,
-    password,
-    passwordAutocomplete,
-    passwordHintId,
-    passwordInputId,
-    passwordReady,
-    resendCooldown,
-    stepHeading: stepMeta.heading,
-    stepLabel: stepMeta.label,
-    transitionDirection,
-    trustDevice,
-    visualStep: stepMeta.visualStep,
-    changeEmail,
-    chooseMethods,
-    requestEmailCode,
-    resetChallenge,
-    setDisplayName,
-    setEmail,
-    setHomeBase,
-    setPassword,
-    setTrustDevice,
-    showPasswordStep,
-    signInWithPasskey,
-    submitForm,
-    switchFlow,
-    updateCode,
-  };
+    entryActions,
+    formState,
+    stepMeta,
+    stepNavigation,
+    submitActions,
+  });
 }
 
 export type EmailLoginPanelState = ReturnType<typeof useEmailLoginPanelState>;

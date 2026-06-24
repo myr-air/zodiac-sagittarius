@@ -113,6 +113,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/email-login/state/use-email-login-challenge-state.ts",
   "src/features/account/components/account-access-panel/email-login/state/use-email-login-entry-actions.ts",
   "src/features/account/components/account-access-panel/email-login/state/use-email-login-form-state.ts",
+  "src/features/account/components/account-access-panel/email-login/state/email-login-panel-state-result.ts",
+  "src/features/account/components/account-access-panel/email-login/state/tests/email-login-panel-state-result.test.ts",
   "src/features/account/components/account-access-panel/email-login/state/use-email-login-panel-state-params.ts",
   "src/features/account/components/account-access-panel/email-login/state/use-email-login-step-navigation.ts",
   "src/features/account/components/account-access-panel/email-login/submit/use-email-login-submit-actions.ts",
