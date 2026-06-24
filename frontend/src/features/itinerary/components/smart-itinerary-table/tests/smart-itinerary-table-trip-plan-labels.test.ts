@@ -5,7 +5,6 @@ import {
   formatTripPlanOptionLabel,
   selectedTripPlanIdForControl,
   smartItineraryTripPlanStatusSelectOptions,
-  tripPlanStatusControlValues,
 } from "../smart-itinerary-table-trip-plan-labels";
 
 describe("smart itinerary table trip plan labels", () => {
@@ -36,7 +35,7 @@ describe("smart itinerary table trip plan labels", () => {
     ]);
   });
 
-  it("centralizes status select options in control display order", () => {
+  it("adapts status select options for the control", () => {
     const labels = {
       main: "Main",
       proposal: "Proposal",
@@ -44,12 +43,6 @@ describe("smart itinerary table trip plan labels", () => {
       backup: "Backup",
     };
 
-    expect(tripPlanStatusControlValues).toEqual([
-      "main",
-      "draft",
-      "backup",
-      "proposal",
-    ]);
     expect(smartItineraryTripPlanStatusSelectOptions(labels)).toEqual([
       { value: "main", label: "Main", disabled: true },
       { value: "draft", label: "Draft" },

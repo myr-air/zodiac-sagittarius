@@ -25,6 +25,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Audited extracted shared component Storybook coverage
 - [x] Centralized repeated workspace badge frame styles
 - [x] Removed obsolete expense category/split option aliases
+- [x] Centralized trip plan status select helpers
 
 ## Milestone 1: Shared UI Primitives
 
@@ -46,7 +47,7 @@ Goal: Keep canonical trip data rules in `frontend/src/trip/**`, with feature cod
 - [x] Use booking doc value arrays directly from `trip/booking-docs`.
 - [x] Review photo album provider/access options for removable aliases.
 - [x] Review member role/status filter values for domain-vs-page ownership.
-- [ ] Review trip plan, path, and itinerary option builders for duplicated value order.
+- [x] Review trip plan, path, and itinerary option builders for duplicated value order.
 
 ## Milestone 3: Workspace Feature Structure
 
@@ -90,6 +91,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Audit large page composition files; current workspace pages stay below the 400-line review band.
 - [x] Re-run Storybook catalog checks after any shared component move.
 - [x] Remove obsolete expense category/split aliases after domain expense helpers exist.
+- [x] Move Trip Plan status option order and labels to the trip domain display helpers.
 
 ## Draft Acceptance Criteria
 

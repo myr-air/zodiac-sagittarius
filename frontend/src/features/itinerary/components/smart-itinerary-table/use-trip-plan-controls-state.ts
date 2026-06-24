@@ -1,8 +1,7 @@
 import { useState, type SetStateAction } from "react";
 import type { PlanVariant } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
-import { findTripPlanOptionById } from "@/src/trip/trip-plans";
-import { tripPlanStatus } from "./smart-itinerary-table-trip-plan-labels";
+import { findTripPlanOptionById, tripPlanStatus } from "@/src/trip/trip-plans";
 import {
   changeTripPlanEditedNameDraft,
   changeTripPlanNewNameDraft,

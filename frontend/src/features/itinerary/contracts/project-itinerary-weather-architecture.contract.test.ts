@@ -28,7 +28,8 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     expect(tableGraph).toContain("export function buildGraphColumnWidth");
     expect(tableLabels).toContain("export function itemStatusLabel");
     expect(tableLabels).toContain("export function formatSelectedPlanLabel");
-    expect(tableTripPlanLabels).toContain("export function tripPlanStatus");
+    expect(tableTripPlanLabels).toContain("@/src/trip/trip-plans");
+    expect(tableTripPlanLabels).not.toContain("export function tripPlanStatus");
     expect(weatherSummary).toContain("export function buildWeatherSummary");
     expect(weatherSummary).toContain("./weather-tooltip");
     expect(weatherTooltip).toContain("export function buildWeatherTooltip");

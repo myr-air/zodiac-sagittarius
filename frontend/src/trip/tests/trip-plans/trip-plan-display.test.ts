@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../seed";
 import {
+  buildTripPlanStatusLabelSelectOptions,
+  buildTripPlanStatusSelectOptions,
   buildTripPlanSelectOptions,
   defaultTripPlanId,
   findTripPlanById,
   findTripPlanOptionById,
+  formatTripPlanOptionLabel,
   tripHasPlan,
   tripPlanName,
   tripPlanOptions,
+  tripPlanStatusSelectValues,
 } from "../../trip-plans";
 
 describe("trip plan display", () => {
@@ -50,6 +54,42 @@ describe("trip plan display", () => {
     ])).toEqual([
       { value: "plan-main", label: "Main Plan" },
       { value: "plan-rain", label: "Rain Plan" },
+    ]);
+  });
+
+  it("builds Trip Plan status labels and select options from domain values", () => {
+    const statusLabels = {
+      main: "Main",
+      proposal: "Proposal",
+      draft: "Draft",
+      backup: "Backup",
+    };
+    const plans = [
+      {
+        kind: "split",
+        id: "split-1",
+        name: "Split",
+        tripId: "trip-1",
+        description: "",
+        status: "proposal",
+      },
+    ] as const;
+
+    expect(tripPlanStatusSelectValues).toEqual([
+      "main",
+      "draft",
+      "backup",
+      "proposal",
+    ]);
+    expect(formatTripPlanOptionLabel(plans[0], statusLabels)).toBe("Split - Proposal");
+    expect(buildTripPlanStatusLabelSelectOptions(plans, statusLabels)).toEqual([
+      { value: "split-1", label: "Split - Proposal" },
+    ]);
+    expect(buildTripPlanStatusSelectOptions(statusLabels)).toEqual([
+      { value: "main", label: "Main", disabled: true },
+      { value: "draft", label: "Draft" },
+      { value: "backup", label: "Backup" },
+      { value: "proposal", label: "Proposal" },
     ]);
   });
 
