@@ -14,114 +14,89 @@ import {
   appViewportStory,
   type SagittariusAppStory,
 } from "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders";
+import type { PlanningView } from "@/src/trip/workspace/planning-view";
 
-export const appViewportStories = {
-  desktop1024Bookings: appViewportStory(
-    "bookings",
-    "desktop1024",
-    expectBookingsView,
-  ),
-  desktop1024Expenses: appViewportStory(
-    "expenses",
-    "desktop1024",
-    expectExpensesView,
-  ),
-  desktop1024Itinerary: appViewportStory(
-    "itinerary",
-    "desktop1024",
-    expectItineraryView,
-  ),
-  desktop1024Map: appViewportStory("map", "desktop1024", expectMapView),
-  desktop1024Members: appViewportStory(
-    "members",
-    "desktop1024",
-    expectMembersView,
-  ),
-  desktop1024Overview: appViewportStory(
-    "overview",
-    "desktop1024",
-    expectDesktopOverviewWorkspace,
-  ),
-  desktop1024Photos: appViewportStory(
-    "photos",
-    "desktop1024",
-    expectPhotosView,
-  ),
-  desktop1024Settings: appViewportStory(
-    "settings",
-    "desktop1024",
-    expectSettingsView,
-  ),
-  desktop1024Timeline: appViewportStory(
-    "timeline",
-    "desktop1024",
-    expectTimelineView,
-  ),
-  desktop1440Bookings: appViewportStory(
-    "bookings",
-    "desktop1440",
-    expectBookingsView,
-  ),
-  desktop1440Expenses: appViewportStory(
-    "expenses",
-    "desktop1440",
-    expectExpensesView,
-  ),
-  desktop1440Itinerary: appViewportStory(
-    "itinerary",
-    "desktop1440",
-    expectItineraryView,
-  ),
-  desktop1440Map: appViewportStory("map", "desktop1440", expectMapView),
-  desktop1440Members: appViewportStory(
-    "members",
-    "desktop1440",
-    expectMembersView,
-  ),
-  desktop1440Overview: appViewportStory(
-    "overview",
-    "desktop1440",
-    expectDesktopOverviewWorkspace,
-  ),
-  desktop1440Photos: appViewportStory(
-    "photos",
-    "desktop1440",
-    expectPhotosView,
-  ),
-  desktop1440Settings: appViewportStory(
-    "settings",
-    "desktop1440",
-    expectSettingsView,
-  ),
-  desktop1440Timeline: appViewportStory(
-    "timeline",
-    "desktop1440",
-    expectTimelineView,
-  ),
-  mobileBookings: appViewportStory("bookings", "mobile320", expectBookingsView),
-  mobileExpenses: appViewportStory("expenses", "mobile320", expectExpensesView),
-  mobileItinerary: appViewportStory(
-    "itinerary",
-    "mobile320",
-    expectItineraryView,
-  ),
-  mobileMap: appViewportStory("map", "mobile320", expectMapView),
-  mobileMembers: appViewportStory("members", "mobile320", expectMembersView),
-  mobileOverview: appViewportStory("overview", "mobile320", expectOverviewView),
-  mobilePhotos: appViewportStory("photos", "mobile320", expectPhotosView),
-  mobileSettings: appViewportStory("settings", "mobile320", expectSettingsView),
-  mobileTimeline: appViewportStory("timeline", "mobile320", expectTimelineView),
-  tabletBookings: appViewportStory("bookings", "tablet768", expectBookingsView),
-  tabletExpenses: appViewportStory("expenses", "tablet768", expectExpensesView),
-  tabletItinerary: appViewportStory(
-    "itinerary",
-    "tablet768",
-    expectItineraryView,
-  ),
-  tabletMap: appViewportStory("map", "tablet768", expectMapView),
-  tabletMembers: appViewportStory("members", "tablet768", expectMembersView),
-  tabletOverview: appViewportStory("overview", "tablet768", expectOverviewView),
-  tabletPhotos: appViewportStory("photos", "tablet768", expectPhotosView),
-  tabletSettings: appViewportStory("settings", "tablet768", expectSettingsView),
-  tabletTimeline: appViewportStory("timeline", "tablet768", expectTimelineView),
-} satisfies Record<string, SagittariusAppStory>;
+type SagittariusViewport = "mobile320" | "tablet768" | "desktop1024" | "desktop1440";
+type ViewportStoryPrefix = "mobile" | "tablet" | "desktop1024" | "desktop1440";
+type ViewStorySuffix = Capitalize<PlanningView>;
+type ViewportStoryKey = `${ViewportStoryPrefix}${ViewStorySuffix}`;
+type StoryPlay = NonNullable<SagittariusAppStory["play"]>;
+
+const appViewportStoryViewOrder = [
+  "overview",
+  "itinerary",
+  "timeline",
+  "map",
+  "members",
+  "expenses",
+  "bookings",
+  "photos",
+  "settings",
+] as const satisfies readonly PlanningView[];
+
+const appViewportStoryViewSuffixes = {
+  bookings: "Bookings",
+  expenses: "Expenses",
+  itinerary: "Itinerary",
+  map: "Map",
+  members: "Members",
+  overview: "Overview",
+  photos: "Photos",
+  settings: "Settings",
+  timeline: "Timeline",
+} as const satisfies Record<PlanningView, ViewStorySuffix>;
+
+const appViewportStoryViewExpectations = {
+  bookings: expectBookingsView,
+  expenses: expectExpensesView,
+  itinerary: expectItineraryView,
+  map: expectMapView,
+  members: expectMembersView,
+  overview: expectOverviewView,
+  photos: expectPhotosView,
+  settings: expectSettingsView,
+  timeline: expectTimelineView,
+} as const satisfies Record<PlanningView, StoryPlay>;
+
+const appViewportStorySpecs = [
+  {
+    keyPrefix: "desktop1024",
+    viewport: "desktop1024",
+    viewExpectations: {
+      ...appViewportStoryViewExpectations,
+      overview: expectDesktopOverviewWorkspace,
+    },
+  },
+  {
+    keyPrefix: "desktop1440",
+    viewport: "desktop1440",
+    viewExpectations: appViewportStoryViewExpectations,
+  },
+  {
+    keyPrefix: "tablet",
+    viewport: "tablet768",
+    viewExpectations: appViewportStoryViewExpectations,
+  },
+  {
+    keyPrefix: "mobile",
+    viewport: "mobile320",
+    viewExpectations: appViewportStoryViewExpectations,
+  },
+] as const satisfies readonly {
+  keyPrefix: ViewportStoryPrefix;
+  viewport: SagittariusViewport;
+  viewExpectations: Record<PlanningView, StoryPlay>;
+}[];
+
+function buildAppViewportStories() {
+  return Object.fromEntries(
+    appViewportStorySpecs.flatMap(({ keyPrefix, viewport, viewExpectations }) =>
+      appViewportStoryViewOrder.map((view) => [
+        `${keyPrefix}${appViewportStoryViewSuffixes[view]}`,
+        appViewportStory(view, viewport, viewExpectations[view]),
+      ]),
+    ),
+  ) as Record<ViewportStoryKey, SagittariusAppStory>;
+}
+
+export const appViewportStories = buildAppViewportStories();
