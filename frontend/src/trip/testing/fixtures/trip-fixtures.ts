@@ -101,6 +101,20 @@ export const tripFixtureStopNotes: StopNote[] = [
   },
 ];
 
+export function buildTripFixtureStopNote(
+  overrides: Partial<StopNote> & Pick<StopNote, "id">,
+): StopNote {
+  return {
+    tripId: seedTrip.id,
+    tripPlanId: seedTrip.activePlanVariantId,
+    itemId: "item-dimdim",
+    authorId: "member-aom",
+    body: "Original note",
+    createdAt: "2026-06-18T09:00:00.000Z",
+    ...overrides,
+  };
+}
+
 export const tripFixture = {
   trip: seedTrip,
   planItems: seedTrip.itineraryItems.filter((item) => item.planVariantId === seedTrip.activePlanVariantId),
