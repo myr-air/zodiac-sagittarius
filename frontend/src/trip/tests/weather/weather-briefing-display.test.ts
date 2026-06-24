@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   briefingsForStrip,
   formatSolarTime,
+  formatWeatherDecimal,
+  formatWeatherSpeed,
   formatWeatherTemp,
   thaiWeekdayTone,
   weatherGraphicLabel,
@@ -56,6 +58,10 @@ describe("weather briefing display helpers", () => {
   it("formats temperatures and solar times for compact weather UI", () => {
     expect(formatWeatherTemp(28.6)).toBe("29°");
     expect(formatWeatherTemp(null)).toBe("--°");
+    expect(formatWeatherDecimal(8.2)).toBe("8.2");
+    expect(formatWeatherDecimal(4)).toBe("4");
+    expect(formatWeatherSpeed(16.4)).toBe("16 km/h");
+    expect(formatWeatherSpeed(null)).toBe("--");
     expect(formatSolarTime("2026-07-11T05:46")).toBe("05:46");
     expect(formatSolarTime("18:47:00")).toBe("18:47");
     expect(formatSolarTime(null)).toBeNull();

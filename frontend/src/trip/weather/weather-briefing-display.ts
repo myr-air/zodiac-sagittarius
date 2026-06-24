@@ -63,6 +63,15 @@ export function formatWeatherTemp(value: number | null | undefined): string {
   return `${Math.round(value)}°`;
 }
 
+export function formatWeatherDecimal(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+export function formatWeatherSpeed(value: number | null | undefined): string {
+  if (typeof value !== "number") return "--";
+  return `${Math.round(value)} km/h`;
+}
+
 export function formatSolarTime(value: string | null | undefined): string | null {
   if (!value) return null;
   const localTime = value.match(/T(\d{2}:\d{2})/)?.[1];

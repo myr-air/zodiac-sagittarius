@@ -8,6 +8,11 @@ import {
   visibleTextParts,
 } from "@/src/shared/text-parts";
 import type { TripDailyBriefing } from "@/src/trip/types";
+import {
+  formatWeatherDecimal,
+  formatWeatherSpeed,
+  formatWeatherTemp,
+} from "@/src/trip/weather";
 import { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
 
 export { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
@@ -28,7 +33,7 @@ export function formatWeatherSummary(
 ): string {
   const condition = conditionLabel ?? emptyText(locale);
   if (typeof high !== "number" && typeof low !== "number") return condition;
-  return `${condition} · ${formatTemp(high)} ${formatTemp(low)}`;
+  return `${condition} · ${formatWeatherTemp(high)} ${formatWeatherTemp(low)}`;
 }
 
 export function formatPercent(value: number | null | undefined): string {
@@ -37,8 +42,7 @@ export function formatPercent(value: number | null | undefined): string {
 }
 
 export function formatSpeed(value: number | null | undefined): string {
-  if (typeof value !== "number") return "--";
-  return `${Math.round(value)} km/h`;
+  return formatWeatherSpeed(value);
 }
 
 export function buildWeatherDetailLines(
@@ -67,11 +71,6 @@ export function buildWeatherDetailLines(
   ]);
 }
 
-function formatTemp(value: number | null | undefined): string {
-  if (typeof value !== "number") return "--°";
-  return `${Math.round(value)}°`;
-}
-
 function joinWeatherParts(parts: Array<string | null>): string | null {
   return joinVisibleTextParts(parts, " · ");
 }
@@ -83,8 +82,8 @@ function formatTempPair(
 ): string | null {
   if (typeof high !== "number" && typeof low !== "number") return null;
   return `${label} ${visibleTextParts([
-    formatTemp(high) !== "--°" ? formatTemp(high) : null,
-    formatTemp(low) !== "--°" ? formatTemp(low) : null,
+    typeof high === "number" ? formatWeatherTemp(high) : null,
+    typeof low === "number" ? formatWeatherTemp(low) : null,
   ]).join(" ")}`;
 }
 
@@ -92,8 +91,7 @@ function formatValue(
   label: string,
   value: number | null | undefined,
   unit: string,
-  transform: (value: number) => number | string = (input) =>
-    Number.isInteger(input) ? input : input.toFixed(1),
+  transform: (value: number) => number | string = formatWeatherDecimal,
 ): string | null {
   if (typeof value !== "number") return null;
   return `${label} ${transform(value)}${unit ? ` ${unit}` : ""}`;

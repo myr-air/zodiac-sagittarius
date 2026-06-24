@@ -4,6 +4,8 @@ import {
 } from "@/src/shared/text-parts";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import {
+  formatWeatherDecimal,
+  formatWeatherSpeed,
   formatSolarTime,
   formatWeatherTemp,
   weatherGraphicLabel,
@@ -48,14 +50,14 @@ export function formatRainDetail(
 ): string | null {
   const parts = joinVisibleTextParts([
     typeof chance === "number" ? `${chance}%` : null,
-    typeof amount === "number" ? `${formatDecimal(amount)} mm` : null,
-    typeof hours === "number" ? `${formatDecimal(hours)}h` : null,
+    typeof amount === "number" ? `${formatWeatherDecimal(amount)} mm` : null,
+    typeof hours === "number" ? `${formatWeatherDecimal(hours)}h` : null,
   ], " · ");
   return parts ? `Rain ${parts}` : null;
 }
 
 export function formatUvIndex(value: number | null | undefined): string | null {
-  return typeof value === "number" ? `UV ${formatDecimal(value)}` : null;
+  return typeof value === "number" ? `UV ${formatWeatherDecimal(value)}` : null;
 }
 
 export function formatWindDetail(
@@ -64,8 +66,8 @@ export function formatWindDetail(
 ): string | null {
   if (typeof speed !== "number" && typeof gusts !== "number") return null;
   const parts = joinVisibleTextParts([
-    typeof speed === "number" ? `${Math.round(speed)} km/h` : null,
-    typeof gusts === "number" ? `gust ${Math.round(gusts)} km/h` : null,
+    typeof speed === "number" ? formatWeatherSpeed(speed) : null,
+    typeof gusts === "number" ? `gust ${formatWeatherSpeed(gusts)}` : null,
   ], " · ");
   return `Wind ${parts}`;
 }
@@ -74,7 +76,7 @@ export function formatVisibilityDetail(
   value: number | null | undefined,
 ): string | null {
   return typeof value === "number"
-    ? `Visibility min ${formatDecimal(value / 1000)} km`
+    ? `Visibility min ${formatWeatherDecimal(value / 1000)} km`
     : null;
 }
 
@@ -83,10 +85,6 @@ export function formatPercentDetail(
   value: number | null | undefined,
 ): string | null {
   return typeof value === "number" ? `${label} ${value}%` : null;
-}
-
-export function formatDecimal(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 export function buildWeatherTooltip(

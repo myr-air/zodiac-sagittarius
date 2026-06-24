@@ -9,6 +9,8 @@ export type {
 export {
   briefingsForStrip,
   formatSolarTime,
+  formatWeatherDecimal,
+  formatWeatherSpeed,
   formatWeatherTemp,
   thaiWeekdayTone,
   weatherGraphicLabel,
