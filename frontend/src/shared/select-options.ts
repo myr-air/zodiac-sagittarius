@@ -22,6 +22,16 @@ export function buildSelectOptionsFromItems<Item, Value extends string>(
   }));
 }
 
+export function buildAllFilterSelectOptions<Value extends string>(
+  values: readonly ("all" | Value)[],
+  allLabel: string,
+  labelForValue: (value: Value) => string,
+): SelectOption<"all" | Value>[] {
+  return buildSelectOptions(values, (value) =>
+    value === "all" ? allLabel : labelForValue(value),
+  );
+}
+
 export function withAllFilterValue<const Values extends readonly string[]>(
   values: Values,
 ): readonly ["all", ...Values] {

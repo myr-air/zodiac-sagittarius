@@ -4,6 +4,7 @@ import {
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
 import {
+  buildAllFilterSelectOptions,
   buildSelectOptions,
   type SelectOption,
   withAllFilterValue,
@@ -45,8 +46,10 @@ export function expenseCategorySelectOptions(): ExpenseSelectOption<Expense["cat
 export function expenseCategoryFilterSelectOptions(
   allCategoriesLabel: string,
 ): ExpenseSelectOption<ExpenseCategoryFilter>[] {
-  return buildSelectOptions(expenseCategoryFilterValues, (value) =>
-    value === "all" ? allCategoriesLabel : value,
+  return buildAllFilterSelectOptions(
+    expenseCategoryFilterValues,
+    allCategoriesLabel,
+    (value) => value,
   );
 }
 

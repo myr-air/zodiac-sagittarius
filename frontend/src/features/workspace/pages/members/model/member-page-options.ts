@@ -6,6 +6,7 @@ import {
   type TripRole,
 } from "@/src/trip/members";
 import {
+  buildAllFilterSelectOptions,
   buildSelectOptions,
   type SelectOption,
   withAllFilterValue,
@@ -81,15 +82,19 @@ export function memberInviteRoleSelectOptions(
 export function memberRoleFilterSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberRoleFilter>[] {
-  return buildSelectOptions(memberRoleFilterValues, (value) =>
-    memberRoleFilterLabel(value, labels),
+  return buildAllFilterSelectOptions(
+    memberRoleFilterValues,
+    labels.members.filters.allRoles,
+    (value) => labels.appShell.roles[value],
   );
 }
 
 export function memberStatusFilterSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberStatusFilter>[] {
-  return buildSelectOptions(memberStatusFilterValues, (value) =>
-    memberStatusFilterLabel(value, labels),
+  return buildAllFilterSelectOptions(
+    memberStatusFilterValues,
+    labels.members.filters.allStatuses,
+    (value) => value === "claimed" ? labels.join.memberStatus.claimed : labels.common.status[value],
   );
 }

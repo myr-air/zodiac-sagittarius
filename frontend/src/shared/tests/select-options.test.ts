@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildAllFilterSelectOptions,
   buildSelectOptions,
   buildSelectOptionsFromItems,
   prependSelectOption,
@@ -30,6 +31,20 @@ describe("buildSelectOptions", () => {
     expect(options).toEqual([
       { value: "plan-main", label: "Main" },
       { value: "plan-rain", label: "Rain plan" },
+    ]);
+  });
+
+  it("builds all-first filter options with a dedicated all label", () => {
+    const options = buildAllFilterSelectOptions(
+      ["all", "active", "disabled"] as const,
+      "All statuses",
+      (value) => value.toUpperCase(),
+    );
+
+    expect(options).toEqual([
+      { value: "all", label: "All statuses" },
+      { value: "active", label: "ACTIVE" },
+      { value: "disabled", label: "DISABLED" },
     ]);
   });
 

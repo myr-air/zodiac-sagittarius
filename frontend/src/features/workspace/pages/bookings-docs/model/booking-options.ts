@@ -7,6 +7,7 @@ import {
   type BookingDocVisibility,
 } from "@/src/trip/booking-docs";
 import {
+  buildAllFilterSelectOptions,
   buildSelectOptions,
   type SelectOption,
   withAllFilterValue,
@@ -45,8 +46,10 @@ export function bookingStatusSelectOptions(copy: BookingCopy): BookingSelectOpti
 export function bookingStatusFilterSelectOptions(
   copy: BookingCopy,
 ): SelectOption<BookingStatusFilter>[] {
-  return buildSelectOptions(bookingStatusFilterValues, (value) =>
-    value === "all" ? copy.allStatuses : formatEnumLabel(value, copy),
+  return buildAllFilterSelectOptions(
+    bookingStatusFilterValues,
+    copy.allStatuses,
+    (value) => formatEnumLabel(value, copy),
   );
 }
 
