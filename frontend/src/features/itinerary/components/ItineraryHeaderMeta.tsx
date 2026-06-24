@@ -1,6 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
-import { formatTripRange } from "@/src/shared/components/page-header";
+import { PageHeaderTripDateMetaItem } from "@/src/shared/components/page-header";
 import { Icon } from "@/src/ui/icons";
 import { formatDuration } from "@/src/features/itinerary/lib/itinerary-display";
 
@@ -29,9 +29,7 @@ export function ItineraryHeaderMeta({
 }: ItineraryHeaderMetaProps) {
   return (
     <>
-      <span>
-        <Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}
-      </span>
+      <PageHeaderTripDateMetaItem startDate={startDate} endDate={endDate} locale={locale} />
       <span>
         <Icon name="route" />{" "}
         {tItinerary.dayItems({ days: daysCount, stops: itemsCount })}

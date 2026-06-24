@@ -3,9 +3,9 @@ import type { Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import {
-  formatTripRange,
   PageHeader,
   PageHeaderMetaItem,
+  PageHeaderTripDateMetaItem,
 } from "@/src/shared/components/page-header";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
@@ -33,7 +33,7 @@ export function BookingsDocsHeader({
       subtitle={trip.name}
       meta={(
         <>
-          <PageHeaderMetaItem icon="calendar">{formatTripRange(trip.startDate, trip.endDate, locale)}</PageHeaderMetaItem>
+          <PageHeaderTripDateMetaItem startDate={trip.startDate} endDate={trip.endDate} locale={locale} />
           <PageHeaderMetaItem icon="ticket">{copy.records(recordCount)}</PageHeaderMetaItem>
         </>
       )}

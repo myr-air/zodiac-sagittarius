@@ -1,5 +1,5 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatTripRange } from "@/src/shared/components/page-header";
+import { PageHeaderTripDateMetaItem } from "@/src/shared/components/page-header";
 import { Icon } from "@/src/ui/icons";
 import {
   activeDayLabel,
@@ -37,9 +37,7 @@ export function RouteMapHeaderMeta({
 }: RouteMapHeaderMetaProps) {
   return (
     <>
-      <span>
-        <Icon name="calendar" /> {formatTripRange(startDate, endDate, locale)}
-      </span>
+      <PageHeaderTripDateMetaItem startDate={startDate} endDate={endDate} locale={locale} />
       <span>
         <Icon name="location" />{" "}
         {copy.locationStatus({

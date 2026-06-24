@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { cn } from "@/src/lib/cn";
+import type { Locale } from "@/src/i18n/types";
 import { PersonAvatar } from "@/src/shared/components/person-avatar";
 import { Icon, type IconName } from "@/src/ui/icons";
+import { formatTripRange } from "./page-header-date";
 import {
   descriptionClassName,
   eyebrowClassName,
@@ -58,6 +60,24 @@ export function PageHeaderMetaItem({ children, icon }: PageHeaderMetaItemProps) 
     <span>
       <Icon name={icon} /> {children}
     </span>
+  );
+}
+
+interface PageHeaderTripDateMetaItemProps {
+  endDate: string;
+  locale?: Locale;
+  startDate: string;
+}
+
+export function PageHeaderTripDateMetaItem({
+  endDate,
+  locale,
+  startDate,
+}: PageHeaderTripDateMetaItemProps) {
+  return (
+    <PageHeaderMetaItem icon="calendar">
+      {formatTripRange(startDate, endDate, locale)}
+    </PageHeaderMetaItem>
   );
 }
 

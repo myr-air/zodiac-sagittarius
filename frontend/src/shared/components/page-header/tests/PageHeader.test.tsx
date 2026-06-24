@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PageHeader, PageHeaderMetaItem, PageUserCard } from "../PageHeader";
+import {
+  PageHeader,
+  PageHeaderMetaItem,
+  PageHeaderTripDateMetaItem,
+  PageUserCard,
+} from "../PageHeader";
 
 describe("PageHeader", () => {
   it("uses a compact command-surface header instead of postcard artwork", () => {
@@ -83,5 +88,22 @@ describe("PageHeader", () => {
 
     expect(screen.getByText("6 days")).toBeInTheDocument();
     expect(screen.getByText("6 days").closest("span")).toContainHTML("svg");
+  });
+
+  it("renders shared trip date range meta", () => {
+    render(
+      <PageHeader
+        title="Trip"
+        meta={
+          <PageHeaderTripDateMetaItem
+            startDate="2026-05-28"
+            endDate="2026-06-02"
+          />
+        }
+      />,
+    );
+
+    expect(screen.getByText("May 28 – Jun 2, 2026")).toBeInTheDocument();
+    expect(screen.getByText("May 28 – Jun 2, 2026").closest("span")).toContainHTML("svg");
   });
 });

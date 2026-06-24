@@ -1,9 +1,9 @@
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
 import {
-  formatTripRange,
   PageHeader,
   PageHeaderMetaItem,
+  PageHeaderTripDateMetaItem,
 } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import type { Trip } from "@/src/trip/types";
@@ -27,7 +27,7 @@ export function ExpensePageHeader({
       subtitle={trip.name}
       meta={(
         <>
-          <PageHeaderMetaItem icon="calendar">{formatTripRange(trip.startDate, trip.endDate, locale)}</PageHeaderMetaItem>
+          <PageHeaderTripDateMetaItem startDate={trip.startDate} endDate={trip.endDate} locale={locale} />
           <PageHeaderMetaItem icon="users">{t.dates.memberCount({ count: trip.members.length })}</PageHeaderMetaItem>
           <PageHeaderMetaItem icon="wallet">{canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</PageHeaderMetaItem>
         </>
