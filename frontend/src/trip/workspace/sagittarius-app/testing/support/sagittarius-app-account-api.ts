@@ -5,6 +5,7 @@ import type {
   AccountTripStats,
   AccountTripSummary,
 } from "@/src/account/api-client";
+import { fetchRequestUrl } from "@/src/testing/fetch-request-url";
 import { jsonResponse } from "@/src/testing/json-response";
 import type { TripParticipantSession } from "@/src/trip/types";
 
@@ -28,7 +29,7 @@ export function mockAccountPortalApiFetch({
   explorer?: AccountExplorerSummary;
 } = {}) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
-    const request = input instanceof Request ? input.url : String(input);
+    const request = fetchRequestUrl(input);
 
     if (
       request.includes("/api/v1/account") &&
@@ -84,7 +85,7 @@ export function mockAccountTripMemberSessionFetch({
   fallbackStatus?: number;
 }) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
-    const request = input instanceof Request ? input.url : String(input);
+    const request = fetchRequestUrl(input);
 
     if (request.includes(accountApiRoutes.accountTripMemberSessions(tripId))) {
       return jsonResponse(memberSession);
@@ -99,7 +100,7 @@ export function mockRejectedAccountTripMemberSessionFetch(
   error: Error,
 ) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
-    const request = input instanceof Request ? input.url : String(input);
+    const request = fetchRequestUrl(input);
 
     if (request.includes(accountApiRoutes.accountTripMemberSessions(tripId))) {
       throw error;

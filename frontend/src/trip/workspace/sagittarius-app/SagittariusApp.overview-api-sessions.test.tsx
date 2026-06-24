@@ -2,6 +2,8 @@ import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { accountApiRoutes } from "@/src/account/api-routes";
+import { fetchRequestUrl } from "@/src/testing/fetch-request-url";
+import { jsonResponse } from "@/src/testing/json-response";
 import { tripParticipantSessionStorageKey } from "@/src/trip/auth";
 import { seedTrip } from "@/src/trip/seed";
 import {
@@ -75,23 +77,17 @@ describe("Sagittarius cockpit overview API sessions", () => {
     const fetchSpy = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(async (input) => {
-        const request = input instanceof Request ? input.url : String(input);
+        const request = fetchRequestUrl(input);
         if (request.includes(accountTripMemberSessionsRoute)) {
-          return new Response(
-            JSON.stringify({
+          return jsonResponse(
+            {
               code: "forbidden",
               message: "account is not linked to this trip",
-            }),
-            {
-              status: 403,
-              headers: { "content-type": "application/json" },
             },
+            403,
           );
         }
-        return new Response(JSON.stringify({}), {
-          status: 404,
-          headers: { "content-type": "application/json" },
-        });
+        return jsonResponse({}, 404);
       });
 
     try {
