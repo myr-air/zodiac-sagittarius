@@ -15,6 +15,7 @@ import {
   workspaceDialogFormClassName,
   workspaceDialogGridClassName,
 } from "@/src/shared/components/workspace-dialog";
+import { workspaceBadgeFrameClassName } from "@/src/shared/components/workspace-badge";
 import { workspacePanelHeadingCompactClassName } from "@/src/shared/components/workspace-panel-heading";
 
 export const expensesPageClassName = "expenses-page grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0";
@@ -52,7 +53,7 @@ export const tableTitleClassName = "grid gap-1 [&_strong]:text-(--color-text) [&
 export const actionCellClassName = "inline-flex items-center gap-1.5";
 export const memberLineClassName = "grid min-w-0 grid-cols-[34px_minmax(0,1fr)] items-center gap-2";
 export const avatarClassName = "inline-grid size-[34px] place-items-center rounded-full border border-white text-[11px] font-black text-white shadow-[0_6px_14px_rgb(15_23_42_/_0.16)]";
-export const categoryBadgeClassName = "inline-flex min-h-6 w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-extrabold capitalize";
+export const categoryBadgeClassName = workspaceBadgeFrameClassName;
 export const categoryDotClassName = "inline-block size-2 rounded-full";
 export const ledgerAmountClassName = "inline-flex min-h-8 items-center rounded-(--radius-sm) bg-(--color-primary-soft) px-2.5 text-[13px] font-black tabular-nums text-(--color-primary-strong)";
 export const dialogClassName = "expense-dialog max-h-[min(720px,calc(100vh_-_32px))] max-w-[760px] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";

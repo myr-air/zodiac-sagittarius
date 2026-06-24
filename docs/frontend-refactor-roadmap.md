@@ -23,6 +23,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Moved generic booking document type labels to trip domain
 - [x] Audited workspace page composition line bands
 - [x] Audited extracted shared component Storybook coverage
+- [x] Centralized repeated workspace badge frame styles
 
 ## Milestone 1: Shared UI Primitives
 
@@ -31,7 +32,7 @@ Goal: Move repeated, feature-neutral UI patterns into `frontend/src/shared/compo
 - [x] Extract common icon+text rendering into `shared/components/icon-text`.
 - [x] Extract compact workspace panel headings into `shared/components/workspace-panel-heading`.
 - [x] Extract shared copy-feedback labels into `shared/components/copy-feedback`.
-- [ ] Audit remaining repeated button/badge/header patterns in workspace pages.
+- [x] Audit remaining repeated button/badge/header patterns in workspace pages.
 - [x] Add or update Storybook stories for each new shared component.
 - [ ] Keep feature wrappers only when they add domain-specific props, labels, or accessibility semantics.
 
@@ -54,7 +55,7 @@ Goal: Keep each workspace page split into page composition, components, hooks, m
 - [x] Bookings/docs page has separated display, options, folders, and dialog fields.
 - [x] Photos page has separated page options, display helpers, and dialog fields.
 - [x] Check large page files and split files above the project 400/600-line review bands.
-- [ ] Move reusable page-level patterns into shared workspace components only when at least two features use them.
+- [x] Move reusable page-level patterns into shared workspace components only when at least two features use them.
 - [ ] Remove obsolete feature-local aliases after shared/domain helpers exist.
 
 ## Milestone 4: Architecture Contracts And Tests
