@@ -1,6 +1,8 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildExpenseSummary } from "@/src/trip/expenses";
+import { seedTrip } from "@/src/trip/seed";
 import { renderExpenses } from "../testing/support/render-expenses-page";
 
 describe("TripExpensesPage actual expense actions", () => {
@@ -19,7 +21,7 @@ describe("TripExpensesPage actual expense actions", () => {
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
-        name: /ทำสำเนา Dim Dim Sum brunch เป็นรายการคาดการณ์/i,
+        name: /สร้างประมาณการจองจาก Dim Dim Sum brunch/i,
       }),
     );
 
@@ -62,15 +64,43 @@ describe("TripExpensesPage actual expense actions", () => {
     expect(props.onUpdateExpense).not.toHaveBeenCalled();
   });
 
-  it("cancels an actual expense through the ledger action", async () => {
+  it("confirms before deleting an actual expense through the ledger action", async () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
-      screen.getByRole("button", { name: /ยกเลิก Dim Dim Sum brunch/i }),
+      screen.getByRole("button", { name: /ลบ Dim Dim Sum brunch/i }),
     );
 
+    expect(props.onDeleteExpense).not.toHaveBeenCalled();
+    const dialog = screen.getByRole("dialog", { name: /ลบรายการนี้/i });
+    expect(dialog).toHaveTextContent(/ย้อนกลับไม่ได้/i);
+    await user.click(screen.getByRole("button", { name: /ลบรายการนี้/i }));
+
     expect(props.onDeleteExpense).toHaveBeenCalledWith("expense-dimsum");
+  });
+
+  it("does not open the normal spend editor for payback rows", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          id: "expense-payback",
+          title: "Beam paid Aom",
+          category: "settlement" as const,
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+
+    expect(screen.getAllByRole("button", { name: /แก้ไข Beam paid Aom/i })[0]).toBeDisabled();
   });
 });

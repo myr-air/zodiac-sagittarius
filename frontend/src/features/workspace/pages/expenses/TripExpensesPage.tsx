@@ -5,6 +5,7 @@ import { ExpenseMoneySettings } from "./components/ExpenseMoneySettings";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpensePageHeader } from "./components/ExpensePageHeader";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
+import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { TripExpensesPageProps } from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./hooks/use-trip-expenses-page-state";
@@ -40,6 +41,7 @@ export function TripExpensesPage({
 }: TripExpensesPageProps) {
   const { locale, t } = useI18n();
   const [activeView, setActiveView] = useState<ExpenseFinanceView>("overview");
+  const [pendingDeleteExpenseId, setPendingDeleteExpenseId] = useState<string | null>(null);
   const {
     categoryFilter,
     categorySpend,
@@ -85,10 +87,10 @@ export function TripExpensesPage({
     trip,
   });
   const planSourceTrip = workspaceTrip ?? trip;
+  const pendingDeleteExpense = trip.expenses.find((expense) => expense.id === pendingDeleteExpenseId) ?? null;
   const activeTripPlanId =
     selectedTripPlanId ?? planSourceTrip.mainTripPlanId ?? planSourceTrip.activePlanVariantId ?? "";
   const financeViews: ExpenseFinanceView[] = ["overview", "spending", "balances", "categories", "settings"];
-  const activePanelId = `trip-money-panel-${activeView}`;
   const focusFinanceTab = (view: ExpenseFinanceView) => {
     window.requestAnimationFrame(() => {
       document.getElementById(`trip-money-tab-${view}`)?.focus();
@@ -144,13 +146,13 @@ export function TripExpensesPage({
         ))}
       </nav>
 
-      {activeView === "overview" ? (
-        <div
-          className={expenseStyles.financeViewClassName}
-          id={activePanelId}
-          role="tabpanel"
-          aria-labelledby="trip-money-tab-overview"
-        >
+      <div
+        className={expenseStyles.financeViewClassName}
+        id="trip-money-panel-overview"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-overview"
+        hidden={activeView !== "overview"}
+      >
           <ExpenseSummaryStats
             currentNet={currentNet}
             displayCurrency={displayCurrency}
@@ -180,11 +182,14 @@ export function TripExpensesPage({
             onRecordSettlement={recordSettlement}
             onReviewExpense={setDialogExpense}
           />
-        </div>
-      ) : null}
+      </div>
 
-      {activeView === "spending" ? (
-        <div id={activePanelId} role="tabpanel" aria-labelledby="trip-money-tab-spending">
+      <div
+        id="trip-money-panel-spending"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-spending"
+        hidden={activeView !== "spending"}
+      >
           <ExpenseLedgerSection
             canEditExpenses={canEditExpenses}
             categoryFilter={categoryFilter}
@@ -197,7 +202,7 @@ export function TripExpensesPage({
             onAddPersonalExpense={() => setDialogExpense("new-personal")}
             onCategoryFilterChange={setCategoryFilter}
             onClearFilters={clearFilters}
-            onDeleteExpense={onDeleteExpense}
+            onDeleteExpense={setPendingDeleteExpenseId}
             onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
             onEditExpense={setDialogExpense}
             onDayFilterChange={setDayFilter}
@@ -214,11 +219,14 @@ export function TripExpensesPage({
             workspaceTrip={planSourceTrip}
             onTripPlanChange={onChangeTripPlan}
           />
-        </div>
-      ) : null}
+      </div>
 
-      {activeView === "balances" ? (
-        <div id={activePanelId} role="tabpanel" aria-labelledby="trip-money-tab-balances">
+      <div
+        id="trip-money-panel-balances"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-balances"
+        hidden={activeView !== "balances"}
+      >
           <ExpenseOverviewPanels
             view="balances"
             trip={trip}
@@ -238,11 +246,14 @@ export function TripExpensesPage({
             onRecordSettlement={recordSettlement}
             onReviewExpense={setDialogExpense}
           />
-        </div>
-      ) : null}
+      </div>
 
-      {activeView === "categories" ? (
-        <div id={activePanelId} role="tabpanel" aria-labelledby="trip-money-tab-categories">
+      <div
+        id="trip-money-panel-categories"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-categories"
+        hidden={activeView !== "categories"}
+      >
           <ExpenseOverviewPanels
             view="categories"
             trip={trip}
@@ -262,11 +273,14 @@ export function TripExpensesPage({
             onRecordSettlement={recordSettlement}
             onReviewExpense={setDialogExpense}
           />
-        </div>
-      ) : null}
+      </div>
 
-      {activeView === "settings" ? (
-        <div id={activePanelId} role="tabpanel" aria-labelledby="trip-money-tab-settings">
+      <div
+        id="trip-money-panel-settings"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-settings"
+        hidden={activeView !== "settings"}
+      >
           <ExpenseMoneySettings
             copyState={copyState}
             displayCurrency={displayCurrency}
@@ -278,8 +292,7 @@ export function TripExpensesPage({
             onDisplayExchangeRateChange={setDisplayExchangeRate}
             onDownloadCsv={downloadCsv}
           />
-        </div>
-      ) : null}
+      </div>
 
       <ExpenseDialogLayer
         apiBaseUrl={apiBaseUrl}
@@ -292,6 +305,20 @@ export function TripExpensesPage({
         onCreateExpense={createDialogExpense}
         onUpdateExpense={updateDialogExpense}
       />
+      {pendingDeleteExpense ? (
+        <WorkspaceConfirmDialog
+          body={t.expenses.actions.confirmDeleteExpenseBody({ title: pendingDeleteExpense.title })}
+          cancelLabel={t.common.actions.cancel}
+          confirmLabel={t.expenses.actions.confirmDeleteExpense}
+          onCancel={() => setPendingDeleteExpenseId(null)}
+          onConfirm={() => {
+            onDeleteExpense(pendingDeleteExpense.id);
+            setPendingDeleteExpenseId(null);
+          }}
+          title={t.expenses.actions.confirmDeleteExpense}
+          titleTone="danger"
+        />
+      ) : null}
     </section>
   );
 }

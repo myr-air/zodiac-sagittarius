@@ -84,6 +84,7 @@ export function ExpenseLedgerSection({
   const selectedLedgerExpenseId = selectedExpense?.id ?? null;
   const tableCopy = {
     actions: t.expenses.actions,
+    categories: t.expenses.categories,
     details: t.expenses.table.details,
     empty: t.expenses.empty,
     uncategorizedStop: t.expenses.uncategorizedStop,

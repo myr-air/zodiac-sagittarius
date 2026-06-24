@@ -7,11 +7,13 @@ import {
 
 interface ExpenseCategoryBadgeProps {
   category: Expense["category"];
+  label?: string;
   tone?: CategoryTone;
 }
 
 export function ExpenseCategoryBadge({
   category,
+  label = category,
   tone = categoryTone(category),
 }: ExpenseCategoryBadgeProps) {
   return (
@@ -28,7 +30,7 @@ export function ExpenseCategoryBadge({
         style={{ backgroundColor: tone.dot }}
         aria-hidden="true"
       />
-      {category}
+      {label}
     </span>
   );
 }

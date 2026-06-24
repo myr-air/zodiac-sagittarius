@@ -37,6 +37,7 @@ interface ExpenseTransactionDetailProps {
       recordRefundShort: string;
       recordRefund(input: { title: string }): string;
     };
+    categories: Record<Expense["category"], string>;
     details: {
       calculation: string;
       close: string;
@@ -128,6 +129,7 @@ export function ExpenseTransactionDetail({
     members,
   });
   const memberBreakdown = display.memberBreakdown ?? [];
+  const canEditThisExpense = canEditExpenses && expense.category !== "settlement";
 
   return (
     <>
@@ -154,7 +156,7 @@ export function ExpenseTransactionDetail({
             {linkedItem?.activity ?? tableCopy.uncategorizedStop}
           </span>
           <h2>{expense.title}</h2>
-          <ExpenseCategoryBadge category={expense.category} />
+          <ExpenseCategoryBadge category={expense.category} label={tableCopy.categories[expense.category]} />
         </div>
         {isMobile ? (
           <IconButton type="button" aria-label={tableCopy.details.close} onClick={onClose}>
@@ -175,7 +177,7 @@ export function ExpenseTransactionDetail({
           type="button"
           aria-label={tableCopy.actions.editExpense({ title: expense.title })}
           className={expenseStyles.transactionDetailPrimaryActionClassName}
-          disabled={!canEditExpenses}
+          disabled={!canEditThisExpense}
           onClick={() => onEditExpense(expense)}
         >
           <Icon name="edit" /> {tableCopy.actions.editExpenseShort}

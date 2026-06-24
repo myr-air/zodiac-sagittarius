@@ -1,5 +1,4 @@
 import {
-  expenseCategorySelectOptions,
   expenseCategoryValues,
   expenseSplitModeValues,
   type ExpenseCategorySelectOption,
@@ -21,7 +20,9 @@ export type CategoryTone = {
 };
 
 export const expenseCategoryFilterValues = withAllFilterValue(expenseCategoryValues);
+const manualExpenseCategoryValues = expenseCategoryValues.filter((value) => value !== "settlement");
 export type ExpenseCategoryFilter = (typeof expenseCategoryFilterValues)[number];
+export type ExpenseCategoryLabels = Record<Expense["category"], string>;
 
 export type ExpenseSelectOption<Value extends string = string> = SelectOption<Value>;
 
@@ -38,15 +39,22 @@ export function categoryTone(category: Expense["category"]): CategoryTone {
   return categoryTones[category];
 }
 
-export { expenseCategorySelectOptions, type ExpenseCategorySelectOption };
+export { type ExpenseCategorySelectOption };
+
+export function manualExpenseCategorySelectOptions(
+  labels: ExpenseCategoryLabels,
+): ExpenseCategorySelectOption[] {
+  return buildSelectOptions(manualExpenseCategoryValues, (value) => labels[value]);
+}
 
 export function expenseCategoryFilterSelectOptions(
   allCategoriesLabel: string,
+  labels: ExpenseCategoryLabels,
 ): ExpenseSelectOption<ExpenseCategoryFilter>[] {
   return buildAllFilterSelectOptions(
     expenseCategoryFilterValues,
     allCategoriesLabel,
-    (value) => value,
+    (value) => labels[value],
   );
 }
 

@@ -11,8 +11,8 @@ import { cn } from "@/src/lib/cn";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   categoryTone,
-  expenseCategorySelectOptions,
   expenseSplitModeSelectOptions,
+  manualExpenseCategorySelectOptions,
 } from "../model/expense-page-options";
 
 interface ExpenseLinkingFieldsProps {
@@ -36,6 +36,7 @@ interface ExpenseLinkingFieldsProps {
       splitMode: string;
       tripPlan: string;
     };
+    categories: Record<Expense["category"], string>;
     splitModes: Record<ExpenseSplitMode, string>;
   };
   onCategoryChange: (value: Expense["category"]) => void;
@@ -62,7 +63,7 @@ export function ExpenseLinkingFields({
   onTripPlanIdChange,
 }: ExpenseLinkingFieldsProps) {
   const splitModeOptions = expenseSplitModeSelectOptions(copy.splitModes);
-  const categoryOptions = expenseCategorySelectOptions();
+  const categoryOptions = manualExpenseCategorySelectOptions(copy.categories);
 
   return (
     <>

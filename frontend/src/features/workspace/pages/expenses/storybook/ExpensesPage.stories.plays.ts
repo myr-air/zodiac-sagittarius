@@ -48,7 +48,7 @@ export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
 
   await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
   await expect(canvas.getByRole("heading", { name: "Dim Dim Sum brunch" })).toBeVisible();
-  await expect(canvas.getByText("Octopus top-up")).toBeVisible();
+  await expect(within(ledger).getByText("Octopus top-up")).toBeVisible();
   await expect(canvas.getByRole("region", { name: "Dim Dim Sum brunch" })).toHaveClass("expense-transaction-detail");
 };
 
@@ -73,8 +73,8 @@ export const responsivePlay: ExpensesPagePlay = async ({ canvasElement }) => {
 };
 
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Settings/i }));
-  await expect(canvas.getByRole("region", { name: /Settings/i })).toBeVisible();
+  await userEvent.click(canvas.getByRole("tab", { name: /Tools/i }));
+  await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();
 };

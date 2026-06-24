@@ -35,7 +35,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
 
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
-    expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("sr-only");
+    expect(document.querySelector(".expense-ledger-table thead")).not.toHaveClass("sr-only");
     expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
     expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-none");
     expect(document.querySelector(".expenses-command-bar")?.className).not.toContain("linear-gradient");
@@ -50,7 +50,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByLabelText("แผนทริป")).toHaveValue("plan-main");
     expect(screen.getByLabelText(/วัน/i)).toHaveValue("all");
 
-    await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));
+    await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
   });
 
@@ -59,20 +59,24 @@ describe("TripExpensesPage overview and filters", () => {
     renderExpenses();
 
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     await user.type(screen.getByLabelText(/ค้นหารายการ/i), "tram");
 
-    expect(screen.getAllByText("Peak Tram tickets").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
+    expect(within(ledger).getAllByText("Peak Tram tickets").length).toBeGreaterThan(0);
+    expect(within(ledger).queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
-    await user.selectOptions(screen.getByLabelText("ประเภท"), "transport");
+    await user.selectOptions(
+      within(screen.getByRole("tabpanel", { name: /รายการใช้จ่าย/i })).getByLabelText("ประเภท"),
+      "transport",
+    );
 
     expect(screen.getByText("ไม่พบค่าใช้จ่ายตามตัวกรอง")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /ล้างตัวกรอง/i }));
 
-    expect(screen.getAllByText("Dim Dim Sum brunch").length).toBeGreaterThan(0);
-    expect(screen.getByText("Octopus top-up")).toBeInTheDocument();
+    expect(within(ledger).getAllByText("Dim Dim Sum brunch").length).toBeGreaterThan(0);
+    expect(within(ledger).getByText("Octopus top-up")).toBeInTheDocument();
   });
 
   it("filters the ledger by linked itinerary day", async () => {
@@ -103,8 +107,9 @@ describe("TripExpensesPage overview and filters", () => {
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
     await user.selectOptions(screen.getByLabelText(/วัน/i), "2026-06-18");
 
-    expect(screen.getAllByText("Arrival taxi").length).toBeGreaterThan(0);
-    expect(screen.queryByText("General tram")).not.toBeInTheDocument();
-    expect(within(screen.getByRole("table", { name: /บันทึกใช้จ่าย/i })).getByText(/2026-06-18/)).toBeInTheDocument();
+    const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
+    expect(within(ledger).getAllByText("Arrival taxi").length).toBeGreaterThan(0);
+    expect(within(ledger).queryByText("General tram")).not.toBeInTheDocument();
+    expect(within(ledger).getByText(/2026-06-18/)).toBeInTheDocument();
   });
 });

@@ -47,6 +47,7 @@ interface ExpenseDetailsFieldsProps {
       title: string;
       tripPlan: string;
     };
+    categories: Record<Expense["category"], string>;
     splitModes: Record<ExpenseSplitMode, string>;
   };
   onAmountChange: (value: string) => void;

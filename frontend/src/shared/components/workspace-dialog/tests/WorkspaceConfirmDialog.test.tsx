@@ -68,4 +68,46 @@ describe("WorkspaceConfirmDialog", () => {
     expect(dialog).toHaveClass("grid");
     expect(within(dialog).getByRole("button", { name: "Switch identity" })).toHaveClass("button--primary");
   });
+
+  it("focuses the safe action first, traps tab, closes on escape, and restores focus", async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+
+    const { rerender } = render(
+      <button type="button">Open delete</button>,
+    );
+
+    const opener = screen.getByRole("button", { name: "Open delete" });
+    opener.focus();
+
+    rerender(
+      <>
+        <button type="button">Open delete</button>
+        <WorkspaceConfirmDialog
+          body="Delete this receipt?"
+          cancelLabel="Cancel"
+          confirmLabel="Delete"
+          onCancel={onCancel}
+          onConfirm={() => undefined}
+          title="Delete receipt"
+        />
+      </>,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Delete receipt" });
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+
+    await user.tab();
+    expect(within(dialog).getByRole("button", { name: "Delete" })).toHaveFocus();
+    await user.tab();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await user.keyboard("{Shift>}{Tab}{/Shift}");
+    expect(within(dialog).getByRole("button", { name: "Delete" })).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(onCancel).toHaveBeenCalledTimes(1);
+
+    rerender(<button type="button">Open delete</button>);
+    expect(screen.getByRole("button", { name: "Open delete" })).toHaveFocus();
+  });
 });

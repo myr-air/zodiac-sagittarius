@@ -24,6 +24,7 @@ interface ExpenseMobileLedgerListProps {
       editExpense(input: { title: string }): string;
       recordRefund(input: { title: string }): string;
     };
+    categories: Record<Expense["category"], string>;
     details: {
       calculation: string;
       hideDetails(input: { title: string }): string;
@@ -89,7 +90,7 @@ export function ExpenseMobileLedgerList({
                 <div className={expenseStyles.mobileLedgerCardTopClassName}>
                   <div className={expenseStyles.mobileLedgerCardTitleClassName}>
                     <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
-                    <ExpenseCategoryBadge category={expense.category} />
+                    <ExpenseCategoryBadge category={expense.category} label={tableCopy.categories[expense.category]} />
                   </div>
                   <span className={expenseStyles.mobileLedgerCardAmountClassName}>
                     {display.displayAmountLabel ?? display.amountLabel}

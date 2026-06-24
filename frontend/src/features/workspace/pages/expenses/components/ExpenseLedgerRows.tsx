@@ -28,6 +28,7 @@ interface ExpenseLedgerRowsProps {
       editExpense(input: { title: string }): string;
       recordRefund(input: { title: string }): string;
     };
+    categories: Record<Expense["category"], string>;
     details: {
       calculation: string;
       memberMath: string;
@@ -61,8 +62,10 @@ export function ExpenseLedgerRows({
       {dayGroups.flatMap((group) => [
         <tr className={expenseStyles.dayGroupRowClassName} key={`${group.id}-heading`}>
           <td colSpan={6}>
-            <span>{group.label}</span>
-            <strong>{group.totalLabel}</strong>
+            <span className={expenseStyles.dayGroupCellClassName}>
+              <span>{group.label}</span>
+              <strong>{group.totalLabel}</strong>
+            </span>
           </td>
         </tr>,
         ...group.expenses.flatMap((expense) => {
@@ -84,12 +87,13 @@ export function ExpenseLedgerRows({
             },
           );
           const selected = selectedExpenseId === expense.id;
+          const canEditThisExpense = canEditExpenses && expense.category !== "settlement";
           return [
             <tr className={selected ? expenseStyles.ledgerSelectedRowClassName : undefined} key={expense.id}>
               <td className={expenseStyles.tableTitleClassName}>
                 <div className={expenseStyles.ledgerTitleLineClassName}>
                   <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
-                  <ExpenseCategoryBadge category={expense.category} />
+                  <ExpenseCategoryBadge category={expense.category} label={tableCopy.categories[expense.category]} />
                 </div>
               </td>
               <td>
@@ -123,7 +127,7 @@ export function ExpenseLedgerRows({
                   }}>
                     <Icon name="eye" />
                   </IconButton>
-                  <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={(event) => {
+                  <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} disabled={!canEditThisExpense} onClick={(event) => {
                     event.stopPropagation();
                     onEditExpense(expense);
                   }}>

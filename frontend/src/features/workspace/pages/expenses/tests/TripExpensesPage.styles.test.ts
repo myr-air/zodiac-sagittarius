@@ -55,7 +55,8 @@ describe("TripExpensesPage styles", () => {
     expect(transactionDetailEmptyClassName).toContain("border-dashed");
     expect(transactionDetailActionsClassName).toContain("p-2.5");
     expect(transactionDetailPrimaryActionClassName).toContain("min-h-11");
-    expect(transactionDetailSecondaryActionsClassName).toContain("grid-cols-2");
+    expect(transactionDetailSecondaryActionsClassName).toContain("grid gap-2");
+    expect(transactionDetailSecondaryActionClassName).toContain("justify-start");
     expect(transactionDetailSecondaryActionClassName).toContain("text-xs");
     expect(transactionDetailDangerActionClassName).toContain("text-xs");
   });

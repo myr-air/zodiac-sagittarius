@@ -20,7 +20,8 @@ describe("TripExpensesPage edit dialog", () => {
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(within(dialog).getByRole("heading", { name: /ข้อมูลบิล/i })).toBeInTheDocument();
     expect(within(dialog).getByRole("heading", { name: /ทริป คนจ่าย และการแบ่ง/i })).toBeInTheDocument();
-    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).toHaveClass("sticky", "bottom-0");
+    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).not.toHaveClass("sticky");
+    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).toHaveClass("border-t");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Hotel night");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "1800");

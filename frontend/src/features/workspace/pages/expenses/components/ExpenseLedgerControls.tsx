@@ -53,6 +53,7 @@ export function ExpenseLedgerControls({
   onTripPlanChange,
 }: ExpenseLedgerControlsProps) {
   const [showFilters, setShowFilters] = useState(false);
+  const filterPanelId = "expense-ledger-filters";
   return (
     <div className={expenseStyles.commandBarClassName}>
       <div className={expenseStyles.commandBarHeaderClassName}>
@@ -65,7 +66,13 @@ export function ExpenseLedgerControls({
           </div>
         </div>
         <div className={expenseStyles.commandActionsClassName}>
-          <Button type="button" variant="ghost" aria-expanded={showFilters} onClick={() => setShowFilters((current) => !current)}>
+          <Button
+            type="button"
+            variant="ghost"
+            aria-controls={filterPanelId}
+            aria-expanded={showFilters}
+            onClick={() => setShowFilters((current) => !current)}
+          >
             <Icon name="settings" /> {showFilters ? t.expenses.filters.hideFilters : t.expenses.filters.showFilters}
           </Button>
           <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
@@ -82,8 +89,7 @@ export function ExpenseLedgerControls({
           <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
         </label>
       </div>
-      {showFilters ? (
-      <div className={expenseStyles.filterGridClassName}>
+      <div className={expenseStyles.filterGridClassName} id={filterPanelId} hidden={!showFilters}>
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.fields.tripPlan}</span>
           <Select value={selectedTripPlanId} onChange={(event) => onTripPlanChange?.(event.target.value)}>
@@ -99,7 +105,7 @@ export function ExpenseLedgerControls({
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.category}</span>
           <Select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value as ExpenseCategoryFilter)}>
-            <SelectOptions options={expenseCategoryFilterSelectOptions(t.expenses.filters.allCategories)} />
+            <SelectOptions options={expenseCategoryFilterSelectOptions(t.expenses.filters.allCategories, t.expenses.categories)} />
           </Select>
         </label>
         <label className={expenseStyles.fieldClassName}>
@@ -117,7 +123,6 @@ export function ExpenseLedgerControls({
         </label>
         <Button type="button" variant="ghost" onClick={onClearFilters}>{t.expenses.actions.clearFilters}</Button>
       </div>
-      ) : null}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 
 interface ExpenseCategorySpendSectionProps {
   categorySpend: Array<[Expense["category"], number]>;
+  categoryLabels: Record<Expense["category"], string>;
   displayCurrency: string;
   displayExchangeRate: number;
   settlementCurrency: string;
@@ -18,6 +19,7 @@ interface ExpenseCategorySpendSectionProps {
 
 export function ExpenseCategorySpendSection({
   categorySpend,
+  categoryLabels,
   displayCurrency,
   displayExchangeRate,
   settlementCurrency,
@@ -41,7 +43,11 @@ export function ExpenseCategorySpendSection({
           });
           return (
             <div className={expenseStyles.balanceRowClassName} key={category}>
-              <ExpenseCategoryBadge category={display.category} tone={display.tone} />
+              <ExpenseCategoryBadge
+                category={display.category}
+                label={categoryLabels[display.category]}
+                tone={display.tone}
+              />
               <strong className={expenseStyles.amountClassName}>
                 {display.amountLabel}
               </strong>

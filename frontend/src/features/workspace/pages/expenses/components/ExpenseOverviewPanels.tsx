@@ -205,7 +205,7 @@ export function ExpenseOverviewPanels({
                 <div className="grid gap-1">
                   <div className={expenseStyles.ledgerTitleLineClassName}>
                     <strong className={expenseStyles.balanceNameClassName}>{expense.title}</strong>
-                    <ExpenseCategoryBadge category={expense.category} />
+                    <ExpenseCategoryBadge category={expense.category} label={t.expenses.categories[expense.category]} />
                   </div>
                   <span className={expenseStyles.balanceMetaClassName}>
                     {linkedItem?.activity ?? t.expenses.uncategorizedStop}
@@ -289,6 +289,7 @@ export function ExpenseOverviewPanels({
       {showCategories ? (
       <ExpenseCategorySpendSection
         categorySpend={categorySpend}
+        categoryLabels={t.expenses.categories}
         displayCurrency={displayCurrency}
         displayExchangeRate={displayExchangeRate}
         settlementCurrency={settlementCurrency}
