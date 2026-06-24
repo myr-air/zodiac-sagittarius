@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { StopNote } from "@/src/trip/types";
+import { buildTripFixtureStopNote } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { useContextRailNoteForm } from "../use-context-rail-note-form";
 
 const contextRailDir = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -100,7 +100,7 @@ describe("useContextRailNoteForm", () => {
     const { result, onCreateNote, onUpdateNote } = createHook({
       itemId: "item-dimdim",
     });
-    const note: StopNote = {
+    const note = buildTripFixtureStopNote({
       id: "note-dimdim-1",
       tripId: "trip-hong-kong",
       itemId: "item-dimdim",
@@ -108,7 +108,7 @@ describe("useContextRailNoteForm", () => {
       body: "Queue plan",
       createdAt: "2026-01-02T03:04:05.000Z",
       version: 1,
-    };
+    });
 
     act(() => {
       result.current.startEditingNote(note);
@@ -127,7 +127,7 @@ describe("useContextRailNoteForm", () => {
 
   it("can cancel editing without clearing the draft body", () => {
     const { result } = createHook();
-    const note: StopNote = {
+    const note = buildTripFixtureStopNote({
       id: "note-dimdim-1",
       tripId: "trip-hong-kong",
       itemId: "item-dimdim",
@@ -135,7 +135,7 @@ describe("useContextRailNoteForm", () => {
       body: "Queue plan",
       createdAt: "2026-01-02T03:04:05.000Z",
       version: 1,
-    };
+    });
 
     act(() => {
       result.current.startEditingNote(note);

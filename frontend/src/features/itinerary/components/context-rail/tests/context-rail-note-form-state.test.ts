@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StopNote } from "@/src/trip/types";
+import { buildTripFixtureStopNote } from "@/src/trip/testing/fixtures/trip-fixtures";
 
 import {
   buildContextRailNoteCreateSubmission,
@@ -13,7 +13,7 @@ import {
   updateContextRailNoteBody,
 } from "../context-rail-note-form-state";
 
-const note: StopNote = {
+const note = buildTripFixtureStopNote({
   authorId: "member-beam",
   body: "Queue plan",
   createdAt: "2026-01-02T03:04:05.000Z",
@@ -21,7 +21,7 @@ const note: StopNote = {
   itemId: "item-dimdim",
   tripId: "trip-hong-kong",
   version: 1,
-};
+});
 
 describe("context rail note form state", () => {
   it("updates and trims create note submissions", () => {
