@@ -1,9 +1,9 @@
 import {
   formatTripRange,
   PageHeader,
+  PageHeaderMetaItem,
 } from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import { Icon } from "@/src/ui/icons";
 import type { Locale } from "@/src/i18n/types";
 
 interface MemberPageHeaderProps {
@@ -29,13 +29,10 @@ export function MemberPageHeader({
       subtitle={subtitle}
       meta={
         <>
-          <span>
-            <Icon name="calendar" />{" "}
+          <PageHeaderMetaItem icon="calendar">
             {formatTripRange(tripStartDate, tripEndDate, locale)}
-          </span>
-          <span>
-            <Icon name="users" /> {memberCountLabel}
-          </span>
+          </PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="users">{memberCountLabel}</PageHeaderMetaItem>
         </>
       }
       motif={<TravelMotif tone="sunshine" />}

@@ -2,7 +2,11 @@ import type { Locale } from "@/src/i18n/types";
 import type { Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import {
+  formatTripRange,
+  PageHeader,
+  PageHeaderMetaItem,
+} from "@/src/shared/components/page-header";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import * as bookingStyles from "../BookingsDocsPage.styles";
 
@@ -29,8 +33,8 @@ export function BookingsDocsHeader({
       subtitle={trip.name}
       meta={(
         <>
-          <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-          <span><Icon name="ticket" /> {copy.records(recordCount)}</span>
+          <PageHeaderMetaItem icon="calendar">{formatTripRange(trip.startDate, trip.endDate, locale)}</PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="ticket">{copy.records(recordCount)}</PageHeaderMetaItem>
         </>
       )}
       aside={canEditBookings ? (

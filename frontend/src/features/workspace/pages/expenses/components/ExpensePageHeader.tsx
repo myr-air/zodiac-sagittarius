@@ -1,9 +1,12 @@
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
+import {
+  formatTripRange,
+  PageHeader,
+  PageHeaderMetaItem,
+} from "@/src/shared/components/page-header";
 import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import type { Trip } from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
 
 interface ExpensePageHeaderProps {
   canEditExpenses: boolean;
@@ -24,9 +27,9 @@ export function ExpensePageHeader({
       subtitle={trip.name}
       meta={(
         <>
-          <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-          <span><Icon name="users" /> {t.dates.memberCount({ count: trip.members.length })}</span>
-          <span><Icon name="wallet" /> {canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</span>
+          <PageHeaderMetaItem icon="calendar">{formatTripRange(trip.startDate, trip.endDate, locale)}</PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="users">{t.dates.memberCount({ count: trip.members.length })}</PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="wallet">{canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</PageHeaderMetaItem>
         </>
       )}
       motif={<TravelMotif tone="route" />}

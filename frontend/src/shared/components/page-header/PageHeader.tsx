@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/src/lib/cn";
+import { Icon, type IconName } from "@/src/ui/icons";
 import {
   descriptionClassName,
   eyebrowClassName,
@@ -43,6 +44,19 @@ export function PageHeader({ allowOverflow = false, eyebrow, title, subtitle, de
       {motif ? <div className={motifClassName}>{motif}</div> : null}
       {aside ? <div className={pageHeaderAsideClassName}>{aside}</div> : null}
     </header>
+  );
+}
+
+interface PageHeaderMetaItemProps {
+  children: ReactNode;
+  icon: IconName;
+}
+
+export function PageHeaderMetaItem({ children, icon }: PageHeaderMetaItemProps) {
+  return (
+    <span>
+      <Icon name={icon} /> {children}
+    </span>
   );
 }
 

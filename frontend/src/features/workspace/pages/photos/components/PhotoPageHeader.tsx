@@ -2,8 +2,8 @@ import type { Locale } from "@/src/i18n/types";
 import {
   formatTripRange,
   PageHeader,
+  PageHeaderMetaItem,
 } from "@/src/shared/components/page-header";
-import { Icon } from "@/src/ui/icons";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 
 interface PhotoPageHeaderProps {
@@ -29,13 +29,10 @@ export function PhotoPageHeader({
       subtitle={tripName}
       meta={
         <>
-          <span>
-            <Icon name="calendar" />{" "}
+          <PageHeaderMetaItem icon="calendar">
             {formatTripRange(tripStartDate, tripEndDate, locale)}
-          </span>
-          <span>
-            <Icon name="cloud" /> {copy.albumLinks(albumCount)}
-          </span>
+          </PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="cloud">{copy.albumLinks(albumCount)}</PageHeaderMetaItem>
         </>
       }
     />

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PageHeader, PageUserCard } from "../PageHeader";
+import { PageHeader, PageHeaderMetaItem, PageUserCard } from "../PageHeader";
 
 describe("PageHeader", () => {
   it("uses a compact command-surface header instead of postcard artwork", () => {
@@ -71,5 +71,17 @@ describe("PageHeader", () => {
       "bg-(--color-surface-subtle)",
       "rounded-(--radius-sm)",
     );
+  });
+
+  it("renders page header meta items with decorative icons", () => {
+    render(
+      <PageHeader
+        title="Itinerary"
+        meta={<PageHeaderMetaItem icon="calendar">6 days</PageHeaderMetaItem>}
+      />,
+    );
+
+    expect(screen.getByText("6 days")).toBeInTheDocument();
+    expect(screen.getByText("6 days").closest("span")).toContainHTML("svg");
   });
 });

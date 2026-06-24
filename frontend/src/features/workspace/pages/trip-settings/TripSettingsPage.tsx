@@ -2,8 +2,10 @@
 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspacePage } from "@/src/ui";
-import { Icon } from "@/src/ui/icons";
-import { PageHeader } from "@/src/shared/components/page-header";
+import {
+  PageHeader,
+  PageHeaderMetaItem,
+} from "@/src/shared/components/page-header";
 import { TripSettingsForm } from "./components/TripSettingsForm";
 import { TripSettingsImpactCard } from "./components/TripSettingsImpactCard";
 import * as settingsStyles from "./TripSettingsPage.styles";
@@ -50,7 +52,11 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
           title={t.tripSettings.title}
           subtitle={trip.name}
           description={t.tripSettings.detail}
-          meta={<span><Icon name="settings" /> {t.tripSettings.currentRole({ role: currentMember.role })}</span>}
+          meta={(
+            <PageHeaderMetaItem icon="settings">
+              {t.tripSettings.currentRole({ role: currentMember.role })}
+            </PageHeaderMetaItem>
+          )}
         />
 
         <div className={settingsStyles.contentGridClassName}>
