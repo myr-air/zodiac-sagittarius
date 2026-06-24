@@ -19,6 +19,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/hooks/tests/use-escape-to-close.test.ts",
   "src/testing/browser-storage.test.ts",
   "src/testing/browser-storage.ts",
+  "src/testing/deferred.test.ts",
+  "src/testing/deferred.ts",
   "src/testing/storybook-actions.ts",
   "src/ui/tests/icons.test.tsx",
   "src/ui/tests/ui-primitives.test.tsx",

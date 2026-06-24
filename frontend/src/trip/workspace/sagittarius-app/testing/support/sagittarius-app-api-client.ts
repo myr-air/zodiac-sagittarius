@@ -7,6 +7,8 @@ import {
 import { normalizeExpenseSplitsFromMinor } from "@/src/trip/expenses";
 import type { Trip } from "@/src/trip/types";
 
+export { createDeferred } from "@/src/testing/deferred";
+
 export function createApiClientForTrip(
   trip: Trip,
   overrides: Partial<TripApiClient> = {},
@@ -127,14 +129,4 @@ export function createApiClientForTrip(
     deletePhotoAlbum: vi.fn(),
     ...overrides,
   };
-}
-
-export function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  let reject!: (reason?: unknown) => void;
-  const promise = new Promise<T>((innerResolve, innerReject) => {
-    resolve = innerResolve;
-    reject = innerReject;
-  });
-  return { promise, reject, resolve };
 }
