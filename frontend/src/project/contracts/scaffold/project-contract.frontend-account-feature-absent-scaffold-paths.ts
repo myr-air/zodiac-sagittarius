@@ -40,6 +40,8 @@ export const frontendAccountFeatureScaffoldPathsAbsent = [
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-date-fields.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-date-fields.test.ts",
   "src/features/account/components/account-access-panel/trip-wizard/steps/portal-trip-wizard-date-fields.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/steps/tests/portal-trip-wizard-date-fields.test.ts",
+  "src/features/account/components/account-access-panel/trip-wizard/steps/destination-card-meta.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-dates-step.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-search.tsx",
   "src/features/account/components/account-access-panel/trip-wizard/portal-trip-wizard-destination-step.tsx",
