@@ -18,6 +18,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/trip-settings/tests/TripSettingsPage.test.tsx",
   "src/features/workspace/pages/trip-settings/testing/support/render-trip-settings-page.tsx",
   "src/features/workspace/pages/trip-settings/components/TripSettingsForm.tsx",
+  "src/features/workspace/pages/trip-settings/components/TripSettingsHeader.tsx",
+  "src/features/workspace/pages/trip-settings/components/tests/TripSettingsHeader.test.tsx",
   "src/features/workspace/pages/trip-settings/components/TripSettingsImpactCard.tsx",
   "src/features/workspace/pages/trip-settings/hooks/use-trip-settings-form-actions.ts",
   "src/features/workspace/pages/trip-settings/hooks/use-trip-settings-form-state.ts",

@@ -2,11 +2,8 @@
 
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspacePage } from "@/src/ui";
-import {
-  PageHeader,
-  PageHeaderMetaItem,
-} from "@/src/shared/components/page-header";
 import { TripSettingsForm } from "./components/TripSettingsForm";
+import { TripSettingsHeader } from "./components/TripSettingsHeader";
 import { TripSettingsImpactCard } from "./components/TripSettingsImpactCard";
 import * as settingsStyles from "./TripSettingsPage.styles";
 import { tripSettingsStateKey } from "./model/trip-settings-state-key";
@@ -48,15 +45,11 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
   return (
     <WorkspacePage className={settingsStyles.pageClassName} aria-label={t.tripSettings.pageLabel}>
       <div className={settingsStyles.shellClassName}>
-        <PageHeader
+        <TripSettingsHeader
           title={t.tripSettings.title}
           subtitle={trip.name}
           description={t.tripSettings.detail}
-          meta={(
-            <PageHeaderMetaItem icon="settings">
-              {t.tripSettings.currentRole({ role: currentMember.role })}
-            </PageHeaderMetaItem>
-          )}
+          roleLabel={t.tripSettings.currentRole({ role: currentMember.role })}
         />
 
         <div className={settingsStyles.contentGridClassName}>
