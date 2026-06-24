@@ -1,9 +1,8 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
 import { WorkspacePage } from "@/src/ui";
-import { PhotoAlbumDeleteDialog } from "./components/PhotoAlbumDeleteDialog";
-import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
 import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
+import { PhotoAlbumDialogLayer } from "./components/PhotoAlbumDialogLayer";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
 import { PhotoPageHeader } from "./components/PhotoPageHeader";
 import { photoCopy } from "./content/TripPhotosPage.copy";
@@ -110,25 +109,17 @@ export function TripPhotosPage({
         <PhotoAlbumInspector album={selectedAlbum} relations={selectedRelations} copy={copy} />
       </div>
 
-      {dialogAlbum ? (
-        <PhotoAlbumDialog
-          album={dialogAlbum === "new" ? null : dialogAlbum}
-          currentMember={currentMember}
-          trip={trip}
-          onCancel={() => setDialogAlbum(null)}
-          onSubmit={submitAlbum}
-          copy={copy}
-        />
-      ) : null}
-
-      {deleteAlbum ? (
-        <PhotoAlbumDeleteDialog
-          album={deleteAlbum}
-          copy={copy}
-          onCancel={() => setDeleteAlbum(null)}
-          onConfirm={() => void confirmDelete()}
-        />
-      ) : null}
+      <PhotoAlbumDialogLayer
+        copy={copy}
+        currentMember={currentMember}
+        deleteAlbum={deleteAlbum}
+        dialogAlbum={dialogAlbum}
+        trip={trip}
+        onCancelDelete={() => setDeleteAlbum(null)}
+        onCancelDialog={() => setDialogAlbum(null)}
+        onConfirmDelete={() => void confirmDelete()}
+        onSubmitAlbum={submitAlbum}
+      />
     </WorkspacePage>
   );
 }
