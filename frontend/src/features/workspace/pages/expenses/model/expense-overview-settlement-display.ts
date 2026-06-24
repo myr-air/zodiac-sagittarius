@@ -1,4 +1,5 @@
 import type { DisplayDateTimeLocale } from "@/src/shared/date-time-display";
+import { displayNameOrFallback } from "@/src/shared/text-parts";
 import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import { findMemberById } from "@/src/trip/members";
 import type { Member, SettlementSuggestion } from "@/src/trip/types";
@@ -57,10 +58,10 @@ export function settlementSuggestionDisplay({
   return {
     label: settlementSuggestionLabel({
       balanceCopy,
-      fromName: from?.displayName ?? suggestion.from,
+      fromName: displayNameOrFallback(from, suggestion.from),
       settlementCurrency,
       suggestion,
-      toName: to?.displayName ?? suggestion.to,
+      toName: displayNameOrFallback(to, suggestion.to),
     }),
     lastReminderLabel: suggestion.lastRemindedAt
       ? settlementReminderLabel({
