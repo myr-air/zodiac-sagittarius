@@ -3,12 +3,13 @@ import {
   renumberItineraryDayItems,
   sortedTargetDayItemsExcluding,
 } from "./itinerary-item-move-ordering";
+import { hasDescendantItem } from "./itinerary-item-hierarchy";
 import { findItineraryItemById } from "./itinerary-item-lookup";
-import { mapById } from "@/src/shared/collection";
 import type {
-  ItineraryItem,
   Trip,
 } from "../types";
+
+export { hasDescendantItem } from "./itinerary-item-hierarchy";
 
 export function moveTripItem(
   current: Trip,
@@ -149,21 +150,4 @@ export function moveTripItemIntoPlanBlock(
     ...current,
     itineraryItems: mergeItineraryDayItems(current.itineraryItems, nextDayItems),
   };
-}
-
-export function hasDescendantItem(
-  items: ItineraryItem[],
-  parentItemId: string,
-  candidateItemId: string,
-): boolean {
-  const itemsById = mapById(items);
-  const visitedItemIds = new Set<string>();
-  let currentItem = itemsById.get(candidateItemId) ?? null;
-  while (currentItem?.parentItemId) {
-    if (currentItem.parentItemId === parentItemId) return true;
-    if (visitedItemIds.has(currentItem.id)) return false;
-    visitedItemIds.add(currentItem.id);
-    currentItem = itemsById.get(currentItem.parentItemId) ?? null;
-  }
-  return false;
 }

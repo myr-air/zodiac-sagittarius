@@ -13,11 +13,11 @@ export {
   findItineraryItemById,
 } from "./itinerary-item-lookup";
 export {
-  hasDescendantItem,
   moveTripItem,
   moveTripItemIntoPlanBlock,
   moveTripItemToDay,
 } from "./itinerary-item-moves";
+export { hasDescendantItem } from "./itinerary-item-hierarchy";
 export {
   buildCreateItineraryItemRequest,
   buildInlineItineraryItemPatchRequest,
