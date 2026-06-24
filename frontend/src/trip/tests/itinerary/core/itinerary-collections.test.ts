@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "../../../seed";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   appendItineraryItemPlacement,
   appendItineraryItemToTrip,
@@ -10,11 +11,10 @@ import {
 
 describe("itinerary collection mutations", () => {
   it("appends itinerary items to trips without branch side effects", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       id: "item-appended",
       activity: "Appended item",
-    };
+    });
 
     const nextTrip = appendItineraryItemToTrip(seedTrip, item);
     const placement = appendItineraryItemPlacement(seedTrip, item);

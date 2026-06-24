@@ -9,16 +9,16 @@ import {
   mainItineraryPathId,
 } from "@/src/trip/itinerary-paths";
 import { seedTrip } from "@/src/trip/seed";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   placeCreatedWorkspaceStop,
   placeUpdatedWorkspaceStop,
 } from "./workspace-itinerary-stop-placement";
 
-const baseItem = {
-  ...seedTrip.itineraryItems[0]!,
+const baseItem = buildTripFixtureItineraryItem({
   id: "item-new-stop",
   activity: "New stop",
-};
+});
 
 describe("placeCreatedWorkspaceStop", () => {
   it("uses activity branch placement for top-level main-path stops", () => {
@@ -51,7 +51,7 @@ describe("placeCreatedWorkspaceStop", () => {
 
 describe("placeUpdatedWorkspaceStop", () => {
   it("places updated stops into the activity branch", () => {
-    const item = { ...seedTrip.itineraryItems[0]!, activity: "Updated stop" };
+    const item = buildTripFixtureItineraryItem({ activity: "Updated stop" });
     const tripWithItem = replaceItineraryItem(seedTrip, item);
 
     expect(placeUpdatedWorkspaceStop(seedTrip, item)).toEqual(
@@ -60,7 +60,7 @@ describe("placeUpdatedWorkspaceStop", () => {
   });
 
   it("applies manual path assignment after branch placement", () => {
-    const item = { ...seedTrip.itineraryItems[0]!, activity: "Updated stop" };
+    const item = buildTripFixtureItineraryItem({ activity: "Updated stop" });
     const pathPlacement = applyItemToActivityBranch(
       replaceItineraryItem(seedTrip, item),
       item,
