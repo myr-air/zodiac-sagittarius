@@ -45,6 +45,18 @@ export const thExpensesMessages = {
       categories: "ใช้จ่ายตามประเภท",
       personal: "บัญชีส่วนตัว",
     },
+    storedValue: {
+      title: "บัตรเดินทาง",
+      balance: "คงเหลือ",
+      topUp: "เติมเข้า",
+      spend: "ใช้ไป",
+      transactionTypes: {
+        none: "ไม่กระทบยอดบัตร",
+        topup: "เติมเงินเข้าบัตร",
+        spend: "ใช้เงินจากบัตร",
+        refund: "เงินคืนเข้าบัตร",
+      },
+    },
     actions: {
       addExpense: "เพิ่มรายการ",
       addPersonalExpense: "บันทึกใช้จ่ายส่วนตัว",
@@ -210,6 +222,8 @@ export const thExpensesMessages = {
       receiptUrl: "ลิงก์ใบเสร็จ",
       repeatCount: "ทำซ้ำ",
       spentOn: "วันที่จ่าย",
+      storedValueCardName: "บัตรเติมเงิน",
+      storedValueTransactionType: "ผลต่อยอดบัตร",
       comments: "โน้ตของค่าใช้จ่าย",
       commentInput: "เพิ่มโน้ต",
       paidBy: "จ่ายโดย",

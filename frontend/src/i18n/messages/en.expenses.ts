@@ -45,6 +45,18 @@ export const enExpensesMessages = {
       categories: "Spend by category",
       personal: "Personal account",
     },
+    storedValue: {
+      title: "Travel cards",
+      balance: "Balance",
+      topUp: "Top-up",
+      spend: "Spend",
+      transactionTypes: {
+        none: "Not card balance",
+        topup: "Top-up adds balance",
+        spend: "Spend uses balance",
+        refund: "Refund adds balance",
+      },
+    },
     actions: {
       addExpense: "Add spend",
       addPersonalExpense: "Log personal spend",
@@ -210,6 +222,8 @@ export const enExpensesMessages = {
       receiptUrl: "Receipt link",
       repeatCount: "Repeat count",
       spentOn: "Paid date",
+      storedValueCardName: "Stored-value card",
+      storedValueTransactionType: "Card balance effect",
       comments: "Expense comments",
       commentInput: "Add comment",
       paidBy: "Paid by",

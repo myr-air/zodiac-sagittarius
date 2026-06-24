@@ -15,7 +15,13 @@ interface ExpenseDialogSubmitInputOptions {
   receiptUrl: string;
   splitMode: ExpenseSplitMode;
   spentOn: string;
+  storedValueCardName: string;
+  storedValueTransactionType: NonNullable<Expense["storedValueTransactionType"]> | "";
   title: string;
+}
+
+function storedValueCardIdFromName(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 export function buildExpenseDialogSubmitInput({
@@ -30,6 +36,8 @@ export function buildExpenseDialogSubmitInput({
   receiptUrl,
   splitMode,
   spentOn,
+  storedValueCardName,
+  storedValueTransactionType,
   title,
 }: ExpenseDialogSubmitInputOptions): ExpenseInput {
   const input: ExpenseInput = {
@@ -48,6 +56,19 @@ export function buildExpenseDialogSubmitInput({
   if (notes.trim()) input.notes = notes.trim();
   if (receiptUrl.trim()) input.receiptUrl = receiptUrl.trim();
   if (spentOn) input.spentOn = spentOn;
+  if (storedValueCardName.trim() && storedValueTransactionType) {
+    const nextCardName = storedValueCardName.trim();
+    input.storedValueCardName = nextCardName;
+    input.storedValueCardId =
+      expense?.storedValueCardName === nextCardName && expense.storedValueCardId
+        ? expense.storedValueCardId
+        : storedValueCardIdFromName(nextCardName);
+    input.storedValueTransactionType = storedValueTransactionType;
+  } else if (expense) {
+    input.storedValueCardName = null;
+    input.storedValueCardId = null;
+    input.storedValueTransactionType = null;
+  }
   if (splitMode === "itemized") {
     input.lineItems = calculatedState.validLineItems;
   }

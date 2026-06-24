@@ -53,6 +53,8 @@ export function useExpenseDialogSubmitHandler({
       receiptUrl: formValues.receiptUrl,
       splitMode: splitEditor.splitMode,
       spentOn: formValues.spentOn,
+      storedValueCardName: formValues.storedValueCardName,
+      storedValueTransactionType: formValues.storedValueTransactionType,
       title: formValues.title,
     });
     try {

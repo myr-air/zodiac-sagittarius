@@ -113,6 +113,53 @@ describe("expense summary", () => {
     ]);
   });
 
+  it("excludes stored-value funding transactions from trip spend and friend balances", () => {
+    const topup: Expense = {
+      id: "expense-octopus-topup",
+      title: "Octopus top-up",
+      amount: 800,
+      paidBy: "member-aom",
+      splits: { "member-aom": 800 },
+      category: "transport",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "topup",
+    };
+    const refund: Expense = {
+      id: "expense-octopus-refund",
+      title: "Octopus refund",
+      amount: 50,
+      paidBy: "member-aom",
+      splits: { "member-aom": 50 },
+      category: "transport",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "refund",
+    };
+    const cardSpend: Expense = {
+      id: "expense-octopus-tram",
+      title: "Octopus tram fare",
+      amount: 12,
+      paidBy: "member-aom",
+      splits: { "member-aom": 6, "member-beam": 6 },
+      category: "transport",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
+    };
+
+    const summary = buildExpenseSummary([topup, refund, cardSpend], "member-beam");
+
+    expect(summary.groupSpend).toBe(12);
+    expect(summary.netByMember).toEqual({
+      "member-aom": 6,
+      "member-beam": -6,
+    });
+    expect(summary.settlementSuggestions).toEqual([
+      { from: "member-beam", to: "member-aom", amount: 6, currency: "HKD" },
+    ]);
+  });
+
   it("converts travel expenses into the trip settlement currency before balancing friends", () => {
     const expenses = [
       {

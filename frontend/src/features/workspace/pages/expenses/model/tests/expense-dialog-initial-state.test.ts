@@ -40,6 +40,8 @@ describe("expense dialog initial state helpers", () => {
       repeatCount: "1",
       receiptUrl: "",
       spentOn: "2026-06-25",
+      storedValueCardName: "",
+      storedValueTransactionType: "",
       title: "",
     });
   });
@@ -59,6 +61,8 @@ describe("expense dialog initial state helpers", () => {
           paidBy: members[1].id,
           receiptUrl: "https://receipts.example/test",
           spentOn: "2026-06-20",
+          storedValueCardName: "Octopus",
+          storedValueTransactionType: "spend",
           title: "Dinner",
         } as Expense,
       }),
@@ -74,6 +78,8 @@ describe("expense dialog initial state helpers", () => {
       repeatCount: "1",
       receiptUrl: "https://receipts.example/test",
       spentOn: "2026-06-20",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
       title: "Dinner",
     });
   });

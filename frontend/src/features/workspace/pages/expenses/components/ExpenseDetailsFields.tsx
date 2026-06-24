@@ -21,6 +21,8 @@ interface ExpenseDetailsFieldsProps {
   repeatCount: string;
   settlementCurrency: string;
   spentOn: string;
+  storedValueCardName: string;
+  storedValueTransactionType: NonNullable<Expense["storedValueTransactionType"]> | "";
   splitMode: ExpenseSplitMode;
   title: string;
   trip: Trip;
@@ -45,9 +47,19 @@ interface ExpenseDetailsFieldsProps {
       receiptUrl: string;
       repeatCount: string;
       spentOn: string;
+      storedValueCardName: string;
+      storedValueTransactionType: string;
       splitMode: string;
       title: string;
       tripPlan: string;
+    };
+    storedValue: {
+      transactionTypes: {
+        none: string;
+        refund: string;
+        spend: string;
+        topup: string;
+      };
     };
     categories: Record<Expense["category"], string>;
     splitModes: Record<ExpenseSplitMode, string>;
@@ -62,6 +74,8 @@ interface ExpenseDetailsFieldsProps {
   onReceiptUrlChange: (value: string) => void;
   onRepeatCountChange: (value: string) => void;
   onSpentOnChange: (value: string) => void;
+  onStoredValueCardNameChange: (value: string) => void;
+  onStoredValueTransactionTypeChange: (value: NonNullable<Expense["storedValueTransactionType"]> | "") => void;
   onSplitModeChange: (value: ExpenseSplitMode) => void;
   onTitleChange: (value: string) => void;
   onTripPlanIdChange: (value: string) => void;
@@ -84,6 +98,8 @@ export function ExpenseDetailsFields({
   repeatCount,
   settlementCurrency,
   spentOn,
+  storedValueCardName,
+  storedValueTransactionType,
   splitMode,
   title,
   trip,
@@ -99,6 +115,8 @@ export function ExpenseDetailsFields({
   onReceiptUrlChange,
   onRepeatCountChange,
   onSpentOnChange,
+  onStoredValueCardNameChange,
+  onStoredValueTransactionTypeChange,
   onSplitModeChange,
   onTitleChange,
   onTripPlanIdChange,
@@ -123,6 +141,8 @@ export function ExpenseDetailsFields({
             repeatCount={repeatCount}
             settlementCurrency={settlementCurrency}
             spentOn={spentOn}
+            storedValueCardName={storedValueCardName}
+            storedValueTransactionType={storedValueTransactionType}
             title={title}
             onAmountChange={onAmountChange}
             onCurrencyChange={onCurrencyChange}
@@ -131,6 +151,8 @@ export function ExpenseDetailsFields({
             onReceiptUrlChange={onReceiptUrlChange}
             onRepeatCountChange={onRepeatCountChange}
             onSpentOnChange={onSpentOnChange}
+            onStoredValueCardNameChange={onStoredValueCardNameChange}
+            onStoredValueTransactionTypeChange={onStoredValueTransactionTypeChange}
             onTitleChange={onTitleChange}
           />
         </div>

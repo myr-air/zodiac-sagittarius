@@ -17,6 +17,9 @@ export function createSeedExpenses(): Expense[] {
       paidBy: "member-aom",
       splits: split(512),
       category: "food",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
     },
     {
       id: "expense-peak-tram",
@@ -29,10 +32,13 @@ export function createSeedExpenses(): Expense[] {
     {
       id: "expense-octopus",
       title: "Octopus top-up",
-      amount: 280,
+      amount: 800,
       paidBy: "member-nam",
-      splits: split(280),
+      splits: { "member-nam": 800 },
       category: "transport",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "topup",
     },
     {
       id: "expense-airport-express",

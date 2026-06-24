@@ -30,6 +30,8 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
     expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
     expect(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("Octopus");
+    expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("HK$288.00");
 
     await user.click(screen.getByRole("tab", { name: /ยอดคงเหลือ/i }));
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");

@@ -33,6 +33,39 @@ pub(crate) fn validate_expense_category(value: &str) -> Result<(), ServiceError>
     }
 }
 
+pub(crate) fn validate_stored_value_transaction_type(
+    value: Option<&str>,
+) -> Result<(), ServiceError> {
+    match value {
+        None | Some("topup" | "spend" | "refund") => Ok(()),
+        Some(_) => Err(ServiceError::InvalidRequest(
+            "stored value transaction type is invalid",
+        )),
+    }
+}
+
+pub(crate) fn validate_stored_value_fields(
+    transaction_type: Option<&str>,
+    card_id: Option<&str>,
+    card_name: Option<&str>,
+) -> Result<(), ServiceError> {
+    validate_stored_value_transaction_type(transaction_type)?;
+    if transaction_type.is_none() {
+        return Ok(());
+    }
+    let has_card_key = [card_id, card_name]
+        .into_iter()
+        .flatten()
+        .any(|value| !value.trim().is_empty());
+    if has_card_key {
+        Ok(())
+    } else {
+        Err(ServiceError::InvalidRequest(
+            "stored value card is required",
+        ))
+    }
+}
+
 pub(crate) fn validate_splits(value: &Value) -> Result<(), ServiceError> {
     if !value.is_object() {
         return Err(ServiceError::InvalidRequest(

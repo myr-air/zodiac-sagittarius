@@ -3,7 +3,10 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import type { ExpenseCopyState } from "../model/expense-page-types";
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
-import { expenseAmountInSettlementCurrency } from "@/src/trip/expenses";
+import {
+  expenseAmountInSettlementCurrency,
+  isStoredValueFundingExpense,
+} from "@/src/trip/expenses";
 import type { Expense, ExpenseSummary, SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -18,6 +21,7 @@ import { ExpenseCopyFeedback } from "./ExpenseCopyFeedback";
 import {
   ExpenseCategorySpendSection,
   ExpenseScopeAuditSection,
+  ExpenseStoredValueSection,
 } from "./ExpenseOverviewSections";
 import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 import { ExpenseMemberLine } from "./ExpenseMemberLine";
@@ -63,6 +67,7 @@ export function ExpenseOverviewPanels({
 }: ExpenseOverviewPanelsProps) {
   const { locale, t } = useI18n();
   const personalOnlySpend = trip.expenses.reduce((sum, expense) => {
+    if (isStoredValueFundingExpense(expense)) return sum;
     const splitEntries = Object.entries(expense.splits);
     const isPersonal =
       expense.paidBy === currentMember.id &&
@@ -74,17 +79,19 @@ export function ExpenseOverviewPanels({
   }, 0);
   const currentMemberPaid = trip.expenses.reduce(
     (sum, expense) =>
-      expense.paidBy === currentMember.id
+      !isStoredValueFundingExpense(expense) && expense.paidBy === currentMember.id
         ? sum + expenseAmountInSettlementCurrency(expense, settlementCurrency)
         : sum,
     0,
   );
   const currentMemberShare = trip.expenses.reduce(
-    (sum, expense) =>
-      sum + expenseAmountInSettlementCurrency({
+    (sum, expense) => {
+      if (isStoredValueFundingExpense(expense)) return sum;
+      return sum + expenseAmountInSettlementCurrency({
         ...expense,
         amount: expense.splits[currentMember.id] ?? 0,
-      }, settlementCurrency),
+      }, settlementCurrency);
+    },
     0,
   );
   const personalMoney = (amount: number) =>
@@ -97,10 +104,12 @@ export function ExpenseOverviewPanels({
   const showBalances = view === "balances";
   const showOverviewActions = view === "overview";
   const showPrioritySpend = view === "overview";
+  const showStoredValue = view === "overview" || view === "balances";
   const showPersonal = view === "balances";
   const showCategories = view === "categories";
   const showScopeAudit = view === "categories";
   const priorityExpenses = [...trip.expenses]
+    .filter((expense) => !isStoredValueFundingExpense(expense))
     .sort((left, right) => right.amount - left.amount)
     .slice(0, 3)
     .map((expense) => ({
@@ -190,6 +199,13 @@ export function ExpenseOverviewPanels({
           <p className={expenseStyles.balanceMetaClassName}>{t.expenses.balance.noPaybacks}</p>
         )}
       </section>
+      ) : null}
+
+      {showStoredValue ? (
+        <ExpenseStoredValueSection
+          copy={t.expenses.storedValue}
+          expenses={trip.expenses}
+        />
       ) : null}
 
       {showPrioritySpend ? (

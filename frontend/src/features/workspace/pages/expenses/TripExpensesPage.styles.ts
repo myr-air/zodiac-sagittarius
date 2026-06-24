@@ -142,6 +142,7 @@ export const warningClassName = "rounded-(--radius-sm) border border-(--color-wa
 export const dialogSummaryWarningClassName = `${warningClassName} m-0`;
 export const scopeAuditRowClassName = `${expenseOverviewWarningRowClassName} grid-cols-[minmax(0,1fr)_auto] items-center`;
 export const personalMetricRowClassName = `${expenseOverviewRowClassName} grid-cols-[minmax(0,1fr)_auto] items-center border-(--color-primary-border) bg-(--color-primary-soft) [&_span]:font-bold [&_span]:text-(--color-text-muted) [&_strong]:font-black [&_strong]:tabular-nums [&_strong]:text-(--color-primary-strong)`;
+export const storedValueCardRowClassName = `${expenseOverviewRowClassName} grid-cols-[minmax(0,1fr)_auto] items-center border-(--color-primary-border) bg-(--color-primary-soft)`;
 export const settingsHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 [&_h2]:m-0 [&_h2]:text-lg [&_h2]:font-black [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:text-sm [&_p]:font-bold [&_p]:text-(--color-text-muted) max-[767px]:grid-cols-1";
 export const settingsGridClassName = "grid grid-cols-2 gap-3 max-[767px]:grid-cols-1";
 export const settingsActionsClassName = "flex flex-wrap items-center gap-2 [&>*]:min-h-10";

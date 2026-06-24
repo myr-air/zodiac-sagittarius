@@ -5,6 +5,7 @@ import {
 import {
   expenseAmountInSettlementCurrency,
   formatMoney,
+  isStoredValueFundingExpense,
 } from "@/src/trip/expenses";
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById } from "@/src/trip/members";
@@ -42,7 +43,7 @@ export function expenseCategorySpend(
 ): Array<[Expense["category"], number]> {
   const totals = new Map<Expense["category"], number>();
   for (const expense of expenses) {
-    if (expense.category === "settlement") continue;
+    if (expense.category === "settlement" || isStoredValueFundingExpense(expense)) continue;
     totals.set(
       expense.category,
       (totals.get(expense.category) ?? 0) +

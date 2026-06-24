@@ -19,6 +19,7 @@ import {
   filterExpenseRemindersForTripPlan,
   upsertExpenseReminder,
 } from "./expense-settlements";
+import { isStoredValueFundingExpense } from "./expense-stored-value";
 
 interface BuildExpenseSummaryOptions {
   exchangeRates?: Record<string, number>;
@@ -62,6 +63,7 @@ export function buildExpenseSummary(
   let groupSpend = 0;
 
   for (const expense of expenses) {
+    if (isStoredValueFundingExpense(expense)) continue;
     const exchangeRate = expenseExchangeRate(
       expense,
       settlementCurrency,

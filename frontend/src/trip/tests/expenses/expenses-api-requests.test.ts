@@ -19,6 +19,9 @@ describe("expense API requests", () => {
           lineItems: undefined,
           comments: undefined,
           spentOn: "2026-06-20",
+          storedValueCardId: "octopus",
+          storedValueCardName: "Octopus",
+          storedValueTransactionType: "topup",
           tripPlanId: "plan-draft",
           paidBy: "member-aom",
           category: "food",
@@ -40,6 +43,9 @@ describe("expense API requests", () => {
       lineItems: undefined,
       comments: [],
       spentOn: "2026-06-20",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "topup",
       tripPlanId: "plan-resolved",
       paidBy: "member-aom",
       category: "food",
@@ -63,6 +69,9 @@ describe("expense API requests", () => {
           lineItems: [],
           comments: [],
           spentOn: "2026-06-21",
+          storedValueCardId: "octopus",
+          storedValueCardName: "Octopus",
+          storedValueTransactionType: "spend",
           tripPlanId: "plan-rain",
           paidBy: "member-aom",
           category: "food",
@@ -86,11 +95,50 @@ describe("expense API requests", () => {
       lineItems: [],
       comments: [],
       spentOn: "2026-06-21",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
       tripPlanId: "plan-rain",
       paidBy: "member-aom",
       category: "food",
       splits: { "member-aom": 6023, "member-beam": 6022 },
       itineraryItemId: "item-lunch",
+    });
+  });
+
+  it("keeps explicit stored-value nulls in patch expense API requests", () => {
+    expect(
+      buildPatchExpenseRequest(
+        {
+          expenseId: "expense-lunch",
+          title: "Dim sum lunch",
+          amount: 120.45,
+          amountMinor: 12045,
+          currency: "HKD",
+          exchangeRateToSettlementCurrency: 1,
+          notes: "",
+          receiptUrl: null,
+          lineItems: [],
+          comments: [],
+          spentOn: "2026-06-21",
+          storedValueCardId: null,
+          storedValueCardName: null,
+          storedValueTransactionType: null,
+          tripPlanId: "plan-rain",
+          paidBy: "member-aom",
+          category: "food",
+          splits: { "member-aom": 120.45 },
+          itineraryItemId: null,
+        },
+        {
+          clientMutationId: "expense-patch-clear-stored-value",
+          expectedVersion: 5,
+        },
+      ),
+    ).toMatchObject({
+      storedValueCardId: null,
+      storedValueCardName: null,
+      storedValueTransactionType: null,
     });
   });
 });

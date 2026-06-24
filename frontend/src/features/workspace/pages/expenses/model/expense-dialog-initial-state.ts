@@ -14,6 +14,8 @@ export interface ExpenseDialogInitialFields {
   repeatCount: string;
   receiptUrl: string;
   spentOn: string;
+  storedValueCardName: string;
+  storedValueTransactionType: NonNullable<Expense["storedValueTransactionType"]> | "";
   title: string;
 }
 
@@ -42,6 +44,8 @@ export function initialExpenseDialogFields({
     repeatCount: "1",
     receiptUrl: expense?.receiptUrl ?? "",
     spentOn: expense?.spentOn ?? todayIsoDate(),
+    storedValueCardName: expense?.storedValueCardName ?? "",
+    storedValueTransactionType: expense?.storedValueTransactionType ?? "",
     title: expense?.title ?? "",
   };
 }

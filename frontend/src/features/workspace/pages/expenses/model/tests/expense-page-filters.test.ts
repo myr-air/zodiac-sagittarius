@@ -118,7 +118,7 @@ describe("expense page filters", () => {
       {
         id: "2026-06-20",
         label: "2026-06-20",
-        totalLabel: "HK$280.00",
+        totalLabel: "HK$800.00",
         titles: ["General top-up"],
       },
     ]);

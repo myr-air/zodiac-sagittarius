@@ -7,6 +7,7 @@ use crate::db::PgPool;
 use crate::db::models::{ExpenseReminderRecord, NewExpense, NewExpenseReminder};
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
+use crate::domain::expense_patch_rules::validate_stored_value_fields;
 use crate::domain::patches::{
     CreateExpenseRequest, PatchExpenseRequest, RecordExpenseReminderRequest,
     validate_expense_splits_total,
@@ -87,7 +88,12 @@ pub async fn create_expense(
                 .unwrap_or(1.0),
             notes: request.notes.as_deref().unwrap_or("").trim(),
             receipt_url: request.receipt_url.as_deref().map(str::trim),
-            spent_on: request.spent_on.unwrap_or_else(|| OffsetDateTime::now_utc().date()),
+            spent_on: request
+                .spent_on
+                .unwrap_or_else(|| OffsetDateTime::now_utc().date()),
+            stored_value_card_id: request.stored_value_card_id.as_deref().map(str::trim),
+            stored_value_card_name: request.stored_value_card_name.as_deref().map(str::trim),
+            stored_value_transaction_type: request.stored_value_transaction_type.as_deref(),
             line_items: request.line_items.unwrap_or_else(|| serde_json::json!([])),
             comments: request.comments.unwrap_or_else(|| serde_json::json!([])),
             settlement_allocations: request
@@ -235,6 +241,20 @@ pub async fn patch_expense(
         request.splits.as_ref().unwrap_or(&existing.splits),
         request.amount_minor.unwrap_or(existing.amount_minor),
     )?;
+    validate_stored_value_fields(
+        patch_string_field(
+            &request.stored_value_transaction_type,
+            &existing.stored_value_transaction_type,
+        ),
+        patch_string_field(
+            &request.stored_value_card_id,
+            &existing.stored_value_card_id,
+        ),
+        patch_string_field(
+            &request.stored_value_card_name,
+            &existing.stored_value_card_name,
+        ),
+    )?;
 
     let updated = db::expense_queries::update_expense(
         &mut tx,
@@ -259,6 +279,17 @@ pub async fn patch_expense(
     realtime.publish(event).await;
 
     Ok(expense)
+}
+
+fn patch_string_field<'a>(
+    patch: &'a Option<Option<String>>,
+    existing: &'a Option<String>,
+) -> Option<&'a str> {
+    match patch {
+        Some(Some(value)) => Some(value.as_str()),
+        Some(None) => None,
+        None => existing.as_deref(),
+    }
 }
 
 pub async fn delete_expense(
