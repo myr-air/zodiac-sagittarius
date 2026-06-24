@@ -4,23 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { appRoutes, tripWorkspaceNavItems } from "@/src/routes/app-routes";
-import { Icon } from "@/src/ui/icons";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
 import type { AppShellProps } from "./app-shell.types";
 import {
   appLayoutClassName,
-  brandBlockClassName,
-  brandCopyClassName,
-  brandMarkClassName,
-  brandNameClassName,
-  brandRowClassName,
-  mobileMenuButtonClassName,
-  mobilePageTitleClassName,
-  mobileTripNameClassName,
-  railToggleClassName,
   sideRailClassName,
   sideRailLanguageClassName,
 } from "./AppShell.styles";
+import { AppShellBrandHeader } from "./AppShellBrandHeader";
 import { AppShellMemberCard } from "./AppShellMemberCard";
 import { AppShellRailNavigation } from "./AppShellRailNavigation";
 
@@ -63,63 +54,18 @@ export function AppShell({
         data-collapsed={collapsed ? "true" : "false"}
         aria-label={t.appShell.navLabel}
       >
-        <div
-          className={brandRowClassName}
-          data-collapsed={collapsed ? "true" : "false"}
-        >
-          <div className={brandBlockClassName}>
-            <div className={brandMarkClassName} aria-hidden="true">
-              <Icon name="route" />
-            </div>
-            <div
-              className={brandCopyClassName}
-              data-collapsed={collapsed ? "true" : "false"}
-            >
-              <strong className={brandNameClassName}>Joii</strong>
-              <span className={mobileTripNameClassName}>{trip.name}</span>
-            </div>
-          </div>
-          <strong className={mobilePageTitleClassName}>{activeNavLabel}</strong>
-
-          <button
-            className={railToggleClassName}
-            data-collapsed={collapsed ? "true" : "false"}
-            type="button"
-            aria-expanded={!collapsed}
-            aria-label={
-              collapsed
-                ? t.appShell.expandNavigation
-                : t.appShell.collapseNavigation
-            }
-            onClick={onToggleCollapsed}
-            title={
-              collapsed
-                ? t.appShell.expandNavigation
-                : t.appShell.collapseNavigation
-            }
-          >
-            <Icon name={collapsed ? "chevronRight" : "chevronLeft"} />
-          </button>
-          <button
-            className={mobileMenuButtonClassName}
-            type="button"
-            aria-controls="mobile-workspace-navigation"
-            aria-expanded={mobileMenuOpen}
-            aria-label={
-              mobileMenuOpen
-                ? t.appShell.closeNavigation
-                : t.appShell.openNavigation
-            }
-            onClick={() => setMobileMenuOpen((current) => !current)}
-            title={
-              mobileMenuOpen
-                ? t.appShell.closeNavigation
-                : t.appShell.openNavigation
-            }
-          >
-            <Icon name={mobileMenuOpen ? "x" : "menu"} />
-          </button>
-        </div>
+        <AppShellBrandHeader
+          activeNavLabel={activeNavLabel}
+          collapsed={collapsed}
+          collapseNavigationLabel={t.appShell.collapseNavigation}
+          expandNavigationLabel={t.appShell.expandNavigation}
+          mobileMenuOpen={mobileMenuOpen}
+          closeNavigationLabel={t.appShell.closeNavigation}
+          openNavigationLabel={t.appShell.openNavigation}
+          onToggleCollapsed={onToggleCollapsed}
+          onToggleMobileMenu={() => setMobileMenuOpen((current) => !current)}
+          tripName={trip.name}
+        />
 
         <AppShellRailNavigation
           activeLinkRef={activeLinkRef}

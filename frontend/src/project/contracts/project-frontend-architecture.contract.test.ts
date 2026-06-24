@@ -55,6 +55,7 @@ describe("Sagittarius frontend architecture contracts", () => {
 
   it("keeps AppShell split into component, styles, and routing logic", () => {
     const appShell = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShell.tsx"), "utf8");
+    const appShellBrandHeader = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellBrandHeader.tsx"), "utf8");
     const appShellRailNavigation = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellRailNavigation.tsx"), "utf8");
     const appShellMemberCard = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/AppShellMemberCard.tsx"), "utf8");
     const appShellMemberCardActions = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/useAppShellMemberCardActions.ts"), "utf8");
@@ -62,13 +63,18 @@ describe("Sagittarius frontend architecture contracts", () => {
     const appShellRouting = readFileSync(join(frontendRoot, "src/features/workspace/components/app-shell/app-shell-routing.ts"), "utf8");
 
     expect(appShell).toContain("./AppShell.styles");
+    expect(appShell).toContain("./AppShellBrandHeader");
     expect(appShell).toContain("./AppShellMemberCard");
     expect(appShell).toContain("./AppShellRailNavigation");
+    expect(appShell).not.toContain("brandRowClassName");
     expect(appShell).not.toContain("railLinksClassName");
     expect(appShell).not.toContain("resolveViewFromPath");
     expect(appShell).not.toContain("const appLayoutClassName");
     expect(appShell).not.toContain("identityDialogOpen");
     expect(appShell).not.toContain("function roleLabel");
+    expect(appShellBrandHeader).toContain("export function AppShellBrandHeader");
+    expect(appShellBrandHeader).toContain("brandRowClassName");
+    expect(appShellBrandHeader).toContain("mobileMenuButtonClassName");
     expect(appShellRailNavigation).toContain("export function AppShellRailNavigation");
     expect(appShellRailNavigation).toContain("railLinksClassName");
     expect(appShellRailNavigation).toContain("AppShellNavigationHandler");
