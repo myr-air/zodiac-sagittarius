@@ -210,6 +210,7 @@ export const frontendWorkspaceScaffoldPathsPresent = [
   "src/trip/workspace/planning-view.ts",
   "src/trip/workspace/selected-trip-plan.ts",
   "src/trip/workspace/testing/fixtures/itinerary-import-api-fixtures.ts",
+  "src/trip/workspace/testing/fixtures/itinerary-import-record-fixtures.ts",
   "src/trip/workspace/testing/fixtures/selected-trip-plan-fixtures.ts",
   "src/trip/workspace/trip-plan-records.ts",
 ] as const;
