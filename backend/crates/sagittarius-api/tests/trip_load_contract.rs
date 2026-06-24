@@ -389,9 +389,9 @@ async fn trip_load_contract_serializes_missing_start_time_as_empty_string(pool: 
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn trip_load_contract_normalizes_raw_empty_end_time_offset_drift(pool: sqlx::PgPool) {
+async fn trip_load_contract_rejects_raw_empty_end_time_offset_drift(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
-    sqlx::query(
+    let result = sqlx::query(
         "update itinerary_items
          set end_time = null,
              end_offset_days = 1
@@ -399,28 +399,12 @@ async fn trip_load_contract_normalizes_raw_empty_end_time_offset_drift(pool: sql
     )
     .bind(uuid::Uuid::parse_str(support::ITEM_ID).unwrap())
     .execute(&pool)
-    .await
-    .unwrap();
-    let traveler_token = support::create_session(&pool, support::TRAVELER_ID).await;
-    let app = support::app(pool);
+    .await;
 
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method(Method::GET)
-                .uri(format!("/api/v1/trips/{}", support::TRIP_ID))
-                .header(header::AUTHORIZATION, format!("Bearer {traveler_token}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::OK);
-    let body: Value =
-        serde_json::from_slice(&to_bytes(response.into_body(), 131072).await.unwrap()).unwrap();
-    assert_eq!(body["itineraryItems"][0]["endTime"], Value::Null);
-    assert_eq!(body["itineraryItems"][0]["endOffsetDays"], 0);
+    assert!(
+        result.is_err(),
+        "end_offset_days > 0 without end_time was accepted"
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]
