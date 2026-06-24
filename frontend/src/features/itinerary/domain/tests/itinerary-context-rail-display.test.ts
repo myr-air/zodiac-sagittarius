@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { BookingDocType, Member, Suggestion, TripTask } from "@/src/trip/types";
+import { buildTripFixtureSuggestion } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   bookingDocTypeOptions,
   memberDisplayName,
@@ -36,20 +37,17 @@ describe("itinerary context rail display helpers", () => {
   });
 
   it("builds suggestion labels from proposed patch", () => {
-    const suggestion: Suggestion = {
+    const suggestion: Suggestion = buildTripFixtureSuggestion({
       id: "s-1",
-      tripId: "trip-1",
       proposerId: "m1",
-      type: "edit",
       targetItemId: "item-1",
       planVariantId: "main",
       proposedPatch: {
         transportation: "Flight",
       },
       sourceVersion: null,
-      status: "pending",
       createdAt: "2026-01-01T00:00:00.000Z",
-    };
+    });
     expect(suggestionLabel(suggestion, "Fallback")).toBe("Flight");
     expect(
       suggestionLabel(

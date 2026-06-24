@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { seedTrip } from "@/src/trip/seed";
-import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  buildTripFixtureSuggestion,
+  getTripFixtureItineraryItem,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 import { buildOverviewPageModel } from "../overview-page-model";
 
 describe("overview page model", () => {
@@ -19,20 +22,7 @@ describe("overview page model", () => {
       focusTodayLabel: "Focus today",
       items: [...seedTrip.itineraryItems].reverse(),
       locale: "en",
-      suggestions: [
-        {
-          id: "suggestion-pending",
-          tripId: seedTrip.id,
-          proposerId: "member-beam",
-          type: "edit",
-          targetItemId: "item-dimdim",
-          planVariantId: seedTrip.activePlanVariantId,
-          proposedPatch: {},
-          sourceVersion: 1,
-          status: "pending",
-          createdAt: "2026-06-18T00:00:00.000Z",
-        },
-      ],
+      suggestions: [buildTripFixtureSuggestion({ id: "suggestion-pending" })],
       trip: seedTrip,
     });
 

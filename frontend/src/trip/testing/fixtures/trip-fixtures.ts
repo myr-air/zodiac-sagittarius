@@ -51,6 +51,23 @@ export const tripFixtureSuggestions: Suggestion[] = [
   },
 ];
 
+export function buildTripFixtureSuggestion(
+  overrides: Partial<Suggestion> & Pick<Suggestion, "id">,
+): Suggestion {
+  return {
+    tripId: seedTrip.id,
+    proposerId: "member-beam",
+    type: "edit",
+    targetItemId: "item-dimdim",
+    planVariantId: seedTrip.activePlanVariantId,
+    proposedPatch: { activity: "Dim Dim Sum" },
+    sourceVersion: 1,
+    status: "pending",
+    createdAt: "2026-06-18T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
 export const tripFixtureTasks: TripTask[] = [
   { id: "task-esim", title: "ซื้อ eSIM", status: "open", visibility: "private", kind: "prep", createdBy: "member-aom", assigneeId: "member-aom" },
   { id: "task-passport-nam", title: "เพิ่มชื่อ passport ของ Explorer Friend", status: "open", visibility: "shared", kind: "booking", createdBy: "member-nam", assigneeId: "member-nam", relatedItemId: "item-flight-bkk-hkg" },

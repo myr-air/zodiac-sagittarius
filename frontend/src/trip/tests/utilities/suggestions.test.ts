@@ -3,7 +3,8 @@ import {
   buildCreateEditSuggestionRequest,
   createLocalEditSuggestion,
 } from "../../itinerary-core";
-import type { ItineraryItem, Suggestion } from "../../types";
+import { buildTripFixtureSuggestion } from "../../testing/fixtures/trip-fixtures";
+import type { ItineraryItem } from "../../types";
 
 describe("suggestion helpers", () => {
   it("builds API create requests for edit suggestions", () => {
@@ -23,7 +24,7 @@ describe("suggestion helpers", () => {
 
   it("builds local edit suggestions from app-provided context", () => {
     expect(
-      createLocalEditSuggestion([suggestionFixture({ id: "suggestion-1" })], {
+      createLocalEditSuggestion([buildTripFixtureSuggestion({ id: "suggestion-1" })], {
         tripId: "trip-1",
         proposerId: "member-aom",
         targetItem: itemFixture(),
@@ -55,22 +56,5 @@ function itemFixture(): Pick<
     activity: "Victoria Peak",
     planVariantId: "plan-main",
     version: 5,
-  };
-}
-
-function suggestionFixture(
-  input: Partial<Suggestion> & Pick<Suggestion, "id">,
-): Suggestion {
-  return {
-    tripId: "trip-1",
-    proposerId: "member-aom",
-    type: "edit",
-    targetItemId: "item-existing",
-    planVariantId: "plan-main",
-    proposedPatch: { activity: "Existing" },
-    sourceVersion: 1,
-    status: "pending",
-    createdAt: "2026-06-18T09:00:00.000Z",
-    ...input,
   };
 }
