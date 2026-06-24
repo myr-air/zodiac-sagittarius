@@ -3,7 +3,7 @@
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import type { AuthFlow } from "../auth";
 import { useEmailLoginPanelState } from "./state/use-email-login-panel-state";
-import { EmailLoginPanelForm } from "./ui/account-email-login-panel-form";
+import { EmailLoginPanelForm } from "./components/account-email-login-panel-form";
 
 interface EmailLoginPanelProps {
   accountClient: AccountApiClient;

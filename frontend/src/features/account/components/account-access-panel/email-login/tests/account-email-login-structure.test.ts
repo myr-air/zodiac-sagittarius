@@ -12,15 +12,15 @@ function readEmailLoginSource(fileName: string) {
 describe("account email login structure", () => {
   it("keeps the panel shell split from step rendering", () => {
     const panelSource = readEmailLoginSource("account-email-login-panel.tsx");
-    const panelFormSource = readEmailLoginSource("ui/account-email-login-panel-form.tsx");
-    const stageSource = readEmailLoginSource("ui/account-email-login-step-stage.tsx");
-    const dispatchSource = readEmailLoginSource("ui/account-email-login-step-dispatch.tsx");
+    const panelFormSource = readEmailLoginSource("components/account-email-login-panel-form.tsx");
+    const stageSource = readEmailLoginSource("components/account-email-login-step-stage.tsx");
+    const dispatchSource = readEmailLoginSource("components/account-email-login-step-dispatch.tsx");
     const stepLabelsSource = readEmailLoginSource("model/account-email-login-step-labels.ts");
-    const stepTypesSource = readEmailLoginSource("ui/account-email-login-step.types.ts");
+    const stepTypesSource = readEmailLoginSource("components/account-email-login-step.types.ts");
 
     expect(panelSource).toContain("EmailLoginPanelForm");
     expect(panelSource).toContain("useEmailLoginPanelState");
-    expect(panelSource).toContain("./ui/account-email-login-panel-form");
+    expect(panelSource).toContain("./components/account-email-login-panel-form");
     expect(panelSource).not.toContain("EmailLoginStepStage");
     expect(panelSource).not.toContain("AccountAuthRouteTabs");
     expect(panelFormSource).toContain("EmailLoginStepStage");

@@ -1,7 +1,7 @@
 "use client";
 
 import type { AuthFlow } from "../../auth";
-import { AccountStepSummary } from "../ui/account-email-login-fields";
+import { AccountStepSummary } from "../components/account-email-login-fields";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 

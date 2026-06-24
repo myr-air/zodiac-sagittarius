@@ -32,7 +32,7 @@ describe("email login state structure", () => {
     const formState = readEmailLoginSource("state/use-email-login-form-state.ts");
     const derivedState = readEmailLoginSource("model/email-login-panel-derived-state.ts");
     const validation = readEmailLoginSource("model/email-login-validation.ts");
-    const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
+    const styles = readEmailLoginSource("components/account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginFormState");
     expect(panelState).not.toMatch(/const \[email,\s*setEmail\]/);
@@ -118,8 +118,8 @@ describe("email login state structure", () => {
     const entryActions = readEmailLoginSource("state/use-email-login-entry-actions.ts");
     const stepMeta = readEmailLoginSource("model/account-email-login-step-meta.ts");
     const stepNavigation = readEmailLoginSource("state/use-email-login-step-navigation.ts");
-    const stepTypes = readEmailLoginSource("ui/account-email-login-step.types.ts");
-    const styles = readEmailLoginSource("ui/account-email-login-styles.ts");
+    const stepTypes = readEmailLoginSource("components/account-email-login-step.types.ts");
+    const styles = readEmailLoginSource("components/account-email-login-styles.ts");
 
     expect(panelState).toContain("useEmailLoginEntryActions");
     expect(panelState).toContain("useEmailLoginStepNavigation");
@@ -147,7 +147,7 @@ describe("email login state structure", () => {
       "../model/account-email-login-step-meta",
     );
     expect(stepTypes).not.toContain("../state/use-email-login-step-navigation");
-    expect(readEmailLoginSource("ui/account-email-login-step-stage.tsx")).not.toContain(
+    expect(readEmailLoginSource("components/account-email-login-step-stage.tsx")).not.toContain(
       "../state/use-email-login-step-navigation",
     );
   });
