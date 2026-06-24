@@ -22,6 +22,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized context rail item surface styles locally
 - [x] Moved generic booking document type labels to trip domain
 - [x] Audited workspace page composition line bands
+- [x] Audited extracted shared component Storybook coverage
 
 ## Milestone 1: Shared UI Primitives
 
@@ -31,7 +32,7 @@ Goal: Move repeated, feature-neutral UI patterns into `frontend/src/shared/compo
 - [x] Extract compact workspace panel headings into `shared/components/workspace-panel-heading`.
 - [x] Extract shared copy-feedback labels into `shared/components/copy-feedback`.
 - [ ] Audit remaining repeated button/badge/header patterns in workspace pages.
-- [ ] Add or update Storybook stories for each new shared component.
+- [x] Add or update Storybook stories for each new shared component.
 - [ ] Keep feature wrappers only when they add domain-specific props, labels, or accessibility semantics.
 
 ## Milestone 2: Domain Single Source Of Truth
@@ -71,9 +72,9 @@ Goal: Keep architectural intent executable so future refactors do not drift back
 Goal: Storybook should reflect reusable components and important page states after structural changes.
 
 - [x] Added Storybook coverage for `WorkspacePanelHeading`.
-- [ ] Audit shared component stories for newly extracted or renamed components.
+- [x] Audit shared component stories for newly extracted or renamed components.
 - [ ] Add stories for reusable workspace controls that currently only appear inside page stories.
-- [ ] Run `rtk bun run test:storybook` after story or shared UI changes.
+- [x] Run `rtk bun run test:storybook` after story or shared UI changes.
 
 ## Atomic Refactor Queue
 
@@ -85,7 +86,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Audit `context-rail.styles.ts`; centralize context-rail-only item surface shells locally.
 - [x] Audit bookings/docs option labels; keep localized page copy local and move generic booking type fallback labels to trip domain.
 - [x] Audit large page composition files; current workspace pages stay below the 400-line review band.
-- [ ] Re-run Storybook catalog checks after any shared component move.
+- [x] Re-run Storybook catalog checks after any shared component move.
 
 ## Draft Acceptance Criteria
 
