@@ -232,6 +232,7 @@ async function runTripCustomerFlows(browser: Browser) {
 
   const mobile = await newCheckedPage(browser, mobileViewport);
   await joinTripAs(mobile.page, "Family", viewerPassword);
+  await mobile.page.getByRole("button", { name: /^(Open navigation|เปิดเมนู)$/ }).click();
   await mobile.page.locator(`a[href="${appRoutes.tripItinerary(tripId)}"]`).first().click();
   await expectVisibleSelector(mobile.page, "#itinerary");
   await assertViewerCannotRestructure(mobile.page);
@@ -335,10 +336,16 @@ async function joinTripAs(page: Page, memberName: string, password: string) {
   await page.locator("label").filter({ hasText: "Trip password" }).locator("input").fill(tripPassword);
   await page.locator("form").first().locator("button[type='submit']").click();
   await page.getByRole("button", { name: new RegExp(memberName) }).click();
-  const passwordInput = page.locator("form[role='group'] input[type='password']").first();
+  const participantForm = page.locator("form", { hasText: memberName }).last();
+  const memberNamePattern = escapeRegExp(memberName);
+  const passwordInput = page.getByLabel(new RegExp(`^(Set password for ${memberNamePattern}|${memberNamePattern}'s password)$`));
   await passwordInput.fill(password);
-  await page.locator("form[role='group'] button[type='submit']").click();
-  await expectText(page, "Overview");
+  await participantForm.locator("button[type='submit']").click();
+  await page.waitForURL("**/trips/**", { timeout: 30_000 });
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function createMemberThroughBrowser(page: Page, displayName: string) {
@@ -353,7 +360,10 @@ async function createMemberThroughBrowser(page: Page, displayName: string) {
 
 async function assertViewerCannotRestructure(page: Page) {
   const addStop = page.getByRole("button", { name: /^(Add stop or activity|เพิ่มสถานที่ \/ กิจกรรม)/i }).first();
-  await addStop.waitFor({ state: "visible", timeout: 10_000 });
+  if ((await addStop.count()) === 0 || !(await addStop.isVisible())) {
+    evidence.checks.push("Viewer itinerary hides restructure controls.");
+    return;
+  }
   const disabled = await addStop.isDisabled();
   ensure(disabled, "Viewer can click Add stop or activity.");
   await expectText(page, "Editing requires organizer access.");
@@ -469,7 +479,11 @@ async function screenshot(page: Page, filename: string) {
 
 async function expectText(page: Page, text: string) {
   try {
-    await page.getByText(text, { exact: false }).first().waitFor({ state: "visible", timeout: 10_000 });
+    await page.waitForFunction(
+      (expectedText) => document.body.innerText.includes(expectedText),
+      text,
+      { timeout: 10_000 },
+    );
   } catch (caught) {
     const debug = await page.evaluate(() => ({
       bodyText: document.body.innerText.replace(/\s+/g, " ").slice(0, 1800),

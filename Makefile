@@ -81,7 +81,7 @@ production-env-check:
 production-env-file-check:
 	set -a; . "$(PRODUCTION_ENV_SOURCE)"; set +a; cd $(FRONTEND_DIR) && SAGITTARIUS_PRODUCTION_ENV_FILE_CHECK=1 bun run test:production-env
 
-staging-preflight: db-ensure-psql
+staging-preflight: db-init-test
 	cd $(FRONTEND_DIR) && \
 	DATABASE_URL="$(TEST_DATABASE_URL)" \
 	NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL="http://$(SAGITTARIUS_BIND_ADDR)" \
