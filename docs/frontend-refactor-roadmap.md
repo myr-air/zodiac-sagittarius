@@ -74,7 +74,7 @@ Goal: Storybook should reflect reusable components and important page states aft
 
 Use one checklist item per commit unless a test failure proves the item must be split smaller.
 
-- [ ] Remove photo provider/access aliases if call sites can import canonical trip photo album values directly.
+- [x] Remove photo provider/access aliases if call sites can import canonical trip photo album values directly.
 - [ ] Extract or centralize member role filter values if they prove useful beyond the members page.
 - [ ] Audit `TripExpensesPage.styles.ts` for style groups that now belong in shared workspace primitives.
 - [ ] Audit `context-rail.styles.ts` for repeated note/expense/suggestion row styles that can become local style groups or shared primitives.
@@ -105,4 +105,3 @@ Run the smallest useful gate first, then broaden based on touched files.
 ## Progress Rule
 
 Update this roadmap when a milestone item is completed, added, split, or intentionally deferred. Each completed implementation slice should end in a commit with the relevant verification evidence recorded in the final report.
-

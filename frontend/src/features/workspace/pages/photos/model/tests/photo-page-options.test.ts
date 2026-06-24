@@ -1,20 +1,22 @@
 import { describe, expect, it } from "vitest";
+import {
+  tripPhotoAlbumAccessValues,
+  tripPhotoAlbumProviderValues,
+} from "@/src/trip/photo-albums";
 import { photoCopy } from "../../content/TripPhotosPage.copy";
 import {
   photoAccessBadgeTone,
   photoAccessLabel,
-  photoAccessOptions,
   photoAccessSelectOptions,
   photoProviderIcon,
   photoProviderLabel,
-  photoProviderOptions,
   photoProviderSelectOptions,
   photoProviders,
 } from "../photo-page-options";
 
 describe("photo page options", () => {
   it("exports canonical provider and access option order", () => {
-    expect(photoProviderOptions).toEqual([
+    expect(tripPhotoAlbumProviderValues).toEqual([
       "google_photos",
       "icloud",
       "google_drive",
@@ -22,8 +24,8 @@ describe("photo page options", () => {
       "onedrive",
       "custom",
     ]);
-    expect(photoProviders).toEqual(["all", ...photoProviderOptions]);
-    expect(photoAccessOptions).toEqual([
+    expect(photoProviders).toEqual(["all", ...tripPhotoAlbumProviderValues]);
+    expect(tripPhotoAlbumAccessValues).toEqual([
       "view_only",
       "collaborative",
       "upload_request",

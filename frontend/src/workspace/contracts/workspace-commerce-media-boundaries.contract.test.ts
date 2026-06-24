@@ -99,7 +99,10 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(photoAlbumDialogActions).toContain("export function usePhotoAlbumDialogActions");
     expect(photoAlbumDialogActions).toContain("async function submit");
     expect(photoAlbumDialogActions).toContain("buildPhotoAlbumDialogSubmitInput");
-    expect(photoPageOptions).toContain("export const photoProviderOptions");
+    expect(photoPageOptions).not.toContain("export const photoProviderOptions");
+    expect(photoPageOptions).not.toContain("export const photoAccessOptions");
+    expect(photoPageOptions).toContain("tripPhotoAlbumProviderValues");
+    expect(photoPageOptions).toContain("tripPhotoAlbumAccessValues");
     expect(photoPageOptions).toContain("export function photoProviderLabel");
     expect(photoPageSelectors).toContain("export function countPhotoProviders");
     expect(photoPageSelectors).toContain("export function photoAlbumLinkHost");

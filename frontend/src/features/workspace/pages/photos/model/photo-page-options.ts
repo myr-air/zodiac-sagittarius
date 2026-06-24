@@ -18,9 +18,6 @@ import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 export const photoProviders = withAllFilterValue(tripPhotoAlbumProviderValues);
 export type PhotoProviderFilter = (typeof photoProviders)[number];
 
-export const photoProviderOptions = tripPhotoAlbumProviderValues;
-export const photoAccessOptions = tripPhotoAlbumAccessValues;
-
 export type PhotoSelectOption<Value extends string = string> = SelectOption<Value>;
 
 export function photoProviderLabel(provider: PhotoProviderFilter, copy: PhotoCopy): string {
@@ -38,11 +35,11 @@ export function photoAccessLabel(access: TripPhotoAlbumAccess, copy: PhotoCopy):
 }
 
 export function photoProviderSelectOptions(copy: PhotoCopy): PhotoSelectOption<TripPhotoAlbumProvider>[] {
-  return buildSelectOptions(photoProviderOptions, (value) => photoProviderLabel(value, copy));
+  return buildSelectOptions(tripPhotoAlbumProviderValues, (value) => photoProviderLabel(value, copy));
 }
 
 export function photoAccessSelectOptions(copy: PhotoCopy): PhotoSelectOption<TripPhotoAlbumAccess>[] {
-  return buildSelectOptions(photoAccessOptions, (value) => photoAccessLabel(value, copy));
+  return buildSelectOptions(tripPhotoAlbumAccessValues, (value) => photoAccessLabel(value, copy));
 }
 
 export function photoAccessBadgeTone(access: TripPhotoAlbumAccess): BadgeTone {
