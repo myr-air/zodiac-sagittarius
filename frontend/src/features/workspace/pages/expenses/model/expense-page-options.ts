@@ -3,6 +3,10 @@ import {
   expenseSplitModeValues,
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
+import {
+  buildSelectOptions,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import type { Expense } from "@/src/trip/types";
 
 export type CategoryTone = {
@@ -18,10 +22,7 @@ export type ExpenseCategoryFilter = (typeof expenseCategoryFilterValues)[number]
 
 export const expenseSplitModes = expenseSplitModeValues;
 
-export interface ExpenseSelectOption<Value extends string = string> {
-  value: Value;
-  label: string;
-}
+export type ExpenseSelectOption<Value extends string = string> = SelectOption<Value>;
 
 const categoryTones: Record<Expense["category"], CategoryTone> = {
   food: { background: "#fff7ed", border: "#fed7aa", dot: "#f97316", text: "#9a3412" },
@@ -37,20 +38,19 @@ export function categoryTone(category: Expense["category"]): CategoryTone {
 }
 
 export function expenseCategorySelectOptions(): ExpenseSelectOption<Expense["category"]>[] {
-  return expenseCategories.map((value) => ({ value, label: value }));
+  return buildSelectOptions(expenseCategories, (value) => value);
 }
 
 export function expenseCategoryFilterSelectOptions(
   allCategoriesLabel: string,
 ): ExpenseSelectOption<ExpenseCategoryFilter>[] {
-  return expenseCategoryFilterValues.map((value) => ({
-    value,
-    label: value === "all" ? allCategoriesLabel : value,
-  }));
+  return buildSelectOptions(expenseCategoryFilterValues, (value) =>
+    value === "all" ? allCategoriesLabel : value,
+  );
 }
 
 export function expenseSplitModeSelectOptions(
   labels: Record<ExpenseSplitMode, string>,
 ): ExpenseSelectOption<ExpenseSplitMode>[] {
-  return expenseSplitModes.map((value) => ({ value, label: labels[value] }));
+  return buildSelectOptions(expenseSplitModes, (value) => labels[value]);
 }

@@ -2,6 +2,10 @@ import {
   tripPhotoAlbumAccessValues,
   tripPhotoAlbumProviderValues,
 } from "@/src/trip/photo-albums";
+import {
+  buildSelectOptions,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import type {
   TripPhotoAlbumAccess,
   TripPhotoAlbumProvider,
@@ -16,10 +20,7 @@ export type PhotoProviderFilter = (typeof photoProviders)[number];
 export const photoProviderOptions = tripPhotoAlbumProviderValues;
 export const photoAccessOptions = tripPhotoAlbumAccessValues;
 
-export interface PhotoSelectOption<Value extends string = string> {
-  value: Value;
-  label: string;
-}
+export type PhotoSelectOption<Value extends string = string> = SelectOption<Value>;
 
 export function photoProviderLabel(provider: PhotoProviderFilter, copy: PhotoCopy): string {
   return copy.providers[provider];
@@ -36,11 +37,11 @@ export function photoAccessLabel(access: TripPhotoAlbumAccess, copy: PhotoCopy):
 }
 
 export function photoProviderSelectOptions(copy: PhotoCopy): PhotoSelectOption<TripPhotoAlbumProvider>[] {
-  return photoProviderOptions.map((value) => ({ value, label: photoProviderLabel(value, copy) }));
+  return buildSelectOptions(photoProviderOptions, (value) => photoProviderLabel(value, copy));
 }
 
 export function photoAccessSelectOptions(copy: PhotoCopy): PhotoSelectOption<TripPhotoAlbumAccess>[] {
-  return photoAccessOptions.map((value) => ({ value, label: photoAccessLabel(value, copy) }));
+  return buildSelectOptions(photoAccessOptions, (value) => photoAccessLabel(value, copy));
 }
 
 export function photoAccessBadgeTone(access: TripPhotoAlbumAccess): BadgeTone {

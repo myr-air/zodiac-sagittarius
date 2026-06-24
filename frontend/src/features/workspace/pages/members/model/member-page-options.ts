@@ -5,6 +5,10 @@ import {
   type TripInvitableRole,
   type TripRole,
 } from "@/src/trip/members";
+import {
+  buildSelectOptions,
+  type SelectOption,
+} from "@/src/shared/select-options";
 
 export const memberInviteRoleValues = tripInvitableRoleValues;
 export type MemberInviteRole = TripInvitableRole;
@@ -20,10 +24,7 @@ export const memberStatusFilterValues = [
 ] as const;
 export type MemberStatusFilter = (typeof memberStatusFilterValues)[number];
 
-export interface MemberSelectOption<Value extends string = string> {
-  value: Value;
-  label: string;
-}
+export type MemberSelectOption<Value extends string = string> = SelectOption<Value>;
 
 export interface MemberFilterLabelSource {
   appShell: {
@@ -71,17 +72,23 @@ export function memberStatusFilterLabel(
 export function memberInviteRoleSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberInviteRole>[] {
-  return memberInviteRoleValues.map((value) => ({ value, label: memberInviteRoleLabel(value, labels) }));
+  return buildSelectOptions(memberInviteRoleValues, (value) =>
+    memberInviteRoleLabel(value, labels),
+  );
 }
 
 export function memberRoleFilterSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberRoleFilter>[] {
-  return memberRoleFilterValues.map((value) => ({ value, label: memberRoleFilterLabel(value, labels) }));
+  return buildSelectOptions(memberRoleFilterValues, (value) =>
+    memberRoleFilterLabel(value, labels),
+  );
 }
 
 export function memberStatusFilterSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberStatusFilter>[] {
-  return memberStatusFilterValues.map((value) => ({ value, label: memberStatusFilterLabel(value, labels) }));
+  return buildSelectOptions(memberStatusFilterValues, (value) =>
+    memberStatusFilterLabel(value, labels),
+  );
 }
