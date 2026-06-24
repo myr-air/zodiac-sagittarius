@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   CopyFeedback,
+  WorkspaceCopyFeedback,
   workspaceCopyFeedbackCompactBadgeClassName,
   workspaceCopyFeedbackPillClassName,
   workspaceCopyFeedbackSubtleBadgeClassName,
@@ -38,4 +39,20 @@ export const PillError: Story = {
     label: "Copy failed",
     state: "error",
   },
+};
+
+export const WorkspacePill: StoryObj<typeof WorkspaceCopyFeedback> = {
+  render: () => (
+    <WorkspaceCopyFeedback
+      aria-label="Invite copy status"
+      className={workspaceCopyFeedbackPillClassName}
+      labels={{
+        copied: "Copied",
+        error: "Copy failed",
+        readOnly: "Only organizers can copy",
+        ready: "Ready to share",
+      }}
+      state="copied"
+    />
+  ),
 };

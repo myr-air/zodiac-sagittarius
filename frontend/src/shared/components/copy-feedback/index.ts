@@ -1,5 +1,9 @@
 export { CopyFeedback } from "./CopyFeedback";
 export {
+  WorkspaceCopyFeedback,
+  workspaceCopyFeedbackLabel,
+} from "./WorkspaceCopyFeedback";
+export {
   copyFeedbackLabel,
   type CopyFeedbackLabels,
 } from "./copy-feedback-labels";
