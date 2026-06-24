@@ -45,5 +45,6 @@ export const frontendTripDomainCatalogSupportScaffoldPathsPresent = [
   "src/trip/testing/fixtures/trip-record-fixtures.ts",
   "src/trip/testing/fixtures/dense-trip-fixture.ts",
   "src/trip/testing/fixtures/api-cockpit-response.ts",
+  "src/trip/testing/fixtures/api-cockpit-record-fixtures.ts",
   "src/routes/invite-links.ts",
 ] as const;
