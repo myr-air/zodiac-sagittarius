@@ -142,6 +142,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/project/contracts/frontend-freeze.contract.test.ts",
   "src/project/contracts/styles.contract.test.ts",
   "src/shared/components/copy-feedback/index.ts",
+  "src/shared/components/copy-feedback/copy-feedback-labels.ts",
+  "src/shared/components/copy-feedback/tests/copy-feedback-labels.test.ts",
   "src/shared/components/copy-feedback/copy-feedback.styles.ts",
   "src/shared/components/copy-feedback/tests/copy-feedback.styles.test.ts",
   "src/shared/components/copy-feedback/use-copy-feedback-state.ts",

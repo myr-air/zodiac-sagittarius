@@ -1,4 +1,7 @@
-import { CopyFeedback } from "@/src/shared/components/copy-feedback";
+import {
+  CopyFeedback,
+  copyFeedbackLabel,
+} from "@/src/shared/components/copy-feedback";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type { ExpenseCopyState, ExpensePageLabels } from "../model/expense-page-types";
 
@@ -9,9 +12,14 @@ export function expenseCopyFeedbackLabel({
   copyState: ExpenseCopyState;
   t: ExpensePageLabels;
 }): string {
-  if (copyState === "copied") return t.common.status.copied;
-  if (copyState === "error") return t.common.status.copyFailed;
-  return t.expenses.copy.ready;
+  return copyFeedbackLabel({
+    labels: {
+      copied: t.common.status.copied,
+      error: t.common.status.copyFailed,
+      ready: t.expenses.copy.ready,
+    },
+    state: copyState,
+  });
 }
 
 interface ExpenseCopyFeedbackProps {

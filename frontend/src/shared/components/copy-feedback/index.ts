@@ -1,5 +1,9 @@
 export { CopyFeedback } from "./CopyFeedback";
 export {
+  copyFeedbackLabel,
+  type CopyFeedbackLabels,
+} from "./copy-feedback-labels";
+export {
   workspaceCopyFeedbackCompactBadgeClassName,
   workspaceCopyFeedbackFrameClassName,
   workspaceCopyFeedbackPillClassName,

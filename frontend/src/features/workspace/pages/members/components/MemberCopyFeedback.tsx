@@ -1,4 +1,7 @@
-import { CopyFeedback } from "@/src/shared/components/copy-feedback";
+import {
+  CopyFeedback,
+  copyFeedbackLabel,
+} from "@/src/shared/components/copy-feedback";
 import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberCopyState, MemberLabels } from "./member-management.types";
 
@@ -11,10 +14,16 @@ export function memberCopyFeedbackLabel({
   labels: MemberLabels;
   readOnly?: boolean;
 }): string {
-  if (readOnly) return labels.members.copy.readOnly;
-  if (copyState === "copied") return labels.common.status.copied;
-  if (copyState === "error") return labels.common.status.copyFailed;
-  return labels.members.copy.ready;
+  return copyFeedbackLabel({
+    labels: {
+      copied: labels.common.status.copied,
+      error: labels.common.status.copyFailed,
+      readOnly: labels.members.copy.readOnly,
+      ready: labels.members.copy.ready,
+    },
+    readOnly,
+    state: copyState,
+  });
 }
 
 interface MemberCopyFeedbackProps {
