@@ -67,6 +67,8 @@ export const enExpensesMessages = {
         calculation: "Calculation",
         memberMath: "Member math",
         originalAmount: "Original",
+        showDetails: ({ title }: { title: string }) => `Show source and calculation for ${title}`,
+        hideDetails: ({ title }: { title: string }) => `Hide source and calculation for ${title}`,
       },
     },
     fields: {

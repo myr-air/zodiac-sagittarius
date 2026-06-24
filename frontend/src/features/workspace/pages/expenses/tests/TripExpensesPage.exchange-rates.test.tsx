@@ -74,6 +74,7 @@ describe("TripExpensesPage exchange rates", () => {
 
     await waitFor(() => expect(screen.getByLabelText(/เรท HKD เป็น THB/i)).toHaveValue("4.6"));
     expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: /ดูที่มาและสูตรของ Dim Dim Sum brunch/i }));
     expect(screen.getByText(/HK\$512\.00 × 1 = HK\$512\.00 · HK\$512\.00 × 4\.6 = ฿2,355\.20/)).toBeInTheDocument();
   });
 });

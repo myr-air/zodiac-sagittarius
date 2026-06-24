@@ -12,7 +12,8 @@ describe("TripExpensesPage overview and filters", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders a travel money cockpit with balances, ledger filters, and settle-up actions", () => {
+  it("renders a travel money cockpit with balances, ledger filters, and settle-up actions", async () => {
+    const user = userEvent.setup();
     renderExpenses();
 
     expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid", "bg-transparent");
@@ -29,9 +30,14 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
-    expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toBeInTheDocument();
-    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getAllByText("ที่มาและสูตรแปลงเงิน").length).toBeGreaterThan(0);
-    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getAllByText("คำนวณรายคน").length).toBeGreaterThan(0);
+    const ledger = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    expect(ledger).toBeInTheDocument();
+    const detailButtons = within(ledger).getAllByRole("button", { name: /ดูที่มาและสูตร/i });
+    expect(detailButtons[0]).toHaveAttribute("aria-expanded", "false");
+    await user.click(detailButtons[0]);
+    expect(detailButtons[0]).toHaveAttribute("aria-expanded", "true");
+    expect(within(ledger).getByText("ที่มาและสูตรแปลงเงิน")).toBeInTheDocument();
+    expect(within(ledger).getByText("คำนวณรายคน")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
     expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/อัปเดตสด/i);

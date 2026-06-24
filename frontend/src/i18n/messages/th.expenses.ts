@@ -67,6 +67,8 @@ export const thExpensesMessages = {
         calculation: "สูตรคำนวณ",
         memberMath: "คำนวณรายคน",
         originalAmount: "ยอดตั้งต้น",
+        showDetails: ({ title }: { title: string }) => `ดูที่มาและสูตรของ ${title}`,
+        hideDetails: ({ title }: { title: string }) => `ซ่อนที่มาและสูตรของ ${title}`,
       },
     },
     fields: {
