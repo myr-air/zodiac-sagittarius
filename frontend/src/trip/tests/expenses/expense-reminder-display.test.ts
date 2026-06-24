@@ -7,7 +7,7 @@ describe("expense reminder display", () => {
   });
 
   it("formats reminder timestamps in the selected locale", () => {
-    expect(formatReminderDate("2026-06-18T12:30:00.000Z", "en")).toContain("2026");
+    expect(formatReminderDate("2026-06-18T12:30:00.000Z", "en")).toBe("Jun 18, 2026, 07:30 PM");
     expect(formatReminderDate("2026-06-18T12:30:00.000Z", "th")).toContain("2026");
   });
 
