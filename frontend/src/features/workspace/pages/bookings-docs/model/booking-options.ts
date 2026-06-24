@@ -42,6 +42,14 @@ export function bookingStatusSelectOptions(copy: BookingCopy): BookingSelectOpti
   return buildBookingSelectOptions(bookingStatuses, copy);
 }
 
+export function bookingStatusFilterSelectOptions(
+  copy: BookingCopy,
+): SelectOption<BookingStatusFilter>[] {
+  return buildSelectOptions(bookingStatusFilterValues, (value) =>
+    value === "all" ? copy.allStatuses : formatEnumLabel(value, copy),
+  );
+}
+
 export function bookingVisibilitySelectOptions(copy: BookingCopy): BookingSelectOption<BookingDocVisibility>[] {
   return buildBookingSelectOptions(bookingVisibilities, copy);
 }

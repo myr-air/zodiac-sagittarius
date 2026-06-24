@@ -9,17 +9,14 @@ describe("BookingFileToolbar", () => {
     const user = userEvent.setup();
     const onQueryChange = vi.fn();
     const onStatusFilterChange = vi.fn();
-    const onToggleStatusMenu = vi.fn();
 
     render(
       <BookingFileToolbar
         copy={bookingCopy.en}
         query="flight"
         statusFilter="confirmed"
-        statusMenuOpen
         onQueryChange={onQueryChange}
         onStatusFilterChange={onStatusFilterChange}
-        onToggleStatusMenu={onToggleStatusMenu}
       />,
     );
 
@@ -27,10 +24,12 @@ describe("BookingFileToolbar", () => {
       target: { value: "flight hk" },
     });
     await user.click(screen.getByRole("button", { name: "Status: Confirmed" }));
-    await user.click(screen.getByRole("option", { name: "Paid" }));
+    expect(
+      screen.getByRole("listbox", { name: "Status: Confirmed" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByText("Paid"));
 
     expect(onQueryChange).toHaveBeenLastCalledWith("flight hk");
-    expect(onToggleStatusMenu).toHaveBeenCalledTimes(1);
     expect(onStatusFilterChange).toHaveBeenCalledWith("paid");
   });
 });

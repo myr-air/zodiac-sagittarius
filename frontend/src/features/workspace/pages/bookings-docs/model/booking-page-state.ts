@@ -8,15 +8,12 @@ export interface BookingBrowserState {
   query: string;
   selectedBookingId: string;
   statusFilter: BookingStatusFilter;
-  statusMenuOpen: boolean;
 }
 
 export interface BookingModalState {
   deleteBooking: BookingDoc | null;
   dialogBooking: BookingDoc | "new" | null;
 }
-
-type BooleanStateAction = boolean | ((current: boolean) => boolean);
 
 export function initialBookingBrowserState(
   bookingDocs: BookingDoc[],
@@ -27,7 +24,6 @@ export function initialBookingBrowserState(
     query: "",
     selectedBookingId: bookingDocs[0]?.id ?? "",
     statusFilter: "all",
-    statusMenuOpen: false,
   };
 }
 
@@ -63,7 +59,6 @@ export function selectBookingFolderBrowserState(
     ...state,
     activeFolderId,
     mobilePreviewOpen: false,
-    statusMenuOpen: false,
   };
 }
 
@@ -75,7 +70,6 @@ export function changeBookingQueryBrowserState(
     ...state,
     mobilePreviewOpen: false,
     query,
-    statusMenuOpen: false,
   };
 }
 
@@ -87,17 +81,5 @@ export function changeBookingStatusFilterBrowserState(
     ...state,
     mobilePreviewOpen: false,
     statusFilter,
-    statusMenuOpen: false,
-  };
-}
-
-export function setBookingStatusMenuOpenBrowserState(
-  state: BookingBrowserState,
-  nextOpen: BooleanStateAction,
-): BookingBrowserState {
-  return {
-    ...state,
-    statusMenuOpen:
-      typeof nextOpen === "function" ? nextOpen(state.statusMenuOpen) : nextOpen,
   };
 }

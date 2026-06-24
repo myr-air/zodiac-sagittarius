@@ -45,9 +45,7 @@ export function useBookingsDocsPageState({
     selectBooking,
     selectFolder,
     setMobilePreviewOpen,
-    setStatusMenuOpen,
     statusFilter,
-    statusMenuOpen,
   } = useBookingBrowserState({ bookingDocs });
   const {
     confirmDelete,
@@ -108,9 +106,7 @@ export function useBookingsDocsPageState({
     setDeleteBooking,
     setDialogBooking,
     setMobilePreviewOpen,
-    setStatusMenuOpen,
     statusFilter,
-    statusMenuOpen,
     submitBooking,
   };
 }

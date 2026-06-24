@@ -1,4 +1,4 @@
-import { type SetStateAction, useState } from "react";
+import { useState } from "react";
 import type { BookingDoc } from "@/src/trip/types";
 import type { BookingStatusFilter } from "../model/booking-options";
 import {
@@ -7,7 +7,6 @@ import {
   initialBookingBrowserState,
   selectBookingBrowserState,
   selectBookingFolderBrowserState,
-  setBookingStatusMenuOpenBrowserState,
   updateBookingBrowserState,
   type BookingBrowserState,
 } from "../model/booking-page-state";
@@ -61,12 +60,6 @@ export function useBookingBrowserState({
     updateBrowserState("mobilePreviewOpen", nextOpen);
   }
 
-  function setStatusMenuOpen(nextOpen: SetStateAction<boolean>) {
-    setBrowserState((current) =>
-      setBookingStatusMenuOpenBrowserState(current, nextOpen),
-    );
-  }
-
   return {
     activeFolderId: browserState.activeFolderId,
     changeQuery,
@@ -77,8 +70,6 @@ export function useBookingBrowserState({
     selectBooking,
     selectFolder,
     setMobilePreviewOpen,
-    setStatusMenuOpen,
     statusFilter: browserState.statusFilter,
-    statusMenuOpen: browserState.statusMenuOpen,
   };
 }

@@ -39,7 +39,6 @@ describe("bookings docs page state structure", () => {
     expect(bookingBrowserStateSource).toContain("selectBookingFolderBrowserState");
     expect(bookingBrowserStateSource).toContain("changeBookingQueryBrowserState");
     expect(bookingBrowserStateSource).toContain("changeBookingStatusFilterBrowserState");
-    expect(bookingBrowserStateSource).toContain("setBookingStatusMenuOpenBrowserState");
     expect(bookingBrowserStateSource).toContain("const [browserState, setBrowserState]");
     expect(bookingModalStateSource).toContain("initialBookingModalState");
     expect(bookingModalStateSource).toContain("@/src/shared/hooks/use-form-fields");

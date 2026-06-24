@@ -7,7 +7,6 @@ import {
   initialBookingModalState,
   selectBookingBrowserState,
   selectBookingFolderBrowserState,
-  setBookingStatusMenuOpenBrowserState,
 } from "../booking-page-state";
 
 const bookingDocs = [
@@ -23,7 +22,6 @@ describe("booking page state", () => {
       query: "",
       selectedBookingId: "booking-flight",
       statusFilter: "all",
-      statusMenuOpen: false,
     });
     expect(initialBookingBrowserState([]).selectedBookingId).toBe("");
     expect(initialBookingModalState).toEqual({
@@ -37,7 +35,6 @@ describe("booking page state", () => {
       ...initialBookingBrowserState(bookingDocs),
       mobilePreviewOpen: true,
       query: "hotel",
-      statusMenuOpen: true,
     };
 
     expect(selectBookingBrowserState(state, "booking-hotel")).toMatchObject({
@@ -47,26 +44,14 @@ describe("booking page state", () => {
     expect(selectBookingFolderBrowserState(state, "transport")).toMatchObject({
       activeFolderId: "transport",
       mobilePreviewOpen: false,
-      statusMenuOpen: false,
     });
     expect(changeBookingQueryBrowserState(state, "flight")).toMatchObject({
       mobilePreviewOpen: false,
       query: "flight",
-      statusMenuOpen: false,
     });
     expect(changeBookingStatusFilterBrowserState(state, "confirmed")).toMatchObject({
       mobilePreviewOpen: false,
       statusFilter: "confirmed",
-      statusMenuOpen: false,
     });
-  });
-
-  it("updates status menu without mutating current state", () => {
-    const state = initialBookingBrowserState(bookingDocs);
-    const openState = setBookingStatusMenuOpenBrowserState(state, true);
-
-    expect(openState.statusMenuOpen).toBe(true);
-    expect(state.statusMenuOpen).toBe(false);
-    expect(setBookingStatusMenuOpenBrowserState(openState, (current) => !current).statusMenuOpen).toBe(false);
   });
 });

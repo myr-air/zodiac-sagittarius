@@ -17,14 +17,12 @@ interface BookingFilePanelProps {
   query: string;
   selectedBookingId?: string;
   statusFilter: BookingStatusFilter;
-  statusMenuOpen: boolean;
   trip: Trip;
   onDeleteBooking: (booking: BookingDoc) => void;
   onEditBooking: (booking: BookingDoc) => void;
   onQueryChange: (query: string) => void;
   onSelectBooking: (bookingDocId: string) => void;
   onStatusFilterChange: (status: BookingStatusFilter) => void;
-  onToggleStatusMenu: () => void;
 }
 
 export function BookingFilePanel({
@@ -37,14 +35,12 @@ export function BookingFilePanel({
   query,
   selectedBookingId,
   statusFilter,
-  statusMenuOpen,
   trip,
   onDeleteBooking,
   onEditBooking,
   onQueryChange,
   onSelectBooking,
   onStatusFilterChange,
-  onToggleStatusMenu,
 }: BookingFilePanelProps) {
   return (
     <WorkspaceSurface className={bookingStyles.filePanelClassName} aria-label={copy.fileList}>
@@ -52,10 +48,8 @@ export function BookingFilePanel({
         copy={copy}
         query={query}
         statusFilter={statusFilter}
-        statusMenuOpen={statusMenuOpen}
         onQueryChange={onQueryChange}
         onStatusFilterChange={onStatusFilterChange}
-        onToggleStatusMenu={onToggleStatusMenu}
       />
       <BookingFolderSummaryBar
         activeFolderDescription={activeFolderDescription}

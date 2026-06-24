@@ -51,9 +51,7 @@ export function BookingsDocsPage({
     setDeleteBooking,
     setDialogBooking,
     setMobilePreviewOpen,
-    setStatusMenuOpen,
     statusFilter,
-    statusMenuOpen,
     submitBooking,
   } = useBookingsDocsPageState({
     bookingDocs,
@@ -100,14 +98,12 @@ export function BookingsDocsPage({
           query={query}
           selectedBookingId={selectedBooking?.id}
           statusFilter={statusFilter}
-          statusMenuOpen={statusMenuOpen}
           trip={trip}
           onDeleteBooking={setDeleteBooking}
           onEditBooking={setDialogBooking}
           onQueryChange={changeQuery}
           onSelectBooking={selectBooking}
           onStatusFilterChange={changeStatusFilter}
-          onToggleStatusMenu={() => setStatusMenuOpen((current) => !current)}
         />
 
         <BookingInspector
