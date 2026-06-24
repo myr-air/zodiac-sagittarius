@@ -1,13 +1,16 @@
 import { expect } from "storybook/test";
 import {
-  buildDenseTripFixture,
-  buildEmptyTripFixture,
   buildTripFixtureItineraryItem,
   tripFixture,
 } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { RouteMapViewProps } from "@/src/features/itinerary/components";
-import { planABAlternativeItemsBase, withStoryPrefix } from "../support/itinerary-story-fixtures";
+import {
+  denseTripFixture,
+  emptyTripFixture,
+  planABAlternativeItemsBase,
+  withStoryPrefix,
+} from "../support/itinerary-story-fixtures";
 
 type MapPageStoryArgs = RouteMapViewProps;
 
@@ -19,8 +22,8 @@ export const mapOwnerStoryArgs = {
   tripName: tripFixture.trip.name,
 } satisfies MapPageStoryArgs;
 
-export const denseMapItems = buildDenseTripFixture().itineraryItems;
-export const emptyMapItems = buildEmptyTripFixture().itineraryItems;
+export const denseMapItems = denseTripFixture.itineraryItems;
+export const emptyMapItems = emptyTripFixture.itineraryItems;
 export const mapPlanABAlternativeItems = withStoryPrefix(planABAlternativeItemsBase, "map");
 export const mapStopsWithoutCoordinatesItems: ItineraryItem[] = [
   buildTripFixtureItineraryItem({

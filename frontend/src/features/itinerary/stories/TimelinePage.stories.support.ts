@@ -1,14 +1,17 @@
 import { expect } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import {
-  buildDenseTripFixture,
-  buildEmptyTripFixture,
   buildTripFixtureItineraryItem,
   tripFixture,
 } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 import type { TimelineViewProps } from "@/src/features/itinerary/components";
-import { planABAlternativeItemsBase, withStoryPrefix } from "./support/itinerary-story-fixtures";
+import {
+  denseTripFixture,
+  emptyTripFixture,
+  planABAlternativeItemsBase,
+  withStoryPrefix,
+} from "./support/itinerary-story-fixtures";
 
 type TimelineStoryArgs = TimelineViewProps;
 
@@ -23,8 +26,8 @@ export const timelineOwnerStoryArgs = {
   onToggleContextRail: noop,
 } satisfies TimelineStoryArgs;
 
-export const denseTimelineItems = buildDenseTripFixture().itineraryItems;
-export const emptyTimelineItems = buildEmptyTripFixture().itineraryItems;
+export const denseTimelineItems = denseTripFixture.itineraryItems;
+export const emptyTimelineItems = emptyTripFixture.itineraryItems;
 export const timelinePlanABAlternativeItems = withStoryPrefix(
   planABAlternativeItemsBase,
   "timeline",

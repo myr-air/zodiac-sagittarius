@@ -21,6 +21,8 @@ describe("Storybook itinerary fixture contracts", () => {
     );
 
     expect(storyFixtures).toContain("./itinerary-story-item-builders");
+    expect(storyFixtures).toContain("@/src/trip/testing/fixtures/trip-story-fixtures");
+    expect(storyFixtures).not.toContain("buildDenseTripFixture");
     expect(storyFixtures).not.toContain("function buildItineraryStoryItem");
     expect(storyItemBuilders).toContain("export function buildItineraryStoryItem");
     expect(storyItemBuilders).toContain("export function buildItineraryStoryPathItems");

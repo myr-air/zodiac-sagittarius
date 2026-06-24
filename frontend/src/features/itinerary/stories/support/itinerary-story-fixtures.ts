@@ -1,4 +1,8 @@
-import { buildEmptyTripFixture, buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  denseStoryTrip,
+  emptyStoryTrip,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { SmartItineraryTableProps } from "@/src/features/itinerary/components";
 import type { ItineraryPathOption } from "@/src/trip/itinerary-paths";
 import {
@@ -74,5 +78,5 @@ export const buildOwnerStoryArgs = (
   ...overrides,
 });
 
-export const denseTripFixture = buildDenseTripFixture();
-export const emptyTripFixture = buildEmptyTripFixture();
+export const denseTripFixture = denseStoryTrip;
+export const emptyTripFixture = emptyStoryTrip;
