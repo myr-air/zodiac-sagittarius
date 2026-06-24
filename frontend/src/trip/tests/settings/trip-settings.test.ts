@@ -9,6 +9,10 @@ import {
   tripPartySizeRange,
 } from "@/src/trip/settings";
 import { seedTrip } from "@/src/trip/seed";
+import {
+  buildTripFixtureItineraryItem,
+  getTripFixtureItineraryItem,
+} from "@/src/trip/testing/fixtures/trip-fixtures";
 
 describe("trip settings", () => {
   it("centralizes trip party size bounds and normalization", () => {
@@ -76,8 +80,8 @@ describe("trip settings", () => {
   it("builds itinerary day patch requests for API start date shifts", () => {
     let mutationIndex = 0;
     const items = [
-      { ...seedTrip.itineraryItems[0]!, id: "item-a", day: "2026-06-18", version: 2 },
-      { ...seedTrip.itineraryItems[1]!, id: "item-b", day: "2026-06-19", version: 3 },
+      buildTripFixtureItineraryItem({ id: "item-a", day: "2026-06-18", version: 2 }),
+      buildTripFixtureItineraryItem({ id: "item-b", day: "2026-06-19", version: 3 }),
     ];
     const requests = buildShiftedItineraryItemDayRequests(
       items,
@@ -120,10 +124,11 @@ describe("trip settings", () => {
   });
 
   it("merges API-patched trip settings while preserving the active plan fallback", () => {
+    const baseItem = getTripFixtureItineraryItem("item-dimdim");
     const patchedItem = {
-      ...seedTrip.itineraryItems[0]!,
+      ...baseItem,
       day: "2026-06-20",
-      version: seedTrip.itineraryItems[0]!.version + 1,
+      version: baseItem.version + 1,
     };
     const patchedTrip = {
       ...seedTrip,

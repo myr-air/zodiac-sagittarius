@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { seedTrip } from "../../../seed";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   buildOverlapWarnings,
   getTimeWindowInterval,
@@ -8,7 +8,7 @@ import {
 } from "../../../itinerary-core";
 
 describe("itinerary validation", () => {
-  const base = seedTrip.itineraryItems[0]!;
+  const base = buildTripFixtureItineraryItem();
 
   it("identifies overlap warnings by sibling scope", () => {
     const first = {
