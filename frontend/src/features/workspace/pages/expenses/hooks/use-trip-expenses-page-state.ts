@@ -3,6 +3,13 @@ import type {
   Member,
   Trip,
 } from "@/src/trip/types";
+import { useEffect, useState } from "react";
+import {
+  fetchMajorExchangeRate,
+  formatExchangeRateInput,
+  normalizeCurrencyCode,
+  type MajorCurrencyCode,
+} from "@/src/trip/currencies";
 import type {
   CreateExpenseHandler,
   RecordPaybackReminderHandler,
@@ -20,6 +27,7 @@ interface UseTripExpensesPageStateArgs {
   onCreateExpense: CreateExpenseHandler;
   onRecordPaybackReminder?: RecordPaybackReminderHandler;
   onUpdateExpense: UpdateExpenseHandler;
+  apiBaseUrl: string;
   selectedTripPlanId?: string | null;
   trip: Trip;
 }
@@ -30,15 +38,18 @@ export function useTripExpensesPageState({
   onCreateExpense,
   onRecordPaybackReminder,
   onUpdateExpense,
+  apiBaseUrl,
   selectedTripPlanId,
   trip,
 }: UseTripExpensesPageStateArgs) {
   const {
     categoryFilter,
     clearFilters,
+    dayFilter,
     payerFilter,
     query,
     setCategoryFilter,
+    setDayFilter,
     setPayerFilter,
     setQuery,
   } = useExpensePageFilters();
@@ -64,11 +75,71 @@ export function useTripExpensesPageState({
   } = useExpensePageDerivedState({
     categoryFilter,
     currentMember,
+    dayFilter,
     expenseSummary,
     payerFilter,
     query,
     trip,
   });
+  const normalizedSettlementCurrency = normalizeCurrencyCode(settlementCurrency);
+  const [displayCurrency, setDisplayCurrencyState] =
+    useState<MajorCurrencyCode>(normalizedSettlementCurrency);
+  const [displayExchangeRate, setDisplayExchangeRate] = useState("1");
+  const [displayExchangeRateTouched, setDisplayExchangeRateTouched] =
+    useState(false);
+
+  function setDisplayCurrency(nextCurrency: string) {
+    const normalizedCurrency = normalizeCurrencyCode(nextCurrency);
+    setDisplayCurrencyState(normalizedCurrency);
+    setDisplayExchangeRateTouched(false);
+    if (normalizedCurrency === normalizedSettlementCurrency) {
+      setDisplayExchangeRate("1");
+    }
+  }
+
+  function changeDisplayExchangeRate(nextRate: string) {
+    setDisplayExchangeRate(nextRate);
+    setDisplayExchangeRateTouched(true);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    if (displayCurrency === normalizedSettlementCurrency) {
+      return undefined;
+    }
+    if (displayExchangeRateTouched) return undefined;
+
+    fetchMajorExchangeRate(normalizedSettlementCurrency, displayCurrency, {
+      backendBaseUrl: apiBaseUrl,
+    })
+      .then((quote) => {
+        if (!cancelled && quote) {
+          setDisplayExchangeRate(formatExchangeRateInput(quote.rate));
+        }
+      })
+      .catch(() => {
+        // Keep manual display-rate entry available when providers are offline.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    apiBaseUrl,
+    displayCurrency,
+    displayExchangeRateTouched,
+    normalizedSettlementCurrency,
+  ]);
+
+  const effectiveDisplayExchangeRate =
+    displayCurrency === normalizedSettlementCurrency
+      ? "1"
+      : displayExchangeRate;
+  const displayExchangeRateNumber = Number(effectiveDisplayExchangeRate);
+  const normalizedDisplayExchangeRate =
+    Number.isFinite(displayExchangeRateNumber) && displayExchangeRateNumber > 0
+      ? displayExchangeRateNumber
+      : 1;
   const {
     copyPaybackReminder,
     copyState,
@@ -81,6 +152,8 @@ export function useTripExpensesPageState({
     trip,
   });
   const {
+    pendingRefundExpenseIds,
+    pendingSettlementKeys,
     recordRefund,
     recordSettlement,
   } = useExpenseSettlementActions({
@@ -99,16 +172,25 @@ export function useTripExpensesPageState({
     copyStatement,
     createDialogExpense,
     currentNet,
+    dayFilter,
+    displayCurrency,
+    displayExchangeRate: effectiveDisplayExchangeRate,
+    displayExchangeRateNumber: normalizedDisplayExchangeRate,
     dialogExpense,
     downloadCsv,
     filteredExpenses,
     inferredScopeExpenses,
     owedToYou,
+    pendingRefundExpenseIds,
+    pendingSettlementKeys,
     payerFilter,
     query,
     recordRefund,
     recordSettlement,
     setCategoryFilter,
+    setDayFilter,
+    setDisplayCurrency,
+    setDisplayExchangeRate: changeDisplayExchangeRate,
     setDialogExpense,
     setPayerFilter,
     setQuery,

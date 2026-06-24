@@ -19,6 +19,7 @@ describe("expense dialog calculated state", () => {
       expense: null,
       lineItems: [],
       members,
+      paidBy: members[0].id,
       repeatCount: "1",
       settlementCurrency: "HKD",
       splitMode: "exact",
@@ -45,6 +46,7 @@ describe("expense dialog calculated state", () => {
       expense: null,
       lineItems: [],
       members,
+      paidBy: members[0].id,
       repeatCount: String(expenseDialogRepeatCountRange.max + 1),
       settlementCurrency: "HKD",
       splitMode: "equal",
@@ -64,6 +66,7 @@ describe("expense dialog calculated state", () => {
       expense: null,
       lineItems: [],
       members,
+      paidBy: members[0].id,
       settlementCurrency: "HKD",
       splitMode: "equal" as const,
       splitValues: {},
@@ -90,6 +93,7 @@ describe("expense dialog calculated state", () => {
         { id: "line-empty", title: "", amount: "4", participantIds: [members[0].id] },
       ],
       members,
+      paidBy: members[0].id,
       repeatCount: "1",
       settlementCurrency: "HKD",
       splitMode: "itemized",
@@ -113,6 +117,7 @@ describe("expense dialog calculated state", () => {
       expense: null,
       lineItems: [],
       members,
+      paidBy: members[0].id,
       repeatCount: "1",
       settlementCurrency: "HKD",
       splitMode: "equal",
@@ -122,5 +127,29 @@ describe("expense dialog calculated state", () => {
     expect(canSubmitExpenseDialog({ isSaving: false, state, title: "Hotel" })).toBe(true);
     expect(canSubmitExpenseDialog({ isSaving: true, state, title: "Hotel" })).toBe(false);
     expect(canSubmitExpenseDialog({ isSaving: false, state, title: " " })).toBe(false);
+  });
+
+  it("keeps a personal expense assigned to the payer only", () => {
+    const state = calculateExpenseDialogState({
+      amount: "75",
+      currency: "HKD",
+      exchangeRate: "1",
+      expense: null,
+      lineItems: [],
+      members,
+      paidBy: members[1].id,
+      repeatCount: "1",
+      settlementCurrency: "HKD",
+      splitMode: "personal",
+      splitValues: {
+        [members[0].id]: "0",
+        [members[1].id]: "0",
+      },
+    });
+
+    expect(state.splits).toEqual({
+      [members[1].id]: 75,
+    });
+    expect(state.splitMismatch).toBe(false);
   });
 });

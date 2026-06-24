@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { Expense, Member, Trip } from "@/src/trip/types";
+import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import {
   calculateExpenseDialogState,
 } from "../model/expense-dialog-calculation";
@@ -19,6 +20,7 @@ interface ExpenseDialogStateInput {
   apiBaseUrl: string;
   currentMember: Member;
   expense: Expense | null;
+  initialSplitMode?: ExpenseSplitMode;
   selectedTripPlanId?: string | null;
   settlementCurrency: string;
   trip: Trip;
@@ -30,6 +32,7 @@ export function useExpenseDialogState({
   apiBaseUrl,
   currentMember,
   expense,
+  initialSplitMode,
   selectedTripPlanId,
   settlementCurrency,
   trip,
@@ -59,7 +62,11 @@ export function useExpenseDialogState({
     comments,
     setCommentDraft,
   } = useExpenseComments({ currentMember, expense });
-  const splitEditor = useExpenseSplitEditor({ expense, members: trip.members });
+  const splitEditor = useExpenseSplitEditor({
+    expense,
+    initialSplitMode,
+    members: trip.members,
+  });
   const linkingState = useExpenseDialogLinkingState({
     expense,
     itemId: formValues.itemId,
@@ -74,6 +81,7 @@ export function useExpenseDialogState({
     expense,
     lineItems: splitEditor.lineItems,
     members: trip.members,
+    paidBy: formValues.paidBy,
     repeatCount: formValues.repeatCount,
     settlementCurrency,
     splitMode: splitEditor.splitMode,

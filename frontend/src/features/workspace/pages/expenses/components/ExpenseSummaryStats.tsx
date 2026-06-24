@@ -6,6 +6,8 @@ import type { ExpensePageLabels } from "../model/expense-page-types";
 
 interface ExpenseSummaryStatsProps {
   currentNet: number;
+  displayCurrency?: string;
+  displayExchangeRate?: number;
   expenseSummary: ExpenseSummary;
   owedToYou: number;
   settlementCurrency: string;
@@ -15,6 +17,8 @@ interface ExpenseSummaryStatsProps {
 
 export function ExpenseSummaryStats({
   currentNet,
+  displayCurrency,
+  displayExchangeRate,
   expenseSummary,
   owedToYou,
   settlementCurrency,
@@ -23,6 +27,8 @@ export function ExpenseSummaryStats({
 }: ExpenseSummaryStatsProps) {
   const display = expenseSummaryDisplay({
     currentNet,
+    displayCurrency,
+    displayExchangeRate,
     expenseSummary,
     owedToYou,
     settlementCurrency,
@@ -42,7 +48,7 @@ export function ExpenseSummaryStats({
         icon="check"
         label={t.expenses.stats.yourBalance}
         tone={display.currentNetTone}
-        value={expenseSummary.currentUserNetLabel}
+        value={display.currentNetLabel}
         valueToneClassNames={expenseStyles.summaryValueToneClassNames}
       />
       <WorkspaceSummaryStat

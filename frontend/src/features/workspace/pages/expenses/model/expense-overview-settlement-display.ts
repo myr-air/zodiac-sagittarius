@@ -4,6 +4,10 @@ import { formatMoney, formatReminderDate } from "@/src/trip/expenses";
 import { findMemberById } from "@/src/trip/members";
 import type { Member, SettlementSuggestion } from "@/src/trip/types";
 import type { ExpenseBalanceCopy } from "./expense-overview-balance-display";
+import {
+  formatSettlementAmountForDisplay,
+  type ExpenseDisplayCurrencyOptions,
+} from "./expense-display-currency";
 
 export interface ExpenseReminderCopy {
   lastSent(input: { date: string }): string;
@@ -16,6 +20,8 @@ export interface SettlementSuggestionDisplay {
 
 export function settlementSuggestionLabel({
   balanceCopy,
+  displayCurrency,
+  displayExchangeRate,
   fromName,
   settlementCurrency,
   suggestion,
@@ -26,12 +32,18 @@ export function settlementSuggestionLabel({
   settlementCurrency: string;
   suggestion: Pick<SettlementSuggestion, "amount" | "currency">;
   toName: string;
-}): string {
+} & Partial<Pick<ExpenseDisplayCurrencyOptions, "displayCurrency" | "displayExchangeRate">>): string {
   return balanceCopy.payback({
-    amount: formatMoney(
-      suggestion.amount,
-      suggestion.currency ?? settlementCurrency,
-    ),
+    amount: displayCurrency
+      ? formatSettlementAmountForDisplay(suggestion.amount, {
+        displayCurrency,
+        displayExchangeRate,
+        settlementCurrency,
+      })
+      : formatMoney(
+        suggestion.amount,
+        suggestion.currency ?? settlementCurrency,
+      ),
     from: fromName,
     to: toName,
   });
@@ -39,6 +51,8 @@ export function settlementSuggestionLabel({
 
 export function settlementSuggestionDisplay({
   balanceCopy,
+  displayCurrency,
+  displayExchangeRate,
   locale,
   members,
   reminderCopy,
@@ -51,13 +65,15 @@ export function settlementSuggestionDisplay({
   reminderCopy: ExpenseReminderCopy;
   settlementCurrency: string;
   suggestion: SettlementSuggestion;
-}): SettlementSuggestionDisplay {
+} & Partial<Pick<ExpenseDisplayCurrencyOptions, "displayCurrency" | "displayExchangeRate">>): SettlementSuggestionDisplay {
   const from = findMemberById(members, suggestion.from);
   const to = findMemberById(members, suggestion.to);
 
   return {
     label: settlementSuggestionLabel({
       balanceCopy,
+      displayCurrency,
+      displayExchangeRate,
       fromName: displayNameOrFallback(from, suggestion.from),
       settlementCurrency,
       suggestion,

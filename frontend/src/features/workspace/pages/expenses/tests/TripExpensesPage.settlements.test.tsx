@@ -24,6 +24,22 @@ describe("TripExpensesPage settlement exports", () => {
     }));
   });
 
+  it("blocks duplicate settlement records while the same payback is pending", async () => {
+    const user = userEvent.setup();
+    let resolveCreate: (() => void) | undefined;
+    const onCreateExpense = vi.fn(() => new Promise<void>((resolve) => {
+      resolveCreate = resolve;
+    }));
+    renderExpenses({ onCreateExpense });
+    const paybackButton = screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0];
+
+    await user.dblClick(paybackButton);
+
+    expect(onCreateExpense).toHaveBeenCalledTimes(1);
+    expect(paybackButton).toBeDisabled();
+    resolveCreate?.();
+  });
+
   it("copies a shareable settlement statement for the group chat", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
@@ -33,11 +49,13 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
+    await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกสรุปยอด/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Paybacks"));
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Family Member pays Travel Mate"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Explorer Friend pays Family Member"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Shenzhen hotel balance"));
     expect(screen.getByRole("status", { name: /สถานะการคัดลอกสรุปยอด/i })).toHaveTextContent("คัดลอกแล้ว");
   });
 
@@ -76,7 +94,8 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /ดาวน์โหลด CSV/i }));
+    await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
+    await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(anchor.download).toBe("hong-kong-shenzhen-trip-expenses.csv");
@@ -95,7 +114,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /คัดลอก reminder/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /คัดลอกข้อความเตือน/i })[0]);
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("please pay"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Hong Kong + Shenzhen Trip"));
@@ -128,7 +147,7 @@ describe("TripExpensesPage settlement exports", () => {
       },
     });
 
-    expect(screen.getByText(/เตือนล่าสุด/i)).toBeInTheDocument();
-    expect(screen.getByText(/5 มิ\.ย\. 2026/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/เตือนล่าสุด/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/5 มิ\.ย\. 2026/i).length).toBeGreaterThan(0);
   });
 });

@@ -16,11 +16,16 @@ describe("TripExpensesPage edit dialog", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(within(dialog).getByRole("heading", { name: /ข้อมูลบิล/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("heading", { name: /ทริป คนจ่าย และการแบ่ง/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).not.toHaveClass("sticky");
+    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).toHaveClass("border-t");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Hotel night");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "1800");
+    await user.click(within(dialog).getByRole("button", { name: /โน้ต.*ลิงก์ใบเสร็จ/i }));
     await user.type(within(dialog).getByLabelText(/โน้ต/i), "Room 1207, includes deposit.");
     await user.clear(within(dialog).getByLabelText(/ทำซ้ำ/i));
     await user.type(within(dialog).getByLabelText(/ทำซ้ำ/i), "3");
@@ -34,11 +39,57 @@ describe("TripExpensesPage edit dialog", () => {
     }));
   });
 
+  it("opens quick personal accounting with the current member as the only split", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]);
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(within(dialog).getByRole("button", { name: /ส่วนตัว/i })).toHaveAttribute("aria-pressed", "true");
+    expect(within(dialog).getByLabelText(/จ่ายโดย/i)).toHaveValue("member-beam");
+
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Personal coffee");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "75");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      paidBy: "member-beam",
+      splits: {
+        "member-beam": 75,
+      },
+      title: "Personal coffee",
+    }));
+  });
+
+  it("blocks duplicate expense submits while an async create is already pending", async () => {
+    const user = userEvent.setup();
+    let resolveCreate: (() => void) | undefined;
+    const onCreateExpense = vi.fn(() => new Promise<void>((resolve) => {
+      resolveCreate = resolve;
+    }));
+    renderExpenses({ onCreateExpense });
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Double click lunch");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "120");
+    const save = within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i });
+
+    await user.dblClick(save);
+
+    expect(onCreateExpense).toHaveBeenCalledTimes(1);
+    expect(save).toBeDisabled();
+    resolveCreate?.();
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i })).not.toBeInTheDocument());
+  });
+
   it("uses the shared day and activity labels for linked stop options", async () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(within(dialog).getByRole("option", {
       name: "2026-06-18 · ถึง Hong Kong International Airport",
@@ -70,11 +121,12 @@ describe("TripExpensesPage edit dialog", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Dim sum receipt/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim sum receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     expect(dialog).toHaveTextContent("Receipt uploaded by Aom.");
-    await user.type(within(dialog).getByLabelText(/เพิ่ม comment/i), "I'll transfer tonight.");
-    await user.click(within(dialog).getByRole("button", { name: /เพิ่ม comment/i }));
+    await user.type(within(dialog).getByLabelText(/เพิ่มโน้ต/i), "I'll transfer tonight.");
+    await user.click(within(dialog).getByRole("button", { name: /เพิ่มโน้ต/i }));
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
     expect(props.onUpdateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -104,7 +156,8 @@ describe("TripExpensesPage edit dialog", () => {
     }));
     renderExpenses({ onUpdateExpense });
 
-    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 

@@ -17,7 +17,7 @@ export function ExpenseDialogSummary({
   copy,
 }: ExpenseDialogSummaryProps) {
   return (
-    <p className={calculation.splitMismatch ? expenseStyles.warningClassName : expenseStyles.balanceMetaClassName}>
+    <p className={calculation.splitMismatch ? expenseStyles.dialogSummaryWarningClassName : expenseStyles.dialogSummaryClassName}>
       {expenseDialogSummaryDisplay({ calculation, settlementCurrency, copy })}
     </p>
   );

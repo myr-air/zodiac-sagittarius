@@ -1,6 +1,8 @@
+import { useId, useState } from "react";
 import { SelectOptions } from "@/src/shared/components/select-options";
 import { majorCurrencySelectOptions } from "@/src/trip/currencies";
-import { Select } from "@/src/ui";
+import { Button, Select } from "@/src/ui";
+import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { expenseDialogRepeatCountRange } from "../model/expense-dialog-constraints";
 
@@ -57,42 +59,97 @@ export function ExpenseCoreFields({
   onRepeatCountChange,
   onTitleChange,
 }: ExpenseCoreFieldsProps) {
+  const advancedSectionId = useId();
+  const [advancedOpen, setAdvancedOpen] = useState(() =>
+    Boolean(notes || receiptUrl || needsExchangeRate || (!isEditing && repeatCount && repeatCount !== "1")),
+  );
+  const advancedSummary = [copy.fields.notes, copy.fields.receiptUrl].join(" · ");
+  const advancedVisible = advancedOpen || needsExchangeRate;
+
   return (
     <>
+      <div className={expenseStyles.dialogPrimaryAmountRowClassName}>
+        <label className={expenseStyles.fieldClassName}>
+          <span>{copy.fields.amount}</span>
+          <input
+            inputMode="decimal"
+            placeholder="420.00"
+            value={amount}
+            onChange={(event) => onAmountChange(event.target.value)}
+          />
+        </label>
+        <label className={expenseStyles.fieldClassName}>
+          <span>{copy.fields.currency}</span>
+          <Select aria-label={copy.fields.currency} value={currency} onChange={(event) => onCurrencyChange(event.target.value)}>
+            <SelectOptions options={majorCurrencySelectOptions()} />
+          </Select>
+        </label>
+      </div>
       <label className={expenseStyles.fieldClassName}>
         <span>{copy.fields.title}</span>
-        <input value={title} onChange={(event) => onTitleChange(event.target.value)} />
+        <input
+          placeholder="Airport taxi"
+          value={title}
+          onChange={(event) => onTitleChange(event.target.value)}
+        />
       </label>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.amount}</span>
-        <input inputMode="decimal" value={amount} onChange={(event) => onAmountChange(event.target.value)} />
-      </label>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.currency}</span>
-        <Select aria-label={copy.fields.currency} value={currency} onChange={(event) => onCurrencyChange(event.target.value)}>
-          <SelectOptions options={majorCurrencySelectOptions()} />
-        </Select>
-      </label>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.receiptUrl}</span>
-        <input value={receiptUrl} onChange={(event) => onReceiptUrlChange(event.target.value)} />
-      </label>
-      <label className={`${expenseStyles.fieldClassName} md:col-span-2`}>
-        <span>{copy.fields.notes}</span>
-        <textarea value={notes} onChange={(event) => onNotesChange(event.target.value)} />
-      </label>
-      {!isEditing ? (
-        <label className={expenseStyles.fieldClassName}>
-          <span>{copy.fields.repeatCount}</span>
-          <input inputMode="numeric" min={expenseDialogRepeatCountRange.min} max={expenseDialogRepeatCountRange.max} type="number" value={repeatCount} onChange={(event) => onRepeatCountChange(event.target.value)} />
-        </label>
-      ) : null}
-      {needsExchangeRate ? (
-        <label className={expenseStyles.fieldClassName}>
-          <span>{copy.fields.exchangeRate({ currency: normalizedCurrency, settlementCurrency })}</span>
-          <input inputMode="decimal" value={exchangeRate} onChange={(event) => onExchangeRateChange(event.target.value)} />
-        </label>
-      ) : null}
+
+      <div className={expenseStyles.dialogDisclosureClassName}>
+        <Button
+          type="button"
+          variant="ghost"
+          aria-controls={advancedSectionId}
+          aria-expanded={advancedVisible}
+          className={expenseStyles.dialogDisclosureToggleClassName}
+          onClick={() => setAdvancedOpen((current) => !current)}
+        >
+          <span className={expenseStyles.dialogDisclosureSummaryClassName}>{advancedSummary}</span>
+          <span className={expenseStyles.dialogDisclosureMetaClassName} aria-hidden="true">
+            <Icon className={advancedVisible ? "size-4 rotate-90 transition-transform" : "size-4 transition-transform"} name="chevronRight" />
+          </span>
+        </Button>
+        {advancedVisible ? (
+          <div className={expenseStyles.dialogDisclosurePanelClassName} id={advancedSectionId}>
+            <div className={expenseStyles.dialogSecondaryGridClassName}>
+              <label className={expenseStyles.fieldClassName}>
+                <span>{copy.fields.receiptUrl}</span>
+                <input
+                  placeholder="https://"
+                  value={receiptUrl}
+                  onChange={(event) => onReceiptUrlChange(event.target.value)}
+                />
+              </label>
+              {!isEditing ? (
+                <label className={expenseStyles.fieldClassName}>
+                  <span>{copy.fields.repeatCount}</span>
+                  <input
+                    inputMode="numeric"
+                    min={expenseDialogRepeatCountRange.min}
+                    max={expenseDialogRepeatCountRange.max}
+                    type="number"
+                    value={repeatCount}
+                    onChange={(event) => onRepeatCountChange(event.target.value)}
+                  />
+                </label>
+              ) : null}
+              {needsExchangeRate ? (
+                <label className={expenseStyles.fieldClassName}>
+                  <span>{copy.fields.exchangeRate({ currency: normalizedCurrency, settlementCurrency })}</span>
+                  <input
+                    inputMode="decimal"
+                    value={exchangeRate}
+                    onChange={(event) => onExchangeRateChange(event.target.value)}
+                  />
+                </label>
+              ) : null}
+            </div>
+            <label className={expenseStyles.fieldClassName}>
+              <span>{copy.fields.notes}</span>
+              <textarea value={notes} onChange={(event) => onNotesChange(event.target.value)} />
+            </label>
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

@@ -43,14 +43,20 @@ export function ExpenseSplitFields({
       <div className={expenseStyles.itemizedListClassName}>
         {lineItems.map((lineItem, index) => (
           <fieldset className={expenseStyles.itemizedLineClassName} key={lineItem.id} role="group" aria-label={copy.fields.lineGroup({ number: index + 1 })}>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{copy.fields.lineTitle}</span>
-              <input value={lineItem.title} onChange={(event) => onUpdateLineItem(index, { title: event.target.value })} />
-            </label>
-            <label className={expenseStyles.fieldClassName}>
-              <span>{copy.fields.lineAmount}</span>
-              <input inputMode="decimal" value={lineItem.amount} onChange={(event) => onUpdateLineItem(index, { amount: event.target.value })} />
-            </label>
+            <div className={expenseStyles.dialogSecondaryGridClassName}>
+              <label className={expenseStyles.fieldClassName}>
+                <span>{copy.fields.lineTitle}</span>
+                <input
+                  placeholder="Taxi van"
+                  value={lineItem.title}
+                  onChange={(event) => onUpdateLineItem(index, { title: event.target.value })}
+                />
+              </label>
+              <label className={expenseStyles.fieldClassName}>
+                <span>{copy.fields.lineAmount}</span>
+                <input inputMode="decimal" value={lineItem.amount} onChange={(event) => onUpdateLineItem(index, { amount: event.target.value })} />
+              </label>
+            </div>
             <div className={expenseStyles.participantChecksClassName} aria-label={copy.fields.lineParticipants}>
               {members.map((member) => (
                 <label key={member.id}>
@@ -70,14 +76,14 @@ export function ExpenseSplitFields({
     );
   }
 
-  if (splitMode === "equal") {
+  if (splitMode === "equal" || splitMode === "personal") {
     return null;
   }
 
   return (
-    <div className={expenseStyles.splitGridClassName}>
+    <div className={expenseStyles.splitMemberFieldGridClassName}>
       {members.map((member) => (
-        <label className={expenseStyles.fieldClassName} key={member.id}>
+        <label className={expenseStyles.splitMemberFieldClassName} key={member.id}>
           <span>{copy.fields.memberShare({ name: member.displayName })}</span>
           <input
             inputMode="decimal"

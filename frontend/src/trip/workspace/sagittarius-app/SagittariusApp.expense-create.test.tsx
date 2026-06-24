@@ -26,7 +26,8 @@ describe("Sagittarius cockpit expense creation", () => {
       "page",
     );
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(
       within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i),
@@ -34,10 +35,7 @@ describe("Sagittarius cockpit expense creation", () => {
     );
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
-    await user.selectOptions(
-      within(dialog).getByLabelText(/แบ่งแบบ/i),
-      "exact",
-    );
+    await user.click(within(dialog).getByRole("button", { name: /จำนวนจริง/i }));
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i));
     await user.type(
       within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i),
@@ -52,7 +50,7 @@ describe("Sagittarius cockpit expense creation", () => {
       within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }),
     );
 
-    const expenseTable = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    const expenseTable = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(within(expenseTable).getByText("Late night taxi")).toBeInTheDocument();
     expect(expenseTable).toHaveTextContent("HK$100.00");
     const persistedTrip = loadPersistedTripDraft(localStorage);

@@ -28,9 +28,10 @@ describe("Sagittarius cockpit expense actions", () => {
     render(<SagittariusApp initialView="expenses" />);
 
     await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
-        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+        name: /สร้างประมาณการจองจาก Dim Dim Sum brunch/i,
       }),
     );
 
@@ -63,9 +64,10 @@ describe("Sagittarius cockpit expense actions", () => {
     render(<SagittariusApp initialView="expenses" />);
 
     await screen.findByRole("region", { name: /เงินทริป/i });
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
-        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+        name: /บันทึกเงินคืนของ Dim Dim Sum brunch/i,
       }),
     );
 

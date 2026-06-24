@@ -3,7 +3,7 @@ import {
   categoryTone,
   expenseCategoryFilterSelectOptions,
   expenseCategoryFilterValues,
-  expenseCategorySelectOptions,
+  manualExpenseCategorySelectOptions,
   expenseSplitModeSelectOptions,
 } from "../expense-page-options";
 import { expenseCategoryValues } from "@/src/trip/expenses";
@@ -31,13 +31,30 @@ describe("expense page options", () => {
     });
   });
 
-  it("builds category select options from the shared category values", () => {
-    expect(expenseCategorySelectOptions()).toEqual(
-      expenseCategoryValues.map((value) => ({ value, label: value })),
-    );
-    expect(expenseCategoryFilterSelectOptions("All categories")[0]).toEqual({
+  const labels = {
+    food: "Food",
+    transport: "Transport",
+    tickets: "Tickets",
+    stay: "Stay",
+    shopping: "Shopping",
+    settlement: "Payback",
+  };
+
+  it("builds human category options and hides system categories from manual entry", () => {
+    expect(manualExpenseCategorySelectOptions(labels)).toEqual([
+      { value: "food", label: "Food" },
+      { value: "transport", label: "Transport" },
+      { value: "tickets", label: "Tickets" },
+      { value: "stay", label: "Stay" },
+      { value: "shopping", label: "Shopping" },
+    ]);
+    expect(expenseCategoryFilterSelectOptions("All categories", labels)[0]).toEqual({
       value: "all",
       label: "All categories",
+    });
+    expect(expenseCategoryFilterSelectOptions("All categories", labels)).toContainEqual({
+      value: "settlement",
+      label: "Payback",
     });
   });
 
@@ -48,12 +65,14 @@ describe("expense page options", () => {
       shares: "Shares",
       percentage: "Percentage",
       itemized: "Itemized",
+      personal: "Personal",
     })).toEqual([
       { value: "equal", label: "Equal" },
       { value: "exact", label: "Exact" },
       { value: "shares", label: "Shares" },
       { value: "percentage", label: "Percentage" },
       { value: "itemized", label: "Itemized" },
+      { value: "personal", label: "Personal" },
     ]);
   });
 });

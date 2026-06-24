@@ -11,6 +11,7 @@ import {
   ownerThaiPlay,
   planScopeAuditPlay,
   responsivePlay,
+  settingsTabPlay,
   viewerPlay,
 } from "./ExpensesPage.stories.plays";
 import {
@@ -71,6 +72,12 @@ export const FilteredLedger: Story = ownerStory(
   Owner.args,
   {},
   filteredLedgerPlay,
+);
+
+export const SettingsTab: Story = ownerStory(
+  Owner.args,
+  {},
+  settingsTabPlay,
 );
 
 export const PlanScopeAudit: Story = {

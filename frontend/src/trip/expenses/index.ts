@@ -4,8 +4,12 @@ export {
   type ExpenseCategorySelectOption,
 } from "./expense-options";
 export {
+  convertToSettlementCurrency,
   expenseAmountInSettlementCurrency,
+  expenseExchangeRate,
   formatMoney,
+  normalizeCurrency,
+  roundMoney,
 } from "./expense-money";
 export {
   buildExpenseSplits,

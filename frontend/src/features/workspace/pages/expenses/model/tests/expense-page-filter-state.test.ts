@@ -9,6 +9,7 @@ describe("expense page filter state", () => {
   it("centralizes the default ledger filters", () => {
     expect(initialExpensePageFilterState()).toEqual({
       categoryFilter: "all",
+      dayFilter: "all",
       payerFilter: "all",
       query: "",
     });
@@ -30,9 +31,15 @@ describe("expense page filter state", () => {
       "categoryFilter",
       "food",
     );
+    const withDay = expensePageFilterFieldState(
+      withCategory,
+      "dayFilter",
+      "2026-06-19",
+    );
 
-    expect(withCategory).toEqual({
+    expect(withDay).toEqual({
       categoryFilter: "food",
+      dayFilter: "2026-06-19",
       payerFilter: "member-aom",
       query: "dinner",
     });

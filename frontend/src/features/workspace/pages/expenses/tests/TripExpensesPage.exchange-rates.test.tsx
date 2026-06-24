@@ -18,13 +18,13 @@ describe("TripExpensesPage exchange rates", () => {
     }));
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Shenzhen taxi");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
     await user.selectOptions(within(dialog).getByLabelText(/สกุลเงิน/i), "CNY");
-    await waitFor(() => expect(within(dialog).getByLabelText(/เรท CNY เป็น HKD/i)).toHaveValue("1.1"));
+    await waitFor(() => expect(within(dialog).getByLabelText(/อัตราแลกเปลี่ยน CNY เป็น HKD/i)).toHaveValue("1.1"));
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -43,13 +43,13 @@ describe("TripExpensesPage exchange rates", () => {
     }));
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Manual rate taxi");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
     await user.selectOptions(within(dialog).getByLabelText(/สกุลเงิน/i), "CNY");
-    const exchangeRateInput = await within(dialog).findByLabelText(/เรท CNY เป็น HKD/i);
+    const exchangeRateInput = await within(dialog).findByLabelText(/อัตราแลกเปลี่ยน CNY เป็น HKD/i);
     await waitFor(() => expect(exchangeRateInput).toHaveValue("1.1"));
     await user.clear(exchangeRateInput);
     await user.type(exchangeRateInput, "1.08");
@@ -60,5 +60,23 @@ describe("TripExpensesPage exchange rates", () => {
       currency: "CNY",
       exchangeRateToSettlementCurrency: 1.08,
     }));
+  });
+
+  it("converts the visible ledger and balances to a selected display currency", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ date: "2026-06-05", base: "HKD", quote: "THB", rate: 4.6 }),
+    }));
+    renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
+    await user.selectOptions(screen.getByLabelText(/สกุลเงินที่แสดง/i), "THB");
+
+    await waitFor(() => expect(screen.getByLabelText(/อัตราแลกเปลี่ยน HKD เป็น THB/i)).toHaveValue("4.6"));
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: /ดูรายละเอียดบิลของ Dim Dim Sum brunch/i }));
+    expect(screen.getByText(/Paid in HKD\. No currency conversion needed\. Shown as ฿2,355\.20\./)).toBeInTheDocument();
   });
 });

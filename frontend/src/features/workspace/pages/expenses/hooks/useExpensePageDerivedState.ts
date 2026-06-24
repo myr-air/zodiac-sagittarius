@@ -19,6 +19,7 @@ import {
 interface UseExpensePageDerivedStateArgs {
   categoryFilter: ExpenseCategoryFilter;
   currentMember: Member;
+  dayFilter: string;
   expenseSummary: ExpenseSummary;
   payerFilter: string;
   query: string;
@@ -28,6 +29,7 @@ interface UseExpensePageDerivedStateArgs {
 export function useExpensePageDerivedState({
   categoryFilter,
   currentMember,
+  dayFilter,
   expenseSummary,
   payerFilter,
   query,
@@ -54,6 +56,7 @@ export function useExpensePageDerivedState({
   const filteredExpenses = useMemo(
     () => filterExpenses({
       categoryFilter,
+      dayFilter,
       expenses: trip.expenses,
       itineraryItems: trip.itineraryItems,
       members: trip.members,
@@ -62,6 +65,7 @@ export function useExpensePageDerivedState({
     }),
     [
       categoryFilter,
+      dayFilter,
       payerFilter,
       query,
       trip.expenses,

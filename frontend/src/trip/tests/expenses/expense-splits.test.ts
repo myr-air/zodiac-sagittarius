@@ -15,6 +15,7 @@ describe("expense splits", () => {
       "shares",
       "percentage",
       "itemized",
+      "personal",
     ]);
   });
 

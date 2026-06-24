@@ -7,6 +7,7 @@ export const expenseSplitModeValues = [
   "shares",
   "percentage",
   "itemized",
+  "personal",
 ] as const;
 export type ExpenseSplitMode = (typeof expenseSplitModeValues)[number];
 

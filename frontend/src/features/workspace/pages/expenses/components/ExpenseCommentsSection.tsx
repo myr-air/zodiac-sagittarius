@@ -33,7 +33,7 @@ export function ExpenseCommentsSection({
   onCommentDraftChange,
 }: ExpenseCommentsSectionProps) {
   return (
-    <section className={expenseStyles.commentsClassName} aria-label={copy.fields.comments}>
+    <div className={expenseStyles.commentsClassName} role="group" aria-label={copy.fields.comments}>
       <div className={expenseStyles.balanceListClassName}>
         {comments.map((comment) => {
           const display = expenseCommentDisplay({
@@ -55,6 +55,6 @@ export function ExpenseCommentsSection({
         <textarea value={commentDraft} onChange={(event) => onCommentDraftChange(event.target.value)} />
       </label>
       <Button type="button" variant="ghost" onClick={onAddComment}>{copy.actions.addComment}</Button>
-    </section>
+    </div>
   );
 }

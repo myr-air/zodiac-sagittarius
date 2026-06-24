@@ -6,11 +6,13 @@ import {
 } from "@/src/features/workspace/model/related-checkbox-options";
 import { SelectOptions } from "@/src/shared/components/select-options";
 import { buildTripPlanSelectOptions } from "@/src/trip/trip-plans";
-import { Select } from "@/src/ui";
+import { SegmentedControl, Select } from "@/src/ui";
+import { cn } from "@/src/lib/cn";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
-  expenseCategorySelectOptions,
+  categoryTone,
   expenseSplitModeSelectOptions,
+  manualExpenseCategorySelectOptions,
 } from "../model/expense-page-options";
 
 interface ExpenseLinkingFieldsProps {
@@ -34,6 +36,7 @@ interface ExpenseLinkingFieldsProps {
       splitMode: string;
       tripPlan: string;
     };
+    categories: Record<Expense["category"], string>;
     splitModes: Record<ExpenseSplitMode, string>;
   };
   onCategoryChange: (value: Expense["category"]) => void;
@@ -59,6 +62,9 @@ export function ExpenseLinkingFields({
   onSplitModeChange,
   onTripPlanIdChange,
 }: ExpenseLinkingFieldsProps) {
+  const splitModeOptions = expenseSplitModeSelectOptions(copy.splitModes);
+  const categoryOptions = manualExpenseCategorySelectOptions(copy.categories);
+
   return (
     <>
       <label className={expenseStyles.fieldClassName}>
@@ -67,37 +73,73 @@ export function ExpenseLinkingFields({
           <SelectOptions options={buildMemberSelectOptions(trip.members)} />
         </Select>
       </label>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.category}</span>
-        <Select value={category} onChange={(event) => onCategoryChange(event.target.value as Expense["category"])}>
-          <SelectOptions options={expenseCategorySelectOptions()} />
-        </Select>
-      </label>
-      <div className="grid gap-1.5">
-        <label className={expenseStyles.fieldClassName}>
-          <span>{copy.fields.tripPlan}</span>
-          <Select value={effectiveTripPlanId} disabled={Boolean(linkedItem)} onChange={(event) => onTripPlanIdChange(event.target.value)}>
-            <SelectOptions options={buildTripPlanSelectOptions(tripPlanOptions)} />
-          </Select>
-        </label>
-        {linkedItem ? <span className={expenseStyles.balanceMetaClassName}>{copy.dialog.planLockedToLinkedStop}</span> : null}
+      <fieldset className={expenseStyles.dialogChoiceFieldClassName}>
+        <legend>{copy.fields.splitMode}</legend>
+        <SegmentedControl
+          aria-label={copy.fields.splitMode}
+          className={expenseStyles.dialogSegmentedControlClassName}
+          itemClassName={expenseStyles.dialogSegmentedItemClassName}
+          selectedItemClassName={expenseStyles.dialogSegmentedItemActiveClassName}
+          value={splitMode}
+          options={splitModeOptions}
+          onChange={onSplitModeChange}
+        />
+      </fieldset>
+      <fieldset className={expenseStyles.dialogChoiceFieldClassName}>
+        <legend>{copy.fields.category}</legend>
+        <div className={expenseStyles.dialogCategoryGridClassName} role="group" aria-label={copy.fields.category}>
+          {categoryOptions.map((option) => {
+            const tone = categoryTone(option.value);
+            const selected = option.value === category;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={selected}
+                className={cn(
+                  expenseStyles.dialogCategoryButtonClassName,
+                  selected && expenseStyles.dialogCategoryButtonActiveClassName,
+                )}
+                style={{
+                  borderColor: selected ? tone.border : undefined,
+                }}
+                onClick={() => onCategoryChange(option.value)}
+              >
+                <span className={expenseStyles.dialogCategoryButtonLabelClassName}>
+                  <span
+                    className={expenseStyles.dialogCategoryDotLargeClassName}
+                    style={{ backgroundColor: tone.dot }}
+                  />
+                  {option.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+      <div className={expenseStyles.dialogSecondaryGridClassName}>
+        <div className="grid gap-1.5">
+          <label className={expenseStyles.fieldClassName}>
+            <span>{copy.fields.linkedStop}</span>
+            <Select value={itemId} onChange={(event) => onItemIdChange(event.target.value)}>
+              <SelectOptions
+                options={buildItineraryItemSelectOptions(trip.itineraryItems, {
+                  leadingOption: { value: "", label: copy.fields.noLinkedStop },
+                })}
+              />
+            </Select>
+          </label>
+        </div>
+        <div className="grid gap-1.5">
+          <label className={expenseStyles.fieldClassName}>
+            <span>{copy.fields.tripPlan}</span>
+            <Select value={effectiveTripPlanId} disabled={Boolean(linkedItem)} onChange={(event) => onTripPlanIdChange(event.target.value)}>
+              <SelectOptions options={buildTripPlanSelectOptions(tripPlanOptions)} />
+            </Select>
+          </label>
+          {linkedItem ? <span className={expenseStyles.balanceMetaClassName}>{copy.dialog.planLockedToLinkedStop}</span> : null}
+        </div>
       </div>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.linkedStop}</span>
-        <Select value={itemId} onChange={(event) => onItemIdChange(event.target.value)}>
-          <SelectOptions
-            options={buildItineraryItemSelectOptions(trip.itineraryItems, {
-              leadingOption: { value: "", label: copy.fields.noLinkedStop },
-            })}
-          />
-        </Select>
-      </label>
-      <label className={expenseStyles.fieldClassName}>
-        <span>{copy.fields.splitMode}</span>
-        <Select value={splitMode} onChange={(event) => onSplitModeChange(event.target.value as ExpenseSplitMode)}>
-          <SelectOptions options={expenseSplitModeSelectOptions(copy.splitModes)} />
-        </Select>
-      </label>
     </>
   );
 }
