@@ -1,4 +1,9 @@
 import { formatOptionalDisplayDateTime } from "@/src/shared/date-time-display";
+import {
+  displayNameListOrFallback,
+  displayNullableTextOrFallback,
+  displayTextOrFallback,
+} from "@/src/shared/text-parts";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 
 export {
@@ -28,7 +33,7 @@ export function bookingProviderDisplay(
   providerName: string | null | undefined,
   copy: Pick<BookingCopy, "noProvider">,
 ): string {
-  return providerName ?? copy.noProvider;
+  return displayNullableTextOrFallback(providerName, copy.noProvider);
 }
 
 export function bookingConfirmationDisplay(
@@ -42,19 +47,19 @@ export function bookingLinkedContextDisplay(
   linkedContext: string,
   copy: Pick<BookingCopy, "noLinkedStop">,
 ): string {
-  return linkedContext || copy.noLinkedStop;
+  return displayTextOrFallback(linkedContext, copy.noLinkedStop);
 }
 
 export function bookingNotesDisplay(
   notes: string | null | undefined,
   copy: Pick<BookingCopy, "noNotes">,
 ): string {
-  return notes ?? copy.noNotes;
+  return displayNullableTextOrFallback(notes, copy.noNotes);
 }
 
 export function bookingTravelerNamesDisplay(
   travelers: readonly { displayName: string }[],
   copy: Pick<BookingCopy, "noTravelers">,
 ): string {
-  return travelers.map((member) => member.displayName).join(", ") || copy.noTravelers;
+  return displayNameListOrFallback(travelers, copy.noTravelers);
 }

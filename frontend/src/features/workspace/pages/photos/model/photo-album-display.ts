@@ -1,3 +1,8 @@
+import {
+  displayNameOrFallback,
+  displayNullableTextOrFallback,
+  displayTextOrFallback,
+} from "@/src/shared/text-parts";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 
@@ -16,7 +21,7 @@ export function photoAlbumAccessNoteDisplay(
   album: Pick<TripPhotoAlbumLink, "accessNote">,
   copy: Pick<PhotoCopy, "noAccessNote">,
 ): string {
-  return album.accessNote || copy.noAccessNote;
+  return displayTextOrFallback(album.accessNote, copy.noAccessNote);
 }
 
 export function photoAlbumDayDisplay(
@@ -30,12 +35,12 @@ export function photoAlbumHostDisplay(
   host: string | null,
   copy: Pick<PhotoCopy, "blockedLink">,
 ): string {
-  return host ?? copy.blockedLink;
+  return displayNullableTextOrFallback(host, copy.blockedLink);
 }
 
 export function photoAlbumOwnerDisplay(
   owner: DisplayMember | null | undefined,
   fallback: string,
 ): string {
-  return owner?.displayName ?? fallback;
+  return displayNameOrFallback(owner, fallback);
 }
