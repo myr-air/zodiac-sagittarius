@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::domain::capabilities::can;
@@ -41,21 +41,19 @@ pub async fn patch_itinerary_item(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         existing.trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(ItineraryItemSummary::from(existing))
-            .map_err(|_| ServiceError::InvalidRequest("latest item could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            ItineraryItemSummary::from(existing),
+            "latest item could not be serialized",
+        ));
     }
 
     let mut patch = request.patch.clone();
@@ -172,16 +170,13 @@ pub async fn create_itinerary_item(
     if !can(session.role, Capability::EditItinerary) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     if !db::queries::plan_variant_exists_for_trip(&mut tx, trip_id, request.plan_variant_id).await?
     {
         return Err(ServiceError::NotFound);
@@ -264,6 +259,7 @@ pub async fn create_itinerary_item(
             end_offset_days,
             activity: request.activity.trim(),
             activity_type: request.activity_type.as_str(),
+            activity_subtype: request.activity_subtype.as_deref(),
             place: request.place.trim(),
             map_link: request.map_link.as_deref().unwrap_or("").trim(),
             address: request.address.as_deref(),
@@ -575,16 +571,13 @@ pub async fn reorder_itinerary_items(
     if !can(session.role, Capability::EditItinerary) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_reorder_scope(&mut tx, trip_id, &request).await?;
 

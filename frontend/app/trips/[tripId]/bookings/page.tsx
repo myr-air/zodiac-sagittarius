@@ -1,7 +1,7 @@
-import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { decodeTripId } from "@/src/trip/ids";
+import { TripWorkspaceApp } from "@/src/trip/workspace/TripWorkspaceApp";
+import { decodeTripId } from "@/src/trip/identity";
 
 export default async function TripBookingsPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params;
-  return <SagittariusApp accessMode="trip-access" initialView="bookings" requireJoin dataSource="api" routeTripId={decodeTripId(tripId)} />;
+  return <TripWorkspaceApp routeTripId={decodeTripId(tripId)} view="bookings" />;
 }

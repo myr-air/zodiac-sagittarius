@@ -13,6 +13,8 @@ TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/sagittarius_tes
 SAGITTARIUS_BIND_ADDR ?= 127.0.0.1:5181
 SAGITTARIUS_ENV ?= development
 SAGITTARIUS_SEED_SAMPLE_DATA ?= 1
+PLACE_RESOLUTION_ENABLED ?= 0
+PLACE_RESOLUTION_USER_AGENT ?= Sagittarius local dev place resolver
 PGADMIN_URL ?= postgres://postgres:postgres@127.0.0.1:5432/postgres
 DATABASE_NAME ?= sagittarius
 TEST_DATABASE_NAME ?= sagittarius_test
@@ -21,12 +23,14 @@ ROLLBACK_TEST_DATABASE_URL ?= postgres://postgres:postgres@127.0.0.1:5432/$(ROLL
 PSQL ?= psql
 PSQL_BIN := $(firstword $(PSQL))
 
-.PHONY: backend-dev frontend-dev backend-test frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight release-signoff-check staging-signoff-check production-deploy-gate verify production-readiness-fast production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
+.PHONY: backend-dev frontend-dev backend-test backend-daily-briefings-contract frontend-build frontend-test frontend-storybook frontend-verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke perf-smoke production-env-check production-env-file-check staging-preflight release-signoff-check staging-signoff-check production-deploy-gate verify production-readiness-fast production-readiness-local container-build container-production-build container-production-migrate container-production-migrate-baseline container-production-up container-production-down container-production-logs container-production-check db-init db-create db-migrate db-init-test db-migrate-test db-rollback-stop-notes-test db-ensure-psql
 
 backend-dev: db-init
 	DATABASE_URL="$(DATABASE_URL)" SAGITTARIUS_BIND_ADDR="$(SAGITTARIUS_BIND_ADDR)" \
 	SAGITTARIUS_ENV="$(SAGITTARIUS_ENV)" \
 	SAGITTARIUS_SEED_SAMPLE_DATA="$(SAGITTARIUS_SEED_SAMPLE_DATA)" \
+	PLACE_RESOLUTION_ENABLED="$(PLACE_RESOLUTION_ENABLED)" \
+	PLACE_RESOLUTION_USER_AGENT="$(PLACE_RESOLUTION_USER_AGENT)" \
 	cargo run --manifest-path $(BACKEND_MANIFEST) --bin sagittarius-api
 
 frontend-dev:
@@ -35,6 +39,9 @@ frontend-dev:
 
 backend-test: db-init-test
 	DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST)
+
+backend-daily-briefings-contract: db-init-test
+	DATABASE_URL="$(TEST_DATABASE_URL)" cargo test --manifest-path $(BACKEND_MANIFEST) -p sagittarius-api --test daily_briefings_contract
 
 frontend-build:
 	cd $(FRONTEND_DIR) && bun run build
@@ -201,6 +208,12 @@ db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
 	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM pg_constraint WHERE conname='itinerary_items_activity_type_check' AND pg_get_constraintdef(oid) LIKE '%default%'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0031_itinerary_activity_type_default.sql; \
+	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='activity_subtype'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0032_itinerary_activity_subtype.sql; \
+	fi
 
 db-init-test: db-create-test
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='trips'" | grep -q 1; then \
@@ -280,6 +293,12 @@ db-init-test: db-create-test
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expense_reminders' AND column_name='trip_plan_id'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0029_expense_reminder_trip_plan_scope.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM pg_constraint WHERE conname='itinerary_items_activity_type_check' AND pg_get_constraintdef(oid) LIKE '%default%'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0031_itinerary_activity_type_default.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='itinerary_items' AND column_name='activity_subtype'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0032_itinerary_activity_subtype.sql; \
 	fi
 
 db-ensure-psql:

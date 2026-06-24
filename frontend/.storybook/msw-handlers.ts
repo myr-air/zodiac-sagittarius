@@ -1,6 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { buildExpenseSummary } from "../src/trip/expenses";
-import { tripFixtureSuggestions, tripFixtureTasks } from "../src/trip/trip-fixtures";
+import { tripFixtureSuggestions, tripFixtureTasks } from "../src/trip/testing/fixtures/trip-fixtures";
 import { seedTrip } from "../src/trip/seed";
 import type { ItineraryItem, Member, Suggestion, TripParticipantSession, TripTask } from "../src/trip/types";
 

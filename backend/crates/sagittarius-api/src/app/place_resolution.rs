@@ -8,6 +8,7 @@ use uuid::Uuid;
 use crate::app::auth;
 use crate::db;
 use crate::db::PgPool;
+use crate::db::models::PlaceGeocodeCacheRecord;
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::Capability;
@@ -19,6 +20,14 @@ const OPEN_METEO_GEOCODE_BASE_URL: &str = "https://geocoding-api.open-meteo.com/
 
 static NOMINATIM_LAST_REQUEST: LazyLock<Mutex<Option<Instant>>> =
     LazyLock::new(|| Mutex::new(None));
+
+#[derive(Debug, Clone, Copy)]
+struct GeoBounds {
+    max_lat: f64,
+    max_lng: f64,
+    min_lat: f64,
+    min_lng: f64,
+}
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -79,11 +88,55 @@ pub async fn resolve_place(
         return Ok(classify_candidates(Vec::new()));
     }
 
+    let country_codes = destination_country_codes(&request.countries);
+    let route_bounds = route_candidate_bounds(&request);
+    let queries = place_queries(&request);
+    for query in &queries {
+        let normalized_query = normalized_destination_query(query, &country_codes);
+        if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await?
+        {
+            let candidate = candidate_from_cache(record);
+            if candidate_matches_bounds(&candidate, &route_bounds) {
+                return Ok(classify_candidates(vec![candidate]));
+            }
+        }
+    }
+
     let evidence = brave_place_evidence(&request).await.unwrap_or_default();
-    let candidates = resolve_place_candidates(&request, evidence)
+    for query in &queries {
+        let candidates = resolve_query_candidates(
+            query,
+            &request.countries,
+            confidence_for_request(&request),
+            evidence.clone(),
+        )
         .await
         .unwrap_or_default();
-    Ok(classify_candidates(candidates))
+        let candidates = filter_candidates_for_bounds(candidates, &route_bounds);
+        let response = classify_candidates(candidates);
+        if response.status == "unresolved" {
+            continue;
+        }
+        if response.status == "resolved" {
+            if let Some(candidate) = response.candidates.first() {
+                let normalized_query = normalized_destination_query(query, &country_codes);
+                let _ = db::queries::upsert_place_geocode_cache(
+                    pool,
+                    &normalized_query,
+                    query,
+                    &country_codes,
+                    &candidate_display_name(candidate),
+                    &candidate.source,
+                    candidate.coordinates.lat,
+                    candidate.coordinates.lng,
+                )
+                .await;
+            }
+        }
+        return Ok(response);
+    }
+
+    Ok(classify_candidates(Vec::new()))
 }
 
 pub async fn resolve_destination_coordinates(
@@ -155,17 +208,112 @@ fn compact_query(parts: &[&str]) -> String {
 }
 
 fn destination_country_codes(countries: &[String]) -> Vec<String> {
-    countries
+    let mut country_codes = countries
         .iter()
         .filter_map(|country| {
             let normalized = country.trim().to_ascii_lowercase();
-            (normalized.len() == 2
+            if normalized.len() == 2
                 && normalized
                     .chars()
-                    .all(|character| character.is_ascii_lowercase()))
-            .then_some(normalized)
+                    .all(|character| character.is_ascii_lowercase())
+            {
+                return Some(normalized);
+            }
+            country_code_for_name(&normalized)
         })
+        .collect::<Vec<_>>();
+    country_codes.sort();
+    country_codes.dedup();
+    country_codes
+}
+
+fn country_code_for_name(value: &str) -> Option<String> {
+    match value {
+        "china" | "mainland china" | "people's republic of china" => Some("cn".to_string()),
+        "hong kong" | "hong kong sar" | "hong kong, china" => Some("hk".to_string()),
+        "japan" => Some("jp".to_string()),
+        "macau" | "macao" | "macau sar" | "macao sar" => Some("mo".to_string()),
+        "singapore" => Some("sg".to_string()),
+        "south korea" | "korea" | "republic of korea" => Some("kr".to_string()),
+        "taiwan" => Some("tw".to_string()),
+        "thailand" => Some("th".to_string()),
+        "vietnam" => Some("vn".to_string()),
+        _ => None,
+    }
+}
+
+fn route_candidate_bounds(request: &ResolvePlaceRequest) -> Vec<GeoBounds> {
+    let destination = request.destination_label.to_ascii_lowercase();
+    let is_compact_delta_route = destination.contains("hong kong")
+        || destination.contains("shenzhen")
+        || destination.contains("macau")
+        || destination.contains("macao");
+    if !is_compact_delta_route {
+        return Vec::new();
+    }
+
+    let mut bounds = Vec::new();
+    if destination.contains("hong kong") {
+        bounds.push(GeoBounds {
+            min_lat: 21.95,
+            max_lat: 22.65,
+            min_lng: 113.75,
+            max_lng: 114.55,
+        });
+    }
+    if destination.contains("shenzhen") {
+        bounds.push(GeoBounds {
+            min_lat: 22.35,
+            max_lat: 22.9,
+            min_lng: 113.65,
+            max_lng: 114.7,
+        });
+    }
+    if destination.contains("macau") || destination.contains("macao") {
+        bounds.push(GeoBounds {
+            min_lat: 22.05,
+            max_lat: 22.35,
+            min_lng: 113.45,
+            max_lng: 113.75,
+        });
+    }
+    if destination_country_codes(&request.countries)
+        .iter()
+        .any(|country| country == "th")
+    {
+        bounds.push(GeoBounds {
+            min_lat: 5.5,
+            max_lat: 20.8,
+            min_lng: 97.0,
+            max_lng: 106.5,
+        });
+    }
+    bounds
+}
+
+fn filter_candidates_for_bounds(
+    candidates: Vec<PlaceCandidate>,
+    bounds: &[GeoBounds],
+) -> Vec<PlaceCandidate> {
+    if bounds.is_empty() {
+        return candidates;
+    }
+    candidates
+        .into_iter()
+        .filter(|candidate| candidate_matches_bounds(candidate, bounds))
         .collect()
+}
+
+fn candidate_matches_bounds(candidate: &PlaceCandidate, bounds: &[GeoBounds]) -> bool {
+    if bounds.is_empty() {
+        return true;
+    }
+    bounds.iter().any(|bounds| {
+        candidate.coordinates.lat >= bounds.min_lat
+            && candidate.coordinates.lat <= bounds.max_lat
+            && candidate.coordinates.lng >= bounds.min_lng
+            && candidate.coordinates.lng <= bounds.max_lng
+    })
 }
 
 fn normalized_destination_query(query: &str, country_codes: &[String]) -> String {
@@ -190,17 +338,31 @@ fn candidate_display_name(candidate: &PlaceCandidate) -> String {
     }
 }
 
-async fn resolve_place_candidates(
-    request: &ResolvePlaceRequest,
-    evidence: Vec<String>,
-) -> Option<Vec<PlaceCandidate>> {
-    resolve_query_candidates(
-        &place_query(request),
-        &request.countries,
-        confidence_for_request(request),
-        evidence,
-    )
-    .await
+fn candidate_from_cache(record: PlaceGeocodeCacheRecord) -> PlaceCandidate {
+    let name = record
+        .display_name
+        .split(',')
+        .next()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or(record.display_name.as_str())
+        .to_string();
+    let coordinates = PlaceCoordinates {
+        lat: record.latitude,
+        lng: record.longitude,
+    };
+    PlaceCandidate {
+        name,
+        address: record.display_name,
+        coordinates,
+        map_link: osm_map_link(record.latitude, record.longitude),
+        confidence: HIGH_CONFIDENCE_THRESHOLD,
+        source: format!("cache:{}", record.source),
+        evidence: vec![
+            format!("cache-query: {}", record.query),
+            format!("cache-key: {}", record.normalized_query),
+        ],
+    }
 }
 
 async fn resolve_query_candidates(
@@ -403,7 +565,7 @@ fn parse_open_meteo_candidates(
 
 async fn brave_place_evidence(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
     let api_key = std::env::var("BRAVE_API_KEY").ok()?;
-    let query = place_query(request);
+    let query = full_place_query(request);
     let response = reqwest::Client::new()
         .get("https://api.search.brave.com/res/v1/web/search")
         .header("X-Subscription-Token", api_key)
@@ -450,32 +612,27 @@ async fn wait_for_nominatim_slot() {
     *last_request = Some(Instant::now());
 }
 
-fn place_query(request: &ResolvePlaceRequest) -> String {
-    [
-        request.activity.clone(),
-        request.place_hint.clone(),
-        request.destination_label.clone(),
-        request.countries.join(" "),
-    ]
-    .join(" ")
-    .split_whitespace()
-    .collect::<Vec<_>>()
-    .join(" ")
+fn place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
+    let mut queries = vec![
+        compact_query(&[&request.place_hint]),
+        compact_query(&[&request.place_hint, &request.destination_label]),
+        full_place_query(request),
+    ];
+    queries.retain(|query| !query.is_empty());
+    queries.dedup();
+    queries
+}
+
+fn full_place_query(request: &ResolvePlaceRequest) -> String {
+    compact_query(&[
+        &request.activity,
+        &request.place_hint,
+        &request.destination_label,
+    ])
 }
 
 fn nominatim_country_codes(countries: &[String]) -> String {
-    countries
-        .iter()
-        .filter_map(|country| {
-            let normalized = country.trim().to_ascii_lowercase();
-            (normalized.len() == 2
-                && normalized
-                    .chars()
-                    .all(|character| character.is_ascii_lowercase()))
-            .then_some(normalized)
-        })
-        .collect::<Vec<_>>()
-        .join(",")
+    destination_country_codes(countries).join(",")
 }
 
 fn confidence_for_request(request: &ResolvePlaceRequest) -> f64 {
@@ -555,11 +712,18 @@ mod tests {
     }
 
     #[test]
-    fn place_query_combines_activity_hint_destination_and_country_context() {
-        let query = place_query(&request());
+    fn place_queries_prioritize_explicit_place_hint_before_context() {
+        let queries = place_queries(&request());
 
-        assert_eq!(query, "Dim Dim Sum near Elements Hong Kong HK Thailand");
-        assert_eq!(nominatim_country_codes(&request().countries), "hk");
+        assert_eq!(
+            queries,
+            vec![
+                "near Elements".to_string(),
+                "near Elements Hong Kong".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+            ]
+        );
+        assert_eq!(nominatim_country_codes(&request().countries), "hk,th");
     }
 
     #[test]
@@ -580,11 +744,65 @@ mod tests {
             "hk".to_string(),
         ]);
 
-        assert_eq!(country_codes, vec!["th".to_string(), "hk".to_string()]);
+        assert_eq!(country_codes, vec!["hk".to_string(), "th".to_string()]);
         assert_eq!(
             normalized_destination_query(" Bangkok   Thailand ", &country_codes),
             "bangkok thailand|hk,th"
         );
+    }
+
+    #[test]
+    fn country_names_are_mapped_to_geocoder_codes() {
+        assert_eq!(
+            destination_country_codes(&[
+                "Hong Kong".to_string(),
+                "China".to_string(),
+                "Thailand".to_string(),
+            ]),
+            vec!["cn".to_string(), "hk".to_string(), "th".to_string()]
+        );
+        assert_eq!(
+            nominatim_country_codes(&["Hong Kong".to_string(), "China".to_string()]),
+            "cn,hk"
+        );
+    }
+
+    #[test]
+    fn compact_delta_routes_reject_candidates_outside_route_bounds() {
+        let mut request = request();
+        request.destination_label = "Shenzhen, Hong Kong".to_string();
+        request.countries = vec!["Hong Kong".to_string(), "China".to_string()];
+        let bounds = route_candidate_bounds(&request);
+        let shenzhen = PlaceCandidate {
+            name: "MOCAPE".to_string(),
+            address: "Shenzhen".to_string(),
+            coordinates: PlaceCoordinates {
+                lat: 22.5485,
+                lng: 114.0567,
+            },
+            map_link: String::new(),
+            confidence: 0.9,
+            source: "test".to_string(),
+            evidence: Vec::new(),
+        };
+        let europe = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 50.8085,
+                lng: -1.1444,
+            },
+            ..shenzhen.clone()
+        };
+        let shanghai = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 31.238,
+                lng: 121.4729,
+            },
+            ..shenzhen.clone()
+        };
+
+        assert!(candidate_matches_bounds(&shenzhen, &bounds));
+        assert!(!candidate_matches_bounds(&europe, &bounds));
+        assert!(!candidate_matches_bounds(&shanghai, &bounds));
     }
 
     #[test]
@@ -602,6 +820,27 @@ mod tests {
                 "Hong Kong + Shenzhen HK CN".to_string(),
             ]
         );
+    }
+
+    #[test]
+    fn cached_place_candidate_preserves_coordinates_without_network() {
+        let record = PlaceGeocodeCacheRecord {
+            normalized_query: "dim dim sum hong kong|hk".to_string(),
+            query: "Dim Dim Sum Hong Kong HK".to_string(),
+            country_codes: vec!["hk".to_string()],
+            display_name: "Dim Dim Sum, Jordan, Hong Kong".to_string(),
+            source: "nominatim".to_string(),
+            latitude: 22.3051,
+            longitude: 114.1722,
+        };
+
+        let candidate = candidate_from_cache(record);
+
+        assert_eq!(candidate.name, "Dim Dim Sum");
+        assert_eq!(candidate.coordinates.lat, 22.3051);
+        assert_eq!(candidate.coordinates.lng, 114.1722);
+        assert_eq!(candidate.source, "cache:nominatim");
+        assert!(candidate.evidence[0].contains("Dim Dim Sum Hong Kong HK"));
     }
 
     #[test]

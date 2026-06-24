@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::domain::capabilities::can;
@@ -8,6 +8,7 @@ use crate::domain::errors::ServiceError;
 use crate::domain::patches::{
     CreatePlanVariantRequest, PatchPlanVariantRequest, PublishPlanVariantRequest,
 };
+use crate::domain::plan_status::legacy_kind_for_plan_status;
 use crate::domain::types::{Capability, PlanVariantSummary, TripSummary};
 use crate::realtime::RealtimeHub;
 
@@ -28,7 +29,7 @@ pub async fn create_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -89,7 +90,7 @@ pub async fn patch_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -98,12 +99,10 @@ pub async fn patch_plan_variant(
     .await?;
 
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(PlanVariantSummary::from_record_for_main_pointer(
-            existing,
-            main_trip_plan_id,
-        ))
-        .map_err(|_| ServiceError::InvalidRequest("latest variant could not be serialized"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            PlanVariantSummary::from_record_for_main_pointer(existing, main_trip_plan_id),
+            "latest variant could not be serialized",
+        ));
     }
 
     let mut updated_record = db::queries::update_plan_variant(
@@ -171,7 +170,7 @@ pub async fn publish_plan_variant(
     if !can(session.role, Capability::ManageTripPlans) {
         return Err(ServiceError::Forbidden);
     }
-    reject_duplicate_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
@@ -248,35 +247,6 @@ pub async fn publish_plan_variant(
     realtime.publish(event).await;
 
     Ok(summary)
-}
-
-fn legacy_kind_for_plan_status(status: &str) -> &'static str {
-    match status {
-        "proposal" => "split",
-        "main" => "main",
-        "backup" => "backup",
-        _ => "draft",
-    }
-}
-
-async fn reject_duplicate_mutation(
-    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    trip_id: Uuid,
-    member_id: Uuid,
-    client_mutation_id: &str,
-) -> Result<(), ServiceError> {
-    if db::queries::realtime_event_exists_for_client_mutation(
-        tx,
-        trip_id,
-        member_id,
-        client_mutation_id,
-    )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
-
-    Ok(())
 }
 
 async fn insert_variant_event(

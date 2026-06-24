@@ -97,6 +97,7 @@ async fn organizer_can_patch_manual_briefing_overrides(pool: sqlx::PgPool) {
                     json!({
                         "clientMutationId": "daily-briefing-override-1",
                         "expectedVersion": version,
+                        "dayTitle": "Dim sum and ferry",
                         "outfitAdvice": "Pack a compact umbrella and breathable shirt",
                         "festivalNote": "Check local waterfront events before leaving"
                     })
@@ -111,6 +112,7 @@ async fn organizer_can_patch_manual_briefing_overrides(pool: sqlx::PgPool) {
     let body: Value =
         serde_json::from_slice(&to_bytes(patch_response.into_body(), 131072).await.unwrap())
             .unwrap();
+    assert_eq!(body["manualOverrides"]["dayTitle"], "Dim sum and ferry");
     assert_eq!(
         body["manualOverrides"]["outfitAdvice"],
         "Pack a compact umbrella and breathable shirt"

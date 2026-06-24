@@ -1,0 +1,36 @@
+export const workspaceTripShellBoundarySourcePaths = {
+  workspaceContextsHook: "src/trip/workspace/sagittarius-app/hooks/use-sagittarius-workspace-contexts.ts",
+  workspaceContextsInputs: "src/trip/workspace/sagittarius-app/hooks/use-sagittarius-workspace-context-inputs.ts",
+  tripWorkspaceFrame: "src/trip/workspace/TripWorkspaceFrame.tsx",
+  tripWorkspaceRail: "src/trip/workspace/TripWorkspaceRail.tsx",
+  workspaceCoreCommandProps: "src/trip/workspace/sagittarius-app/props/workspace-core-command-props.ts",
+  workspaceCoreCommandPropsTypes:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-command-props.types.ts",
+  workspaceCoreAppCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-app-command-props.ts",
+  workspaceCorePlanningCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-planning-command-props.ts",
+  workspaceCoreSetupCommandProps:
+    "src/trip/workspace/sagittarius-app/props/workspace-core-setup-command-props.ts",
+  workspaceCoreFrameProps: "src/trip/workspace/sagittarius-app/props/workspace-core-frame-props.ts",
+  workspaceCoreRecordProps: "src/trip/workspace/sagittarius-app/props/workspace-core-record-props.ts",
+  workspaceFrameActionProps: "src/trip/workspace/sagittarius-app/props/workspace-frame-action-props.ts",
+  workspaceFrameProps: "src/trip/workspace/sagittarius-app/props/workspace-frame-props.ts",
+  workspaceViewPropsTypes: "src/trip/workspace/sagittarius-app/props/workspace-view-props.types.ts",
+  sagaCore: "src/trip/workspace/sagittarius-app/SagittariusAppCore.tsx",
+  sagittariusAccessGate: "src/trip/workspace/sagittarius-app/access-gate.tsx",
+  workspaceAppFrame: "src/trip/workspace/sagittarius-app/WorkspaceAppFrame.tsx",
+  workspaceMainShell: "src/trip/workspace/sagittarius-app/WorkspaceMainShell.tsx",
+  workspaceRolePreview: "src/trip/workspace/sagittarius-app/WorkspaceRolePreview.tsx",
+  workspaceToast: "src/trip/workspace/WorkspaceToast.tsx",
+  workspaceAccessProps: "src/trip/workspace/sagittarius-app/props/workspace-access-props.ts",
+  workspaceShellProps: "src/trip/workspace/sagittarius-app/props/workspace-shell-props.ts",
+  workspaceDialogsProps: "src/trip/workspace/sagittarius-app/props/workspace-dialogs-props.ts",
+  workspaceRailProps: "src/trip/workspace/sagittarius-app/props/workspace-rail-props.ts",
+  workspaceToastProps: "src/trip/workspace/sagittarius-app/props/workspace-toast-props.ts",
+  workspacePageViewProps: "src/trip/workspace/sagittarius-app/props/workspace-page-view-props.ts",
+  workspacePlanningViewProps: "src/trip/workspace/sagittarius-app/props/workspace-planning-view-props.ts",
+  workspaceViewProps: "src/trip/workspace/sagittarius-app/props/workspace-view-props.ts",
+  workspaceFacade: "src/trip/workspace/SagittariusApp.tsx",
+  workspaceDialogs: "src/trip/workspace/sagittarius-app/WorkspaceDialogs.tsx",
+} as const;

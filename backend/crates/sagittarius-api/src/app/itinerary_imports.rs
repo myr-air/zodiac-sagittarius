@@ -269,7 +269,7 @@ fn openrouter_request(
         "messages": [
             {
                 "role": "system",
-                "content": "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay."
+                "content": "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default."
             },
             {
                 "role": "user",
@@ -292,7 +292,7 @@ fn itinerary_conversion_prompt(
     trip_context: &ItineraryImportTrip,
 ) -> String {
     format!(
-        "Return JSON only, with schema {IMPORT_SCHEMA} and version {IMPORT_VERSION}. Convert travel itinerary text into strict Joii itinerary JSON. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay.\n\nTrip: {} ({}) from {} to {}. Active plan: {}. File name: {}. Content type: {}.\n\nSource text:\n{}",
+        "Return JSON only, with schema {IMPORT_SCHEMA} and version {IMPORT_VERSION}. Convert travel itinerary text into strict Joii itinerary JSON. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default. For travel items, set activitySubtype only when the mode is clear: flight, train, bus, taxi, ferry, walk, car, shuttle; otherwise null.\n\nTrip: {} ({}) from {} to {}. Active plan: {}. File name: {}. Content type: {}.\n\nSource text:\n{}",
         trip_context.name,
         trip_context.destination_label,
         trip_context.start_date,
@@ -368,7 +368,7 @@ fn itinerary_json_schema() -> Value {
     let item_schema = json!({
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "details", "advisories", "note"],
+        "required": ["id", "day", "sortOrder", "startTime", "activity", "activityType", "activitySubtype", "place", "linkLabel", "mapLink", "durationMinutes", "transportation", "details", "advisories", "note"],
         "properties": {
             "id": { "type": "string" },
             "pathGroupId": { "type": ["string", "null"] },
@@ -387,7 +387,8 @@ fn itinerary_json_schema() -> Value {
             "endTime": { "type": ["string", "null"] },
             "endOffsetDays": { "type": ["integer", "null"] },
             "activity": { "type": "string" },
-            "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay"] },
+            "activityType": { "enum": ["travel", "food", "shopping", "attraction", "experience", "stay", "default"] },
+            "activitySubtype": { "enum": ["flight", "train", "bus", "taxi", "ferry", "walk", "car", "shuttle", null] },
             "place": { "type": "string" },
             "linkLabel": { "type": "string" },
             "mapLink": { "type": "string" },
@@ -454,6 +455,9 @@ fn normalize_items(items: &mut [ItineraryImportItem]) -> Result<(), ServiceError
             item.sort_order = ((index + 1) * 100) as i32;
         }
         validate_activity_type(&item.activity_type)?;
+        if let Some(activity_subtype) = &item.activity_subtype {
+            validate_activity_subtype(activity_subtype)?;
+        }
         if let Some(path_role) = &item.path_role {
             if !matches!(path_role.as_str(), "main" | "alternative") {
                 return Err(ServiceError::InvalidRequest("unsupported path role"));
@@ -687,11 +691,18 @@ fn record_reference_error(
 fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     if matches!(
         value,
-        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay"
+        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default"
     ) {
         return Ok(());
     }
     Err(ServiceError::InvalidRequest("unsupported activity type"))
+}
+
+fn validate_activity_subtype(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("unsupported activity subtype")),
+    }
 }
 
 fn validate_item_kind(value: &str) -> Result<(), ServiceError> {

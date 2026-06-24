@@ -1,12 +1,26 @@
 use std::collections::HashSet;
 
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::Date;
 use uuid::Uuid;
 
 use crate::domain::errors::ServiceError;
+use crate::domain::expense_patch_rules::{
+    validate_amount_minor, validate_comments, validate_exchange_rate, validate_expense_category,
+    validate_line_items, validate_splits,
+};
+use crate::domain::patch_serde::{
+    deserialize_non_null_option, deserialize_nullable_f64_patch, deserialize_nullable_i32_patch,
+    deserialize_nullable_string_patch, deserialize_nullable_uuid_patch,
+};
+use crate::domain::plan_status::{
+    effective_plan_status, legacy_kind_for_plan_status, reject_main_plan_status,
+    validate_plan_status, validate_plan_status_input,
+};
 use crate::domain::types::{TripMemberAccessStatus, TripRole};
+
+pub(crate) use crate::domain::expense_patch_rules::validate_expense_splits_total;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -53,6 +67,7 @@ pub struct CreateItineraryItemRequest {
     pub end_offset_days: Option<i32>,
     pub activity: String,
     pub activity_type: String,
+    pub activity_subtype: Option<String>,
     pub place: String,
     pub map_link: Option<String>,
     pub address: Option<String>,
@@ -221,6 +236,7 @@ pub struct UpdatePresenceRequest {
 pub struct PatchDailyBriefingRequest {
     pub client_mutation_id: String,
     pub expected_version: i64,
+    pub day_title: Option<Option<String>>,
     pub outfit_advice: Option<Option<String>>,
     pub festival_note: Option<Option<String>>,
     pub facts_note: Option<Option<String>>,
@@ -470,6 +486,7 @@ impl PatchPhotoAlbumLinkRequest {
 impl PatchDailyBriefingRequest {
     pub fn validate(&self) -> Result<(), ServiceError> {
         validate_client_mutation_id(&self.client_mutation_id)?;
+        validate_optional_day_title(&self.day_title)?;
         validate_optional_override(&self.outfit_advice, "outfitAdvice")?;
         validate_optional_override(&self.festival_note, "festivalNote")?;
         validate_optional_override(&self.facts_note, "factsNote")?;
@@ -508,6 +525,9 @@ impl CreateItineraryItemRequest {
             validate_item_priority(priority)?;
         }
         validate_activity_type(&self.activity_type)?;
+        if let Some(activity_subtype) = &self.activity_subtype {
+            validate_activity_subtype(activity_subtype)?;
+        }
         if let Some(path_role) = &self.path_role {
             validate_path_role(path_role)?;
         }
@@ -806,6 +826,8 @@ pub struct ItineraryItemPatch {
     pub duration_minutes: Option<Option<i32>>,
     pub activity: Option<String>,
     pub activity_type: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
+    pub activity_subtype: Option<Option<String>>,
     pub place: Option<String>,
     pub map_link: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullable_string_patch")]
@@ -848,6 +870,9 @@ impl ItineraryItemPatch {
 
         if let Some(activity_type) = &self.activity_type {
             validate_activity_type(activity_type)?;
+        }
+        if let Some(Some(activity_subtype)) = &self.activity_subtype {
+            validate_activity_subtype(activity_subtype)?;
         }
 
         if let Some(path_role) = &self.path_role {
@@ -1016,8 +1041,15 @@ fn validate_hh_mm(value: &str) -> Result<(), ServiceError> {
 
 fn validate_activity_type(value: &str) -> Result<(), ServiceError> {
     match value {
-        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" => Ok(()),
+        "travel" | "food" | "shopping" | "attraction" | "experience" | "stay" | "default" => Ok(()),
         _ => Err(ServiceError::InvalidRequest("activity_type is invalid")),
+    }
+}
+
+fn validate_activity_subtype(value: &str) -> Result<(), ServiceError> {
+    match value {
+        "flight" | "train" | "bus" | "taxi" | "ferry" | "walk" | "car" | "shuttle" => Ok(()),
+        _ => Err(ServiceError::InvalidRequest("activity_subtype is invalid")),
     }
 }
 
@@ -1101,6 +1133,15 @@ fn validate_optional_override(
 ) -> Result<(), ServiceError> {
     if let Some(Some(text)) = value {
         validate_sized_text(text, field)?;
+    }
+    Ok(())
+}
+
+fn validate_optional_day_title(value: &Option<Option<String>>) -> Result<(), ServiceError> {
+    if let Some(Some(text)) = value {
+        if text.chars().count() > 48 {
+            return Err(ServiceError::InvalidRequest("dayTitle is too long"));
+        }
     }
     Ok(())
 }
@@ -1275,72 +1316,6 @@ fn validate_unique_booking_doc_external_link_ids(
     Ok(())
 }
 
-fn validate_amount_minor(value: i32) -> Result<(), ServiceError> {
-    if value < 0 {
-        return Err(ServiceError::InvalidRequest(
-            "amount_minor must be zero or greater",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_exchange_rate(value: Option<f64>) -> Result<(), ServiceError> {
-    let Some(rate) = value else {
-        return Ok(());
-    };
-    if !rate.is_finite() || rate <= 0.0 {
-        return Err(ServiceError::InvalidRequest(
-            "expense exchange rate must be greater than zero",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_expense_category(value: &str) -> Result<(), ServiceError> {
-    match value {
-        "food" | "transport" | "tickets" | "stay" | "shopping" | "settlement" => Ok(()),
-        _ => Err(ServiceError::InvalidRequest("expense category is invalid")),
-    }
-}
-
-fn validate_splits(value: &Value) -> Result<(), ServiceError> {
-    if !value.is_object() {
-        return Err(ServiceError::InvalidRequest(
-            "expense splits must be an object",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_line_items(value: Option<&Value>) -> Result<(), ServiceError> {
-    let Some(value) = value else {
-        return Ok(());
-    };
-    if !value.is_array() {
-        return Err(ServiceError::InvalidRequest(
-            "expense line items must be an array",
-        ));
-    }
-
-    Ok(())
-}
-
-fn validate_comments(value: Option<&Value>) -> Result<(), ServiceError> {
-    let Some(value) = value else {
-        return Ok(());
-    };
-    if !value.is_array() {
-        return Err(ServiceError::InvalidRequest(
-            "expense comments must be an array",
-        ));
-    }
-
-    Ok(())
-}
-
 fn validate_optional_details(value: Option<&Value>) -> Result<(), ServiceError> {
     let Some(value) = value else {
         return Ok(());
@@ -1350,109 +1325,6 @@ fn validate_optional_details(value: Option<&Value>) -> Result<(), ServiceError> 
     }
 
     Ok(())
-}
-
-pub(crate) fn validate_expense_splits_total(
-    value: &Value,
-    amount_minor: i32,
-) -> Result<(), ServiceError> {
-    validate_splits(value)?;
-    let mut total_minor = 0_i64;
-    for (member_id, share) in value.as_object().expect("validated splits object") {
-        if Uuid::parse_str(member_id).is_err() {
-            return Err(ServiceError::InvalidRequest(
-                "expense split member is invalid",
-            ));
-        }
-        let Some(share_minor) = split_share_minor(share) else {
-            return Err(ServiceError::InvalidRequest(
-                "expense split amount must be numeric",
-            ));
-        };
-        if share_minor < 0 {
-            return Err(ServiceError::InvalidRequest(
-                "expense split amount must be zero or greater",
-            ));
-        }
-        total_minor += share_minor;
-    }
-    if total_minor != i64::from(amount_minor) {
-        return Err(ServiceError::InvalidRequest(
-            "expense splits must equal amount_minor",
-        ));
-    }
-
-    Ok(())
-}
-
-fn split_share_minor(value: &Value) -> Option<i64> {
-    value
-        .as_i64()
-        .or_else(|| value.as_f64().map(|number| number.round() as i64))
-}
-
-fn validate_plan_status_input(
-    kind: Option<&str>,
-    status: Option<&str>,
-) -> Result<(), ServiceError> {
-    if let Some(kind) = kind {
-        validate_plan_variant_kind(kind)?;
-    }
-    if let Some(status) = status {
-        validate_plan_status(status)?;
-    }
-    if let (Some(kind), Some(status)) = (kind, status) {
-        let kind_status = status_for_legacy_kind(kind)?;
-        if kind_status != status {
-            return Err(ServiceError::InvalidRequest(
-                "trip plan status does not match legacy kind",
-            ));
-        }
-    }
-    Ok(())
-}
-
-fn reject_main_plan_status(kind: Option<&str>, status: Option<&str>) -> Result<(), ServiceError> {
-    if matches!(status, Some("main")) || matches!(kind, Some("main")) {
-        return Err(ServiceError::InvalidRequest(
-            "use set-main to select the main trip plan",
-        ));
-    }
-    Ok(())
-}
-
-fn effective_plan_status<'a>(kind: Option<&'a str>, status: Option<&'a str>) -> Option<&'a str> {
-    status.or_else(|| kind.and_then(|value| status_for_legacy_kind(value).ok()))
-}
-
-fn validate_plan_status(value: &str) -> Result<(), ServiceError> {
-    match value {
-        "main" | "backup" | "draft" | "proposal" => Ok(()),
-        _ => Err(ServiceError::InvalidRequest("trip plan status is invalid")),
-    }
-}
-
-fn validate_plan_variant_kind(value: &str) -> Result<(), ServiceError> {
-    status_for_legacy_kind(value).map(|_| ())
-}
-
-fn status_for_legacy_kind(value: &str) -> Result<&'static str, ServiceError> {
-    match value {
-        "main" => Ok("main"),
-        "backup" => Ok("backup"),
-        "draft" => Ok("draft"),
-        "split" => Ok("proposal"),
-        _ => Err(ServiceError::InvalidRequest("plan variant kind is invalid")),
-    }
-}
-
-fn legacy_kind_for_plan_status(value: &str) -> &'static str {
-    match value {
-        "proposal" => "split",
-        "main" => "main",
-        "backup" => "backup",
-        _ => "draft",
-    }
 }
 
 fn validate_member_role(role: TripRole) -> Result<(), ServiceError> {
@@ -1515,48 +1387,6 @@ fn validate_coordinates(latitude: Option<f64>, longitude: Option<f64>) -> Result
     Ok(())
 }
 
-fn deserialize_nullable_string_patch<'de, D>(
-    deserializer: D,
-) -> Result<Option<Option<String>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<String>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_f64_patch<'de, D>(deserializer: D) -> Result<Option<Option<f64>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<f64>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_i32_patch<'de, D>(deserializer: D) -> Result<Option<Option<i32>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<i32>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_nullable_uuid_patch<'de, D>(
-    deserializer: D,
-) -> Result<Option<Option<Uuid>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Option::<Uuid>::deserialize(deserializer).map(Some)
-}
-
-fn deserialize_non_null_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de>,
-{
-    Option::<T>::deserialize(deserializer)?
-        .map(Some)
-        .ok_or_else(|| serde::de::Error::custom("field cannot be null"))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1576,11 +1406,30 @@ mod tests {
     }
 
     #[test]
+    fn daily_briefing_patch_accepts_short_day_title_and_rejects_long_title() {
+        let valid = PatchDailyBriefingRequest {
+            client_mutation_id: "daily-title".to_string(),
+            expected_version: 1,
+            day_title: Some(Some("Bangkok -> Hong Kong".to_string())),
+            outfit_advice: None,
+            festival_note: None,
+            facts_note: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let invalid = PatchDailyBriefingRequest {
+            day_title: Some(Some("x".repeat(49))),
+            ..valid
+        };
+        assert_eq!(invalid_message(invalid.validate()), "dayTitle is too long");
+    }
+
+    #[test]
     fn itinerary_patch_accepts_valid_time_activity_type_and_duration() {
         let patch = ItineraryItemPatch {
             start_time: Some(Some("09:30".to_string())),
             duration_minutes: Some(Some(45)),
-            activity_type: Some("experience".to_string()),
+            activity_type: Some("default".to_string()),
             ..ItineraryItemPatch::default()
         };
 

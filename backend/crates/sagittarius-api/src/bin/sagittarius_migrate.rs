@@ -147,6 +147,14 @@ fn embedded_migrations() -> Vec<Migration> {
             version: "0030_itinerary_end_offset_sanitize.sql",
             sql: include_str!("../../../../migrations/0030_itinerary_end_offset_sanitize.sql"),
         },
+        Migration {
+            version: "0031_itinerary_activity_type_default.sql",
+            sql: include_str!("../../../../migrations/0031_itinerary_activity_type_default.sql"),
+        },
+        Migration {
+            version: "0032_itinerary_activity_subtype.sql",
+            sql: include_str!("../../../../migrations/0032_itinerary_activity_subtype.sql"),
+        },
     ]
 }
 
@@ -357,6 +365,8 @@ mod tests {
         assert!(versions.contains("0028_plan_check_trip_plan_scope.sql"));
         assert!(versions.contains("0029_expense_reminder_trip_plan_scope.sql"));
         assert!(versions.contains("0030_itinerary_end_offset_sanitize.sql"));
+        assert!(versions.contains("0031_itinerary_activity_type_default.sql"));
+        assert!(versions.contains("0032_itinerary_activity_subtype.sql"));
     }
 
     #[test]

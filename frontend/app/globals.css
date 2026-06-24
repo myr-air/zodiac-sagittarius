@@ -235,9 +235,90 @@ button:disabled,
 }
 
 :where(button, a, input, select, textarea):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-primary) 75%, white);
+  outline: 3px solid color-mix(in srgb, var(--color-route) 64%, white);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgb(194 79 22 / 0.15);
+  box-shadow: 0 0 0 5px rgb(191 219 254 / 0.42);
+}
+
+:where(input, select, textarea):focus,
+:where(input, select, textarea):focus-visible {
+  border-color: var(--color-route-border);
+  outline: 0;
+  box-shadow: 0 0 0 4px rgb(191 219 254 / 0.42);
+}
+
+.activity-time-button:focus-visible {
+  outline: 2px solid var(--color-route-border);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgb(191 219 254 / 0.45);
+}
+
+.day-title-input,
+.day-title-input:focus,
+.day-title-input:focus-visible {
+  appearance: none;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 520px) {
+  .table-panel > .page-header {
+    margin-bottom: 0;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .smart-table colgroup {
+    display: none;
+  }
+
+  .smart-table,
+  .smart-table thead,
+  .smart-table tbody,
+  .smart-table tr,
+  .smart-table th,
+  .smart-table td {
+    display: block;
+    width: 100%;
+    height: auto !important;
+    border-right: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .smart-table thead th:first-child,
+  .smart-table .activity-path-graph-cell {
+    display: none;
+  }
+
+  .smart-table .day-row,
+  .smart-table .activity-row,
+  .smart-table .add-stop-row {
+    display: block;
+    width: 100%;
+  }
+
+  .smart-table .day-row th,
+  .smart-table .activity-row .item-placeholder-cell,
+  .smart-table .add-stop-row td {
+    display: block;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .smart-table .item-placeholder-cell {
+    padding: 0 !important;
+    width: 100%;
+  }
 }
 
 .page-header::after {
@@ -350,8 +431,58 @@ button:disabled,
   box-shadow: var(--shadow-panel);
 }
 
+.trip-photos-page .photos-panel,
+.trip-photos-page .photo-album-card,
+.trip-photos-page .photo-album-card:hover,
+.trip-photos-page .photos-inspector {
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.04);
+}
+
+.trip-photos-page .photos-stat {
+  background: var(--color-surface);
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.04);
+}
+
 .smart-table tbody tr:last-child td {
   border-bottom-color: transparent;
+}
+
+.itinerary-header-controls[data-state="closed"] {
+  pointer-events: none;
+}
+
+@keyframes itinerary-controls-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes itinerary-controls-popover-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .itinerary-header-controls[data-state="open"] {
+    animation: itinerary-controls-popover-in 160ms var(--motion-ease-out) both;
+  }
+
+  .itinerary-header-controls[data-state="closed"] {
+    animation: itinerary-controls-popover-out 140ms ease-in both;
+  }
 }
 
 .smart-table thead th:first-child {
@@ -383,12 +514,8 @@ button:disabled,
 }
 
 @media (min-width: 1280px) {
-  body {
-    padding: 28px;
-  }
-
   .app-layout {
-    min-height: calc(100vh - 56px);
+    min-height: 100vh;
     overflow: hidden;
     border: 1px solid rgb(216 206 196 / 0.86);
     border-radius: 16px;
@@ -399,7 +526,7 @@ button:disabled,
   .side-rail,
   .workspace-grid,
   .planning-main {
-    height: calc(100vh - 58px);
+    height: 100vh;
   }
 
   .side-rail {
@@ -1230,8 +1357,52 @@ button:disabled,
 
 }
 
+@media (max-width: 1099px) {
+  .account-shell--entry .account-hero {
+    display: none;
+  }
+
+  .account-shell--entry .account-login-flow {
+    overflow: hidden;
+  }
+
+  .account-shell--entry .account-login-flow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(255 255 255 / 0.72) 46%, rgb(255 255 255 / 0.96)),
+      url("/landing/auth/bg-map-watercolor.png") left bottom / cover no-repeat;
+    opacity: 0.72;
+  }
+
+  .account-shell--entry .account-login-flow::after {
+    content: "";
+    position: absolute;
+    inset: auto -12% -18% -8%;
+    z-index: 0;
+    height: 190px;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 22% 78%, rgb(20 184 166 / 0.14), transparent 52%),
+      radial-gradient(ellipse at 78% 66%, rgb(251 113 133 / 0.12), transparent 48%);
+    filter: blur(2px);
+  }
+
+  .account-shell--entry .account-login-flow > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .account-page--entry .account-shell::before {
+    inset: -10px;
+  }
+}
+
 /* Layout spacing adjustments to prevent back-to-home button, brand hero, and highlights collision on desktop */
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
   .account-shell--entry .account-hero .join-mark {
     top: 84px !important;
   }

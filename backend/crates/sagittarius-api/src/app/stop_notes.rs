@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::NewStopNote;
@@ -29,16 +29,13 @@ pub async fn create_stop_note(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let item_trip_plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(
         &mut tx,
@@ -111,21 +108,18 @@ pub async fn patch_stop_note(
     if !can_manage_stop_note(session.role, session.member_id, existing.author_id) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(StopNoteSummary::from(existing)).map_err(|_| {
-            ServiceError::InvalidRequest("latest stop note could not be serialized")
-        })?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            StopNoteSummary::from(existing),
+            "latest stop note could not be serialized",
+        ));
     }
     let trip_plan_id = db::queries::itinerary_item_plan_variant_id_for_trip(
         &mut tx,

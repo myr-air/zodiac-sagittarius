@@ -1,4 +1,7 @@
 pub mod account;
+pub mod account_email;
+pub mod account_mappers;
+pub mod account_passkeys;
 pub mod auth;
 pub mod bookings;
 pub mod daily_briefings;
@@ -9,6 +12,7 @@ pub mod expenses;
 pub mod itinerary;
 pub mod itinerary_imports;
 pub mod members;
+pub mod mutation_guard;
 pub mod photo_albums;
 pub mod place_resolution;
 pub mod plan_checks;

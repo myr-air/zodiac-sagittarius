@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::NewTripMember;
@@ -188,16 +188,13 @@ pub async fn update_presence(
     if !can(session.role, Capability::ViewPlan) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let member = db::queries::update_member_presence(&mut tx, trip_id, session.member_id, presence)
         .await?

@@ -1,0 +1,173 @@
+import { fireEvent, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildItineraryItem,
+  createDragDataTransfer,
+  getItineraryItemRow,
+  getSubItineraryItemLine,
+  renderSmartItineraryTable,
+} from "@/src/features/itinerary/testing";
+
+const renderTable = renderSmartItineraryTable;
+
+describe("SmartItineraryTable sub-activity actions", () => {
+  it("renders add activity rows for expanded days", async () => {
+    const user = userEvent.setup();
+    const onAddStop = vi.fn();
+    const item = buildItineraryItem({
+      id: "add-stop-day-row",
+      day: "2026-06-18",
+    });
+
+    renderTable({
+      items: [item],
+      graphItems: [item],
+      selectedItemId: item.id,
+      onAddStop,
+    });
+
+    const addActivityButtons = screen.getAllByRole("button", {
+      name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop/i,
+    });
+    expect(addActivityButtons.length).toBeGreaterThan(0);
+
+    await user.click(addActivityButtons[0]);
+    expect(onAddStop).toHaveBeenCalledWith(item.day);
+  });
+
+  it("shows an add sub-activity row for a selected activity with no sub-activities", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const parent = buildItineraryItem({
+      id: "empty-sub-parent",
+      activity: "Harbour transfer",
+      day: "2026-06-19",
+      sortOrder: 10,
+    });
+
+    renderTable({
+      items: [parent],
+      graphItems: [parent],
+      selectedItemId: "empty-sub-parent",
+      onAddSubActivity,
+    });
+
+    const parentRow = getItineraryItemRow(parent.id);
+    expect(parentRow.querySelector(".sub-activity-list")).toBeInTheDocument();
+
+    await user.click(
+      within(parentRow).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    );
+    expect(onAddSubActivity).toHaveBeenCalledWith("empty-sub-parent");
+  });
+
+  it("shows an add sub-activity row after expanding an unselected empty activity", async () => {
+    const user = userEvent.setup();
+    const onAddSubActivity = vi.fn();
+    const selectedSibling = buildItineraryItem({
+      id: "selected-sibling",
+      activity: "Selected sibling",
+      day: "2026-06-19",
+      sortOrder: 10,
+    });
+    const parent = buildItineraryItem({
+      id: "unselected-empty-sub-parent",
+      activity: "Bus to Shenzhen",
+      day: "2026-06-19",
+      sortOrder: 20,
+    });
+
+    renderTable({
+      items: [selectedSibling, parent],
+      graphItems: [selectedSibling, parent],
+      selectedItemId: "selected-sibling",
+      onAddSubActivity,
+    });
+
+    const parentRow = getItineraryItemRow(parent.id);
+    expect(parentRow.querySelector(".sub-activity-list")).toBeNull();
+
+    await user.click(
+      within(parentRow).getAllByRole("button", {
+        name: /Sub-activities for Bus to Shenzhen/i,
+      })[0],
+    );
+
+    await user.click(
+      within(parentRow).getByRole("button", {
+        name: /Add sub-activity|เพิ่มกิจกรรมย่อย/i,
+      }),
+    );
+    expect(onAddSubActivity).toHaveBeenCalledWith("unselected-empty-sub-parent");
+  });
+
+  it("renders sub-activities without inline drag and drop controls", () => {
+    const parentA = buildItineraryItem({
+      id: "parent-a",
+      activity: "Parent A",
+      day: "2026-06-19",
+      sortOrder: 10,
+    });
+    const parentB = buildItineraryItem({
+      id: "parent-b",
+      activity: "Parent B",
+      day: "2026-06-19",
+      sortOrder: 30,
+    });
+    const childA1 = buildItineraryItem({
+      id: "child-a-1",
+      parentItemId: "parent-a",
+      activity: "Child A1",
+      day: "2026-06-19",
+      sortOrder: 11,
+    });
+    const childA2 = buildItineraryItem({
+      id: "child-a-2",
+      parentItemId: "parent-a",
+      activity: "Child A2",
+      day: "2026-06-19",
+      sortOrder: 12,
+    });
+    const childB1 = buildItineraryItem({
+      id: "child-b-1",
+      parentItemId: "parent-b",
+      activity: "Child B1",
+      day: "2026-06-19",
+      sortOrder: 31,
+    });
+
+    renderTable({
+      items: [parentA, childA1, childA2, parentB, childB1],
+      graphItems: [parentA, childA1, childA2, parentB, childB1],
+      selectedItemId: "parent-a",
+    });
+
+    const parentARow = getItineraryItemRow(parentA.id);
+    const parentBRow = getItineraryItemRow(parentB.id);
+    fireEvent.click(
+      within(parentARow).getAllByRole("button", {
+        name: /Sub-activities for Parent A/i,
+      })[0],
+    );
+    fireEvent.click(
+      within(parentBRow).getAllByRole("button", {
+        name: /Sub-activities for Parent B/i,
+      })[0],
+    );
+
+    const childA1Line = getSubItineraryItemLine(childA1.id);
+    const childA2Line = getSubItineraryItemLine(childA2.id);
+    const childB1Line = getSubItineraryItemLine(childB1.id);
+
+    expect(childA1Line).not.toHaveAttribute("draggable", "true");
+    expect(childA2Line).not.toHaveAttribute("draggable", "true");
+    expect(childB1Line).not.toHaveAttribute("draggable", "true");
+    expect(childA1Line.querySelector(".cursor-grab")).toBeNull();
+    fireEvent.drop(childA2Line, {
+      dataTransfer: createDragDataTransfer(),
+    });
+  });
+});

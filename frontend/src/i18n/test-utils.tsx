@@ -3,11 +3,13 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { I18nProvider, localeStorageKey } from "./I18nProvider";
 import type { Locale } from "./types";
 
+export type RenderWithI18nUi = ReactElement;
+
 interface RenderWithI18nOptions extends RenderOptions {
   locale?: Locale;
 }
 
-export function renderWithI18n(ui: ReactElement, { locale, ...options }: RenderWithI18nOptions = {}) {
+export function renderWithI18n(ui: RenderWithI18nUi, { locale, ...options }: RenderWithI18nOptions = {}) {
   const storage = window.localStorage;
   const previousLocale = storage?.getItem(localeStorageKey) ?? null;
   storage?.removeItem(localeStorageKey);

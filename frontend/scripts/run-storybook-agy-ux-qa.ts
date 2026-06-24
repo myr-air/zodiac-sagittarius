@@ -24,7 +24,7 @@ const prompt = [
   `- Storybook static build: ${storybookStatic}`,
   "- Storybook source: frontend/src/**/*.stories.tsx",
   "- Preview config: frontend/.storybook/preview.ts",
-  "- Contract: frontend/src/storybook.contract.test.ts",
+  "- Contract: frontend/src/storybook/contracts/*.test.ts",
   "",
   "Audit tasks:",
   "1. Review the Storybook catalog coverage for UX/UI testing gaps.",

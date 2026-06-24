@@ -3,7 +3,7 @@ use sha2::{Digest, Sha256};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-use crate::app::auth;
+use crate::app::{auth, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{NewPlanCheck, NewPlanSuggestion, plan_check_summary};
@@ -185,9 +185,10 @@ pub async fn patch_plan_suggestion(
         return Err(ServiceError::NotFound);
     }
     if existing.version != expected_version {
-        let latest = serde_json::to_value(existing.into_summary())
-            .map_err(|_| ServiceError::InvalidRequest("latest suggestion could not serialize"))?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            existing.into_summary(),
+            "latest suggestion could not serialize",
+        ));
     }
     validate_status(status)?;
     let snooze_ref = snoozed_until.as_deref();

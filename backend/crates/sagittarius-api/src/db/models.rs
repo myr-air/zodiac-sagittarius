@@ -2,6 +2,7 @@ use sqlx::{FromRow, types::Json};
 use time::{Date, OffsetDateTime};
 use uuid::Uuid;
 
+use crate::domain::plan_status::legacy_kind_for_plan_status;
 use crate::domain::types::{
     AccountSessionKind, ClaimableMember, ExpenseItemSummary, ItineraryCoordinates,
     ItineraryItemSummary, LocalizedText, PlanCheckSummary, PlanSuggestionSummary,
@@ -245,6 +246,7 @@ pub struct NewItineraryItem<'a> {
     pub end_offset_days: i32,
     pub activity: &'a str,
     pub activity_type: &'a str,
+    pub activity_subtype: Option<&'a str>,
     pub place: &'a str,
     pub map_link: &'a str,
     pub address: Option<&'a str>,
@@ -450,15 +452,6 @@ impl PlanVariantSummary {
     }
 }
 
-fn legacy_kind_for_plan_status(status: &str) -> &'static str {
-    match status {
-        "main" => "main",
-        "backup" => "backup",
-        "proposal" => "split",
-        _ => "draft",
-    }
-}
-
 #[derive(Debug, Clone, FromRow)]
 pub struct ItineraryItemRecord {
     pub id: Uuid,
@@ -481,6 +474,7 @@ pub struct ItineraryItemRecord {
     pub end_offset_days: i32,
     pub activity: String,
     pub activity_type: String,
+    pub activity_subtype: Option<String>,
     pub place: String,
     pub link_label: String,
     pub map_link: String,
@@ -558,6 +552,7 @@ impl From<ItineraryItemRecord> for ItineraryItemSummary {
             end_offset_days,
             activity: record.activity,
             activity_type: record.activity_type,
+            activity_subtype: record.activity_subtype,
             place: record.place,
             link_label: record.link_label,
             map_link: record.map_link,
@@ -1048,6 +1043,7 @@ mod tests {
             end_offset_days: 0,
             activity: "Breakfast".to_string(),
             activity_type: "food".to_string(),
+            activity_subtype: None,
             place: "Central".to_string(),
             link_label: String::new(),
             map_link: String::new(),

@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{NewSuggestion, SuggestionRecord};
@@ -29,16 +29,13 @@ pub async fn create_suggestion(
         return Err(ServiceError::Forbidden);
     }
 
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         session.trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_suggestion_references(&mut tx, session.trip_id, &request).await?;
 
@@ -121,11 +118,13 @@ pub async fn approve_suggestion(
         let resolved =
             update_status_and_insert_event(&mut tx, &suggestion, "conflicted", session.member_id)
                 .await?;
-        let latest = serde_json::to_value(resolved.summary.clone())
-            .expect("suggestion summary should serialize");
+        let conflict = mutation_guard::version_conflict_with_latest(
+            resolved.summary.clone(),
+            "latest suggestion could not be serialized",
+        );
         tx.commit().await?;
         realtime.publish(resolved.event).await;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(conflict);
     }
 
     let patch = suggestion_patch(&suggestion)?;

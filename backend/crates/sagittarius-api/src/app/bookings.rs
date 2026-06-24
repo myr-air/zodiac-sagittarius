@@ -4,12 +4,13 @@ use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 use uuid::Uuid;
 
-use crate::app::{auth, events};
+use crate::app::{auth, events, mutation_guard};
 use crate::db;
 use crate::db::PgPool;
 use crate::db::models::{BookingDocRecord, NewBookingDoc};
 use crate::domain::capabilities::can;
 use crate::domain::errors::ServiceError;
+use crate::domain::money_values::price_amount_to_minor;
 use crate::domain::patches::{
     BookingDocPatch, CreateBookingDocExternalLinkRequest, CreateBookingDocRequest,
     PatchBookingDocRequest,
@@ -17,6 +18,7 @@ use crate::domain::patches::{
 use crate::domain::types::{
     BookingDocExternalLinkSummary, BookingDocSummary, Capability, TripRole,
 };
+use crate::domain::uuid_values::unique_uuids;
 use crate::realtime::{RealtimeEvent, RealtimeHub};
 
 #[derive(Debug, Clone, Default)]
@@ -35,7 +37,7 @@ pub async fn list_visible_booking_docs(
     member_id: Uuid,
     role: TripRole,
 ) -> Result<Vec<BookingDocSummary>, ServiceError> {
-    let records = db::queries::list_booking_docs(pool, trip_id).await?;
+    let records = db::booking_doc_queries::list_booking_docs(pool, trip_id).await?;
     let booking_ids = records.iter().map(|record| record.id).collect::<Vec<_>>();
     let relations = load_relation_map(pool, trip_id, &booking_ids).await?;
 
@@ -69,16 +71,13 @@ pub async fn create_booking_doc(
     if !can(session.role, Capability::EditBookings) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     validate_create_references(&mut tx, trip_id, &request).await?;
     let trip_plan_id = resolve_booking_trip_plan_id(&mut tx, trip_id, &request).await?;
@@ -96,7 +95,7 @@ pub async fn create_booking_doc(
     let external_link_requests = normalize_external_link_requests(&request.external_links);
     let starts_at = parse_optional_rfc3339(request.starts_at.as_deref(), "startsAt")?;
     let ends_at = parse_optional_rfc3339(request.ends_at.as_deref(), "endsAt")?;
-    let record = db::queries::insert_booking_doc(
+    let record = db::booking_doc_queries::insert_booking_doc(
         &mut tx,
         NewBookingDoc {
             id: booking_id,
@@ -172,7 +171,7 @@ pub async fn patch_booking_doc(
 
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_booking_doc(&mut tx, booking_id)
+    let existing = db::booking_doc_queries::lock_booking_doc(&mut tx, booking_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -184,23 +183,20 @@ pub async fn patch_booking_doc(
     if !can(session.role, Capability::EditBookings) {
         return Err(ServiceError::Forbidden);
     }
-    if db::queries::realtime_event_exists_for_client_mutation(
+    mutation_guard::reject_duplicate_mutation(
         &mut tx,
         trip_id,
         session.member_id,
         &request.client_mutation_id,
     )
-    .await?
-    {
-        return Err(ServiceError::VersionConflict);
-    }
+    .await?;
 
     let existing_summary = load_booking_doc_summary(pool, &existing).await?;
     if existing.version != request.expected_version {
-        let latest = serde_json::to_value(existing_summary).map_err(|_| {
-            ServiceError::InvalidRequest("latest booking doc could not be serialized")
-        })?;
-        return Err(ServiceError::VersionConflictWithLatest(latest));
+        return Err(mutation_guard::version_conflict_with_latest(
+            existing_summary,
+            "latest booking doc could not be serialized",
+        ));
     }
 
     validate_patch_references(&mut tx, trip_id, &request.patch).await?;
@@ -233,7 +229,7 @@ pub async fn patch_booking_doc(
         &patched_relations.note_ids,
     )
     .await?;
-    let updated = db::queries::update_booking_doc(
+    let updated = db::booking_doc_queries::update_booking_doc(
         &mut tx,
         booking_id,
         &request,
@@ -281,7 +277,7 @@ pub async fn delete_booking_doc(
 ) -> Result<BookingDocSummary, ServiceError> {
     let token_hash = auth::hash_session_token(session_token)?;
     let mut tx = pool.begin().await?;
-    let existing = db::queries::lock_booking_doc(&mut tx, booking_id)
+    let existing = db::booking_doc_queries::lock_booking_doc(&mut tx, booking_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
     if existing.trip_id != trip_id {
@@ -295,9 +291,10 @@ pub async fn delete_booking_doc(
     }
 
     let existing_summary = load_booking_doc_summary(pool, &existing).await?;
-    let deleted = db::queries::soft_delete_booking_doc(&mut tx, booking_id, existing.version + 1)
-        .await?
-        .ok_or(ServiceError::NotFound)?;
+    let deleted =
+        db::booking_doc_queries::soft_delete_booking_doc(&mut tx, booking_id, existing.version + 1)
+            .await?
+            .ok_or(ServiceError::NotFound)?;
     let booking_doc = summary_from_record(
         deleted,
         BookingDocRelations {
@@ -342,12 +339,32 @@ async fn load_relation_map(
     booking_ids: &[Uuid],
 ) -> Result<BTreeMap<Uuid, BookingDocRelations>, ServiceError> {
     let (link_records, traveler_pairs, itinerary_pairs, task_pairs, expense_pairs, note_pairs) = tokio::try_join!(
-        db::queries::list_booking_doc_links(pool, trip_id, booking_ids),
-        db::queries::list_booking_doc_relation_ids(pool, trip_id, "travelers", booking_ids),
-        db::queries::list_booking_doc_relation_ids(pool, trip_id, "itinerary_items", booking_ids),
-        db::queries::list_booking_doc_relation_ids(pool, trip_id, "tasks", booking_ids),
-        db::queries::list_booking_doc_relation_ids(pool, trip_id, "expenses", booking_ids),
-        db::queries::list_booking_doc_relation_ids(pool, trip_id, "stop_notes", booking_ids),
+        db::booking_doc_queries::list_booking_doc_links(pool, trip_id, booking_ids),
+        db::booking_doc_queries::list_booking_doc_relation_ids(
+            pool,
+            trip_id,
+            "travelers",
+            booking_ids
+        ),
+        db::booking_doc_queries::list_booking_doc_relation_ids(
+            pool,
+            trip_id,
+            "itinerary_items",
+            booking_ids
+        ),
+        db::booking_doc_queries::list_booking_doc_relation_ids(pool, trip_id, "tasks", booking_ids),
+        db::booking_doc_queries::list_booking_doc_relation_ids(
+            pool,
+            trip_id,
+            "expenses",
+            booking_ids
+        ),
+        db::booking_doc_queries::list_booking_doc_relation_ids(
+            pool,
+            trip_id,
+            "stop_notes",
+            booking_ids
+        ),
     )?;
 
     let mut map = BTreeMap::<Uuid, BookingDocRelations>::new();
@@ -522,7 +539,7 @@ async fn validate_related_record_plan_scope(
         "related task Trip Plan must match booking doc Trip Plan",
     )?;
     validate_related_plan_ids(
-        db::queries::expense_trip_plan_ids_for_trip(tx, trip_id, expense_ids).await?,
+        db::expense_queries::expense_trip_plan_ids_for_trip(tx, trip_id, expense_ids).await?,
         booking_trip_plan_id,
         "related expense Trip Plan must match booking doc Trip Plan",
     )?;
@@ -589,7 +606,7 @@ async fn validate_relations(
         }
     }
     if let Some(ids) = expense_ids {
-        if !db::queries::expense_ids_exist_for_trip(tx, trip_id, ids).await? {
+        if !db::expense_queries::expense_ids_exist_for_trip(tx, trip_id, ids).await? {
             return Err(ServiceError::NotFound);
         }
     }
@@ -624,22 +641,32 @@ async fn replace_relations(
     note_ids: Option<&[Uuid]>,
 ) -> Result<(), ServiceError> {
     if let Some(links) = external_links {
-        db::queries::replace_booking_doc_external_links(tx, trip_id, booking_id, links).await?;
+        db::booking_doc_queries::replace_booking_doc_external_links(tx, trip_id, booking_id, links)
+            .await?;
     }
     if let Some(ids) = traveler_ids {
-        db::queries::replace_booking_doc_member_relations(tx, trip_id, booking_id, ids).await?;
+        db::booking_doc_queries::replace_booking_doc_member_relations(tx, trip_id, booking_id, ids)
+            .await?;
     }
     if let Some(ids) = itinerary_item_ids {
-        db::queries::replace_booking_doc_itinerary_relations(tx, trip_id, booking_id, ids).await?;
+        db::booking_doc_queries::replace_booking_doc_itinerary_relations(
+            tx, trip_id, booking_id, ids,
+        )
+        .await?;
     }
     if let Some(ids) = task_ids {
-        db::queries::replace_booking_doc_task_relations(tx, trip_id, booking_id, ids).await?;
+        db::booking_doc_queries::replace_booking_doc_task_relations(tx, trip_id, booking_id, ids)
+            .await?;
     }
     if let Some(ids) = expense_ids {
-        db::queries::replace_booking_doc_expense_relations(tx, trip_id, booking_id, ids).await?;
+        db::booking_doc_queries::replace_booking_doc_expense_relations(
+            tx, trip_id, booking_id, ids,
+        )
+        .await?;
     }
     if let Some(ids) = note_ids {
-        db::queries::replace_booking_doc_note_relations(tx, trip_id, booking_id, ids).await?;
+        db::booking_doc_queries::replace_booking_doc_note_relations(tx, trip_id, booking_id, ids)
+            .await?;
     }
 
     Ok(())
@@ -794,15 +821,6 @@ fn format_time(value: OffsetDateTime) -> String {
         .unwrap_or_else(|_| value.unix_timestamp().to_string())
 }
 
-fn price_amount_to_minor(value: f64) -> i32 {
-    (value * 100.0).round() as i32
-}
-
-fn unique_uuids(ids: &[Uuid]) -> Vec<Uuid> {
-    let mut seen = std::collections::HashSet::new();
-    ids.iter().copied().filter(|id| seen.insert(*id)).collect()
-}
-
 async fn write_event(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     booking_doc: &BookingDocSummary,
@@ -924,18 +942,6 @@ mod tests {
             &record,
             &relations
         ));
-    }
-
-    #[test]
-    fn unique_uuids_preserves_first_seen_order() {
-        let first = Uuid::now_v7();
-        let second = Uuid::now_v7();
-        let third = Uuid::now_v7();
-
-        assert_eq!(
-            unique_uuids(&[first, second, first, third, second]),
-            vec![first, second, third]
-        );
     }
 
     #[test]
