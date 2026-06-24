@@ -31,6 +31,13 @@ interface ExpenseLedgerRowsProps {
       editExpense(input: { title: string }): string;
       recordRefund(input: { title: string }): string;
     };
+    details: {
+      calculation: string;
+      memberMath: string;
+      originalAmount: string;
+      source: string;
+      sourceAndMath: string;
+    };
     empty: string;
     uncategorizedStop: string;
   };
@@ -79,16 +86,33 @@ export function ExpenseLedgerRows({
               members,
             },
           );
+          const hasSourceDetails = Boolean(display.sourceLabel || display.calculationLabel);
+          const memberBreakdown = display.memberBreakdown ?? [];
           return (
             <tr key={expense.id}>
               <td className={expenseStyles.tableTitleClassName}>
-                <strong>{expense.title}</strong>
-                <ExpenseCategoryBadge category={expense.category} />
-                {display.sourceLabel ? (
-                  <span className={expenseStyles.ledgerSourceClassName}>{display.sourceLabel}</span>
-                ) : null}
-                {display.calculationLabel ? (
-                  <span className={expenseStyles.ledgerCalculationClassName}>{display.calculationLabel}</span>
+                <div className={expenseStyles.ledgerTitleLineClassName}>
+                  <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
+                  <ExpenseCategoryBadge category={expense.category} />
+                </div>
+                {hasSourceDetails ? (
+                  <details className={expenseStyles.ledgerDisclosureClassName}>
+                    <summary>{tableCopy.details.sourceAndMath}</summary>
+                    <dl className={expenseStyles.ledgerDetailsListClassName}>
+                      {display.sourceLabel ? (
+                        <div>
+                          <dt>{tableCopy.details.source}</dt>
+                          <dd>{display.sourceLabel}</dd>
+                        </div>
+                      ) : null}
+                      {display.calculationLabel ? (
+                        <div>
+                          <dt>{tableCopy.details.calculation}</dt>
+                          <dd>{display.calculationLabel}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  </details>
                 ) : null}
               </td>
               <td>
@@ -96,7 +120,9 @@ export function ExpenseLedgerRows({
                   {display.displayAmountLabel ?? display.amountLabel}
                 </span>
                 {display.displayAmountLabel && display.displayAmountLabel !== display.amountLabel ? (
-                  <span className={expenseStyles.ledgerSubAmountClassName}>{display.amountLabel}</span>
+                  <span className={expenseStyles.ledgerSubAmountClassName}>
+                    {tableCopy.details.originalAmount}: {display.amountLabel}
+                  </span>
                 ) : null}
               </td>
               <td>
@@ -105,14 +131,25 @@ export function ExpenseLedgerRows({
                 ) : expense.paidBy}
               </td>
               <td>
-                <span>{display.splitTotalLabel}</span>
-                {display.memberBreakdown?.length ? (
-                  <span className={expenseStyles.ledgerCalculationClassName}>
-                    {display.memberBreakdown.join(" · ")}
-                  </span>
-                ) : null}
+                <div className={expenseStyles.ledgerSplitCellClassName}>
+                  <span>{display.splitTotalLabel}</span>
+                  {memberBreakdown.length ? (
+                    <details className={expenseStyles.ledgerDisclosureClassName}>
+                      <summary>{tableCopy.details.memberMath}</summary>
+                      <ul className={expenseStyles.ledgerMemberListClassName}>
+                        {memberBreakdown.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  ) : null}
+                </div>
               </td>
-              <td>{linkedItem?.activity ?? tableCopy.uncategorizedStop}</td>
+              <td>
+                <span className={expenseStyles.ledgerStopPillClassName}>
+                  {linkedItem?.activity ?? tableCopy.uncategorizedStop}
+                </span>
+              </td>
               <td>
                 <span className={expenseStyles.actionCellClassName}>
                   <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} disabled={!canEditExpenses} onClick={() => onEditExpense(expense)}>

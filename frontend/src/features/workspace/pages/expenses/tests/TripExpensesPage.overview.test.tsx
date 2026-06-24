@@ -30,6 +30,8 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getAllByText("ที่มาและสูตรแปลงเงิน").length).toBeGreaterThan(0);
+    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getAllByText("คำนวณรายคน").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
     expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/อัปเดตสด/i);

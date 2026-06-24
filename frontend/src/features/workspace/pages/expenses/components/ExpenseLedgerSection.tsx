@@ -153,6 +153,7 @@ export function ExpenseLedgerSection({
             settlementCurrency={settlementCurrency}
             tableCopy={{
               actions: t.expenses.actions,
+              details: t.expenses.table.details,
               empty: t.expenses.empty,
               uncategorizedStop: t.expenses.uncategorizedStop,
             }}

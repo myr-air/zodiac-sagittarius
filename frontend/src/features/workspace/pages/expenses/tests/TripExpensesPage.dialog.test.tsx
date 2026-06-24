@@ -18,6 +18,9 @@ describe("TripExpensesPage edit dialog", () => {
 
     await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(within(dialog).getByRole("heading", { name: /ข้อมูลบิล/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("heading", { name: /ทริป คนจ่าย และการแบ่ง/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("group", { name: /ตรวจแล้วบันทึก/i })).toHaveClass("sticky", "bottom-0");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Hotel night");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "1800");

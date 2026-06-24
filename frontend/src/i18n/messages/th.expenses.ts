@@ -61,6 +61,13 @@ export const thExpensesMessages = {
       linkedStop: "ผูกกับแผน",
       category: "ประเภท",
       actions: "คำสั่ง",
+      details: {
+        sourceAndMath: "ที่มาและสูตรแปลงเงิน",
+        source: "ที่มา",
+        calculation: "สูตรคำนวณ",
+        memberMath: "คำนวณรายคน",
+        originalAmount: "ยอดตั้งต้น",
+      },
     },
     fields: {
       title: "ชื่อค่าใช้จ่าย",
@@ -126,6 +133,13 @@ export const thExpensesMessages = {
     dialog: {
       addTitle: "เพิ่มค่าใช้จ่าย",
       editTitle: "แก้ไขค่าใช้จ่าย",
+      sections: {
+        receipt: "ข้อมูลบิล",
+        routing: "ทริป คนจ่าย และการแบ่ง",
+        split: "รายละเอียดการแบ่ง",
+        comments: "Comments",
+        review: "ตรวจแล้วบันทึก",
+      },
       splitTotal: ({ total, amount }: { total: string; amount: string }) => `รวมส่วนแบ่ง ${total} / ยอดบิล ${amount}`,
       settleValue: ({ amount }: { amount: string }) => `มูลค่า settle ${amount}`,
       exchangeRateRequired: "ใส่ exchange rate ที่ถูกต้อง",

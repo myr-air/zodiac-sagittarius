@@ -19,12 +19,14 @@ describe("TripExpensesPage split forms", () => {
     await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(dialog).toHaveClass("shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]");
+    expect(dialog).toHaveClass("!max-w-4xl");
     expect(dialog.className).not.toContain("0_14px_34px");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Airport taxi");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "300");
     await user.selectOptions(within(dialog).getByLabelText(/จ่ายโดย/i), "member-beam");
     await user.selectOptions(within(dialog).getByLabelText(/แบ่งแบบ/i), "exact");
+    expect(within(dialog).getByRole("heading", { name: /รายละเอียดการแบ่ง/i })).toBeInTheDocument();
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i));
     await user.type(within(dialog).getByLabelText(/ส่วนของ Demo Traveler/i), "150");
     await user.clear(within(dialog).getByLabelText(/ส่วนของ Travel Mate/i));

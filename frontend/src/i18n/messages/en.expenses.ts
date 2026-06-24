@@ -61,6 +61,13 @@ export const enExpensesMessages = {
       linkedStop: "Linked stop",
       category: "Category",
       actions: "Actions",
+      details: {
+        sourceAndMath: "Source and currency math",
+        source: "Source",
+        calculation: "Calculation",
+        memberMath: "Member math",
+        originalAmount: "Original",
+      },
     },
     fields: {
       title: "Expense title",
@@ -126,6 +133,13 @@ export const enExpensesMessages = {
     dialog: {
       addTitle: "Add expense",
       editTitle: "Edit expense",
+      sections: {
+        receipt: "Receipt basics",
+        routing: "Trip, payer, and split",
+        split: "Split details",
+        comments: "Comments",
+        review: "Review and save",
+      },
       splitTotal: ({ total, amount }: { total: string; amount: string }) => `Split total ${total} / expense ${amount}`,
       settleValue: ({ amount }: { amount: string }) => `Settle value ${amount}.`,
       exchangeRateRequired: "Add a valid exchange rate.",
