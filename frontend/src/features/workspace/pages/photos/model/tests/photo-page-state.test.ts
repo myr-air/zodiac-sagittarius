@@ -4,7 +4,6 @@ import {
   initialPhotoAlbumBrowserState,
   initialPhotoAlbumModalState,
   updatePhotoAlbumBrowserState,
-  updatePhotoAlbumModalState,
 } from "../photo-page-state";
 
 const photoAlbumLinks = [
@@ -40,17 +39,4 @@ describe("photo page state", () => {
     expect(state.activeProvider).toBe("all");
   });
 
-  it("updates modal state without mutating current state", () => {
-    const nextState = updatePhotoAlbumModalState(
-      initialPhotoAlbumModalState,
-      "dialogAlbum",
-      "new",
-    );
-
-    expect(nextState).toEqual({
-      deleteAlbum: null,
-      dialogAlbum: "new",
-    });
-    expect(initialPhotoAlbumModalState.dialogAlbum).toBeNull();
-  });
 });

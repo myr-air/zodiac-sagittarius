@@ -8,7 +8,6 @@ import {
   selectBookingBrowserState,
   selectBookingFolderBrowserState,
   setBookingStatusMenuOpenBrowserState,
-  updateBookingModalState,
 } from "../booking-page-state";
 
 const bookingDocs = [
@@ -62,16 +61,12 @@ describe("booking page state", () => {
     });
   });
 
-  it("updates status menu and modal state without mutating current state", () => {
+  it("updates status menu without mutating current state", () => {
     const state = initialBookingBrowserState(bookingDocs);
     const openState = setBookingStatusMenuOpenBrowserState(state, true);
 
     expect(openState.statusMenuOpen).toBe(true);
     expect(state.statusMenuOpen).toBe(false);
     expect(setBookingStatusMenuOpenBrowserState(openState, (current) => !current).statusMenuOpen).toBe(false);
-    expect(updateBookingModalState(initialBookingModalState, "dialogBooking", "new")).toEqual({
-      deleteBooking: null,
-      dialogBooking: "new",
-    });
   });
 });

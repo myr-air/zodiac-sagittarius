@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useFormFields } from "@/src/shared/hooks/use-form-fields";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import {
   initialPhotoAlbumModalState,
-  updatePhotoAlbumModalState,
   type PhotoAlbumModalState,
 } from "../model/photo-page-state";
 import type {
@@ -23,16 +22,10 @@ export function usePhotoAlbumModalState({
   onDeletePhotoAlbum,
   onUpdatePhotoAlbum,
 }: UsePhotoAlbumModalStateInput) {
-  const [modalState, setModalState] = useState<PhotoAlbumModalState>(
-    initialPhotoAlbumModalState,
-  );
-
-  function updateModalState<Field extends keyof PhotoAlbumModalState>(
-    field: Field,
-    value: PhotoAlbumModalState[Field],
-  ) {
-    setModalState((current) => updatePhotoAlbumModalState(current, field, value));
-  }
+  const {
+    fields: modalState,
+    updateField: updateModalState,
+  } = useFormFields<PhotoAlbumModalState>(initialPhotoAlbumModalState);
 
   const {
     confirmDelete,

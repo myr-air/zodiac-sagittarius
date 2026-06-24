@@ -35,8 +35,8 @@ describe("trip photos page state structure", () => {
     expect(photoBrowserStateSource).toContain("updatePhotoAlbumBrowserState");
     expect(photoBrowserStateSource).toContain("const [browserState, setBrowserState]");
     expect(photoModalStateSource).toContain("initialPhotoAlbumModalState");
-    expect(photoModalStateSource).toContain("updatePhotoAlbumModalState");
-    expect(photoModalStateSource).toContain("const [modalState, setModalState]");
+    expect(photoModalStateSource).toContain("@/src/shared/hooks/use-form-fields");
+    expect(photoModalStateSource).toContain("useFormFields<PhotoAlbumModalState>");
     expect(photoModalStateSource).toContain("usePhotoAlbumModalActions");
     expect(photoModalStateSource).not.toContain("async function submitAlbum");
     expect(photoModalStateSource).not.toContain("async function confirmDelete");
@@ -51,5 +51,6 @@ describe("trip photos page state structure", () => {
     expect(photoPageStateSource).toContain(
       "export function updatePhotoAlbumBrowserState",
     );
+    expect(photoPageStateSource).not.toContain("updatePhotoAlbumModalState");
   });
 });

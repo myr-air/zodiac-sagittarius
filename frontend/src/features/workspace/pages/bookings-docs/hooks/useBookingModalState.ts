@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useFormFields } from "@/src/shared/hooks/use-form-fields";
 import type { BookingDoc } from "@/src/trip/types";
 import type {
   CreateBookingDocHandler,
@@ -7,7 +7,6 @@ import type {
 } from "../BookingsDocsPage.types";
 import {
   initialBookingModalState,
-  updateBookingModalState,
   type BookingModalState,
 } from "../model/booking-page-state";
 import { useBookingModalActions } from "./useBookingModalActions";
@@ -23,16 +22,10 @@ export function useBookingModalState({
   onDeleteBookingDoc,
   onUpdateBookingDoc,
 }: UseBookingModalStateInput) {
-  const [modalState, setModalState] = useState<BookingModalState>(
-    initialBookingModalState,
-  );
-
-  function updateModalState<Field extends keyof BookingModalState>(
-    field: Field,
-    value: BookingModalState[Field],
-  ) {
-    setModalState((current) => updateBookingModalState(current, field, value));
-  }
+  const {
+    fields: modalState,
+    updateField: updateModalState,
+  } = useFormFields<BookingModalState>(initialBookingModalState);
 
   const { confirmDelete, submitBooking } = useBookingModalActions({
     modalState,

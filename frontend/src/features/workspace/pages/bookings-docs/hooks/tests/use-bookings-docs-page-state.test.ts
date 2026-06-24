@@ -42,9 +42,9 @@ describe("bookings docs page state structure", () => {
     expect(bookingBrowserStateSource).toContain("setBookingStatusMenuOpenBrowserState");
     expect(bookingBrowserStateSource).toContain("const [browserState, setBrowserState]");
     expect(bookingModalStateSource).toContain("initialBookingModalState");
-    expect(bookingModalStateSource).toContain("updateBookingModalState");
+    expect(bookingModalStateSource).toContain("@/src/shared/hooks/use-form-fields");
+    expect(bookingModalStateSource).toContain("useFormFields<BookingModalState>");
     expect(bookingModalStateSource).toContain("useBookingModalActions");
-    expect(bookingModalStateSource).toContain("const [modalState, setModalState]");
     expect(bookingModalStateSource).not.toContain("async function submitBooking");
     expect(bookingModalStateSource).not.toContain("async function confirmDelete");
     expect(bookingModalActionsSource).toContain("async function submitBooking");
@@ -52,6 +52,7 @@ describe("bookings docs page state structure", () => {
     expect(bookingModalActionsSource).toContain("BookingModalState");
     expect(bookingPageStateSource).toContain("export interface BookingBrowserState");
     expect(bookingPageStateSource).toContain("export interface BookingModalState");
+    expect(bookingPageStateSource).not.toContain("updateBookingModalState");
     expect(bookingPageStateSource).toContain(
       "export function initialBookingBrowserState",
     );

@@ -34,13 +34,3 @@ export function updatePhotoAlbumBrowserState<
 ): PhotoAlbumBrowserState {
   return { ...state, [field]: value };
 }
-
-export function updatePhotoAlbumModalState<
-  Field extends keyof PhotoAlbumModalState,
->(
-  state: PhotoAlbumModalState,
-  field: Field,
-  value: PhotoAlbumModalState[Field],
-): PhotoAlbumModalState {
-  return { ...state, [field]: value };
-}

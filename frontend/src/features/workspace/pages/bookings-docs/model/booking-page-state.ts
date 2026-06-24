@@ -44,14 +44,6 @@ export function updateBookingBrowserState<Field extends keyof BookingBrowserStat
   return { ...state, [field]: value };
 }
 
-export function updateBookingModalState<Field extends keyof BookingModalState>(
-  state: BookingModalState,
-  field: Field,
-  value: BookingModalState[Field],
-): BookingModalState {
-  return { ...state, [field]: value };
-}
-
 export function selectBookingBrowserState(
   state: BookingBrowserState,
   selectedBookingId: string,
