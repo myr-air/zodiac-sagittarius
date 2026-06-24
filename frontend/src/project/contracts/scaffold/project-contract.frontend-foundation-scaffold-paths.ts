@@ -219,6 +219,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/workspace/contracts/workspace-session-hook-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-source-boundaries.assertions.ts",
   "src/workspace/contracts/workspace-source-boundaries.contract.test.ts",
+  "src/workspace/contracts/workspace-dialog-chrome-boundaries.contract.test.ts",
+  "src/workspace/contracts/workspace-page-dialog-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-source-boundaries.blocked-terms.ts",
   "src/workspace/contracts/workspace-source-boundaries.feature-paths.ts",
   "src/workspace/contracts/workspace-source-boundaries.feature-itinerary-paths.ts",
