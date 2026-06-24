@@ -7,6 +7,11 @@ import {
   tripFixture,
 } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { buildDenseTripFixture as buildDenseTripFixtureDirect } from "@/src/trip/testing/fixtures/dense-trip-fixture";
+import {
+  coverStoryPhotoAlbumLinks,
+  denseStoryBookingDocs,
+  denseStoryPhotoAlbumLinks,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import { tripRoleValues } from "../../members";
 
 describe("trip fixtures", () => {
@@ -46,5 +51,17 @@ describe("trip fixtures", () => {
     expect(dense.expenses.length).toBeGreaterThanOrEqual(60);
     expect(tripFixture.trip.itineraryItems.length).toBeGreaterThan(0);
     expect(dense.itineraryItems[0]).not.toBe(tripFixture.trip.itineraryItems[0]);
+  });
+
+  it("keeps Storybook-only trip datasets centralized and deterministic", () => {
+    expect(denseStoryBookingDocs).toHaveLength(16);
+    expect(denseStoryBookingDocs[0].id).toBe("booking-doc-dense-1");
+    expect(denseStoryPhotoAlbumLinks).toHaveLength(18);
+    expect(denseStoryPhotoAlbumLinks[0].id).toBe("photo-album-dense-1");
+    expect(coverStoryPhotoAlbumLinks.map((album) => album.id)).toEqual([
+      "photo-album-cover-hong-kong",
+      "photo-album-cover-market",
+      "photo-album-cover-fallback",
+    ]);
   });
 });

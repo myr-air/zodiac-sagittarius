@@ -2,7 +2,7 @@ import { expect, fn } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { seedTrip } from "@/src/trip/seed";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { BookingDoc } from "@/src/trip/types";
+import { denseStoryBookingDocs } from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type {
   BookingsDocsPageProps,
   CreateBookingDocHandler,
@@ -12,48 +12,6 @@ type BookingsDocsPageStoryArgs = BookingsDocsPageProps;
 
 export const onStoryCreateBookingDoc = fn();
 export const onStoryUpdateBookingDoc = fn();
-
-const denseBookingDocs: BookingDoc[] = Array.from({ length: 16 }, (_, index) => {
-  const base = (seedTrip.bookingDocs ?? [])[index % (seedTrip.bookingDocs?.length || 1)] ?? {
-    id: "booking-doc-fallback",
-    tripId: seedTrip.id,
-    type: "other",
-    title: "Travel document",
-    status: "draft",
-    visibility: "shared",
-    ownerMemberId: tripFixture.currentMembers.owner.id,
-    providerName: "Shared supplier",
-    confirmationCode: "REF-000",
-    startsAt: `${seedTrip.startDate}T09:00:00.000Z`,
-    endsAt: `${seedTrip.startDate}T10:00:00.000Z`,
-    timezone: "Asia/Hong_Kong",
-    priceAmount: 120,
-    currency: "USD",
-    travelerIds: [tripFixture.currentMembers.traveler.id],
-    externalLinks: [],
-    relatedItineraryItemIds: [],
-    relatedTaskIds: [],
-    relatedExpenseIds: [],
-    noteIds: [],
-    notes: "Dense Storybook coverage item for booking and document layout.",
-    createdBy: tripFixture.currentMembers.owner.id,
-    updatedAt: "2026-05-27T00:00:00.000Z",
-    version: 1,
-  } satisfies BookingDoc;
-
-  return {
-    ...base,
-    id: `booking-doc-dense-${index + 1}`,
-    tripId: seedTrip.id,
-    title: `${base.title} ${index + 1}`,
-    status: index % 5 === 0 ? "needs_action" : base.status,
-    providerName: base.providerName ?? "Shared supplier",
-    confirmationCode: base.confirmationCode ?? `REF-${String(index + 1).padStart(3, "0")}`,
-    priceAmount: base.priceAmount ?? (index + 1) * 120,
-    updatedAt: `2026-05-${String(10 + (index % 17)).padStart(2, "0")}T00:00:00.000Z`,
-    version: base.version + index + 1,
-  };
-});
 
 export const bookingsDocsOwnerStoryArgs = {
   trip: seedTrip,
@@ -80,7 +38,7 @@ export const bookingsDocsTravelerStoryArgs = {
 
 export const denseBookingsDocsStoryArgs = {
   ...bookingsDocsOwnerStoryArgs,
-  bookingDocs: denseBookingDocs,
+  bookingDocs: denseStoryBookingDocs,
 } satisfies BookingsDocsPageStoryArgs;
 
 export const emptyBookingsDocsStoryArgs = {
