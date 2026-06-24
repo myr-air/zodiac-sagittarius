@@ -85,71 +85,7 @@ export function ExpenseOverviewPanels({
     });
 
   return (
-    <div className="grid content-start gap-3">
-      <section className={expenseStyles.panelClassName} aria-label={t.expenses.personal.label}>
-        <WorkspacePanelHeading
-          className={expenseStyles.panelHeadingClassName}
-          icon="wallet"
-          title={t.expenses.panels.personal}
-        />
-        <div className={expenseStyles.balanceListClassName}>
-          <div className={expenseStyles.personalMetricRowClassName}>
-            <span>{t.expenses.personal.personalOnly}</span>
-            <strong>{personalMoney(personalOnlySpend)}</strong>
-          </div>
-          <div className={expenseStyles.personalMetricRowClassName}>
-            <span>{t.expenses.personal.youPaid}</span>
-            <strong>{personalMoney(currentMemberPaid)}</strong>
-          </div>
-          <div className={expenseStyles.personalMetricRowClassName}>
-            <span>{t.expenses.personal.yourShare}</span>
-            <strong>{personalMoney(currentMemberShare)}</strong>
-          </div>
-        </div>
-        <Button type="button" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
-          <Icon name="plus" /> {t.expenses.actions.addPersonalExpense}
-        </Button>
-      </section>
-
-      <section className={expenseStyles.panelClassName} aria-label={t.expenses.balanceLabel}>
-        <WorkspacePanelHeading
-          className={expenseStyles.panelHeadingClassName}
-          icon="users"
-          title={t.expenses.panels.balances}
-        />
-        <div className={expenseStyles.balanceListClassName}>
-          {trip.members.map((member) => {
-            const net = expenseSummary.netByMember[member.id] ?? 0;
-            const balance = expenseMemberBalanceDisplay({
-              balanceCopy: t.expenses.balance,
-              displayCurrency,
-              displayExchangeRate,
-              memberName: member.displayName,
-              net,
-              settlementCurrency,
-            });
-            return (
-              <div className={expenseStyles.balanceRowClassName} key={member.id}>
-                <ExpenseMemberLine
-                  color={member.color}
-                  name={member.displayName}
-                  meta={balance.description}
-                />
-                <strong
-                  className={cn(
-                    expenseStyles.amountClassName,
-                    balance.tone === "positive" && expenseStyles.positiveClassName,
-                    balance.tone === "negative" && expenseStyles.negativeClassName,
-                  )}
-                >
-                  {balance.amountLabel}
-                </strong>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
+    <aside className={expenseStyles.overviewRailClassName} aria-label={t.expenses.summaryLabel}>
       <section className={expenseStyles.panelClassName} aria-label={t.expenses.panels.settle}>
         <WorkspacePanelHeading
           className={expenseStyles.panelHeadingClassName}
@@ -199,6 +135,70 @@ export function ExpenseOverviewPanels({
         )}
       </section>
 
+      <section className={expenseStyles.panelClassName} aria-label={t.expenses.balanceLabel}>
+        <WorkspacePanelHeading
+          className={expenseStyles.panelHeadingClassName}
+          icon="users"
+          title={t.expenses.panels.balances}
+        />
+        <div className={expenseStyles.balanceListClassName}>
+          {trip.members.map((member) => {
+            const net = expenseSummary.netByMember[member.id] ?? 0;
+            const balance = expenseMemberBalanceDisplay({
+              balanceCopy: t.expenses.balance,
+              displayCurrency,
+              displayExchangeRate,
+              memberName: member.displayName,
+              net,
+              settlementCurrency,
+            });
+            return (
+              <div className={expenseStyles.balanceRowClassName} key={member.id}>
+                <ExpenseMemberLine
+                  color={member.color}
+                  name={member.displayName}
+                  meta={balance.description}
+                />
+                <strong
+                  className={cn(
+                    expenseStyles.amountClassName,
+                    balance.tone === "positive" && expenseStyles.positiveClassName,
+                    balance.tone === "negative" && expenseStyles.negativeClassName,
+                  )}
+                >
+                  {balance.amountLabel}
+                </strong>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={expenseStyles.panelClassName} aria-label={t.expenses.personal.label}>
+        <WorkspacePanelHeading
+          className={expenseStyles.panelHeadingClassName}
+          icon="wallet"
+          title={t.expenses.panels.personal}
+        />
+        <div className={expenseStyles.balanceListClassName}>
+          <div className={expenseStyles.personalMetricRowClassName}>
+            <span>{t.expenses.personal.personalOnly}</span>
+            <strong>{personalMoney(personalOnlySpend)}</strong>
+          </div>
+          <div className={expenseStyles.personalMetricRowClassName}>
+            <span>{t.expenses.personal.youPaid}</span>
+            <strong>{personalMoney(currentMemberPaid)}</strong>
+          </div>
+          <div className={expenseStyles.personalMetricRowClassName}>
+            <span>{t.expenses.personal.yourShare}</span>
+            <strong>{personalMoney(currentMemberShare)}</strong>
+          </div>
+        </div>
+        <Button type="button" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+          <Icon name="plus" /> {t.expenses.actions.addPersonalExpense}
+        </Button>
+      </section>
+
       <ExpenseCategorySpendSection
         categorySpend={categorySpend}
         displayCurrency={displayCurrency}
@@ -214,6 +214,6 @@ export function ExpenseOverviewPanels({
         onReviewExpense={onReviewExpense}
         trip={trip}
       />
-    </div>
+    </aside>
   );
 }

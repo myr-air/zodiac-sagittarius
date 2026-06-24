@@ -76,7 +76,36 @@ export function ExpenseLedgerControls({
   const needsDisplayExchangeRate = displayCurrency !== settlementCurrency;
   return (
     <div className={expenseStyles.commandBarClassName}>
+      <div className={expenseStyles.commandBarHeaderClassName}>
+        <div className={expenseStyles.commandTitleGroupClassName}>
+          <h2 className={expenseStyles.commandTitleClassName}>{t.expenses.ledgerLabel}</h2>
+          <div className={expenseStyles.commandMetaClassName}>
+            <span className={expenseStyles.liveStatusClassName} role="status" aria-label={t.expenses.live.statusLabel}>
+              {t.expenses.live.updated({ count: expenseCount })}
+            </span>
+            <ExpenseCopyFeedback copyState={copyState} t={t} />
+          </div>
+        </div>
+        <div className={expenseStyles.commandActionsClassName}>
+          <Button type="button" variant="ghost" onClick={onCopyStatement}>
+            <Icon name="copy" /> {t.expenses.actions.copyStatement}
+          </Button>
+          <Button type="button" variant="ghost" onClick={onDownloadCsv}>
+            <Icon name="export" /> {t.expenses.actions.downloadCsv}
+          </Button>
+          <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
+            <Icon name="plus" /> {t.expenses.actions.addExpense}
+          </Button>
+          <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+            <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
+          </Button>
+        </div>
+      </div>
       <div className={expenseStyles.filterGridClassName}>
+        <label className={expenseStyles.fieldClassName}>
+          <span>{t.expenses.filters.search}</span>
+          <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
+        </label>
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.fields.tripPlan}</span>
           <Select value={selectedTripPlanId} onChange={(event) => onTripPlanChange?.(event.target.value)}>
@@ -88,10 +117,6 @@ export function ExpenseLedgerControls({
           <Select value={dayFilter} onChange={(event) => onDayFilterChange(event.target.value)}>
             <SelectOptions options={dayFilterOptions} />
           </Select>
-        </label>
-        <label className={expenseStyles.fieldClassName}>
-          <span>{t.expenses.filters.search}</span>
-          <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
         </label>
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.category}</span>
@@ -128,24 +153,6 @@ export function ExpenseLedgerControls({
           />
         </label>
         <Button type="button" variant="ghost" onClick={onClearFilters}>{t.expenses.actions.clearFilters}</Button>
-      </div>
-      <div className={expenseStyles.commandActionsClassName}>
-        <Button type="button" variant="ghost" onClick={onCopyStatement}>
-          <Icon name="copy" /> {t.expenses.actions.copyStatement}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onDownloadCsv}>
-          <Icon name="export" /> {t.expenses.actions.downloadCsv}
-        </Button>
-        <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
-          <Icon name="plus" /> {t.expenses.actions.addExpense}
-        </Button>
-        <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
-          <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
-        </Button>
-        <span className={expenseStyles.liveStatusClassName} role="status" aria-label={t.expenses.live.statusLabel}>
-          {t.expenses.live.updated({ count: expenseCount })}
-        </span>
-        <ExpenseCopyFeedback copyState={copyState} t={t} />
       </div>
     </div>
   );

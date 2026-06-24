@@ -92,7 +92,7 @@ export function ExpenseLedgerSection({
     unlinkedLabel: t.expenses.filters.unlinkedDay,
   });
   return (
-    <section className="grid min-h-0 content-start gap-3" aria-label={t.expenses.ledgerLabel}>
+    <section className={expenseStyles.ledgerSectionClassName} aria-label={t.expenses.ledgerLabel}>
       <ExpenseLedgerControls
         canEditExpenses={canEditExpenses}
         categoryFilter={categoryFilter}

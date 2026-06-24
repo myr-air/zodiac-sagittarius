@@ -104,23 +104,6 @@ export function TripExpensesPage({
       />
 
       <div className={expenseStyles.contentGridClassName}>
-        <ExpenseOverviewPanels
-          trip={trip}
-          expenseSummary={expenseSummary}
-          categorySpend={categorySpend}
-          currentMember={currentMember}
-          displayCurrency={displayCurrency}
-          displayExchangeRate={displayExchangeRateNumber}
-          inferredScopeExpenses={inferredScopeExpenses}
-          settlementCurrency={settlementCurrency}
-          canEditExpenses={canEditExpenses}
-          onAddPersonalExpense={() => setDialogExpense("new-personal")}
-          onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
-          pendingSettlementKeys={pendingSettlementKeys}
-          onRecordSettlement={recordSettlement}
-          onReviewExpense={setDialogExpense}
-        />
-
         <ExpenseLedgerSection
           canEditExpenses={canEditExpenses}
           categoryFilter={categoryFilter}
@@ -155,6 +138,23 @@ export function TripExpensesPage({
           trip={trip}
           workspaceTrip={planSourceTrip}
           onTripPlanChange={onChangeTripPlan}
+        />
+
+        <ExpenseOverviewPanels
+          trip={trip}
+          expenseSummary={expenseSummary}
+          categorySpend={categorySpend}
+          currentMember={currentMember}
+          displayCurrency={displayCurrency}
+          displayExchangeRate={displayExchangeRateNumber}
+          inferredScopeExpenses={inferredScopeExpenses}
+          settlementCurrency={settlementCurrency}
+          canEditExpenses={canEditExpenses}
+          onAddPersonalExpense={() => setDialogExpense("new-personal")}
+          onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
+          pendingSettlementKeys={pendingSettlementKeys}
+          onRecordSettlement={recordSettlement}
+          onReviewExpense={setDialogExpense}
         />
       </div>
 

@@ -22,13 +22,17 @@ describe("TripExpensesPage overview and filters", () => {
       "rounded-(--radius-md)",
       "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
     );
+    expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("0_8px_18px");
     expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("bg-(--color-surface-subtle)");
     expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
-    expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".expenses-content")?.firstElementChild).toHaveClass("expenses-ledger");
+    expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-none");
+    expect(document.querySelector(".expenses-panel")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
-    expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-none");
+    expect(document.querySelector(".expenses-command-bar")?.className).not.toContain("linear-gradient");
+    expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     const ledger = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
