@@ -129,7 +129,7 @@ describe("Sagittarius production release contracts", () => {
     expect(makefile).toContain("production-readiness-fast: staging-preflight verify frontend-e2e-local frontend-e2e-auth-browser api-trace-smoke db-rollback-stop-notes-test");
     expect(makefile).toContain("production-readiness-local: production-readiness-fast perf-smoke");
     expect(makefile).toContain("container-build:");
-    expect(makefile).toContain("staging-preflight: db-ensure-psql");
+    expect(makefile).toContain("staging-preflight: db-init-test");
     expect(makefile).toContain("staging-signoff-check:");
     expect(makefile).toContain("production-env-check:");
     expect(makefile).toContain("api-trace-smoke: db-init-test");
