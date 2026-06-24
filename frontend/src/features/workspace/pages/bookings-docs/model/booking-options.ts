@@ -15,10 +15,7 @@ import {
 
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 
-export const bookingTypes = bookingDocTypeValues;
-export const bookingStatuses = bookingDocStatusValues;
-export const bookingStatusFilterValues = withAllFilterValue(bookingStatuses);
-export const bookingVisibilities = bookingDocVisibilityValues;
+export const bookingStatusFilterValues = withAllFilterValue(bookingDocStatusValues);
 
 export type BookingStatusFilter = (typeof bookingStatusFilterValues)[number];
 export type BookingCopyEnumKey = keyof BookingCopy["enumLabels"];
@@ -36,11 +33,11 @@ function buildBookingSelectOptions<Value extends BookingCopyEnumKey>(
 }
 
 export function bookingTypeSelectOptions(copy: BookingCopy): BookingSelectOption<BookingDocType>[] {
-  return buildBookingSelectOptions(bookingTypes, copy);
+  return buildBookingSelectOptions(bookingDocTypeValues, copy);
 }
 
 export function bookingStatusSelectOptions(copy: BookingCopy): BookingSelectOption<BookingDocStatus>[] {
-  return buildBookingSelectOptions(bookingStatuses, copy);
+  return buildBookingSelectOptions(bookingDocStatusValues, copy);
 }
 
 export function bookingStatusFilterSelectOptions(
@@ -54,5 +51,5 @@ export function bookingStatusFilterSelectOptions(
 }
 
 export function bookingVisibilitySelectOptions(copy: BookingCopy): BookingSelectOption<BookingDocVisibility>[] {
-  return buildBookingSelectOptions(bookingVisibilities, copy);
+  return buildBookingSelectOptions(bookingDocVisibilityValues, copy);
 }

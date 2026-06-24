@@ -1,20 +1,22 @@
 import { describe, expect, it } from "vitest";
+import {
+  bookingDocStatusValues,
+  bookingDocTypeValues,
+  bookingDocVisibilityValues,
+} from "@/src/trip/booking-docs";
 import { bookingCopy } from "../../content/BookingsDocsPage.copy";
 import {
   bookingStatusFilterValues,
   bookingStatusFilterSelectOptions,
   bookingStatusSelectOptions,
-  bookingStatuses,
   bookingTypeSelectOptions,
-  bookingTypes,
   bookingVisibilitySelectOptions,
-  bookingVisibilities,
   formatEnumLabel,
 } from "../booking-options";
 
 describe("booking options", () => {
   it("keeps dialog select options in stable domain order", () => {
-    expect(bookingTypes).toEqual([
+    expect(bookingDocTypeValues).toEqual([
       "flight",
       "train",
       "public_transport",
@@ -25,12 +27,12 @@ describe("booking options", () => {
       "activity_ticket",
       "other",
     ]);
-    expect(bookingStatuses).toEqual(["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"]);
-    expect(bookingVisibilities).toEqual(["shared", "sensitive", "private"]);
+    expect(bookingDocStatusValues).toEqual(["draft", "needs_action", "booked", "confirmed", "paid", "cancelled", "expired"]);
+    expect(bookingDocVisibilityValues).toEqual(["shared", "sensitive", "private"]);
   });
 
   it("derives status filter options from the shared status order", () => {
-    expect(bookingStatusFilterValues).toEqual(["all", ...bookingStatuses]);
+    expect(bookingStatusFilterValues).toEqual(["all", ...bookingDocStatusValues]);
     expect(bookingStatusFilterSelectOptions(bookingCopy.en)[0]).toEqual({
       value: "all",
       label: "All statuses",
