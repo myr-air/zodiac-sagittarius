@@ -1,4 +1,5 @@
 import { findMemberById } from "@/src/trip/members";
+import { displayNameOrFallback } from "@/src/shared/text-parts";
 import type { ExpenseComment, Member } from "@/src/trip/types";
 import { appendExpenseDialogComment } from "./expense-dialog-comments";
 
@@ -46,7 +47,7 @@ export function addExpenseCommentFromDraft({
     : {
         commentDraft: "",
         comments,
-    };
+      };
 }
 
 export function expenseCommentDisplay({
@@ -60,7 +61,7 @@ export function expenseCommentDisplay({
 }): ExpenseCommentDisplay {
   const author = findMemberById(members, comment.authorId);
   return {
-    authorName: author?.displayName ?? unknownAuthor,
+    authorName: displayNameOrFallback(author, unknownAuthor),
     body: comment.body,
     id: comment.id,
   };

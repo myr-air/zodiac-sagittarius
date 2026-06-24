@@ -14,6 +14,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const expenseFilterState = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-page-filter-state.ts");
     const expenseLedgerSection = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerSection.tsx");
     const expenseLedgerRows = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseLedgerRows.tsx");
+    const expenseCategoryBadge = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseCategoryBadge.tsx");
     const expenseLedgerDisplay = readItineraryArchitectureSource("src/features/workspace/pages/expenses/model/expense-ledger-display.ts");
     const expensePageHeader = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpensePageHeader.tsx");
     const expenseOverviewPanels = readItineraryArchitectureSource("src/features/workspace/pages/expenses/components/ExpenseOverviewPanels.tsx");
@@ -140,7 +141,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseLedgerSection).not.toContain("memberInitial");
     expect(expenseLedgerRows).toContain("../model/expense-ledger-display");
     expect(expenseLedgerRows).toContain("findItineraryItemById");
-    expect(expenseLedgerRows).toContain("categoryTone");
+    expect(expenseLedgerRows).toContain("ExpenseCategoryBadge");
+    expect(expenseLedgerRows).not.toContain("categoryTone");
+    expect(expenseCategoryBadge).toContain("categoryTone");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerRowDisplay");
     expect(expenseLedgerDisplay).toContain("export function expenseLedgerPayerDisplay");
     expect(expenseSummaryStats).toContain("../model/expense-summary-display");

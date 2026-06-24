@@ -1,5 +1,9 @@
-import { safePhotoAlbumHref, type PhotoAlbumRelations } from "@/src/trip/photo-albums";
+import {
+  safePhotoAlbumHref,
+  type PhotoAlbumRelations,
+} from "@/src/trip/photo-albums";
 import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
+import { displayNameOrFallback } from "@/src/shared/text-parts";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, WorkspaceSurface } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -34,23 +38,41 @@ export function PhotoAlbumInspector({
 
   if (!album) {
     return (
-      <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
-        <div className={photoStyles.inspectorSectionClassName}>{copy.selectHint}</div>
+      <WorkspaceSurface
+        className={photoStyles.inspectorClassName}
+        density="compact"
+        aria-label={copy.inspectorLabel}
+      >
+        <div className={photoStyles.inspectorSectionClassName}>
+          {copy.selectHint}
+        </div>
       </WorkspaceSurface>
     );
   }
   const href = safePhotoAlbumHref(album.url);
   const linkHost = photoAlbumLinkHost(href);
   return (
-    <WorkspaceSurface className={photoStyles.inspectorClassName} density="compact" aria-label={copy.inspectorLabel}>
+    <WorkspaceSurface
+      className={photoStyles.inspectorClassName}
+      density="compact"
+      aria-label={copy.inspectorLabel}
+    >
       <div className="grid gap-2">
-        <Badge tone={photoAccessBadgeTone(album.access)}>{photoProviderLabel(album.provider, copy)}</Badge>
-        <h2 className="m-0 text-xl font-black text-(--color-text)">{album.title}</h2>
-        <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">{copy.externalProviderNote}</span>
+        <Badge tone={photoAccessBadgeTone(album.access)}>
+          {photoProviderLabel(album.provider, copy)}
+        </Badge>
+        <h2 className="m-0 text-xl font-black text-(--color-text)">
+          {album.title}
+        </h2>
+        <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">
+          {copy.externalProviderNote}
+        </span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <div className="flex min-w-0 items-center justify-between gap-2">
-          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">{photoAlbumHostDisplay(linkHost, copy)}</span>
+          <span className="min-w-0 truncate text-xs font-black text-(--color-text-muted)">
+            {photoAlbumHostDisplay(linkHost, copy)}
+          </span>
           {href ? (
             <button
               type="button"
@@ -75,18 +97,32 @@ export function PhotoAlbumInspector({
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
         <span>{photoAccessLabel(album.access, copy)}</span>
-        <span className="text-(--color-text-muted)">{photoAlbumAccessNoteDisplay(album, copy)}</span>
+        <span className="text-(--color-text-muted)">
+          {photoAlbumAccessNoteDisplay(album, copy)}
+        </span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.owner}</strong>
-        <span>{photoAlbumOwnerDisplay(relations?.owner, copy.noOwnerAssigned)}</span>
-        <span className="text-xs text-(--color-text-muted)">{copy.createdBy(relations?.createdBy?.displayName ?? album.createdBy)}</span>
+        <span>
+          {photoAlbumOwnerDisplay(relations?.owner, copy.noOwnerAssigned)}
+        </span>
+        <span className="text-xs text-(--color-text-muted)">
+          {copy.createdBy(
+            displayNameOrFallback(relations?.createdBy, album.createdBy),
+          )}
+        </span>
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.relatedStops}</strong>
-        {relations?.itineraryItems.length ? relations.itineraryItems.map((item) => (
-          <span key={item.id} className="text-sm">{item.day} · {item.activity}</span>
-        )) : <span className="text-(--color-text-muted)">{copy.tripLevel}</span>}
+        {relations?.itineraryItems.length ? (
+          relations.itineraryItems.map((item) => (
+            <span key={item.id} className="text-sm">
+              {item.day} · {item.activity}
+            </span>
+          ))
+        ) : (
+          <span className="text-(--color-text-muted)">{copy.tripLevel}</span>
+        )}
       </div>
     </WorkspaceSurface>
   );

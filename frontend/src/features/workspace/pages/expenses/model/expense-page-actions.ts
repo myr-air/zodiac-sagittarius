@@ -1,5 +1,6 @@
 import { refundSplits, sumShares } from "@/src/trip/expenses";
 import { findMemberById } from "@/src/trip/members";
+import { displayNameOrFallback } from "@/src/shared/text-parts";
 import type { Expense, Member, SettlementSuggestion } from "@/src/trip/types";
 import type { ExpenseInput } from "./expense-page-types";
 
@@ -16,7 +17,7 @@ export function buildSettlementExpenseInput({
   const to = findMemberById(members, suggestion.to);
   return {
     itemId: null,
-    title: `${from?.displayName ?? "Traveler"} paid ${to?.displayName ?? "Traveler"} back`,
+    title: `${displayNameOrFallback(from, "Traveler")} paid ${displayNameOrFallback(to, "Traveler")} back`,
     amount: suggestion.amount,
     currency: suggestion.currency ?? settlementCurrency,
     exchangeRateToSettlementCurrency: 1,

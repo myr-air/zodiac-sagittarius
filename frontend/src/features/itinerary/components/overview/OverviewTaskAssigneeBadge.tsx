@@ -1,5 +1,6 @@
 import type { Trip, TripTask } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
+import { displayNameOrFallback } from "@/src/shared/text-parts";
 import { findMemberById } from "@/src/trip/members";
 import { overviewTaskMetaClassName } from "./overview.styles";
 
@@ -21,7 +22,7 @@ export function TaskAssigneeBadge({
 }) {
   const isPrivate = task.visibility === "private";
   const member = findMemberById(trip.members, task.assigneeId) ?? null;
-  const name = member?.displayName ?? labels.tripMember;
+  const name = displayNameOrFallback(member, labels.tripMember);
   const color = member?.color ?? "var(--color-text-subtle)";
   const initial = name.slice(0, 1).toUpperCase();
 
@@ -38,8 +39,8 @@ export function TaskAssigneeBadge({
         {isPrivate ? labels.private : labels.shared}
       </small>
 
-      {task.visibility !== "private" && (
-        task.assigneeId ? (
+      {task.visibility !== "private" &&
+        (task.assigneeId ? (
           <div className="inline-flex items-center gap-1">
             <span
               className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-black text-white"
@@ -56,8 +57,7 @@ export function TaskAssigneeBadge({
           <small className="inline-flex items-center rounded-sm border border-(--color-border) bg-(--color-surface-subtle) px-1.5 py-0.5 text-[10px] font-bold text-(--color-text-muted)">
             {labels.unassigned}
           </small>
-        )
-      )}
+        ))}
     </div>
   );
 }
