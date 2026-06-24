@@ -1,3 +1,4 @@
+import { displayNullableTextOrFallback } from "@/src/shared/text-parts";
 import { ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR } from "../../model/account-profile-defaults";
 
 export interface AccountPortalProfileDisplay {
@@ -14,12 +15,18 @@ interface AccountPortalProfileDisplayInput {
   noEmail: string;
 }
 
-export function accountPortalProfileEmail(email: string | null | undefined, noEmail: string): string {
-  return email ?? noEmail;
+export function accountPortalProfileEmail(
+  email: string | null | undefined,
+  noEmail: string,
+): string {
+  return displayNullableTextOrFallback(email, noEmail);
 }
 
-export function accountPortalProfileDisplayName(displayName: string | null | undefined, fallbackName: string): string {
-  return displayName ?? fallbackName;
+export function accountPortalProfileDisplayName(
+  displayName: string | null | undefined,
+  fallbackName: string,
+): string {
+  return displayNullableTextOrFallback(displayName, fallbackName);
 }
 
 export function buildAccountPortalProfileDisplay({
