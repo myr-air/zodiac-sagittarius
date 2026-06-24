@@ -14,6 +14,7 @@ export function PeoplePanelRow({
   onChangeMemberRole,
   onResetMemberClaim,
   onTransferOwnership,
+  roleLabels,
 }: PeoplePanelRowProps) {
   const copy = peoplePanelCopy(locale);
   const joined = Boolean(member.claimPasswordHash || member.claimedAt) || member.id === currentMemberId;
@@ -34,6 +35,7 @@ export function PeoplePanelRow({
         joined={joined}
         locale={locale}
         member={member}
+        roleLabels={roleLabels}
       />
       {canManagePeople && (member.role !== "owner" || member.id === currentMemberId) ? (
         <PeoplePanelRowControls
@@ -41,13 +43,13 @@ export function PeoplePanelRow({
           canTransferOwner={canTransferOwner}
           copy={copy}
           currentMemberId={currentMemberId}
-          locale={locale}
           member={member}
           onChangeCurrentMemberPassword={onChangeCurrentMemberPassword}
           onChangeMemberAccessStatus={onChangeMemberAccessStatus}
           onChangeMemberRole={onChangeMemberRole}
           onResetMemberClaim={onResetMemberClaim}
           onTransferOwnership={onTransferOwnership}
+          roleLabels={roleLabels}
         />
       ) : (
         <PeoplePanelPresencePill member={member} />

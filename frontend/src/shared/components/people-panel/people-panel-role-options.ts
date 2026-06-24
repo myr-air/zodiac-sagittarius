@@ -1,5 +1,5 @@
 import { tripInvitableRoleValues, type TripInvitableRole } from "@/src/trip/members";
-import { peoplePanelRoleLabel } from "./people-panel.copy";
+import { peoplePanelRoleLabel, type PeoplePanelRoleLabels } from "./people-panel-role-labels";
 
 export interface PeoplePanelRoleOption {
   value: TripInvitableRole;
@@ -8,16 +8,16 @@ export interface PeoplePanelRoleOption {
 
 export function peoplePanelManagedRoleLabel(
   role: TripInvitableRole,
-  locale: string,
+  labels: PeoplePanelRoleLabels,
 ): string {
-  return peoplePanelRoleLabel(role, locale);
+  return peoplePanelRoleLabel(role, labels);
 }
 
 export function peoplePanelManagedRoleOptions(
-  locale: string,
+  labels: PeoplePanelRoleLabels,
 ): PeoplePanelRoleOption[] {
   return tripInvitableRoleValues.map((value) => ({
     value,
-    label: peoplePanelManagedRoleLabel(value, locale),
+    label: peoplePanelManagedRoleLabel(value, labels),
   }));
 }

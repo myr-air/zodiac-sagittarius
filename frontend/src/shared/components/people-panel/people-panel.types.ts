@@ -1,4 +1,5 @@
 import type { Member, TripMemberAccessStatus, TripRole } from "@/src/trip/types";
+import type { PeoplePanelRoleLabels } from "./people-panel-role-labels";
 
 export type PeoplePanelManagedRole = Exclude<TripRole, "owner">;
 
@@ -29,4 +30,5 @@ export interface PeoplePanelRowProps extends PeoplePanelManagementHandlers {
   currentMemberId: string;
   locale: string;
   member: Member;
+  roleLabels: PeoplePanelRoleLabels;
 }

@@ -1,5 +1,4 @@
 import type { Member } from "@/src/trip/types";
-import { roleLabel as tripMemberRoleLabel } from "@/src/trip/members";
 
 export function peoplePanelCopy(locale: string) {
   return locale === "th"
@@ -40,24 +39,4 @@ export function peoplePanelCopy(locale: string) {
 export function presenceLabel(presence: Member["presence"]): string {
   /* v8 ignore next */
   return presence === "online" ? "ออนไลน์" : presence === "away" ? "ออฟไลน์ 1 ชม." : "ออฟไลน์";
-}
-
-export function peoplePanelRoleLabels(locale: string): Record<Member["role"], string> {
-  return locale === "th"
-    ? {
-        owner: "เจ้าของแผน",
-        organizer: "ผู้จัดทริป",
-        traveler: "ผู้ร่วมเดินทาง",
-        viewer: "ผู้ชม",
-      }
-    : {
-        owner: "Owner",
-        organizer: "Organizer",
-        traveler: "Traveler",
-        viewer: "Viewer",
-      };
-}
-
-export function peoplePanelRoleLabel(role: Member["role"], locale: string): string {
-  return tripMemberRoleLabel(role, peoplePanelRoleLabels(locale));
 }

@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { enMessages } from "@/src/i18n/messages/en";
+import { thMessages } from "@/src/i18n/messages/th";
 import { seedTrip } from "@/src/trip/seed";
 import { peoplePanelCopy } from "../people-panel.copy";
 import { PeoplePanelRowControls } from "../PeoplePanelRowControls";
@@ -21,12 +23,12 @@ describe("PeoplePanelRowControls", () => {
         canTransferOwner
         copy={peoplePanelCopy("en")}
         currentMemberId="member-aom"
-        locale="en"
         member={{ ...organizer, claimPasswordHash: "local_hash", userId: "user-nam" }}
         onChangeMemberAccessStatus={onChangeMemberAccessStatus}
         onChangeMemberRole={onChangeMemberRole}
         onResetMemberClaim={onResetMemberClaim}
         onTransferOwnership={onTransferOwnership}
+        roleLabels={enMessages.appShell.roles}
       />,
     );
 
@@ -50,9 +52,9 @@ describe("PeoplePanelRowControls", () => {
         canTransferOwner={false}
         copy={peoplePanelCopy("th")}
         currentMemberId="member-aom"
-        locale="th"
         member={owner}
         onChangeCurrentMemberPassword={onChangeCurrentMemberPassword}
+        roleLabels={thMessages.appShell.roles}
       />,
     );
 

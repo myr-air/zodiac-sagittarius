@@ -21,7 +21,7 @@ export function PeoplePanel({
   onResetMemberClaim,
   onTransferOwnership,
 }: PeoplePanelProps) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const copy = peoplePanelCopy(locale);
   return (
     <section className={peopleModuleClassName} aria-label="People and presence">
@@ -46,6 +46,7 @@ export function PeoplePanel({
               onChangeMemberRole={onChangeMemberRole}
               onResetMemberClaim={onResetMemberClaim}
               onTransferOwnership={onTransferOwnership}
+              roleLabels={t.appShell.roles}
             />
           );
         })}

@@ -9,7 +9,8 @@ import {
   presencePillClassName,
   presencePillToneClassNames,
 } from "./people-panel.styles";
-import { peoplePanelCopy, peoplePanelRoleLabel, presenceLabel } from "./people-panel.copy";
+import { peoplePanelRoleLabel, type PeoplePanelRoleLabels } from "./people-panel-role-labels";
+import { peoplePanelCopy, presenceLabel } from "./people-panel.copy";
 import type { PeoplePanelRowProps } from "./people-panel.types";
 
 type PeoplePanelCopy = ReturnType<typeof peoplePanelCopy>;
@@ -20,6 +21,7 @@ interface PeoplePanelRowIdentityProps {
   joined: boolean;
   locale: string;
   member: PeoplePanelRowProps["member"];
+  roleLabels: PeoplePanelRoleLabels;
 }
 
 interface PeoplePanelPresencePillProps {
@@ -32,6 +34,7 @@ export function PeoplePanelRowIdentity({
   joined,
   locale,
   member,
+  roleLabels,
 }: PeoplePanelRowIdentityProps) {
   return (
     <>
@@ -42,7 +45,7 @@ export function PeoplePanelRowIdentity({
       />
       <div className={memberIdentityClassName}>
         <strong>{member.displayName}{member.id === currentMemberId ? (locale === "th" ? " (คุณ)" : " (You)") : ""}</strong>
-        <span>{peoplePanelRoleLabel(member.role, locale)}</span>
+        <span>{peoplePanelRoleLabel(member.role, roleLabels)}</span>
         <div className={memberStatusStackClassName} aria-label={`Status for ${member.displayName}`}>
           <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[member.accessStatus === "disabled" ? "disabled" : "active"])}>
             {member.accessStatus === "disabled" ? copy.disabled : copy.active}

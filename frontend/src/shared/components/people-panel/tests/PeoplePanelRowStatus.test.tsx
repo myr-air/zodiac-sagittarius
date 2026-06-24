@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { enMessages } from "@/src/i18n/messages/en";
+import { thMessages } from "@/src/i18n/messages/th";
 import { seedTrip } from "@/src/trip/seed";
 import { peoplePanelCopy } from "../people-panel.copy";
 import { PeoplePanelPresencePill, PeoplePanelRowIdentity } from "../PeoplePanelRowStatus";
@@ -15,6 +17,7 @@ describe("PeoplePanelRowStatus", () => {
         joined={false}
         locale="en"
         member={traveler}
+        roleLabels={enMessages.appShell.roles}
       />,
     );
 
@@ -32,6 +35,7 @@ describe("PeoplePanelRowStatus", () => {
         joined
         locale="th"
         member={{ ...traveler, accessStatus: "disabled" }}
+        roleLabels={thMessages.appShell.roles}
       />,
     );
 

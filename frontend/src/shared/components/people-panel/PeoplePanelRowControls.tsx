@@ -7,6 +7,7 @@ import {
 } from "./people-panel.styles";
 import { peoplePanelCopy } from "./people-panel.copy";
 import { peoplePanelManagedRoleOptions } from "./people-panel-role-options";
+import type { PeoplePanelRoleLabels } from "./people-panel-role-labels";
 import type {
   PeoplePanelManagementHandlers,
   PeoplePanelManagedRole,
@@ -20,8 +21,8 @@ interface PeoplePanelRowControlsProps extends PeoplePanelManagementHandlers {
   canTransferOwner: boolean;
   copy: PeoplePanelCopy;
   currentMemberId: string;
-  locale: string;
   member: PeoplePanelRowProps["member"];
+  roleLabels: PeoplePanelRoleLabels;
 }
 
 export function PeoplePanelRowControls({
@@ -29,13 +30,13 @@ export function PeoplePanelRowControls({
   canTransferOwner,
   copy,
   currentMemberId,
-  locale,
   member,
   onChangeCurrentMemberPassword,
   onChangeMemberAccessStatus,
   onChangeMemberRole,
   onResetMemberClaim,
   onTransferOwnership,
+  roleLabels,
 }: PeoplePanelRowControlsProps) {
   return (
     <div className={memberControlsClassName}>
@@ -46,7 +47,7 @@ export function PeoplePanelRowControls({
           value={member.role}
           onChange={(event) => onChangeMemberRole?.(member.id, event.target.value as PeoplePanelManagedRole)}
         >
-          <SelectOptions options={peoplePanelManagedRoleOptions(locale)} />
+          <SelectOptions options={peoplePanelManagedRoleOptions(roleLabels)} />
         </Select>
       ) : null}
       {canChangePassword ? (
