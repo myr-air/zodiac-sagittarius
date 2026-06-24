@@ -114,9 +114,11 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(routeMapUtils).not.toContain("fallbackRouteViewport");
     expect(routeMapUtils).not.toContain("getRouteCenter");
     expect(routeMapUtils).not.toContain("export function buildRoutePoints");
-    expect(routeMapModel).toContain("export function buildRoutePoints");
-    expect(routeMapModel).toContain("export function buildRouteDayGroups");
-    expect(routeMapModel).toContain("export function hasCoordinates");
+    expect(routeMapModel).toContain("buildRoutePoints");
+    expect(routeMapModel).toContain("buildRouteDayGroups");
+    expect(routeMapModel).toContain("hasCoordinates");
+    expect(routeMapModel).toContain("./route-map-points");
+    expect(routeMapModel).toContain("./route-map-day-groups");
     expect(routeMapViewport).toContain("export function fallbackRouteViewport");
     expect(routeMapViewport).toContain("export function getRouteCenter");
 
@@ -148,7 +150,8 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(stopDialogDraftUpdaters).toContain("@/src/features/itinerary/domain/stop-form-model");
     expect(stopFormModel).toContain("./stop-form-time-fields");
     expect(stopFormModel).not.toContain("durationBetweenTimes");
-    expect(stopFormModel).toContain("export function applyStopActivityInput");
+    expect(stopFormModel).toContain("applyStopActivityInput");
+    expect(stopFormModel).toContain("./stop-form-activity-input");
     expect(stopFormTimeFields).toContain("export function applyStopStartTime");
     expect(stopFormTimeFields).toContain("export function applyStopEndTime");
     expect(stopFormTimeFields).toContain("export function applyStopTimeMode");

@@ -130,7 +130,7 @@ describe("Sagittarius account source boundaries", () => {
     expect(accountAccessStoryClients).not.toContain('id: "vault-1"');
     expect(accountAccessRenderTestUtils).toContain("../AccountAccessPanel");
     expect(accountAccessRenderTestUtils).toContain("export function renderAccountAccessPanel");
-    expect(accountAccessRenderTestUtils).toContain("export function renderTripBuilder");
+    expect(accountAccessRenderTestUtils).toContain('export { renderTripBuilder } from "./account-access-panel-trip-builder-render"');
     expect(accountAccessRenderTestUtils).toContain("./account-access-panel-test-clients");
     expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-api-fixtures");
     expect(accountAccessTestClients).toContain("../fixtures/account-access-panel-base-fixtures");
