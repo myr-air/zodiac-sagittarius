@@ -1,10 +1,11 @@
 import type { Trip } from "@/src/trip/types";
+import { setLocalMainTripPlan } from "@/src/trip/trip-plans/trip-plan-aliases";
 import { tripWithPlans } from "./sagittarius-app-plan-fixtures";
 
 export function tripWithPlansAndPlanScopedRecords(
   selectedPlanId = "plan-variant-backup",
 ): Trip {
-  const draftTrip = tripWithPlans();
+  const draftTrip = setLocalMainTripPlan(tripWithPlans(), selectedPlanId);
   const backupItem = draftTrip.itineraryItems.find(
     (item) => item.id === "item-rain-gallery",
   )!;
@@ -14,18 +15,6 @@ export function tripWithPlansAndPlanScopedRecords(
 
   return {
     ...draftTrip,
-    activePlanVariantId: selectedPlanId,
-    mainTripPlanId: selectedPlanId,
-    planVariants: draftTrip.planVariants.map((plan) =>
-      plan.id === selectedPlanId
-        ? { ...plan, kind: "main", status: "main" }
-        : { ...plan, kind: "backup", status: "backup" },
-    ),
-    tripPlans: draftTrip.tripPlans?.map((plan) =>
-      plan.id === selectedPlanId
-        ? { ...plan, kind: "main", status: "main" }
-        : { ...plan, kind: "backup", status: "backup" },
-    ),
     expenses: [
       {
         id: "expense-main-dimsum",
