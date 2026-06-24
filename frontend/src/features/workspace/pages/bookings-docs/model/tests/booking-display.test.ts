@@ -7,10 +7,7 @@ import {
   bookingNotesDisplay,
   bookingProviderDisplay,
   bookingTravelerNamesDisplay,
-  bookingTypeIcon,
   formatDateTime,
-  statusBadgeClassName,
-  typeIconClassName,
 } from "../booking-display";
 
 describe("booking display helpers", () => {
@@ -36,12 +33,5 @@ describe("booking display helpers", () => {
       { displayName: "Aom" },
       { displayName: "Beam" },
     ], bookingCopy.en)).toBe("Aom, Beam");
-  });
-
-  it("keeps selection and visual token helpers centralized", () => {
-    expect(bookingTypeIcon("hotel")).toBe("home");
-    expect(typeIconClassName("passport")).toContain("text-(--color-primary-strong)");
-    expect(statusBadgeClassName("needs_action")).toContain("text-(--color-warning-strong)");
-    expect(statusBadgeClassName("expired")).toContain("text-[#b91c1c]");
   });
 });

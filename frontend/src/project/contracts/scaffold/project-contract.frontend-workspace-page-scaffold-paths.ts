@@ -55,6 +55,8 @@ export const frontendWorkspacePageScaffoldPathsPresent = [
   "src/features/workspace/pages/bookings-docs/storybook/BookingsDocsPage.stories.plays.ts",
   "src/features/workspace/pages/bookings-docs/model/booking-display.ts",
   "src/features/workspace/pages/bookings-docs/model/tests/booking-display.test.ts",
+  "src/features/workspace/pages/bookings-docs/model/booking-display-visuals.ts",
+  "src/features/workspace/pages/bookings-docs/model/tests/booking-display-visuals.test.ts",
   "src/features/workspace/pages/bookings-docs/model/booking-folders.ts",
   "src/features/workspace/pages/bookings-docs/model/tests/booking-folders.test.ts",
   "src/features/workspace/pages/bookings-docs/model/booking-list.ts",

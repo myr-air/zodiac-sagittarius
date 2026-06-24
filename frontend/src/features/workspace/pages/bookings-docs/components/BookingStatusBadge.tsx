@@ -2,7 +2,7 @@ import { cn } from "@/src/lib/cn";
 import type { BookingDocStatus } from "@/src/trip/types";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 import { badgeClassName } from "../BookingsDocsPage.styles";
-import { statusBadgeClassName } from "../model/booking-display";
+import { statusBadgeClassName } from "../model/booking-display-visuals";
 import { formatEnumLabel } from "../model/booking-options";
 
 interface BookingStatusBadgeProps {

@@ -2,7 +2,7 @@ import { cn } from "@/src/lib/cn";
 import type { BookingDocType } from "@/src/trip/types";
 import { Icon } from "@/src/ui/icons";
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
-import { bookingTypeIcon, typeIconClassName } from "../model/booking-display";
+import { bookingTypeIcon, typeIconClassName } from "../model/booking-display-visuals";
 import { formatEnumLabel } from "../model/booking-options";
 
 interface BookingTypeDisplayProps {

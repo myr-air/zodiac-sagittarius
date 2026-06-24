@@ -6,6 +6,7 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
   it("keeps booking docs, photos, and expenses split by responsibility", () => {
     const {
       bookingDisplay,
+      bookingDisplayVisuals,
       bookingFolders,
       bookingList,
       bookingDialog,
@@ -30,7 +31,10 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     } = readWorkspaceBoundarySources(frontendRoot);
 
     expect(bookingDisplay).toContain("export function formatDateTime");
-    expect(bookingDisplay).toContain("export function bookingTypeIcon");
+    expect(bookingDisplay).toContain("booking-display-visuals");
+    expect(bookingDisplay).not.toContain("export function bookingTypeIcon");
+    expect(bookingDisplayVisuals).toContain("export function bookingTypeIcon");
+    expect(bookingDisplayVisuals).toContain("export function statusBadgeClassName");
     expect(bookingDisplay).not.toContain("function toDateTimeLocalValue");
     expect(bookingDisplay).not.toContain("function fromDateTimeLocalValue");
     expect(bookingDisplay).not.toContain("function toggleId");
