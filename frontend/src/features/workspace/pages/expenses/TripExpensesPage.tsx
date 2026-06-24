@@ -1,5 +1,5 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { ExpenseDialog } from "./components/ExpenseDialog";
+import { ExpenseDialogLayer } from "./components/ExpenseDialogLayer";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpensePageHeader } from "./components/ExpensePageHeader";
@@ -124,19 +124,17 @@ export function TripExpensesPage({
         />
       </div>
 
-      {dialogExpense ? (
-        <ExpenseDialog
-          expense={dialogExpense === "new" ? null : dialogExpense}
-          trip={trip}
-          currentMember={currentMember}
-          settlementCurrency={settlementCurrency}
-          selectedTripPlanId={selectedTripPlanId}
-          apiBaseUrl={apiBaseUrl}
-          onClose={() => setDialogExpense(null)}
-          onCreateExpense={createDialogExpense}
-          onUpdateExpense={updateDialogExpense}
-        />
-      ) : null}
+      <ExpenseDialogLayer
+        apiBaseUrl={apiBaseUrl}
+        currentMember={currentMember}
+        dialogExpense={dialogExpense}
+        selectedTripPlanId={selectedTripPlanId}
+        settlementCurrency={settlementCurrency}
+        trip={trip}
+        onClose={() => setDialogExpense(null)}
+        onCreateExpense={createDialogExpense}
+        onUpdateExpense={updateDialogExpense}
+      />
     </section>
   );
 }
