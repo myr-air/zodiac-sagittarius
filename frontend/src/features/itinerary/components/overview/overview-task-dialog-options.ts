@@ -1,9 +1,9 @@
 import {
   buildSelectOptions,
-  buildSelectOptionsFromItems,
   prependSelectOption,
   type SelectOption,
 } from "@/src/shared/select-options";
+import { buildMemberSelectOptions } from "@/src/trip/members";
 import type { Member, TripTask } from "@/src/trip/types";
 
 export function overviewTaskVisibilitySelectOptions(labels: {
@@ -18,11 +18,7 @@ export function overviewTaskAssigneeSelectOptions(
   noAssigneeLabel: string,
 ): SelectOption[] {
   return prependSelectOption(
-    buildSelectOptionsFromItems(
-      members,
-      (member) => member.id,
-      (member) => member.displayName,
-    ),
+    buildMemberSelectOptions(members),
     { value: "", label: noAssigneeLabel },
   );
 }

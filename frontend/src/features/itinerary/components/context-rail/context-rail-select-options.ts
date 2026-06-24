@@ -2,10 +2,10 @@ import { formatBookingDocTypeLabel } from "@/src/features/itinerary/domain/itine
 import { bookingDocTypeOptions } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 import {
   buildSelectOptions,
-  buildSelectOptionsFromItems,
   type SelectOption,
 } from "@/src/shared/select-options";
 import { expenseCategorySelectOptions } from "@/src/trip/expenses";
+import { buildMemberSelectOptions } from "@/src/trip/members";
 import type { BookingDocType, Expense, Member } from "@/src/trip/types";
 
 export type ContextRailSelectOption<Value extends string = string> = SelectOption<Value>;
@@ -13,11 +13,7 @@ export type ContextRailSelectOption<Value extends string = string> = SelectOptio
 export function contextRailMemberSelectOptions(
   members: readonly Pick<Member, "id" | "displayName">[],
 ): ContextRailSelectOption[] {
-  return buildSelectOptionsFromItems(
-    members,
-    (member) => member.id,
-    (member) => member.displayName,
-  );
+  return buildMemberSelectOptions(members);
 }
 
 export function contextRailExpenseCategorySelectOptions(): ContextRailSelectOption<

@@ -3,6 +3,7 @@ import {
   prependSelectOption,
   type SelectOption,
 } from "@/src/shared/select-options";
+import { buildMemberSelectOptions as buildTripMemberSelectOptions } from "@/src/trip/members";
 import type { Expense, ItineraryItem, Member, StopNote, TripTask } from "@/src/trip/types";
 
 export interface WorkspaceRelatedOption {
@@ -42,7 +43,10 @@ export function buildMemberSelectOptions(
   members: MemberOptionSource[],
   config?: WorkspaceRelatedSelectOptionsConfig,
 ): WorkspaceRelatedSelectOption[] {
-  return buildWorkspaceRelatedSelectOptions(buildMemberOptions(members), config);
+  return prependSelectOption(
+    buildTripMemberSelectOptions(members),
+    config?.leadingOption,
+  );
 }
 
 export function buildItineraryItemOptions(items: ItineraryItemOptionSource[]): WorkspaceRelatedOption[] {

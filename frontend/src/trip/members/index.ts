@@ -21,6 +21,10 @@ export {
   findMemberById,
 } from "./member-lookup";
 export {
+  buildMemberSelectOptions,
+  type MemberSelectOption,
+} from "./member-options";
+export {
   assignableTripMembers,
   isSyntheticViewerMember,
   isTripMemberActive,
