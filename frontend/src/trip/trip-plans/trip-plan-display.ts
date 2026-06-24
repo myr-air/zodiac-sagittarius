@@ -1,4 +1,8 @@
 import { findById } from "@/src/shared/collection";
+import {
+  buildSelectOptionsFromItems,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import type { PlanVariant, Trip } from "../types";
 
 type TripPlanDisplaySource = Pick<
@@ -6,10 +10,7 @@ type TripPlanDisplaySource = Pick<
   "activePlanVariantId" | "mainTripPlanId" | "planVariants" | "tripPlans"
 >;
 
-export interface TripPlanSelectOption {
-  value: string;
-  label: string;
-}
+export type TripPlanSelectOption = SelectOption;
 
 export function tripPlanOptions(
   trip: Pick<Trip, "planVariants" | "tripPlans">,
@@ -20,7 +21,11 @@ export function tripPlanOptions(
 export function buildTripPlanSelectOptions(
   tripPlans: readonly Pick<PlanVariant, "id" | "name">[],
 ): TripPlanSelectOption[] {
-  return tripPlans.map((plan) => ({ value: plan.id, label: plan.name }));
+  return buildSelectOptionsFromItems(
+    tripPlans,
+    (plan) => plan.id,
+    (plan) => plan.name,
+  );
 }
 
 export function findTripPlanOptionById(
