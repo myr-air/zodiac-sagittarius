@@ -8,7 +8,7 @@ import {
   shiftIsoDate,
   shiftItineraryItemsToStartDate,
 } from "@/src/trip/itinerary-core";
-import { seedTrip } from "@/src/trip/seed";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { ItineraryItem } from "@/src/trip/types";
 
 describe("itinerary time helpers", () => {
@@ -38,13 +38,12 @@ describe("itinerary time helpers", () => {
   });
 
   it("normalizes inline time-window edits into matching durations", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       startTime: "23:00",
       endTime: "01:00",
       endOffsetDays: 1,
       durationMinutes: 120,
-    };
+    });
 
     expect(normalizeInlineTimePatch(item, { endTime: "02:30" })).toMatchObject({
       endTime: "02:30",
@@ -85,13 +84,12 @@ describe("itinerary time helpers", () => {
   });
 
   it("builds changed inline patches with trimmed text and clamped duration", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       activity: "Breakfast",
       place: "Central",
       transportation: "MTR",
       durationMinutes: 30,
-    };
+    });
 
     expect(
       buildInlineItineraryItemPatch(item, {
@@ -117,14 +115,14 @@ describe("itinerary time helpers", () => {
   });
 
   it("rejects empty required inline activity and place edits", () => {
-    const item = seedTrip.itineraryItems[0]!;
+    const item = buildTripFixtureItineraryItem();
 
     expect(buildInlineItineraryItemPatch(item, { activity: "   " })).toBeNull();
     expect(buildInlineItineraryItemPatch(item, { place: "   " })).toBeNull();
   });
 
   it("returns null when an inline patch does not change the item", () => {
-    const item = seedTrip.itineraryItems[0]!;
+    const item = buildTripFixtureItineraryItem();
 
     expect(
       buildInlineItineraryItemPatch(item, {

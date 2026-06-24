@@ -4,13 +4,12 @@ import {
   buildInlineItineraryItemPatchRequest,
   buildPatchItineraryItemRequest,
 } from "../../../itinerary-items";
-import { seedTrip } from "../../../seed";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { pathIdRain } from "@/src/trip/testing/fixtures/itinerary-path-fixtures";
 
 describe("itinerary item API request builders", () => {
   it("builds create itinerary item requests from the draft item", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       id: "item-new",
       planVariantId: "plan-alt",
       pathGroupId: "path-group-item-new",
@@ -36,7 +35,7 @@ describe("itinerary item API request builders", () => {
       transportation: "MTR",
       details: { ticket: "prebooked" },
       note: "Arrive early",
-    };
+    });
 
     expect(buildCreateItineraryItemRequest(item, "mutation-1")).toEqual({
       clientMutationId: "mutation-1",

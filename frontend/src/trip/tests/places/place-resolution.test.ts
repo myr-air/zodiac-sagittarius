@@ -9,7 +9,8 @@ import {
   resolveStopPlace,
 } from "@/src/trip/places";
 import { seedTrip } from "@/src/trip/seed";
-import type { ItineraryItem, PlaceResolutionCandidate } from "@/src/trip/types";
+import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
+import type { PlaceResolutionCandidate } from "@/src/trip/types";
 
 const candidate: PlaceResolutionCandidate = {
   name: "M+ Museum",
@@ -33,27 +34,25 @@ describe("place resolution helpers", () => {
   });
 
   it("derives map resolution activity and place hints for travel rows", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       activity: "Airport transfer",
       activityType: "travel",
       place: "Hong Kong Airport",
       details: { from: "BKK", to: "HKG" },
-    } as ItineraryItem;
+    });
 
     expect(mapResolutionPlaceHint(item)).toBe("HKG");
     expect(mapResolutionActivity(item)).toBe("Airport transfer from BKK to HKG");
   });
 
   it("builds map place resolution requests for itinerary rows", () => {
-    const item = {
-      ...seedTrip.itineraryItems[0],
+    const item = buildTripFixtureItineraryItem({
       activity: "Airport transfer",
       activityType: "travel",
       day: "2026-06-18",
       place: "Hong Kong Airport",
       details: { from: "BKK", to: "HKG" },
-    } as ItineraryItem;
+    });
 
     expect(
       buildMapPlaceResolutionRequest(item, seedTrip, {
