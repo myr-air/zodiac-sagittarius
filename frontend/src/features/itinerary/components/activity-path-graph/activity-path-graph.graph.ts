@@ -1,5 +1,8 @@
 import { parseTime } from "@/src/trip/itinerary-core";
-import type { SelectOptionItem } from "@/src/shared/components/select-options";
+import {
+  buildSelectOptionsFromItems,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import {
   humanizePathId,
   itineraryItemPathId,
@@ -22,11 +25,12 @@ export interface PathMeta {
 
 export function activityPathGraphPathSelectOptions(
   pathMetaById: ReadonlyMap<string, PathMeta>,
-): Array<SelectOptionItem<string>> {
-  return Array.from(pathMetaById, ([id, option]) => ({
-    value: id,
-    label: option.name,
-  }));
+): Array<SelectOption<string>> {
+  return buildSelectOptionsFromItems(
+    Array.from(pathMetaById),
+    ([id]) => id,
+    ([, option]) => option.name,
+  );
 }
 
 export function buildPathMetaForDay(

@@ -1,9 +1,7 @@
 import type { SelectOption } from "@/src/shared/select-options";
 
-export type SelectOptionItem<Value extends string = string> = SelectOption<Value>;
-
 interface SelectOptionsProps<Value extends string = string> {
-  options: readonly SelectOptionItem<Value>[];
+  options: readonly SelectOption<Value>[];
 }
 
 export function SelectOptions<Value extends string = string>({
