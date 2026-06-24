@@ -1,6 +1,6 @@
 {
   "name": "sagittarius-travel-cockpit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.5",
@@ -12,7 +12,7 @@
     "storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
     "build-storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
     "test": "NODE_OPTIONS=--no-warnings vitest --project unit run",
-    "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api.e2e.test.ts src/account/real-portal.e2e.test.ts",
+    "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api-e2e/real-api.e2e.test.ts src/account/real-api-e2e/real-portal.e2e.test.ts",
     "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
     "test:e2e:auth-browser": "bun run scripts/run-local-real-browser-auth-e2e.ts",
     "test:itinerary-import-browser-qa": "bun run scripts/run-itinerary-import-browser-qa.ts",

@@ -11,6 +11,8 @@ describe("Sagittarius production e2e contracts", () => {
     const makefile = readFileSync(join(repoRoot, "Makefile"), "utf8");
 
     expect(packageJson.scripts?.["test:e2e:local"]).toBe("bun run scripts/run-local-real-api-e2e.ts");
+    expect(packageJson.scripts?.["test:e2e:real"]).toContain("src/trip/real-api-e2e/real-api.e2e.test.ts");
+    expect(packageJson.scripts?.["test:e2e:real"]).toContain("src/account/real-api-e2e/real-portal.e2e.test.ts");
     expect(packageJson.scripts?.["test:e2e:auth-browser"]).toBe("bun run scripts/run-local-real-browser-auth-e2e.ts");
     expect(packageJson.scripts?.["test:api-trace-smoke"]).toBe("bun run scripts/run-local-api-trace-smoke.ts");
     expect(packageJson.scripts?.["test:perf-smoke"]).toBe("bun run scripts/run-local-perf-smoke.ts");
@@ -86,6 +88,7 @@ describe("Sagittarius production e2e contracts", () => {
     expect(seedE2e).toContain("0028_plan_check_trip_plan_scope.sql");
     expect(seedE2e).toContain("0029_expense_reminder_trip_plan_scope.sql");
     expect(seedE2e).toContain("0031_itinerary_activity_type_default.sql");
+    expect(seedE2e).toContain("0032_itinerary_activity_subtype.sql");
     for (const script of [
       "scripts/run-local-real-api-e2e.ts",
       "scripts/run-local-real-browser-auth-e2e.ts",
