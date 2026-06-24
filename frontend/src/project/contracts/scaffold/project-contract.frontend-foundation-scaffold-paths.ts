@@ -17,6 +17,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/tests/form-state.test.ts",
   "src/shared/select-options.ts",
   "src/shared/tests/select-options.test.ts",
+  "src/shared/text-parts.ts",
+  "src/shared/tests/text-parts.test.ts",
   "src/shared/hooks/use-escape-to-close.ts",
   "src/shared/hooks/tests/use-escape-to-close.test.ts",
   "src/ui/tests/icons.test.tsx",

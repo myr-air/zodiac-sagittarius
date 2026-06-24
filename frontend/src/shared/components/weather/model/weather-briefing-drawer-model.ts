@@ -3,6 +3,10 @@ import {
   displayDateTimeLocaleCode,
   formatDateOnlyDisplay,
 } from "@/src/shared/date-time-display";
+import {
+  joinVisibleTextParts,
+  visibleTextParts,
+} from "@/src/shared/text-parts";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
 
@@ -42,7 +46,7 @@ export function buildWeatherDetailLines(
   locale: Locale,
 ): string[] {
   const copy = weatherDrawerCopy(locale);
-  return [
+  return visibleTextParts([
     joinWeatherParts([
       formatTempPair(
         copy.feelsLike,
@@ -60,7 +64,7 @@ export function buildWeatherDetailLines(
       formatValue(copy.visibilityMin, metersToKilometers(weather.visibilityMinMeters), "km"),
       formatPercentValue(copy.cloudCover, weather.cloudCoverMeanPercent),
     ]),
-  ].filter((line): line is string => Boolean(line));
+  ]);
 }
 
 function formatTemp(value: number | null | undefined): string {
@@ -69,8 +73,7 @@ function formatTemp(value: number | null | undefined): string {
 }
 
 function joinWeatherParts(parts: Array<string | null>): string | null {
-  const visible = parts.filter(Boolean);
-  return visible.length ? visible.join(" · ") : null;
+  return joinVisibleTextParts(parts, " · ");
 }
 
 function formatTempPair(
@@ -79,7 +82,10 @@ function formatTempPair(
   low: number | null | undefined,
 ): string | null {
   if (typeof high !== "number" && typeof low !== "number") return null;
-  return `${label} ${[formatTemp(high), formatTemp(low)].filter((value) => value !== "--°").join(" ")}`;
+  return `${label} ${visibleTextParts([
+    formatTemp(high) !== "--°" ? formatTemp(high) : null,
+    formatTemp(low) !== "--°" ? formatTemp(low) : null,
+  ]).join(" ")}`;
 }
 
 function formatValue(

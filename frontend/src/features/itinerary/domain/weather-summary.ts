@@ -1,3 +1,7 @@
+import {
+  joinVisibleTextParts,
+  visibleTextParts,
+} from "@/src/shared/text-parts";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import {
   formatSolarTime,
@@ -22,7 +26,7 @@ function formatWeatherSummaryParts(
       ? condition
       : "";
 
-  return [weatherLabel].filter(Boolean);
+  return visibleTextParts([weatherLabel]);
 }
 
 export function formatFeelsLike(
@@ -30,10 +34,10 @@ export function formatFeelsLike(
   low: number | null | undefined,
 ): string | null {
   if (typeof high !== "number" && typeof low !== "number") return null;
-  const temps = [
+  const temps = visibleTextParts([
     typeof high === "number" ? formatWeatherTemp(high) : null,
     typeof low === "number" ? formatWeatherTemp(low) : null,
-  ].filter(Boolean);
+  ]);
   return `Feels ${temps.join(" ")}`;
 }
 
@@ -42,12 +46,12 @@ export function formatRainDetail(
   amount: number | null | undefined,
   hours: number | null | undefined,
 ): string | null {
-  const parts = [
+  const parts = joinVisibleTextParts([
     typeof chance === "number" ? `${chance}%` : null,
     typeof amount === "number" ? `${formatDecimal(amount)} mm` : null,
     typeof hours === "number" ? `${formatDecimal(hours)}h` : null,
-  ].filter(Boolean);
-  return parts.length ? `Rain ${parts.join(" · ")}` : null;
+  ], " · ");
+  return parts ? `Rain ${parts}` : null;
 }
 
 export function formatUvIndex(value: number | null | undefined): string | null {
@@ -59,11 +63,11 @@ export function formatWindDetail(
   gusts: number | null | undefined,
 ): string | null {
   if (typeof speed !== "number" && typeof gusts !== "number") return null;
-  const parts = [
+  const parts = joinVisibleTextParts([
     typeof speed === "number" ? `${Math.round(speed)} km/h` : null,
     typeof gusts === "number" ? `gust ${Math.round(gusts)} km/h` : null,
-  ].filter(Boolean);
-  return `Wind ${parts.join(" · ")}`;
+  ], " · ");
+  return `Wind ${parts}`;
 }
 
 export function formatVisibilityDetail(
@@ -92,7 +96,7 @@ export function buildWeatherTooltip(
   sunset: string | null,
 ): string {
   if (!weather) return summary;
-  const details = [
+  const details = visibleTextParts([
     formatFeelsLike(
       weather.apparentTemperatureMaxCelsius,
       weather.apparentTemperatureMinCelsius,
@@ -107,8 +111,8 @@ export function buildWeatherTooltip(
     formatVisibilityDetail(weather.visibilityMinMeters),
     formatPercentDetail("Humidity", weather.humidityPercent),
     sunrise && sunset ? `Sun ${sunrise}/${sunset}` : null,
-  ].filter(Boolean);
-  return [summary, ...details].filter(Boolean).join("\n");
+  ]);
+  return visibleTextParts([summary, ...details]).join("\n");
 }
 
 export interface WeatherChipDisplay {
@@ -140,14 +144,14 @@ export function buildWeatherChipDisplay(
   const highLabel = formatWeatherTemp(high);
   const lowLabel = formatWeatherTemp(low);
   const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
-  const weatherLabel = [
+  const weatherLabel = joinVisibleTextParts([
     hasForecastTemps
       ? `${condition} ${highLabel} ${lowLabel}`
       : hasCondition
         ? condition
         : "",
     solarLabel,
-  ].filter(Boolean).join(" ");
+  ], " ") ?? "";
 
   return {
     condition,
