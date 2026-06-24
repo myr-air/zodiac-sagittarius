@@ -12,6 +12,8 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/routes/tests/invite-links.test.ts",
   "src/api/sagittarius-api-clients.ts",
   "src/api/tests/sagittarius-api-clients.test.ts",
+  "src/shared/api/api-route-helpers.ts",
+  "src/shared/api/tests/api-route-helpers.test.ts",
   "src/shared/storage/browser-session-json.ts",
   "src/shared/form-state.ts",
   "src/shared/tests/form-state.test.ts",
@@ -243,5 +245,6 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/account/tests/api-client/api-client-portal.test.ts",
   "src/account/tests/api-client/api-client-settings.test.ts",
   "src/account/tests/api-client/api-client-trips.test.ts",
+  "src/account/tests/api-routes.test.ts",
   "src/account/testing/support/api-client-test-utils.ts",
 ] as const;
