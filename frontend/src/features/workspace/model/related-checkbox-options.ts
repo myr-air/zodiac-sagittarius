@@ -1,3 +1,7 @@
+import {
+  buildSelectOptionsFromItems,
+  type SelectOption,
+} from "@/src/shared/select-options";
 import type { Expense, ItineraryItem, Member, StopNote, TripTask } from "@/src/trip/types";
 
 export interface WorkspaceRelatedOption {
@@ -5,10 +9,7 @@ export interface WorkspaceRelatedOption {
   label: string;
 }
 
-export interface WorkspaceRelatedSelectOption {
-  value: string;
-  label: string;
-}
+export type WorkspaceRelatedSelectOption = SelectOption;
 
 interface WorkspaceRelatedSelectOptionsConfig {
   leadingOption?: WorkspaceRelatedSelectOption;
@@ -28,10 +29,11 @@ function buildWorkspaceRelatedSelectOptions(
   options: WorkspaceRelatedOption[],
   config: WorkspaceRelatedSelectOptionsConfig = {},
 ): WorkspaceRelatedSelectOption[] {
-  const selectOptions = options.map((option) => ({
-    value: option.id,
-    label: option.label,
-  }));
+  const selectOptions = buildSelectOptionsFromItems(
+    options,
+    (option) => option.id,
+    (option) => option.label,
+  );
   return config.leadingOption
     ? [config.leadingOption, ...selectOptions]
     : selectOptions;
