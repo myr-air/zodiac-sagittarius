@@ -1,14 +1,18 @@
 import { expect, fn, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  denseStoryTrip,
+  emptyStoryTrip,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { TripExpensesPageProps } from "../TripExpensesPage";
 
 type TripExpensesPageStoryArgs = TripExpensesPageProps;
 
 export const onStoryUpdateExpense = fn();
-export const denseTrip = buildDenseTripFixture();
-export const emptyTrip = buildEmptyTripFixture();
+export const denseTrip = denseStoryTrip;
+export const emptyTrip = emptyStoryTrip;
 
 export const inferredScopeTrip = {
   ...tripFixture.trip,

@@ -1,13 +1,12 @@
-import { seedTripJoinId } from "@/src/trip/auth";
 import {
-  buildDenseTripFixture,
-  buildEmptyTripFixture,
-  tripFixture,
-} from "@/src/trip/testing/fixtures/trip-fixtures";
+  denseStoryTrip,
+  emptyStoryTrip,
+  seedTripJoinId,
+  storyTripId,
+  travelerMemberId,
+  viewerMemberId,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 
-export const storyTripId = "trip-1";
-export const travelerMemberId = tripFixture.currentMembers.traveler.id;
-export const viewerMemberId = tripFixture.currentMembers.viewer.id;
-export const denseTrip = buildDenseTripFixture();
-export const emptyTrip = buildEmptyTripFixture();
-export { seedTripJoinId };
+export { seedTripJoinId, storyTripId, travelerMemberId, viewerMemberId };
+export const denseTrip = denseStoryTrip;
+export const emptyTrip = emptyStoryTrip;

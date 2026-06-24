@@ -43,6 +43,7 @@ export const frontendTripDomainCatalogSupportScaffoldPathsPresent = [
   "src/trip/tests/settings/trip-settings.test.ts",
   "src/trip/testing/fixtures/trip-fixtures.ts",
   "src/trip/testing/fixtures/trip-record-fixtures.ts",
+  "src/trip/testing/fixtures/trip-story-fixtures.ts",
   "src/trip/testing/fixtures/dense-trip-fixture.ts",
   "src/trip/testing/fixtures/api-cockpit-response.ts",
   "src/trip/testing/fixtures/api-cockpit-record-fixtures.ts",

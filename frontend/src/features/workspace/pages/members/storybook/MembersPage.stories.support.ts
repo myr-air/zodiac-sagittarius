@@ -1,16 +1,13 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { buildDenseTripFixture, tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  denseStoryTrip,
+  singleMemberStoryTrip,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { TripMembersPageProps } from "../TripMembersPage";
 
 type MembersPageStoryArgs = TripMembersPageProps;
-
-const denseMembersTrip = buildDenseTripFixture();
-
-const singleMemberTrip = {
-  ...tripFixture.trip,
-  members: [tripFixture.currentMembers.owner],
-};
 
 export const membersOwnerStoryArgs = {
   trip: tripFixture.trip,
@@ -37,13 +34,13 @@ export const membersViewerStoryArgs = {
 
 export const membersDenseStoryArgs = {
   ...membersOwnerStoryArgs,
-  trip: denseMembersTrip,
-  currentMember: denseMembersTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+  trip: denseStoryTrip,
+  currentMember: denseStoryTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
 } satisfies MembersPageStoryArgs;
 
 export const membersEmptyStoryArgs = {
   ...membersOwnerStoryArgs,
-  trip: singleMemberTrip,
+  trip: singleMemberStoryTrip,
   currentMember: tripFixture.currentMembers.owner,
 } satisfies MembersPageStoryArgs;
 

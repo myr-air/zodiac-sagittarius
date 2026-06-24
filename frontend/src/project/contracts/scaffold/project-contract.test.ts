@@ -118,7 +118,8 @@ describe("Sagittarius project scaffold", () => {
     expect(stories).toContain(
       "@/src/trip/workspace/sagittarius-app/support/storybook-story-builders",
     );
-    expect(storyFixtures).toContain("export const storyTripId");
+    expect(storyFixtures).toContain("@/src/trip/testing/fixtures/trip-story-fixtures");
+    expect(storyFixtures).toContain("storyTripId");
     expect(storyFixtures).toContain("seedTripJoinId");
     expect(storyRouteStories).toContain("@/src/routes/app-routes");
     expect(storyRouteStories).toContain(

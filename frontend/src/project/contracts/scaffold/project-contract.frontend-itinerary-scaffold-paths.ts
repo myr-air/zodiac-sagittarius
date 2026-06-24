@@ -17,6 +17,7 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/stories/StopDialog.stories.plays.ts",
   "src/features/itinerary/stories/StopDialog.stories.items.ts",
   "src/features/itinerary/stories/support/itinerary-story-assertions.ts",
+  "src/features/itinerary/stories/support/itinerary-story-item-builders.ts",
   "src/features/itinerary/stories/support/itinerary-path-story-args.ts",
   "src/features/itinerary/stories/support/itinerary-path-story-args.test.ts",
   "src/features/itinerary/stories/fixtures/itinerary-story-alternative-items.ts",
