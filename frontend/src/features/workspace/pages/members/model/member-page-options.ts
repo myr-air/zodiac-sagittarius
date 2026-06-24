@@ -12,7 +12,6 @@ import {
   withAllFilterValue,
 } from "@/src/shared/select-options";
 
-export const memberInviteRoleValues = tripInvitableRoleValues;
 export type MemberInviteRole = TripInvitableRole;
 
 export const memberRoleFilterValues = withAllFilterValue(tripRoleValues);
@@ -74,7 +73,7 @@ export function memberStatusFilterLabel(
 export function memberInviteRoleSelectOptions(
   labels: MemberFilterLabelSource,
 ): MemberSelectOption<MemberInviteRole>[] {
-  return buildSelectOptions(memberInviteRoleValues, (value) =>
+  return buildSelectOptions(tripInvitableRoleValues, (value) =>
     memberInviteRoleLabel(value, labels),
   );
 }

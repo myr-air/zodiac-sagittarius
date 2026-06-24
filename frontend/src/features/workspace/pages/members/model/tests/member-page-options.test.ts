@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { enMessages } from "@/src/i18n/messages/en";
+import { tripInvitableRoleValues } from "@/src/trip/members";
 import {
   memberInviteRoleLabel,
   memberInviteRoleSelectOptions,
-  memberInviteRoleValues,
   memberRoleFilterLabel,
   memberRoleFilterSelectOptions,
   memberRoleFilterValues,
@@ -14,7 +14,7 @@ import {
 
 describe("member page options", () => {
   it("keeps member role and status filters in shared display order", () => {
-    expect(memberInviteRoleValues).toEqual([
+    expect(tripInvitableRoleValues).toEqual([
       "organizer",
       "traveler",
       "viewer",

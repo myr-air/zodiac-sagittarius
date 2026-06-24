@@ -17,6 +17,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized expense category options: `b3d972c6d`
 - [x] Centralized member select options: `ff524eff5`
 - [x] Removed duplicate booking option aliases: `d730743ed`
+- [x] Reviewed member filter ownership and removed invite role alias
 
 ## Milestone 1: Shared UI Primitives
 
@@ -37,7 +38,7 @@ Goal: Keep canonical trip data rules in `frontend/src/trip/**`, with feature cod
 - [x] Move member select options to `trip/members`.
 - [x] Use booking doc value arrays directly from `trip/booking-docs`.
 - [ ] Review photo album provider/access options for removable aliases.
-- [ ] Review member role/status filter values for domain-vs-page ownership.
+- [x] Review member role/status filter values for domain-vs-page ownership.
 - [ ] Review trip plan, path, and itinerary option builders for duplicated value order.
 
 ## Milestone 3: Workspace Feature Structure
@@ -75,7 +76,7 @@ Goal: Storybook should reflect reusable components and important page states aft
 Use one checklist item per commit unless a test failure proves the item must be split smaller.
 
 - [x] Remove photo provider/access aliases if call sites can import canonical trip photo album values directly.
-- [ ] Extract or centralize member role filter values if they prove useful beyond the members page.
+- [x] Review member role/status filters; keep page-only filters local and use canonical trip invite role values directly.
 - [ ] Audit `TripExpensesPage.styles.ts` for style groups that now belong in shared workspace primitives.
 - [ ] Audit `context-rail.styles.ts` for repeated note/expense/suggestion row styles that can become local style groups or shared primitives.
 - [ ] Audit bookings/docs option labels and itinerary booking labels for possible shared formatting without mixing page copy into trip domain.
