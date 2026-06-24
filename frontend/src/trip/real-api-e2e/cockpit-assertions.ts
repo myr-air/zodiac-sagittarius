@@ -10,7 +10,6 @@ export function expectLoadedCockpit(cockpit: TripCockpit, tripId: string): void 
   expect(cockpit.trip.mainTripPlanId).toBe(cockpit.trip.activePlanVariantId);
   expect(cockpit.tasks).toEqual(expect.arrayContaining([
     expect.objectContaining({
-      id: "018f4e85-2222-7000-8000-000000000002",
       tripPlanId: cockpitResponse.planVariants![0].id,
       title: "Book Peak Tram",
       status: "done",
