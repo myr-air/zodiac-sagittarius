@@ -46,7 +46,7 @@ export function roleLabel(role: Member["role"], locale: string): string {
     if (role === "owner") return "เจ้าของแผน";
     if (role === "organizer") return "ผู้จัดทริป";
     if (role === "traveler") return "ผู้ร่วมเดินทาง";
-    return "ดูได้";
+    return "ผู้ชม";
   }
   if (role === "owner") return "Owner";
   if (role === "organizer") return "Organizer";

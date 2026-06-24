@@ -1,4 +1,5 @@
 import { tripInvitableRoleValues, type TripInvitableRole } from "@/src/trip/members";
+import { roleLabel } from "./people-panel.copy";
 
 export interface PeoplePanelRoleOption {
   value: TripInvitableRole;
@@ -9,14 +10,7 @@ export function peoplePanelManagedRoleLabel(
   role: TripInvitableRole,
   locale: string,
 ): string {
-  if (locale === "th") {
-    if (role === "organizer") return "ผู้จัดทริป";
-    if (role === "traveler") return "ผู้ร่วมเดินทาง";
-    return "ผู้ชม";
-  }
-  if (role === "organizer") return "Organizer";
-  if (role === "traveler") return "Traveler";
-  return "Viewer";
+  return roleLabel(role, locale);
 }
 
 export function peoplePanelManagedRoleOptions(

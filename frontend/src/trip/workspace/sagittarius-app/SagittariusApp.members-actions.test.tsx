@@ -56,9 +56,7 @@ describe("Sagittarius cockpit member actions", () => {
       .getAllByText("New Cousin")[0]
       .closest(".person-row");
     expect(newMemberRow).not.toBeNull();
-    expect(
-      within(newMemberRow as HTMLElement).getByText(/ดูได้/i),
-    ).toBeInTheDocument();
+    expect(newMemberRow).toHaveTextContent(/ผู้ชม/i);
     expect(
       within(newMemberRow as HTMLElement).getByText(/รอเข้าร่วม/i),
     ).toBeInTheDocument();
