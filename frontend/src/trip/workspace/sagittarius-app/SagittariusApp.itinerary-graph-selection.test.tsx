@@ -5,8 +5,6 @@ import { SagittariusApp } from "@/src/app/SagittariusApp";
 import { seedTrip } from "@/src/trip/seed";
 import { buildTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
-  installLocalStorageStub,
-  persistTripDraft,
   render,
   resetSagittariusAppTestEnvironment,
 } from "./sagittarius-app.test-support";
@@ -18,7 +16,6 @@ describe("Sagittarius cockpit itinerary graph selection", () => {
 
   it("keeps the right context drawer closed when selecting an activity from the graph", async () => {
     const user = userEvent.setup();
-    const storage = installLocalStorageStub();
     const mainItem = buildTripFixtureItineraryItem({
       id: "graph-main-app",
       day: seedTrip.startDate,
@@ -34,11 +31,13 @@ describe("Sagittarius cockpit itinerary graph selection", () => {
       pathName: "Plan A",
       pathRole: "alternative" as const,
     };
-    persistTripDraft(storage, {
+    const graphTrip = {
       ...seedTrip,
       itineraryItems: [mainItem, alternativeItem],
-    });
-    const { container } = render(<SagittariusApp initialView="itinerary" />);
+    };
+    const { container } = render(
+      <SagittariusApp initialTrip={graphTrip} initialView="itinerary" />,
+    );
 
     const graphButton = await screen.findByRole("button", {
       name: /Graph app alternative on Plan A/i,
