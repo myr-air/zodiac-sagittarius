@@ -1,8 +1,7 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Icon } from "@/src/ui/icons";
 import { Button, WorkspacePage } from "@/src/ui";
-import { BookingDeleteDialog } from "./components/BookingDeleteDialog";
-import { BookingDialog } from "./components/BookingDialog";
+import { BookingDialogLayer } from "./components/BookingDialogLayer";
 import { BookingFilePanel } from "./components/BookingFilePanel";
 import { BookingFolderRail } from "./components/BookingFolderRail";
 import { BookingsDocsHeader } from "./components/BookingsDocsHeader";
@@ -123,25 +122,17 @@ export function BookingsDocsPage({
         />
       </div>
 
-      {dialogBooking ? (
-        <BookingDialog
-          booking={dialogBooking === "new" ? null : dialogBooking}
-          trip={trip}
-          tasks={tasks}
-          onCancel={() => setDialogBooking(null)}
-          onSubmit={submitBooking}
-          copy={copy}
-        />
-      ) : null}
-
-      {deleteBooking ? (
-        <BookingDeleteDialog
-          bookingTitle={deleteBooking.title}
-          copy={copy}
-          onCancel={() => setDeleteBooking(null)}
-          onConfirm={confirmDelete}
-        />
-      ) : null}
+      <BookingDialogLayer
+        copy={copy}
+        deleteBooking={deleteBooking}
+        dialogBooking={dialogBooking}
+        tasks={tasks}
+        trip={trip}
+        onCancelDelete={() => setDeleteBooking(null)}
+        onCancelDialog={() => setDialogBooking(null)}
+        onConfirmDelete={confirmDelete}
+        onSubmitBooking={submitBooking}
+      />
     </WorkspacePage>
   );
 }
