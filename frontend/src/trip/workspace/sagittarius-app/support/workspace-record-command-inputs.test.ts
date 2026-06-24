@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   buildWorkspaceStopNoteCreateInput,
   buildWorkspaceTaskCreateDraft,
 } from "./workspace-record-command-inputs";
 
 const selectedTripPlanId = seedTrip.activePlanVariantId;
-const linkedItem = seedTrip.itineraryItems[0];
+const linkedItem = getTripFixtureItineraryItem("item-dimdim");
 
 describe("workspace record command inputs", () => {
   it("builds trimmed stop-note create input with the linked item trip plan", () => {

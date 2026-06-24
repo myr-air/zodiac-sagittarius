@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { BookingDocInputLike } from "@/src/trip/booking-docs";
 import { buildWorkspaceBookingDocCreateInput } from "./booking-command-create-inputs";
 
-const linkedItem = seedTrip.itineraryItems[0];
+const linkedItem = getTripFixtureItineraryItem("item-dimdim");
 
 function bookingDocInput(
   input: Partial<BookingDocInputLike>,
