@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { copyFeedbackLabel } from "../copy-feedback-labels";
+import { commonCopyFeedbackLabels, copyFeedbackLabel } from "../copy-feedback-labels";
 
 describe("copyFeedbackLabel", () => {
   const labels = {
@@ -23,5 +23,23 @@ describe("copyFeedbackLabel", () => {
         state: "copied",
       }),
     ).toBe("Read only");
+  });
+
+  it("builds labels from common copied/error status copy", () => {
+    expect(
+      commonCopyFeedbackLabels({
+        readOnly: "Read only",
+        ready: "Ready to invite",
+        status: {
+          copied: "Copied",
+          copyFailed: "Copy failed",
+        },
+      }),
+    ).toEqual({
+      copied: "Copied",
+      error: "Copy failed",
+      readOnly: "Read only",
+      ready: "Ready to invite",
+    });
   });
 });

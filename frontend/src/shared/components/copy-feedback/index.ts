@@ -4,8 +4,10 @@ export {
   workspaceCopyFeedbackLabel,
 } from "./WorkspaceCopyFeedback";
 export {
+  commonCopyFeedbackLabels,
   copyFeedbackLabel,
   type CopyFeedbackLabels,
+  type CommonCopyFeedbackStatusLabels,
 } from "./copy-feedback-labels";
 export {
   workspaceCopyFeedbackCompactBadgeClassName,

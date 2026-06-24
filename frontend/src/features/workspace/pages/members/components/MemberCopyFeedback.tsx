@@ -1,5 +1,6 @@
 import {
   WorkspaceCopyFeedback,
+  commonCopyFeedbackLabels,
   workspaceCopyFeedbackLabel,
   type CopyFeedbackLabels,
 } from "@/src/shared/components/copy-feedback";
@@ -7,12 +8,11 @@ import * as memberStyles from "../TripMembersPage.styles";
 import type { MemberCopyState, MemberLabels } from "./member-management.types";
 
 function memberCopyFeedbackLabels(labels: MemberLabels): CopyFeedbackLabels {
-  return {
-    copied: labels.common.status.copied,
-    error: labels.common.status.copyFailed,
+  return commonCopyFeedbackLabels({
     readOnly: labels.members.copy.readOnly,
     ready: labels.members.copy.ready,
-  };
+    status: labels.common.status,
+  });
 }
 
 export function memberCopyFeedbackLabel({

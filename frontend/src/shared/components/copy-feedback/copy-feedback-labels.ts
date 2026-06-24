@@ -7,6 +7,28 @@ export interface CopyFeedbackLabels {
   ready: string;
 }
 
+export interface CommonCopyFeedbackStatusLabels {
+  copied: string;
+  copyFailed: string;
+}
+
+export function commonCopyFeedbackLabels({
+  readOnly,
+  ready,
+  status,
+}: {
+  readOnly?: string;
+  ready: string;
+  status: CommonCopyFeedbackStatusLabels;
+}): CopyFeedbackLabels {
+  return {
+    copied: status.copied,
+    error: status.copyFailed,
+    readOnly,
+    ready,
+  };
+}
+
 export function copyFeedbackLabel({
   labels,
   readOnly,

@@ -1,5 +1,6 @@
 import {
   WorkspaceCopyFeedback,
+  commonCopyFeedbackLabels,
   workspaceCopyFeedbackLabel,
   type CopyFeedbackLabels,
 } from "@/src/shared/components/copy-feedback";
@@ -7,11 +8,10 @@ import * as expenseStyles from "../TripExpensesPage.styles";
 import type { ExpenseCopyState, ExpensePageLabels } from "../model/expense-page-types";
 
 function expenseCopyFeedbackLabels(t: ExpensePageLabels): CopyFeedbackLabels {
-  return {
-    copied: t.common.status.copied,
-    error: t.common.status.copyFailed,
+  return commonCopyFeedbackLabels({
     ready: t.expenses.copy.ready,
-  };
+    status: t.common.status,
+  });
 }
 
 export function expenseCopyFeedbackLabel({
