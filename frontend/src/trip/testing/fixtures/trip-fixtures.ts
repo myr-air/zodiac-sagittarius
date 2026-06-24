@@ -77,6 +77,19 @@ export const tripFixtureTasks: TripTask[] = [
   { id: "task-expenses", title: "สรุปค่าใช้จ่ายวันแรก", status: "open", visibility: "shared", kind: "prep", createdBy: "member-beam", assigneeId: "member-beam" },
 ];
 
+export function buildTripFixtureTask(
+  overrides: Partial<TripTask> & Pick<TripTask, "id">,
+): TripTask {
+  return {
+    title: "Task",
+    status: "open",
+    visibility: "shared",
+    kind: "prep",
+    createdBy: "member-aom",
+    ...overrides,
+  };
+}
+
 export const tripFixtureStopNotes: StopNote[] = [
   {
     id: "note-dimdim-1",

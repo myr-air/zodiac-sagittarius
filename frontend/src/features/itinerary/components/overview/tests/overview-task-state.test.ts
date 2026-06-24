@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildTripFixtureTask } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { TripTask } from "@/src/trip/types";
 
 import {
@@ -25,16 +26,14 @@ function task({
   title,
   ...task
 }: Partial<TripTask> & Pick<TripTask, "id" | "title">): TripTask {
-  return {
+  return buildTripFixtureTask({
     assigneeId: null,
     createdBy: "member-a",
     id,
-    kind: "prep",
-    status: "open",
     title,
     visibility: "private",
     ...task,
-  };
+  });
 }
 
 const tasks = [
