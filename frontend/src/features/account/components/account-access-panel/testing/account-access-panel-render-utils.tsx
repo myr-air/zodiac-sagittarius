@@ -1,27 +1,18 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { type ReactElement, useState } from "react";
+import { useState } from "react";
 import { expect, vi } from "vitest";
 import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
-import { I18nProvider } from "@/src/i18n/I18nProvider";
-import { renderWithI18n } from "@/src/i18n/test-utils";
 import type { PortalSection } from "@/src/shared/portal";
 import type { TripApiClient } from "@/src/trip/api-client";
 import { seedTrip } from "@/src/trip/seed";
 import type { Trip, TripParticipantSession } from "@/src/trip/types";
 import { AccountAccessPanel } from "../AccountAccessPanel";
 import type { AccountAccessMode } from "../model/account-access-modes";
-import { createAccountClient, createTrustedAccountSession } from "./account-access-panel-test-clients";
-
-export function render(ui: ReactElement) {
-  const result = renderWithI18n(ui, { locale: "en" });
-  const originalRerender = result.rerender;
-
-  return {
-    ...result,
-    rerender: (nextUi: ReactElement) => originalRerender(<I18nProvider>{nextUi}</I18nProvider>),
-  };
-}
+import { render } from "./account-access-panel-render-base";
+import { createAccountClient } from "./account-access-panel-test-clients";
+export { render } from "./account-access-panel-render-base";
+export { renderTripBuilder } from "./account-access-panel-trip-builder-render";
 
 export function authForm() {
   const form = screen.getByLabelText(/Email/i).closest("form");
@@ -117,42 +108,6 @@ export function renderAccountAccessPanel({
       onAccountSessionChange={onAccountSessionChange}
       onAuthenticated={onAuthenticated}
       onCockpitLoaded={onCockpitLoaded}
-      onTripChange={onTripChange}
-    />,
-  );
-
-  return {
-    ...result,
-    accountClient,
-    onAccountSessionChange,
-    onAuthenticated,
-    onTripChange,
-  };
-}
-
-export function renderTripBuilder({
-  accountClient = createAccountClient(),
-  apiClient,
-  onAccountSessionChange = vi.fn(),
-  onAuthenticated = vi.fn(),
-  onTripChange = vi.fn(),
-}: {
-  accountClient?: AccountApiClient;
-  apiClient?: TripApiClient;
-  onAccountSessionChange?: (session: AccountSession | null) => void;
-  onAuthenticated?: (session: TripParticipantSession) => void;
-  onTripChange?: (trip: Trip) => void;
-} = {}) {
-  const result = render(
-    <AccountAccessPanel
-      accessMode="account-portal"
-      accountClient={accountClient}
-      apiClient={apiClient}
-      accountSession={createTrustedAccountSession()}
-      portalSection="new-trip"
-      trip={seedTrip}
-      onAccountSessionChange={onAccountSessionChange}
-      onAuthenticated={onAuthenticated}
       onTripChange={onTripChange}
     />,
   );
