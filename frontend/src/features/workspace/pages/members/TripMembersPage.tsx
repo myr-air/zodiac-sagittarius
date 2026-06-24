@@ -1,10 +1,10 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { PeoplePanel } from "@/src/shared/components/people-panel";
 import { WorkspacePage } from "@/src/ui";
+import { MemberDialogLayer } from "./components/MemberDialogLayer";
 import { MemberManagementControls } from "./components/MemberManagementControls";
 import { MemberPageHeader } from "./components/MemberPageHeader";
 import { MemberSummaryStats } from "./components/MemberSummaryStats";
-import { MemberTaskDialog } from "./components/MemberTaskDialog";
 import * as memberStyles from "./TripMembersPage.styles";
 import type { TripMembersPageProps } from "./TripMembersPage.types";
 import { useTripMembersPageState } from "./hooks/use-trip-members-page-state";
@@ -133,17 +133,15 @@ export function TripMembersPage({
           onTransferOwnership ? confirmTransferOwnership : undefined
         }
       />
-      {memberDialog ? (
-        <MemberTaskDialog
-          dialog={memberDialog}
-          labels={t.members.confirm}
-          passwordError={passwordError}
-          passwordValue={passwordValue}
-          onCancel={closeMemberDialog}
-          onPasswordChange={setPasswordValue}
-          onSubmit={submitMemberDialog}
-        />
-      ) : null}
+      <MemberDialogLayer
+        dialog={memberDialog}
+        labels={t.members.confirm}
+        passwordError={passwordError}
+        passwordValue={passwordValue}
+        onCancel={closeMemberDialog}
+        onPasswordChange={setPasswordValue}
+        onSubmit={submitMemberDialog}
+      />
     </WorkspacePage>
   );
 }
