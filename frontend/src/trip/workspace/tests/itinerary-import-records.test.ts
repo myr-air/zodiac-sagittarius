@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { Expense, ItineraryItem, StopNote, TripTask } from "@/src/trip/types";
+import type { Expense, ItineraryItem } from "@/src/trip/types";
+import {
+  buildImportedStopNote,
+  buildImportedTask,
+} from "../testing/fixtures/itinerary-import-api-fixtures";
 import {
   buildImportedPlanRecordsForTripPlan,
 } from "../itinerary-import-record-mapping";
@@ -51,7 +55,7 @@ describe("itinerary import linked records", () => {
       tripId: "source-trip",
       tripPlanId: "source-plan",
     };
-    const importedNote: StopNote = {
+    const importedNote = buildImportedStopNote({
       body: "Use exit C",
       authorId: "member-aom",
       createdAt: "2026-06-16T00:00:00.000Z",
@@ -59,8 +63,8 @@ describe("itinerary import linked records", () => {
       itemId: importedItem.id,
       tripId: "source-trip",
       tripPlanId: "source-plan",
-    };
-    const importedTask: TripTask = {
+    });
+    const importedTask = buildImportedTask({
       assigneeId: "member-aom",
       id: "task-import",
       createdBy: "member-aom",
@@ -70,7 +74,7 @@ describe("itinerary import linked records", () => {
       title: "Buy tickets",
       tripPlanId: "source-plan",
       visibility: "shared",
-    };
+    });
 
     const records = buildImportedPlanRecordsForTripPlan({
       appliedImportedItems: [appliedItem],
@@ -110,7 +114,7 @@ describe("itinerary import linked records", () => {
   });
 
   it("merges imported tasks and stop notes by replacing existing ids and appending new records", () => {
-    const existingTask: TripTask = {
+    const existingTask = buildImportedTask({
       assigneeId: "member-aom",
       createdBy: "member-aom",
       id: "task-existing",
@@ -120,18 +124,19 @@ describe("itinerary import linked records", () => {
       title: "Existing task",
       tripPlanId: "plan-main",
       visibility: "shared",
-    };
-    const importedTask: TripTask = {
-      ...existingTask,
+    });
+    const importedTask = buildImportedTask({
+      id: existingTask.id,
+      relatedItemId: existingTask.relatedItemId,
       status: "done",
       title: "Updated task",
-    };
-    const newTask: TripTask = {
-      ...existingTask,
+      tripPlanId: existingTask.tripPlanId,
+    });
+    const newTask = buildImportedTask({
       id: "task-new",
       title: "New task",
-    };
-    const existingNote: StopNote = {
+    });
+    const existingNote = buildImportedStopNote({
       authorId: "member-aom",
       body: "Existing note",
       createdAt: "2026-06-16T00:00:00.000Z",
@@ -139,16 +144,15 @@ describe("itinerary import linked records", () => {
       itemId: "item-existing",
       tripId: tripFixture.trip.id,
       tripPlanId: "plan-main",
-    };
-    const importedNote: StopNote = {
+    });
+    const importedNote = {
       ...existingNote,
       body: "Updated note",
     };
-    const newNote: StopNote = {
-      ...existingNote,
+    const newNote = buildImportedStopNote({
       id: "note-new",
       body: "New note",
-    };
+    });
 
     expect(
       mergeImportedTasks([existingTask], {

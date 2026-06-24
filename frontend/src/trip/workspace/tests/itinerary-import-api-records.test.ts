@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type { BookingDoc, Expense, StopNote, TripTask } from "@/src/trip/types";
+import type { BookingDoc, Expense } from "@/src/trip/types";
 import { createImportedPlanRecordsViaApi } from "../itinerary-import-api-records";
 import {
+  buildImportedStopNote,
+  buildImportedTask,
   importedBookingDoc,
   importedExpense,
   importedStopNote,
@@ -12,13 +14,12 @@ import type { ImportedPlanRecords } from "../itinerary-import-record-mapping";
 
 describe("itinerary import API record creation", () => {
   it("creates imported records and remaps linked booking relations", async () => {
-    const createdTask: TripTask = {
-      ...importedTask,
+    const createdTask = buildImportedTask({
       id: "task-created",
       status: "open",
       version: 1,
-    };
-    const patchedTask: TripTask = {
+    });
+    const patchedTask = {
       ...createdTask,
       status: "done",
       version: 2,
@@ -27,7 +28,7 @@ describe("itinerary import API record creation", () => {
       ...importedExpense,
       id: "expense-created",
     };
-    const createdNote: StopNote = { ...importedStopNote, id: "note-created" };
+    const createdNote = buildImportedStopNote({ id: "note-created" });
     const createdBookingDoc: BookingDoc = {
       ...importedBookingDoc,
       id: "booking-created",

@@ -19,6 +19,15 @@ export const importedTask: TripTask = {
   visibility: "shared",
 };
 
+export function buildImportedTask(
+  overrides: Partial<TripTask> & Pick<TripTask, "id">,
+): TripTask {
+  return {
+    ...importedTask,
+    ...overrides,
+  };
+}
+
 export const importedExpense: Expense = {
   amount: 12,
   category: "tickets",
@@ -40,6 +49,15 @@ export const importedStopNote: StopNote = {
   tripId: "trip-demo",
   tripPlanId: "plan-rain",
 };
+
+export function buildImportedStopNote(
+  overrides: Partial<StopNote> & Pick<StopNote, "id">,
+): StopNote {
+  return {
+    ...importedStopNote,
+    ...overrides,
+  };
+}
 
 export const importedBookingDoc: BookingDoc = {
   confirmationCode: "ABC123",
