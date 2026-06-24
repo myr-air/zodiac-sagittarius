@@ -21,8 +21,8 @@ import {
 
 describe("TripExpensesPage styles", () => {
   it("keeps expense overview rows on one local row shell", () => {
-    expect(expenseOverviewRowClassName).toContain("rounded-(--radius-md)");
-    expect(expenseOverviewRowClassName).toContain("px-2.5");
+    expect(expenseOverviewRowClassName).toContain("border-b");
+    expect(expenseOverviewRowClassName).toContain("px-0");
     expect(balanceRowClassName).toContain(expenseOverviewRowClassName);
     expect(settlementRowClassName).toContain(expenseOverviewWarningRowClassName);
     expect(scopeAuditRowClassName).toContain(expenseOverviewWarningRowClassName);
@@ -43,8 +43,8 @@ describe("TripExpensesPage styles", () => {
   });
 
   it("keeps ledger detail layouts responsive without nested card chrome", () => {
-    expect(ledgerWorkspaceClassName).toContain("grid-cols-[minmax(0,1fr)_340px]");
-    expect(ledgerWorkspaceClassName).toContain("max-[1023px]:grid-cols-1");
+    expect(ledgerWorkspaceClassName).toContain("grid-cols-[minmax(0,1fr)_300px]");
+    expect(ledgerWorkspaceClassName).toContain("max-[1279px]:grid-cols-1");
     expect(transactionDetailClassName).toContain("expense-transaction-detail");
     expect(transactionDetailClassName).toContain("max-[767px]:fixed");
     expect(transactionDetailClassName).not.toContain("backdrop-blur");

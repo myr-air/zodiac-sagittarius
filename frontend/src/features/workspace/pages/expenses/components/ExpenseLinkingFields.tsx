@@ -100,10 +100,7 @@ export function ExpenseLinkingFields({
                   selected && expenseStyles.dialogCategoryButtonActiveClassName,
                 )}
                 style={{
-                  backgroundColor: selected ? tone.background : undefined,
                   borderColor: selected ? tone.border : undefined,
-                  color: selected ? tone.text : undefined,
-                  boxShadow: selected ? `inset 0 0 0 1px ${tone.border}` : undefined,
                 }}
                 onClick={() => onCategoryChange(option.value)}
               >

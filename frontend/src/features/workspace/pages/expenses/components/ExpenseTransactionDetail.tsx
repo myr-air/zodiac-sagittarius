@@ -2,6 +2,7 @@ import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
+import { type KeyboardEvent, useEffect, useRef } from "react";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   expenseLedgerPayerDisplay,
@@ -65,15 +66,53 @@ export function ExpenseTransactionDetail({
   tableCopy,
   trip,
 }: ExpenseTransactionDetailProps) {
+  const detailRef = useRef<HTMLElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isMobile || !expense) return;
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    detailRef.current?.focus();
+    return () => restoreFocusRef.current?.focus();
+  }, [expense, isMobile]);
+
+  const onDetailKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (!isMobile) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab" || !detailRef.current) return;
+    const focusable = Array.from(
+      detailRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    );
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (document.activeElement === detailRef.current) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   if (!expense) {
     if (isMobile) return null;
     return (
-      <aside className={expenseStyles.transactionDetailClassName} aria-label={tableCopy.details.sourceAndMath}>
+      <section className={expenseStyles.transactionDetailClassName} aria-label={tableCopy.details.sourceAndMath}>
         <div className={expenseStyles.transactionDetailEmptyClassName}>
           <Icon name="wallet" />
           <p>{tableCopy.details.empty}</p>
         </div>
-      </aside>
+      </section>
     );
   }
 
@@ -96,7 +135,15 @@ export function ExpenseTransactionDetail({
           onClick={onClose}
         />
       ) : null}
-      <aside className={expenseStyles.transactionDetailClassName} aria-label={expense.title}>
+      <section
+        ref={detailRef}
+        className={expenseStyles.transactionDetailClassName}
+        aria-label={expense.title}
+        aria-modal={isMobile ? true : undefined}
+        role={isMobile ? "dialog" : "region"}
+        tabIndex={isMobile ? -1 : undefined}
+        onKeyDown={onDetailKeyDown}
+      >
       <div className={expenseStyles.transactionDetailHeaderClassName}>
         <div className="grid min-w-0 gap-2">
           <span className={expenseStyles.ledgerStopPillClassName}>
@@ -105,9 +152,11 @@ export function ExpenseTransactionDetail({
           <h2>{expense.title}</h2>
           <ExpenseCategoryBadge category={expense.category} />
         </div>
-        <IconButton type="button" aria-label={tableCopy.details.close} onClick={onClose}>
-          <Icon name="x" />
-        </IconButton>
+        {isMobile ? (
+          <IconButton type="button" aria-label={tableCopy.details.close} onClick={onClose}>
+            <Icon name="x" />
+          </IconButton>
+        ) : null}
       </div>
 
       <div className={expenseStyles.transactionDetailAmountClassName}>
@@ -116,41 +165,6 @@ export function ExpenseTransactionDetail({
           <span>{tableCopy.details.originalAmount}: {display.amountLabel}</span>
         ) : null}
       </div>
-
-      <dl className={expenseStyles.transactionDetailListClassName}>
-        <div>
-          <dt>{tableCopy.details.paidBy}</dt>
-          <dd>{payer ? <ExpenseMemberLine color={payer.color} name={payer.name} /> : expense.paidBy}</dd>
-        </div>
-        <div>
-          <dt>{tableCopy.details.split}</dt>
-          <dd>{display.splitTotalLabel}</dd>
-        </div>
-        {display.sourceLabel ? (
-          <div>
-            <dt>{tableCopy.details.source}</dt>
-            <dd>{display.sourceLabel}</dd>
-          </div>
-        ) : null}
-        {display.calculationLabel ? (
-          <div>
-            <dt>{tableCopy.details.calculation}</dt>
-            <dd>{display.calculationLabel}</dd>
-          </div>
-        ) : null}
-        {memberBreakdown.length ? (
-          <div>
-            <dt>{tableCopy.details.memberMath}</dt>
-            <dd>
-              <ul className={expenseStyles.ledgerMemberListClassName}>
-                {memberBreakdown.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </dd>
-          </div>
-        ) : null}
-      </dl>
 
       <div className={expenseStyles.transactionDetailActionsClassName}>
         <Button type="button" disabled={!canEditExpenses} onClick={() => onEditExpense(expense)}>
@@ -176,7 +190,45 @@ export function ExpenseTransactionDetail({
           <Icon name="trash" /> {tableCopy.actions.cancelExpense({ title: expense.title })}
         </Button>
       </div>
-      </aside>
+
+      <dl className={expenseStyles.transactionDetailListClassName}>
+        <div>
+          <dt>{tableCopy.details.paidBy}</dt>
+          <dd>{payer ? <ExpenseMemberLine color={payer.color} name={payer.name} /> : expense.paidBy}</dd>
+        </div>
+        <div>
+          <dt>{tableCopy.details.split}</dt>
+          <dd>{display.splitTotalLabel}</dd>
+        </div>
+        {display.sourceLabel || display.calculationLabel ? (
+          <div>
+            <dt>{tableCopy.details.sourceAndMath}</dt>
+            <dd>
+              <details className={expenseStyles.transactionDetailDisclosureClassName}>
+                <summary>{tableCopy.details.sourceAndMath}</summary>
+                {display.sourceLabel ? <p>{display.sourceLabel}</p> : null}
+                {display.calculationLabel ? <p>{display.calculationLabel}</p> : null}
+              </details>
+            </dd>
+          </div>
+        ) : null}
+        {memberBreakdown.length ? (
+          <div>
+            <dt>{tableCopy.details.memberMath}</dt>
+            <dd>
+              <details className={expenseStyles.transactionDetailDisclosureClassName}>
+                <summary>{tableCopy.details.memberMath}</summary>
+                <ul className={expenseStyles.ledgerMemberListClassName}>
+                  {memberBreakdown.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </details>
+            </dd>
+          </div>
+        ) : null}
+      </dl>
+      </section>
     </>
   );
 }

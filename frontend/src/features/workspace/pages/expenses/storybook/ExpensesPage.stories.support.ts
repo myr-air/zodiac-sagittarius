@@ -90,10 +90,10 @@ export const planScopeAuditExpensesStoryArgs = {
 export async function expectExpensesResponsiveContract(canvasElement: HTMLElement) {
   const canvas = within(canvasElement);
   await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
-  await expect(canvas.getByRole("navigation", { name: /Trip money sections|ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
+  await expect(canvas.getByRole("tablist", { name: /Trip money sections|ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
   await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
   await expect(canvasElement.querySelector(".expense-finance-tabs")).not.toBeNull();
-  const spendingTab = canvas.queryByRole("button", { name: /Spending|รายการใช้จ่าย/i });
+  const spendingTab = canvas.queryByRole("tab", { name: /Spending|รายการใช้จ่าย/i });
   if (spendingTab) {
     await userEvent.click(spendingTab);
   }
@@ -105,6 +105,16 @@ export async function expectExpensesResponsiveContract(canvasElement: HTMLElemen
     await expect(mobileLedger).not.toBeNull();
     if (mobileLedger) {
       await expect(mobileLedger).toBeVisible();
+      const firstMobileExpense = mobileLedger.querySelector("button");
+      if (firstMobileExpense) {
+        await userEvent.click(firstMobileExpense);
+        await expect(canvasElement.querySelector(".expense-transaction-detail")).toBeVisible();
+        const detail = canvas.getByRole("dialog");
+        await expect(within(detail).getByRole("button", { name: /Edit|แก้ไข/i })).toBeVisible();
+        await userEvent.click(within(detail).getByRole("button", { name: /Close expense details|ปิดรายละเอียด/i }));
+        await expect(canvasElement.querySelector(".expense-transaction-detail")).toBeNull();
+      }
     }
   }
+  await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
 }

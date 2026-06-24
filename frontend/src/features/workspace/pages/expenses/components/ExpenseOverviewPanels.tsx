@@ -112,7 +112,7 @@ export function ExpenseOverviewPanels({
     }));
 
   return (
-    <aside className={expenseStyles.overviewRailClassName} aria-label={t.expenses.summaryLabel}>
+    <section className={expenseStyles.overviewRailClassName}>
       {showOverviewActions ? (
         <section className={expenseStyles.panelClassName} aria-label={t.expenses.overview.nextActionTitle}>
           <WorkspacePanelHeading
@@ -305,6 +305,6 @@ export function ExpenseOverviewPanels({
         trip={trip}
       />
       ) : null}
-    </aside>
+    </section>
   );
 }

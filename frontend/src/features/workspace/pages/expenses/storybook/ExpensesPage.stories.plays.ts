@@ -49,7 +49,7 @@ export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
   await expect(canvas.getByRole("heading", { name: "Dim Dim Sum brunch" })).toBeVisible();
   await expect(canvas.getByText("Octopus top-up")).toBeVisible();
-  await expect(document.querySelector(".expense-transaction-detail")).toHaveAttribute("aria-label", "Dim Dim Sum brunch");
+  await expect(canvas.getByRole("region", { name: "Dim Dim Sum brunch" })).toHaveClass("expense-transaction-detail");
 };
 
 export const planScopeAuditPlay: ExpensesPagePlay = async ({ canvas }) => {

@@ -16,7 +16,7 @@ describe("TripExpensesPage overview and filters", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid", "bg-transparent");
+    expect(screen.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page", "grid", "bg-[#f8fafc]");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i })).toHaveTextContent("HK$");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")).toHaveClass(
       "rounded-(--radius-md)",
@@ -44,7 +44,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(ledger).toBeInTheDocument();
     const detailButtons = within(ledger).getAllByRole("button", { name: /ดูรายละเอียดบิล/i });
     await user.click(detailButtons[0]);
-    expect(screen.getByRole("complementary", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
+    expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
     expect(screen.getByLabelText("Trip Plan")).toHaveValue("plan-main");

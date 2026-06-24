@@ -8,7 +8,7 @@ import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { TripExpensesPageProps } from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./hooks/use-trip-expenses-page-state";
-import { useState } from "react";
+import { type KeyboardEvent, useState } from "react";
 
 export type {
   CreateExpenseHandler,
@@ -89,6 +89,28 @@ export function TripExpensesPage({
     selectedTripPlanId ?? planSourceTrip.mainTripPlanId ?? planSourceTrip.activePlanVariantId ?? "";
   const financeViews: ExpenseFinanceView[] = ["overview", "spending", "balances", "categories", "settings"];
   const activePanelId = `trip-money-panel-${activeView}`;
+  const focusFinanceTab = (view: ExpenseFinanceView) => {
+    window.requestAnimationFrame(() => {
+      document.getElementById(`trip-money-tab-${view}`)?.focus();
+    });
+  };
+  const onFinanceTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, view: ExpenseFinanceView) => {
+    const currentIndex = financeViews.indexOf(view);
+    const nextView =
+      event.key === "ArrowRight"
+        ? financeViews[(currentIndex + 1) % financeViews.length]
+        : event.key === "ArrowLeft"
+          ? financeViews[(currentIndex - 1 + financeViews.length) % financeViews.length]
+          : event.key === "Home"
+            ? financeViews[0]
+            : event.key === "End"
+              ? financeViews[financeViews.length - 1]
+              : null;
+    if (!nextView) return;
+    event.preventDefault();
+    setActiveView(nextView);
+    focusFinanceTab(nextView);
+  };
 
   return (
     <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
@@ -113,7 +135,9 @@ export function TripExpensesPage({
             key={view}
             id={`trip-money-tab-${view}`}
             role="tab"
+            tabIndex={activeView === view ? 0 : -1}
             onClick={() => setActiveView(view)}
+            onKeyDown={(event) => onFinanceTabKeyDown(event, view)}
           >
             {t.expenses.tabs[view]}
           </button>

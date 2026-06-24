@@ -143,12 +143,12 @@ export function ExpenseLedgerSection({
           <div className={expenseStyles.tableWrapClassName}>
             <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
               <colgroup>
-                <col className="w-[240px]" />
-                <col className="w-[140px]" />
-                <col className="w-[190px]" />
-                <col className="w-[120px]" />
-                <col className="w-[170px]" />
+                <col className="w-[220px]" />
+                <col className="w-[128px]" />
+                <col className="w-[156px]" />
                 <col className="w-[104px]" />
+                <col className="w-[132px]" />
+                <col className="w-[84px]" />
               </colgroup>
               <thead className={expenseStyles.tableHeaderClassName}>
                 <tr>
@@ -178,23 +178,23 @@ export function ExpenseLedgerSection({
         )}
 
         {selectedExpense || !isMobileLedger ? (
-        <ExpenseTransactionDetail
-          canEditExpenses={canEditExpenses}
-          displayCurrency={displayCurrency}
-          displayExchangeRate={displayExchangeRateNumber}
-          expense={selectedExpense}
-          isMobile={isMobileLedger}
-          members={members}
-          onClose={() => setSelectedExpenseId(null)}
-          onDeleteExpense={onDeleteExpense}
-          onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
-          onEditExpense={onEditExpense}
-          onRecordRefund={onRecordRefund}
-          pendingRefundExpenseIds={pendingRefundExpenseIds}
-          settlementCurrency={settlementCurrency}
-          tableCopy={tableCopy}
-          trip={trip}
-        />
+          <ExpenseTransactionDetail
+            canEditExpenses={canEditExpenses}
+            displayCurrency={displayCurrency}
+            displayExchangeRate={displayExchangeRateNumber}
+            expense={selectedExpense}
+            isMobile={isMobileLedger}
+            members={members}
+            onClose={() => setSelectedExpenseId(null)}
+            onDeleteExpense={onDeleteExpense}
+            onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
+            onEditExpense={onEditExpense}
+            onRecordRefund={onRecordRefund}
+            pendingRefundExpenseIds={pendingRefundExpenseIds}
+            settlementCurrency={settlementCurrency}
+            tableCopy={tableCopy}
+            trip={trip}
+          />
         ) : null}
       </div>
     </section>

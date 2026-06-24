@@ -81,6 +81,7 @@ export function ExpenseMobileLedgerList({
             return (
               <button
                 type="button"
+                aria-pressed={selected}
                 className={selected ? `${expenseStyles.mobileLedgerCardClassName} ${expenseStyles.mobileLedgerCardSelectedClassName}` : expenseStyles.mobileLedgerCardClassName}
                 key={expense.id}
                 onClick={() => onSelectExpense(expense)}

@@ -85,7 +85,7 @@ export function ExpenseLedgerRows({
           );
           const selected = selectedExpenseId === expense.id;
           return [
-            <tr className={selected ? expenseStyles.ledgerSelectedRowClassName : undefined} key={expense.id} onClick={() => onSelectExpense(expense)}>
+            <tr className={selected ? expenseStyles.ledgerSelectedRowClassName : undefined} key={expense.id}>
               <td className={expenseStyles.tableTitleClassName}>
                 <div className={expenseStyles.ledgerTitleLineClassName}>
                   <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
