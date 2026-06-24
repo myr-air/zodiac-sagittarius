@@ -5,6 +5,10 @@ import { frontendRoot } from "../../project/contracts/project-contract.helpers";
 
 const extractedSharedComponentStories = [
   {
+    path: "src/shared/components/checkbox-group/storybook/CheckboxGroup.stories.tsx",
+    exports: ["Travelers", "RelatedItinerary"],
+  },
+  {
     path: "src/shared/components/copy-feedback/storybook/CopyFeedback.stories.tsx",
     exports: ["SubtleBadge", "CompactCopied", "PillError", "WorkspacePill"],
   },

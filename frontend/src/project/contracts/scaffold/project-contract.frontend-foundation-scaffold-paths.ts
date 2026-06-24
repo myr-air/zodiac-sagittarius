@@ -170,6 +170,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/components/person-avatar/storybook/PersonAvatar.stories.tsx",
   "src/shared/components/checkbox-group/index.ts",
   "src/shared/components/checkbox-group/CheckboxGroup.tsx",
+  "src/shared/components/checkbox-group/storybook/CheckboxGroup.stories.tsx",
   "src/shared/components/checkbox-group/tests/CheckboxGroup.test.tsx",
   "src/shared/components/inline-option-picker/index.ts",
   "src/shared/components/inline-option-picker/InlineOptionPicker.tsx",

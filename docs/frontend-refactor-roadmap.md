@@ -27,6 +27,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Removed obsolete expense category/split option aliases
 - [x] Centralized trip plan status select helpers
 - [x] Removed obsolete itinerary display/detail aliases
+- [x] Added shared CheckboxGroup Storybook coverage
 
 ## Milestone 1: Shared UI Primitives
 
@@ -77,7 +78,7 @@ Goal: Storybook should reflect reusable components and important page states aft
 
 - [x] Added Storybook coverage for `WorkspacePanelHeading`.
 - [x] Audit shared component stories for newly extracted or renamed components.
-- [ ] Add stories for reusable workspace controls that currently only appear inside page stories.
+- [x] Add stories for reusable workspace controls that currently only appear inside page stories.
 - [x] Run `rtk bun run test:storybook` after story or shared UI changes.
 
 ## Atomic Refactor Queue
@@ -94,6 +95,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Remove obsolete expense category/split aliases after domain expense helpers exist.
 - [x] Move Trip Plan status option order and labels to the trip domain display helpers.
 - [x] Remove pass-through itinerary aliases for booking docs, stop detail options, and travel subtypes.
+- [x] Add Storybook coverage for the shared `CheckboxGroup` workspace control.
 
 ## Draft Acceptance Criteria
 
