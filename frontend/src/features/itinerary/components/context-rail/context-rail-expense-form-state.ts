@@ -1,4 +1,3 @@
-import { expenseCategoryValues } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
 
 export interface ContextRailExpenseFormValues {
@@ -20,8 +19,6 @@ export interface ContextRailExpenseSubmission {
   paidBy: string;
   title: string;
 }
-
-export const contextRailExpenseCategoryOptions = expenseCategoryValues;
 
 export function initialContextRailExpenseFormState(
   defaultPaidBy: string,

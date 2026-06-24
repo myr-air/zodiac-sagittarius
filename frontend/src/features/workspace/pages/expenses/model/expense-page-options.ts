@@ -1,6 +1,8 @@
 import {
+  expenseCategorySelectOptions,
   expenseCategoryValues,
   expenseSplitModeValues,
+  type ExpenseCategorySelectOption,
   type ExpenseSplitMode,
 } from "@/src/trip/expenses";
 import {
@@ -39,9 +41,7 @@ export function categoryTone(category: Expense["category"]): CategoryTone {
   return categoryTones[category];
 }
 
-export function expenseCategorySelectOptions(): ExpenseSelectOption<Expense["category"]>[] {
-  return buildSelectOptions(expenseCategories, (value) => value);
-}
+export { expenseCategorySelectOptions, type ExpenseCategorySelectOption };
 
 export function expenseCategoryFilterSelectOptions(
   allCategoriesLabel: string,

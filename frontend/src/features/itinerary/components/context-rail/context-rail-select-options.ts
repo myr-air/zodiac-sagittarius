@@ -5,8 +5,8 @@ import {
   buildSelectOptionsFromItems,
   type SelectOption,
 } from "@/src/shared/select-options";
+import { expenseCategorySelectOptions } from "@/src/trip/expenses";
 import type { BookingDocType, Expense, Member } from "@/src/trip/types";
-import { contextRailExpenseCategoryOptions } from "./context-rail-expense-form-state";
 
 export type ContextRailSelectOption<Value extends string = string> = SelectOption<Value>;
 
@@ -23,7 +23,7 @@ export function contextRailMemberSelectOptions(
 export function contextRailExpenseCategorySelectOptions(): ContextRailSelectOption<
   Expense["category"]
 >[] {
-  return buildSelectOptions(contextRailExpenseCategoryOptions, (category) => category);
+  return expenseCategorySelectOptions();
 }
 
 export function contextRailBookingDocTypeSelectOptions(): ContextRailSelectOption<

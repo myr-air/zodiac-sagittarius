@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { expenseCategoryValues } from "@/src/trip/expenses";
 import type { Expense } from "@/src/trip/types";
 import {
   buildContextRailExpenseSubmission,
-  contextRailExpenseCategoryOptions,
   initialContextRailExpenseFormState,
   resetContextRailExpenseFormAfterSubmit,
   startContextRailExpenseEdit,
@@ -66,8 +66,8 @@ describe("context rail expense form state", () => {
     });
   });
 
-  it("exports the canonical category order used by context rail expense forms", () => {
-    expect(contextRailExpenseCategoryOptions).toEqual([
+  it("uses the canonical trip expense category order", () => {
+    expect(expenseCategoryValues).toEqual([
       "food",
       "transport",
       "tickets",

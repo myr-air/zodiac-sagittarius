@@ -43,6 +43,7 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     const contextRailExpenseForm = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form.ts");
     const contextRailExpenseFormActions = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/use-context-rail-expense-form-actions.ts");
     const contextRailExpenseFormState = readItineraryArchitectureSource("src/features/itinerary/components/context-rail/context-rail-expense-form-state.ts");
+    const expenseOptions = readItineraryArchitectureSource("src/trip/expenses/expense-options.ts");
 
     expect(expensesPage).toContain("./hooks/use-trip-expenses-page-state");
     expect(expensesPage).toContain("./components/ExpensePageHeader");
@@ -240,7 +241,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(contextRailExpenseFormState).toContain("export interface ContextRailExpenseFormState");
     expect(contextRailExpenseFormState).toContain("export interface ContextRailExpenseSubmission");
     expect(contextRailExpenseFormState).toContain("export function buildContextRailExpenseSubmission");
-    expect(contextRailExpenseFormState).toContain("contextRailExpenseCategoryOptions");
+    expect(contextRailExpenseFormState).not.toContain("contextRailExpenseCategoryOptions");
+    expect(expenseOptions).toContain("export function expenseCategorySelectOptions");
     expect(contextRailExpenseFormState).toContain("startContextRailExpenseEdit");
   });
 });

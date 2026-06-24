@@ -32,7 +32,9 @@ describe("expense page options", () => {
   });
 
   it("builds category select options from the shared category values", () => {
-    expect(expenseCategorySelectOptions()).toEqual(expenseCategories.map((value) => ({ value, label: value })));
+    expect(expenseCategorySelectOptions()).toEqual(
+      expenseCategories.map((value) => ({ value, label: value })),
+    );
     expect(expenseCategoryFilterSelectOptions("All categories")[0]).toEqual({
       value: "all",
       label: "All categories",

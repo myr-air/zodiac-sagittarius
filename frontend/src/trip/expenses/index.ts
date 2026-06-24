@@ -1,5 +1,9 @@
 export * from "./expense-types";
 export {
+  expenseCategorySelectOptions,
+  type ExpenseCategorySelectOption,
+} from "./expense-options";
+export {
   expenseAmountInSettlementCurrency,
   formatMoney,
 } from "./expense-money";
