@@ -14,6 +14,7 @@ export function formatReminderDate(value: string, locale: DisplayDateTimeLocale)
       hour: "2-digit",
       minute: "2-digit",
       month: "short",
+      timeZone: "Asia/Bangkok",
       year: "numeric",
     },
     value,
