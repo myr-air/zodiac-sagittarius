@@ -23,6 +23,20 @@ export function displayTextOrFallback(
   return value || fallback;
 }
 
+export function firstDisplayTextOrFallback(
+  values: readonly (string | null | undefined | false)[],
+  fallback: string,
+): string {
+  return visibleTextParts(values)[0] ?? fallback;
+}
+
+export function firstNullableTextOrFallback(
+  values: readonly (string | null | undefined)[],
+  fallback: string,
+): string {
+  return values.find((value): value is string => value != null) ?? fallback;
+}
+
 export function displayNullableTextOrFallback(
   value: string | null | undefined,
   fallback: string,

@@ -2,6 +2,7 @@ import {
   displayNameOrFallback,
   displayNullableTextOrFallback,
   displayTextOrFallback,
+  firstDisplayTextOrFallback,
 } from "@/src/shared/text-parts";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
@@ -14,7 +15,10 @@ export function photoAlbumSummaryDisplay(
   album: Pick<TripPhotoAlbumLink, "accessNote" | "description">,
   copy: Pick<PhotoCopy, "defaultAccessNote">,
 ): string {
-  return album.accessNote || album.description || copy.defaultAccessNote;
+  return firstDisplayTextOrFallback(
+    [album.accessNote, album.description],
+    copy.defaultAccessNote,
+  );
 }
 
 export function photoAlbumAccessNoteDisplay(

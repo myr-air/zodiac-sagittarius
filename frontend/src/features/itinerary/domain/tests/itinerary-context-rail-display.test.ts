@@ -64,6 +64,18 @@ describe("itinerary context rail display helpers", () => {
       suggestionLabel(
         {
           ...suggestion,
+          proposedPatch: {
+            activity: "",
+            transportation: "Flight",
+          },
+        },
+        "Fallback",
+      ),
+    ).toBe("");
+    expect(
+      suggestionLabel(
+        {
+          ...suggestion,
           proposedPatch: {},
         },
         "Fallback",

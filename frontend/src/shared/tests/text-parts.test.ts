@@ -5,6 +5,8 @@ import {
   displayNameOrFallback,
   displayNullableTextOrFallback,
   displayTextOrFallback,
+  firstDisplayTextOrFallback,
+  firstNullableTextOrFallback,
   joinVisibleTextParts,
   visibleTextParts,
 } from "../text-parts";
@@ -35,5 +37,9 @@ describe("text part helpers", () => {
       { displayName: "Beam" },
     ], "No travelers")).toBe("Aom, Beam");
     expect(displayNameListOrFallback([], "No travelers")).toBe("No travelers");
+    expect(firstDisplayTextOrFallback([null, "", "Description"], "Fallback")).toBe("Description");
+    expect(firstDisplayTextOrFallback([null, "", false, undefined], "Fallback")).toBe("Fallback");
+    expect(firstNullableTextOrFallback([null, "", "Description"], "Fallback")).toBe("");
+    expect(firstNullableTextOrFallback([null, undefined], "Fallback")).toBe("Fallback");
   });
 });
