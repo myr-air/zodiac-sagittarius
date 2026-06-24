@@ -94,7 +94,11 @@ export const overviewPageDenseStoryArgs = buildOverviewPageStoryArgs(
 );
 
 const emptyOverviewStoryOverrides = {
-  trip: emptyTripFixture,
+  trip: {
+    ...emptyTripFixture,
+    startDate: "2036-06-18",
+    endDate: "2036-06-23",
+  },
   items: [],
   suggestions: [],
   tasks: [],

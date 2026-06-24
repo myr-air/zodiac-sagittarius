@@ -1,10 +1,9 @@
 import { joinVisibleTextParts } from "@/src/shared/text-parts";
-import type { TripDailyBriefing } from "@/src/trip/types";
 import {
-  formatSolarTime,
-  formatWeatherTemp,
-  weatherGraphicLabel,
-} from "@/src/trip/weather";
+  buildWeatherDisplayFacts,
+  formatWeatherConditionTemperatureLabel,
+} from "@/src/shared/components/weather/model/weather-display-facts";
+import type { TripDailyBriefing } from "@/src/trip/types";
 import { buildWeatherTooltip } from "./weather-tooltip";
 
 export interface WeatherChipDisplay {
@@ -23,25 +22,27 @@ export function buildWeatherChipDisplay(
   briefing: TripDailyBriefing,
 ): WeatherChipDisplay | null {
   const weather = briefing.weather;
-  const condition = weatherGraphicLabel(weather?.conditionCode);
-  const high = weather?.temperatureMaxCelsius;
-  const low = weather?.temperatureMinCelsius;
-  const sunrise = formatSolarTime(weather?.sunrise);
-  const sunset = formatSolarTime(weather?.sunset);
-  const hasForecastTemps = typeof high === "number" && typeof low === "number";
-  const hasSolarTimes = Boolean(sunrise && sunset);
+  const {
+    condition,
+    hasCondition,
+    hasForecastTemps,
+    hasSolarTimes,
+    highLabel,
+    lowLabel,
+    sunrise,
+    sunset,
+  } = buildWeatherDisplayFacts(weather);
   if (!hasForecastTemps && !hasSolarTimes) return null;
 
-  const hasCondition = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
-  const highLabel = formatWeatherTemp(high);
-  const lowLabel = formatWeatherTemp(low);
   const solarLabel = sunrise && sunset ? `sunrise ${sunrise} sunset ${sunset}` : "";
   const weatherLabel = joinVisibleTextParts([
-    hasForecastTemps
-      ? `${condition} ${highLabel} ${lowLabel}`
-      : hasCondition
-        ? condition
-        : "",
+    formatWeatherConditionTemperatureLabel({
+      condition,
+      hasCondition,
+      hasForecastTemps,
+      highLabel,
+      lowLabel,
+    }),
     solarLabel,
   ], " ") ?? "";
 
