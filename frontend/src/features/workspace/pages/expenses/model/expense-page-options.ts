@@ -20,11 +20,8 @@ export type CategoryTone = {
   text: string;
 };
 
-export const expenseCategories = expenseCategoryValues;
 export const expenseCategoryFilterValues = withAllFilterValue(expenseCategoryValues);
 export type ExpenseCategoryFilter = (typeof expenseCategoryFilterValues)[number];
-
-export const expenseSplitModes = expenseSplitModeValues;
 
 export type ExpenseSelectOption<Value extends string = string> = SelectOption<Value>;
 
@@ -56,5 +53,5 @@ export function expenseCategoryFilterSelectOptions(
 export function expenseSplitModeSelectOptions(
   labels: Record<ExpenseSplitMode, string>,
 ): ExpenseSelectOption<ExpenseSplitMode>[] {
-  return buildSelectOptions(expenseSplitModes, (value) => labels[value]);
+  return buildSelectOptions(expenseSplitModeValues, (value) => labels[value]);
 }

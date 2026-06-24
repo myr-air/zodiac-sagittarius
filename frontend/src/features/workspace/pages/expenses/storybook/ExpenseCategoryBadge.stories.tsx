@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expenseCategories } from "../model/expense-page-options";
+import { expenseCategoryValues } from "@/src/trip/expenses";
 import { ExpenseCategoryBadge } from "../components/ExpenseCategoryBadge";
 
 const meta = {
@@ -24,7 +24,7 @@ export const Transport: Story = {
 export const AllCategories: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      {expenseCategories.map((category) => (
+      {expenseCategoryValues.map((category) => (
         <ExpenseCategoryBadge category={category} key={category} />
       ))}
     </div>

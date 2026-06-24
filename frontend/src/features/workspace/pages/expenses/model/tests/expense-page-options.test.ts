@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   categoryTone,
-  expenseCategories,
   expenseCategoryFilterSelectOptions,
   expenseCategoryFilterValues,
   expenseCategorySelectOptions,
   expenseSplitModeSelectOptions,
 } from "../expense-page-options";
+import { expenseCategoryValues } from "@/src/trip/expenses";
 
 describe("expense page options", () => {
   it("keeps category filters aligned with expense categories", () => {
@@ -19,7 +19,7 @@ describe("expense page options", () => {
       "shopping",
       "settlement",
     ]);
-    expect(expenseCategoryFilterValues).toEqual(["all", ...expenseCategories]);
+    expect(expenseCategoryFilterValues).toEqual(["all", ...expenseCategoryValues]);
   });
 
   it("keeps category tone values centralized for ledger badges", () => {
@@ -33,7 +33,7 @@ describe("expense page options", () => {
 
   it("builds category select options from the shared category values", () => {
     expect(expenseCategorySelectOptions()).toEqual(
-      expenseCategories.map((value) => ({ value, label: value })),
+      expenseCategoryValues.map((value) => ({ value, label: value })),
     );
     expect(expenseCategoryFilterSelectOptions("All categories")[0]).toEqual({
       value: "all",

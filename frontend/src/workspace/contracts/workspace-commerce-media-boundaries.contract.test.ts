@@ -114,8 +114,10 @@ describe("Sagittarius workspace commerce and media source boundaries", () => {
     expect(expenseSettlements).toContain("export function attachReminderHistory");
     expect(expenseSettlements).toContain("export function upsertExpenseReminder");
     expect(expenseSettlements).toContain("function expenseReminderKey");
-    expect(expensePageOptions).toContain("export const expenseCategories");
-    expect(expensePageOptions).toContain("export const expenseSplitModes");
+    expect(expensePageOptions).not.toContain("export const expenseCategories");
+    expect(expensePageOptions).not.toContain("export const expenseSplitModes");
+    expect(expensePageOptions).toContain("expenseCategoryValues");
+    expect(expensePageOptions).toContain("expenseSplitModeValues");
     expect(expensePageOptions).toContain("function categoryTone");
   });
 });
