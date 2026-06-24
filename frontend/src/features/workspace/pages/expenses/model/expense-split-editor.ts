@@ -20,9 +20,11 @@ export interface ExpenseSplitEditorState {
 
 export function initialExpenseSplitEditorState({
   expense,
+  initialSplitMode,
   members,
 }: {
   expense: Expense | null;
+  initialSplitMode?: ExpenseSplitMode;
   members: Member[];
 }): ExpenseSplitEditorState {
   return {
@@ -31,7 +33,7 @@ export function initialExpenseSplitEditorState({
       ? "itemized"
       : expense
         ? "exact"
-        : "equal",
+        : initialSplitMode ?? "equal",
     splitValues: initialExpenseSplitValues(members, expense),
   };
 }

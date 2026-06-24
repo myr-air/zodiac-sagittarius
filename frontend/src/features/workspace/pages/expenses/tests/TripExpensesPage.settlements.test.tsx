@@ -24,6 +24,22 @@ describe("TripExpensesPage settlement exports", () => {
     }));
   });
 
+  it("blocks duplicate settlement records while the same payback is pending", async () => {
+    const user = userEvent.setup();
+    let resolveCreate: (() => void) | undefined;
+    const onCreateExpense = vi.fn(() => new Promise<void>((resolve) => {
+      resolveCreate = resolve;
+    }));
+    renderExpenses({ onCreateExpense });
+    const paybackButton = screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0];
+
+    await user.dblClick(paybackButton);
+
+    expect(onCreateExpense).toHaveBeenCalledTimes(1);
+    expect(paybackButton).toBeDisabled();
+    resolveCreate?.();
+  });
+
   it("copies a shareable settlement statement for the group chat", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);

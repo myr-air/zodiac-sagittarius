@@ -90,4 +90,38 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
       expect(persistedTrip.activePlanVariantId).toBe(draftTrip.activePlanVariantId);
     });
   });
+
+  it("switches Trip Plans from the expense page and shows that plan's ledger records", async () => {
+    const user = userEvent.setup();
+    const storage = installLocalStorageStub();
+    const draftTrip = {
+      ...tripWithPlans(),
+      expenses: [
+        ...tripWithPlans().expenses,
+        {
+          ...tripWithPlans().expenses[0],
+          id: "expense-rain-snack",
+          title: "Rain gallery snack",
+          tripPlanId: "plan-variant-backup",
+          itineraryItemId: null,
+        },
+      ],
+    };
+    persistTripDraft(storage, draftTrip);
+
+    render(<SagittariusApp initialView="expenses" />);
+
+    await screen.findByRole("region", { name: /เงินทริป/i });
+    expect(screen.getByText("Dim Dim Sum brunch")).toBeInTheDocument();
+    expect(screen.queryByText("Rain gallery snack")).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Trip Plan"), [
+      "plan-variant-backup",
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Rain gallery snack").length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
+  });
 });

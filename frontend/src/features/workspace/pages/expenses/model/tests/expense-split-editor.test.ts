@@ -33,6 +33,30 @@ describe("expense split editor model", () => {
     });
   });
 
+  it("builds a personal split state for quick personal accounting", () => {
+    expect(
+      initialExpenseSplitEditorState({
+        expense: null,
+        initialSplitMode: "personal",
+        members,
+      }),
+    ).toEqual({
+      lineItems: [
+        {
+          id: "line-local-1",
+          title: "",
+          amount: "",
+          participantIds: members.map((member) => member.id),
+        },
+      ],
+      splitMode: "personal",
+      splitValues: {
+        [members[0].id]: "0",
+        [members[1].id]: "0",
+      },
+    });
+  });
+
   it("builds itemized split state from an existing line item expense", () => {
     const expense = {
       id: "expense-itemized",

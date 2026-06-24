@@ -13,15 +13,17 @@ import {
 
 interface UseExpenseSplitEditorInput {
   expense: Expense | null;
+  initialSplitMode?: ExpenseSplitMode;
   members: Member[];
 }
 
 export function useExpenseSplitEditor({
   expense,
+  initialSplitMode,
   members,
 }: UseExpenseSplitEditorInput) {
   const [state, setState] = useState(() =>
-    initialExpenseSplitEditorState({ expense, members }),
+    initialExpenseSplitEditorState({ expense, initialSplitMode, members }),
   );
 
   function changeSplitMode(nextMode: ExpenseSplitMode) {

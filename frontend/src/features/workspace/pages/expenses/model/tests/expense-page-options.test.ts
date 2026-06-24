@@ -48,12 +48,14 @@ describe("expense page options", () => {
       shares: "Shares",
       percentage: "Percentage",
       itemized: "Itemized",
+      personal: "Personal",
     })).toEqual([
       { value: "equal", label: "Equal" },
       { value: "exact", label: "Exact" },
       { value: "shares", label: "Shares" },
       { value: "percentage", label: "Percentage" },
       { value: "itemized", label: "Itemized" },
+      { value: "personal", label: "Personal" },
     ]);
   });
 });

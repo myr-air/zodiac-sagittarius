@@ -17,9 +17,11 @@ export const thExpensesMessages = {
       balances: "ยอดแยกตามเพื่อน",
       settle: "รายการจ่ายคืนที่แนะนำ",
       categories: "ใช้จ่ายตามประเภท",
+      personal: "บัญชีส่วนตัว",
     },
     actions: {
       addExpense: "เพิ่มค่าใช้จ่าย",
+      addPersonalExpense: "บันทึกใช้จ่ายส่วนตัว",
       addComment: "เพิ่ม comment",
       addLineItem: "เพิ่มรายการ",
       copyReminder: "คัดลอก reminder",
@@ -45,6 +47,11 @@ export const thExpensesMessages = {
       payer: "จ่ายโดย",
       allCategories: "ทุกประเภท",
       allPayers: "ทุกคนที่จ่าย",
+      allDays: "ทุกวัน",
+      day: "วันของค่าใช้จ่าย",
+      displayCurrency: "สกุลเงินที่แสดง",
+      displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `เรท ${currency} เป็น ${displayCurrency}`,
+      unlinkedDay: "ไม่ผูกวัน",
     },
     table: {
       expense: "ค่าใช้จ่าย",
@@ -83,6 +90,17 @@ export const thExpensesMessages = {
       shares: "จำนวนส่วน",
       percentage: "เปอร์เซ็นต์",
       itemized: "แยกรายการ",
+      personal: "ส่วนตัว",
+    },
+    live: {
+      statusLabel: "สถานะอัปเดตค่าใช้จ่าย",
+      updated: ({ count }: { count: number }) => `อัปเดตสด · ${count} รายการ`,
+    },
+    personal: {
+      label: "บัญชีส่วนตัว",
+      personalOnly: "ใช้ส่วนตัว",
+      youPaid: "คุณจ่าย",
+      yourShare: "ส่วนของคุณ",
     },
     balance: {
       owed: ({ name, amount }: { name: string; amount: string }) => `${name} ต้องได้รับ ${amount}`,

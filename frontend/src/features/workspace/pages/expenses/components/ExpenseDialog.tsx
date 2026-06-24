@@ -1,6 +1,7 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspaceDialog } from "@/src/shared/components/workspace-dialog";
 import type { Expense, Member, Trip } from "@/src/trip/types";
+import type { ExpenseSplitMode } from "@/src/trip/expenses";
 import { useExpenseDialogState } from "../hooks/useExpenseDialogState";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type {
@@ -13,6 +14,7 @@ interface ExpenseDialogProps {
   expense: Expense | null;
   trip: Trip;
   currentMember: Member;
+  initialSplitMode?: ExpenseSplitMode;
   settlementCurrency: string;
   selectedTripPlanId?: string | null;
   apiBaseUrl: string;
@@ -25,6 +27,7 @@ export function ExpenseDialog({
   expense,
   trip,
   currentMember,
+  initialSplitMode,
   settlementCurrency,
   selectedTripPlanId,
   apiBaseUrl,
@@ -37,6 +40,7 @@ export function ExpenseDialog({
     apiBaseUrl,
     currentMember,
     expense,
+    initialSplitMode,
     selectedTripPlanId,
     settlementCurrency,
     trip,

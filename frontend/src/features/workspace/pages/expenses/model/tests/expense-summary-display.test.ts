@@ -12,6 +12,7 @@ describe("expense summary display", () => {
         youOwe: 0,
       }),
     ).toEqual({
+      currentNetLabel: "+HK$25.00",
       currentNetTone: "positive",
       groupSpendLabel: "HK$120.00",
       owedToYouLabel: "HK$25.00",

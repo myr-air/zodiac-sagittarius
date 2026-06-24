@@ -6,10 +6,12 @@ import type { ExpenseInput } from "./expense-page-types";
 
 export function buildSettlementExpenseInput({
   members,
+  selectedTripPlanId,
   settlementCurrency,
   suggestion,
 }: {
   members: Member[];
+  selectedTripPlanId?: string | null;
   settlementCurrency: string;
   suggestion: SettlementSuggestion;
 }): ExpenseInput {
@@ -17,6 +19,7 @@ export function buildSettlementExpenseInput({
   const to = findMemberById(members, suggestion.to);
   return {
     itemId: null,
+    tripPlanId: selectedTripPlanId ?? null,
     title: `${displayNameOrFallback(from, "Traveler")} paid ${displayNameOrFallback(to, "Traveler")} back`,
     amount: suggestion.amount,
     currency: suggestion.currency ?? settlementCurrency,

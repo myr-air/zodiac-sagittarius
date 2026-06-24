@@ -25,12 +25,15 @@ export function useExpensePageFilters() {
   return {
     categoryFilter: filterState.categoryFilter,
     clearFilters,
+    dayFilter: filterState.dayFilter,
     payerFilter: filterState.payerFilter,
     query: filterState.query,
     setCategoryFilter: (
       categoryFilter: ExpensePageFilterState["categoryFilter"],
     ) =>
       updateFilterField("categoryFilter", categoryFilter),
+    setDayFilter: (dayFilter: string) =>
+      updateFilterField("dayFilter", dayFilter),
     setPayerFilter: (payerFilter: string) =>
       updateFilterField("payerFilter", payerFilter),
     setQuery: (query: string) => updateFilterField("query", query),

@@ -25,7 +25,9 @@ export function TripExpensesPage({
   expenseSummary,
   canEditExpenses,
   selectedTripPlanId,
+  workspaceTrip,
   apiBaseUrl = "",
+  onChangeTripPlan,
   onCreateExpense,
   onUpdateExpense,
   onDeleteExpense,
@@ -42,23 +44,33 @@ export function TripExpensesPage({
     copyStatement,
     createDialogExpense,
     currentNet,
+    dayFilter,
+    displayCurrency,
+    displayExchangeRate,
+    displayExchangeRateNumber,
     dialogExpense,
     downloadCsv,
     filteredExpenses,
     inferredScopeExpenses,
     owedToYou,
+    pendingRefundExpenseIds,
+    pendingSettlementKeys,
     payerFilter,
     query,
     recordRefund,
     recordSettlement,
     setCategoryFilter,
+    setDayFilter,
     setDialogExpense,
+    setDisplayCurrency,
+    setDisplayExchangeRate,
     setPayerFilter,
     setQuery,
     settlementCurrency,
     updateDialogExpense,
     youOwe,
   } = useTripExpensesPageState({
+    apiBaseUrl,
     currentMember,
     expenseSummary,
     onCreateExpense,
@@ -67,6 +79,9 @@ export function TripExpensesPage({
     selectedTripPlanId,
     trip,
   });
+  const planSourceTrip = workspaceTrip ?? trip;
+  const activeTripPlanId =
+    selectedTripPlanId ?? planSourceTrip.mainTripPlanId ?? planSourceTrip.activePlanVariantId ?? "";
 
   return (
     <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
@@ -79,6 +94,8 @@ export function TripExpensesPage({
 
       <ExpenseSummaryStats
         currentNet={currentNet}
+        displayCurrency={displayCurrency}
+        displayExchangeRate={displayExchangeRateNumber}
         expenseSummary={expenseSummary}
         owedToYou={owedToYou}
         settlementCurrency={settlementCurrency}
@@ -91,10 +108,15 @@ export function TripExpensesPage({
           trip={trip}
           expenseSummary={expenseSummary}
           categorySpend={categorySpend}
+          currentMember={currentMember}
+          displayCurrency={displayCurrency}
+          displayExchangeRate={displayExchangeRateNumber}
           inferredScopeExpenses={inferredScopeExpenses}
           settlementCurrency={settlementCurrency}
           canEditExpenses={canEditExpenses}
+          onAddPersonalExpense={() => setDialogExpense("new-personal")}
           onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
+          pendingSettlementKeys={pendingSettlementKeys}
           onRecordSettlement={recordSettlement}
           onReviewExpense={setDialogExpense}
         />
@@ -103,9 +125,14 @@ export function TripExpensesPage({
           canEditExpenses={canEditExpenses}
           categoryFilter={categoryFilter}
           copyState={copyState}
+          dayFilter={dayFilter}
+          displayCurrency={displayCurrency}
+          displayExchangeRate={displayExchangeRate}
+          displayExchangeRateNumber={displayExchangeRateNumber}
           filteredExpenses={filteredExpenses}
           members={trip.members}
           onAddExpense={() => setDialogExpense("new")}
+          onAddPersonalExpense={() => setDialogExpense("new-personal")}
           onCategoryFilterChange={setCategoryFilter}
           onClearFilters={clearFilters}
           onCopyStatement={() => void copyStatement()}
@@ -113,14 +140,21 @@ export function TripExpensesPage({
           onDownloadCsv={downloadCsv}
           onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
           onEditExpense={setDialogExpense}
+          onDayFilterChange={setDayFilter}
+          onDisplayCurrencyChange={setDisplayCurrency}
+          onDisplayExchangeRateChange={setDisplayExchangeRate}
           onPayerFilterChange={setPayerFilter}
           onQueryChange={setQuery}
           onRecordRefund={recordRefund}
+          pendingRefundExpenseIds={pendingRefundExpenseIds}
           payerFilter={payerFilter}
           query={query}
+          selectedTripPlanId={activeTripPlanId}
           settlementCurrency={settlementCurrency}
           t={t}
           trip={trip}
+          workspaceTrip={planSourceTrip}
+          onTripPlanChange={onChangeTripPlan}
         />
       </div>
 

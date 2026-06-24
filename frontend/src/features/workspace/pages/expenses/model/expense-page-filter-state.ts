@@ -2,6 +2,7 @@ import type { ExpenseCategoryFilter } from "./expense-page-types";
 
 export interface ExpensePageFilterState {
   categoryFilter: ExpenseCategoryFilter;
+  dayFilter: string;
   payerFilter: string;
   query: string;
 }
@@ -9,6 +10,7 @@ export interface ExpensePageFilterState {
 export function initialExpensePageFilterState(): ExpensePageFilterState {
   return {
     categoryFilter: "all",
+    dayFilter: "all",
     payerFilter: "all",
     query: "",
   };

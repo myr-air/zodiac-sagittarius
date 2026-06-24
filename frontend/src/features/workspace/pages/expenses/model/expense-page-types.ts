@@ -13,7 +13,7 @@ import type { WorkspaceMutationResult } from "../../../model/workspace-action-ty
 
 export type { ExpenseCategoryFilter } from "./expense-page-options";
 export type ExpenseCopyState = CopyFeedbackState;
-export type ExpenseDialogTarget = Expense | "new" | null;
+export type ExpenseDialogTarget = Expense | "new" | "new-personal" | null;
 export type ExpensePageLabels = ReturnType<typeof useI18n>["t"];
 
 export interface ExpenseInput {
@@ -63,7 +63,9 @@ export interface TripExpensesPageProps {
   expenseSummary: ExpenseSummary;
   canEditExpenses: boolean;
   selectedTripPlanId?: string | null;
+  workspaceTrip?: Trip;
   apiBaseUrl?: string;
+  onChangeTripPlan?: (tripPlanId: string) => void;
   onCreateExpense: CreateExpenseHandler;
   onUpdateExpense: UpdateExpenseHandler;
   onDeleteExpense: DeleteExpenseHandler;

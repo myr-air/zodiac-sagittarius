@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+import { useRef, type FormEvent } from "react";
 import type { Expense } from "@/src/trip/types";
 import type { ExpenseSplitEditorState } from "../model/expense-split-editor";
 import type { ExpenseDialogCalculatedState } from "../model/expense-dialog-calculation";
@@ -36,9 +36,11 @@ export function useExpenseDialogSubmitHandler({
   setSaving,
   splitEditor,
 }: UseExpenseDialogSubmitHandlerInput) {
+  const submittingRef = useRef(false);
   return async function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmitExpense) return;
+    if (!canSubmitExpense || submittingRef.current) return;
+    submittingRef.current = true;
     const input = buildExpenseDialogSubmitInput({
       calculatedState,
       category: formValues.category,
@@ -52,13 +54,17 @@ export function useExpenseDialogSubmitHandler({
       splitMode: splitEditor.splitMode,
       title: formValues.title,
     });
-    await submitExpenseDialog({
-      canSubmitExpense,
-      expense,
-      input,
-      onCreateExpense,
-      onUpdateExpense,
-      setSaving,
-    });
+    try {
+      await submitExpenseDialog({
+        canSubmitExpense,
+        expense,
+        input,
+        onCreateExpense,
+        onUpdateExpense,
+        setSaving,
+      });
+    } finally {
+      submittingRef.current = false;
+    }
   };
 }

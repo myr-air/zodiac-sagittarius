@@ -17,9 +17,11 @@ export const enExpensesMessages = {
       balances: "Balances by friend",
       settle: "Suggested paybacks",
       categories: "Spend by category",
+      personal: "Personal account",
     },
     actions: {
       addExpense: "Add expense",
+      addPersonalExpense: "Log personal spend",
       addComment: "Add comment",
       addLineItem: "Add item",
       copyReminder: "Copy reminder",
@@ -45,6 +47,11 @@ export const enExpensesMessages = {
       payer: "Paid by",
       allCategories: "All categories",
       allPayers: "All payers",
+      allDays: "All days",
+      day: "Expense day",
+      displayCurrency: "Display currency",
+      displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `${currency} to ${displayCurrency} rate`,
+      unlinkedDay: "No day",
     },
     table: {
       expense: "Expense",
@@ -83,6 +90,17 @@ export const enExpensesMessages = {
       shares: "Shares",
       percentage: "Percentages",
       itemized: "Itemized receipt",
+      personal: "Personal",
+    },
+    live: {
+      statusLabel: "Expense update status",
+      updated: ({ count }: { count: number }) => `Live updates · ${count} records`,
+    },
+    personal: {
+      label: "Personal account",
+      personalOnly: "Personal only",
+      youPaid: "You paid",
+      yourShare: "Your share",
     },
     balance: {
       owed: ({ name, amount }: { name: string; amount: string }) => `${name} is owed ${amount}`,

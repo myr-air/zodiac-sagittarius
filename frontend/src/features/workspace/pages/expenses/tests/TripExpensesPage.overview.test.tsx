@@ -1,6 +1,8 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildExpenseSummary } from "@/src/trip/expenses";
+import { seedTrip } from "@/src/trip/seed";
 import { renderExpenses } from "../testing/support/render-expenses-page";
 
 describe("TripExpensesPage overview and filters", () => {
@@ -23,12 +25,17 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("bg-(--color-surface-subtle)");
     expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
     expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".expenses-panel")?.textContent).toContain("Travel Mate");
+    expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
     expect(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
+    expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
+    expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/อัปเดตสด/i);
+    expect(screen.getByLabelText("Trip Plan")).toHaveValue("plan-main");
+    expect(screen.getByLabelText(/วันของค่าใช้จ่าย/i)).toHaveValue("all");
+    expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
     expect(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i }).length).toBeGreaterThan(0);
   });
 
@@ -49,5 +56,36 @@ describe("TripExpensesPage overview and filters", () => {
 
     expect(screen.getByText("Dim Dim Sum brunch")).toBeInTheDocument();
     expect(screen.getByText("Octopus top-up")).toBeInTheDocument();
+  });
+
+  it("filters the ledger by linked itinerary day", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          id: "expense-arrival",
+          itineraryItemId: "item-arrive-hkg",
+          title: "Arrival taxi",
+        },
+        {
+          ...seedTrip.expenses[1],
+          id: "expense-unlinked",
+          itineraryItemId: null,
+          title: "General tram",
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    await user.selectOptions(screen.getByLabelText(/วันของค่าใช้จ่าย/i), "2026-06-18");
+
+    expect(screen.getByText("Arrival taxi")).toBeInTheDocument();
+    expect(screen.queryByText("General tram")).not.toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getByText(/2026-06-18/)).toBeInTheDocument();
   });
 });

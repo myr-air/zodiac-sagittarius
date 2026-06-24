@@ -23,6 +23,7 @@ interface ExpenseDialogStateInput {
   expense: Expense | null;
   lineItems: EditableExpenseLineItem[];
   members: Member[];
+  paidBy: string;
   repeatCount: string;
   settlementCurrency: string;
   splitMode: ExpenseSplitMode;
@@ -51,6 +52,7 @@ export function calculateExpenseDialogState({
   expense,
   lineItems,
   members,
+  paidBy,
   repeatCount,
   settlementCurrency,
   splitMode,
@@ -70,7 +72,9 @@ export function calculateExpenseDialogState({
   const splits = Number.isFinite(amountNumber) && amountNumber >= 0
     ? splitMode === "itemized"
       ? buildItemizedExpenseSplits({ lineItems: validLineItems, memberIds })
-      : buildExpenseSplits({ amount: amountNumber, memberIds, mode: splitMode, valuesByMember: parsedSplitValues })
+      : splitMode === "personal"
+        ? { [paidBy]: amountNumber }
+        : buildExpenseSplits({ amount: amountNumber, memberIds, mode: splitMode, valuesByMember: parsedSplitValues })
     : {};
   const splitTotal = sumShares(splits);
   const splitMismatch = (splitMode === "exact" || splitMode === "percentage" || splitMode === "itemized") && Math.abs(splitTotal - amountNumber) > 0.01;

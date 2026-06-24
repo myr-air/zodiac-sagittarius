@@ -32,6 +32,20 @@ const members: Member[] = [
     presence: "online",
     role: "owner",
   },
+  {
+    color: "#0f766e",
+    displayName: "Beam",
+    id: "member-beam",
+    presence: "online",
+    role: "organizer",
+  },
+  {
+    color: "#f97316",
+    displayName: "Nam",
+    id: "member-nam",
+    presence: "away",
+    role: "traveler",
+  },
 ];
 
 describe("expense ledger display", () => {
@@ -94,5 +108,47 @@ describe("expense ledger display", () => {
       members,
       paidBy: "member-missing",
     })).toBeNull();
+  });
+
+  it("shows original, settlement, display-currency, source, and per-member math", () => {
+    expect(
+      expenseLedgerRowDisplay(
+        buildExpense({
+          amount: 100,
+          currency: "HKD",
+          exchangeRateToSettlementCurrency: 4.5,
+          lineItems: [
+            {
+              id: "line-noodles",
+              title: "Noodles",
+              amount: 60,
+              participantIds: ["member-aom", "member-beam"],
+            },
+          ],
+          paidBy: "member-aom",
+          splits: {
+            "member-aom": 40,
+            "member-beam": 60,
+          },
+        }),
+        "THB",
+        {
+          displayCurrency: "USD",
+          displayExchangeRate: 0.03,
+          members,
+        },
+      ),
+    ).toEqual(expect.objectContaining({
+      amountLabel: "HK$100.00",
+      calculationLabel: "HK$100.00 × 4.5 = ฿450.00 · ฿450.00 × 0.03 = US$13.50",
+      displayAmountLabel: "US$13.50",
+      memberBreakdown: [
+        "Aom share ฿180.00, net ฿270.00",
+        "Beam share ฿270.00, net -฿270.00",
+        "Nam share ฿0.00, net ฿0.00",
+      ],
+      settlementAmountLabel: "฿450.00",
+      sourceLabel: "Itemized receipt: Noodles",
+    }));
   });
 });

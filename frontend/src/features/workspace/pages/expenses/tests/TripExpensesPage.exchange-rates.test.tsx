@@ -61,4 +61,19 @@ describe("TripExpensesPage exchange rates", () => {
       exchangeRateToSettlementCurrency: 1.08,
     }));
   });
+
+  it("converts the visible ledger and balances to a selected display currency", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ date: "2026-06-05", base: "HKD", quote: "THB", rate: 4.6 }),
+    }));
+    renderExpenses();
+
+    await user.selectOptions(screen.getByLabelText(/สกุลเงินที่แสดง/i), "THB");
+
+    await waitFor(() => expect(screen.getByLabelText(/เรท HKD เป็น THB/i)).toHaveValue("4.6"));
+    expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
+    expect(screen.getByText(/HK\$512\.00 × 1 = HK\$512\.00 · HK\$512\.00 × 4\.6 = ฿2,355\.20/)).toBeInTheDocument();
+  });
 });

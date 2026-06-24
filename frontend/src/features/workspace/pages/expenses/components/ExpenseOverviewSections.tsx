@@ -10,12 +10,16 @@ import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 
 interface ExpenseCategorySpendSectionProps {
   categorySpend: Array<[Expense["category"], number]>;
+  displayCurrency: string;
+  displayExchangeRate: number;
   settlementCurrency: string;
   title: string;
 }
 
 export function ExpenseCategorySpendSection({
   categorySpend,
+  displayCurrency,
+  displayExchangeRate,
   settlementCurrency,
   title,
 }: ExpenseCategorySpendSectionProps) {
@@ -31,6 +35,8 @@ export function ExpenseCategorySpendSection({
           const display = categorySpendDisplay({
             amount,
             category,
+            displayCurrency,
+            displayExchangeRate,
             settlementCurrency,
           });
           return (

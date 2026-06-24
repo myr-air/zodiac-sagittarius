@@ -70,7 +70,7 @@ export function ExpenseSplitFields({
     );
   }
 
-  if (splitMode === "equal") {
+  if (splitMode === "equal" || splitMode === "personal") {
     return null;
   }
 
