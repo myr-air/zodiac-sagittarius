@@ -10,7 +10,7 @@ import type {
   TripPlanResponse,
   TripSummaryResponse,
   TripTaskResponse,
-} from "./api-response-types";
+} from "./api-response-planning-types";
 import { DEFAULT_TRIP_TIMEZONE } from "../metadata";
 import {
   legacyKindForPlanStatus,

@@ -1,6 +1,6 @@
 import { normalizeExpenseSplitsFromMinor } from "../expenses";
 import type { Expense } from "../types";
-import type { ExpenseResponse } from "./api-response-types";
+import type { ExpenseResponse } from "./api-response-record-types";
 
 export function mapExpense(expense: ExpenseResponse): Expense {
   return {

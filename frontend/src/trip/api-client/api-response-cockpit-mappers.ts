@@ -11,10 +11,10 @@ import {
 } from "./api-response-planning-mappers";
 import { mapExpense } from "./api-response-record-mappers";
 import type {
-  PlanVariantResponse,
   TripCockpit,
   TripCockpitResponse,
-} from "./api-response-types";
+} from "./api-response-cockpit-types";
+import type { PlanVariantResponse } from "./api-response-planning-types";
 
 export function mapCockpitResponse(response: TripCockpitResponse): TripCockpit {
   if (!Array.isArray(response.bookingDocs)) {

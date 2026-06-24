@@ -1,5 +1,5 @@
 import type { Member } from "../types";
-import type { TripMemberResponse } from "./api-response-types";
+import type { TripMemberResponse } from "./api-response-planning-types";
 
 export function mapMember(member: TripMemberResponse): Member {
   return {
