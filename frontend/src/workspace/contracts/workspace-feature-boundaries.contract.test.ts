@@ -11,8 +11,12 @@ describe("Sagittarius workspace feature source boundaries", () => {
       tripSettingsTypesSource,
       tripSettingsPageTypesSource,
       memberInviteActions,
+      memberCopyFeedback,
+      expenseCopyFeedback,
       memberPageOptions,
       memberPageSelectors,
+      photoCopyFeedback,
+      bookingExternalLinkAction,
       dateTimePickers,
       tripSettingsPage,
       tripSettingsStateKey,
@@ -66,6 +70,26 @@ describe("Sagittarius workspace feature source boundaries", () => {
     expect(tripSettingsPageTypesSource).not.toContain("export interface TripSettingsFormValues");
     expect(memberInviteActions).toContain("@/src/routes/invite-links");
     expect(memberInviteActions).not.toContain("./TripMembersPage.support");
+    [memberCopyFeedback, expenseCopyFeedback, photoCopyFeedback].forEach(
+      (source) => {
+        expect(source).toContain("WorkspaceCopyFeedback");
+        expect(source).toContain("workspaceCopyFeedbackLabel");
+        expect(source).toContain("CopyFeedbackLabels");
+      },
+    );
+    expect(memberCopyFeedback).toContain("memberCopyFeedbackLabels");
+    expect(memberCopyFeedback).toContain("labels.members.copy");
+    expect(memberCopyFeedback).toContain("readOnly");
+    expect(expenseCopyFeedback).toContain("expenseCopyFeedbackLabels");
+    expect(expenseCopyFeedback).toContain("t.expenses.copy");
+    expect(expenseCopyFeedback).toContain("aria-label={t.expenses.copy.statusLabel}");
+    expect(photoCopyFeedback).toContain("photoCopyFeedbackLabels");
+    expect(photoCopyFeedback).toContain("PhotoCopy");
+    expect(photoCopyFeedback).toContain("aria-label={copy.copyStatusLabel}");
+    expect(bookingExternalLinkAction).toContain("BookingDoc");
+    expect(bookingExternalLinkAction).toContain("ExternalLinkAction");
+    expect(bookingExternalLinkAction).toContain("openLabel");
+    expect(bookingExternalLinkAction).toContain("variant === \"icon\"");
     expect(memberPageOptions).toContain("export const memberRoleFilterValues");
     expect(memberPageOptions).toContain("export const memberStatusFilterValues");
     expect(memberPageSelectors).toContain("export function filterTripMembers");

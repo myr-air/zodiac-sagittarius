@@ -28,6 +28,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized trip plan status select helpers
 - [x] Removed obsolete itinerary display/detail aliases
 - [x] Added shared CheckboxGroup Storybook coverage
+- [x] Audited feature wrappers for domain semantics
 
 ## Milestone 1: Shared UI Primitives
 
@@ -38,7 +39,7 @@ Goal: Move repeated, feature-neutral UI patterns into `frontend/src/shared/compo
 - [x] Extract shared copy-feedback labels into `shared/components/copy-feedback`.
 - [x] Audit remaining repeated button/badge/header patterns in workspace pages.
 - [x] Add or update Storybook stories for each new shared component.
-- [ ] Keep feature wrappers only when they add domain-specific props, labels, or accessibility semantics.
+- [x] Keep feature wrappers only when they add domain-specific props, labels, or accessibility semantics.
 
 ## Milestone 2: Domain Single Source Of Truth
 
@@ -96,6 +97,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Move Trip Plan status option order and labels to the trip domain display helpers.
 - [x] Remove pass-through itinerary aliases for booking docs, stop detail options, and travel subtypes.
 - [x] Add Storybook coverage for the shared `CheckboxGroup` workspace control.
+- [x] Add architecture coverage for feature wrappers around shared copy/link primitives.
 
 ## Draft Acceptance Criteria
 
