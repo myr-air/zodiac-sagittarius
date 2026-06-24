@@ -26,6 +26,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized repeated workspace badge frame styles
 - [x] Removed obsolete expense category/split option aliases
 - [x] Centralized trip plan status select helpers
+- [x] Removed obsolete itinerary display/detail aliases
 
 ## Milestone 1: Shared UI Primitives
 
@@ -58,7 +59,7 @@ Goal: Keep each workspace page split into page composition, components, hooks, m
 - [x] Photos page has separated page options, display helpers, and dialog fields.
 - [x] Check large page files and split files above the project 400/600-line review bands.
 - [x] Move reusable page-level patterns into shared workspace components only when at least two features use them.
-- [ ] Remove obsolete feature-local aliases after shared/domain helpers exist.
+- [x] Remove obsolete feature-local aliases after shared/domain helpers exist.
 
 ## Milestone 4: Architecture Contracts And Tests
 
@@ -92,6 +93,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Re-run Storybook catalog checks after any shared component move.
 - [x] Remove obsolete expense category/split aliases after domain expense helpers exist.
 - [x] Move Trip Plan status option order and labels to the trip domain display helpers.
+- [x] Remove pass-through itinerary aliases for booking docs, stop detail options, and travel subtypes.
 
 ## Draft Acceptance Criteria
 

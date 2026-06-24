@@ -1,29 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import type { BookingDocType, Member, Suggestion, TripTask } from "@/src/trip/types";
+import type { Member, Suggestion, TripTask } from "@/src/trip/types";
 import { buildTripFixtureSuggestion } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
-  bookingDocTypeOptions,
   memberDisplayName,
   suggestionLabel,
   taskKindLabel,
 } from "../itinerary-context-rail-display";
 
 describe("itinerary context rail display helpers", () => {
-  it("lists all booking doc type options", () => {
-    expect(bookingDocTypeOptions).toEqual<BookingDocType[]>([
-      "flight",
-      "train",
-      "public_transport",
-      "hotel",
-      "insurance",
-      "passport",
-      "visa",
-      "activity_ticket",
-      "other",
-    ]);
-  });
-
   it("resolves display name from member", () => {
     const member: Member = {
       id: "m1",

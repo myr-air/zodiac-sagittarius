@@ -89,7 +89,8 @@ describe("Sagittarius itinerary context rail architecture", () => {
     expect(bookingDisplay).not.toContain("export function formatBookingDocTypeLabel");
     expect(bookingDocDisplay).toContain("export function formatBookingDocTypeLabel");
     expect(contextRailSelectOptions).toContain("@/src/trip/booking-docs");
-    expect(contextRailDisplay).toContain("export const bookingDocTypeOptions");
+    expect(contextRailSelectOptions).toContain("bookingDocTypeValues");
+    expect(contextRailDisplay).not.toContain("bookingDocTypeOptions");
     expect(contextRailDisplay).toContain("export function suggestionLabel");
     expect(contextRailDisplay).toContain("export function memberDisplayName");
     expect(contextRailDisplay).toContain("export { taskKindLabel }");

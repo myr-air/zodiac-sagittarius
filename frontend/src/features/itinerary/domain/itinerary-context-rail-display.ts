@@ -2,11 +2,8 @@ import {
   displayNameOrFallback,
   firstNullableTextOrFallback,
 } from "@/src/shared/text-parts";
-import { bookingDocTypeValues } from "@/src/trip/booking-docs";
 import type { Member, Suggestion } from "@/src/trip/types";
 import { taskKindLabel } from "./overview";
-
-export const bookingDocTypeOptions = bookingDocTypeValues;
 
 export function suggestionLabel(suggestion: Suggestion, fallback: string): string {
   /* v8 ignore next */

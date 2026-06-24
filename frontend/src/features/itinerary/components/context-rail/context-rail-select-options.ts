@@ -1,9 +1,11 @@
-import { bookingDocTypeOptions } from "@/src/features/itinerary/domain/itinerary-context-rail-display";
 import {
   buildSelectOptions,
   type SelectOption,
 } from "@/src/shared/select-options";
-import { formatBookingDocTypeLabel } from "@/src/trip/booking-docs";
+import {
+  bookingDocTypeValues,
+  formatBookingDocTypeLabel,
+} from "@/src/trip/booking-docs";
 import { expenseCategorySelectOptions } from "@/src/trip/expenses";
 import { buildMemberSelectOptions } from "@/src/trip/members";
 import type { BookingDocType, Expense, Member } from "@/src/trip/types";
@@ -25,5 +27,5 @@ export function contextRailExpenseCategorySelectOptions(): ContextRailSelectOpti
 export function contextRailBookingDocTypeSelectOptions(): ContextRailSelectOption<
   BookingDocType
 >[] {
-  return buildSelectOptions(bookingDocTypeOptions, formatBookingDocTypeLabel);
+  return buildSelectOptions(bookingDocTypeValues, formatBookingDocTypeLabel);
 }

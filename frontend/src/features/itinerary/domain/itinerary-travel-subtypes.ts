@@ -6,8 +6,6 @@ import { type IconName } from "@/src/ui/icons";
 
 export type TravelSubtype = ActivitySubtype;
 
-export const travelSubtypes = activitySubtypeValues;
-
 export const travelSubtypeIcons: Record<TravelSubtype, IconName> = {
   bus: "bus",
   car: "car",
@@ -26,7 +24,7 @@ export function normalizeTravelSubtype(value: string | null | undefined): Travel
   if (normalized === "rail" || normalized === "mtr") return "train";
   if (normalized === "boat" || normalized === "ship") return "ferry";
   if (normalized === "walking") return "walk";
-  return travelSubtypes.includes(normalized as TravelSubtype)
+  return activitySubtypeValues.includes(normalized as TravelSubtype)
     ? (normalized as TravelSubtype)
     : null;
 }
@@ -88,7 +86,7 @@ export function travelSubtypeOptions(locale: Locale): Array<{ icon: IconName; va
       walk: "เดิน",
     },
   };
-  return travelSubtypes.map((type) => ({
+  return activitySubtypeValues.map((type) => ({
     icon: travelSubtypeIcons[type],
     label: labels[locale][type],
     value: type,

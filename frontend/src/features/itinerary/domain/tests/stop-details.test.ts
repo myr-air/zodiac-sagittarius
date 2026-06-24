@@ -8,8 +8,8 @@ import {
   readStringDetail,
   resolveStopActivityType,
   stopDetailLabels,
-  stopDialogDetailTypeOptions,
-  stopDialogDetailTypeToActivityType,
+  stopDetailTypeOptions,
+  stopDetailTypeToActivityType,
   structuredStopDetailValues,
 } from "../stop-details";
 
@@ -27,16 +27,16 @@ describe("stop details model", () => {
   });
 
   it("maps activity types and localized labels for stop detail mode", () => {
-    expect(stopDialogDetailTypeOptions).toEqual([
+    expect(stopDetailTypeOptions).toEqual([
       "transportation",
       "stay",
       "experience",
       "task",
     ]);
-    expect(stopDialogDetailTypeToActivityType.transportation).toBe("travel");
-    expect(stopDialogDetailTypeToActivityType.stay).toBe("stay");
-    expect(stopDialogDetailTypeToActivityType.task).toBe("experience");
-    expect(stopDialogDetailTypeToActivityType.experience).toBe("experience");
+    expect(stopDetailTypeToActivityType.transportation).toBe("travel");
+    expect(stopDetailTypeToActivityType.stay).toBe("stay");
+    expect(stopDetailTypeToActivityType.task).toBe("experience");
+    expect(stopDetailTypeToActivityType.experience).toBe("experience");
     expect(detailTypeFromActivityType("travel")).toBe("transportation");
     expect(detailTypeFromActivityType("stay")).toBe("stay");
     expect(detailTypeFromActivityType("experience")).toBe("experience");

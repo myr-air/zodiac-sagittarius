@@ -6,7 +6,6 @@ export const stopDetailTypeOptions = [
   "experience",
   "task",
 ] as const;
-export const stopDialogDetailTypeOptions = stopDetailTypeOptions;
 export type StopDetailType = (typeof stopDetailTypeOptions)[number];
 
 export interface StopDetailValues {
@@ -38,7 +37,6 @@ export const stopDetailTypeToActivityType: Record<
   task: "experience",
   transportation: "travel",
 };
-export const stopDialogDetailTypeToActivityType = stopDetailTypeToActivityType;
 
 export const emptyStopDetailValues: StopDetailValues = {
   bookingRef: "",

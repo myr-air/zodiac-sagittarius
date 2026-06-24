@@ -9,7 +9,6 @@ export {
   travelSubtypeForItem,
   travelSubtypeIcons,
   travelSubtypeOptions,
-  travelSubtypes,
   withoutTravelSubtypeDetails,
 } from "./itinerary-travel-subtypes";
 export type { TravelSubtype } from "./itinerary-travel-subtypes";

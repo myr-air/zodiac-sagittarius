@@ -11,8 +11,6 @@ export {
   stopDetailLabels,
   stopDetailTypeOptions,
   stopDetailTypeToActivityType,
-  stopDialogDetailTypeOptions,
-  stopDialogDetailTypeToActivityType,
 } from "./stop-detail-definitions";
 export type {
   StopDetailType,
