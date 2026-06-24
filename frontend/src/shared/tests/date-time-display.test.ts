@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   displayDateTimeLocaleCode,
   displayGregorianDateTimeLocaleCode,
+  formatDateOnlyDisplay,
   formatDisplayDateTime,
   formatOptionalDisplayDateTime,
+  parseDateOnlyValue,
 } from "../date-time-display";
 
 describe("date time display helpers", () => {
@@ -35,6 +37,22 @@ describe("date time display helpers", () => {
       options: { day: "numeric", hour: "2-digit", minute: "2-digit", month: "short" },
       value: "2026-06-18T12:30:00.000Z",
     })).toContain("Jun");
+  });
+
+  it("parses and formats date-only values with explicit invalid fallbacks", () => {
+    expect(parseDateOnlyValue("2026-07-13")?.getFullYear()).toBe(2026);
+    expect(parseDateOnlyValue("not-a-date")).toBeNull();
+
+    expect(formatDateOnlyDisplay({
+      locale: "en-US",
+      options: { weekday: "short", month: "short", day: "numeric" },
+      value: "2026-07-13",
+    })).toBe("Mon, Jul 13");
+    expect(formatDateOnlyDisplay({
+      locale: "en-US",
+      options: { weekday: "short", month: "short", day: "numeric" },
+      value: "not-a-date",
+    })).toBe("not-a-date");
   });
 
   it("keeps nullable and invalid fallbacks explicit for optional displays", () => {

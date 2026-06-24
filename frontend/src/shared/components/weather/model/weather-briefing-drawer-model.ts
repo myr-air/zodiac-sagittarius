@@ -1,16 +1,19 @@
 import type { Locale } from "@/src/i18n/types";
-import { displayDateTimeLocaleCode } from "@/src/shared/date-time-display";
+import {
+  displayDateTimeLocaleCode,
+  formatDateOnlyDisplay,
+} from "@/src/shared/date-time-display";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
 
 export { emptyText, weatherDrawerCopy } from "./weather-briefing-drawer-copy";
 
 export function formatFullDate(date: string, locale: Locale): string {
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(displayDateTimeLocaleCode(locale), {
-    dateStyle: "full",
-  }).format(parsed);
+  return formatDateOnlyDisplay({
+    locale: displayDateTimeLocaleCode(locale),
+    options: { dateStyle: "full" },
+    value: date,
+  });
 }
 
 export function formatWeatherSummary(

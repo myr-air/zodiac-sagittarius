@@ -1,3 +1,4 @@
+import { parseDateOnlyValue } from "@/src/shared/date-time-display";
 import type { IconName } from "@/src/ui/icons";
 import type { TripDailyBriefing } from "./weather-briefing-types";
 
@@ -22,8 +23,8 @@ export function briefingsForStrip(briefings: TripDailyBriefing[]): TripDailyBrie
 }
 
 export function thaiWeekdayTone(date: string): ThaiWeekdayTone {
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return weekdayTones[0];
+  const parsed = parseDateOnlyValue(date);
+  if (!parsed) return weekdayTones[0];
   return weekdayTones[parsed.getDay()] ?? weekdayTones[0];
 }
 
