@@ -5,9 +5,13 @@ import {
 } from "@/src/shared/date-time-display";
 import {
   joinVisibleTextParts,
+  trimmedTextOrNull,
   visibleTextParts,
 } from "@/src/shared/text-parts";
-import type { TripDailyBriefing } from "@/src/trip/types";
+import type {
+  DailyBriefingOverrides,
+  TripDailyBriefing,
+} from "@/src/trip/types";
 import {
   formatWeatherDecimal,
   formatWeatherSpeed,
@@ -69,6 +73,18 @@ export function buildWeatherDetailLines(
       formatPercentValue(copy.cloudCover, weather.cloudCoverMeanPercent),
     ]),
   ]);
+}
+
+export function buildDailyBriefingOverrides(input: {
+  outfitAdvice: string;
+  festivalNote: string;
+  factsNote: string;
+}): DailyBriefingOverrides {
+  return {
+    outfitAdvice: trimmedTextOrNull(input.outfitAdvice),
+    festivalNote: trimmedTextOrNull(input.festivalNote),
+    factsNote: trimmedTextOrNull(input.factsNote),
+  };
 }
 
 function joinWeatherParts(parts: Array<string | null>): string | null {

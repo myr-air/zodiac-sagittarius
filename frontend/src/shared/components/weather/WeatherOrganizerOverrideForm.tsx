@@ -1,6 +1,9 @@
 import { type FormEvent, useState } from "react";
 import { Button } from "@/src/ui";
-import { weatherDrawerCopy } from "./model/weather-briefing-drawer-model";
+import {
+  buildDailyBriefingOverrides,
+  weatherDrawerCopy,
+} from "./model/weather-briefing-drawer-model";
 import {
   briefingBlockClassName,
   textAreaClassName,
@@ -19,11 +22,11 @@ export function WeatherOrganizerOverrideForm({
 
   function submitOverrides(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSaveOverrides?.(briefing.date, briefing.version, {
-      outfitAdvice: outfitAdvice.trim() || null,
-      festivalNote: festivalNote.trim() || null,
-      factsNote: factsNote.trim() || null,
-    });
+    onSaveOverrides?.(
+      briefing.date,
+      briefing.version,
+      buildDailyBriefingOverrides({ outfitAdvice, festivalNote, factsNote }),
+    );
   }
 
   return (

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TripDailyBriefing } from "@/src/trip/types";
 import {
+  buildDailyBriefingOverrides,
   buildWeatherDetailLines,
   formatFullDate,
   formatWeatherSummary,
@@ -62,5 +63,19 @@ describe("weather briefing drawer model", () => {
     expect(formatFullDate("2026-07-12", "en")).toContain("Sunday");
     expect(formatFullDate("2026-07-12", "th")).toContain("วันอาทิตย์");
     expect(formatFullDate("not-a-date", "en")).toBe("not-a-date");
+  });
+
+  it("normalizes organizer override text for API patches", () => {
+    expect(
+      buildDailyBriefingOverrides({
+        outfitAdvice: "  Bring sandals  ",
+        festivalNote: "  ",
+        factsNote: "",
+      }),
+    ).toEqual({
+      outfitAdvice: "Bring sandals",
+      festivalNote: null,
+      factsNote: null,
+    });
   });
 });

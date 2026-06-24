@@ -52,7 +52,9 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     expect(drawer).not.toContain("function OrganizerOverrideForm");
     expect(drawerModel).toContain("export function formatWeatherSummary");
     expect(drawerModel).toContain("export function buildWeatherDetailLines");
+    expect(drawerModel).toContain("export function buildDailyBriefingOverrides");
     expect(drawerModel).toContain("./weather-briefing-drawer-copy");
+    expect(drawerModel).toContain("@/src/shared/text-parts");
     expect(drawerModel).not.toContain('regionLabel: "Weather briefing"');
     expect(drawerCopy).toContain("export function weatherDrawerCopy");
     expect(drawerCopy).toContain("export function emptyText");
@@ -60,6 +62,8 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     expect(textBlock).toContain("./WeatherSourceMeta");
     expect(sourceMeta).toContain("export function WeatherSourceMeta");
     expect(overrideForm).toContain("export function WeatherOrganizerOverrideForm");
+    expect(overrideForm).toContain("buildDailyBriefingOverrides");
+    expect(overrideForm).not.toContain(".trim() || null");
   });
 
   it("keeps weather forecast strip formatting split from render", () => {
