@@ -3,6 +3,7 @@ import {
   type PhotoAlbumRelations,
 } from "@/src/trip/photo-albums";
 import { useCopyFeedbackState } from "@/src/shared/components/copy-feedback";
+import { ExternalLinkAction } from "@/src/shared/components/external-link-action";
 import { displayNameOrFallback } from "@/src/shared/text-parts";
 import type { TripPhotoAlbumLink } from "@/src/trip/types";
 import { Badge, WorkspaceSurface } from "@/src/ui";
@@ -21,7 +22,6 @@ import {
 } from "../model/photo-album-display";
 import { photoAlbumLinkHost } from "../model/photo-page-selectors";
 import { PhotoCopyFeedback } from "./PhotoCopyFeedback";
-import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
 
 interface PhotoAlbumInspectorProps {
   album: TripPhotoAlbumLink | null;
@@ -86,10 +86,10 @@ export function PhotoAlbumInspector({
         {copyState !== "idle" ? (
           <PhotoCopyFeedback copy={copy} copyState={copyState} />
         ) : null}
-        <PhotoAlbumExternalLinkAction
+        <ExternalLinkAction
           blockedLabel={copy.unsafeLinkBlocked}
           blockedMode="notice"
-          buttonClassName="w-full"
+          className="w-full"
           href={href}
           openLabel={copy.openAlbum}
         />

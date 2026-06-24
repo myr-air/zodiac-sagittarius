@@ -1,3 +1,4 @@
+import { ExternalLinkAction } from "@/src/shared/components/external-link-action";
 import { findPhotoAlbumRelations, safePhotoAlbumCoverHref, safePhotoAlbumHref } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
@@ -15,7 +16,6 @@ import {
   photoAlbumOwnerDisplay,
   photoAlbumSummaryDisplay,
 } from "../model/photo-album-display";
-import { PhotoAlbumExternalLinkAction } from "./PhotoAlbumExternalLinkAction";
 
 interface PhotoAlbumCardProps {
   album: TripPhotoAlbumLink;
@@ -65,13 +65,13 @@ export function PhotoAlbumCard({
         {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <PhotoAlbumExternalLinkAction
+        <ExternalLinkAction
           blockedLabel={copy.openBlocked}
           blockedMode="button"
-          buttonClassName="w-auto"
+          buttonVariant="ghost"
+          className="w-auto"
           href={href}
           openLabel={copy.openAlbumTitle(album.title)}
-          variant="ghost"
         />
         {canEdit ? (
           <span className="flex gap-1">
