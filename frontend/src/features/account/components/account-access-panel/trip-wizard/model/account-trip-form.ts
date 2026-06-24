@@ -3,6 +3,10 @@ import type {
   AccountTripCreateRequest,
 } from "@/src/account/api-client";
 import { uniqueStrings } from "@/src/shared/collection";
+import {
+  normalizeSearchQuery,
+  textEqualsNormalizedQuery,
+} from "@/src/shared/text-search";
 import { normalizeTripPartySize, tripPartySizeRange } from "@/src/trip/settings";
 import type { TripCity } from "@/src/trip/types";
 import {
@@ -66,12 +70,19 @@ export function normalizedTripForm(form: AccountTripCreateRequest, defaultOwnerD
 function originCityFromProfile(profile?: AccountSettings["profile"] | null): TripCityOption {
   const profileCity = profile?.homeCity?.trim();
   const profileCountry = profile?.homeCountry?.trim();
+  const normalizedProfileCity = normalizeSearchQuery(profileCity);
+  const normalizedProfileCountry = normalizeSearchQuery(profileCountry);
   if (profileCity) {
-    const exact = tripCityOptions.find((city) => city.city.toLocaleLowerCase() === profileCity.toLocaleLowerCase() && (!profileCountry || city.country.toLocaleLowerCase() === profileCountry.toLocaleLowerCase()));
+    const exact = tripCityOptions.find((city) =>
+      textEqualsNormalizedQuery(city.city, normalizedProfileCity) &&
+      (!profileCountry || textEqualsNormalizedQuery(city.country, normalizedProfileCountry)),
+    );
     if (exact) return exact;
   }
   if (profileCountry) {
-    const capital = tripCityOptions.find((city) => city.capital && city.country.toLocaleLowerCase() === profileCountry.toLocaleLowerCase());
+    const capital = tripCityOptions.find((city) =>
+      city.capital && textEqualsNormalizedQuery(city.country, normalizedProfileCountry),
+    );
     if (capital) return capital;
   }
   return defaultTripOriginCity;

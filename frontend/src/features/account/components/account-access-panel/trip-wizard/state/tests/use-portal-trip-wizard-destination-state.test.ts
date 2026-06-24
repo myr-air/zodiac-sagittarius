@@ -37,6 +37,20 @@ describe("usePortalTripWizardDestinationState", () => {
     });
   });
 
+  it("ignores destination duplicates without case-sensitive matching", () => {
+    const tokyo = tripCityOptions.find((city) => city.city === "Tokyo");
+    if (!tokyo) throw new Error("Tokyo fixture is missing");
+
+    const { result } = renderHook(() => useDestinationStateHarness([tokyo]));
+
+    act(() => {
+      result.current.destinationState.setCountryQuery("tokyo");
+    });
+    act(() => result.current.destinationState.addCityStop());
+
+    expect(result.current.form.destinationCities.map((city) => city.city)).toEqual(["Tokyo"]);
+  });
+
   it("adds custom stops with the first selected city fallback and clears destination queries", () => {
     const tokyo = tripCityOptions.find((city) => city.city === "Tokyo");
     if (!tokyo) throw new Error("Tokyo fixture is missing");

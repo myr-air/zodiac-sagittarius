@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
 import {
   applyTripDestinationCities,
+  defaultTripForm,
   normalizedTripForm,
 } from "../account-trip-form";
 
@@ -56,6 +57,25 @@ describe("account trip form helpers", () => {
     ).toMatchObject({
       countries: ["Japan"],
       destinationLabel: "Tokyo, Kyoto",
+    });
+  });
+
+  it("uses profile home city and country without case-sensitive matching", () => {
+    expect(
+      defaultTripForm("", {
+        id: "profile-aom",
+        avatarColor: "#0f766e",
+        homeCity: "tokyo",
+        homeCountry: "japan",
+        displayName: "",
+        locale: "en",
+        primaryEmail: "aom@example.com",
+        timezone: "Asia/Tokyo",
+      }),
+    ).toMatchObject({
+      originCity: "Tokyo",
+      originCountry: "Japan",
+      originCountryCode: "JP",
     });
   });
 });

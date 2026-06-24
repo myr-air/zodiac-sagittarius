@@ -1,5 +1,9 @@
 import { type Dispatch, type SetStateAction, useRef, useState } from "react";
 import type { AccountTripCreateRequest } from "@/src/account/api-client";
+import {
+  normalizeSearchQuery,
+  textEqualsNormalizedQuery,
+} from "@/src/shared/text-search";
 import type { TripCity } from "@/src/trip/types";
 import { applyTripDestinationCities } from "../model/account-trip-form";
 import {
@@ -30,8 +34,9 @@ export function usePortalTripWizardDestinationState({
   }
 
   function selectDestinationCity(city: TripCityOption) {
+    const normalizedCity = normalizeSearchQuery(city.city);
     const alreadySelected = selectedDestinationCities.some((selected) =>
-      selected.city.toLocaleLowerCase() === city.city.toLocaleLowerCase()
+      textEqualsNormalizedQuery(selected.city, normalizedCity)
       && selected.countryCode === city.countryCode
     );
     if (alreadySelected) return;
@@ -44,8 +49,9 @@ export function usePortalTripWizardDestinationState({
 
   function addCityStop() {
     const nextCity = (countryQuery || cityQuery).trim();
+    const normalizedNextCity = normalizeSearchQuery(nextCity);
     const hasSelectedCity = selectedDestinationNames.some((name) =>
-      name.toLocaleLowerCase() === nextCity.toLocaleLowerCase()
+      textEqualsNormalizedQuery(name, normalizedNextCity)
     );
     if (!nextCity || hasSelectedCity) return;
     updateDestinationCities([
