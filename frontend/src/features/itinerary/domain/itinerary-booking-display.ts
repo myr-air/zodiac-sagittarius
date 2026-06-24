@@ -1,6 +1,10 @@
 import type { BookingDoc, BookingDocType, ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
-import type { ItineraryBookingTemplate } from "@/src/trip/booking-docs";
+import {
+  bookingTypeForBookingTemplate,
+  bookingTypeForItineraryItem,
+  type ItineraryBookingTemplate,
+} from "@/src/trip/booking-docs";
 import { type IconName } from "@/src/ui/icons";
 import {
   travelSubtypeForItem,
@@ -63,18 +67,8 @@ export function bookingDocTypeForItemTemplate(
   item: ItineraryItem,
   template: ItineraryBookingTemplate,
 ): BookingDocType {
-  if (template === "flight") return "flight";
-  if (template === "train") return "train";
-  if (template === "hotel") return "hotel";
-  if (template === "activity_ticket") return "activity_ticket";
-
-  const subtype = travelSubtypeForItem(item);
-  if (subtype === "flight") return "flight";
-  if (subtype === "train") return "train";
-  if (item.activityType === "travel") return "public_transport";
-  if (item.activityType === "stay") return "hotel";
-  if (item.activityType === "attraction" || item.activityType === "experience") return "activity_ticket";
-  return "other";
+  if (template !== "recommended") return bookingTypeForBookingTemplate(template);
+  return bookingTypeForItineraryItem(item);
 }
 
 export function formatBookingSummary(booking: BookingDoc, items: ItineraryItem[]): string {

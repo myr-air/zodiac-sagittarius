@@ -1,4 +1,4 @@
-import type { BookingDoc } from "../types";
+import { bookingTypeForItemClassification } from "../booking-docs/booking-doc-item-classification";
 import type {
   ItineraryExportItem,
   ItineraryExportRecords,
@@ -41,7 +41,7 @@ export function buildSpreadsheetLinkedRecords({
       id: bookingId,
       tripId: "",
       tripPlanId: null,
-      type: bookingTypeForImportedItem(item),
+      type: bookingTypeForItemClassification(item),
       title: `${item.activity} draft`,
       status: "draft",
       visibility: "shared",
@@ -97,16 +97,4 @@ export function parseMoneyHint(value: string): { amount: number; currency: strin
   const rawCurrency = (currencyFirst ? match[1] : match[2])?.toUpperCase() ?? "";
   if (!Number.isFinite(amount) || !rawCurrency) return null;
   return { amount, currency: rawCurrency === "RMB" ? "CNY" : rawCurrency };
-}
-
-function bookingTypeForImportedItem(
-  item: Pick<ItineraryExportItem, "activityType" | "activitySubtype" | "itemKind">,
-): BookingDoc["type"] {
-  if (item.activitySubtype === "flight") return "flight";
-  if (item.activityType === "travel" || item.itemKind === "travel")
-    return "public_transport";
-  if (item.activityType === "stay" || item.itemKind === "lodging") return "hotel";
-  if (item.activityType === "attraction" || item.itemKind === "activity")
-    return "activity_ticket";
-  return "other";
 }

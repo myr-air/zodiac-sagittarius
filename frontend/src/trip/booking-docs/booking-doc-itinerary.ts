@@ -8,6 +8,7 @@ import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInputLike,
 } from "./booking-doc-inputs";
+import { bookingTypeForItemClassification } from "./booking-doc-item-classification";
 export { bookingDraftTitleForItineraryItem } from "./booking-doc-display";
 
 export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType {
@@ -32,10 +33,7 @@ export function bookingTypeForItineraryItem(item: ItineraryItem): BookingDocType
   ) {
     return "hotel";
   }
-  if (item.activityType === "attraction" || item.itemKind === "activity") {
-    return "activity_ticket";
-  }
-  return "other";
+  return bookingTypeForItemClassification(item);
 }
 
 export function syncItineraryDetailsWithBookingTicket(

@@ -27,6 +27,19 @@ describe("itinerary-booking-display", () => {
     expect(bookingIconForItem(flight)).toBe("plane");
   });
 
+  it("uses shared trip booking classification for recommended ticket types", () => {
+    expect(
+      bookingDocTypeForItemTemplate(
+        buildItineraryItem({
+          activity: "Harbour night cruise",
+          activityType: "experience",
+          itemKind: "activity",
+        }),
+        "recommended",
+      ),
+    ).toBe("activity_ticket");
+  });
+
   it("summarizes existing booking links for candidate lists", () => {
     const booking: BookingDoc = {
       id: "booking-1",

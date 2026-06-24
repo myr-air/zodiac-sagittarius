@@ -4,6 +4,7 @@ import {
   bookingDraftTimeWindowForItineraryItem,
   bookingDraftTitleForItineraryItem,
   bookingDocInputForExpenseEstimate,
+  bookingTypeForItemClassification,
   bookingTypeForBookingTemplate,
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
@@ -46,6 +47,15 @@ describe("booking doc estimates", () => {
     expect(bookingTypeForBookingTemplate("activity_ticket")).toBe("activity_ticket");
     expect(bookingTypeForExpenseEstimate({ category: "stay" } as Expense)).toBe("hotel");
     expect(bookingTypeForExpenseEstimate({ category: "transport" } as Expense)).toBe("public_transport");
+  });
+
+  it("classifies item category fields through one shared booking type helper", () => {
+    expect(bookingTypeForItemClassification({ activitySubtype: "flight" })).toBe("flight");
+    expect(bookingTypeForItemClassification({ activitySubtype: "train" })).toBe("train");
+    expect(bookingTypeForItemClassification({ activityType: "travel" })).toBe("public_transport");
+    expect(bookingTypeForItemClassification({ itemKind: "lodging" })).toBe("hotel");
+    expect(bookingTypeForItemClassification({ activityType: "experience" })).toBe("activity_ticket");
+    expect(bookingTypeForItemClassification({ activityType: "food" })).toBe("other");
   });
 
   it("builds booking estimate inputs from actual expenses", () => {

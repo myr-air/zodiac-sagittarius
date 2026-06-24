@@ -44,6 +44,12 @@ export type {
 } from "./booking-doc-local";
 export type { BookingDocQuickFieldsPatch } from "./booking-doc-record-inputs";
 export {
+  bookingTypeForItemClassification,
+} from "./booking-doc-item-classification";
+export type {
+  BookingItemClassificationInput,
+} from "./booking-doc-item-classification";
+export {
   buildBookingDocsSummary,
   bookingDocLinkedContext,
   bookingDocMatchesQuery,
