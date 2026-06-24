@@ -21,6 +21,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized expense overview row styles locally
 - [x] Centralized context rail item surface styles locally
 - [x] Moved generic booking document type labels to trip domain
+- [x] Audited workspace page composition line bands
 
 ## Milestone 1: Shared UI Primitives
 
@@ -51,7 +52,7 @@ Goal: Keep each workspace page split into page composition, components, hooks, m
 - [x] Expenses page has separated model display helpers and component wrappers.
 - [x] Bookings/docs page has separated display, options, folders, and dialog fields.
 - [x] Photos page has separated page options, display helpers, and dialog fields.
-- [ ] Check large page files and split files above the project 400/600-line review bands.
+- [x] Check large page files and split files above the project 400/600-line review bands.
 - [ ] Move reusable page-level patterns into shared workspace components only when at least two features use them.
 - [ ] Remove obsolete feature-local aliases after shared/domain helpers exist.
 
@@ -83,7 +84,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Audit `TripExpensesPage.styles.ts`; centralize expense-only overview row shells locally.
 - [x] Audit `context-rail.styles.ts`; centralize context-rail-only item surface shells locally.
 - [x] Audit bookings/docs option labels; keep localized page copy local and move generic booking type fallback labels to trip domain.
-- [ ] Audit large page composition files and split only where behavior boundaries are clear.
+- [x] Audit large page composition files; current workspace pages stay below the 400-line review band.
 - [ ] Re-run Storybook catalog checks after any shared component move.
 
 ## Draft Acceptance Criteria
