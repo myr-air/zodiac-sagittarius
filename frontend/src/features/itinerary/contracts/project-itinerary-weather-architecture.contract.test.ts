@@ -9,6 +9,8 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     const tableLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-labels.ts");
     const tableTripPlanLabels = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/smart-itinerary-table-trip-plan-labels.ts");
     const weatherSummary = readItineraryArchitectureSource("src/features/itinerary/domain/weather-summary.ts");
+    const weatherTooltip = readItineraryArchitectureSource("src/features/itinerary/domain/weather-tooltip.ts");
+    const weatherChipDisplay = readItineraryArchitectureSource("src/features/itinerary/domain/weather-chip-display.ts");
     const weatherChip = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/day-weather-chip.tsx");
 
     expect(tableUtils).not.toContain("TripDailyBriefing");
@@ -28,14 +30,17 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     expect(tableLabels).toContain("export function formatSelectedPlanLabel");
     expect(tableTripPlanLabels).toContain("export function tripPlanStatus");
     expect(weatherSummary).toContain("export function buildWeatherSummary");
-    expect(weatherSummary).toContain("export function buildWeatherTooltip");
-    expect(weatherChip).toContain("@/src/features/itinerary/domain/weather-summary");
+    expect(weatherSummary).toContain("./weather-tooltip");
+    expect(weatherTooltip).toContain("export function buildWeatherTooltip");
+    expect(weatherChipDisplay).toContain("export function buildWeatherChipDisplay");
+    expect(weatherChip).toContain("@/src/features/itinerary/domain/weather-chip-display");
   });
 
   it("keeps weather briefing drawer formatting split from render", () => {
     const drawer = readItineraryArchitectureSource("src/shared/components/weather/WeatherBriefingDrawer.tsx");
     const drawerModel = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-model.ts");
     const drawerCopy = readItineraryArchitectureSource("src/shared/components/weather/model/weather-briefing-drawer-copy.ts");
+    const metricFormatters = readItineraryArchitectureSource("src/shared/components/weather/model/weather-metric-formatters.ts");
     const textBlock = readItineraryArchitectureSource("src/shared/components/weather/WeatherTextBlock.tsx");
     const sourceMeta = readItineraryArchitectureSource("src/shared/components/weather/WeatherSourceMeta.tsx");
     const overrideForm = readItineraryArchitectureSource("src/shared/components/weather/WeatherOrganizerOverrideForm.tsx");
@@ -54,7 +59,9 @@ describe("Sagittarius itinerary weather architecture contracts", () => {
     expect(drawerModel).toContain("export function buildWeatherDetailLines");
     expect(drawerModel).toContain("export function buildDailyBriefingOverrides");
     expect(drawerModel).toContain("./weather-briefing-drawer-copy");
-    expect(drawerModel).toContain("@/src/shared/text-parts");
+    expect(drawerModel).toContain("./weather-metric-formatters");
+    expect(metricFormatters).toContain("@/src/shared/text-parts");
+    expect(metricFormatters).toContain("export function formatWeatherMetric");
     expect(drawerModel).not.toContain('regionLabel: "Weather briefing"');
     expect(drawerCopy).toContain("export function weatherDrawerCopy");
     expect(drawerCopy).toContain("export function emptyText");

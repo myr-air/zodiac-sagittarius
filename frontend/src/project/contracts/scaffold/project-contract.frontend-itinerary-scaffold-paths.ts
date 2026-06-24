@@ -80,6 +80,8 @@ export const frontendItineraryScaffoldPathsPresent = [
   "src/features/itinerary/domain/stop-time.ts",
   "src/features/itinerary/domain/tests/stop-time.test.ts",
   "src/features/itinerary/domain/weather-summary.ts",
+  "src/features/itinerary/domain/weather-tooltip.ts",
+  "src/features/itinerary/domain/weather-chip-display.ts",
   "src/features/itinerary/domain/tests/weather-summary.test.ts",
   "src/features/itinerary/lib/itinerary-display.ts",
   "src/features/itinerary/lib/tests/itinerary-display.test.ts",

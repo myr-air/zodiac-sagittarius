@@ -270,6 +270,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/shared/components/travel-motifs/storybook/TravelMotifs.stories.plays.ts",
   "src/shared/components/weather/model/weather-briefing-drawer-copy.ts",
   "src/shared/components/weather/model/weather-briefing-drawer-model.ts",
+  "src/shared/components/weather/model/weather-metric-formatters.ts",
+  "src/shared/components/weather/model/weather-metric-formatters.test.ts",
   "src/shared/components/weather/model/weather-forecast-strip-model.ts",
   "src/shared/components/weather/model/weather-forecast-strip-model.test.ts",
   "src/shared/components/weather/WeatherOrganizerOverrideForm.tsx",

@@ -1,7 +1,7 @@
 import type { TripDailyBriefing } from "@/src/trip/types";
 import { weatherIconForCondition } from "@/src/trip/weather";
 import { Icon } from "@/src/ui/icons";
-import { buildWeatherChipDisplay } from "@/src/features/itinerary/domain/weather-summary";
+import { buildWeatherChipDisplay } from "@/src/features/itinerary/domain/weather-chip-display";
 import {
   dayWeatherChipClassName,
   dayWeatherSolarClassName,
