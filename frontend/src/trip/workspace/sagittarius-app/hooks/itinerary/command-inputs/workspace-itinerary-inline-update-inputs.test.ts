@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildInlineItineraryItemPatchRequest } from "@/src/trip/itinerary-items";
 import { buildInlineItineraryItemPatch } from "@/src/trip/itinerary-core";
 import { buildMapLink } from "@/src/trip/places";
-import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   buildWorkspaceInlinePatch,
@@ -10,7 +10,7 @@ import {
   buildWorkspaceInlineUpdatedItem,
 } from "./workspace-itinerary-inline-update-inputs";
 
-const item = seedTrip.itineraryItems[0]!;
+const item = getTripFixtureItineraryItem("item-dimdim");
 
 describe("workspace itinerary inline update inputs", () => {
   it("builds API patch requests from normalized inline item patches", () => {

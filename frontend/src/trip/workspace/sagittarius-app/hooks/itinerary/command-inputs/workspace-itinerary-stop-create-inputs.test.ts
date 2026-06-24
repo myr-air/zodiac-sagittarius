@@ -7,6 +7,7 @@ import {
 } from "@/src/trip/itinerary-paths";
 import { nextLocalItemId } from "@/src/trip/identity";
 import { seedTrip } from "@/src/trip/seed";
+import { getTripFixtureItineraryItem } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { workspaceLocalMutationTimestamp } from "../../../support/local-mutations";
 import {
   stopFormValues,
@@ -63,7 +64,7 @@ describe("workspace itinerary stop create inputs", () => {
   });
 
   it("reports parent-child creates while preserving parent path draft behavior", () => {
-    const parentItem = seedTrip.itineraryItems[0]!;
+    const parentItem = getTripFixtureItineraryItem("item-dimdim");
     const values = stopFormValues({ parentItemId: parentItem.id });
     const day = parentItem.day;
     const pathSelection = { tripPathId: "path-rain" };
