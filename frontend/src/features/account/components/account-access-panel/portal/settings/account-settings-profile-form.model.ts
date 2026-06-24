@@ -2,17 +2,14 @@ import type {
   AccountSettings,
   AccountSettingsUpdateRequest,
 } from "@/src/account/api-client";
+import type { SelectOption } from "@/src/shared/select-options";
 import {
   buildAccountPortalProfileDisplay,
   type AccountPortalProfileDisplay,
 } from "../profile/account-portal-profile-display";
 
 export type AccountSettingsProfilePreview = AccountPortalProfileDisplay;
-
-export interface AccountSettingsLocaleSelectOption {
-  value: string;
-  label: string;
-}
+export type AccountSettingsLocaleSelectOption = SelectOption;
 
 export const accountSettingsLocaleSelectOptions: readonly AccountSettingsLocaleSelectOption[] = [
   { value: "th-TH", label: "Thai" },
