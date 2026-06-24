@@ -24,7 +24,7 @@ describe("TripExpensesPage exchange rates", () => {
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
     await user.selectOptions(within(dialog).getByLabelText(/สกุลเงิน/i), "CNY");
-    await waitFor(() => expect(within(dialog).getByLabelText(/เรท CNY เป็น HKD/i)).toHaveValue("1.1"));
+    await waitFor(() => expect(within(dialog).getByLabelText(/อัตราแลกเปลี่ยน CNY เป็น HKD/i)).toHaveValue("1.1"));
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -49,7 +49,7 @@ describe("TripExpensesPage exchange rates", () => {
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "100");
     await user.selectOptions(within(dialog).getByLabelText(/สกุลเงิน/i), "CNY");
-    const exchangeRateInput = await within(dialog).findByLabelText(/เรท CNY เป็น HKD/i);
+    const exchangeRateInput = await within(dialog).findByLabelText(/อัตราแลกเปลี่ยน CNY เป็น HKD/i);
     await waitFor(() => expect(exchangeRateInput).toHaveValue("1.1"));
     await user.clear(exchangeRateInput);
     await user.type(exchangeRateInput, "1.08");
@@ -73,10 +73,10 @@ describe("TripExpensesPage exchange rates", () => {
     await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));
     await user.selectOptions(screen.getByLabelText(/สกุลเงินที่แสดง/i), "THB");
 
-    await waitFor(() => expect(screen.getByLabelText(/เรท HKD เป็น THB/i)).toHaveValue("4.6"));
+    await waitFor(() => expect(screen.getByLabelText(/อัตราแลกเปลี่ยน HKD เป็น THB/i)).toHaveValue("4.6"));
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
     await user.click(screen.getByRole("button", { name: /ดูรายละเอียดบิลของ Dim Dim Sum brunch/i }));
-    expect(screen.getByText(/HK\$512\.00 × 1 = HK\$512\.00 · HK\$512\.00 × 4\.6 = ฿2,355\.20/)).toBeInTheDocument();
+    expect(screen.getByText(/Paid in HKD\. No currency conversion needed\. Shown as ฿2,355\.20\./)).toBeInTheDocument();
   });
 });

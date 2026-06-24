@@ -47,7 +47,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
-    expect(screen.getByLabelText("Trip Plan")).toHaveValue("plan-main");
+    expect(screen.getByLabelText("แผนทริป")).toHaveValue("plan-main");
     expect(screen.getByLabelText(/วัน/i)).toHaveValue("all");
 
     await user.click(screen.getByRole("tab", { name: /ตั้งค่า/i }));

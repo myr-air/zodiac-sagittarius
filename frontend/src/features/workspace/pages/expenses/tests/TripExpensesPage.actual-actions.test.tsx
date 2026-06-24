@@ -19,7 +19,7 @@ describe("TripExpensesPage actual expense actions", () => {
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
-        name: /ทำ Dim Dim Sum brunch เป็น estimate/i,
+        name: /ทำสำเนา Dim Dim Sum brunch เป็นรายการคาดการณ์/i,
       }),
     );
 
@@ -39,7 +39,7 @@ describe("TripExpensesPage actual expense actions", () => {
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(
       screen.getByRole("button", {
-        name: /บันทึก refund ของ Dim Dim Sum brunch/i,
+        name: /บันทึกเงินคืนของ Dim Dim Sum brunch/i,
       }),
     );
 

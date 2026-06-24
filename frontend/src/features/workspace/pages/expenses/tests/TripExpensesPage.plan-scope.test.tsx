@@ -12,14 +12,14 @@ describe("TripExpensesPage plan scope", () => {
     vi.unstubAllGlobals();
   });
 
-  it("lets organizers choose the Trip Plan for an unlinked actual expense", async () => {
+  it("lets organizers choose the trip plan for an unlinked actual expense", async () => {
     const user = userEvent.setup();
     const props = renderExpenses({ selectedTripPlanId: "plan-main" });
 
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
-    await user.selectOptions(within(dialog).getByLabelText("Trip Plan"), "plan-rain");
+    await user.selectOptions(within(dialog).getByLabelText("แผนทริป"), "plan-rain");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
     expect(props.onUpdateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -48,21 +48,21 @@ describe("TripExpensesPage plan scope", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: /ประเภท/i }));
-    const audit = screen.getByRole("region", { name: /ตรวจ scope ของเงินจริง/i });
+    const audit = screen.getByRole("region", { name: /ตรวจขอบเขตของเงินจริง/i });
     expect(audit).toHaveTextContent("Dim Dim Sum brunch");
-    expect(audit).toHaveTextContent("scope ที่ระบบเดาไว้: แผนฝนตก");
+    expect(audit).toHaveTextContent("ขอบเขตที่ระบบเดาไว้: แผนฝนตก");
 
     await user.click(
       within(audit).getByRole("button", {
-        name: /ตรวจ scope ของ Dim Dim Sum brunch/i,
+        name: /ตรวจขอบเขตของ Dim Dim Sum brunch/i,
       }),
     );
 
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
-    expect(within(dialog).getByLabelText("Trip Plan")).toHaveValue("plan-rain");
+    expect(within(dialog).getByLabelText("แผนทริป")).toHaveValue("plan-rain");
   });
 
-  it("locks the Trip Plan to the linked stop when editing a linked expense", async () => {
+  it("locks the trip plan to the linked stop when editing a linked expense", async () => {
     const user = userEvent.setup();
     const trip = {
       ...seedTrip,
@@ -85,7 +85,7 @@ describe("TripExpensesPage plan scope", () => {
     await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Arrival taxi receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
-    const planSelect = within(dialog).getByLabelText("Trip Plan");
+    const planSelect = within(dialog).getByLabelText("แผนทริป");
 
     expect(planSelect).toBeDisabled();
     expect(planSelect).toHaveValue("plan-main");

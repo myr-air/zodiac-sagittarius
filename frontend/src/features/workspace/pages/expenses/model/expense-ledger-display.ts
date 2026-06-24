@@ -10,7 +10,6 @@ import { findMemberById } from "@/src/trip/members";
 import type { Expense, Member } from "@/src/trip/types";
 import {
   displayCurrencyCode,
-  formatExchangeRateForDisplay,
   formatSettlementAmountForDisplay,
   type ExpenseDisplayCurrencyOptions,
 } from "./expense-display-currency";
@@ -66,13 +65,17 @@ export function expenseLedgerRowDisplay(
     settlementAmount,
     displayOptions,
   );
+  const sameSettlementCurrency = currency === normalizedSettlementCurrency;
+  const conversionLabel = sameSettlementCurrency
+    ? `Paid in ${currency}. No currency conversion needed.`
+    : `Paid in ${currency}. Trip amount is ${settlementAmountLabel}.`;
   const displayMath = targetCurrency === normalizedSettlementCurrency
     ? ""
-    : ` · ${settlementAmountLabel} × ${formatExchangeRateForDisplay(displayOptions.displayExchangeRate)} = ${displayAmountLabel}`;
+    : ` Shown as ${displayAmountLabel}.`;
 
   return {
     ...baseDisplay,
-    calculationLabel: `${baseDisplay.amountLabel} × ${formatExchangeRateForDisplay(exchangeRate)} = ${settlementAmountLabel}${displayMath}`,
+    calculationLabel: `${conversionLabel}${displayMath}`,
     displayAmountLabel,
     memberBreakdown: options.members.map((member) => {
       const share = convertToSettlementCurrency(
@@ -82,12 +85,18 @@ export function expenseLedgerRowDisplay(
       const net = roundMoney(
         (expense.paidBy === member.id ? settlementAmount : 0) - share,
       );
-      return `${member.displayName} share ${formatMoney(share, settlementCurrency)}, net ${formatMoney(net, settlementCurrency)}`;
+      if (net > 0) {
+        return `${member.displayName} gets back ${formatMoney(net, settlementCurrency)}`;
+      }
+      if (net < 0) {
+        return `${member.displayName} pays ${formatMoney(Math.abs(net), settlementCurrency)}`;
+      }
+      return `${member.displayName} is settled`;
     }),
     settlementAmountLabel,
     sourceLabel: expense.lineItems?.length
-      ? `Itemized receipt: ${expense.lineItems.map((item) => item.title).join(", ")}`
-      : "Saved member shares",
+      ? `Built from receipt items: ${expense.lineItems.map((item) => item.title).join(", ")}`
+      : "Split saved by member shares",
   };
 }
 

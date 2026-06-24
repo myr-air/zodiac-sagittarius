@@ -140,15 +140,15 @@ describe("expense ledger display", () => {
       ),
     ).toEqual(expect.objectContaining({
       amountLabel: "HK$100.00",
-      calculationLabel: "HK$100.00 × 4.5 = ฿450.00 · ฿450.00 × 0.03 = US$13.50",
+      calculationLabel: "Paid in HKD. Trip amount is ฿450.00. Shown as US$13.50.",
       displayAmountLabel: "US$13.50",
       memberBreakdown: [
-        "Aom share ฿180.00, net ฿270.00",
-        "Beam share ฿270.00, net -฿270.00",
-        "Nam share ฿0.00, net ฿0.00",
+        "Aom gets back ฿270.00",
+        "Beam pays ฿270.00",
+        "Nam is settled",
       ],
       settlementAmountLabel: "฿450.00",
-      sourceLabel: "Itemized receipt: Noodles",
+      sourceLabel: "Built from receipt items: Noodles",
     }));
   });
 });

@@ -124,8 +124,8 @@ describe("TripExpensesPage edit dialog", () => {
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim sum receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     expect(dialog).toHaveTextContent("Receipt uploaded by Aom.");
-    await user.type(within(dialog).getByLabelText(/เพิ่ม comment/i), "I'll transfer tonight.");
-    await user.click(within(dialog).getByRole("button", { name: /เพิ่ม comment/i }));
+    await user.type(within(dialog).getByLabelText(/เพิ่มโน้ต/i), "I'll transfer tonight.");
+    await user.click(within(dialog).getByRole("button", { name: /เพิ่มโน้ต/i }));
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
     expect(props.onUpdateExpense).toHaveBeenCalledWith(expect.objectContaining({

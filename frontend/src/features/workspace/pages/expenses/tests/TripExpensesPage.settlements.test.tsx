@@ -113,7 +113,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /คัดลอก reminder/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /คัดลอกข้อความเตือน/i })[0]);
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("please pay"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Hong Kong + Shenzhen Trip"));
