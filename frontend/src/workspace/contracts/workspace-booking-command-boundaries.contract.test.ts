@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { frontendRoot } from "../../project/contracts/project-contract.helpers";
+import {
+  expectSourceNotToContain,
+  expectSourceToContain,
+} from "./workspace-source-boundaries.assertions";
 import { readWorkspaceBoundarySources } from "./workspace-source-boundaries.sources";
 
 describe("Sagittarius workspace booking command source boundaries", () => {
@@ -24,93 +28,87 @@ describe("Sagittarius workspace booking command source boundaries", () => {
       bookingCommandTicketInputs,
     } = readWorkspaceBoundarySources(frontendRoot);
 
-    expect(itineraryBookingCommands).toContain(
+    expectSourceToContain(itineraryBookingCommands, [
       "useCreateItineraryBookingDraftCommand",
-    );
-    expect(itineraryBookingCommands).toContain(
       "useSaveItineraryBookingTicketCommand",
-    );
-    expect(itineraryBookingCommands).toContain("useUnlinkItineraryBookingCommand");
-    expect(itineraryBookingCommands).not.toContain(
+      "useUnlinkItineraryBookingCommand",
+    ]);
+    expectSourceNotToContain(itineraryBookingCommands, [
       "resolveItineraryBookingTicketCommandInput",
-    );
-    expect(itineraryBookingCommands).not.toContain(
       "syncItineraryDetailsWithBookingTicket",
-    );
-    expect(itineraryBookingCommands).not.toContain("bookingDocInputFromRecord");
-    expect(itineraryBookingCommands).not.toContain(
+      "bookingDocInputFromRecord",
       "buildItineraryBookingTicketDocInput",
-    );
+    ]);
     expect(itineraryBookingCommandTypes).toContain(
       "UseWorkspaceItineraryBookingCommandsOptions",
     );
-    expect(createItineraryBookingDraftCommand).toContain(
+    expectSourceToContain(createItineraryBookingDraftCommand, [
       "buildItineraryBookingDraftInput",
-    );
-    expect(createItineraryBookingDraftCommand).toContain("findDuplicateBookingDoc");
-    expect(saveItineraryBookingTicketCommand).toContain(
+      "findDuplicateBookingDoc",
+    ]);
+    expectSourceToContain(saveItineraryBookingTicketCommand, [
       "resolveItineraryBookingTicketCommandInput",
-    );
-    expect(saveItineraryBookingTicketCommand).toContain(
       "syncItineraryDetailsWithBookingTicket",
-    );
-    expect(unlinkItineraryBookingCommand).toContain("bookingDocInputFromRecord");
-    expect(unlinkItineraryBookingCommand).toContain(
+    ]);
+    expectSourceToContain(unlinkItineraryBookingCommand, [
+      "bookingDocInputFromRecord",
       "clearItineraryBookingTicketDetails",
-    );
-    expect(bookingDocCommands).toContain("useCreateBookingDocCommand");
-    expect(bookingDocCommands).toContain("useDeleteBookingDocCommand");
-    expect(bookingDocCommands).toContain("useWorkspaceBookingDocUpdateCommands");
-    expect(bookingDocCommands).not.toContain("buildWorkspaceBookingDocCreateInput");
-    expect(bookingDocCommands).not.toContain("removeBookingDocFromTrip");
-    expect(bookingDocCommands).not.toContain("normalizeBookingDocTitle");
-    expect(bookingDocCommands).not.toContain("resolveBookingDocCreateTripPlanId");
+    ]);
+    expectSourceToContain(bookingDocCommands, [
+      "useCreateBookingDocCommand",
+      "useDeleteBookingDocCommand",
+      "useWorkspaceBookingDocUpdateCommands",
+    ]);
+    expectSourceNotToContain(bookingDocCommands, [
+      "buildWorkspaceBookingDocCreateInput",
+      "removeBookingDocFromTrip",
+      "normalizeBookingDocTitle",
+      "resolveBookingDocCreateTripPlanId",
+    ]);
     expect(bookingDocCommandTypes).toContain(
       "UseWorkspaceBookingDocCommandsOptions",
     );
-    expect(createBookingDocCommand).toContain(
+    expectSourceToContain(createBookingDocCommand, [
       "buildWorkspaceBookingDocCreateInput",
-    );
-    expect(createBookingDocCommand).toContain("buildCreateBookingDocRequest");
-    expect(createBookingDocCommand).toContain("createLocalBookingDoc");
+      "buildCreateBookingDocRequest",
+      "createLocalBookingDoc",
+    ]);
     expect(deleteBookingDocCommand).toContain("removeBookingDocFromTrip");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocUpdateRunner");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocTypeCommand");
-    expect(bookingDocUpdateCommands).toContain("useBookingDocQuickFieldCommand");
-    expect(bookingDocUpdateCommands).not.toContain(
+    expectSourceToContain(bookingDocUpdateCommands, [
+      "useBookingDocUpdateRunner",
+      "useBookingDocTypeCommand",
+      "useBookingDocQuickFieldCommand",
+    ]);
+    expectSourceNotToContain(bookingDocUpdateCommands, [
       "runWorkspaceVersionConflictRetry",
-    );
-    expect(bookingDocUpdateCommands).not.toContain("bookingDocInputFromRecord");
-    expect(bookingDocUpdateCommands).not.toContain(
+      "bookingDocInputFromRecord",
       "bookingDocQuickFieldsInputFromRecord",
-    );
+    ]);
     expect(bookingDocUpdateCommandTypes).toContain(
       "UseWorkspaceBookingDocUpdateCommandsOptions",
     );
-    expect(bookingDocUpdateRunner).toContain("runWorkspaceVersionConflictRetry");
-    expect(bookingDocUpdateRunner).toContain("queueKeyedUpdate");
-    expect(bookingDocUpdateRunner).toContain("updateLocalBookingDocInTrip");
+    expectSourceToContain(bookingDocUpdateRunner, [
+      "runWorkspaceVersionConflictRetry",
+      "queueKeyedUpdate",
+      "updateLocalBookingDocInTrip",
+    ]);
     expect(bookingDocTypeCommand).toContain("bookingDocInputFromRecord");
     expect(bookingDocQuickFieldCommand).toContain(
       "bookingDocQuickFieldsInputFromRecord",
     );
-    expect(bookingCommandCreateInputs).toContain(
+    expectSourceToContain(bookingCommandCreateInputs, [
       "buildWorkspaceBookingDocCreateInput",
-    );
-    expect(bookingCommandCreateInputs).toContain("normalizeBookingDocTitle");
-    expect(bookingCommandCreateInputs).toContain(
+      "normalizeBookingDocTitle",
       "resolveBookingDocCreateTripPlanId",
-    );
-    expect(bookingCommandDraftInputs).toContain("buildItineraryBookingDraftInput");
-    expect(bookingCommandDraftInputs).toContain(
+    ]);
+    expectSourceToContain(bookingCommandDraftInputs, [
+      "buildItineraryBookingDraftInput",
       "bookingDraftTitleForItineraryItem",
-    );
-    expect(bookingCommandTicketInputs).toContain(
+    ]);
+    expectSourceToContain(bookingCommandTicketInputs, [
       "buildItineraryBookingTicketDocInput",
-    );
-    expect(bookingCommandTicketInputs).toContain(
       "resolveItineraryBookingTicketCommandInput",
-    );
-    expect(bookingCommandTicketInputs).toContain("findDuplicateBookingDoc");
+      "findDuplicateBookingDoc",
+    ]);
   });
 });
