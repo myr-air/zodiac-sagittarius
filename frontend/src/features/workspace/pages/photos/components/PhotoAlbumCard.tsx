@@ -1,4 +1,5 @@
 import { ExternalLinkAction } from "@/src/shared/components/external-link-action";
+import { IconText } from "@/src/shared/components/icon-text";
 import { findPhotoAlbumRelations, safePhotoAlbumCoverHref, safePhotoAlbumHref } from "@/src/trip/photo-albums";
 import type { Trip, TripPhotoAlbumLink } from "@/src/trip/types";
 import { cn } from "@/src/lib/cn";
@@ -60,8 +61,12 @@ export function PhotoAlbumCard({
         </span>
       </button>
       <div className="grid gap-2 text-xs font-bold text-(--color-text-muted)">
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="users" /> {photoAlbumOwnerDisplay(relations.owner, copy.noOwner)}</span>
-        <span className="flex min-w-0 items-center gap-1.5"><Icon name="calendar" /> {photoAlbumDayDisplay(album.day, copy)}</span>
+        <IconText icon="users" className="flex min-w-0 items-center gap-1.5">
+          {photoAlbumOwnerDisplay(relations.owner, copy.noOwner)}
+        </IconText>
+        <IconText icon="calendar" className="flex min-w-0 items-center gap-1.5">
+          {photoAlbumDayDisplay(album.day, copy)}
+        </IconText>
         {!href ? <span className="font-extrabold text-[#b91c1c]">{copy.unsafeLinkBlocked}</span> : null}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">

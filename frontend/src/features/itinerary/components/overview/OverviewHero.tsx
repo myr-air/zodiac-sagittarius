@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
-import { Icon } from "@/src/ui/icons";
+import { IconText } from "@/src/shared/components/icon-text";
 import type { DestinationVisual } from "@/src/features/itinerary/domain/overview";
 import {
   overviewHeroAsideClassName,
@@ -58,10 +58,10 @@ export function OverviewHero({
         <h1 className={overviewHeroTitleClassName}>{title}</h1>
         <p className={overviewHeroRoleClassName}>{roleTitle}</p>
         <div className={overviewHeroMetaClassName} aria-label="trip facts">
-          <span><Icon name="calendar" /> {dateRange}</span>
-          <span><Icon name="location" /> {visual.label}</span>
-          <span><Icon name="users" /> {activeMembersLabel}</span>
-          <span><Icon name="wallet" /> {groupSpendLabel}</span>
+          <IconText icon="calendar">{dateRange}</IconText>
+          <IconText icon="location">{visual.label}</IconText>
+          <IconText icon="users">{activeMembersLabel}</IconText>
+          <IconText icon="wallet">{groupSpendLabel}</IconText>
         </div>
       </div>
       <div className={overviewHeroAsideClassName}>
