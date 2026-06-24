@@ -221,6 +221,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/storybook/story-assertions.ts",
   "src/shared/storybook/story-builders.ts",
   "src/workspace/contracts/workspace-feature-boundaries.contract.test.ts",
+  "src/workspace/contracts/workspace-refactor-test-coverage.contract.test.ts",
   "src/workspace/contracts/workspace-app-test-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-commerce-media-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-itinerary-feature-boundaries.contract.test.ts",

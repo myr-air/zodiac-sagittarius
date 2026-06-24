@@ -29,6 +29,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Removed obsolete itinerary display/detail aliases
 - [x] Added shared CheckboxGroup Storybook coverage
 - [x] Audited feature wrappers for domain semantics
+- [x] Added executable test coverage audit contract
 
 ## Milestone 1: Shared UI Primitives
 
@@ -69,9 +70,9 @@ Goal: Keep architectural intent executable so future refactors do not drift back
 
 - [x] Update scaffold catalogs when new shared/domain files are added.
 - [x] Update architecture contracts when ownership changes are intentional.
-- [ ] Add focused pure tests for each new domain utility or shared UI helper.
-- [ ] Prefer feature tests that assert user-visible output over private call order.
-- [ ] Run full unit tests after contract or shared-module changes.
+- [x] Add focused pure tests for each new domain utility or shared UI helper.
+- [x] Prefer feature tests that assert user-visible output over private call order.
+- [x] Run full unit tests after contract or shared-module changes.
 
 ## Milestone 5: Storybook Alignment
 
@@ -98,6 +99,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Remove pass-through itinerary aliases for booking docs, stop detail options, and travel subtypes.
 - [x] Add Storybook coverage for the shared `CheckboxGroup` workspace control.
 - [x] Add architecture coverage for feature wrappers around shared copy/link primitives.
+- [x] Add architecture coverage for pure helper tests and user-visible feature tests.
 
 ## Draft Acceptance Criteria
 
