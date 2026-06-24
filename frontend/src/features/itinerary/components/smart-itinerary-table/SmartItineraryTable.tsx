@@ -2,12 +2,12 @@ import {
   mainItineraryPathId,
   mainItineraryPathName,
 } from "@/src/trip/itinerary-paths";
-import { SmartItineraryTableBody } from "./SmartItineraryTableBody";
 import { SmartItineraryTablePageHeader } from "./SmartItineraryTablePageHeader";
+import { SmartItineraryTableViewport } from "./SmartItineraryTableViewport";
 import { useSmartItineraryTablePageState } from "./hooks/useSmartItineraryTablePageState";
 import type { SmartItineraryTableProps } from "./SmartItineraryTable.types";
 
-import { tablePanelClassName, tableScrollClassName } from "./smart-itinerary-table.styles";
+import { tablePanelClassName } from "./smart-itinerary-table.styles";
 
 export function SmartItineraryTable({
   canRestructure = true,
@@ -114,47 +114,42 @@ export function SmartItineraryTable({
         tripPlans={tripPlans}
         warningCount={warningCount}
       />
-      <div
-        className={tableScrollClassName}
-        tabIndex={0}
-        aria-label={t.itinerary.scrollLabel}
-      >
-        <SmartItineraryTableBody
-          canRestructureItems={canRestructureItems}
-          collapsedDays={collapsedDays}
-          groups={groups}
-          graphItemsByDay={graphItemsByDay}
-          dailyBriefingsByDate={dailyBriefingsByDate}
-          pathOptions={pathOptions}
-          dayPathOverrides={dayPathOverrides}
-          showAllPaths={showAllPaths}
-          smartTableStyle={smartTableStyle}
-          graphColumnWidth={graphColumnWidth}
-          itineraryLabels={t.itinerary}
-          locale={locale}
-          startDate={startDate}
-          selectedItemId={selectedItemId}
-          bookingDocs={bookingDocs}
-          bookingLinkItems={items}
-          onAddStop={onAddStop}
-          onAddSubActivity={onAddSubActivity}
-          onAddNoteForItem={onAddNoteForItem}
-          onAddBookingForItem={onAddBookingForItem}
-          onSaveBookingForItem={onSaveBookingForItem}
-          onUnlinkBookingForItem={onUnlinkBookingForItem}
-          onDeleteItem={onDeleteItem}
-          onEditItem={onEditItem}
-          onMoveItemToPath={onMoveItemToPath}
-          onOpenItemDetails={onOpenItemDetails}
-          onSelectItem={onSelectItem}
-          onSaveDayTitle={onSaveDayTitle}
-          onUpdateItemInline={onUpdateItemInline}
-          onToggleDay={toggleDay}
-          onChangeDayPath={onChangeDayPath}
-          onClearDayPath={onClearDayPath}
-          tHeaders={t.itinerary.headers}
-        />
-      </div>
+      <SmartItineraryTableViewport
+        canRestructureItems={canRestructureItems}
+        collapsedDays={collapsedDays}
+        groups={groups}
+        graphItemsByDay={graphItemsByDay}
+        dailyBriefingsByDate={dailyBriefingsByDate}
+        pathOptions={pathOptions}
+        dayPathOverrides={dayPathOverrides}
+        showAllPaths={showAllPaths}
+        smartTableStyle={smartTableStyle}
+        graphColumnWidth={graphColumnWidth}
+        itineraryLabels={t.itinerary}
+        locale={locale}
+        startDate={startDate}
+        selectedItemId={selectedItemId}
+        bookingDocs={bookingDocs}
+        bookingLinkItems={items}
+        onAddStop={onAddStop}
+        onAddSubActivity={onAddSubActivity}
+        onAddNoteForItem={onAddNoteForItem}
+        onAddBookingForItem={onAddBookingForItem}
+        onSaveBookingForItem={onSaveBookingForItem}
+        onUnlinkBookingForItem={onUnlinkBookingForItem}
+        onDeleteItem={onDeleteItem}
+        onEditItem={onEditItem}
+        onMoveItemToPath={onMoveItemToPath}
+        onOpenItemDetails={onOpenItemDetails}
+        onSelectItem={onSelectItem}
+        onSaveDayTitle={onSaveDayTitle}
+        onUpdateItemInline={onUpdateItemInline}
+        onToggleDay={toggleDay}
+        onChangeDayPath={onChangeDayPath}
+        onClearDayPath={onClearDayPath}
+        scrollLabel={t.itinerary.scrollLabel}
+        tHeaders={t.itinerary.headers}
+      />
     </section>
   );
 }

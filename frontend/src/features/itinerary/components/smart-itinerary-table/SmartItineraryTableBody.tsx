@@ -15,7 +15,7 @@ import type {
 } from "./itinerary-action.types";
 import { smartTableClassName } from "./smart-itinerary-table.styles";
 
-interface SmartItineraryTableBodyProps
+export interface SmartItineraryTableBodyProps
   extends ItineraryBookingActionProps,
     ItineraryInlineItemEditProps,
     ItineraryItemInteractionProps,

@@ -15,6 +15,7 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
       smartItineraryTable,
       smartItineraryTableTypes,
       smartItineraryTablePageHeader,
+      smartItineraryTableViewport,
       routeMapView,
       placeTypes,
       routeMapUnresolvedPanel,
@@ -68,14 +69,18 @@ describe("Sagittarius workspace itinerary feature source boundaries", () => {
     expect(overviewWeatherBriefing).toContain("WeatherForecastStrip");
 
     expect(smartItineraryTable).toContain("SmartItineraryTablePageHeader");
+    expect(smartItineraryTable).toContain("SmartItineraryTableViewport");
     expect(smartItineraryTable).toContain("./SmartItineraryTable.types");
     expect(smartItineraryTable).not.toContain("interface SmartItineraryTableProps");
+    expect(smartItineraryTable).not.toContain("tableScrollClassName");
     expect(smartItineraryTableTypes).toContain("export interface SmartItineraryTableProps");
     expect(smartItineraryTable).not.toContain("@/src/shared/components/page-header");
     expect(smartItineraryTable).not.toContain("SmartItineraryTableHeaderControls");
     expect(smartItineraryTablePageHeader).toContain("PageHeader");
     expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableHeaderControls");
     expect(smartItineraryTablePageHeader).toContain("SmartItineraryTableMeta");
+    expect(smartItineraryTableViewport).toContain("SmartItineraryTableBody");
+    expect(smartItineraryTableViewport).toContain("tableScrollClassName");
     expect(placeTypes).toContain("export interface MapCoordinateResolutionResult");
     expect(routeMapTypes).toContain("@/src/trip/places");
     expect(routeMapTypes).not.toContain("export interface MapCoordinateResolutionResult");

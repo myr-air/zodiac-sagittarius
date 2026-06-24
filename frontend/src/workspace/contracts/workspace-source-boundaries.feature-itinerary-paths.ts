@@ -10,6 +10,7 @@ export const workspaceItineraryFeatureBoundarySourcePaths = {
   smartItineraryTable: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.tsx",
   smartItineraryTableTypes: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types.ts",
   smartItineraryTablePageHeader: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTablePageHeader.tsx",
+  smartItineraryTableViewport: "src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableViewport.tsx",
   routeMapView: "src/features/itinerary/components/route-map/RouteMapView.tsx",
   routeMapCanvas: "src/features/itinerary/components/route-map/RouteMapCanvas.tsx",
   routeMapUnresolvedPanel: "src/features/itinerary/components/route-map/RouteMapUnresolvedPanel.tsx",
