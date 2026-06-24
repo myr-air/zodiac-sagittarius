@@ -9,7 +9,7 @@ import {
   presencePillClassName,
   presencePillToneClassNames,
 } from "./people-panel.styles";
-import { peoplePanelCopy, presenceLabel, roleLabel } from "./people-panel.copy";
+import { peoplePanelCopy, peoplePanelRoleLabel, presenceLabel } from "./people-panel.copy";
 import type { PeoplePanelRowProps } from "./people-panel.types";
 
 type PeoplePanelCopy = ReturnType<typeof peoplePanelCopy>;
@@ -42,7 +42,7 @@ export function PeoplePanelRowIdentity({
       />
       <div className={memberIdentityClassName}>
         <strong>{member.displayName}{member.id === currentMemberId ? (locale === "th" ? " (คุณ)" : " (You)") : ""}</strong>
-        <span>{roleLabel(member.role, locale)}</span>
+        <span>{peoplePanelRoleLabel(member.role, locale)}</span>
         <div className={memberStatusStackClassName} aria-label={`Status for ${member.displayName}`}>
           <span className={cn(memberStatePillClassName, memberStatePillToneClassNames[member.accessStatus === "disabled" ? "disabled" : "active"])}>
             {member.accessStatus === "disabled" ? copy.disabled : copy.active}
