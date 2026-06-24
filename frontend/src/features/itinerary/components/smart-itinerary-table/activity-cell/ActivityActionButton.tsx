@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 
+import { externalLinkAnchorProps } from "@/src/shared/components/external-link-action";
 import { Icon, type IconName } from "@/src/ui/icons";
 
 import { activityIconButtonClassName } from "./activity-cell.styles";
@@ -32,8 +33,7 @@ export function ActivityActionButton({
       <a
         className={activityIconButtonClassName}
         href={href}
-        target="_blank"
-        rel="noreferrer"
+        {...externalLinkAnchorProps}
         aria-label={ariaLabel}
         title={ariaLabel}
         onClick={handleClick}

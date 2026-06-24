@@ -79,7 +79,8 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensePageFilters).toContain("export function useExpensePageFilters");
     expect(expensePageHeader).toContain("export function ExpensePageHeader");
     expect(expensePageHeader).toContain("PageHeader");
-    expect(expensePageHeader).toContain("formatTripRange");
+    expect(expensePageHeader).toContain("PageHeaderTripDateMetaItem");
+    expect(expensePageHeader).not.toContain("formatTripRange");
     expect(expensePageHeader).toContain("TravelMotif");
     expect(expensesState).not.toContain("buildExpenseCsv");
     expect(expensesState).not.toContain("buildSettlementExpenseInput");
@@ -198,8 +199,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expenseDialogState).not.toContain("const [currency, setCurrency]");
     expect(expenseDialogState).not.toContain("const [isSaving, setIsSaving]");
     expect(expenseDialogState).not.toContain("const [tripPlanId, setTripPlanId]");
-    expect(expenseDialogFormValues).toContain("const [formValues, setFormValues]");
-    expect(expenseDialogFormValues).toContain("const updateFormValue");
+    expect(expenseDialogFormValues).toContain("useFormFields");
+    expect(expenseDialogFormValues).toContain("fields: formValues");
+    expect(expenseDialogFormValues).toContain("updateField: updateFormValue");
     expect(expenseDialogFormValues).toContain("expenseDialogCurrencyChangeFields");
     expect(expenseDialogFormValues).toContain("expenseDialogManualExchangeRateFields");
     expect(expenseDialogLinkingState).toContain("const [uiState, setUiState]");

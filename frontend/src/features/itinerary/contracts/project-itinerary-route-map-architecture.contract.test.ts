@@ -68,7 +68,8 @@ describe("Sagittarius itinerary route map architecture contracts", () => {
     expect(routeLiveMapState).toContain("retryRouteLiveMap");
     expect(routeMapTypes).toContain('export type RouteMapCanvasCopy = Messages["map"]');
     expect(mapHeaderMeta).toContain("export function RouteMapHeaderMeta");
-    expect(mapHeaderMeta).toContain("formatTripRange");
+    expect(mapHeaderMeta).toContain("PageHeaderTripDateMetaItem");
+    expect(mapHeaderMeta).not.toContain("formatTripRange");
     expect(mapHeaderMeta).toContain("activeDayLabel");
     expect(mapHeaderMetaStory).toContain("RouteMapHeaderMeta");
     expect(mapHeaderMetaStory).toContain("ThaiSelectedDay");

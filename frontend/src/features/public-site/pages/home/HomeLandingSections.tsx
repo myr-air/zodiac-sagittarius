@@ -6,6 +6,7 @@ import { LanguageSwitch } from "@/src/i18n/LanguageSwitch";
 import type { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { appRoutes } from "@/src/routes/app-routes";
+import { externalLinkAnchorProps } from "@/src/shared/components/external-link-action";
 import { Icon } from "@/src/ui/icons";
 import { buildHomeWorkflowItems } from "./HomeLanding.meta";
 import {
@@ -130,7 +131,7 @@ export function HomeLandingFooter({ landing }: { landing: HomeLandingCopy }) {
         <Link className={homeFooterLinkClassName} href={appRoutes.login()}>{landing.actions.login}</Link>
         <Link className={homeFooterLinkClassName} href={appRoutes.join()}>{landing.actions.tripAccess}</Link>
         <Link className={homeFooterLinkClassName} href={appRoutes.register()}>{landing.actions.createAccount}</Link>
-        <a className={homeFooterLinkClassName} href="https://github.com/GLINCKER/thesvg" target="_blank" rel="noreferrer">
+        <a className={homeFooterLinkClassName} href="https://github.com/GLINCKER/thesvg" {...externalLinkAnchorProps}>
           <Image src="/icons/github-thesvg.svg" alt="" width={16} height={16} />
           {landing.footer.svgSource}
         </a>

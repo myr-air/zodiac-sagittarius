@@ -139,7 +139,8 @@ describe("Sagittarius itinerary architecture contracts", () => {
     const tableMeta = readItineraryArchitectureSource("src/features/itinerary/components/smart-itinerary-table/SmartItineraryTableMeta.tsx");
 
     expect(itineraryHeaderMeta).toContain("export function ItineraryHeaderMeta");
-    expect(itineraryHeaderMeta).toContain("formatTripRange");
+    expect(itineraryHeaderMeta).toContain("PageHeaderTripDateMetaItem");
+    expect(itineraryHeaderMeta).not.toContain("formatTripRange");
     expect(itineraryHeaderMeta).toContain("formatDuration");
     expect(itineraryHeaderMetaStory).toContain("ItineraryHeaderMeta");
     expect(itineraryHeaderMetaStory).toContain("Thai");

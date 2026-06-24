@@ -32,11 +32,14 @@ describe("Sagittarius production and routing contracts", () => {
     expect(homeLandingPreview).toContain("./HomeLandingPreview.sections");
     expect(homeLandingPreview).not.toContain("previewDayKeys");
     expect(homeLandingPreview).not.toContain("checkedChecklistKeys");
-    expect(homeLandingPreviewSections).toContain("previewDayKeys");
-    expect(homeLandingPreviewSections).toContain("checkedChecklistKeys");
+    expect(homeLandingPreviewSections).toContain("buildHomePreviewDayCards");
+    expect(homeLandingPreviewSections).toContain("buildHomePreviewChecklistItems");
+    expect(homeLandingPreviewSections).not.toContain("previewDayKeys");
+    expect(homeLandingPreviewSections).not.toContain("checkedChecklistKeys");
     expect(homeLanding).not.toContain("const homePageClassName");
     expect(homeLanding).not.toContain("const workflowStepMeta");
-    expect(homeLandingSections).toContain("workflowStepMeta");
+    expect(homeLandingSections).toContain("buildHomeWorkflowItems");
+    expect(homeLandingSections).not.toContain("workflowStepMeta");
     expect(homeLandingMeta).toContain("workflowStepMeta");
     expect(homeLandingMeta).toContain("previewDayKeys");
     expect(homeLandingStyles).toContain("homePageClassName");

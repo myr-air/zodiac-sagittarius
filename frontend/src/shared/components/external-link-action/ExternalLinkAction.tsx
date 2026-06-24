@@ -1,6 +1,7 @@
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import type { ButtonVariant } from "@/src/ui/primitive-styles";
+import { externalLinkAnchorProps } from "./external-link-props";
 
 export type ExternalLinkActionVariant = "button" | "icon" | "inline";
 export type ExternalLinkBlockedMode = "button" | "none" | "notice";
@@ -32,7 +33,7 @@ export function ExternalLinkAction({
     if (variant === "button") {
       return (
         <Button asChild className={className} variant={buttonVariant}>
-          <a href={href} target="_blank" rel="noreferrer">
+          <a href={href} {...externalLinkAnchorProps}>
             {iconPosition === "start" ? <Icon name="external" /> : null}
             {openLabel}
             {iconPosition === "end" ? <Icon name="external" /> : null}
@@ -46,8 +47,7 @@ export function ExternalLinkAction({
         <a
           className={className}
           href={href}
-          target="_blank"
-          rel="noreferrer"
+          {...externalLinkAnchorProps}
           aria-label={openLabel}
         >
           <Icon name="external" />
@@ -56,7 +56,7 @@ export function ExternalLinkAction({
     }
 
     return (
-      <a className={className} href={href} target="_blank" rel="noreferrer">
+      <a className={className} href={href} {...externalLinkAnchorProps}>
         {iconPosition === "start" ? <Icon name="external" /> : null}
         {openLabel}
         {iconPosition === "end" ? <Icon name="external" /> : null}
