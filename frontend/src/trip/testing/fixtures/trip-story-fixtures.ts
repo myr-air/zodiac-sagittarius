@@ -4,14 +4,23 @@ import type { BookingDoc, TripPhotoAlbumLink } from "../../types";
 import { buildDenseTripFixture, buildEmptyTripFixture, tripFixture } from "./trip-fixtures";
 
 export const storyTripId = "trip-1";
+export const storyTrip = tripFixture.trip;
+export const storyMembers = tripFixture.currentMembers;
+export const storyPlanItems = tripFixture.planItems;
+export const storySuggestions = tripFixture.suggestions;
+export const storyTasks = tripFixture.tasks;
+export const storyExpenseSummaries = tripFixture.expenseSummaries;
+export const ownerStoryMember = storyMembers.owner;
+export const travelerStoryMember = storyMembers.traveler;
+export const viewerStoryMember = storyMembers.viewer;
 export const travelerMemberId = tripFixture.currentMembers.traveler.id;
 export const viewerMemberId = tripFixture.currentMembers.viewer.id;
 
 export const denseStoryTrip = buildDenseTripFixture();
 export const emptyStoryTrip = buildEmptyTripFixture();
 export const singleMemberStoryTrip = {
-  ...tripFixture.trip,
-  members: [tripFixture.currentMembers.owner],
+  ...storyTrip,
+  members: [ownerStoryMember],
 };
 
 export const denseStoryBookingDocs: BookingDoc[] = Array.from({ length: 16 }, (_, index) => {

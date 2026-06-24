@@ -1,8 +1,13 @@
 import { expect, fn } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { seedTrip } from "@/src/trip/seed";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import { denseStoryBookingDocs } from "@/src/trip/testing/fixtures/trip-story-fixtures";
+import {
+  denseStoryBookingDocs,
+  ownerStoryMember,
+  storyTasks,
+  storyTrip,
+  travelerStoryMember,
+  viewerStoryMember,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type {
   BookingsDocsPageProps,
   CreateBookingDocHandler,
@@ -14,10 +19,10 @@ export const onStoryCreateBookingDoc = fn();
 export const onStoryUpdateBookingDoc = fn();
 
 export const bookingsDocsOwnerStoryArgs = {
-  trip: seedTrip,
-  tasks: tripFixture.tasks,
-  currentMember: tripFixture.currentMembers.owner,
-  bookingDocs: seedTrip.bookingDocs ?? [],
+  trip: storyTrip,
+  tasks: storyTasks,
+  currentMember: ownerStoryMember,
+  bookingDocs: storyTrip.bookingDocs ?? [],
   canEditBookings: true,
   onCreateBookingDoc: noop as CreateBookingDocHandler,
   onUpdateBookingDoc: noop,
@@ -26,13 +31,13 @@ export const bookingsDocsOwnerStoryArgs = {
 
 export const bookingsDocsViewerStoryArgs = {
   ...bookingsDocsOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.viewer,
+  currentMember: viewerStoryMember,
   canEditBookings: false,
 } satisfies BookingsDocsPageStoryArgs;
 
 export const bookingsDocsTravelerStoryArgs = {
   ...bookingsDocsOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.traveler,
+  currentMember: travelerStoryMember,
   canEditBookings: true,
 } satisfies BookingsDocsPageStoryArgs;
 

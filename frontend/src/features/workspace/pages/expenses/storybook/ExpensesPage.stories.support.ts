@@ -1,10 +1,14 @@
 import { expect, fn, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
 import { buildExpenseSummary } from "@/src/trip/expenses";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   denseStoryTrip,
   emptyStoryTrip,
+  ownerStoryMember,
+  storyExpenseSummaries,
+  storyTrip,
+  travelerStoryMember,
+  viewerStoryMember,
 } from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { TripExpensesPageProps } from "../TripExpensesPage";
 
@@ -15,10 +19,10 @@ export const denseTrip = denseStoryTrip;
 export const emptyTrip = emptyStoryTrip;
 
 export const inferredScopeTrip = {
-  ...tripFixture.trip,
+  ...storyTrip,
   expenses: [
     {
-      ...tripFixture.trip.expenses[0],
+      ...storyTrip.expenses[0],
       tripPlanId: "plan-rain",
       itineraryItemId: null,
     },
@@ -26,9 +30,9 @@ export const inferredScopeTrip = {
 };
 
 export const expensesOwnerStoryArgs = {
-  trip: tripFixture.trip,
-  currentMember: tripFixture.currentMembers.owner,
-  expenseSummary: tripFixture.expenseSummaries.owner,
+  trip: storyTrip,
+  currentMember: ownerStoryMember,
+  expenseSummary: storyExpenseSummaries.owner,
   canEditExpenses: true,
   onCreateExpense: noop,
   onUpdateExpense: noop,
@@ -37,14 +41,14 @@ export const expensesOwnerStoryArgs = {
 
 export const expensesTravelerStoryArgs = {
   ...expensesOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.traveler,
-  expenseSummary: tripFixture.expenseSummaries.traveler,
+  currentMember: travelerStoryMember,
+  expenseSummary: storyExpenseSummaries.traveler,
 } satisfies TripExpensesPageStoryArgs;
 
 export const expensesViewerStoryArgs = {
   ...expensesOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.viewer,
-  expenseSummary: tripFixture.expenseSummaries.viewer,
+  currentMember: viewerStoryMember,
+  expenseSummary: storyExpenseSummaries.viewer,
   canEditExpenses: false,
 } satisfies TripExpensesPageStoryArgs;
 
@@ -55,12 +59,12 @@ export const denseExpenseSummary = buildExpenseSummary(
 
 export const emptyExpenseSummary = buildExpenseSummary(
   emptyTrip.expenses,
-  tripFixture.currentMembers.owner.id,
+  ownerStoryMember.id,
 );
 
 export const inferredScopeExpenseSummary = buildExpenseSummary(
   inferredScopeTrip.expenses,
-  tripFixture.currentMembers.owner.id,
+  ownerStoryMember.id,
 );
 
 export const denseExpensesStoryArgs = {

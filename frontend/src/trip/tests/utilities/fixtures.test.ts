@@ -11,6 +11,14 @@ import {
   coverStoryPhotoAlbumLinks,
   denseStoryBookingDocs,
   denseStoryPhotoAlbumLinks,
+  ownerStoryMember,
+  storyExpenseSummaries,
+  storyPlanItems,
+  storySuggestions,
+  storyTasks,
+  storyTrip,
+  travelerStoryMember,
+  viewerStoryMember,
 } from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import { tripRoleValues } from "../../members";
 
@@ -54,6 +62,14 @@ describe("trip fixtures", () => {
   });
 
   it("keeps Storybook-only trip datasets centralized and deterministic", () => {
+    expect(storyTrip).toBe(tripFixture.trip);
+    expect(ownerStoryMember).toBe(tripFixture.currentMembers.owner);
+    expect(travelerStoryMember).toBe(tripFixture.currentMembers.traveler);
+    expect(viewerStoryMember).toBe(tripFixture.currentMembers.viewer);
+    expect(storyPlanItems).toBe(tripFixture.planItems);
+    expect(storySuggestions).toBe(tripFixture.suggestions);
+    expect(storyTasks).toBe(tripFixture.tasks);
+    expect(storyExpenseSummaries).toBe(tripFixture.expenseSummaries);
     expect(denseStoryBookingDocs).toHaveLength(16);
     expect(denseStoryBookingDocs[0].id).toBe("booking-doc-dense-1");
     expect(denseStoryPhotoAlbumLinks).toHaveLength(18);

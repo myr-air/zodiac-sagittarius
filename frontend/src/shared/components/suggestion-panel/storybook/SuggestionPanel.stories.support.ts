@@ -1,16 +1,19 @@
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
+import {
+  storySuggestions,
+  storyTrip,
+} from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { SuggestionPanelProps } from "../suggestion-panel.types";
 
 type SuggestionPanelStoryArgs = SuggestionPanelProps;
 
 export const suggestionPanelStoryArgs = {
-  members: tripFixture.trip.members,
-  suggestions: tripFixture.suggestions,
+  members: storyTrip.members,
+  suggestions: storySuggestions,
 } satisfies SuggestionPanelStoryArgs;
 
 export const emptySuggestionPanelStoryArgs = {
   ...suggestionPanelStoryArgs,
-  suggestions: tripFixture.suggestions.map((suggestion) => ({
+  suggestions: storySuggestions.map((suggestion) => ({
     ...suggestion,
     status: "approved" as const,
   })),
@@ -18,7 +21,7 @@ export const emptySuggestionPanelStoryArgs = {
 
 export const conflictedSuggestionPanelStoryArgs = {
   ...suggestionPanelStoryArgs,
-  suggestions: tripFixture.suggestions.map((suggestion, index) => ({
+  suggestions: storySuggestions.map((suggestion, index) => ({
     ...suggestion,
     id: `${suggestion.id}-conflicted-${index}`,
     status: "conflicted" as const,

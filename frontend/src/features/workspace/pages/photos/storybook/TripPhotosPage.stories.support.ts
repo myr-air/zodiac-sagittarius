@@ -1,18 +1,21 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   coverStoryPhotoAlbumLinks,
   denseStoryPhotoAlbumLinks,
+  ownerStoryMember,
+  storyTrip,
+  travelerStoryMember,
+  viewerStoryMember,
 } from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { TripPhotosPageProps } from "../TripPhotosPage";
 
 type TripPhotosPageStoryArgs = TripPhotosPageProps;
 
 export const tripPhotosOwnerStoryArgs = {
-  trip: tripFixture.trip,
-  currentMember: tripFixture.currentMembers.owner,
-  photoAlbumLinks: tripFixture.trip.photoAlbumLinks ?? [],
+  trip: storyTrip,
+  currentMember: ownerStoryMember,
+  photoAlbumLinks: storyTrip.photoAlbumLinks ?? [],
   canEditPhotoAlbums: true,
   onCreatePhotoAlbum: noop,
   onUpdatePhotoAlbum: noop,
@@ -21,13 +24,13 @@ export const tripPhotosOwnerStoryArgs = {
 
 export const tripPhotosViewerStoryArgs = {
   ...tripPhotosOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.viewer,
+  currentMember: viewerStoryMember,
   canEditPhotoAlbums: false,
 } satisfies TripPhotosPageStoryArgs;
 
 export const tripPhotosTravelerStoryArgs = {
   ...tripPhotosOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.traveler,
+  currentMember: travelerStoryMember,
   canEditPhotoAlbums: true,
 } satisfies TripPhotosPageStoryArgs;
 

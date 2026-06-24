@@ -1,17 +1,20 @@
 import { expect, within } from "storybook/test";
 import { noop } from "@/src/testing/storybook-actions";
-import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import {
   denseStoryTrip,
+  ownerStoryMember,
   singleMemberStoryTrip,
+  storyTrip,
+  travelerStoryMember,
+  viewerStoryMember,
 } from "@/src/trip/testing/fixtures/trip-story-fixtures";
 import type { TripMembersPageProps } from "../TripMembersPage";
 
 type MembersPageStoryArgs = TripMembersPageProps;
 
 export const membersOwnerStoryArgs = {
-  trip: tripFixture.trip,
-  currentMember: tripFixture.currentMembers.owner,
+  trip: storyTrip,
+  currentMember: ownerStoryMember,
   canManagePeople: true,
   onChangeMemberAccessStatus: noop,
   onChangeMemberPassword: noop,
@@ -22,26 +25,26 @@ export const membersOwnerStoryArgs = {
 
 export const membersTravelerStoryArgs = {
   ...membersOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.traveler,
+  currentMember: travelerStoryMember,
   canManagePeople: false,
 } satisfies MembersPageStoryArgs;
 
 export const membersViewerStoryArgs = {
   ...membersOwnerStoryArgs,
-  currentMember: tripFixture.currentMembers.viewer,
+  currentMember: viewerStoryMember,
   canManagePeople: false,
 } satisfies MembersPageStoryArgs;
 
 export const membersDenseStoryArgs = {
   ...membersOwnerStoryArgs,
   trip: denseStoryTrip,
-  currentMember: denseStoryTrip.members.find((member) => member.role === "owner") ?? tripFixture.currentMembers.owner,
+  currentMember: denseStoryTrip.members.find((member) => member.role === "owner") ?? ownerStoryMember,
 } satisfies MembersPageStoryArgs;
 
 export const membersEmptyStoryArgs = {
   ...membersOwnerStoryArgs,
   trip: singleMemberStoryTrip,
-  currentMember: tripFixture.currentMembers.owner,
+  currentMember: ownerStoryMember,
 } satisfies MembersPageStoryArgs;
 
 export async function expectMembersResponsiveContract(canvasElement: HTMLElement) {
