@@ -1,12 +1,11 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
-import { Icon } from "@/src/ui/icons";
-import { formatTripRange, PageHeader } from "@/src/shared/components/page-header";
 import { WorkspaceSummaryStat } from "@/src/shared/components/workspace-summary-stat";
 import { WorkspacePage } from "@/src/ui";
 import { PhotoAlbumDeleteDialog } from "./components/PhotoAlbumDeleteDialog";
 import { PhotoAlbumDialog } from "./components/PhotoAlbumDialog";
 import { PhotoAlbumBrowser } from "./components/PhotoAlbumBrowser";
 import { PhotoAlbumInspector } from "./components/PhotoAlbumInspector";
+import { PhotoPageHeader } from "./components/PhotoPageHeader";
 import { photoCopy } from "./content/TripPhotosPage.copy";
 import * as photoStyles from "./TripPhotosPage.styles";
 import type { TripPhotosPageProps } from "./TripPhotosPage.types";
@@ -56,15 +55,13 @@ export function TripPhotosPage({
 
   return (
     <WorkspacePage className={photoStyles.pageClassName} aria-label={copy.pageLabel} role="region">
-      <PageHeader
-        title={copy.title}
-        subtitle={trip.name}
-        meta={(
-          <>
-            <span><Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}</span>
-            <span><Icon name="cloud" /> {copy.albumLinks(photoAlbumLinks.length)}</span>
-          </>
-        )}
+      <PhotoPageHeader
+        albumCount={photoAlbumLinks.length}
+        copy={copy}
+        locale={locale}
+        tripEndDate={trip.endDate}
+        tripName={trip.name}
+        tripStartDate={trip.startDate}
       />
 
       <div className={photoStyles.summaryClassName} aria-label={copy.summaryLabel}>
