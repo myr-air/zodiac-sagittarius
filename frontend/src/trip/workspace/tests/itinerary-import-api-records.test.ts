@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TripApiClient } from "@/src/trip/api-client";
-import type { Expense } from "@/src/trip/types";
 import { createImportedPlanRecordsViaApi } from "../itinerary-import-api-records";
 import {
   buildImportedBookingDoc,
+  buildImportedExpense,
   buildImportedStopNote,
   buildImportedTask,
   importedBookingDoc,
@@ -25,10 +25,7 @@ describe("itinerary import API record creation", () => {
       status: "done",
       version: 2,
     };
-    const createdExpense: Expense = {
-      ...importedExpense,
-      id: "expense-created",
-    };
+    const createdExpense = buildImportedExpense({ id: "expense-created" });
     const createdNote = buildImportedStopNote({ id: "note-created" });
     const createdBookingDoc = buildImportedBookingDoc({
       id: "booking-created",

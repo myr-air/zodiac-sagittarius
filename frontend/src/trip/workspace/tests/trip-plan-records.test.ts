@@ -5,9 +5,10 @@ import {
   tripPlanIdForRecord,
 } from "../trip-plan-records";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
+import type { StopNote, Trip, TripTask } from "@/src/trip/types";
 import {
   buildImportedBookingDoc,
+  buildImportedExpense,
   buildImportedStopNote,
   buildImportedTask,
 } from "../testing/fixtures/itinerary-import-api-fixtures";
@@ -27,7 +28,7 @@ function tripWithRecordFixtures(): {
     id: "item-backup-museum",
     planVariantId: "plan-backup",
   };
-  const mainExpense: Expense = {
+  const mainExpense = buildImportedExpense({
     amount: 10,
     category: "food",
     id: "expense-main",
@@ -36,20 +37,19 @@ function tripWithRecordFixtures(): {
     splits: {},
     title: "Main breakfast",
     tripPlanId: null,
-  };
-  const backupExpense: Expense = {
-    ...mainExpense,
+  });
+  const backupExpense = buildImportedExpense({
     id: "expense-backup",
     itineraryItemId: backupItem.id,
     title: "Backup museum",
-  };
-  const unlinkedMainExpense: Expense = {
-    ...mainExpense,
+    tripPlanId: null,
+  });
+  const unlinkedMainExpense = buildImportedExpense({
     id: "expense-unlinked-main",
     itineraryItemId: null,
     title: "Shared main estimate",
     tripPlanId: null,
-  };
+  });
   const backupBooking = buildImportedBookingDoc({
     id: "booking-backup",
     noteIds: [],

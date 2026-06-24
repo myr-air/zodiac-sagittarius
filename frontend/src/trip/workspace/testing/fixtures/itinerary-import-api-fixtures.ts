@@ -40,6 +40,15 @@ export const importedExpense: Expense = {
   tripPlanId: "plan-rain",
 };
 
+export function buildImportedExpense(
+  overrides: Partial<Expense> & Pick<Expense, "id">,
+): Expense {
+  return {
+    ...importedExpense,
+    ...overrides,
+  };
+}
+
 export const importedStopNote: StopNote = {
   authorId: "member-aom",
   body: "Use exit C",

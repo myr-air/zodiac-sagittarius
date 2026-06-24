@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { Expense, ItineraryItem } from "@/src/trip/types";
+import type { ItineraryItem } from "@/src/trip/types";
 import { mergeApiImportedPlanRecordsIntoTrip } from "../itinerary-import-record-merge";
+import { buildImportedExpense } from "../testing/fixtures/itinerary-import-api-fixtures";
 
 describe("API-created itinerary import merges", () => {
   it("merges API-created import items and linked records into the current trip", () => {
@@ -12,12 +13,10 @@ describe("API-created itinerary import merges", () => {
       activity: "Created import activity",
       version: 2,
     };
-    const existingExpense = tripFixture.trip.expenses[0];
-    const createdExpense: Expense = {
-      ...existingExpense,
+    const createdExpense = buildImportedExpense({
       id: "expense-created-import",
       title: "Created import expense",
-    };
+    });
     const nextTrip = mergeApiImportedPlanRecordsIntoTrip({
       createdItems: [createdItem],
       currentTrip: tripFixture.trip,

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { Expense, ItineraryItem } from "@/src/trip/types";
+import type { ItineraryItem } from "@/src/trip/types";
 import {
+  buildImportedExpense,
   buildImportedStopNote,
   buildImportedTask,
 } from "../testing/fixtures/itinerary-import-api-fixtures";
@@ -40,7 +41,7 @@ describe("itinerary import linked records", () => {
       updatedAt: "2026-06-16T00:00:00.000Z",
       version: 1,
     };
-    const importedExpense: Expense = {
+    const importedExpense = buildImportedExpense({
       amount: 12,
       amountMinor: 1200,
       category: "tickets",
@@ -54,7 +55,7 @@ describe("itinerary import linked records", () => {
       title: "Museum ticket",
       tripId: "source-trip",
       tripPlanId: "source-plan",
-    };
+    });
     const importedNote = buildImportedStopNote({
       body: "Use exit C",
       authorId: "member-aom",
