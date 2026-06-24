@@ -1,5 +1,6 @@
 import type { Locale } from "@/src/i18n/types";
 import { uniqueIds } from "@/src/shared/collection";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type {
   ItineraryBookingTemplate,
   ItineraryBookingTicketInput,
@@ -114,8 +115,8 @@ export function buildTicketSubmitInput({
     title: values.title.trim(),
     status: selectedBooking?.status ?? "draft",
     visibility: selectedBooking?.visibility ?? "shared",
-    providerName: values.providerName.trim() || null,
-    confirmationCode: values.confirmationCode.trim() || null,
+    providerName: trimmedTextOrNull(values.providerName),
+    confirmationCode: trimmedTextOrNull(values.confirmationCode),
     startsAt: fromDateTimeLocalValue(values.startsAt),
     endsAt: fromDateTimeLocalValue(values.endsAt),
     travelerIds: selectedBooking?.travelerIds ?? [],
@@ -123,6 +124,6 @@ export function buildTicketSubmitInput({
       ...values.relatedItineraryItemIds,
       item.id,
     ]),
-    notes: values.notes.trim() || null,
+    notes: trimmedTextOrNull(values.notes),
   };
 }
