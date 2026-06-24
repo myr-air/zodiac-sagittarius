@@ -87,6 +87,15 @@ export const importedBookingDoc: BookingDoc = {
   visibility: "shared",
 };
 
+export function buildImportedBookingDoc(
+  overrides: Partial<BookingDoc> & Pick<BookingDoc, "id">,
+): BookingDoc {
+  return {
+    ...importedBookingDoc,
+    ...overrides,
+  };
+}
+
 export const importedItineraryItem: ItineraryItem = {
   activity: "Imported museum",
   activityType: "attraction",

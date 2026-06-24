@@ -5,8 +5,9 @@ import {
   tripPlanIdForRecord,
 } from "../trip-plan-records";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
-import type { BookingDoc, Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
+import type { Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
 import {
+  buildImportedBookingDoc,
   buildImportedStopNote,
   buildImportedTask,
 } from "../testing/fixtures/itinerary-import-api-fixtures";
@@ -49,33 +50,17 @@ function tripWithRecordFixtures(): {
     title: "Shared main estimate",
     tripPlanId: null,
   };
-  const backupBooking: BookingDoc = {
-    confirmationCode: null,
-    createdBy: "member-aom",
-    currency: "HKD",
-    endsAt: null,
-    externalLinks: [],
+  const backupBooking = buildImportedBookingDoc({
     id: "booking-backup",
     noteIds: [],
-    notes: "",
-    ownerMemberId: "member-aom",
-    priceAmount: null,
-    providerName: null,
     relatedExpenseIds: [],
     relatedItineraryItemIds: [backupItem.id],
     relatedTaskIds: [],
-    startsAt: null,
     status: "draft",
-    timezone: "Asia/Hong_Kong",
     title: "Backup ticket",
-    travelerIds: ["member-aom"],
     tripId: tripFixture.trip.id,
     tripPlanId: null,
-    type: "activity_ticket",
-    updatedAt: "2026-06-16T00:00:00.000Z",
-    version: 1,
-    visibility: "shared",
-  };
+  });
   const backupNote = buildImportedStopNote({
     authorId: "member-aom",
     body: "Backup route note",
