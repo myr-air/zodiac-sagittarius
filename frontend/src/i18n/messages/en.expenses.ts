@@ -116,7 +116,7 @@ export const enExpensesMessages = {
       tableLabel: "Detailed trip money statement",
       summaryLabel: "Statement summary",
       summaryRows: ({ count }: { count: number }) => `${count} money row${count === 1 ? "" : "s"}`,
-      summaryNeedsReview: ({ count }: { count: number }) => `${count} row${count === 1 ? "" : "s"} need review`,
+      summaryNeedsReview: ({ count }: { count: number }) => `${count} to review`,
       dateFallback: "No linked day",
       empty: "No statement rows match this view.",
       reasonDetails: "Why",
@@ -134,6 +134,7 @@ export const enExpensesMessages = {
         label: "Statement filters",
         all: "All rows",
       },
+      mobileDetails: "Details",
       recordSource: {
         ledger: "Ledger entry",
         settlement: "Settlement record",
@@ -142,9 +143,9 @@ export const enExpensesMessages = {
       splitMembers: ({ count }: { count: number }) => `${count} people`,
       status: {
         recorded: "Recorded",
-        needsReview: "Needs payback review",
-        settlementRecorded: "Settlement recorded",
-        noPaybackNeeded: "No payback needed",
+        needsReview: "Review",
+        settlementRecorded: "Settled record",
+        noPaybackNeeded: "No payback",
       },
       statusReason: {
         recorded: "This spend is recorded in the ledger. No confirmed payback link is stored for this row.",
@@ -154,8 +155,8 @@ export const enExpensesMessages = {
       },
       statusShortReason: {
         recorded: "Recorded in the ledger.",
-        needsReview: "Review before calling it settled.",
-        settlementRecorded: "Adjusts balances only.",
+        needsReview: "Not confirmed settled yet.",
+        settlementRecorded: "Balance adjusted.",
         noPaybackNeeded: "No friend payback needed.",
       },
       type: {

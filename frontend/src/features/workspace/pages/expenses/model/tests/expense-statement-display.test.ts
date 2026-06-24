@@ -34,14 +34,14 @@ describe("expense statement display", () => {
       paidByLabel: "Travel Mate",
       recordSourceLabel: "Ledger entry",
       status: "needsReview",
-      statusLabel: "Needs payback review",
+      statusLabel: "Review",
       typeLabel: "Spend",
     });
     expect(rows.find((row) => row.id === "expense-beam-paid-aom")).toMatchObject({
       dateLabel: "No linked day",
       recordSourceLabel: "Settlement record",
       status: "settlementRecorded",
-      statusLabel: "Settlement recorded",
+      statusLabel: "Settled record",
       typeLabel: "Settlement",
     });
     expect(rows.find((row) => row.id === "expense-pacific-place-personal")).toMatchObject({

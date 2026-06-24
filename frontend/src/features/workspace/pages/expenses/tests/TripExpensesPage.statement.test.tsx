@@ -20,10 +20,11 @@ describe("TripExpensesPage statement", () => {
     expect(within(statement).getByRole("columnheader", { name: "ที่มาของรายการ" })).toBeVisible();
     expect(within(statement).getByText("Airport Express group tickets")).toBeInTheDocument();
     expect(within(statement).getAllByText("บันทึกในบัญชี").length).toBeGreaterThan(0);
-    expect(within(statement).getAllByText("ควรตรวจการจ่ายคืน").length).toBeGreaterThan(0);
-    expect(within(statement).getAllByText(/ควรตรวจคู่กับรายการจ่ายคืนก่อนสรุปว่าเคลียร์แล้ว/i).length).toBeGreaterThan(0);
+    expect(within(statement).getAllByText("ตรวจยอด").length).toBeGreaterThan(0);
+    expect(within(statement).getAllByText(/ยังไม่ยืนยันว่าเคลียร์ครบ/i).length).toBeGreaterThan(0);
+    expect(within(statement).getAllByLabelText("เหตุผล").length).toBeGreaterThan(0);
     expect(within(statement).getByText("Aom received Beam payback")).toBeInTheDocument();
-    expect(within(statement).getByText("บันทึกเคลียร์ยอดแล้ว")).toBeInTheDocument();
+    expect(within(statement).getByText("เคลียร์ยอดแล้ว")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 
@@ -33,7 +34,7 @@ describe("TripExpensesPage statement", () => {
 
     await user.click(screen.getByRole("tab", { name: /รายการละเอียด/i }));
     const panel = screen.getByRole("tabpanel", { name: /รายการละเอียด/i });
-    await user.click(within(panel).getByRole("radio", { name: /ไม่ต้องจ่ายคืน/i }));
+    await user.click(within(panel).getByRole("radio", { name: /ไม่ต้องคืน/i }));
 
     const statement = within(panel).getByRole("table", { name: /รายการเงินทริปแบบละเอียด/i });
     expect(within(statement).getByText("Pacific Place personal shopping")).toBeInTheDocument();

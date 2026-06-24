@@ -157,15 +157,21 @@ export function ExpenseStatementSection({
                     <td className={expenseStyles.statementMetaCellClassName}>{row.recordSourceLabel}</td>
                     <td>
                       <div className={expenseStyles.statementStatusCellClassName}>
-                      <span
-                        aria-describedby={`expense-statement-status-reason-${row.id}`}
-                        className={`${expenseStyles.statementStatusClassName} ${expenseStyles.statementStatusToneClassNames[row.status]}`}
-                      >
-                        {row.statusLabel}
-                      </span>
-                        <span className={expenseStyles.statementStatusReasonClassName} id={`expense-statement-status-reason-${row.id}`}>
-                          {row.statusReason}
+                        <span
+                          aria-describedby={`expense-statement-status-short-reason-${row.id}`}
+                          className={`${expenseStyles.statementStatusClassName} ${expenseStyles.statementStatusToneClassNames[row.status]}`}
+                        >
+                          {row.statusLabel}
                         </span>
+                        <div className={expenseStyles.statementStatusReasonRowClassName}>
+                          <span className={expenseStyles.statementStatusReasonClassName} id={`expense-statement-status-short-reason-${row.id}`}>
+                            {row.statusShortReason}
+                          </span>
+                          <details className={expenseStyles.statementReasonTooltipClassName}>
+                            <summary aria-label={t.expenses.statement.reasonDetails} title={row.statusReason}>i</summary>
+                            <span>{row.statusReason}</span>
+                          </details>
+                        </div>
                       </div>
                     </td>
                     <td className={expenseStyles.statementAmountCellClassName}>
@@ -192,38 +198,36 @@ export function ExpenseStatementSection({
                     {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
                   </div>
                 </div>
-                <span
-                  aria-describedby={`expense-statement-mobile-status-reason-${row.id}`}
-                  className={`${expenseStyles.statementStatusClassName} ${expenseStyles.statementStatusToneClassNames[row.status]}`}
-                >
-                  {row.statusLabel}
-                </span>
-                <p className={expenseStyles.statementMobileStatusReasonClassName} id={`expense-statement-mobile-status-reason-${row.id}`}>
-                  {row.statusShortReason}
-                </p>
-                <dl className={expenseStyles.statementMobileMetaClassName}>
-                  <div>
-                    <dt>{t.expenses.statement.columns.paidBy}</dt>
-                    <dd>{row.paidByLabel}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.expenses.statement.columns.recordSource}</dt>
-                    <dd>{row.recordSourceLabel}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.expenses.statement.columns.split}</dt>
-                    <dd>{row.splitLabel}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.expenses.statement.columns.status}</dt>
-                    <dd>
-                      <details className={expenseStyles.statementMobileReasonDisclosureClassName}>
-                        <summary>{t.expenses.statement.reasonDetails}</summary>
-                        <span>{row.statusReason}</span>
-                      </details>
-                    </dd>
-                  </div>
-                </dl>
+                <div className={expenseStyles.statementMobileSummaryClassName}>
+                  <span>{row.paidByLabel}</span>
+                  <span
+                    aria-describedby={`expense-statement-mobile-status-reason-${row.id}`}
+                    className={`${expenseStyles.statementStatusClassName} ${expenseStyles.statementStatusToneClassNames[row.status]}`}
+                  >
+                    {row.statusLabel}
+                  </span>
+                </div>
+                <details className={expenseStyles.statementMobileDetailsClassName}>
+                  <summary>{t.expenses.statement.mobileDetails}</summary>
+                  <dl className={expenseStyles.statementMobileMetaClassName}>
+                    <div>
+                      <dt>{t.expenses.statement.columns.recordSource}</dt>
+                      <dd>{row.recordSourceLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.expenses.statement.columns.split}</dt>
+                      <dd>{row.splitLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.expenses.statement.columns.status}</dt>
+                      <dd id={`expense-statement-mobile-status-reason-${row.id}`}>{row.statusShortReason}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.expenses.statement.reasonDetails}</dt>
+                      <dd>{row.statusReason}</dd>
+                    </div>
+                  </dl>
+                </details>
               </article>
             ))}
           </div>

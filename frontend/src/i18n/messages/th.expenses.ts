@@ -116,7 +116,7 @@ export const thExpensesMessages = {
       tableLabel: "รายการเงินทริปแบบละเอียด",
       summaryLabel: "สรุปรายการละเอียด",
       summaryRows: ({ count }: { count: number }) => `${count} รายการเงิน`,
-      summaryNeedsReview: ({ count }: { count: number }) => `${count} รายการควรตรวจการจ่ายคืน`,
+      summaryNeedsReview: ({ count }: { count: number }) => `ต้องตรวจ ${count} รายการ`,
       dateFallback: "ไม่ผูกวัน",
       empty: "ไม่พบรายการตามมุมมองนี้",
       reasonDetails: "เหตุผล",
@@ -134,6 +134,7 @@ export const thExpensesMessages = {
         label: "ตัวกรองรายการละเอียด",
         all: "ทั้งหมด",
       },
+      mobileDetails: "รายละเอียด",
       recordSource: {
         ledger: "บันทึกในบัญชี",
         settlement: "บันทึกเคลียร์ยอด",
@@ -142,9 +143,9 @@ export const thExpensesMessages = {
       splitMembers: ({ count }: { count: number }) => `${count} คน`,
       status: {
         recorded: "บันทึกแล้ว",
-        needsReview: "ควรตรวจการจ่ายคืน",
-        settlementRecorded: "บันทึกเคลียร์ยอดแล้ว",
-        noPaybackNeeded: "ไม่ต้องจ่ายคืน",
+        needsReview: "ตรวจยอด",
+        settlementRecorded: "เคลียร์ยอดแล้ว",
+        noPaybackNeeded: "ไม่ต้องคืน",
       },
       statusReason: {
         recorded: "รายการนี้ถูกบันทึกในบัญชีแล้ว แต่ยังไม่มีข้อมูลผูกว่ามีการจ่ายคืนรายการนี้โดยตรง",
@@ -154,9 +155,9 @@ export const thExpensesMessages = {
       },
       statusShortReason: {
         recorded: "บันทึกในบัญชีแล้ว",
-        needsReview: "ตรวจคู่กับรายการเคลียร์ยอดก่อน",
-        settlementRecorded: "ใช้ปรับยอดคงเหลือเท่านั้น",
-        noPaybackNeeded: "ไม่ต้องมีเพื่อนจ่ายคืน",
+        needsReview: "ยังไม่ยืนยันว่าเคลียร์ครบ",
+        settlementRecorded: "ปรับยอดคงเหลือแล้ว",
+        noPaybackNeeded: "ไม่มีเพื่อนต้องคืนเงิน",
       },
       type: {
         settlement: "เคลียร์ยอด",
