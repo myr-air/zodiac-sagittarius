@@ -28,9 +28,13 @@ interface ExpenseTransactionDetailProps {
   settlementCurrency: string;
   tableCopy: {
     actions: {
+      cancelExpenseShort: string;
       cancelExpense(input: { title: string }): string;
+      duplicateAsEstimateShort: string;
       duplicateAsEstimate(input: { title: string }): string;
+      editExpenseShort: string;
       editExpense(input: { title: string }): string;
+      recordRefundShort: string;
       recordRefund(input: { title: string }): string;
     };
     details: {
@@ -167,27 +171,46 @@ export function ExpenseTransactionDetail({
       </div>
 
       <div className={expenseStyles.transactionDetailActionsClassName}>
-        <Button type="button" disabled={!canEditExpenses} onClick={() => onEditExpense(expense)}>
-          <Icon name="edit" /> {tableCopy.actions.editExpense({ title: expense.title })}
-        </Button>
         <Button
           type="button"
-          variant="ghost"
-          disabled={!canEditExpenses || !display.canRecordRefund || pendingRefundExpenseIds.has(expense.id)}
-          onClick={() => void onRecordRefund(expense)}
+          aria-label={tableCopy.actions.editExpense({ title: expense.title })}
+          className={expenseStyles.transactionDetailPrimaryActionClassName}
+          disabled={!canEditExpenses}
+          onClick={() => onEditExpense(expense)}
         >
-          <Icon name="wallet" /> {tableCopy.actions.recordRefund({ title: expense.title })}
+          <Icon name="edit" /> {tableCopy.actions.editExpenseShort}
         </Button>
+        <div className={expenseStyles.transactionDetailSecondaryActionsClassName}>
+          <Button
+            type="button"
+            variant="secondary"
+            aria-label={tableCopy.actions.recordRefund({ title: expense.title })}
+            className={expenseStyles.transactionDetailSecondaryActionClassName}
+            disabled={!canEditExpenses || !display.canRecordRefund || pendingRefundExpenseIds.has(expense.id)}
+            onClick={() => void onRecordRefund(expense)}
+          >
+            <Icon name="wallet" /> {tableCopy.actions.recordRefundShort}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            aria-label={tableCopy.actions.duplicateAsEstimate({ title: expense.title })}
+            className={expenseStyles.transactionDetailSecondaryActionClassName}
+            disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
+            onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
+          >
+            <Icon name="copy" /> {tableCopy.actions.duplicateAsEstimateShort}
+          </Button>
+        </div>
         <Button
           type="button"
-          variant="ghost"
-          disabled={!canEditExpenses || !onDuplicateExpenseAsEstimate}
-          onClick={() => void onDuplicateExpenseAsEstimate?.(expense)}
+          variant="danger"
+          aria-label={tableCopy.actions.cancelExpense({ title: expense.title })}
+          className={expenseStyles.transactionDetailDangerActionClassName}
+          disabled={!canEditExpenses}
+          onClick={() => onDeleteExpense(expense.id)}
         >
-          <Icon name="copy" /> {tableCopy.actions.duplicateAsEstimate({ title: expense.title })}
-        </Button>
-        <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={() => onDeleteExpense(expense.id)}>
-          <Icon name="trash" /> {tableCopy.actions.cancelExpense({ title: expense.title })}
+          <Icon name="trash" /> {tableCopy.actions.cancelExpenseShort}
         </Button>
       </div>
 

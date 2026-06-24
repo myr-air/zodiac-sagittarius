@@ -16,7 +16,11 @@ import {
   settlementRowClassName,
   transactionDetailActionsClassName,
   transactionDetailClassName,
+  transactionDetailDangerActionClassName,
   transactionDetailEmptyClassName,
+  transactionDetailPrimaryActionClassName,
+  transactionDetailSecondaryActionClassName,
+  transactionDetailSecondaryActionsClassName,
 } from "../TripExpensesPage.styles";
 
 describe("TripExpensesPage styles", () => {
@@ -49,7 +53,11 @@ describe("TripExpensesPage styles", () => {
     expect(transactionDetailClassName).toContain("max-[767px]:fixed");
     expect(transactionDetailClassName).not.toContain("backdrop-blur");
     expect(transactionDetailEmptyClassName).toContain("border-dashed");
-    expect(transactionDetailActionsClassName).toContain("[&_button]:min-h-10");
+    expect(transactionDetailActionsClassName).toContain("p-2.5");
+    expect(transactionDetailPrimaryActionClassName).toContain("min-h-11");
+    expect(transactionDetailSecondaryActionsClassName).toContain("grid-cols-2");
+    expect(transactionDetailSecondaryActionClassName).toContain("text-xs");
+    expect(transactionDetailDangerActionClassName).toContain("text-xs");
   });
 
   it("keeps mobile feed and settings actions touch-safe", () => {
