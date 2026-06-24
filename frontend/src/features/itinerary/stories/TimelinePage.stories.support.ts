@@ -1,4 +1,7 @@
-import { expect } from "storybook/test";
+import {
+  expectStoryElementClasses,
+  expectStoryElementPresent,
+} from "@/src/shared/storybook/story-assertions";
 import { noop } from "@/src/testing/storybook-actions";
 import {
   buildTripFixtureItineraryItem,
@@ -46,6 +49,6 @@ export const timelineAdvisoryItems: ItineraryItem[] = [
 ];
 
 export async function expectTimelineStructure(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".timeline-panel")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("timeline-grid", "grid", "grid-cols-3");
+  await expectStoryElementPresent(canvasElement, ".timeline-panel");
+  await expectStoryElementClasses(canvasElement, ".timeline-grid", "timeline-grid", "grid", "grid-cols-3");
 }

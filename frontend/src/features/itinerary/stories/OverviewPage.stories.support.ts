@@ -1,5 +1,8 @@
-import { expect } from "storybook/test";
 import type { OverviewPageProps } from "@/src/features/itinerary/components";
+import {
+  expectStoryElementClasses,
+  expectStoryElementPresent,
+} from "@/src/shared/storybook/story-assertions";
 import { weatherBriefings } from "@/src/shared/components/weather/testing/WeatherBriefing.fixtures";
 import { buildExpenseSummary } from "@/src/trip/expenses";
 import { noop } from "@/src/testing/storybook-actions";
@@ -108,9 +111,9 @@ export const overviewPageEmptyStoryArgs = buildOverviewPageStoryArgs({
 });
 
 export async function expectOverviewStructure(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".overview-page")).toBeInTheDocument();
-  await expect(canvasElement.querySelector(".overview-hero")).toHaveClass("overview-hero", "grid");
-  await expect(canvasElement.querySelector(".overview-travel-cockpit")).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3");
-  await expect(canvasElement.querySelector(".overview-grid")).toHaveClass("overview-grid", "grid");
-  await expect(canvasElement.querySelector(".overview-highlight-board")).toBeInTheDocument();
+  await expectStoryElementPresent(canvasElement, ".overview-page");
+  await expectStoryElementClasses(canvasElement, ".overview-hero", "overview-hero", "grid");
+  await expectStoryElementClasses(canvasElement, ".overview-travel-cockpit", "overview-travel-cockpit", "grid", "grid-cols-3");
+  await expectStoryElementClasses(canvasElement, ".overview-grid", "overview-grid", "grid");
+  await expectStoryElementPresent(canvasElement, ".overview-highlight-board");
 }

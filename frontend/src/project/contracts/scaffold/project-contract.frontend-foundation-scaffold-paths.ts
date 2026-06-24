@@ -186,6 +186,7 @@ export const frontendFoundationScaffoldPathsPresent = [
   "src/shared/components/workspace-summary-stat/WorkspaceSummaryStat.tsx",
   "src/shared/components/workspace-summary-stat/storybook/WorkspaceSummaryStat.stories.tsx",
   "src/shared/components/workspace-summary-stat/tests/WorkspaceSummaryStat.test.tsx",
+  "src/shared/storybook/story-assertions.ts",
   "src/shared/storybook/story-builders.ts",
   "src/workspace/contracts/workspace-feature-boundaries.contract.test.ts",
   "src/workspace/contracts/workspace-app-test-boundaries.contract.test.ts",

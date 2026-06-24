@@ -1,4 +1,4 @@
-import { expect } from "storybook/test";
+import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import { asyncNoop } from "@/src/testing/storybook-actions";
 import {
   ownerStoryMember,
@@ -40,6 +40,6 @@ export const tripSettingsPlanImpactStoryArgs = {
 } satisfies TripSettingsPageStoryArgs;
 
 export async function expectSettingsResponsiveContract(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".content-grid")).toHaveClass("content-grid", "max-[920px]:grid-cols-1");
-  await expect(canvasElement.querySelector(".field-grid")).toHaveClass("field-grid", "max-[767px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".content-grid", "content-grid", "max-[920px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".field-grid", "field-grid", "max-[767px]:grid-cols-1");
 }

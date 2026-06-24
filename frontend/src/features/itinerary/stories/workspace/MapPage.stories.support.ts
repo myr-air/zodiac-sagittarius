@@ -1,4 +1,4 @@
-import { expect } from "storybook/test";
+import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import {
   buildTripFixtureItineraryItem,
   tripFixture,
@@ -40,8 +40,8 @@ export const mapStopsWithoutCoordinatesItems: ItineraryItem[] = [
 ];
 
 export async function expectMapResponsiveContract(canvasElement: HTMLElement) {
-  await expect(canvasElement.querySelector(".route-map-panel")).toHaveClass("route-map-panel", "grid");
-  await expect(canvasElement.querySelector(".route-map-layout")).toHaveClass("route-map-layout", "max-[1199px]:border-0", "max-[1199px]:p-0");
-  await expect(canvasElement.querySelector(".route-map-canvas")).toHaveClass("route-map-canvas", "max-[1199px]:min-h-[calc(100dvh-168px)]", "max-[767px]:h-[calc(100dvh-48px)]");
-  await expect(canvasElement.querySelector(".route-stop-list")).toHaveClass("route-stop-list", "max-[767px]:hidden");
+  await expectStoryElementClasses(canvasElement, ".route-map-panel", "route-map-panel", "grid");
+  await expectStoryElementClasses(canvasElement, ".route-map-layout", "route-map-layout", "max-[1199px]:border-0", "max-[1199px]:p-0");
+  await expectStoryElementClasses(canvasElement, ".route-map-canvas", "route-map-canvas", "max-[1199px]:min-h-[calc(100dvh-168px)]", "max-[767px]:h-[calc(100dvh-48px)]");
+  await expectStoryElementClasses(canvasElement, ".route-stop-list", "route-stop-list", "max-[767px]:hidden");
 }
