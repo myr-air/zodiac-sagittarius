@@ -5,8 +5,10 @@ import {
 } from "../account-access-panel-shell-classes";
 import {
   accountAuthCardClassName,
+  accountFormClassName,
   accountStepSummaryClassName,
 } from "../account-access-panel-layout";
+import { accountSettingsFormClassName as wizardAccountSettingsFormClassName } from "../../trip-wizard/layout/portal-trip-wizard-styles";
 
 describe("account access panel shell classes", () => {
   it("adds account-entry page and shell modifiers", () => {
@@ -51,5 +53,10 @@ describe("account access panel shell classes", () => {
     expect(accountAuthCardClassName).toContain("account-auth-card");
     expect(accountAuthCardClassName).toContain("account-form");
     expect(accountStepSummaryClassName).toContain("account-step-summary");
+  });
+
+  it("shares the base account form class with trip wizard forms", () => {
+    expect(wizardAccountSettingsFormClassName).toContain(accountFormClassName);
+    expect(wizardAccountSettingsFormClassName).toContain("account-settings-form");
   });
 });
