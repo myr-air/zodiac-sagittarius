@@ -5,6 +5,7 @@ import type {
   AccountTripStats,
   AccountTripSummary,
 } from "@/src/account/api-client";
+import { jsonResponse } from "@/src/testing/json-response";
 import type { TripParticipantSession } from "@/src/trip/types";
 
 export function mockAccountPortalApiFetch({
@@ -105,13 +106,5 @@ export function mockRejectedAccountTripMemberSessionFetch(
     }
 
     return jsonResponse({}, 404);
-  });
-}
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-    statusText: status === 404 ? "not found" : undefined,
   });
 }
