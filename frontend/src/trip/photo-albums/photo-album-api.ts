@@ -2,6 +2,7 @@ import type {
   CreatePhotoAlbumApiRequest,
   PatchPhotoAlbumApiRequest,
 } from "../api-client";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type { PhotoAlbumInput } from "./photo-album-inputs";
 
 export interface BuildCreatePhotoAlbumRequestOptions {
@@ -18,10 +19,10 @@ export function serializePhotoAlbumInputForApi(input: PhotoAlbumInput) {
     ...input,
     title: input.title.trim(),
     url: input.url.trim(),
-    description: input.description?.trim() || null,
-    accessNote: input.accessNote?.trim() || null,
-    coverUrl: input.coverUrl?.trim() || null,
-    day: input.day?.trim() || null,
+    description: trimmedTextOrNull(input.description),
+    accessNote: trimmedTextOrNull(input.accessNote),
+    coverUrl: trimmedTextOrNull(input.coverUrl),
+    day: trimmedTextOrNull(input.day),
   };
 }
 

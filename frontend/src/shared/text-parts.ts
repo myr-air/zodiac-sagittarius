@@ -44,6 +44,10 @@ export function displayNullableTextOrFallback(
   return value ?? fallback;
 }
 
+export function trimmedTextOrNull(value: string | null | undefined): string | null {
+  return value?.trim() || null;
+}
+
 export function displayNameOrFallback(
   source: DisplayNameSource | null | undefined,
   fallback: string,

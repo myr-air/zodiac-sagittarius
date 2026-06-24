@@ -1,3 +1,4 @@
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type { PhotoAlbumInput } from "./photo-album-inputs";
 import type { Trip, TripPhotoAlbumLink } from "../types";
 
@@ -42,8 +43,8 @@ export function createLocalPhotoAlbum(
     tripId: trip.id,
     title: options.title,
     url: options.url,
-    description: input.description?.trim() || null,
-    accessNote: input.accessNote?.trim() || null,
+    description: trimmedTextOrNull(input.description),
+    accessNote: trimmedTextOrNull(input.accessNote),
     createdBy: options.createdBy,
     updatedAt: options.updatedAt,
     version: 1,
@@ -82,8 +83,8 @@ export function updateLocalPhotoAlbum(
     ...input,
     title: options.title,
     url: options.url,
-    description: input.description?.trim() || null,
-    accessNote: input.accessNote?.trim() || null,
+    description: trimmedTextOrNull(input.description),
+    accessNote: trimmedTextOrNull(input.accessNote),
     updatedAt: options.updatedAt,
     version: album.version + 1,
   };

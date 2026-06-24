@@ -8,6 +8,7 @@ import {
   firstDisplayTextOrFallback,
   firstNullableTextOrFallback,
   joinVisibleTextParts,
+  trimmedTextOrNull,
   visibleTextParts,
 } from "../text-parts";
 
@@ -41,5 +42,12 @@ describe("text part helpers", () => {
     expect(firstDisplayTextOrFallback([null, "", false, undefined], "Fallback")).toBe("Fallback");
     expect(firstNullableTextOrFallback([null, "", "Description"], "Fallback")).toBe("");
     expect(firstNullableTextOrFallback([null, undefined], "Fallback")).toBe("Fallback");
+  });
+
+  it("trims optional text fields to null when empty", () => {
+    expect(trimmedTextOrNull("  Shared album  ")).toBe("Shared album");
+    expect(trimmedTextOrNull("  ")).toBeNull();
+    expect(trimmedTextOrNull(null)).toBeNull();
+    expect(trimmedTextOrNull(undefined)).toBeNull();
   });
 });
