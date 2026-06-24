@@ -43,95 +43,94 @@ function tripAccessViewStory(
   );
 }
 
-export const apiJoinStory: SagittariusAppStory = {
-  args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" },
-};
-export const joinWithSeedCredentialsStory = apiRouteStory(
-  { accessMode: "trip-access", initialJoinCode: seedTripJoinId },
-  appRoutes.join(),
-);
-export const publicEntryStory = apiRouteStory(
-  { accessMode: "account-login" },
-  appRoutes.home(),
-);
-export const accountLoginStory = apiRouteStory(
-  { accessMode: "account-login" },
-  appRoutes.access("sign-in"),
-);
-export const accountRegisterStory = apiRouteStory(
-  { accessMode: "account-register" },
-  appRoutes.access("register"),
-);
-export const accountPortalStory = apiRouteStory(
-  { accessMode: "account-portal" },
-  portalRoutes.base,
-);
-export const accountPortalMyTripsStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "trips" },
-  portalRoutes.myTrips,
-);
-export const accountPortalNewTripStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "new-trip" },
-  portalRoutes.newTrip,
-);
-export const accountPortalExplorerStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "explorer" },
-  portalRoutes.explorer,
-);
-export const accountPortalToDosStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "todos" },
-  portalRoutes.toDos,
-);
-export const accountPortalVaultStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "vault" },
-  portalRoutes.vault,
-);
-export const accountPortalSettingsStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "settings" },
-  portalRoutes.settings,
-);
-export const accountPortalSignOutStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "sign-out" },
-  portalRoutes.signOut,
-);
-export const accountTripsStory = apiRouteStory(
-  { accessMode: "account-portal", portalSection: "trips" },
-  tripRoutes.tripsBase,
-);
-export const accountNewTripStory = apiRouteStory(
-  { accessMode: "account-login" },
-  tripRoutes.tripsNew,
-);
-export const tripAccessStory = apiRouteStory(
-  { accessMode: "trip-access" },
-  appRoutes.join(),
-);
-export const tripAccessWithJoinCodeStory = apiRouteStory(
-  { accessMode: "trip-access", initialJoinCode: seedTripJoinId },
-  appRoutes.join(seedTripJoinId),
-);
-export const tripOverviewAccessStory = tripAccessViewStory(
-  "overview",
-  tripRoutes.base(storyTripId),
-);
-export const tripItineraryAccessStory = tripAccessViewStory(
-  "itinerary",
-  tripRoutes.itinerary(storyTripId),
-);
-export const tripMapAccessStory = tripAccessViewStory(
-  "map",
-  tripRoutes.map(storyTripId),
-);
-export const tripTimelineAccessStory = tripAccessViewStory(
-  "timeline",
-  tripRoutes.timeline(storyTripId),
-);
-export const tripMembersAccessStory = tripAccessViewStory(
-  "members",
-  tripRoutes.members(storyTripId),
-);
-
 export const appRouteStories = {
+  accountLogin: apiRouteStory(
+    { accessMode: "account-login" },
+    appRoutes.access("sign-in"),
+  ),
+  accountNewTrip: apiRouteStory(
+    { accessMode: "account-login" },
+    tripRoutes.tripsNew,
+  ),
+  accountPortal: apiRouteStory(
+    { accessMode: "account-portal" },
+    portalRoutes.base,
+  ),
+  accountPortalExplorer: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "explorer" },
+    portalRoutes.explorer,
+  ),
+  accountPortalMyTrips: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "trips" },
+    portalRoutes.myTrips,
+  ),
+  accountPortalNewTrip: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "new-trip" },
+    portalRoutes.newTrip,
+  ),
+  accountPortalSettings: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "settings" },
+    portalRoutes.settings,
+  ),
+  accountPortalSignOut: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "sign-out" },
+    portalRoutes.signOut,
+  ),
+  accountPortalToDos: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "todos" },
+    portalRoutes.toDos,
+  ),
+  accountPortalVault: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "vault" },
+    portalRoutes.vault,
+  ),
+  accountRegister: apiRouteStory(
+    { accessMode: "account-register" },
+    appRoutes.access("register"),
+  ),
+  accountTrips: apiRouteStory(
+    { accessMode: "account-portal", portalSection: "trips" },
+    tripRoutes.tripsBase,
+  ),
+  apiJoin: {
+    args: { accessMode: "trip-access", requireJoin: true, dataSource: "api" },
+  },
+  joinWithSeedCredentials: apiRouteStory(
+    { accessMode: "trip-access", initialJoinCode: seedTripJoinId },
+    appRoutes.join(),
+  ),
+  publicEntry: apiRouteStory(
+    { accessMode: "account-login" },
+    appRoutes.home(),
+  ),
+  tripAccess: apiRouteStory(
+    { accessMode: "trip-access" },
+    appRoutes.join(),
+  ),
+  tripAccessWithJoinCode: apiRouteStory(
+    { accessMode: "trip-access", initialJoinCode: seedTripJoinId },
+    appRoutes.join(seedTripJoinId),
+  ),
+  tripItineraryAccess: tripAccessViewStory(
+    "itinerary",
+    tripRoutes.itinerary(storyTripId),
+  ),
+  tripMapAccess: tripAccessViewStory("map", tripRoutes.map(storyTripId)),
+  tripMembersAccess: tripAccessViewStory(
+    "members",
+    tripRoutes.members(storyTripId),
+  ),
+  tripOverviewAccess: tripAccessViewStory(
+    "overview",
+    tripRoutes.base(storyTripId),
+  ),
+  tripTimelineAccess: tripAccessViewStory(
+    "timeline",
+    tripRoutes.timeline(storyTripId),
+  ),
+} as const satisfies Record<string, SagittariusAppStory>;
+
+export const {
   accountLogin: accountLoginStory,
   accountNewTrip: accountNewTripStory,
   accountPortal: accountPortalStory,
@@ -154,4 +153,4 @@ export const appRouteStories = {
   tripMembersAccess: tripMembersAccessStory,
   tripOverviewAccess: tripOverviewAccessStory,
   tripTimelineAccess: tripTimelineAccessStory,
-} as const;
+} = appRouteStories;

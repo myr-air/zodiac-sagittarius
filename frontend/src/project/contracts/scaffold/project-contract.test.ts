@@ -125,7 +125,8 @@ describe("Sagittarius project scaffold", () => {
     expect(storyRouteStories).toContain(
       "@/src/trip/workspace/sagittarius-app/support/route-patterns",
     );
-    expect(storyRouteStories).toContain("export const tripOverviewAccessStory");
+    expect(storyRouteStories).toContain("tripOverviewAccess: tripAccessViewStory");
+    expect(storyRouteStories).toContain("tripOverviewAccess: tripOverviewAccessStory");
     expect(storyBuilders).toContain("export function appViewportStory");
     expect(stories).toContain(
       "@/src/trip/workspace/sagittarius-app/support/storybook-viewport-stories",
