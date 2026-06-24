@@ -18,6 +18,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Centralized member select options: `ff524eff5`
 - [x] Removed duplicate booking option aliases: `d730743ed`
 - [x] Reviewed member filter ownership and removed invite role alias
+- [x] Centralized expense overview row styles locally
 
 ## Milestone 1: Shared UI Primitives
 
@@ -77,7 +78,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 
 - [x] Remove photo provider/access aliases if call sites can import canonical trip photo album values directly.
 - [x] Review member role/status filters; keep page-only filters local and use canonical trip invite role values directly.
-- [ ] Audit `TripExpensesPage.styles.ts` for style groups that now belong in shared workspace primitives.
+- [x] Audit `TripExpensesPage.styles.ts`; centralize expense-only overview row shells locally.
 - [ ] Audit `context-rail.styles.ts` for repeated note/expense/suggestion row styles that can become local style groups or shared primitives.
 - [ ] Audit bookings/docs option labels and itinerary booking labels for possible shared formatting without mixing page copy into trip domain.
 - [ ] Audit large page composition files and split only where behavior boundaries are clear.
