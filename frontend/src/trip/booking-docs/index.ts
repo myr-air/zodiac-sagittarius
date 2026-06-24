@@ -1,5 +1,6 @@
 export * from "./booking-doc-types";
 export {
+  formatBookingDocTypeLabel,
   bookingTitleForItineraryItem,
 } from "./booking-doc-display";
 export {

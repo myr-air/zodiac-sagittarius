@@ -34,3 +34,10 @@ export function bookingDraftTitleForItineraryItem(
 ): string {
   return `${item.activity} ${bookingDraftTitleSuffixByType[bookingType] ?? "booking draft"}`;
 }
+
+export function formatBookingDocTypeLabel(type: BookingDocType): string {
+  return type
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}

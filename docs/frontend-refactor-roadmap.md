@@ -20,6 +20,7 @@ Refactor the frontend structure incrementally so shared UI, domain rules, option
 - [x] Reviewed member filter ownership and removed invite role alias
 - [x] Centralized expense overview row styles locally
 - [x] Centralized context rail item surface styles locally
+- [x] Moved generic booking document type labels to trip domain
 
 ## Milestone 1: Shared UI Primitives
 
@@ -81,7 +82,7 @@ Use one checklist item per commit unless a test failure proves the item must be 
 - [x] Review member role/status filters; keep page-only filters local and use canonical trip invite role values directly.
 - [x] Audit `TripExpensesPage.styles.ts`; centralize expense-only overview row shells locally.
 - [x] Audit `context-rail.styles.ts`; centralize context-rail-only item surface shells locally.
-- [ ] Audit bookings/docs option labels and itinerary booking labels for possible shared formatting without mixing page copy into trip domain.
+- [x] Audit bookings/docs option labels; keep localized page copy local and move generic booking type fallback labels to trip domain.
 - [ ] Audit large page composition files and split only where behavior boundaries are clear.
 - [ ] Re-run Storybook catalog checks after any shared component move.
 

@@ -8,6 +8,7 @@ import {
   bookingTypeForBookingTemplate,
   bookingTypeForExpenseEstimate,
   bookingTypeForItineraryItem,
+  formatBookingDocTypeLabel,
 } from "../../booking-docs";
 import {
   bookingDocTestDocs as docs,
@@ -56,6 +57,11 @@ describe("booking doc estimates", () => {
     expect(bookingTypeForItemClassification({ itemKind: "lodging" })).toBe("hotel");
     expect(bookingTypeForItemClassification({ activityType: "experience" })).toBe("activity_ticket");
     expect(bookingTypeForItemClassification({ activityType: "food" })).toBe("other");
+  });
+
+  it("formats booking document type fallback labels from the booking domain", () => {
+    expect(formatBookingDocTypeLabel("public_transport")).toBe("Public Transport");
+    expect(formatBookingDocTypeLabel("activity_ticket")).toBe("Activity Ticket");
   });
 
   it("builds booking estimate inputs from actual expenses", () => {

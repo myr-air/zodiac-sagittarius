@@ -39,8 +39,14 @@ describe("Sagittarius itinerary context rail architecture", () => {
     const bookingDisplay = readItineraryArchitectureSource(
       "src/features/itinerary/domain/itinerary-booking-display.ts",
     );
+    const bookingDocDisplay = readItineraryArchitectureSource(
+      "src/trip/booking-docs/booking-doc-display.ts",
+    );
     const contextRailDisplay = readItineraryArchitectureSource(
       "src/features/itinerary/domain/itinerary-context-rail-display.ts",
+    );
+    const contextRailSelectOptions = readItineraryArchitectureSource(
+      "src/features/itinerary/components/context-rail/context-rail-select-options.ts",
     );
 
     expect(bookingDocItem).toContain("./context-rail-booking-doc-item-model");
@@ -80,7 +86,9 @@ describe("Sagittarius itinerary context rail architecture", () => {
     expect(contextRailUtils).not.toContain("function memberDisplayName");
     expect(contextRailUtils).not.toContain("bookingDocTypeOptions");
     expect(contextRailUtils).not.toContain("taskKindLabel");
-    expect(bookingDisplay).toContain("export function formatBookingDocTypeLabel");
+    expect(bookingDisplay).not.toContain("export function formatBookingDocTypeLabel");
+    expect(bookingDocDisplay).toContain("export function formatBookingDocTypeLabel");
+    expect(contextRailSelectOptions).toContain("@/src/trip/booking-docs");
     expect(contextRailDisplay).toContain("export const bookingDocTypeOptions");
     expect(contextRailDisplay).toContain("export function suggestionLabel");
     expect(contextRailDisplay).toContain("export function memberDisplayName");
