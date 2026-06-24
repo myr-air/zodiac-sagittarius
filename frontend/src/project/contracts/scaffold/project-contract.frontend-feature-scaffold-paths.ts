@@ -41,6 +41,8 @@ export const frontendFeatureScaffoldPathsPresent = [
   "src/features/account/components/account-access-panel/portal/entry/tests/account-access-panel-portal-handlers.test.ts",
   "src/features/account/components/account-access-panel/composition/account-access-panel-chrome.tsx",
   "src/features/account/components/account-access-panel/composition/account-access-panel-content.tsx",
+  "src/features/account/components/account-access-panel/composition/account-access-status-stack.tsx",
+  "src/features/account/components/account-access-panel/composition/tests/account-access-status-stack.test.tsx",
   "src/features/account/components/account-access-panel/composition/account-email-login-panel-content.tsx",
   "src/features/account/components/account-access-panel/composition/account-entry-hero.tsx",
   "src/features/account/components/account-access-panel/primitives/account-panel-heading.tsx",

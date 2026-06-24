@@ -13,13 +13,8 @@ import {
   type AccountAccessMode,
 } from "./model/account-access-modes";
 import { AccountAccessChrome } from "./composition/account-access-panel-chrome";
-import {
-  StatusMessage,
-} from "./auth";
 import { AccountAccessPanelContent } from "./composition/account-access-panel-content";
-import {
-  accountToastStackClassName,
-} from "./layout/account-access-panel-layout";
+import { AccountAccessStatusStack } from "./composition/account-access-status-stack";
 import {
   accountAccessPanelPageClassName,
   accountAccessPanelShellClassName,
@@ -122,14 +117,11 @@ export function AccountAccessPanel({
           titleLabels={t.access.titles}
         />
 
-        {isAccountEntry && message ? (
-          <div className={accountToastStackClassName} aria-live="polite">
-            {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
-          </div>
-        ) : null}
-
-        {!isAccountEntry && message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
-        {!isAccountEntry && displayError ? <StatusMessage tone="danger">{displayError}</StatusMessage> : null}
+        <AccountAccessStatusStack
+          displayError={displayError}
+          isAccountEntry={isAccountEntry}
+          message={message}
+        />
 
         <AccountAccessPanelContent
           accountClient={accountClient}
