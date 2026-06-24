@@ -6,6 +6,10 @@ import {
 } from "../trip-plan-records";
 import { tripFixture } from "@/src/trip/testing/fixtures/trip-fixtures";
 import type { BookingDoc, Expense, StopNote, Trip, TripTask } from "@/src/trip/types";
+import {
+  buildImportedStopNote,
+  buildImportedTask,
+} from "../testing/fixtures/itinerary-import-api-fixtures";
 
 function tripWithRecordFixtures(): {
   backupItemId: string;
@@ -72,7 +76,7 @@ function tripWithRecordFixtures(): {
     version: 1,
     visibility: "shared",
   };
-  const backupNote: StopNote = {
+  const backupNote = buildImportedStopNote({
     authorId: "member-aom",
     body: "Backup route note",
     createdAt: "2026-06-16T00:00:00.000Z",
@@ -80,8 +84,8 @@ function tripWithRecordFixtures(): {
     itemId: backupItem.id,
     tripId: tripFixture.trip.id,
     tripPlanId: null,
-  };
-  const mainTask: TripTask = {
+  });
+  const mainTask = buildImportedTask({
     createdBy: "member-aom",
     id: "task-main-explicit",
     relatedItemId: null,
@@ -89,14 +93,14 @@ function tripWithRecordFixtures(): {
     title: "Main task",
     tripPlanId: tripFixture.trip.activePlanVariantId,
     visibility: "shared",
-  };
-  const backupTask: TripTask = {
-    ...mainTask,
+  });
+  const backupTask = buildImportedTask({
     id: "task-backup",
     relatedItemId: backupItem.id,
+    status: "open",
     title: "Backup task",
     tripPlanId: null,
-  };
+  });
 
   return {
     backupItemId: backupItem.id,
