@@ -2,6 +2,7 @@ import {
   fromDateTimeLocalValue,
   toDateTimeLocalValue,
 } from "@/src/shared/date-time-local";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type {
   BookingDoc,
   BookingDocStatus,
@@ -84,12 +85,12 @@ export function buildBookingDialogSubmitInput({
         ? fields.travelerIds[0] || null
         : booking?.ownerMemberId ?? null,
     providerName: providerName || null,
-    confirmationCode: fields.confirmationCode.trim() || null,
+    confirmationCode: trimmedTextOrNull(fields.confirmationCode),
     startsAt: fromDateTimeLocalValue(fields.startsAt),
     endsAt: fromDateTimeLocalValue(fields.endsAt),
     timezone: booking?.timezone ?? "Asia/Hong_Kong",
     priceAmount: fields.priceAmount ? Number(fields.priceAmount) : null,
-    currency: fields.currency.trim() || null,
+    currency: trimmedTextOrNull(fields.currency),
     travelerIds: fields.travelerIds,
     externalLinks: linkUrl
       ? [
@@ -106,6 +107,6 @@ export function buildBookingDialogSubmitInput({
     relatedTaskIds: fields.relatedTaskIds,
     relatedExpenseIds: fields.relatedExpenseIds,
     noteIds: fields.noteIds,
-    notes: fields.notes.trim() || null,
+    notes: trimmedTextOrNull(fields.notes),
   };
 }

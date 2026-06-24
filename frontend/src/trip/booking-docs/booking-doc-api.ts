@@ -2,6 +2,7 @@ import type {
   CreateBookingDocApiRequest,
   PatchBookingDocApiRequest,
 } from "../api-client";
+import { trimmedTextOrNull } from "@/src/shared/text-parts";
 import type { BookingDoc } from "../types";
 import type {
   BookingDocInputLike,
@@ -17,17 +18,17 @@ export function serializeBookingDocInputForApi(
     title: input.title.trim(),
     startsAt: normalizeBookingDocDateTimeForApi(input.startsAt, input.timezone),
     endsAt: normalizeBookingDocDateTimeForApi(input.endsAt, input.timezone),
-    providerName: input.providerName?.trim() || null,
-    confirmationCode: input.confirmationCode?.trim() || null,
-    timezone: input.timezone?.trim() || null,
-    currency: input.currency?.trim() || null,
-    notes: input.notes?.trim() || null,
+    providerName: trimmedTextOrNull(input.providerName),
+    confirmationCode: trimmedTextOrNull(input.confirmationCode),
+    timezone: trimmedTextOrNull(input.timezone),
+    currency: trimmedTextOrNull(input.currency),
+    notes: trimmedTextOrNull(input.notes),
     externalLinks: input.externalLinks.map((link) => ({
       ...(isUuid(link.id) ? { id: link.id } : {}),
       label: link.label.trim(),
       url: link.url.trim(),
-      provider: link.provider?.trim() || null,
-      accessNote: link.accessNote?.trim() || null,
+      provider: trimmedTextOrNull(link.provider),
+      accessNote: trimmedTextOrNull(link.accessNote),
     })),
   };
 }
@@ -69,7 +70,7 @@ function normalizeBookingDocDateTimeForApi(
     minute: Number(minute),
     month: Number(month),
     second: Number(second),
-    timezone: timezone?.trim() || null,
+    timezone: trimmedTextOrNull(timezone),
     year: Number(year),
   });
   return `${year}-${month}-${day}T${hour}:${minute}:${second}${formatUtcOffset(offsetMinutes)}`;
