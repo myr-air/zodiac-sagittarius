@@ -16,7 +16,7 @@ describe("TripExpensesPage split forms", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(dialog).toHaveClass("shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]");
     expect(dialog).toHaveClass("!max-w-4xl");
@@ -64,7 +64,7 @@ describe("TripExpensesPage split forms", () => {
       expenseSummary: buildExpenseSummary([], trip.members[0].id),
     });
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Itemized receipt");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
@@ -112,7 +112,7 @@ describe("TripExpensesPage split forms", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Dim sum");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));

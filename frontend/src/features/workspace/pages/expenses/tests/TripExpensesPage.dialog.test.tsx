@@ -16,7 +16,7 @@ describe("TripExpensesPage edit dialog", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(within(dialog).getByRole("heading", { name: /ข้อมูลบิล/i })).toBeInTheDocument();
     expect(within(dialog).getByRole("heading", { name: /ทริป คนจ่าย และการแบ่ง/i })).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe("TripExpensesPage edit dialog", () => {
     }));
     renderExpenses({ onCreateExpense });
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Double click lunch");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
@@ -87,7 +87,7 @@ describe("TripExpensesPage edit dialog", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(within(dialog).getByRole("option", {
       name: "2026-06-18 · ถึง Hong Kong International Airport",

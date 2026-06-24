@@ -91,5 +91,10 @@ export async function expectExpensesResponsiveContract(canvasElement: HTMLElemen
   const canvas = within(canvasElement);
   await expect(canvas.getByRole("region", { name: /Trip money|เงินทริป/i })).toHaveClass("expenses-page");
   await expect(canvas.getByRole("region", { name: /Money summary|สรุปเงิน/i })).toBeVisible();
-  await expect(canvas.getByRole("table", { name: /Expense ledger|รายการค่าใช้จ่าย/i })).toHaveClass("expense-ledger-table");
+  const spendingLog = canvas.queryByRole("table", { name: /Spending log|บันทึกใช้จ่าย/i });
+  if (spendingLog) {
+    await expect(spendingLog).toHaveClass("expense-ledger-table");
+  } else {
+    await expect(canvasElement.querySelector(".expense-mobile-ledger")).toBeVisible();
+  }
 }

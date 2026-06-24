@@ -24,7 +24,7 @@ describe("TripExpensesPage overview and filters", () => {
     );
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("0_8px_18px");
-    expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("bg-(--color-surface-subtle)");
+    expect(document.querySelector(".expense-ledger-table thead")).toHaveClass("sr-only");
     expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
     expect(document.querySelector(".expenses-content")?.firstElementChild).toHaveClass("expenses-ledger");
     expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-none");
@@ -34,19 +34,19 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-command-bar")?.className).not.toContain("linear-gradient");
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
-    const ledger = screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i });
+    const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
-    const detailButtons = within(ledger).getAllByRole("button", { name: /ดูที่มาและสูตร/i });
+    const detailButtons = within(ledger).getAllByRole("button", { name: /ดูรายละเอียดบิล/i });
     expect(detailButtons[0]).toHaveAttribute("aria-expanded", "false");
     await user.click(detailButtons[0]);
     expect(detailButtons[0]).toHaveAttribute("aria-expanded", "true");
-    expect(within(ledger).getByText("ที่มาและสูตรแปลงเงิน")).toBeInTheDocument();
-    expect(within(ledger).getByText("คำนวณรายคน")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
+    expect(within(ledger).getByText("รายละเอียดบิล")).toBeInTheDocument();
+    expect(within(ledger).getAllByText("แชร์กับ").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
     expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
-    expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/อัปเดตสด/i);
+    expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     expect(screen.getByLabelText("Trip Plan")).toHaveValue("plan-main");
-    expect(screen.getByLabelText(/วันของค่าใช้จ่าย/i)).toHaveValue("all");
+    expect(screen.getByLabelText(/วัน/i)).toHaveValue("all");
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
     expect(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i }).length).toBeGreaterThan(0);
   });
@@ -55,7 +55,7 @@ describe("TripExpensesPage overview and filters", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.type(screen.getByLabelText(/ค้นหาค่าใช้จ่าย/i), "tram");
+    await user.type(screen.getByLabelText(/ค้นหารายการ/i), "tram");
 
     expect(screen.getByText("Peak Tram tickets")).toBeInTheDocument();
     expect(screen.queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
@@ -94,10 +94,10 @@ describe("TripExpensesPage overview and filters", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.selectOptions(screen.getByLabelText(/วันของค่าใช้จ่าย/i), "2026-06-18");
+    await user.selectOptions(screen.getByLabelText(/วัน/i), "2026-06-18");
 
     expect(screen.getByText("Arrival taxi")).toBeInTheDocument();
     expect(screen.queryByText("General tram")).not.toBeInTheDocument();
-    expect(within(screen.getByRole("table", { name: /รายการค่าใช้จ่าย/i })).getByText(/2026-06-18/)).toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: /บันทึกใช้จ่าย/i })).getByText(/2026-06-18/)).toBeInTheDocument();
   });
 });

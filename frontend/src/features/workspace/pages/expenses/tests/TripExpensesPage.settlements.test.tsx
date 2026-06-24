@@ -92,7 +92,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("button", { name: /ดาวน์โหลด CSV/i }));
+    await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(anchor.download).toBe("hong-kong-shenzhen-trip-expenses.csv");

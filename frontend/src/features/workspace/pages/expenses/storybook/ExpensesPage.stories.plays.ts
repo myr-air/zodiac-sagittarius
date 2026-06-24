@@ -10,22 +10,22 @@ type ExpensesPagePlay = NonNullable<StoryObj<typeof TripExpensesPage>["play"]>;
 
 export const ownerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /Trip money/i })).toHaveClass("expenses-page");
-  await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeEnabled();
+  await expect(canvas.getByRole("button", { name: /Add spend/i })).toBeEnabled();
 };
 
 export const viewerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.getByText(/Money view only/i)).toBeVisible();
-  await expect(canvas.getByRole("button", { name: /Add expense/i })).toBeDisabled();
+  await expect(canvas.getByRole("button", { name: /Add spend/i })).toBeDisabled();
 };
 
 export const ownerThaiPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /เงินทริป/i })).toHaveClass("expenses-page");
   await expect(canvas.getByRole("region", { name: /สรุปเงิน/i })).toBeVisible();
-  await expect(canvas.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })).toBeEnabled();
+  await expect(canvas.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
 };
 
 export const addExpenseDialogOpenPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("button", { name: /Add expense/i }));
+  await userEvent.click(canvas.getByRole("button", { name: /Add spend/i }));
   await expect(canvas.getByRole("dialog", { name: /Add expense/i })).toHaveClass("expense-dialog");
   await expect(canvas.getByLabelText("Expense title")).toBeVisible();
   await expect(canvas.getByLabelText("Amount")).toBeVisible();
@@ -33,10 +33,10 @@ export const addExpenseDialogOpenPlay: ExpensesPagePlay = async ({ canvas }) => 
 };
 
 export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
-  const ledger = canvas.getByRole("table", { name: /Expense ledger/i });
+  const ledger = canvas.getByRole("table", { name: /Spending log/i });
   await expect(ledger).toHaveClass("expense-ledger-table");
 
-  await userEvent.type(canvas.getByLabelText(/Search expenses/i), "tram");
+  await userEvent.type(canvas.getByLabelText(/Find spend/i), "tram");
   await expect(canvas.getByText("Peak Tram tickets")).toBeVisible();
   await expect(canvas.queryByText("Dim Dim Sum brunch")).toBeNull();
 
