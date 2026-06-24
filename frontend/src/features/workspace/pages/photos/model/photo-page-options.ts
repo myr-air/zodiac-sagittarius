@@ -5,6 +5,7 @@ import {
 import {
   buildSelectOptions,
   type SelectOption,
+  withAllFilterValue,
 } from "@/src/shared/select-options";
 import type {
   TripPhotoAlbumAccess,
@@ -14,7 +15,7 @@ import type { IconName } from "@/src/ui/icons";
 import type { BadgeTone } from "@/src/ui/primitive-badge-styles";
 import type { PhotoCopy } from "../content/TripPhotosPage.copy";
 
-export const photoProviders = ["all", ...tripPhotoAlbumProviderValues] as const;
+export const photoProviders = withAllFilterValue(tripPhotoAlbumProviderValues);
 export type PhotoProviderFilter = (typeof photoProviders)[number];
 
 export const photoProviderOptions = tripPhotoAlbumProviderValues;

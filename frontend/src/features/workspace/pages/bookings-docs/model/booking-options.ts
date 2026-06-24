@@ -9,13 +9,14 @@ import {
 import {
   buildSelectOptions,
   type SelectOption,
+  withAllFilterValue,
 } from "@/src/shared/select-options";
 
 import type { BookingCopy } from "../content/BookingsDocsPage.copy";
 
 export const bookingTypes = bookingDocTypeValues;
 export const bookingStatuses = bookingDocStatusValues;
-export const bookingStatusFilterValues = ["all", ...bookingStatuses] as const;
+export const bookingStatusFilterValues = withAllFilterValue(bookingStatuses);
 export const bookingVisibilities = bookingDocVisibilityValues;
 
 export type BookingStatusFilter = (typeof bookingStatusFilterValues)[number];

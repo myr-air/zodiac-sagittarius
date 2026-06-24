@@ -4,6 +4,7 @@ import {
   buildSelectOptions,
   buildSelectOptionsFromItems,
   prependSelectOption,
+  withAllFilterValue,
 } from "../select-options";
 
 describe("buildSelectOptions", () => {
@@ -45,6 +46,14 @@ describe("buildSelectOptions", () => {
 
     expect(prependSelectOption([{ value: "member-aom", label: "Aom" }])).toEqual([
       { value: "member-aom", label: "Aom" },
+    ]);
+  });
+
+  it("builds canonical all-first filter values", () => {
+    expect(withAllFilterValue(["active", "disabled"] as const)).toEqual([
+      "all",
+      "active",
+      "disabled",
     ]);
   });
 });

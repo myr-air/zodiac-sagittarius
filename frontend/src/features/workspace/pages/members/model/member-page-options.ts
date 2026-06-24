@@ -8,12 +8,13 @@ import {
 import {
   buildSelectOptions,
   type SelectOption,
+  withAllFilterValue,
 } from "@/src/shared/select-options";
 
 export const memberInviteRoleValues = tripInvitableRoleValues;
 export type MemberInviteRole = TripInvitableRole;
 
-export const memberRoleFilterValues = ["all", ...tripRoleValues] as const;
+export const memberRoleFilterValues = withAllFilterValue(tripRoleValues);
 export type MemberRoleFilter = (typeof memberRoleFilterValues)[number];
 
 export const memberStatusFilterValues = [

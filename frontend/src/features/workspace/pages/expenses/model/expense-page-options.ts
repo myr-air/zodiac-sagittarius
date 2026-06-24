@@ -6,6 +6,7 @@ import {
 import {
   buildSelectOptions,
   type SelectOption,
+  withAllFilterValue,
 } from "@/src/shared/select-options";
 import type { Expense } from "@/src/trip/types";
 
@@ -17,7 +18,7 @@ export type CategoryTone = {
 };
 
 export const expenseCategories = expenseCategoryValues;
-export const expenseCategoryFilterValues = ["all", ...expenseCategoryValues] as const;
+export const expenseCategoryFilterValues = withAllFilterValue(expenseCategoryValues);
 export type ExpenseCategoryFilter = (typeof expenseCategoryFilterValues)[number];
 
 export const expenseSplitModes = expenseSplitModeValues;

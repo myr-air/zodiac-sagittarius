@@ -22,6 +22,12 @@ export function buildSelectOptionsFromItems<Item, Value extends string>(
   }));
 }
 
+export function withAllFilterValue<const Values extends readonly string[]>(
+  values: Values,
+): readonly ["all", ...Values] {
+  return ["all", ...values];
+}
+
 export function prependSelectOption<Value extends string>(
   options: readonly SelectOption<Value>[],
   leadingOption?: SelectOption<Value>,

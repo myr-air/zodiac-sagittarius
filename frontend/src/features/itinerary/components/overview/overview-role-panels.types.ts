@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import type { Locale } from "@/src/i18n/types";
+import { withAllFilterValue } from "@/src/shared/select-options";
 import type { ItineraryItem, Trip, TripTask } from "@/src/trip/types";
 import { tripTaskStatusValues } from "@/src/trip/records";
 import type { OverviewTaskListLabels } from "./OverviewTaskList";
@@ -7,7 +8,7 @@ import type { OverviewTaskListLabels } from "./OverviewTaskList";
 export const taskScopeFilterValues = ["mine", "trip", "all"] as const;
 export type TaskScopeFilter = (typeof taskScopeFilterValues)[number];
 
-export const taskStatusFilterValues = ["all", ...tripTaskStatusValues] as const;
+export const taskStatusFilterValues = withAllFilterValue(tripTaskStatusValues);
 export type TaskStatusFilter = (typeof taskStatusFilterValues)[number];
 
 interface OverviewChecklistPanelBaseProps {
