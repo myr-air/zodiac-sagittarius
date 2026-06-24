@@ -1,9 +1,9 @@
 import type { StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expectStoryElementAttribute } from "@/src/shared/storybook/story-assertions";
 import type { TravelMotif } from "../TravelMotifs";
 
 type TravelMotifPlay = NonNullable<StoryObj<typeof TravelMotif>["play"]>;
 
 export const routePlay: TravelMotifPlay = async ({ canvasElement }) => {
-  await expect(canvasElement.querySelector(".travel-motif--route")).toHaveAttribute("aria-hidden", "true");
+  await expectStoryElementAttribute(canvasElement, ".travel-motif--route", "aria-hidden", "true");
 };

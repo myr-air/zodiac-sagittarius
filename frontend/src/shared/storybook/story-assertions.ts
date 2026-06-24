@@ -14,3 +14,15 @@ export async function expectStoryElementClasses(
 ) {
   await expect(canvasElement.querySelector(selector)).toHaveClass(...classNames);
 }
+
+export async function expectStoryElementAttribute(
+  canvasElement: HTMLElement,
+  selector: string,
+  attributeName: string,
+  attributeValue: string,
+) {
+  await expect(canvasElement.querySelector(selector)).toHaveAttribute(
+    attributeName,
+    attributeValue,
+  );
+}

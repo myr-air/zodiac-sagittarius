@@ -1,5 +1,6 @@
 import { expect } from "storybook/test";
 import type { TimelineView } from "@/src/features/itinerary/components";
+import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import { expectTimelineStructure } from "./TimelinePage.stories.support";
 import type { StoryPlay } from "./support/story-play-types";
 
@@ -57,7 +58,7 @@ export const advisoryWarningPlay: TimelinePagePlay = async ({ canvas }) => {
 
 export const tabletPlay: TimelinePagePlay = async ({ canvasElement }) => {
   await expectTimelineStructure(canvasElement);
-  await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass("max-[1199px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".timeline-grid", "max-[1199px]:grid-cols-1");
 };
 
 export const responsivePlay: TimelinePagePlay = async ({ canvasElement }) => {
@@ -66,11 +67,15 @@ export const responsivePlay: TimelinePagePlay = async ({ canvasElement }) => {
 
 export const mobilePlay: TimelinePagePlay = async ({ canvasElement }) => {
   await expectTimelineStructure(canvasElement);
-  await expect(canvasElement.querySelector(".timeline-grid")).toHaveClass(
+  await expectStoryElementClasses(
+    canvasElement,
+    ".timeline-grid",
     "max-[1199px]:grid-cols-1",
     "max-[767px]:overflow-y-auto",
   );
-  await expect(canvasElement.querySelector(".timeline-stop-button")).toHaveClass(
+  await expectStoryElementClasses(
+    canvasElement,
+    ".timeline-stop-button",
     "max-[767px]:grid-cols-[62px_32px_minmax(0,1fr)]",
   );
 };

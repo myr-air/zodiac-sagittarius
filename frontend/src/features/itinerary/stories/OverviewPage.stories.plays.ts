@@ -1,5 +1,6 @@
 import { expect, userEvent } from "storybook/test";
 import type { OverviewPage } from "@/src/features/itinerary/components";
+import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import { expectOverviewStructure } from "./OverviewPage.stories.support";
 import type { StoryPlay } from "./support/story-play-types";
 
@@ -58,18 +59,20 @@ export const addTaskDialogOpenPlay: OverviewPagePlay = async ({ canvas }) => {
 
 export const tabletPlay: OverviewPagePlay = async ({ canvasElement }) => {
   await expectOverviewStructure(canvasElement);
-  await expect(canvasElement.querySelector(".overview-grid")).toHaveClass("max-[1199px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".overview-grid", "max-[1199px]:grid-cols-1");
 };
 
 export const desktop1440Play: OverviewPagePlay = async ({ canvasElement }) => {
   await expectOverviewStructure(canvasElement);
-  await expect(canvasElement.querySelector(".overview-travel-cockpit")).toHaveClass("grid-cols-3");
+  await expectStoryElementClasses(canvasElement, ".overview-travel-cockpit", "grid-cols-3");
 };
 
 export const mobilePlay: OverviewPagePlay = async ({ canvasElement }) => {
   await expectOverviewStructure(canvasElement);
-  await expect(canvasElement.querySelector(".overview-hero")).toHaveClass("max-[1199px]:grid-cols-1");
-  await expect(canvasElement.querySelector(".overview-highlight-list")).toHaveClass(
+  await expectStoryElementClasses(canvasElement, ".overview-hero", "max-[1199px]:grid-cols-1");
+  await expectStoryElementClasses(
+    canvasElement,
+    ".overview-highlight-list",
     "max-[767px]:flex",
     "max-[767px]:overflow-x-auto",
   );
