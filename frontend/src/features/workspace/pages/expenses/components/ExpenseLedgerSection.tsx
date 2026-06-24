@@ -107,6 +107,7 @@ export function ExpenseLedgerSection({
         dayFilter={dayFilter}
         dayFilterOptions={expenseDayFilterOptions({
           allDaysLabel: t.expenses.filters.allDays,
+          expenses: filteredExpenses,
           itineraryItems: trip.itineraryItems,
           unlinkedLabel: t.expenses.filters.unlinkedDay,
         })}

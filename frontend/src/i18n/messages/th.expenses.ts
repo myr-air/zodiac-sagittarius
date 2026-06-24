@@ -209,6 +209,7 @@ export const thExpensesMessages = {
       notes: "โน้ต",
       receiptUrl: "ลิงก์ใบเสร็จ",
       repeatCount: "ทำซ้ำ",
+      spentOn: "วันที่จ่าย",
       comments: "โน้ตของค่าใช้จ่าย",
       commentInput: "เพิ่มโน้ต",
       paidBy: "จ่ายโดย",

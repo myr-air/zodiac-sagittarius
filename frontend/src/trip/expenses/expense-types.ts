@@ -19,6 +19,7 @@ export interface Expense {
   exchangeRateToSettlementCurrency?: number;
   notes?: string;
   receiptUrl?: string | null;
+  spentOn?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
   settlementAllocations?: ExpenseSettlementAllocation[];

@@ -52,6 +52,7 @@ export function useExpenseDialogSubmitHandler({
       paidBy: formValues.paidBy,
       receiptUrl: formValues.receiptUrl,
       splitMode: splitEditor.splitMode,
+      spentOn: formValues.spentOn,
       title: formValues.title,
     });
     try {

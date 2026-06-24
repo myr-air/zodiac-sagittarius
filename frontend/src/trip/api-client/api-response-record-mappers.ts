@@ -14,6 +14,7 @@ export function mapExpense(expense: ExpenseResponse): Expense {
     exchangeRateToSettlementCurrency: expense.exchangeRateToSettlementCurrency,
     notes: expense.notes ?? "",
     receiptUrl: expense.receiptUrl,
+    spentOn: expense.spentOn ?? null,
     lineItems: expense.lineItems ?? [],
     comments: expense.comments ?? [],
     settlementAllocations: expense.settlementAllocations ?? [],

@@ -13,7 +13,12 @@ export interface ExpenseDialogInitialFields {
   paidBy: string;
   repeatCount: string;
   receiptUrl: string;
+  spentOn: string;
   title: string;
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function initialExpenseDialogFields({
@@ -36,6 +41,7 @@ export function initialExpenseDialogFields({
     paidBy: expense?.paidBy ?? currentMemberId,
     repeatCount: "1",
     receiptUrl: expense?.receiptUrl ?? "",
+    spentOn: expense?.spentOn ?? todayIsoDate(),
     title: expense?.title ?? "",
   };
 }

@@ -46,6 +46,7 @@ export function ExpenseDialogFormContent({
           receiptUrl={state.receiptUrl}
           repeatCount={state.repeatCount}
           settlementCurrency={settlementCurrency}
+          spentOn={state.spentOn}
           splitMode={state.splitEditor.splitMode}
           title={state.title}
           trip={trip}
@@ -60,6 +61,7 @@ export function ExpenseDialogFormContent({
           onPaidByChange={state.setPaidBy}
           onReceiptUrlChange={state.setReceiptUrl}
           onRepeatCountChange={state.setRepeatCount}
+          onSpentOnChange={state.setSpentOn}
           onSplitModeChange={state.splitEditor.changeSplitMode}
           onTitleChange={state.setTitle}
           onTripPlanIdChange={state.setTripPlanId}

@@ -60,6 +60,7 @@ export function buildExpenseUpdateDraft<
       1,
     notes: input.notes ?? existing.notes ?? "",
     receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
+    spentOn: input.spentOn ?? existing.spentOn ?? null,
     lineItems: input.lineItems ?? existing.lineItems ?? [],
     comments: input.comments ?? existing.comments ?? [],
     tripPlanId,

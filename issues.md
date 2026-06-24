@@ -16,6 +16,9 @@ assignment, labels, comments, and closing history.
   - [#17 Production migrations need owner-capable database role](https://github.com/myr-air/zodiac-sagittarius/issues/17)
 - Active design follow-ups:
   - [#22 Production web redesign audit follow-up](https://github.com/myr-air/zodiac-sagittarius/issues/22), sourced from [redesign.md](redesign.md)
+- Active spending follow-ups:
+  - [#70 Support stored-value travel wallets in trip spending](https://github.com/myr-air/zodiac-sagittarius/issues/70)
+  - [#71 Capture receipts with camera or OCR into spending drafts](https://github.com/myr-air/zodiac-sagittarius/issues/71)
 - Production readiness follow-ups closed on 2026-06-07:
   - [#9 Production readiness local gate fails in auth browser e2e under next dev](https://github.com/myr-air/zodiac-sagittarius/issues/9)
   - [#10 Production browser QA fails because trip nav selector uses raw UUID instead of encoded route](https://github.com/myr-air/zodiac-sagittarius/issues/10)

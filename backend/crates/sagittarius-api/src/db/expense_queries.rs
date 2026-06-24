@@ -84,7 +84,7 @@ pub async fn list_expenses(
 ) -> Result<Vec<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where trip_id = $1 and deleted_at is null
@@ -101,12 +101,12 @@ pub async fn insert_expense(
 ) -> Result<ExpenseRecord, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "insert into expenses (
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version
          )
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 1)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, 1)
          returning
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense.id)
@@ -118,6 +118,7 @@ pub async fn insert_expense(
     .bind(expense.exchange_rate_to_settlement_currency)
     .bind(expense.notes)
     .bind(expense.receipt_url)
+    .bind(expense.spent_on)
     .bind(expense.line_items)
     .bind(expense.comments)
     .bind(expense.settlement_allocations)
@@ -135,7 +136,7 @@ pub async fn lock_expense(
 ) -> Result<Option<ExpenseRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseRecord>(
         "select
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version
          from expenses
          where id = $1 and deleted_at is null
@@ -161,19 +162,20 @@ pub async fn update_expense(
              exchange_rate_to_settlement_currency = coalesce($5, exchange_rate_to_settlement_currency),
              notes = coalesce($6, notes),
              receipt_url = coalesce($7, receipt_url),
-             line_items = coalesce($8, line_items),
-             comments = coalesce($9, comments),
-             settlement_allocations = coalesce($10, settlement_allocations),
-             paid_by = coalesce($11, paid_by),
-             category = coalesce($12, category),
-             splits = coalesce($13, splits),
-             itinerary_item_id = case when $14 then $15 else itinerary_item_id end,
-             trip_plan_id = $16,
-             version = $17,
+             spent_on = coalesce($8, spent_on),
+             line_items = coalesce($9, line_items),
+             comments = coalesce($10, comments),
+             settlement_allocations = coalesce($11, settlement_allocations),
+             paid_by = coalesce($12, paid_by),
+             category = coalesce($13, category),
+             splits = coalesce($14, splits),
+             itinerary_item_id = case when $15 then $16 else itinerary_item_id end,
+             trip_plan_id = $17,
+             version = $18,
              updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)
@@ -183,6 +185,7 @@ pub async fn update_expense(
     .bind(patch.exchange_rate_to_settlement_currency)
     .bind(patch.notes.as_deref())
     .bind(patch.receipt_url.as_deref())
+    .bind(patch.spent_on)
     .bind(patch.line_items.as_ref())
     .bind(patch.comments.as_ref())
     .bind(patch.settlement_allocations.as_ref())
@@ -207,7 +210,7 @@ pub async fn delete_expense(
          set deleted_at = now(), version = $2, updated_at = now()
          where id = $1 and deleted_at is null
          returning
-           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, line_items, comments, settlement_allocations, paid_by, category, splits,
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency, notes, receipt_url, spent_on, line_items, comments, settlement_allocations, paid_by, category, splits,
            itinerary_item_id, version",
     )
     .bind(expense_id)

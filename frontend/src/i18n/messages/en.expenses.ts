@@ -209,6 +209,7 @@ export const enExpensesMessages = {
       notes: "Notes",
       receiptUrl: "Receipt link",
       repeatCount: "Repeat count",
+      spentOn: "Paid date",
       comments: "Expense comments",
       commentInput: "Add comment",
       paidBy: "Paid by",

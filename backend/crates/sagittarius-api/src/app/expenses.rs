@@ -1,3 +1,4 @@
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::app::{auth, events, mutation_guard, trips};
@@ -86,6 +87,7 @@ pub async fn create_expense(
                 .unwrap_or(1.0),
             notes: request.notes.as_deref().unwrap_or("").trim(),
             receipt_url: request.receipt_url.as_deref().map(str::trim),
+            spent_on: request.spent_on.unwrap_or_else(|| OffsetDateTime::now_utc().date()),
             line_items: request.line_items.unwrap_or_else(|| serde_json::json!([])),
             comments: request.comments.unwrap_or_else(|| serde_json::json!([])),
             settlement_allocations: request

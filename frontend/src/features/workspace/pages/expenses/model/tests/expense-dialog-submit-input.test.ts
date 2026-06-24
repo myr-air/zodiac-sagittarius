@@ -34,6 +34,7 @@ describe("expense dialog submit input", () => {
         paidBy: members[0].id,
         receiptUrl: "  https://receipt.example  ",
         splitMode: "equal",
+        spentOn: "2026-06-25",
         title: "  Dinner  ",
       }),
     ).toMatchObject({
@@ -45,6 +46,7 @@ describe("expense dialog submit input", () => {
       exchangeRateToSettlementCurrency: 1.08,
       notes: "Pay cash",
       receiptUrl: "https://receipt.example",
+      spentOn: "2026-06-25",
       repeatCount: 3,
       paidBy: members[0].id,
       category: "food",
@@ -84,12 +86,14 @@ describe("expense dialog submit input", () => {
         paidBy: members[0].id,
         receiptUrl: "",
         splitMode: "itemized",
+        spentOn: "2026-06-26",
         title: "Tea",
       }),
     ).toMatchObject({
       itemId: null,
       tripPlanId: null,
       exchangeRateToSettlementCurrency: 1,
+      spentOn: "2026-06-26",
       comments: [{ id: "comment-1" }],
       lineItems: [{ id: "line-tea", title: "Tea", amount: 12 }],
     });

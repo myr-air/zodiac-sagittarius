@@ -58,6 +58,7 @@ export function useExpenseDialogFormValues({
       updateFormValue("receiptUrl", receiptUrl),
     setRepeatCount: (repeatCount: string) =>
       updateFormValue("repeatCount", repeatCount),
+    setSpentOn: (spentOn: string) => updateFormValue("spentOn", spentOn),
     setTitle: (title: string) => updateFormValue("title", title),
   };
 }

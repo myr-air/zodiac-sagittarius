@@ -17,6 +17,7 @@ interface ExpenseCoreFieldsProps {
   receiptUrl: string;
   repeatCount: string;
   settlementCurrency: string;
+  spentOn: string;
   title: string;
   copy: {
     fields: {
@@ -26,6 +27,7 @@ interface ExpenseCoreFieldsProps {
       notes: string;
       receiptUrl: string;
       repeatCount: string;
+      spentOn: string;
       title: string;
     };
   };
@@ -35,6 +37,7 @@ interface ExpenseCoreFieldsProps {
   onNotesChange: (value: string) => void;
   onReceiptUrlChange: (value: string) => void;
   onRepeatCountChange: (value: string) => void;
+  onSpentOnChange: (value: string) => void;
   onTitleChange: (value: string) => void;
 }
 
@@ -50,6 +53,7 @@ export function ExpenseCoreFields({
   receiptUrl,
   repeatCount,
   settlementCurrency,
+  spentOn,
   title,
   onAmountChange,
   onCurrencyChange,
@@ -57,6 +61,7 @@ export function ExpenseCoreFields({
   onNotesChange,
   onReceiptUrlChange,
   onRepeatCountChange,
+  onSpentOnChange,
   onTitleChange,
 }: ExpenseCoreFieldsProps) {
   const advancedSectionId = useId();
@@ -91,6 +96,14 @@ export function ExpenseCoreFields({
           placeholder="Airport taxi"
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
+        />
+      </label>
+      <label className={expenseStyles.fieldClassName}>
+        <span>{copy.fields.spentOn}</span>
+        <input
+          type="date"
+          value={spentOn}
+          onChange={(event) => onSpentOnChange(event.target.value)}
         />
       </label>
 

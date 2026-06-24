@@ -168,6 +168,7 @@ pub struct CreateExpenseRequest {
     pub exchange_rate_to_settlement_currency: Option<f64>,
     pub notes: Option<String>,
     pub receipt_url: Option<String>,
+    pub spent_on: Option<Date>,
     pub line_items: Option<Value>,
     pub comments: Option<Value>,
     pub settlement_allocations: Option<Value>,
@@ -189,6 +190,7 @@ pub struct PatchExpenseRequest {
     pub exchange_rate_to_settlement_currency: Option<f64>,
     pub notes: Option<String>,
     pub receipt_url: Option<String>,
+    pub spent_on: Option<Date>,
     pub line_items: Option<Value>,
     pub comments: Option<Value>,
     pub settlement_allocations: Option<Value>,
@@ -744,6 +746,7 @@ impl PatchExpenseRequest {
             && self.exchange_rate_to_settlement_currency.is_none()
             && self.notes.is_none()
             && self.receipt_url.is_none()
+            && self.spent_on.is_none()
             && self.line_items.is_none()
             && self.comments.is_none()
             && self.settlement_allocations.is_none()
@@ -1571,6 +1574,7 @@ mod tests {
             exchange_rate_to_settlement_currency: None,
             notes: None,
             receipt_url: None,
+            spent_on: None,
             line_items: None,
             comments: None,
             settlement_allocations: None,
@@ -1602,6 +1606,7 @@ mod tests {
             exchange_rate_to_settlement_currency: None,
             notes: None,
             receipt_url: None,
+            spent_on: None,
             line_items: None,
             comments: None,
             settlement_allocations: None,
@@ -1632,6 +1637,7 @@ mod tests {
             exchange_rate_to_settlement_currency: Some(0.0),
             notes: None,
             receipt_url: None,
+            spent_on: None,
             line_items: None,
             comments: None,
             settlement_allocations: None,
@@ -1655,6 +1661,7 @@ mod tests {
             exchange_rate_to_settlement_currency: Some(-1.0),
             notes: None,
             receipt_url: None,
+            spent_on: None,
             line_items: None,
             comments: None,
             settlement_allocations: None,

@@ -42,7 +42,10 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
-    await user.click(within(ledger).getByRole("button", { name: /ดูรายละเอียดบิลของ Dim Dim Sum brunch/i }));
+    const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
+      .find((button) => button.textContent?.includes("Dim Dim Sum brunch"));
+    expect(rowButton).toBeInstanceOf(HTMLButtonElement);
+    await user.click(rowButton as HTMLButtonElement);
     expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
@@ -51,6 +54,36 @@ describe("TripExpensesPage overview and filters", () => {
 
     await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
+  });
+
+  it("keeps long desktop ledger titles selectable without widening action columns", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      expenses: [
+        {
+          ...seedTrip.expenses[0],
+          id: "expense-long-title",
+          title: "Octopus card permanent stored value top-up and airport express transfer adjustment",
+        },
+      ],
+    };
+    renderExpenses({
+      trip,
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
+    const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
+      .find((button) => button.textContent?.includes("Octopus card permanent stored value top-up"));
+    expect(rowButton).toBeInstanceOf(HTMLButtonElement);
+
+    expect(rowButton).toHaveClass("expense-ledger-row-button");
+    expect(rowButton?.querySelector("strong")).toHaveClass("break-words");
+
+    await user.click(rowButton as HTMLButtonElement);
+    expect(screen.getByRole("region", { name: /Octopus card permanent stored value/i })).toHaveTextContent("แชร์กับ");
   });
 
   it("filters the expense ledger by search text and category, then resets filters", async () => {

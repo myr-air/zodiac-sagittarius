@@ -679,6 +679,7 @@ pub struct ExpenseItemSummary {
     pub exchange_rate_to_settlement_currency: f64,
     pub notes: String,
     pub receipt_url: Option<String>,
+    pub spent_on: Option<Date>,
     pub line_items: Value,
     pub comments: Value,
     pub settlement_allocations: Value,

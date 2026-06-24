@@ -14,6 +14,7 @@ interface ExpenseDialogSubmitInputOptions {
   paidBy: string;
   receiptUrl: string;
   splitMode: ExpenseSplitMode;
+  spentOn: string;
   title: string;
 }
 
@@ -28,6 +29,7 @@ export function buildExpenseDialogSubmitInput({
   paidBy,
   receiptUrl,
   splitMode,
+  spentOn,
   title,
 }: ExpenseDialogSubmitInputOptions): ExpenseInput {
   const input: ExpenseInput = {
@@ -45,6 +47,7 @@ export function buildExpenseDialogSubmitInput({
   };
   if (notes.trim()) input.notes = notes.trim();
   if (receiptUrl.trim()) input.receiptUrl = receiptUrl.trim();
+  if (spentOn) input.spentOn = spentOn;
   if (splitMode === "itemized") {
     input.lineItems = calculatedState.validLineItems;
   }

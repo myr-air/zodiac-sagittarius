@@ -96,6 +96,7 @@ export function buildImportedExpenseCreateRequest({
       expense.exchangeRateToSettlementCurrency ?? 1,
     notes: expense.notes ?? null,
     receiptUrl: expense.receiptUrl ?? null,
+    spentOn: expense.spentOn ?? null,
     lineItems: expense.lineItems ?? [],
     comments: expense.comments ?? [],
     settlementAllocations: expense.settlementAllocations ?? [],

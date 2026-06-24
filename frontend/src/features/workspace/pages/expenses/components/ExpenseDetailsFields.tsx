@@ -20,6 +20,7 @@ interface ExpenseDetailsFieldsProps {
   receiptUrl: string;
   repeatCount: string;
   settlementCurrency: string;
+  spentOn: string;
   splitMode: ExpenseSplitMode;
   title: string;
   trip: Trip;
@@ -43,6 +44,7 @@ interface ExpenseDetailsFieldsProps {
       paidBy: string;
       receiptUrl: string;
       repeatCount: string;
+      spentOn: string;
       splitMode: string;
       title: string;
       tripPlan: string;
@@ -59,6 +61,7 @@ interface ExpenseDetailsFieldsProps {
   onPaidByChange: (value: string) => void;
   onReceiptUrlChange: (value: string) => void;
   onRepeatCountChange: (value: string) => void;
+  onSpentOnChange: (value: string) => void;
   onSplitModeChange: (value: ExpenseSplitMode) => void;
   onTitleChange: (value: string) => void;
   onTripPlanIdChange: (value: string) => void;
@@ -80,6 +83,7 @@ export function ExpenseDetailsFields({
   receiptUrl,
   repeatCount,
   settlementCurrency,
+  spentOn,
   splitMode,
   title,
   trip,
@@ -94,6 +98,7 @@ export function ExpenseDetailsFields({
   onPaidByChange,
   onReceiptUrlChange,
   onRepeatCountChange,
+  onSpentOnChange,
   onSplitModeChange,
   onTitleChange,
   onTripPlanIdChange,
@@ -117,6 +122,7 @@ export function ExpenseDetailsFields({
             receiptUrl={receiptUrl}
             repeatCount={repeatCount}
             settlementCurrency={settlementCurrency}
+            spentOn={spentOn}
             title={title}
             onAmountChange={onAmountChange}
             onCurrencyChange={onCurrencyChange}
@@ -124,6 +130,7 @@ export function ExpenseDetailsFields({
             onNotesChange={onNotesChange}
             onReceiptUrlChange={onReceiptUrlChange}
             onRepeatCountChange={onRepeatCountChange}
+            onSpentOnChange={onSpentOnChange}
             onTitleChange={onTitleChange}
           />
         </div>

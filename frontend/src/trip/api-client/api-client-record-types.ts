@@ -16,6 +16,7 @@ export interface CreateExpenseApiRequest {
   exchangeRateToSettlementCurrency?: number;
   notes?: string | null;
   receiptUrl?: string | null;
+  spentOn?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
   settlementAllocations?: ExpenseSettlementAllocation[];
@@ -42,6 +43,7 @@ export interface PatchExpenseApiRequest {
   exchangeRateToSettlementCurrency?: number;
   notes?: string | null;
   receiptUrl?: string | null;
+  spentOn?: string | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
   settlementAllocations?: ExpenseSettlementAllocation[];

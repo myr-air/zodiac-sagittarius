@@ -166,6 +166,9 @@ db-init: db-create
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expenses' AND column_name='comments'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0015_expense_comments.sql; \
 	fi
+	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expenses' AND column_name='spent_on'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0033_expense_spent_on.sql; \
+	fi
 	@if ! $(PSQL) "$(DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='place_geocode_cache'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(DATABASE_URL)" < backend/migrations/0016_place_geocode_cache.sql; \
 	fi
@@ -251,6 +254,9 @@ db-init-test: db-create-test
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expenses' AND column_name='comments'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0015_expense_comments.sql; \
+	fi
+	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='expenses' AND column_name='spent_on'" | grep -q 1; then \
+	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0033_expense_spent_on.sql; \
 	fi
 	@if ! $(PSQL) "$(TEST_DATABASE_URL)" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='place_geocode_cache'" | grep -q 1; then \
 	  $(PSQL) -v ON_ERROR_STOP=1 "$(TEST_DATABASE_URL)" < backend/migrations/0016_place_geocode_cache.sql; \
