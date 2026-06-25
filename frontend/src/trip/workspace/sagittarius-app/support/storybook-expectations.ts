@@ -107,7 +107,7 @@ export async function expectExpensesView({
   canvasElement: HTMLElement;
 }) {
   await expectWorkspaceView(canvasElement, ".expenses-page");
-  await expect(canvasElement.querySelector(".expenses-content")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".expense-finance-tabs")).toBeInTheDocument();
 }
 
 export async function expectBookingsView({

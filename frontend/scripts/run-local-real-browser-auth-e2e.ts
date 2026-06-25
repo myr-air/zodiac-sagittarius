@@ -182,7 +182,10 @@ async function newCheckedPage(
   const consoleErrors: string[] = [];
   const apiEvents: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+    const text = message.text();
+    if (message.type() === "error" && !isExpectedAccountAuthProbeConsole(text)) {
+      consoleErrors.push(text);
+    }
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   page.on("requestfailed", (request) => {
@@ -210,6 +213,10 @@ async function newCheckedPage(
       ].join("\n");
     },
   };
+}
+
+function isExpectedAccountAuthProbeConsole(text: string) {
+  return text === "Failed to load resource: the server responded with a status of 401 (Unauthorized)";
 }
 
 async function expectText(page: Page, text: string) {

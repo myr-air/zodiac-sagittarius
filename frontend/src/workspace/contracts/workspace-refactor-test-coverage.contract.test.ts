@@ -30,7 +30,7 @@ const userVisibleFeatureTestExpectations = [
     assertions: [
       'getByRole("region", { name: /เงินทริป/i })',
       'getByRole("region", { name: /สรุปเงิน/i })',
-      'getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i })',
+      'getByRole("button", { name: /เพิ่มรายการ/i })',
     ],
   },
   {

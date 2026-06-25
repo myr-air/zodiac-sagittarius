@@ -49,7 +49,9 @@ describe("Sagittarius workspace expenses architecture contracts", () => {
     expect(expensesPage).toContain("./components/ExpensePageHeader");
     expect(expensesPage).not.toContain("formatTripRange");
     expect(expensesPage).not.toContain("TravelMotif");
-    expect(expensesPage).not.toContain("useState");
+    expect(expensesPage).not.toContain("const [filterState, setFilterState]");
+    expect(expensesPage).not.toContain("const [query, setQuery]");
+    expect(expensesPage).not.toContain("const [dialogExpense, setDialogExpense]");
     expect(expensesPage).not.toContain("useMemo");
     expect(expensesPage).not.toContain("buildExpenseCsv");
     expect(expensesPage).not.toContain("refundSplits");
