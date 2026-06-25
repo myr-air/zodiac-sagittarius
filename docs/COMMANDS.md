@@ -90,6 +90,7 @@ The source of truth is [docs/itinerary-trip-plan-phase-0-1-implementation-spec.m
 | Frontend plus backend verify | Repository root | `rtk make verify` |
 | Fast local production readiness | Repository root | `rtk make production-readiness-fast` |
 | Full local production readiness | Repository root | `rtk make production-readiness-local` |
+| Release verification workflow | Repository root | Follow [docs/release-verification-workflow.md](./release-verification-workflow.md) |
 | Aries profile gate before strong claims | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |
 
 ## Production And Staging

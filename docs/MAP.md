@@ -98,6 +98,7 @@ Likely tests:
 ## QA And Release Docs
 
 - [docs/real-system-feature-qa.md](./real-system-feature-qa.md): real-system feature QA expectations.
+- [docs/release-verification-workflow.md](./release-verification-workflow.md): pre-merge, post-merge, CI, and production deploy workflow.
 - [docs/frontend-refactor-roadmap.md](./frontend-refactor-roadmap.md): milestone checklist for ongoing frontend structure, SSoT, test, and Storybook refactors.
 - [docs/test-staging-verification-runbook.md](./test-staging-verification-runbook.md): staging verification flow.
 - [docs/production-freeze-checklist.md](./production-freeze-checklist.md): production freeze checks.
