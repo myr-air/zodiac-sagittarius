@@ -1,11 +1,14 @@
-import { personalStatementRows } from "../model/expense-personal-statement-display";
+import {
+  personalStatementDayGroups,
+  personalStatementRows,
+} from "../model/expense-personal-statement-display";
 import { settlementSuggestionDisplay } from "../model/expense-overview-display";
 import { settlementSuggestionKey } from "../hooks/useExpenseSettlementActions";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type { SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 
 interface ExpenseStatementSectionProps {
   canEditExpenses: boolean;
@@ -64,6 +67,7 @@ export function ExpenseStatementSection({
   const accountSuggestions = settlementSuggestions.filter(
     (suggestion) => suggestion.from === currentMember.id || suggestion.to === currentMember.id,
   );
+  const personalDayGroups = useMemo(() => personalStatementDayGroups(personalRows), [personalRows]);
 
   return (
     <section className={expenseStyles.statementSectionClassName} aria-label={t.expenses.statement.label}>
@@ -139,7 +143,6 @@ export function ExpenseStatementSection({
             <div className={expenseStyles.personalStatementTableWrapClassName}>
               <table className={expenseStyles.personalStatementTableClassName} aria-label={t.expenses.statement.personal.tableLabel({ name: currentMember.displayName })}>
                 <colgroup>
-                  <col className="w-[132px]" />
                   <col className="w-[250px]" />
                   <col className="w-[160px]" />
                   <col className="w-[160px]" />
@@ -148,7 +151,6 @@ export function ExpenseStatementSection({
                 </colgroup>
                 <thead className={expenseStyles.tableHeaderClassName}>
                   <tr>
-                    <th>{t.expenses.statement.personal.columns.date}</th>
                     <th>{t.expenses.statement.personal.columns.item}</th>
                     <th>{t.expenses.statement.personal.columns.flow}</th>
                     <th>{t.expenses.statement.personal.columns.relatedMember}</th>
@@ -157,64 +159,77 @@ export function ExpenseStatementSection({
                   </tr>
                 </thead>
                 <tbody className={expenseStyles.statementTableBodyClassName}>
-                  {personalRows.map((row) => (
-                    <tr key={row.id}>
-                      <td className={expenseStyles.statementMetaCellClassName}>{row.dateLabel}</td>
-                      <td>
-                        <div className={expenseStyles.statementItemCellClassName}>
-                          <strong>{row.title}</strong>
-                          {row.contextLabel ? <span>{row.contextLabel}</span> : null}
-                          <span>{row.includedLabel}</span>
-                        </div>
-                      </td>
-                      <td className={expenseStyles.statementMetaCellClassName}>{row.flowLabel}</td>
-                      <td className={expenseStyles.statementMetaCellClassName}>{row.relatedMemberLabel}</td>
-                      <td className={expenseStyles.statementMetaCellClassName}>{row.paidWithLabel}</td>
-                      <td className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
-                        {row.amountLabel}
-                        {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
-                      </td>
-                    </tr>
+                  {personalDayGroups.map((group) => (
+                    <Fragment key={`day-${group.dateLabel}`}>
+                      <tr className={expenseStyles.personalStatementDayRowClassName}>
+                        <th colSpan={5} scope="rowgroup">{group.dateLabel}</th>
+                      </tr>
+                      {group.rows.map((row) => (
+                        <tr key={row.id}>
+                          <td>
+                            <div className={expenseStyles.statementItemCellClassName}>
+                              <strong>{row.title}</strong>
+                              {row.contextLabel ? <span>{row.contextLabel}</span> : null}
+                              <span>{row.includedLabel}</span>
+                            </div>
+                          </td>
+                          <td className={expenseStyles.statementMetaCellClassName}>{row.flowLabel}</td>
+                          <td className={expenseStyles.statementMetaCellClassName}>{row.relatedMemberLabel}</td>
+                          <td className={expenseStyles.statementMetaCellClassName}>{row.paidWithLabel}</td>
+                          <td className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
+                            {row.amountLabel}
+                            {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
             </div>
             <ul className={expenseStyles.personalStatementMobileListClassName}>
-              {personalRows.map((row) => (
-                <li
-                  aria-label={`${row.title} · ${row.amountLabel} · ${row.dateLabel}`}
-                  className={expenseStyles.personalStatementMobileRowClassName}
-                  key={row.id}
-                >
-                  <details className={expenseStyles.personalStatementMobileDetailsClassName}>
-                    <summary>
-                      <div className={expenseStyles.personalStatementMobileTopClassName}>
-                        <div className={expenseStyles.statementMobileTitleClassName}>
-                          <strong>{row.title}</strong>
-                          <span>{row.dateLabel} · {row.flowLabel}</span>
-                        </div>
-                        <div className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
-                          {row.amountLabel}
-                          {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
-                          <small>{t.expenses.statement.mobileDetails}</small>
-                        </div>
-                      </div>
-                    </summary>
-                    <div className={expenseStyles.personalStatementMobileIncludedClassName}>
-                      {row.contextLabel ? <span>{row.contextLabel}</span> : null}
-                      <span>{row.includedLabel}</span>
-                    </div>
-                    <dl className={expenseStyles.personalStatementMobileMetaClassName}>
-                      <div>
-                        <dt>{t.expenses.statement.personal.columns.relatedMember}</dt>
-                        <dd>{row.relatedMemberLabel}</dd>
-                      </div>
-                      <div>
-                        <dt>{t.expenses.statement.personal.columns.paidWith}</dt>
-                        <dd>{row.paidWithLabel}</dd>
-                      </div>
-                    </dl>
-                  </details>
+              {personalDayGroups.map((group) => (
+                <li className={expenseStyles.personalStatementMobileDayGroupClassName} key={`mobile-day-${group.dateLabel}`}>
+                  <div className={expenseStyles.personalStatementMobileDayClassName}>{group.dateLabel}</div>
+                  <ul className={expenseStyles.personalStatementMobileDayRowsClassName}>
+                    {group.rows.map((row) => (
+                      <li
+                        aria-label={`${row.title} · ${row.amountLabel} · ${row.dateLabel}`}
+                        className={expenseStyles.personalStatementMobileRowClassName}
+                        key={row.id}
+                      >
+                        <details className={expenseStyles.personalStatementMobileDetailsClassName}>
+                          <summary>
+                            <div className={expenseStyles.personalStatementMobileTopClassName}>
+                              <div className={expenseStyles.statementMobileTitleClassName}>
+                                <strong>{row.title}</strong>
+                                <span>{row.flowLabel}</span>
+                              </div>
+                              <div className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
+                                {row.amountLabel}
+                                {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
+                                <small>{t.expenses.statement.mobileDetails}</small>
+                              </div>
+                            </div>
+                          </summary>
+                          <div className={expenseStyles.personalStatementMobileIncludedClassName}>
+                            {row.contextLabel ? <span>{row.contextLabel}</span> : null}
+                            <span>{row.includedLabel}</span>
+                          </div>
+                          <dl className={expenseStyles.personalStatementMobileMetaClassName}>
+                            <div>
+                              <dt>{t.expenses.statement.personal.columns.relatedMember}</dt>
+                              <dd>{row.relatedMemberLabel}</dd>
+                            </div>
+                            <div>
+                              <dt>{t.expenses.statement.personal.columns.paidWith}</dt>
+                              <dd>{row.paidWithLabel}</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>

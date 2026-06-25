@@ -53,6 +53,7 @@ export interface PersonalStatementRow {
   amountLabel: string;
   amountTone: PersonalStatementAmountTone;
   contextLabel?: string;
+  dateKey: string;
   dateLabel: string;
   displayAmountLabel?: string;
   flow: PersonalStatementFlow;
@@ -62,6 +63,11 @@ export interface PersonalStatementRow {
   relatedMemberLabel: string;
   settlementState: PersonalStatementSettlementState;
   title: string;
+}
+
+export interface PersonalStatementDayGroup {
+  dateLabel: string;
+  rows: PersonalStatementRow[];
 }
 
 interface PersonalStatementRowsInput {
@@ -82,6 +88,7 @@ interface DebtCoverage {
 
 interface SettlementAllocationPlan {
   coverageByExpenseId: Map<string, DebtCoverage>;
+  inferredAllocationsBySettlementId: Map<string, { expenseId: string }[]>;
   labelsBySettlementId: Map<string, string>;
 }
 
@@ -109,7 +116,6 @@ export function personalStatementRows({
   const coverageByExpenseId = settlementPlanForMember(currentMemberId).coverageByExpenseId;
 
   return [...trip.expenses]
-    .sort((left, right) => expenseSortKey(trip, left).localeCompare(expenseSortKey(trip, right)))
     .flatMap((expense) => {
       if (expense.category === "settlement") {
         return settlementRowsForMember({
@@ -133,9 +139,23 @@ export function personalStatementRows({
         expense,
         locale,
         settlementCurrency,
-        trip,
-      });
-    });
+          trip,
+        });
+      })
+    .sort((left, right) => left.dateKey.localeCompare(right.dateKey) || left.title.localeCompare(right.title));
+}
+
+export function personalStatementDayGroups(rows: PersonalStatementRow[]): PersonalStatementDayGroup[] {
+  const groups: PersonalStatementDayGroup[] = [];
+  for (const row of rows) {
+    const current = groups.at(-1);
+    if (current?.dateLabel === row.dateLabel) {
+      current.rows.push(row);
+      continue;
+    }
+    groups.push({ dateLabel: row.dateLabel, rows: [row] });
+  }
+  return groups;
 }
 
 function spendRowForMember({
@@ -183,13 +203,15 @@ function spendRowForMember({
       ? `${copy.paymentMethod[settlementState]} · ${coverage.settlementTitles.join(", ")}`
       : copy.paymentMethod[settlementState];
   const amountTone = amountToneForFlow(flow);
+  const date = statementDateParts(expense, trip, locale, copy.dateFallback);
 
   return [{
     id: `spend-${expense.id}-${currentMemberId}`,
     amountLabel: signedMoneyLabel(rowAmount, expense.currency ?? settlementCurrency, amountTone),
     amountTone,
     contextLabel: isPaidByCurrentMember ? groupBillContextLabel({ copy, currentMemberId, expense, settlementCurrency }) : undefined,
-    dateLabel: statementDateLabel(expense, trip, locale, copy.dateFallback),
+    dateKey: date.key,
+    dateLabel: date.label,
     displayAmountLabel: displayAmountLabel({
       amount: rowAmountInSettlementCurrency,
       displayCurrency,
@@ -234,13 +256,16 @@ function settlementRowsForMember({
   const settlementAmount = amountInSettlementCurrency(expense.amount, expense, settlementCurrency);
 
   if (expense.paidBy === currentMemberId) {
+    const allocationPlan = settlementPlanForMember(currentMemberId);
+    const date = settlementDateParts(expense, trip, locale, copy.dateFallback, allocationPlan);
     const recipients = settlementRecipients(expense, trip.members);
-    const allocatedItems = settlementAllocationLabel(expense, currentMemberId, trip, settlementPlanForMember(currentMemberId), copy.noDirectAllocation);
+    const allocatedItems = settlementAllocationLabel(expense, currentMemberId, trip, allocationPlan, copy.noDirectAllocation);
     rows.push({
       id: `settlement-sent-${expense.id}`,
       amountLabel: signedMoneyLabel(expense.amount, expense.currency ?? settlementCurrency, "outflow"),
       amountTone: "outflow",
-      dateLabel: statementDateLabel(expense, trip, locale, copy.dateFallback),
+      dateKey: date.key,
+      dateLabel: date.label,
       displayAmountLabel: displayAmountLabel({
         amount: settlementAmount,
         displayCurrency,
@@ -262,12 +287,15 @@ function settlementRowsForMember({
   if (receivedAmount > 0) {
     const sender = findMemberById(trip.members, expense.paidBy);
     const receivedSettlementAmount = amountInSettlementCurrency(receivedAmount, expense, settlementCurrency);
-    const allocatedItems = settlementAllocationLabel(expense, expense.paidBy, trip, settlementPlanForMember(expense.paidBy), copy.noDirectAllocation);
+    const allocationPlan = settlementPlanForMember(expense.paidBy);
+    const date = settlementDateParts(expense, trip, locale, copy.dateFallback, allocationPlan);
+    const allocatedItems = settlementAllocationLabel(expense, expense.paidBy, trip, allocationPlan, copy.noDirectAllocation);
     rows.push({
       id: `settlement-received-${expense.id}-${currentMemberId}`,
       amountLabel: signedMoneyLabel(receivedAmount, expense.currency ?? settlementCurrency, "inflow"),
       amountTone: "inflow",
-      dateLabel: statementDateLabel(expense, trip, locale, copy.dateFallback),
+      dateKey: date.key,
+      dateLabel: date.label,
       displayAmountLabel: displayAmountLabel({
         amount: receivedSettlementAmount,
         displayCurrency,
@@ -298,6 +326,7 @@ function settlementAllocationPlanForMember({
   trip: Trip;
 }): SettlementAllocationPlan {
   const coverageByExpenseId = new Map<string, DebtCoverage>();
+  const inferredAllocationsBySettlementId = new Map<string, { expenseId: string }[]>();
   const labelsBySettlementId = new Map<string, string>();
   for (const settlement of trip.expenses.filter((expense) => expense.category === "settlement" && expense.paidBy === memberId)) {
     const explicitAllocations = settlement.settlementAllocations ?? [];
@@ -310,6 +339,7 @@ function settlementAllocationPlanForMember({
         trip,
       });
       if (inferredAllocations.length) {
+        inferredAllocationsBySettlementId.set(settlement.id, inferredAllocations);
         labelsBySettlementId.set(settlement.id, allocationLabels(inferredAllocations, trip).join(", "));
       }
       for (const allocation of inferredAllocations) {
@@ -330,7 +360,7 @@ function settlementAllocationPlanForMember({
     }
   }
 
-  return { coverageByExpenseId, labelsBySettlementId };
+  return { coverageByExpenseId, inferredAllocationsBySettlementId, labelsBySettlementId };
 }
 
 function addDebtCoverage(
@@ -387,7 +417,7 @@ function inferredSettlementAllocationsForMember({
         expense.id !== settlement.id &&
         (expense.splits[memberId] ?? 0) > 0
       )
-      .sort((left, right) => expenseSortKey(trip, left).localeCompare(expenseSortKey(trip, right)));
+      .sort((left, right) => expenseSourceSortKey(trip, left).localeCompare(expenseSourceSortKey(trip, right)));
 
     for (const expense of recipientDebtExpenses) {
       const debtAmount = amountInSettlementCurrency(expense.splits[memberId] ?? 0, expense, settlementCurrency);
@@ -553,17 +583,40 @@ function displayAmountLabel({
   return label;
 }
 
-function statementDateLabel(
+function statementDateParts(
   expense: Expense,
   trip: Trip,
   locale: "en" | "th",
   dateFallback: string,
-): string {
+): { key: string; label: string } {
   const linkedItem = findItineraryItemById(trip.itineraryItems, expense.itineraryItemId);
-  return linkedItem ? `${formatDayLabel(linkedItem.day, trip.startDate, locale)} · ${linkedItem.day}` : dateFallback;
+  const day = linkedItem?.day ?? expense.spentOn ?? null;
+  return {
+    key: day ?? "9999-99-99",
+    label: day ? `${formatDayLabel(day, trip.startDate, locale)} · ${day}` : dateFallback,
+  };
 }
 
-function expenseSortKey(trip: Trip, expense: Expense): string {
-  const day = findItineraryItemById(trip.itineraryItems, expense.itineraryItemId)?.day ?? "9999-99-99";
+function settlementDateParts(
+  expense: Expense,
+  trip: Trip,
+  locale: "en" | "th",
+  dateFallback: string,
+  allocationPlan: SettlementAllocationPlan,
+): { key: string; label: string } {
+  const directDate = statementDateParts(expense, trip, locale, "");
+  if (directDate.label) return directDate;
+  const allocations = expense.settlementAllocations?.length
+    ? expense.settlementAllocations
+    : allocationPlan.inferredAllocationsBySettlementId.get(expense.id) ?? [];
+  const allocationDate = allocations
+    .map((allocation) => trip.expenses.find((candidate) => candidate.id === allocation.expenseId))
+    .map((allocatedExpense) => allocatedExpense ? statementDateParts(allocatedExpense, trip, locale, "") : null)
+    .find((date) => date?.label);
+  return allocationDate ?? { key: "9999-99-99", label: dateFallback };
+}
+
+function expenseSourceSortKey(trip: Trip, expense: Expense): string {
+  const day = findItineraryItemById(trip.itineraryItems, expense.itineraryItemId)?.day ?? expense.spentOn ?? "9999-99-99";
   return `${day}-${expense.title}`;
 }

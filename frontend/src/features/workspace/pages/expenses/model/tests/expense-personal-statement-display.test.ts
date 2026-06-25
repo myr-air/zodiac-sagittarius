@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { enExpensesMessages } from "@/src/i18n/messages/en.expenses";
 import { seedTrip } from "@/src/trip/seed";
-import { personalStatementRows } from "../expense-personal-statement-display";
+import {
+  personalStatementDayGroups,
+  personalStatementRows,
+} from "../expense-personal-statement-display";
 
 const copy = {
   accountContext: enExpensesMessages.statement.personal.accountContext,
@@ -48,6 +51,101 @@ describe("personal statement display", () => {
       relatedMemberLabel: "Sent to Demo Traveler",
     });
     expect(rows.some((row) => row.includedLabel.includes("Adult tickets"))).toBe(true);
+    expect(rows.find((row) => row.id === "settlement-sent-expense-beam-paid-aom")).toMatchObject({
+      dateLabel: "Day 3 · 2026-06-20",
+    });
+  });
+
+  it("groups personal statement rows under day headers", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: seedTrip,
+    });
+
+    const groups = personalStatementDayGroups(rows);
+
+    expect(groups[0]).toMatchObject({
+      dateLabel: "Day 1 · 2026-06-18",
+    });
+    expect(groups.find((group) => group.dateLabel === "Day 3 · 2026-06-20")?.rows.map((row) => row.title)).toContain("Aom received Beam payback");
+    expect(groups.some((group) => group.dateLabel === "No linked day")).toBe(false);
+  });
+
+  it("uses spentOn as the statement day when no itinerary item is linked", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "unlinked-coffee",
+            title: "Unlinked coffee",
+            amount: 42,
+            paidBy: "member-beam",
+            spentOn: "2026-06-21",
+            splits: { "member-beam": 42 },
+            category: "food",
+          },
+        ],
+      },
+    });
+
+    expect(rows[0]).toMatchObject({
+      dateLabel: "Day 4 · 2026-06-21",
+      title: "Unlinked coffee",
+    });
+  });
+
+  it("uses the inferred source receipt day for lump paybacks without explicit allocations", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "friend-dinner",
+            title: "Friend dinner",
+            amount: 100,
+            paidBy: "member-aom",
+            spentOn: "2026-06-19",
+            splits: { "member-beam": 100 },
+            category: "food",
+          },
+          {
+            id: "lump-payback",
+            title: "Beam lump payback",
+            amount: 100,
+            paidBy: "member-beam",
+            splits: { "member-aom": 100 },
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    const groups = personalStatementDayGroups(rows);
+
+    expect(rows.find((row) => row.id === "settlement-sent-lump-payback")).toMatchObject({
+      dateLabel: "Day 2 · 2026-06-19",
+      includedLabel: "Friend dinner",
+    });
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({ dateLabel: "Day 2 · 2026-06-19" });
   });
 
   it("marks friend-paid expenses covered when a payback to that payer exists", () => {
