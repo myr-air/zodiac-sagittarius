@@ -104,8 +104,9 @@ describe("TripExpensesPage actual expense actions", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+    await user.click(ledgerRowButton("Beam paid Aom"));
 
-    expect(screen.getAllByRole("button", { name: /แก้ไข Beam paid Aom/i })[0]).toBeDisabled();
+    expect(screen.getByRole("button", { name: /แก้ไข Beam paid Aom/i })).toBeDisabled();
   });
 });
 
