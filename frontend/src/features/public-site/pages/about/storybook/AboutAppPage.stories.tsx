@@ -22,7 +22,7 @@ const webVersion = {
   runtimeMode: "api",
   schemaVersion: "frontend-static",
   service: "sagittarius-web",
-  version: "0.1.5",
+  version: "0.3.0",
 } as const;
 
 const apiVersion = {
@@ -31,7 +31,7 @@ const apiVersion = {
   environment: "staging",
   schemaVersion: "0019_photo_album_links",
   service: "sagittarius-api",
-  version: "0.1.5",
+  version: "0.2.0",
 } as const;
 
 const meta = {
