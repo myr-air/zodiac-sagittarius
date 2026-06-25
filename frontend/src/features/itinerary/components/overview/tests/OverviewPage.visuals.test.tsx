@@ -26,7 +26,7 @@ describe("OverviewPage visual summary", () => {
     expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
     expect(document.querySelector(".overview-summary-bento")).toHaveClass("grid", "grid-cols-12", "max-[1199px]:grid-cols-1");
     expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
-    expect(hero).toHaveClass("min-h-[168px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
+    expect(hero).toHaveClass("col-span-12", "min-h-[156px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
     expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:hidden");
@@ -36,7 +36,7 @@ describe("OverviewPage visual summary", () => {
     expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.72)]", "rounded-(--radius-md)");
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
-    expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3");
+    expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3", "self-start");
     expect(within(cockpit).getByText(/จุดถัดไป/i).closest(".overview-cockpit-card")).toHaveClass(
       "overview-cockpit-card",
       "grid",

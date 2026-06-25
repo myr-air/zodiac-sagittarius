@@ -53,7 +53,8 @@ describe("WeatherForecastStrip", () => {
     expect(container.querySelector(".weather-forecast-strip")).toHaveClass("bg-(--color-surface)", "border-(--color-border)");
     expect(container.querySelector(".weather-forecast-strip")?.className).not.toContain("backdrop-blur");
     expect(container.querySelector(".weather-forecast-row")).toHaveClass("max-[767px]:snap-x", "max-[767px]:snap-mandatory");
-    expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28° Sunrise 05:46 sunset 18:47/ })).toHaveClass("max-[767px]:w-[106px]", "max-[767px]:shrink-0");
+    expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28° Sunrise 05:46 sunset 18:47/ })).toHaveClass("max-[767px]:w-[118px]", "max-[767px]:shrink-0");
+    expect(container.querySelector(".weather-forecast-icon")).toHaveClass("grid", "size-9", "[&_.icon]:size-5");
 
     expect(screen.getByRole("button", { name: /Sun, Jul 12 Rain 33° 28° Sunrise 05:46 sunset 18:47/ })).toBeInTheDocument();
     expect(screen.getByText("33°")).toHaveClass("weather-forecast-temp-high");
@@ -81,6 +82,7 @@ describe("WeatherForecastStrip", () => {
 
     expect(screen.getByRole("button", { name: /Tue, Jul 14 Forecast pending/ })).toBeInTheDocument();
     expect(screen.getByText("Forecast pending")).toHaveClass("weather-forecast-pending");
+    expect(document.querySelector(".weather-forecast-icon")).not.toBeInTheDocument();
     expect(screen.queryByText("--°")).not.toBeInTheDocument();
     expect(screen.queryByText("🌤")).not.toBeInTheDocument();
     expect(screen.queryByText("☂")).not.toBeInTheDocument();

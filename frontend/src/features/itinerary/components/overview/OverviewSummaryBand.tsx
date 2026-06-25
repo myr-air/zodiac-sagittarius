@@ -131,28 +131,6 @@ export function OverviewSummaryBand({
         />
       </div>
 
-      <section
-        className={cn(overviewPhaseCardClassName, overviewPhaseToneClassNames[countdown.type])}
-        aria-label={phaseLabels.eyebrow}
-      >
-        <div className={overviewPhaseHeaderClassName}>
-          <span>{phaseLabels.eyebrow}</span>
-          <h2>{phaseLabels.title}</h2>
-          <p>{phaseLabels.detail}</p>
-        </div>
-        <ul className={overviewPhaseFactListClassName}>
-          {phaseFacts.map((fact) => (
-            <li key={fact.label}>
-              <Icon name={fact.icon} />
-              <span>
-                <small>{fact.label}</small>
-                <strong>{fact.value}</strong>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <OverviewCockpit
         activeMembers={activeMembers}
         groupSpendLabel={groupSpendLabel}
@@ -176,6 +154,28 @@ export function OverviewSummaryBand({
         trip={trip}
         warningCount={warningCount}
       />
+
+      <section
+        className={cn(overviewPhaseCardClassName, overviewPhaseToneClassNames[countdown.type])}
+        aria-label={phaseLabels.eyebrow}
+      >
+        <div className={overviewPhaseHeaderClassName}>
+          <span>{phaseLabels.eyebrow}</span>
+          <h2>{phaseLabels.title}</h2>
+          <p>{phaseLabels.detail}</p>
+        </div>
+        <ul className={overviewPhaseFactListClassName}>
+          {phaseFacts.map((fact) => (
+            <li key={fact.label}>
+              <Icon name={fact.icon} />
+              <span>
+                <small>{fact.label}</small>
+                <strong>{fact.value}</strong>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <HighlightBoard
         items={highlightItems}
