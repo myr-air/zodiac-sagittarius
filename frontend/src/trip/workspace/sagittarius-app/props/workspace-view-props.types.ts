@@ -6,6 +6,7 @@ export interface BuildWorkspaceViewsPropsInput {
   activePlanItems: WorkspaceViewsProps["itineraryProps"]["graphItems"];
   apiBaseUrl: WorkspaceViewsProps["expensesProps"]["apiBaseUrl"];
   bookingDocs: WorkspaceViewsProps["bookingsProps"]["bookingDocs"];
+  canCreateExpenses: WorkspaceViewsProps["expensesProps"]["canCreateExpenses"];
   canEdit: WorkspaceViewsProps["itineraryProps"]["canRestructure"];
   canEditBookings: WorkspaceViewsProps["bookingsProps"]["canEditBookings"];
   canEditExpenses: WorkspaceViewsProps["expensesProps"]["canEditExpenses"];

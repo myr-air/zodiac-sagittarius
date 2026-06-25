@@ -9,6 +9,7 @@ export function renderExpenses(overrides: Partial<TripExpensesPageProps> = {}) {
     trip: seedTrip,
     currentMember: seedTrip.members[1],
     expenseSummary: buildExpenseSummary(seedTrip.expenses, seedTrip.members[1].id),
+    canCreateExpenses: true,
     canEditExpenses: true,
     onCreateExpense: vi.fn(),
     onUpdateExpense: vi.fn(),

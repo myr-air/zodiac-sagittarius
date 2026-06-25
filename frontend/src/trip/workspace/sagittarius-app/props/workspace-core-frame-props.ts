@@ -46,6 +46,7 @@ export function buildWorkspaceCoreFrameProps({
     activePlanItems: setup.activePlanItems,
     apiBaseUrl: setup.apiBaseUrl,
     canAccessPanel: setup.canAccessPanel,
+    canCreateExpenses: setup.canCreateExpenses,
     canCreateStopNote: setup.canCreateStopNote,
     canCreateSuggestion: setup.canCreateSuggestion,
     canEdit: setup.canEdit,

@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderExpenses } from "../testing/support/render-expenses-page";
@@ -21,6 +21,21 @@ describe("TripExpensesPage settlement exports", () => {
       amount: expect.any(Number),
       paidBy: expect.any(String),
       splits: expect.any(Object),
+    }));
+  });
+
+  it("records an account-scoped suggested payback from personal account", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    const accountPanel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    await user.click(within(accountPanel).getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      category: "settlement",
+      paidBy: "member-beam",
+      splits: { "member-family": 665 },
     }));
   });
 
@@ -49,7 +64,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกสรุปยอด/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
@@ -94,7 +109,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));

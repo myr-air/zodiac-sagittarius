@@ -107,6 +107,123 @@ async fn expenses_contract_create_unlinked_uses_requested_trip_plan(pool: sqlx::
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_traveler_can_create_but_not_patch_expenses(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    support::seed_expense(&pool).await;
+    let traveler = support::create_session(&pool, support::TRAVELER_ID).await;
+    let app = support::app(pool.clone());
+
+    let create_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/expenses", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "traveler-quick-spend",
+                        "title": "Traveler noodles",
+                        "amountMinor": 9000,
+                        "currency": "HKD",
+                        "paidBy": support::TRAVELER_ID,
+                        "category": "food",
+                        "splits": {
+                            support::OWNER_ID: 3000,
+                            support::ORGANIZER_ID: 3000,
+                            support::TRAVELER_ID: 3000
+                        }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(create_response.status(), StatusCode::OK);
+
+    let patch_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::PATCH)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/{}",
+                    support::TRIP_ID,
+                    support::EXPENSE_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "traveler-edit-blocked",
+                        "expectedVersion": 1,
+                        "title": "Traveler edit attempt"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(patch_response.status(), StatusCode::FORBIDDEN);
+
+    let delete_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::DELETE)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/{}",
+                    support::TRIP_ID,
+                    support::EXPENSE_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(delete_response.status(), StatusCode::FORBIDDEN);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn expenses_contract_viewer_cannot_create_expenses(pool: sqlx::PgPool) {
+    support::seed_trip(&pool).await;
+    let viewer = support::create_session(&pool, support::VIEWER_ID).await;
+    let app = support::app(pool.clone());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri(format!("/api/v1/trips/{}/expenses", support::TRIP_ID))
+                .header(header::AUTHORIZATION, format!("Bearer {viewer}"))
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "clientMutationId": "viewer-expense-blocked",
+                        "title": "Viewer noodles",
+                        "amountMinor": 9000,
+                        "currency": "HKD",
+                        "paidBy": support::VIEWER_ID,
+                        "category": "food",
+                        "splits": { support::VIEWER_ID: 9000 }
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn expenses_contract_summary_can_be_scoped_to_trip_plan(pool: sqlx::PgPool) {
     support::seed_trip(&pool).await;
     support::seed_expense(&pool).await;

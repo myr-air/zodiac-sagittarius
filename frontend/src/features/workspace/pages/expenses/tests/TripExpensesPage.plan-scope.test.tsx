@@ -97,7 +97,6 @@ describe("TripExpensesPage plan scope", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[0]);
     await user.click(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({

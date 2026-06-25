@@ -70,7 +70,7 @@ describe("TripExpensesPage exchange rates", () => {
     }));
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     await user.selectOptions(screen.getByLabelText(/สกุลเงินที่แสดง/i), "THB");
 
     await waitFor(() => expect(screen.getByLabelText(/อัตราแลกเปลี่ยน HKD เป็น THB/i)).toHaveValue("4.6"));

@@ -19,6 +19,7 @@ type UseCreateWorkspaceExpenseCommandOptions =
 
 export function useCreateWorkspaceExpenseCommand({
   apiClient,
+  canCreateExpenses,
   canEditExpenses,
   commitTrip,
   isApiMode,
@@ -29,7 +30,7 @@ export function useCreateWorkspaceExpenseCommand({
   updateApiTrip,
 }: UseCreateWorkspaceExpenseCommandOptions): CreateWorkspaceExpenseCommand {
   return useCallback(async (input) => {
-    if (!canEditExpenses) return;
+    if (!canCreateExpenses && !canEditExpenses) return;
     const expenseDrafts = buildExpenseCreateDrafts(
       input,
       trip.members.map((member) => member.id),
@@ -69,6 +70,7 @@ export function useCreateWorkspaceExpenseCommand({
     );
   }, [
     apiClient,
+    canCreateExpenses,
     canEditExpenses,
     commitTrip,
     isApiMode,

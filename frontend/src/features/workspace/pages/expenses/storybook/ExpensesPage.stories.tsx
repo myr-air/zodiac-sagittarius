@@ -6,7 +6,10 @@ import {
 import { TripExpensesPage } from "../TripExpensesPage";
 import {
   addExpenseDialogOpenPlay,
+  accountMobilePlay,
   filteredLedgerPlay,
+  itemizedHeavyDialogPlay,
+  mobileEditDialogLayerPlay,
   ownerPlay,
   ownerThaiPlay,
   planScopeAuditPlay,
@@ -16,10 +19,13 @@ import {
 } from "./ExpensesPage.stories.plays";
 import {
   denseExpensesStoryArgs,
+  denseLongNamesMobileStoryArgs,
   emptyExpensesStoryArgs,
   expensesOwnerStoryArgs,
   expensesTravelerStoryArgs,
   expensesViewerStoryArgs,
+  itemizedHeavyStoryArgs,
+  longExpenseOverflowStoryArgs,
   planScopeAuditExpensesStoryArgs,
 } from "./ExpensesPage.stories.support";
 
@@ -54,9 +60,39 @@ export const OwnerThai: Story = ownerStory(Owner.args, {}, ownerThaiPlay, {
   locale: "th",
 });
 
+export const ThaiMobileFull: Story = viewportStoryForOwner(
+  OwnerThai.args,
+  "mobile320",
+  responsivePlay,
+);
+
 export const Dense: Story = {
   args: denseExpensesStoryArgs,
 };
+
+export const DenseLongNamesMobile: Story = viewportStoryForOwner(
+  denseLongNamesMobileStoryArgs,
+  "mobile320",
+  responsivePlay,
+);
+
+export const AccountMobile: Story = viewportStoryForOwner(
+  Owner.args,
+  "mobile320",
+  accountMobilePlay,
+);
+
+export const ItemizedHeavyDialogMobile: Story = viewportStoryForOwner(
+  itemizedHeavyStoryArgs,
+  "mobile320",
+  itemizedHeavyDialogPlay,
+);
+
+export const LongExpenseOverflowMobile: Story = viewportStoryForOwner(
+  longExpenseOverflowStoryArgs,
+  "mobile320",
+  responsivePlay,
+);
 
 export const Empty: Story = {
   args: emptyExpensesStoryArgs,
@@ -107,4 +143,10 @@ export const Mobile: Story = viewportStoryForOwner(
   Owner.args,
   "mobile320",
   responsivePlay,
+);
+
+export const MobileEditDialogLayer: Story = viewportStoryForOwner(
+  Owner.args,
+  "mobile320",
+  mobileEditDialogLayerPlay,
 );

@@ -21,6 +21,7 @@ pub enum Capability {
     ReviewSuggestions,
     CreateSuggestion,
     ViewExpenses,
+    CreateExpense,
     EditExpenses,
     ManagePeople,
     ManageTripPlans,

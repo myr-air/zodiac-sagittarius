@@ -11,6 +11,7 @@ import { useWorkspaceExpenseReminderCommand } from "./expenses/use-workspace-exp
 
 interface UseWorkspaceExpensesOptions {
   apiClient?: TripApiClient;
+  canCreateExpenses: boolean;
   canEditBookings: boolean;
   canEditExpenses: boolean;
   commitTrip: (updater: (current: Trip) => Trip) => void;
@@ -29,6 +30,7 @@ interface UseWorkspaceExpensesOptions {
 
 export function useWorkspaceExpenses({
   apiClient,
+  canCreateExpenses,
   canEditBookings,
   canEditExpenses,
   commitTrip,
@@ -66,6 +68,7 @@ export function useWorkspaceExpenses({
     updateExpense,
   } = useWorkspaceExpenseMutationCommands({
     apiClient,
+    canCreateExpenses,
     canEditExpenses,
     commitTrip,
     isApiMode,

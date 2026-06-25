@@ -27,10 +27,11 @@ export const ownerThaiPlay: ExpensesPagePlay = async ({ canvas }) => {
 
 export const addExpenseDialogOpenPlay: ExpensesPagePlay = async ({ canvas }) => {
   await userEvent.click(canvas.getByRole("button", { name: /Add spend/i }));
-  await expect(canvas.getByRole("dialog", { name: /Add expense/i })).toHaveClass("expense-dialog");
-  await expect(canvas.getByLabelText("Expense title")).toBeVisible();
-  await expect(canvas.getByLabelText("Amount")).toBeVisible();
-  await expect(canvas.getByRole("button", { name: /Save expense/i })).toBeDisabled();
+  const dialog = canvas.getByRole("dialog", { name: /Add expense/i });
+  await expect(dialog).toHaveClass("expense-dialog");
+  await expect(within(dialog).getByLabelText("Expense title")).toBeVisible();
+  await expect(within(dialog).getByLabelText("Amount")).toBeVisible();
+  await expect(within(dialog).getByRole("button", { name: /Save expense/i })).toBeDisabled();
 };
 
 export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
@@ -43,7 +44,7 @@ export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.queryByRole("heading", { name: "Dim Dim Sum brunch" })).toBeNull();
 
   await userEvent.click(canvas.getByRole("button", { name: /Filters/i }));
-  await userEvent.selectOptions(canvas.getByLabelText("Category"), "transport");
+  await userEvent.selectOptions(within(canvas.getByRole("tabpanel", { name: /Manage expenses/i })).getByLabelText("Category"), "transport");
   await expect(canvas.getByText(/No expenses match this filter/i)).toBeVisible();
 
   await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
@@ -71,9 +72,49 @@ export const responsivePlay: ExpensesPagePlay = async ({ canvasElement }) => {
   await expectExpensesResponsiveContract(canvasElement);
 };
 
+export const mobileEditDialogLayerPlay: ExpensesPagePlay = async ({ canvas, canvasElement }) => {
+  await userEvent.click(canvas.getByRole("tab", { name: /Manage expenses/i }));
+  const mobileLedger = canvasElement.querySelector(".expense-mobile-ledger");
+  await expect(mobileLedger).not.toBeNull();
+  const firstMobileExpense = mobileLedger?.querySelector("button");
+  await expect(firstMobileExpense).not.toBeNull();
+  if (!firstMobileExpense) return;
+
+  await userEvent.click(firstMobileExpense);
+  const detail = canvas.getByRole("dialog");
+  await expect(detail).toHaveClass("expense-transaction-detail");
+  await userEvent.click(within(detail).getByRole("button", { name: /Edit /i }));
+
+  const editDialog = canvas.getByRole("dialog", { name: /Edit expense/i });
+  await expect(editDialog).toBeVisible();
+  const bounds = editDialog.getBoundingClientRect();
+  const topElement = document.elementFromPoint(
+    bounds.left + bounds.width / 2,
+    Math.min(bounds.top + bounds.height / 2, window.innerHeight / 2),
+  );
+  expect(topElement?.closest(".expense-transaction-detail")).toBeNull();
+};
+
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Personal account/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Statement & tools/i }));
   await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();
+};
+
+export const accountMobilePlay: ExpensesPagePlay = async ({ canvas, canvasElement }) => {
+  await userEvent.click(canvas.getByRole("tab", { name: /Statement & tools|รายการและเครื่องมือ/i }));
+  await expect(canvasElement.querySelector(".expense-statement")).not.toBeNull();
+  await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
+};
+
+export const itemizedHeavyDialogPlay: ExpensesPagePlay = async ({ canvas }) => {
+  await userEvent.click(canvas.getByRole("tab", { name: /Manage expenses|จัดการค่าใช้จ่าย/i }));
+  await userEvent.click(canvas.getByRole("button", { name: /Night market itemized receipt/i }));
+  const detail = canvas.getByRole("dialog", { name: /Night market itemized receipt/i });
+  await userEvent.click(within(detail).getByRole("button", { name: /Edit|แก้ไข/i }));
+  const dialog = canvas.getByRole("dialog", { name: /Edit expense|แก้ไขค่าใช้จ่าย/i });
+  await userEvent.click(within(dialog).getByRole("button", { name: /Itemized receipt|แยกรายการ/i }));
+  await expect(within(dialog).getByRole("group", { name: /Line item 1|รายการ 1/i })).toBeVisible();
+  await expect(within(dialog).getAllByText(/Nattaporn Sirirattanakul/i)[0]).toBeVisible();
 };

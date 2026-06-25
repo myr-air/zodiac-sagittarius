@@ -30,6 +30,7 @@ export function TripExpensesPage({
   trip,
   currentMember,
   expenseSummary,
+  canCreateExpenses,
   canEditExpenses,
   selectedTripPlanId,
   workspaceTrip,
@@ -92,6 +93,15 @@ export function TripExpensesPage({
   });
   const pendingDeleteExpense = trip.expenses.find((expense) => expense.id === pendingDeleteExpenseId) ?? null;
   const financeViews: ExpenseFinanceView[] = ["overview", "spending", "account"];
+  const openAddExpense = () => {
+    if (canEditExpenses) {
+      setDialogExpense("new");
+      return;
+    }
+    if (canCreateExpenses) {
+      setActiveView("overview");
+    }
+  };
   const focusFinanceTab = (view: ExpenseFinanceView) => {
     window.requestAnimationFrame(() => {
       document.getElementById(`trip-money-tab-${view}`)?.focus();
@@ -118,6 +128,7 @@ export function TripExpensesPage({
   return (
     <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
       <ExpensePageHeader
+        canCreateExpenses={canCreateExpenses}
         canEditExpenses={canEditExpenses}
         currentTripPlanId={activeTripPlanId}
         locale={locale}
@@ -125,6 +136,10 @@ export function TripExpensesPage({
         t={t}
         trip={planSourceTrip}
       />
+      <div className={expenseStyles.mobileHeaderClassName}>
+        <h1>{t.expenses.title}</h1>
+        <p>{planSourceTrip.name}</p>
+      </div>
       <div className={expenseStyles.mobilePlanBarClassName}>
         <ExpenseTripPlanPicker
           currentTripPlanId={activeTripPlanId}
@@ -183,11 +198,14 @@ export function TripExpensesPage({
             displayCurrency={displayCurrency}
             displayExchangeRate={displayExchangeRateNumber}
             inferredScopeExpenses={inferredScopeExpenses}
+            selectedTripPlanId={activeTripPlanId}
             settlementCurrency={settlementCurrency}
+            canCreateExpenses={canCreateExpenses}
             canEditExpenses={canEditExpenses}
             copyState={copyState}
-            onAddExpense={() => setDialogExpense("new")}
+            onAddExpense={openAddExpense}
             onAddPersonalExpense={() => setDialogExpense("new-personal")}
+            onCreateQuickExpense={createDialogExpense}
             onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
             pendingSettlementKeys={pendingSettlementKeys}
             onRecordSettlement={recordSettlement}
@@ -203,13 +221,14 @@ export function TripExpensesPage({
       >
           <ExpenseLedgerSection
             canEditExpenses={canEditExpenses}
+            canCreateExpenses={canCreateExpenses}
             categoryFilter={categoryFilter}
             dayFilter={dayFilter}
             displayCurrency={displayCurrency}
             displayExchangeRateNumber={displayExchangeRateNumber}
             filteredExpenses={filteredExpenses}
             members={trip.members}
-            onAddExpense={() => setDialogExpense("new")}
+            onAddExpense={openAddExpense}
             onAddPersonalExpense={() => setDialogExpense("new-personal")}
             onCategoryFilterChange={setCategoryFilter}
             onClearFilters={clearFilters}
@@ -236,23 +255,30 @@ export function TripExpensesPage({
         hidden={activeView !== "account"}
       >
         <div className={expenseStyles.financeViewClassName}>
-          <ExpenseMoneySettings
-            copyState={copyState}
-            displayCurrency={displayCurrency}
-            displayExchangeRate={displayExchangeRate}
-            settlementCurrency={settlementCurrency}
-            t={t}
-            onCopyStatement={() => void copyStatement()}
-            onDisplayCurrencyChange={setDisplayCurrency}
-            onDisplayExchangeRateChange={setDisplayExchangeRate}
-            onDownloadCsv={downloadCsv}
-          />
+          {canEditExpenses ? (
+            <ExpenseMoneySettings
+              copyState={copyState}
+              displayCurrency={displayCurrency}
+              displayExchangeRate={displayExchangeRate}
+              settlementCurrency={settlementCurrency}
+              t={t}
+              onCopyStatement={() => void copyStatement()}
+              onDisplayCurrencyChange={setDisplayCurrency}
+              onDisplayExchangeRateChange={setDisplayExchangeRate}
+              onDownloadCsv={downloadCsv}
+            />
+          ) : null}
           <ExpenseStatementSection
+            canEditExpenses={canEditExpenses}
             currentMember={currentMember}
             displayCurrency={displayCurrency}
             displayExchangeRateNumber={displayExchangeRateNumber}
             locale={locale}
+            onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
+            onRecordSettlement={recordSettlement}
+            pendingSettlementKeys={pendingSettlementKeys}
             settlementCurrency={settlementCurrency}
+            settlementSuggestions={expenseSummary.settlementSuggestions}
             t={t}
             trip={trip}
           />

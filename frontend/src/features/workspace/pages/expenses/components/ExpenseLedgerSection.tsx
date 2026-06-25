@@ -1,5 +1,5 @@
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   expenseDayFilterOptions,
@@ -15,6 +15,7 @@ import { ExpenseMobileLedgerList } from "./ExpenseMobileLedgerList";
 import { ExpenseTransactionDetail } from "./ExpenseTransactionDetail";
 
 interface ExpenseLedgerSectionProps {
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   categoryFilter: ExpenseCategoryFilter;
   dayFilter: string;
@@ -42,6 +43,7 @@ interface ExpenseLedgerSectionProps {
 }
 
 export function ExpenseLedgerSection({
+  canCreateExpenses,
   canEditExpenses,
   categoryFilter,
   dayFilter,
@@ -73,7 +75,7 @@ export function ExpenseLedgerSection({
   );
   const selectedExpense =
     filteredExpenses.find((expense) => expense.id === selectedExpenseId) ??
-    (!isMobileLedger ? filteredExpenses[0] : null) ??
+    (isMobileLedger === false ? filteredExpenses[0] : null) ??
     null;
   const selectedLedgerExpenseId = selectedExpense?.id ?? null;
   const tableCopy = {
@@ -96,6 +98,7 @@ export function ExpenseLedgerSection({
   return (
     <section className={expenseStyles.ledgerSectionClassName} aria-label={t.expenses.ledgerLabel}>
       <ExpenseLedgerControls
+        canCreateExpenses={canCreateExpenses}
         canEditExpenses={canEditExpenses}
         categoryFilter={categoryFilter}
         dayFilter={dayFilter}
@@ -120,7 +123,7 @@ export function ExpenseLedgerSection({
       />
 
       <div className={expenseStyles.ledgerWorkspaceClassName}>
-        {isMobileLedger ? (
+        {isMobileLedger === true ? (
           <ExpenseMobileLedgerList
             dayGroups={dayGroups}
             displayCurrency={displayCurrency}
@@ -132,7 +135,7 @@ export function ExpenseLedgerSection({
             tableCopy={tableCopy}
             trip={trip}
           />
-        ) : (
+        ) : isMobileLedger === false ? (
           <div className={expenseStyles.tableWrapClassName}>
             <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
               <colgroup>
@@ -168,15 +171,15 @@ export function ExpenseLedgerSection({
               />
             </table>
           </div>
-        )}
+        ) : null}
 
-        {selectedExpense || !isMobileLedger ? (
+        {selectedExpense || isMobileLedger === false ? (
           <ExpenseTransactionDetail
             canEditExpenses={canEditExpenses}
             displayCurrency={displayCurrency}
             displayExchangeRate={displayExchangeRateNumber}
             expense={selectedExpense}
-            isMobile={isMobileLedger}
+            isMobile={isMobileLedger === true}
             members={members}
             onClose={() => setSelectedExpenseId(null)}
             onDeleteExpense={onDeleteExpense}
@@ -194,17 +197,29 @@ export function ExpenseLedgerSection({
   );
 }
 
+const mobileLedgerQuery = "(max-width: 767px)";
+
 function useIsMobileLedger() {
-  const [isMobile, setIsMobile] = useState(false);
+  return useSyncExternalStore(
+    subscribeToMobileLedger,
+    getMobileLedgerSnapshot,
+    getMobileLedgerServerSnapshot,
+  );
+}
 
-  useEffect(() => {
-    if (!window.matchMedia) return;
-    const media = window.matchMedia("(max-width: 767px)");
-    const sync = () => setIsMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
+function subscribeToMobileLedger(onStoreChange: () => void) {
+  if (typeof window === "undefined" || !window.matchMedia) return () => {};
+  const media = window.matchMedia(mobileLedgerQuery);
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
 
-  return isMobile;
+function getMobileLedgerSnapshot(): boolean | null {
+  if (typeof window === "undefined") return null;
+  if (!window.matchMedia) return false;
+  return window.matchMedia(mobileLedgerQuery).matches;
+}
+
+function getMobileLedgerServerSnapshot(): boolean | null {
+  return null;
 }

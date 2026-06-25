@@ -43,7 +43,8 @@ describe("TripExpensesPage edit dialog", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[0]);
+    await user.click(screen.getByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(within(dialog).getByRole("button", { name: /ส่วนตัว/i })).toHaveAttribute("aria-pressed", "true");
     expect(within(dialog).getByLabelText(/จ่ายโดย/i)).toHaveValue("member-beam");

@@ -132,12 +132,14 @@ export function ExpenseLedgerRows({
                   }}>
                     <Icon name="eye" />
                   </IconButton>
-                  <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} disabled={!canEditThisExpense} onClick={(event) => {
-                    event.stopPropagation();
-                    onEditExpense(expense);
-                  }}>
-                    <Icon name="edit" />
-                  </IconButton>
+                  {canEditThisExpense ? (
+                    <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} onClick={(event) => {
+                      event.stopPropagation();
+                      onEditExpense(expense);
+                    }}>
+                      <Icon name="edit" />
+                    </IconButton>
+                  ) : null}
                 </span>
               </td>
             </tr>,

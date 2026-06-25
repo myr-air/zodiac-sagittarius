@@ -175,6 +175,7 @@ export function ExpenseTransactionDetail({
         ) : null}
       </div>
 
+      {canEditExpenses ? (
       <div className={expenseStyles.transactionDetailActionsClassName}>
         <div className={expenseStyles.transactionDetailActionHeaderClassName}>
           <Button
@@ -232,6 +233,7 @@ export function ExpenseTransactionDetail({
           </Button>
         </div>
       </div>
+      ) : null}
 
       <dl className={expenseStyles.transactionDetailListClassName}>
         <div>

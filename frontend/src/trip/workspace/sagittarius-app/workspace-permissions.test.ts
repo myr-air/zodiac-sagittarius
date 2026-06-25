@@ -5,6 +5,7 @@ describe("deriveWorkspacePermissions", () => {
   it("keeps owner workspace permissions aligned with domain capabilities", () => {
     expect(deriveWorkspacePermissions("owner")).toMatchObject({
       canCreateStopNote: true,
+      canCreateExpenses: true,
       canCreateSuggestion: true,
       canEdit: true,
       canEditBookings: true,
@@ -20,6 +21,7 @@ describe("deriveWorkspacePermissions", () => {
   it("derives booking and stop-note permissions from itinerary and expense capabilities", () => {
     expect(deriveWorkspacePermissions("traveler")).toMatchObject({
       canCreateStopNote: true,
+      canCreateExpenses: true,
       canCreateSuggestion: true,
       canEdit: true,
       canEditBookings: true,
@@ -32,6 +34,7 @@ describe("deriveWorkspacePermissions", () => {
   it("keeps viewer access read-only for workspace mutation surfaces", () => {
     expect(deriveWorkspacePermissions("viewer")).toMatchObject({
       canCreateStopNote: false,
+      canCreateExpenses: false,
       canCreateSuggestion: false,
       canEdit: false,
       canEditBookings: false,

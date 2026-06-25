@@ -11,6 +11,7 @@ pub fn can(role: TripRole, capability: Capability) -> bool {
                 | Capability::EditItinerary
                 | Capability::CreateSuggestion
                 | Capability::ViewExpenses
+                | Capability::CreateExpense
                 | Capability::CreateSharedTask
                 | Capability::CreatePrivateTask
                 | Capability::UpdateOwnPrivateTask
@@ -26,6 +27,7 @@ const OWNER_OR_ORGANIZER_CAPABILITIES: &[Capability] = &[
     Capability::ReviewSuggestions,
     Capability::CreateSuggestion,
     Capability::ViewExpenses,
+    Capability::CreateExpense,
     Capability::EditExpenses,
     Capability::ManagePeople,
     Capability::ManageTripPlans,
@@ -48,6 +50,7 @@ mod tests {
         assert!(can(TripRole::Traveler, Capability::UpdateOwnPrivateTask));
         assert!(can(TripRole::Traveler, Capability::ManagePhotoAlbums));
         assert!(can(TripRole::Traveler, Capability::EditItinerary));
+        assert!(can(TripRole::Traveler, Capability::CreateExpense));
         assert!(!can(TripRole::Traveler, Capability::ManagePeople));
         assert!(!can(TripRole::Traveler, Capability::ManageTripPlans));
         assert!(!can(TripRole::Traveler, Capability::EditExpenses));
@@ -67,6 +70,7 @@ mod tests {
             assert!(can(role, Capability::EditItinerary));
             assert!(can(role, Capability::ReviewSuggestions));
             assert!(can(role, Capability::EditExpenses));
+            assert!(can(role, Capability::CreateExpense));
             assert!(can(role, Capability::ManagePeople));
             assert!(can(role, Capability::ManageTripPlans));
             assert!(can(role, Capability::CreateSharedTask));

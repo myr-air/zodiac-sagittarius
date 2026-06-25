@@ -5,6 +5,7 @@ import type { UseWorkspaceExpenseMutationCommandsOptions } from "./workspace-exp
 
 export function useWorkspaceExpenseMutationCommands({
   apiClient,
+  canCreateExpenses,
   canEditExpenses,
   commitTrip,
   isApiMode,
@@ -16,6 +17,7 @@ export function useWorkspaceExpenseMutationCommands({
 }: UseWorkspaceExpenseMutationCommandsOptions) {
   const createExpense = useCreateWorkspaceExpenseCommand({
     apiClient,
+    canCreateExpenses,
     canEditExpenses,
     commitTrip,
     isApiMode,
@@ -27,6 +29,7 @@ export function useWorkspaceExpenseMutationCommands({
   });
   const deleteExpense = useDeleteWorkspaceExpenseCommand({
     apiClient,
+    canCreateExpenses,
     canEditExpenses,
     commitTrip,
     isApiMode,
@@ -37,6 +40,7 @@ export function useWorkspaceExpenseMutationCommands({
   });
   const updateExpense = useUpdateWorkspaceExpenseCommand({
     apiClient,
+    canCreateExpenses,
     canEditExpenses,
     commitTrip,
     isApiMode,

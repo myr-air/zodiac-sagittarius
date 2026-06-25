@@ -13,6 +13,7 @@ import { Select } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
 
 interface ExpensePageHeaderProps {
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   currentTripPlanId: string;
   locale: Locale;
@@ -22,6 +23,7 @@ interface ExpensePageHeaderProps {
 }
 
 export function ExpensePageHeader({
+  canCreateExpenses,
   canEditExpenses,
   currentTripPlanId,
   locale,
@@ -40,7 +42,7 @@ export function ExpensePageHeader({
         <>
           <PageHeaderTripDateMetaItem startDate={trip.startDate} endDate={trip.endDate} locale={locale} />
           <PageHeaderMetaItem icon="users">{t.dates.memberCount({ count: trip.members.length })}</PageHeaderMetaItem>
-          <PageHeaderMetaItem icon="wallet">{canEditExpenses ? t.expenses.canEdit : t.expenses.readOnly}</PageHeaderMetaItem>
+          <PageHeaderMetaItem icon="wallet">{canEditExpenses ? t.expenses.canEdit : canCreateExpenses ? t.expenses.canCreate : t.expenses.readOnly}</PageHeaderMetaItem>
         </>
       )}
       aside={(
