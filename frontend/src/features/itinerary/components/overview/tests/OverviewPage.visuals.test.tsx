@@ -56,7 +56,13 @@ describe("OverviewPage visual summary", () => {
     expect(within(phase).getAllByText(/จุดถัดไป/i).length).toBeGreaterThan(0);
     expect(within(phase).getByText(/ช่วงอากาศ/i)).toBeInTheDocument();
 
+    const readiness = screen.getByRole("region", { name: /ความพร้อมของทริป/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
+    expect(readiness.compareDocumentPosition(phase)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(checklist.compareDocumentPosition(phase)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
     const board = screen.getByRole("region", { name: /ไฮไลต์ทริป/i });
+    expect(phase.compareDocumentPosition(board)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(within(board).getByRole("heading", { name: /ไฮไลต์ทริป/i })).toBeInTheDocument();
     expect(within(board).getByText(/ของกินและสถานที่จากแผนนี้/i)).toBeInTheDocument();
     expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
@@ -119,6 +125,11 @@ describe("OverviewPage visual summary", () => {
     const afterTrip = screen.getByRole("region", { name: /หลังจบทริป/i });
     expect(within(afterTrip).getByRole("heading", { name: /ปิดงานทริป/i })).toBeInTheDocument();
     expect(within(afterTrip).getByText(/3 รายการชำระคืน/i)).toBeInTheDocument();
+    const readiness = screen.getByRole("region", { name: /ความพร้อมของทริป/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
+    expect(afterTrip.compareDocumentPosition(readiness)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(afterTrip.compareDocumentPosition(checklist)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(checklist).not.toHaveClass("overview-task-panel");
     expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
     expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
   });

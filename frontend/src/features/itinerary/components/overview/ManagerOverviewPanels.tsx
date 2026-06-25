@@ -29,71 +29,92 @@ export function ManagerOverviewPanels({
   openTaskDialog,
 }: ManagerOverviewPanelsProps) {
   const { t } = useI18n();
+  const readinessPanel = (
+    <ManagerReadinessPanel
+      ariaLabel={t.overview.sections.readiness}
+      myChecklistLabel={t.overview.readiness.myChecklist}
+      myOpenTasks={myOpenTasks}
+      pendingSuggestions={pendingSuggestions}
+      pendingSuggestionsLabel={t.overview.readiness.pendingSuggestions}
+      sharedChecklistLabel={t.overview.readiness.sharedChecklist}
+      sharedOpenTasks={sharedOpenTasks}
+      title={t.overview.headings.readiness}
+    />
+  );
+  const checklistPanel = (
+    <ManagerTaskChecklistPanel
+      addChecklistLabel={t.overview.headings.addChecklist}
+      allLabel={t.overview.filters.all}
+      allStatusesLabel={t.overview.filters.allStatuses}
+      ariaLabel={t.overview.sections.tripChecklist}
+      doneLabel={t.overview.filters.done}
+      emptyMessage={t.overview.task.emptyFilter}
+      includeStopMeta
+      includeTripKindMeta
+      items={items}
+      mineLabel={t.overview.filters.mine}
+      onAddTask={openTaskDialog}
+      onScopeFilterChange={setTaskScopeFilter}
+      onStatusFilterChange={setTaskStatusFilter}
+      onToggleTask={onToggleTask}
+      openLabel={t.overview.filters.open}
+      pinPanel={!isCompleted}
+      scopeFilter={taskScopeFilter}
+      scopeFilterLabel={t.overview.filters.scopeLabel}
+      statusFilter={taskStatusFilter}
+      statusFilterLabel={t.overview.filters.statusLabel}
+      taskListLabels={taskListLabels}
+      tasks={visibleTasks}
+      title={t.overview.headings.tripChecklist}
+      trip={trip}
+      tripLabel={t.overview.filters.trip}
+    />
+  );
+  const focusPanel = (
+    <OverviewFocusSection
+      ariaLabel={t.overview.sections.todayFocus}
+      heading={focusTodayHeading}
+      trip={trip}
+      items={items}
+      nextStop={nextStop}
+      nextDayItems={nextDayItems}
+      startDate={trip.startDate}
+      locale={locale}
+      groupSpendLabel={groupSpendLabel}
+      isCompleted={isCompleted}
+      focusListLabel={t.overview.sections.todayFocusStops}
+      detailFallback={nextStop ? focusSectionDetailFallback : t.overview.focusDetails.managerFallback}
+      emptyText={t.overview.empty.itinerary}
+    />
+  );
+  const expensePanel = (
+    <OverviewExpenseShortcut
+      icon="plus"
+      title={t.overview.generalExpense}
+      value={t.overview.money.generalExamples}
+      detail={t.overview.money.generalDetail}
+      ariaLabel={t.overview.generalExpense}
+      onClick={openExpenses}
+    />
+  );
+
+  if (isCompleted) {
+    return (
+      <>
+        {focusPanel}
+        {expensePanel}
+        {readinessPanel}
+        {checklistPanel}
+      </>
+    );
+  }
 
   return (
     <>
-      <ManagerReadinessPanel
-        ariaLabel={t.overview.sections.readiness}
-        myChecklistLabel={t.overview.readiness.myChecklist}
-        myOpenTasks={myOpenTasks}
-        pendingSuggestions={pendingSuggestions}
-        pendingSuggestionsLabel={t.overview.readiness.pendingSuggestions}
-        sharedChecklistLabel={t.overview.readiness.sharedChecklist}
-        sharedOpenTasks={sharedOpenTasks}
-        title={t.overview.headings.readiness}
-      />
-
-      <ManagerTaskChecklistPanel
-        addChecklistLabel={t.overview.headings.addChecklist}
-        allLabel={t.overview.filters.all}
-        allStatusesLabel={t.overview.filters.allStatuses}
-        ariaLabel={t.overview.sections.tripChecklist}
-        doneLabel={t.overview.filters.done}
-        emptyMessage={t.overview.task.emptyFilter}
-        includeStopMeta
-        includeTripKindMeta
-        items={items}
-        mineLabel={t.overview.filters.mine}
-        onAddTask={openTaskDialog}
-        onScopeFilterChange={setTaskScopeFilter}
-        onStatusFilterChange={setTaskStatusFilter}
-        onToggleTask={onToggleTask}
-        openLabel={t.overview.filters.open}
-        scopeFilter={taskScopeFilter}
-        scopeFilterLabel={t.overview.filters.scopeLabel}
-        statusFilter={taskStatusFilter}
-        statusFilterLabel={t.overview.filters.statusLabel}
-        taskListLabels={taskListLabels}
-        tasks={visibleTasks}
-        title={t.overview.headings.tripChecklist}
-        trip={trip}
-        tripLabel={t.overview.filters.trip}
-      />
-
-      <OverviewFocusSection
-        ariaLabel={t.overview.sections.todayFocus}
-        heading={focusTodayHeading}
-        trip={trip}
-        items={items}
-        nextStop={nextStop}
-        nextDayItems={nextDayItems}
-        startDate={trip.startDate}
-        locale={locale}
-        groupSpendLabel={groupSpendLabel}
-        isCompleted={isCompleted}
-        focusListLabel={t.overview.sections.todayFocusStops}
-        detailFallback={nextStop ? focusSectionDetailFallback : t.overview.focusDetails.managerFallback}
-        emptyText={t.overview.empty.itinerary}
-      />
-
-      <OverviewExpenseShortcut
-        icon="plus"
-        title={t.overview.generalExpense}
-        value={t.overview.money.generalExamples}
-        detail={t.overview.money.generalDetail}
-        ariaLabel={t.overview.generalExpense}
-        onClick={openExpenses}
-      />
+      {readinessPanel}
+      {checklistPanel}
+      {focusPanel}
+      {expensePanel}
     </>
   );
 }

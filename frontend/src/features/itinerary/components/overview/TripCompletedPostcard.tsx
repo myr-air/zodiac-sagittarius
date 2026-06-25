@@ -44,18 +44,18 @@ export function TripCompletedPostcard({
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center">
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center max-[480px]:grid-cols-1 max-[480px]:text-left">
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.durationLabel}</span>
           <strong className="text-lg font-black text-(--color-text)">{labels.durationValue}</strong>
         </div>
-        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border)">
+        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border) max-[480px]:border-x-0 max-[480px]:border-y max-[480px]:py-2">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.stopsLabel}</span>
           <strong className="text-lg font-black text-(--color-text)">{labels.stopsValue}</strong>
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.budgetLabel}</span>
-          <strong className="text-lg font-black text-(--color-text)">{groupSpendLabel}</strong>
+          <strong className="text-lg font-black text-(--color-text) [overflow-wrap:anywhere]">{groupSpendLabel}</strong>
         </div>
       </div>
     </div>
