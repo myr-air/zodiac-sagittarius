@@ -2,7 +2,7 @@ import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { Expense, Member, Trip } from "@/src/trip/types";
 import { Button, IconButton } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { type KeyboardEvent, useEffect, useRef } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
   expenseLedgerPayerDisplay,
@@ -34,6 +34,7 @@ interface ExpenseTransactionDetailProps {
       duplicateAsEstimate(input: { title: string }): string;
       editExpenseShort: string;
       editExpense(input: { title: string }): string;
+      moreExpenseActions: string;
       recordRefundShort: string;
       recordRefund(input: { title: string }): string;
     };
@@ -73,6 +74,7 @@ export function ExpenseTransactionDetail({
 }: ExpenseTransactionDetailProps) {
   const detailRef = useRef<HTMLElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const [showActions, setShowActions] = useState(false);
 
   useEffect(() => {
     if (!isMobile || !expense) return;
@@ -130,6 +132,7 @@ export function ExpenseTransactionDetail({
   });
   const memberBreakdown = display.memberBreakdown ?? [];
   const canEditThisExpense = canEditExpenses && expense.category !== "settlement";
+  const actionMenuId = `expense-transaction-actions-${expense.id}`;
 
   return (
     <>
@@ -173,16 +176,30 @@ export function ExpenseTransactionDetail({
       </div>
 
       <div className={expenseStyles.transactionDetailActionsClassName}>
-        <Button
-          type="button"
-          aria-label={tableCopy.actions.editExpense({ title: expense.title })}
-          className={expenseStyles.transactionDetailPrimaryActionClassName}
-          disabled={!canEditThisExpense}
-          onClick={() => onEditExpense(expense)}
-        >
-          <Icon name="edit" /> {tableCopy.actions.editExpenseShort}
-        </Button>
-        <div className={expenseStyles.transactionDetailSecondaryActionsClassName}>
+        <div className={expenseStyles.transactionDetailActionHeaderClassName}>
+          <Button
+            type="button"
+            aria-label={tableCopy.actions.editExpense({ title: expense.title })}
+            className={expenseStyles.transactionDetailPrimaryActionClassName}
+            disabled={!canEditThisExpense}
+            onClick={() => onEditExpense(expense)}
+          >
+            <Icon name="edit" /> {tableCopy.actions.editExpenseShort}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            aria-controls={actionMenuId}
+            aria-expanded={showActions}
+            aria-label={tableCopy.actions.moreExpenseActions}
+            className={expenseStyles.transactionDetailMoreActionClassName}
+            title={tableCopy.actions.moreExpenseActions}
+            onClick={() => setShowActions((current) => !current)}
+          >
+            <Icon name="dots" />
+          </Button>
+        </div>
+        <div className={expenseStyles.transactionDetailSecondaryActionsClassName} id={actionMenuId} hidden={!showActions}>
           <Button
             type="button"
             variant="secondary"
@@ -203,17 +220,17 @@ export function ExpenseTransactionDetail({
           >
             <Icon name="copy" /> {tableCopy.actions.duplicateAsEstimateShort}
           </Button>
+          <Button
+            type="button"
+            variant="danger"
+            aria-label={tableCopy.actions.cancelExpense({ title: expense.title })}
+            className={expenseStyles.transactionDetailDangerActionClassName}
+            disabled={!canEditExpenses}
+            onClick={() => onDeleteExpense(expense.id)}
+          >
+            <Icon name="trash" /> {tableCopy.actions.cancelExpenseShort}
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="danger"
-          aria-label={tableCopy.actions.cancelExpense({ title: expense.title })}
-          className={expenseStyles.transactionDetailDangerActionClassName}
-          disabled={!canEditExpenses}
-          onClick={() => onDeleteExpense(expense.id)}
-        >
-          <Icon name="trash" /> {tableCopy.actions.cancelExpenseShort}
-        </Button>
       </div>
 
       <dl className={expenseStyles.transactionDetailListClassName}>

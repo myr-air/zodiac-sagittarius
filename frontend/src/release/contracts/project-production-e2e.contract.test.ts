@@ -14,6 +14,7 @@ describe("Sagittarius production e2e contracts", () => {
     expect(packageJson.scripts?.["test:e2e:real"]).toContain("src/trip/real-api-e2e/real-api.e2e.test.ts");
     expect(packageJson.scripts?.["test:e2e:real"]).toContain("src/account/real-api-e2e/real-portal.e2e.test.ts");
     expect(packageJson.scripts?.["test:e2e:auth-browser"]).toBe("bun run scripts/run-local-real-browser-auth-e2e.ts");
+    expect(packageJson.scripts?.["test:expense-browser-smoke"]).toBe("bun run scripts/run-expense-workspace-browser-smoke.ts");
     expect(packageJson.scripts?.["test:api-trace-smoke"]).toBe("bun run scripts/run-local-api-trace-smoke.ts");
     expect(packageJson.scripts?.["test:perf-smoke"]).toBe("bun run scripts/run-local-perf-smoke.ts");
     expect(packageJson.scripts?.["test:production-env"]).toBe("bun run scripts/check-production-env.ts");
@@ -22,6 +23,7 @@ describe("Sagittarius production e2e contracts", () => {
     expect(packageJson.scripts?.["test:staging-signoff"]).toBe("bun run scripts/check-staging-signoff.ts");
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-api-e2e.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-real-browser-auth-e2e.ts"))).toBe(true);
+    expect(existsSync(join(frontendRoot, "scripts/run-expense-workspace-browser-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-api-trace-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/run-local-perf-smoke.ts"))).toBe(true);
     expect(existsSync(join(frontendRoot, "scripts/check-production-env.ts"))).toBe(true);
@@ -38,6 +40,11 @@ describe("Sagittarius production e2e contracts", () => {
     expect(authBrowserE2e).not.toContain('name: /^Use password$/');
     expect(authBrowserE2e).not.toContain('name: /^Create my trip space$/');
     expect(authBrowserE2e).not.toContain('["run", "next", "dev"');
+    const expenseBrowserSmoke = readFileSync(join(frontendRoot, "scripts/run-expense-workspace-browser-smoke.ts"), "utf8");
+    expect(expenseBrowserSmoke).toContain('SAGITTARIUS_INTERNAL_API_BASE_URL: apiBaseUrl');
+    expect(expenseBrowserSmoke).toContain("Dim sum breakfast");
+    expect(expenseBrowserSmoke).toContain("assertNoHorizontalPageOverflow");
+    expect(expenseBrowserSmoke).toContain("evidence.json");
     const releaseSignoff = readFileSync(join(frontendRoot, "scripts/check-release-signoff.ts"), "utf8");
     expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_API_BASE_URL");
     expect(releaseSignoff).toContain("SAGITTARIUS_SIGNOFF_FRONTEND_URL");
@@ -92,6 +99,7 @@ describe("Sagittarius production e2e contracts", () => {
     for (const script of [
       "scripts/run-local-real-api-e2e.ts",
       "scripts/run-local-real-browser-auth-e2e.ts",
+      "scripts/run-expense-workspace-browser-smoke.ts",
       "scripts/run-local-api-trace-smoke.ts",
       "scripts/run-local-perf-smoke.ts",
       "scripts/run-local-production-browser-qa.ts",
@@ -103,6 +111,9 @@ describe("Sagittarius production e2e contracts", () => {
     expect(makefile).toContain("bun run test:e2e:local");
     expect(makefile).toContain("frontend-e2e-auth-browser: db-init-test");
     expect(makefile).toContain("bun run test:e2e:auth-browser");
+    expect(makefile).toContain("expense-browser-smoke: db-init-test");
+    expect(makefile).toContain("bun run test:expense-browser-smoke");
+    expect(makefile).toContain("browser-qa-local: frontend-e2e-local frontend-e2e-auth-browser expense-browser-smoke api-trace-smoke");
   });
 
 

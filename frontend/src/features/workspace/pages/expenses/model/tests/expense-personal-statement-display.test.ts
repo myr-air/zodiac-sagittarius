@@ -25,7 +25,7 @@ describe("personal statement display", () => {
     });
 
     expect(rows.find((row) => row.id === "spend-expense-airport-express-member-beam")).toMatchObject({
-      amountLabel: "HK$115.00",
+      amountLabel: "HK$460.00",
       flow: "paidForGroup",
       paidWithLabel: "Paid at source",
       relatedMemberLabel: "You paid",
@@ -118,6 +118,37 @@ describe("personal statement display", () => {
     expect(rows.find((row) => row.id === "spend-newer-taxi-member-beam")).toMatchObject({
       settlementState: "covered",
       paidWithLabel: "Paid back · Beam paid taxi only",
+    });
+  });
+
+  it("lists payer-only advances even when the current member has no personal split", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [{
+          id: "advance-for-friends",
+          title: "Taxi advanced for friends",
+          amount: 300,
+          paidBy: "member-beam",
+          splits: {
+            "member-aom": 150,
+            "member-nam": 150,
+          },
+          category: "transport",
+        }],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-advance-for-friends-member-beam")).toMatchObject({
+      amountLabel: "HK$300.00",
+      flow: "paidForGroup",
+      relatedMemberLabel: "You paid",
     });
   });
 });

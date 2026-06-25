@@ -72,7 +72,7 @@ describe("expense page action builders", () => {
       settlementAllocations: [{
         expenseId: "expense-refundable",
         memberId: "member-beam",
-        amount: 20.125,
+        amount: 22.14,
       }],
     });
   });
@@ -93,6 +93,35 @@ describe("expense page action builders", () => {
       expenseId: "expense-dimsum",
       memberId: "member-beam",
       amount: 78,
+    }]);
+  });
+
+  it("allocates net settlements to the debtor's underlying expenses even when a different member is paid", () => {
+    expect(
+      buildSettlementExpenseInput({
+        members: seedTrip.members,
+        settlementCurrency: "HKD",
+        suggestion: {
+          from: "member-beam",
+          to: "member-aom",
+          amount: 70,
+        },
+        trip: {
+          ...seedTrip,
+          expenses: [{
+            id: "nam-paid-beam-share",
+            title: "Nam paid Beam share",
+            amount: 70,
+            paidBy: "member-nam",
+            splits: { "member-beam": 70 },
+            category: "food",
+          }],
+        },
+      }).settlementAllocations,
+    ).toEqual([{
+      expenseId: "nam-paid-beam-share",
+      memberId: "member-beam",
+      amount: 70,
     }]);
   });
 

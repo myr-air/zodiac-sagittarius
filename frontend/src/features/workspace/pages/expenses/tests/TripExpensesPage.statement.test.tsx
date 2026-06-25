@@ -8,16 +8,16 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการละเอียด/i }));
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
 
-    const panel = screen.getByRole("tabpanel", { name: /รายการละเอียด/i });
+    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
     expect(within(panel).getByRole("heading", { name: "รายการละเอียด" })).toBeInTheDocument();
     expect(within(panel).getByText(/ดูว่าแต่ละรายการคือค่าอะไร/i)).toBeInTheDocument();
 
     const personalStatement = within(panel).getByRole("table", { name: /รายการบัญชีส่วนตัวของ Travel Mate/i });
     expect(personalStatement).toHaveClass("expense-personal-statement-table");
     expect(within(personalStatement).getByRole("columnheader", { name: "ค่าอะไร" })).toBeVisible();
-    expect(within(personalStatement).getByRole("columnheader", { name: "จ่ายคืน/เคลียร์ด้วยอะไร" })).toBeVisible();
+    expect(within(personalStatement).getByRole("columnheader", { name: "วิธีเคลียร์" })).toBeVisible();
     expect(within(personalStatement).getByText("Aom received Beam payback")).toBeInTheDocument();
     expect(within(personalStatement).getByText("เราจ่ายคืน")).toBeInTheDocument();
     expect(within(personalStatement).getByText("จ่ายให้ Demo Traveler")).toBeInTheDocument();
@@ -42,8 +42,8 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการละเอียด/i }));
-    const panel = screen.getByRole("tabpanel", { name: /รายการละเอียด/i });
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
     await user.click(within(panel).getByRole("radio", { name: /ไม่ต้องคืน/i }));
 
     const statement = within(panel).getByRole("table", { name: /รายการเงินทริปแบบละเอียด/i });

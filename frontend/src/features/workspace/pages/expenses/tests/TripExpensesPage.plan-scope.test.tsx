@@ -16,7 +16,7 @@ describe("TripExpensesPage plan scope", () => {
     const user = userEvent.setup();
     const props = renderExpenses({ selectedTripPlanId: "plan-main" });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.selectOptions(within(dialog).getByLabelText("แผนทริป"), "plan-rain");
@@ -26,6 +26,83 @@ describe("TripExpensesPage plan scope", () => {
       expenseId: "expense-dimsum",
       itemId: null,
       tripPlanId: "plan-rain",
+    }));
+  });
+
+  it("uses the first available trip plan when main and active plan ids are missing", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      activePlanVariantId: "",
+      mainTripPlanId: "",
+      planVariants: [],
+      tripPlans: [
+        {
+          id: "plan-first",
+          tripId: seedTrip.id,
+          name: "First saved plan",
+          kind: "main" as const,
+          description: "Fallback plan",
+        },
+        {
+          id: "plan-later",
+          tripId: seedTrip.id,
+          name: "Later plan",
+          kind: "backup" as const,
+          description: "Secondary plan",
+        },
+      ],
+    };
+    const props = renderExpenses({
+      trip,
+      selectedTripPlanId: undefined,
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    expect(screen.getAllByLabelText("แผนทริป")[0]).toHaveValue("plan-first");
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Fallback plan taxi");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "120");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Fallback plan taxi",
+      tripPlanId: "plan-first",
+    }));
+  });
+
+  it("scopes generated settlement records to the fallback trip plan", async () => {
+    const user = userEvent.setup();
+    const trip = {
+      ...seedTrip,
+      activePlanVariantId: "",
+      mainTripPlanId: "",
+      planVariants: [],
+      tripPlans: [
+        {
+          id: "plan-first",
+          tripId: seedTrip.id,
+          name: "First saved plan",
+          kind: "main" as const,
+          description: "Fallback plan",
+        },
+      ],
+    };
+    const props = renderExpenses({
+      trip,
+      selectedTripPlanId: undefined,
+      expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
+    });
+
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      category: "settlement",
+      tripPlanId: "plan-first",
     }));
   });
 
@@ -47,7 +124,6 @@ describe("TripExpensesPage plan scope", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("tab", { name: /ประเภท/i }));
     const audit = screen.getByRole("region", { name: /ตรวจขอบเขตของเงินจริง/i });
     expect(audit).toHaveTextContent("Dim Dim Sum brunch");
     expect(audit).toHaveTextContent("ขอบเขตที่ระบบเดาไว้: แผนฝนตก");
@@ -82,7 +158,7 @@ describe("TripExpensesPage plan scope", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Arrival taxi receipt/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     const planSelect = within(dialog).getByLabelText("แผนทริป");

@@ -135,14 +135,17 @@ function spendRowForMember({
   trip: Trip;
 }): PersonalStatementRow[] {
   const share = expense.splits[currentMemberId] ?? 0;
-  if (share <= 0) return [];
+  const isPaidByCurrentMember = expense.paidBy === currentMemberId;
+  if (!isPaidByCurrentMember && share <= 0) return [];
+  if (isPaidByCurrentMember && expense.amount <= 0) return [];
 
   const payer = findMemberById(trip.members, expense.paidBy);
+  const rowAmount = isPaidByCurrentMember ? expense.amount : share;
+  const rowAmountInSettlementCurrency = amountInSettlementCurrency(rowAmount, expense, settlementCurrency);
   const shareInSettlementCurrency = amountInSettlementCurrency(share, expense, settlementCurrency);
-  const isPaidByCurrentMember = expense.paidBy === currentMemberId;
   const splitParticipants = Object.values(expense.splits).filter((amount) => amount > 0).length;
   const flow: PersonalStatementFlow = isPaidByCurrentMember
-    ? splitParticipants > 1
+    ? splitParticipants > 1 || share < expense.amount
       ? "paidForGroup"
       : "ownShare"
     : "friendPaid";
@@ -157,10 +160,10 @@ function spendRowForMember({
 
   return [{
     id: `spend-${expense.id}-${currentMemberId}`,
-    amountLabel: formatMoney(share, expense.currency ?? settlementCurrency),
+    amountLabel: formatMoney(rowAmount, expense.currency ?? settlementCurrency),
     dateLabel: statementDateLabel(expense, trip, locale, copy.dateFallback),
     displayAmountLabel: displayAmountLabel({
-      amount: shareInSettlementCurrency,
+      amount: rowAmountInSettlementCurrency,
       displayCurrency,
       displayExchangeRate,
       settlementCurrency,

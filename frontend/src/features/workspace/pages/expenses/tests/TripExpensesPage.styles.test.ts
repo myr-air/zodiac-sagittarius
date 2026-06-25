@@ -40,9 +40,11 @@ describe("TripExpensesPage styles", () => {
     expect(financeTabsClassName).toContain("expense-finance-tabs");
     expect(financeTabsClassName).toContain("bg-(--color-surface)");
     expect(financeTabsClassName).toContain("max-[767px]:sticky");
+    expect(financeTabsClassName).toContain("grid-cols-3");
     expect(financeTabsClassName).not.toContain("linear-gradient");
     expect(financeTabClassName).toContain("min-h-10");
-    expect(financeTabClassName).toContain("min-w-[104px]");
+    expect(financeTabClassName).toContain("min-w-0");
+    expect(financeTabClassName).toContain("text-ellipsis");
     expect(financeTabActiveClassName).toContain("border-(--color-primary-border)");
   });
 

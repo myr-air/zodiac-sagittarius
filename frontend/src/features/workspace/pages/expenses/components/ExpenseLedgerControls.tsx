@@ -1,7 +1,6 @@
 import { buildMemberSelectOptions } from "@/src/features/workspace/model/related-checkbox-options";
 import { SelectOptions } from "@/src/shared/components/select-options";
-import { buildTripPlanSelectOptions } from "@/src/trip/trip-plans";
-import type { Member, TripPlan } from "@/src/trip/types";
+import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useState } from "react";
@@ -18,9 +17,7 @@ interface ExpenseLedgerControlsProps {
   members: Member[];
   payerFilter: string;
   query: string;
-  selectedTripPlanId: string;
   t: ExpensePageLabels;
-  tripPlanOptions: TripPlan[];
   onAddExpense: () => void;
   onAddPersonalExpense: () => void;
   onCategoryFilterChange: (category: ExpenseCategoryFilter) => void;
@@ -28,7 +25,6 @@ interface ExpenseLedgerControlsProps {
   onDayFilterChange: (day: string) => void;
   onPayerFilterChange: (memberId: string) => void;
   onQueryChange: (query: string) => void;
-  onTripPlanChange?: (tripPlanId: string) => void;
 }
 
 export function ExpenseLedgerControls({
@@ -40,9 +36,7 @@ export function ExpenseLedgerControls({
   members,
   payerFilter,
   query,
-  selectedTripPlanId,
   t,
-  tripPlanOptions,
   onAddExpense,
   onAddPersonalExpense,
   onCategoryFilterChange,
@@ -50,10 +44,11 @@ export function ExpenseLedgerControls({
   onDayFilterChange,
   onPayerFilterChange,
   onQueryChange,
-  onTripPlanChange,
 }: ExpenseLedgerControlsProps) {
   const [showFilters, setShowFilters] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const filterPanelId = "expense-ledger-filters";
+  const actionsPanelId = "expense-ledger-actions";
   return (
     <div className={expenseStyles.commandBarClassName}>
       <div className={expenseStyles.commandBarHeaderClassName}>
@@ -69,18 +64,37 @@ export function ExpenseLedgerControls({
           <Button
             type="button"
             variant="ghost"
+            className={expenseStyles.commandIconButtonClassName}
             aria-controls={filterPanelId}
             aria-expanded={showFilters}
+            title={showFilters ? t.expenses.filters.hideFilters : t.expenses.filters.showFilters}
             onClick={() => setShowFilters((current) => !current)}
           >
-            <Icon name="settings" /> {showFilters ? t.expenses.filters.hideFilters : t.expenses.filters.showFilters}
+            <Icon name="settings" />
+            <span>{t.expenses.filters.showFilters}</span>
           </Button>
-          <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
+          <Button type="button" className={expenseStyles.commandPrimaryButtonClassName} disabled={!canEditExpenses} onClick={onAddExpense}>
             <Icon name="plus" /> {t.expenses.actions.addExpense}
           </Button>
-          <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
-            <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
-          </Button>
+          <div className={expenseStyles.commandMenuClassName}>
+            <Button
+              type="button"
+              variant="ghost"
+              className={expenseStyles.commandIconButtonClassName}
+              aria-controls={actionsPanelId}
+              aria-expanded={showActions}
+              aria-label={t.expenses.table.actions}
+              title={t.expenses.table.actions}
+              onClick={() => setShowActions((current) => !current)}
+            >
+              <Icon name="dots" />
+            </Button>
+            <div className={expenseStyles.commandMenuPanelClassName} id={actionsPanelId} hidden={!showActions}>
+              <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+                <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       <div className={expenseStyles.searchRowClassName}>
@@ -90,12 +104,6 @@ export function ExpenseLedgerControls({
         </label>
       </div>
       <div className={expenseStyles.filterGridClassName} id={filterPanelId} hidden={!showFilters}>
-        <label className={expenseStyles.fieldClassName}>
-          <span>{t.expenses.fields.tripPlan}</span>
-          <Select value={selectedTripPlanId} onChange={(event) => onTripPlanChange?.(event.target.value)}>
-            <SelectOptions options={buildTripPlanSelectOptions(tripPlanOptions)} />
-          </Select>
-        </label>
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.day}</span>
           <Select value={dayFilter} onChange={(event) => onDayFilterChange(event.target.value)}>

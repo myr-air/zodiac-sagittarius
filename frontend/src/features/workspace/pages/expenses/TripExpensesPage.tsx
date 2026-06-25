@@ -3,10 +3,11 @@ import { ExpenseDialogLayer } from "./components/ExpenseDialogLayer";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseMoneySettings } from "./components/ExpenseMoneySettings";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
-import { ExpensePageHeader } from "./components/ExpensePageHeader";
+import { ExpensePageHeader, ExpenseTripPlanPicker } from "./components/ExpensePageHeader";
 import { ExpenseStatementSection } from "./components/ExpenseStatementSection";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
+import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import * as expenseStyles from "./TripExpensesPage.styles";
 import type { TripExpensesPageProps } from "./model/expense-page-types";
 import { useTripExpensesPageState } from "./hooks/use-trip-expenses-page-state";
@@ -23,7 +24,7 @@ export type {
   UpdateExpenseHandler,
 } from "./model/expense-page-types";
 
-type ExpenseFinanceView = "overview" | "spending" | "statement" | "balances" | "categories" | "settings";
+type ExpenseFinanceView = "overview" | "spending" | "account";
 
 export function TripExpensesPage({
   trip,
@@ -43,6 +44,8 @@ export function TripExpensesPage({
   const { locale, t } = useI18n();
   const [activeView, setActiveView] = useState<ExpenseFinanceView>("overview");
   const [pendingDeleteExpenseId, setPendingDeleteExpenseId] = useState<string | null>(null);
+  const planSourceTrip = workspaceTrip ?? trip;
+  const activeTripPlanId = selectedTripPlanId || defaultTripPlanId(planSourceTrip);
   const {
     categoryFilter,
     categorySpend,
@@ -84,14 +87,11 @@ export function TripExpensesPage({
     onCreateExpense,
     onRecordPaybackReminder,
     onUpdateExpense,
-    selectedTripPlanId,
+    selectedTripPlanId: activeTripPlanId,
     trip,
   });
-  const planSourceTrip = workspaceTrip ?? trip;
   const pendingDeleteExpense = trip.expenses.find((expense) => expense.id === pendingDeleteExpenseId) ?? null;
-  const activeTripPlanId =
-    selectedTripPlanId ?? planSourceTrip.mainTripPlanId ?? planSourceTrip.activePlanVariantId ?? "";
-  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "statement", "balances", "categories", "settings"];
+  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "account"];
   const focusFinanceTab = (view: ExpenseFinanceView) => {
     window.requestAnimationFrame(() => {
       document.getElementById(`trip-money-tab-${view}`)?.focus();
@@ -119,10 +119,20 @@ export function TripExpensesPage({
     <section className={expenseStyles.expensesPageClassName} aria-label={t.expenses.pageLabel}>
       <ExpensePageHeader
         canEditExpenses={canEditExpenses}
+        currentTripPlanId={activeTripPlanId}
         locale={locale}
+        onTripPlanChange={onChangeTripPlan}
         t={t}
-        trip={trip}
+        trip={planSourceTrip}
       />
+      <div className={expenseStyles.mobilePlanBarClassName}>
+        <ExpenseTripPlanPicker
+          currentTripPlanId={activeTripPlanId}
+          label={t.expenses.fields.tripPlan}
+          tripPlanOptions={planSourceTrip.tripPlans ?? planSourceTrip.planVariants}
+          onTripPlanChange={onChangeTripPlan}
+        />
+      </div>
 
       <nav
         className={expenseStyles.financeTabsClassName}
@@ -213,53 +223,6 @@ export function TripExpensesPage({
             pendingRefundExpenseIds={pendingRefundExpenseIds}
             payerFilter={payerFilter}
             query={query}
-            selectedTripPlanId={activeTripPlanId}
-            settlementCurrency={settlementCurrency}
-            t={t}
-            trip={trip}
-            workspaceTrip={planSourceTrip}
-            onTripPlanChange={onChangeTripPlan}
-          />
-      </div>
-
-      <div
-        id="trip-money-panel-balances"
-        role="tabpanel"
-        aria-labelledby="trip-money-tab-balances"
-        hidden={activeView !== "balances"}
-      >
-          <ExpenseOverviewPanels
-            view="balances"
-            trip={trip}
-            expenseSummary={expenseSummary}
-            categorySpend={categorySpend}
-            currentMember={currentMember}
-            displayCurrency={displayCurrency}
-          displayExchangeRate={displayExchangeRateNumber}
-          inferredScopeExpenses={inferredScopeExpenses}
-          settlementCurrency={settlementCurrency}
-          canEditExpenses={canEditExpenses}
-          copyState={copyState}
-          onAddExpense={() => setDialogExpense("new")}
-          onAddPersonalExpense={() => setDialogExpense("new-personal")}
-          onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
-            pendingSettlementKeys={pendingSettlementKeys}
-            onRecordSettlement={recordSettlement}
-            onReviewExpense={setDialogExpense}
-          />
-      </div>
-
-      <div
-        id="trip-money-panel-statement"
-        role="tabpanel"
-        aria-labelledby="trip-money-tab-statement"
-        hidden={activeView !== "statement"}
-      >
-          <ExpenseStatementSection
-            currentMember={currentMember}
-            displayCurrency={displayCurrency}
-            displayExchangeRateNumber={displayExchangeRateNumber}
-            locale={locale}
             settlementCurrency={settlementCurrency}
             t={t}
             trip={trip}
@@ -267,38 +230,12 @@ export function TripExpensesPage({
       </div>
 
       <div
-        id="trip-money-panel-categories"
+        id="trip-money-panel-account"
         role="tabpanel"
-        aria-labelledby="trip-money-tab-categories"
-        hidden={activeView !== "categories"}
+        aria-labelledby="trip-money-tab-account"
+        hidden={activeView !== "account"}
       >
-          <ExpenseOverviewPanels
-            view="categories"
-            trip={trip}
-            expenseSummary={expenseSummary}
-            categorySpend={categorySpend}
-            currentMember={currentMember}
-            displayCurrency={displayCurrency}
-          displayExchangeRate={displayExchangeRateNumber}
-          inferredScopeExpenses={inferredScopeExpenses}
-          settlementCurrency={settlementCurrency}
-          canEditExpenses={canEditExpenses}
-          copyState={copyState}
-          onAddExpense={() => setDialogExpense("new")}
-          onAddPersonalExpense={() => setDialogExpense("new-personal")}
-          onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
-            pendingSettlementKeys={pendingSettlementKeys}
-            onRecordSettlement={recordSettlement}
-            onReviewExpense={setDialogExpense}
-          />
-      </div>
-
-      <div
-        id="trip-money-panel-settings"
-        role="tabpanel"
-        aria-labelledby="trip-money-tab-settings"
-        hidden={activeView !== "settings"}
-      >
+        <div className={expenseStyles.financeViewClassName}>
           <ExpenseMoneySettings
             copyState={copyState}
             displayCurrency={displayCurrency}
@@ -310,13 +247,23 @@ export function TripExpensesPage({
             onDisplayExchangeRateChange={setDisplayExchangeRate}
             onDownloadCsv={downloadCsv}
           />
+          <ExpenseStatementSection
+            currentMember={currentMember}
+            displayCurrency={displayCurrency}
+            displayExchangeRateNumber={displayExchangeRateNumber}
+            locale={locale}
+            settlementCurrency={settlementCurrency}
+            t={t}
+            trip={trip}
+          />
+        </div>
       </div>
 
       <ExpenseDialogLayer
         apiBaseUrl={apiBaseUrl}
         currentMember={currentMember}
         dialogExpense={dialogExpense}
-        selectedTripPlanId={selectedTripPlanId}
+        selectedTripPlanId={activeTripPlanId}
         settlementCurrency={settlementCurrency}
         trip={trip}
         onClose={() => setDialogExpense(null)}

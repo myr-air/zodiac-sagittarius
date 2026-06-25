@@ -36,7 +36,7 @@ const webVersion: WebVersionInfo = {
   runtimeMode: "api",
   schemaVersion: "frontend-static",
   service: "sagittarius-web",
-  version: "0.1.5",
+  version: "0.3.0",
 };
 
 const apiVersion: ApiVersionInfo = {
@@ -45,7 +45,7 @@ const apiVersion: ApiVersionInfo = {
   environment: "production",
   schemaVersion: "0019_photo_album_links",
   service: "sagittarius-api",
-  version: "0.1.5",
+  version: "0.2.0",
 };
 
 describe("AboutAppPage model", () => {
@@ -82,7 +82,7 @@ describe("AboutAppPage model", () => {
         ],
         icon: "layout",
         label: "Web app version",
-        value: "sagittarius-web v0.1.5",
+        value: "sagittarius-web v0.3.0",
       },
       {
         details: [
@@ -92,7 +92,7 @@ describe("AboutAppPage model", () => {
         icon: "cloud",
         label: "API version",
         muted: false,
-        value: "sagittarius-api v0.1.5",
+        value: "sagittarius-api v0.2.0",
       },
     ]);
 
