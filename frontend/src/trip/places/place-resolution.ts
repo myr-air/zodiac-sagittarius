@@ -32,14 +32,24 @@ export function buildMapLink(place: string): string {
 }
 
 export function mapResolutionPlaceHint(item: ItineraryItem): string {
+  return mapResolutionPlaceHints(item)[0] ?? "";
+}
+
+export function mapResolutionPlaceHints(item: ItineraryItem): string[] {
   if (item.activityType === "travel") {
-    return (
-      readItineraryDetailString(item.details, "to") ||
+    return uniqueCompactText([
+      readItineraryDetailString(item.details, "to"),
       item.place ||
-      readItineraryDetailString(item.details, "from")
-    ).trim();
+        readItineraryDetailString(item.details, "location") ||
+        readItineraryDetailString(item.details, "place"),
+      readItineraryDetailString(item.details, "from"),
+    ]);
   }
-  return item.place.trim();
+  return uniqueCompactText([
+    item.place,
+    readItineraryDetailString(item.details, "location"),
+    readItineraryDetailString(item.details, "place"),
+  ]);
 }
 
 export function mapResolutionActivity(item: ItineraryItem): string {
@@ -134,4 +144,14 @@ export function locationFieldsFromCandidate(
 
 function compactText(parts: string[]): string {
   return parts.join(" ").split(/\s+/).filter(Boolean).join(" ");
+}
+
+function uniqueCompactText(parts: string[]): string[] {
+  return Array.from(
+    new Set(
+      parts
+        .map((part) => compactText([part]))
+        .filter(Boolean),
+    ),
+  );
 }

@@ -15,6 +15,7 @@ export {
   locationFieldsFromCandidate,
   mapResolutionActivity,
   mapResolutionPlaceHint,
+  mapResolutionPlaceHints,
   readItineraryDetailString,
   resolveStopPlace,
 } from "./place-resolution";

@@ -5,6 +5,7 @@ import {
   locationFieldsFromCandidate,
   mapResolutionActivity,
   mapResolutionPlaceHint,
+  mapResolutionPlaceHints,
   readItineraryDetailString,
   resolveStopPlace,
 } from "@/src/trip/places";
@@ -43,6 +44,38 @@ describe("place resolution helpers", () => {
 
     expect(mapResolutionPlaceHint(item)).toBe("HKG");
     expect(mapResolutionActivity(item)).toBe("Airport transfer from BKK to HKG");
+  });
+
+  it("keeps all transit endpoints as map resolution hints", () => {
+    const item = buildTripFixtureItineraryItem({
+      activity: "Airport transfer",
+      activityType: "travel",
+      place: "Hong Kong Airport",
+      details: {
+        from: "Suvarnabhumi Airport",
+        location: "Chek Lap Kok",
+        to: "HKG",
+      },
+    });
+
+    expect(mapResolutionPlaceHint(item)).toBe("HKG");
+    expect(mapResolutionPlaceHints(item)).toEqual([
+      "HKG",
+      "Hong Kong Airport",
+      "Suvarnabhumi Airport",
+    ]);
+  });
+
+  it("uses place and location details for non-travel map resolution", () => {
+    const item = buildTripFixtureItineraryItem({
+      activity: "Dinner",
+      activityType: "food",
+      place: "",
+      details: { location: "Central Pier", place: "Pier 7" },
+    });
+
+    expect(mapResolutionPlaceHint(item)).toBe("Central Pier");
+    expect(mapResolutionPlaceHints(item)).toEqual(["Central Pier", "Pier 7"]);
   });
 
   it("builds map place resolution requests for itinerary rows", () => {

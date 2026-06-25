@@ -17,6 +17,7 @@ const HIGH_CONFIDENCE_THRESHOLD: f64 = 0.85;
 const NOMINATIM_DEFAULT_BASE_URL: &str = "https://nominatim.openstreetmap.org";
 const NOMINATIM_MIN_INTERVAL: Duration = Duration::from_secs(1);
 const OPEN_METEO_GEOCODE_BASE_URL: &str = "https://geocoding-api.open-meteo.com/v1";
+const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
 static NOMINATIM_LAST_REQUEST: LazyLock<Mutex<Option<Instant>>> =
     LazyLock::new(|| Mutex::new(None));
@@ -66,6 +67,46 @@ pub struct ResolvePlaceResponse {
     pub candidates: Vec<PlaceCandidate>,
 }
 
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryRequest<'a> {
+    model: &'a str,
+    messages: Vec<OpenRouterPlaceQueryMessage<'a>>,
+    temperature: f64,
+    response_format: OpenRouterPlaceQueryResponseFormat,
+}
+
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryMessage<'a> {
+    role: &'a str,
+    content: String,
+}
+
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryResponseFormat {
+    #[serde(rename = "type")]
+    response_type: &'static str,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryResponse {
+    choices: Vec<OpenRouterPlaceQueryChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryChoice {
+    message: OpenRouterPlaceQueryResponseMessage,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryResponseMessage {
+    content: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryPayload {
+    queries: Vec<String>,
+}
+
 pub async fn resolve_place(
     pool: &PgPool,
     trip_id: Uuid,
@@ -90,7 +131,7 @@ pub async fn resolve_place(
 
     let country_codes = destination_country_codes(&request.countries);
     let route_bounds = route_candidate_bounds(&request);
-    let queries = place_queries(&request);
+    let queries = resolved_place_queries(&request).await;
     for query in &queries {
         let normalized_query = normalized_destination_query(query, &country_codes);
         if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await?
@@ -623,6 +664,92 @@ fn place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
     queries
 }
 
+async fn resolved_place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
+    merge_place_queries(
+        openrouter_place_queries(request).await.unwrap_or_default(),
+        place_queries(request),
+    )
+}
+
+fn merge_place_queries(primary: Vec<String>, fallback: Vec<String>) -> Vec<String> {
+    let mut queries = Vec::new();
+    for query in primary.into_iter().chain(fallback) {
+        let query = compact_query(&[&query]);
+        if query.is_empty() || queries.contains(&query) {
+            continue;
+        }
+        queries.push(query);
+    }
+    queries
+}
+
+async fn openrouter_place_queries(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
+    let api_key = std::env::var("OPENROUTER_API_KEY")
+        .or_else(|_| std::env::var("SAGITTARIUS_OPENROUTER_API_KEY"))
+        .ok()?;
+    let model = std::env::var("OPENROUTER_MODEL")
+        .or_else(|_| std::env::var("SAGITTARIUS_AI_MODEL"))
+        .unwrap_or_else(|_| "openai/gpt-5.2".to_string());
+    let client = reqwest::Client::new();
+    let mut builder = client
+        .post(OPENROUTER_CHAT_COMPLETIONS_URL)
+        .bearer_auth(api_key)
+        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
+        .json(&OpenRouterPlaceQueryRequest {
+            model: &model,
+            temperature: 0.0,
+            response_format: OpenRouterPlaceQueryResponseFormat {
+                response_type: "json_object",
+            },
+            messages: vec![
+                OpenRouterPlaceQueryMessage {
+                    role: "system",
+                    content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Include transit from/to endpoints, place, and location hints when present. Do not invent coordinates.".to_string(),
+                },
+                OpenRouterPlaceQueryMessage {
+                    role: "user",
+                    content: openrouter_place_query_prompt(request),
+                },
+            ],
+        });
+    if let Ok(site_url) = std::env::var("OPENROUTER_SITE_URL") {
+        builder = builder.header("HTTP-Referer", site_url);
+    }
+    if let Ok(site_name) = std::env::var("OPENROUTER_SITE_NAME") {
+        builder = builder.header("X-Title", site_name);
+    }
+    let response = builder.send().await.ok()?;
+    if !response.status().is_success() {
+        return None;
+    }
+    let raw = response.json::<OpenRouterPlaceQueryResponse>().await.ok()?;
+    let content = raw.choices.first()?.message.content.as_str();
+    parse_openrouter_place_queries(content)
+}
+
+fn openrouter_place_query_prompt(request: &ResolvePlaceRequest) -> String {
+    format!(
+        "activity: {}\nplaceHint: {}\ndestination: {}\ncountries: {}\nday: {}",
+        request.activity,
+        request.place_hint,
+        request.destination_label,
+        request.countries.join(", "),
+        request.day
+    )
+}
+
+fn parse_openrouter_place_queries(content: &str) -> Option<Vec<String>> {
+    let payload = serde_json::from_str::<OpenRouterPlaceQueryPayload>(content).ok()?;
+    let queries = payload
+        .queries
+        .into_iter()
+        .map(|query| compact_query(&[&query]))
+        .filter(|query| !query.is_empty())
+        .take(3)
+        .collect::<Vec<_>>();
+    (!queries.is_empty()).then_some(queries)
+}
+
 fn full_place_query(request: &ResolvePlaceRequest) -> String {
     compact_query(&[
         &request.activity,
@@ -724,6 +851,57 @@ mod tests {
             ]
         );
         assert_eq!(nominatim_country_codes(&request().countries), "hk,th");
+    }
+
+    #[test]
+    fn openrouter_queries_are_merged_before_fallback_queries() {
+        let queries = merge_place_queries(
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+            ],
+            place_queries(&request()),
+        );
+
+        assert_eq!(
+            queries,
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+                "near Elements".to_string(),
+                "near Elements Hong Kong".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn openrouter_place_query_parser_keeps_three_compact_queries() {
+        let queries = parse_openrouter_place_queries(
+            r#"{"queries":["  HKG  Hong Kong International Airport  ","Chek Lap Kok Hong Kong","Airport Express Hong Kong","extra"]}"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            queries,
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Chek Lap Kok Hong Kong".to_string(),
+                "Airport Express Hong Kong".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn openrouter_place_query_prompt_preserves_transit_context() {
+        let mut request = request();
+        request.activity = "Airport transfer from Suvarnabhumi Airport to HKG".to_string();
+        request.place_hint = "Hong Kong Airport".to_string();
+
+        let prompt = openrouter_place_query_prompt(&request);
+
+        assert!(prompt.contains("from Suvarnabhumi Airport to HKG"));
+        assert!(prompt.contains("placeHint: Hong Kong Airport"));
+        assert!(prompt.contains("countries: HK, Thailand"));
     }
 
     #[test]
