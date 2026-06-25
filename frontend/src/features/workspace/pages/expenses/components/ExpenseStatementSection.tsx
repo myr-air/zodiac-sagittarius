@@ -166,8 +166,8 @@ export function ExpenseStatementSection({
                       </tr>
                       {group.rows.map((row) => (
                         <tr key={row.id}>
-                          <td>
-                            <div className={expenseStyles.statementItemCellClassName}>
+                          <td className={expenseStyles.statementItemCellClassName}>
+                            <div className={expenseStyles.statementItemContentClassName}>
                               <strong>{row.title}</strong>
                               {row.contextLabel ? <span>{row.contextLabel}</span> : null}
                               <span>{row.includedLabel}</span>

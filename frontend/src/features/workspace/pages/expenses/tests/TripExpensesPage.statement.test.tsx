@@ -36,6 +36,21 @@ describe("TripExpensesPage statement", () => {
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 
+  it("keeps the personal statement item column on the same cell shell as the row", async () => {
+    const user = userEvent.setup();
+    renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /รายการบัญชี/i }));
+
+    const personalStatement = within(screen.getByRole("tabpanel", { name: /รายการบัญชี/i }))
+      .getByRole("table", { name: /รายการบัญชีส่วนตัวของ Travel Mate/i });
+    const itemContent = within(personalStatement).getByText("Luk Yu dinner").closest("div");
+    const itemCell = itemContent?.closest("td");
+
+    expect(itemCell).toHaveClass("text-xs", "font-bold", "leading-5", "text-(--color-text-muted)");
+    expect(itemContent).toHaveClass("grid", "min-w-0", "gap-1");
+  });
+
   it("keeps setup tools out of the statement tab", async () => {
     const user = userEvent.setup();
     renderExpenses();
