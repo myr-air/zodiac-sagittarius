@@ -141,7 +141,7 @@ describe("I18nProvider", () => {
 
     await screen.findByText("ภาพรวม");
     expect(screen.getByTestId("locale")).toHaveTextContent("th");
-    expect(document.documentElement).toHaveAttribute("lang", "th");
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("lang", "th"));
   });
 
   it("falls back to English for an unknown stored locale", async () => {

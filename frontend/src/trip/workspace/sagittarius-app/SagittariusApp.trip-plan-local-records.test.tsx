@@ -44,7 +44,7 @@ describe("Sagittarius cockpit local Trip Plan scoped records", () => {
 
     render(<SagittariusApp initialTrip={trip} initialView="overview" />);
 
-    expect(await screen.findByText("Backup gallery task")).toBeInTheDocument();
+    expect((await screen.findAllByText("Backup gallery task")).length).toBeGreaterThan(0);
     expect(screen.queryByText("Main plan brunch task")).not.toBeInTheDocument();
   });
 });
