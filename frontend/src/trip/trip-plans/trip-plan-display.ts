@@ -85,10 +85,12 @@ export function findTripPlanById(
 }
 
 export function defaultTripPlanId(trip: TripPlanDisplaySource): string {
+  const plans = tripPlanOptions(trip);
   return (
     trip.mainTripPlanId ||
+    plans.find((plan) => tripPlanStatus(plan) === "main")?.id ||
     trip.activePlanVariantId ||
-    tripPlanOptions(trip)[0]?.id ||
+    plans[0]?.id ||
     ""
   );
 }
