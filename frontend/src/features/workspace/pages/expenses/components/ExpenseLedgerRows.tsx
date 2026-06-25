@@ -1,6 +1,6 @@
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import type { Expense, Member, Trip } from "@/src/trip/types";
-import { Button, IconButton } from "@/src/ui";
+import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import {
@@ -42,9 +42,7 @@ interface ExpenseLedgerRowsProps {
       calculation: string;
       memberMath: string;
       originalAmount: string;
-      hideDetails(input: { title: string }): string;
       paidBy: string;
-      showDetails(input: { title: string }): string;
       split: string;
       source: string;
       sourceAndMath: string;
@@ -76,7 +74,7 @@ export function ExpenseLedgerRows({
     <tbody className={expenseStyles.tableBodyClassName}>
       {dayGroups.flatMap((group) => [
         <tr className={expenseStyles.dayGroupRowClassName} key={`${group.id}-heading`}>
-          <td colSpan={6}>
+          <td colSpan={5}>
             <span className={expenseStyles.dayGroupCellClassName}>
               <span>{group.label}</span>
               <strong>{group.totalLabel}</strong>
@@ -142,28 +140,10 @@ export function ExpenseLedgerRows({
                   {linkedItem?.activity ?? tableCopy.uncategorizedStop}
                 </span>
               </td>
-              <td>
-                <span className={expenseStyles.actionCellClassName}>
-                  <IconButton type="button" aria-controls={detailId} aria-expanded={selected} aria-label={(selected ? tableCopy.details.hideDetails : tableCopy.details.showDetails)({ title: expense.title })} onClick={(event) => {
-                    event.stopPropagation();
-                    onSelectExpense(expense);
-                  }}>
-                    <Icon name="eye" />
-                  </IconButton>
-                  {canEditThisExpense ? (
-                    <IconButton type="button" aria-label={tableCopy.actions.editExpense({ title: expense.title })} onClick={(event) => {
-                      event.stopPropagation();
-                      onEditExpense(expense);
-                    }}>
-                      <Icon name="edit" />
-                    </IconButton>
-                  ) : null}
-                </span>
-              </td>
             </tr>,
             selected ? (
               <tr className={expenseStyles.ledgerDetailRowClassName} key={`${expense.id}-details`}>
-                <td colSpan={6} id={detailId}>
+                <td colSpan={5} id={detailId}>
                   <div className={expenseStyles.ledgerDetailPanelClassName}>
                     <div className={expenseStyles.ledgerDetailHeaderClassName}>
                       <dl className={expenseStyles.ledgerDetailGridClassName}>
@@ -250,7 +230,7 @@ export function ExpenseLedgerRows({
       ])}
       {!dayGroups.length ? (
         <tr>
-          <td colSpan={6}>{tableCopy.empty}</td>
+          <td colSpan={5}>{tableCopy.empty}</td>
         </tr>
       ) : null}
     </tbody>

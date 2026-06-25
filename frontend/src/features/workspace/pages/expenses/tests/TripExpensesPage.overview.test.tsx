@@ -47,6 +47,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
+    expect(within(ledger).queryByRole("columnheader", { name: "คำสั่ง" })).not.toBeInTheDocument();
     const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
       .find((button) => button.textContent?.includes("Dim Dim Sum brunch"));
     expect(rowButton).toBeInstanceOf(HTMLButtonElement);

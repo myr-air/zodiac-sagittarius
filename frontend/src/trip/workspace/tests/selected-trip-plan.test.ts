@@ -16,7 +16,7 @@ describe("selected trip plan workspace state", () => {
     window.history.replaceState(null, "", tripRoutes.itinerary(tripFixture.trip.id));
   });
 
-  it("resolves preferred, URL, session, and default trip plan ids in order", () => {
+  it("resolves preferred and URL trip plan ids before the main default", () => {
     const trip = tripWithPlans();
 
     expect(initialSelectedTripPlanId(trip)).toBe("plan-main");
@@ -35,7 +35,7 @@ describe("selected trip plan workspace state", () => {
       selectedTripPlanStorageKey(trip.id),
       "plan-rain",
     );
-    expect(resolveSelectedTripPlanId(trip)).toBe("plan-rain");
+    expect(resolveSelectedTripPlanId(trip)).toBe("plan-main");
 
     window.sessionStorage.setItem(
       selectedTripPlanStorageKey(trip.id),

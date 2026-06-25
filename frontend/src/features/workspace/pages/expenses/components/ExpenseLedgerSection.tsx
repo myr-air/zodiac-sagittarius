@@ -140,12 +140,11 @@ export function ExpenseLedgerSection({
           <div className={expenseStyles.tableWrapClassName}>
             <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
               <colgroup>
-                <col className="w-[32%]" />
+                <col className="w-[36%]" />
                 <col className="w-[16%]" />
                 <col className="w-[18%]" />
                 <col className="w-[12%]" />
-                <col className="w-[14%]" />
-                <col className="w-[8%]" />
+                <col className="w-[18%]" />
               </colgroup>
               <thead className={expenseStyles.tableHeaderClassName}>
                 <tr>
@@ -154,7 +153,6 @@ export function ExpenseLedgerSection({
                   <th>{t.expenses.table.paidBy}</th>
                   <th>{t.expenses.table.split}</th>
                   <th>{t.expenses.table.linkedStop}</th>
-                  <th>{t.expenses.table.actions}</th>
                 </tr>
               </thead>
               <ExpenseLedgerRows
