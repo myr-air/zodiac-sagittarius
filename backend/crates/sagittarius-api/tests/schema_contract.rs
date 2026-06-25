@@ -74,6 +74,38 @@ async fn migration_creates_vertical_slice_indexes(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn expenses_schema_stores_settlement_allocations(pool: sqlx::PgPool) {
+    let columns: Vec<(String, String)> = sqlx::query_as(
+        "select column_name::text, data_type::text
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'expenses'
+           and column_name = 'settlement_allocations'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        columns,
+        vec![("settlement_allocations".to_string(), "jsonb".to_string())]
+    );
+
+    let constraints: Vec<String> = sqlx::query_scalar(
+        "select conname::text
+         from pg_constraint
+         where conname = 'expenses_settlement_allocations_array'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        constraints,
+        vec!["expenses_settlement_allocations_array".to_string()]
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn itinerary_schema_stores_time_windows(pool: sqlx::PgPool) {
     let columns: Vec<(String, String)> = sqlx::query_as(
         "select column_name::text, data_type::text

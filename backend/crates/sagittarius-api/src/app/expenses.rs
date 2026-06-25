@@ -73,6 +73,15 @@ pub async fn create_expense(
         request.itinerary_item_id,
     )
     .await?;
+    validate_settlement_allocations(
+        &mut tx,
+        trip_id,
+        &request.category,
+        request.amount_minor,
+        request.exchange_rate_to_settlement_currency.unwrap_or(1.0),
+        request.settlement_allocations.as_ref(),
+    )
+    .await?;
 
     let record = db::expense_queries::insert_expense(
         &mut tx,
@@ -255,6 +264,20 @@ pub async fn patch_expense(
             &existing.stored_value_card_name,
         ),
     )?;
+    validate_settlement_allocations(
+        &mut tx,
+        trip_id,
+        request.category.as_deref().unwrap_or(&existing.category),
+        request.amount_minor.unwrap_or(existing.amount_minor),
+        request
+            .exchange_rate_to_settlement_currency
+            .unwrap_or(existing.exchange_rate_to_settlement_currency),
+        request
+            .settlement_allocations
+            .as_ref()
+            .or(Some(&existing.settlement_allocations)),
+    )
+    .await?;
 
     let updated = db::expense_queries::update_expense(
         &mut tx,
@@ -383,6 +406,75 @@ async fn validate_expense_links(
         if !db::queries::itinerary_item_exists_for_trip(tx, trip_id, item_id).await? {
             return Err(ServiceError::NotFound);
         }
+    }
+
+    Ok(())
+}
+
+async fn validate_settlement_allocations(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    category: &str,
+    amount_minor: i32,
+    exchange_rate_to_settlement_currency: f64,
+    allocations: Option<&serde_json::Value>,
+) -> Result<(), ServiceError> {
+    let Some(allocations) = allocations else {
+        return Ok(());
+    };
+    let Some(allocation_rows) = allocations.as_array() else {
+        return Ok(());
+    };
+    if allocation_rows.is_empty() {
+        return Ok(());
+    }
+    if category != "settlement" {
+        return Err(ServiceError::InvalidRequest(
+            "settlement allocations are only valid for settlement expenses",
+        ));
+    }
+
+    let mut expense_ids = Vec::new();
+    let mut member_ids = Vec::new();
+    let mut total_allocated = 0.0_f64;
+    for allocation in allocation_rows {
+        let Some(allocation) = allocation.as_object() else {
+            continue;
+        };
+        if let Some(expense_id) = allocation
+            .get("expenseId")
+            .and_then(serde_json::Value::as_str)
+            .and_then(|value| Uuid::parse_str(value).ok())
+        {
+            expense_ids.push(expense_id);
+        }
+        if let Some(member_id) = allocation
+            .get("memberId")
+            .and_then(serde_json::Value::as_str)
+            .and_then(|value| Uuid::parse_str(value).ok())
+        {
+            member_ids.push(member_id);
+        }
+        total_allocated += allocation
+            .get("amount")
+            .and_then(serde_json::Value::as_f64)
+            .unwrap_or(0.0);
+    }
+
+    if !db::expense_queries::expense_ids_exist_for_trip(tx, trip_id, &expense_ids).await? {
+        return Err(ServiceError::NotFound);
+    }
+    for member_id in member_ids {
+        if !db::queries::trip_member_exists(tx, trip_id, member_id).await? {
+            return Err(ServiceError::NotFound);
+        }
+    }
+
+    let settlement_total = (f64::from(amount_minor) / 100.0) * exchange_rate_to_settlement_currency;
+    if total_allocated > settlement_total + 0.01 {
+        return Err(ServiceError::InvalidRequest(
+            "settlement allocations must not exceed settlement amount",
+        ));
     }
 
     Ok(())

@@ -48,6 +48,9 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../../../migrations/0030_itinerary_end_offset_sanitize.sql"),
     include_str!("../../../../migrations/0031_itinerary_activity_type_default.sql"),
     include_str!("../../../../migrations/0032_itinerary_activity_subtype.sql"),
+    include_str!("../../../../migrations/0033_expense_spent_on.sql"),
+    include_str!("../../../../migrations/0034_expense_stored_value_cards.sql"),
+    include_str!("../../../../migrations/0035_expense_settlement_allocations.sql"),
 ];
 
 #[tokio::main]

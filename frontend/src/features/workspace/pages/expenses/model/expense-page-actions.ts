@@ -72,7 +72,12 @@ export function buildRefundExpenseInput({
       .map(([memberId, amount]) => ({
         expenseId: expense.id,
         memberId,
-        amount,
+        amount: roundMoney(
+          convertToSettlementCurrency(
+            amount,
+            expenseExchangeRate(expense, settlementCurrency),
+          ),
+        ),
       })),
   };
 }
@@ -95,7 +100,7 @@ function settlementAllocationsForSuggestion({
   const debtExpenses = [...trip.expenses]
     .filter((expense) =>
       expense.category !== "settlement" &&
-      expense.paidBy === suggestion.to &&
+      expense.paidBy !== suggestion.from &&
       (expense.splits[suggestion.from] ?? 0) > 0
     );
 

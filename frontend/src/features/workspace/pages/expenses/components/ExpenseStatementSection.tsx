@@ -175,9 +175,13 @@ export function ExpenseStatementSection({
                 </tbody>
               </table>
             </div>
-            <div className={expenseStyles.personalStatementMobileListClassName}>
+            <ul className={expenseStyles.personalStatementMobileListClassName}>
               {personalRows.map((row) => (
-                <article className={expenseStyles.personalStatementMobileRowClassName} key={row.id}>
+                <li
+                  aria-label={`${row.title} · ${row.amountLabel} · ${row.dateLabel}`}
+                  className={expenseStyles.personalStatementMobileRowClassName}
+                  key={row.id}
+                >
                   <div className={expenseStyles.personalStatementMobileTopClassName}>
                     <div className={expenseStyles.statementMobileTitleClassName}>
                       <strong>{row.title}</strong>
@@ -203,9 +207,9 @@ export function ExpenseStatementSection({
                       <dd>{row.paidWithLabel}</dd>
                     </div>
                   </dl>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           </>
         ) : (
           <p className={expenseStyles.statementEmptyClassName}>{t.expenses.statement.personal.empty}</p>
@@ -303,9 +307,13 @@ export function ExpenseStatementSection({
             </table>
           </div>
 
-          <div className={expenseStyles.statementMobileListClassName}>
+          <ul className={expenseStyles.statementMobileListClassName}>
             {filteredRows.map((row) => (
-              <article className={expenseStyles.statementMobileRowClassName} key={row.id}>
+              <li
+                aria-label={`${row.title} · ${row.amountLabel} · ${row.dateLabel}`}
+                className={expenseStyles.statementMobileRowClassName}
+                key={row.id}
+              >
                 <div className={expenseStyles.statementMobileTopClassName}>
                   <div className={expenseStyles.statementMobileTitleClassName}>
                     <strong>{row.title}</strong>
@@ -346,9 +354,9 @@ export function ExpenseStatementSection({
                     </div>
                   </dl>
                 </details>
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         </>
       ) : (
         <p className={expenseStyles.statementEmptyClassName}>{t.expenses.statement.empty}</p>

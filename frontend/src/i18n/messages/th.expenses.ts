@@ -187,9 +187,9 @@ export const thExpensesMessages = {
           date: "วัน",
           item: "ค่าอะไร",
           flow: "เงินไหลแบบไหน",
-          relatedMember: "ใครออกให้",
-          paidWith: "จ่ายคืน/เคลียร์ด้วยอะไร",
-          amount: "ยอดของเรา",
+          relatedMember: "คู่บัญชี",
+          paidWith: "วิธีเคลียร์",
+          amount: "ยอดบัญชี",
         },
         flow: {
           ownShare: "ใช้ส่วนตัว",

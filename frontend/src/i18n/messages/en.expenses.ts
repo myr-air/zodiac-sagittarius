@@ -187,9 +187,9 @@ export const enExpensesMessages = {
           date: "Date",
           item: "What it was",
           flow: "Money flow",
-          relatedMember: "Who covered it",
-          paidWith: "How it was paid",
-          amount: "Your amount",
+          relatedMember: "Counterparty",
+          paidWith: "Cleared with",
+          amount: "Account amount",
         },
         flow: {
           ownShare: "Personal spend",
