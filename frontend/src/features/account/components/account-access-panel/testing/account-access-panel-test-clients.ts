@@ -40,6 +40,7 @@ export function createAccountClient(): AccountApiClient {
     startEmailLogin: vi.fn().mockResolvedValue({ challengeId: "login-challenge", expiresAt: "2026-05-30T09:00:00.000Z" }),
     finishEmailLogin: vi.fn().mockResolvedValue(createTrustedAccountSession()),
     finishPasswordLogin: vi.fn().mockResolvedValue(createTrustedAccountSession()),
+    restoreSession: vi.fn().mockResolvedValue(createTrustedAccountSession()),
     loadSettings: vi.fn().mockResolvedValue(accountSettings),
     updateSettings: vi.fn().mockImplementation((_sessionToken: string, request: AccountSettingsUpdateRequest) =>
       Promise.resolve({

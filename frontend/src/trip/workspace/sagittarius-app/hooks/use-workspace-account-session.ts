@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import type { AccountSession } from "@/src/account/api-client";
+import type { AccountApiClient, AccountSession } from "@/src/account/api-client";
 import {
   loadPersistedAccountSession,
   persistAccountSession,
 } from "@/src/account/session-storage";
 
-export function useWorkspaceAccountSession() {
+export function useWorkspaceAccountSession(accountClient: AccountApiClient) {
   const [accountSession, setAccountSession] = useState<AccountSession | null>(
     null,
   );
@@ -13,12 +13,30 @@ export function useWorkspaceAccountSession() {
 
   useEffect(() => {
     if (accountSessionLoaded) return;
+    let cancelled = false;
     const timeout = window.setTimeout(() => {
-      setAccountSession(loadPersistedAccountSession());
-      setAccountSessionLoaded(true);
+      const legacySession = loadPersistedAccountSession();
+      if (legacySession) {
+        setAccountSession(legacySession);
+        setAccountSessionLoaded(true);
+        return;
+      }
+      accountClient.restoreSession()
+        .then((session) => {
+          if (cancelled) return;
+          setAccountSession(session);
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          if (cancelled) return;
+          setAccountSessionLoaded(true);
+        });
     }, 0);
-    return () => window.clearTimeout(timeout);
-  }, [accountSessionLoaded]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [accountClient, accountSessionLoaded]);
 
   useEffect(() => {
     if (!accountSessionLoaded) return;

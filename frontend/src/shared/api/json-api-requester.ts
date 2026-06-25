@@ -12,9 +12,11 @@ export type JsonApiRequester = <T>(
 export function createJsonApiRequester({
   baseUrl = "",
   fetcher = fetch,
+  credentials,
   createError,
 }: {
   baseUrl?: string;
+  credentials?: RequestCredentials;
   fetcher?: typeof fetch;
   createError: (input: JsonApiErrorInput) => Error;
 }): JsonApiRequester {
@@ -26,6 +28,7 @@ export function createJsonApiRequester({
   ): Promise<T> {
     const response = await fetcher(`${normalizedBaseUrl}${path}`, {
       ...init,
+      credentials: init.credentials ?? credentials,
       headers: {
         "content-type": "application/json",
         ...(init.headers ?? {}),
