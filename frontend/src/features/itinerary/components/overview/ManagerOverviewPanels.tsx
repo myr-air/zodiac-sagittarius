@@ -32,22 +32,6 @@ export function ManagerOverviewPanels({
 
   return (
     <>
-      <OverviewFocusSection
-        ariaLabel={t.overview.sections.todayFocus}
-        heading={focusTodayHeading}
-        trip={trip}
-        items={items}
-        nextStop={nextStop}
-        nextDayItems={nextDayItems}
-        startDate={trip.startDate}
-        locale={locale}
-        groupSpendLabel={groupSpendLabel}
-        isCompleted={isCompleted}
-        focusListLabel={t.overview.sections.todayFocusStops}
-        detailFallback={nextStop ? focusSectionDetailFallback : t.overview.focusDetails.managerFallback}
-        emptyText={t.overview.empty.itinerary}
-      />
-
       <ManagerReadinessPanel
         ariaLabel={t.overview.sections.readiness}
         myChecklistLabel={t.overview.readiness.myChecklist}
@@ -57,15 +41,6 @@ export function ManagerOverviewPanels({
         sharedChecklistLabel={t.overview.readiness.sharedChecklist}
         sharedOpenTasks={sharedOpenTasks}
         title={t.overview.headings.readiness}
-      />
-
-      <OverviewExpenseShortcut
-        icon="plus"
-        title={t.overview.generalExpense}
-        value={t.overview.money.generalExamples}
-        detail={t.overview.money.generalDetail}
-        ariaLabel={t.overview.generalExpense}
-        onClick={openExpenses}
       />
 
       <ManagerTaskChecklistPanel
@@ -93,6 +68,31 @@ export function ManagerOverviewPanels({
         title={t.overview.headings.tripChecklist}
         trip={trip}
         tripLabel={t.overview.filters.trip}
+      />
+
+      <OverviewFocusSection
+        ariaLabel={t.overview.sections.todayFocus}
+        heading={focusTodayHeading}
+        trip={trip}
+        items={items}
+        nextStop={nextStop}
+        nextDayItems={nextDayItems}
+        startDate={trip.startDate}
+        locale={locale}
+        groupSpendLabel={groupSpendLabel}
+        isCompleted={isCompleted}
+        focusListLabel={t.overview.sections.todayFocusStops}
+        detailFallback={nextStop ? focusSectionDetailFallback : t.overview.focusDetails.managerFallback}
+        emptyText={t.overview.empty.itinerary}
+      />
+
+      <OverviewExpenseShortcut
+        icon="plus"
+        title={t.overview.generalExpense}
+        value={t.overview.money.generalExamples}
+        detail={t.overview.money.generalDetail}
+        ariaLabel={t.overview.generalExpense}
+        onClick={openExpenses}
       />
     </>
   );

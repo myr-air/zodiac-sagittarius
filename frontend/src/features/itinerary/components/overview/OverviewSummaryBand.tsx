@@ -9,10 +9,9 @@ import type {
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { formatTripRange } from "@/src/shared/components/page-header";
-import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
 import type { OverviewRoleLens } from "@/src/features/itinerary/domain/overview";
 import { Icon, type IconName } from "@/src/ui/icons";
-import { HighlightBoard, type HighlightBoardProps } from "./OverviewHighlightBoard";
+import type { HighlightBoardProps } from "./OverviewHighlightBoard";
 import { OverviewHero, type OverviewHeroProps } from "./OverviewHero";
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
@@ -188,18 +187,6 @@ export function OverviewSummaryBand({
         </ul>
       </section>
 
-      <HighlightBoard
-        items={highlightItems}
-        startDate={trip.startDate}
-        locale={locale}
-        emptyMessage={
-          isManagerLens
-            ? t.overview.empty.highlights
-            : photoBoardEmptyMessage(t.overview.empty.highlights)
-        }
-        title={t.overview.highlightBoard.title}
-        subtitle={t.overview.highlightBoard.subtitle}
-      />
     </div>
   );
 }

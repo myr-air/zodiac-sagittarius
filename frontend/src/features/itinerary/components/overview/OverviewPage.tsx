@@ -2,6 +2,8 @@ import {
   overviewGridClassName,
   overviewPageClassName,
 } from "./overview-page.styles";
+import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
+import { HighlightBoard } from "./OverviewHighlightBoard";
 import { OverviewLensPanels } from "./OverviewLensPanels";
 import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
@@ -134,6 +136,19 @@ export function OverviewPage(props: OverviewPageProps) {
           visibleTasks={visibleTasks}
         />
       </div>
+
+      <HighlightBoard
+        items={highlightItems}
+        startDate={trip.startDate}
+        locale={locale}
+        emptyMessage={
+          isManagerLens
+            ? t.overview.empty.highlights
+            : photoBoardEmptyMessage(t.overview.empty.highlights)
+        }
+        title={t.overview.highlightBoard.title}
+        subtitle={t.overview.highlightBoard.subtitle}
+      />
       <OverviewTaskLayer
         assignableMembers={assignableMembers}
         assigneeId={newTaskAssigneeId}

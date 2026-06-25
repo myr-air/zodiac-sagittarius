@@ -2,24 +2,24 @@ import { workspaceResponsivePanelResetClassName } from "@/src/shared/components/
 import { workspacePanelHeadingOverviewClassName } from "@/src/shared/components/workspace-panel-heading";
 
 export const overviewPageClassName =
-  "overview-page grid min-h-full min-w-0 max-w-full overflow-hidden gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:overflow-y-auto";
+  "overview-page flex min-h-full min-w-0 max-w-full flex-col overflow-hidden gap-4 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:overflow-y-auto";
 export const overviewSummaryBentoClassName =
-  "overview-summary-bento grid min-w-0 max-w-full grid-cols-12 items-start gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
+  "overview-summary-bento grid w-full min-w-0 max-w-full grid-cols-12 items-start gap-4 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 export const overviewWeatherBentoClassName =
-  "overview-weather-bento col-span-12 min-w-0 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none [&_.weather-forecast-strip]:m-0 [&_.weather-forecast-strip]:w-full [&_.weather-forecast-strip]:rounded-none [&_.weather-forecast-strip]:border-0 [&_.weather-forecast-strip]:px-4 [&_.weather-forecast-strip]:py-3 [&_.weather-forecast-strip]:shadow-none";
+  "overview-weather-bento col-span-12 min-w-0 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none [&_.weather-forecast-strip]:m-0 [&_.weather-forecast-strip]:w-full [&_.weather-forecast-strip]:rounded-none [&_.weather-forecast-strip]:border-0 [&_.weather-forecast-strip]:px-4 [&_.weather-forecast-strip]:py-2.5 [&_.weather-forecast-strip]:shadow-none";
 export const overviewCockpitClassName =
-  "overview-travel-cockpit col-span-7 grid w-full min-w-0 max-w-full grid-cols-3 items-start gap-3 overflow-hidden self-start max-[1199px]:col-auto max-[1199px]:mb-0 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[1199px]:[&_.overview-cockpit-card:nth-child(3)]:col-span-full";
+  "overview-travel-cockpit col-span-12 grid w-full min-w-0 max-w-full grid-cols-3 items-stretch overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none max-[767px]:grid-cols-2 max-[767px]:[&_.overview-cockpit-card:nth-child(3)]:col-span-full";
 export const overviewPhaseCardClassName =
-  "overview-phase-card col-span-5 grid min-w-0 gap-3 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--overview-phase-accent)_18%,var(--color-border))] bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [--overview-phase-accent:var(--color-primary)] [--overview-phase-wash:var(--color-surface-subtle)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none";
+  "overview-phase-card col-span-12 grid min-w-0 grid-cols-[minmax(220px,0.9fr)_minmax(0,1.8fr)] items-center gap-4 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--overview-phase-accent)_20%,var(--color-border))] bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [--overview-phase-accent:var(--color-primary)] [--overview-phase-wash:var(--color-surface-subtle)] max-[1199px]:col-auto max-[1199px]:grid-cols-1 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none max-[767px]:gap-3 max-[767px]:p-3.5";
 export const overviewPhaseToneClassNames = {
   incoming: "[--overview-phase-accent:var(--color-primary)] [--overview-phase-wash:var(--color-primary-soft)]",
   active: "[--overview-phase-accent:var(--color-warning-strong)] [--overview-phase-wash:var(--color-warning-soft)]",
   completed: "[--overview-phase-accent:var(--color-route)] [--overview-phase-wash:var(--color-route-soft)]",
 } as const;
 export const overviewPhaseHeaderClassName =
-  "overview-phase-header grid gap-1.5 [&_span]:w-fit [&_span]:rounded-full [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--overview-phase-accent)_26%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.7)] [&_span]:px-2.5 [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--overview-phase-accent) [&_h2]:m-0 [&_h2]:text-[18px] [&_h2]:font-black [&_h2]:leading-6 [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:text-xs [&_p]:font-bold [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
+  "overview-phase-header grid gap-1.5 [&_span]:w-fit [&_span]:rounded-full [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--overview-phase-accent)_26%,var(--color-border))] [&_span]:bg-(--overview-phase-wash) [&_span]:px-2.5 [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--overview-phase-accent) [&_h2]:m-0 [&_h2]:text-[17px] [&_h2]:font-black [&_h2]:leading-6 [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:max-w-[42ch] [&_p]:text-xs [&_p]:font-bold [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
 export const overviewPhaseFactListClassName =
-  "overview-phase-facts m-0 grid list-none grid-cols-3 gap-2 p-0 max-[1399px]:grid-cols-1 [&_li]:grid [&_li]:grid-cols-[28px_minmax(0,1fr)] [&_li]:items-start [&_li]:gap-2 [&_li]:rounded-(--radius-sm) [&_li]:border [&_li]:border-[color-mix(in_srgb,var(--overview-phase-accent)_14%,var(--color-border))] [&_li]:bg-(--overview-phase-wash) [&_li]:p-2.5 [&_.icon]:mt-0.5 [&_.icon]:size-[16px] [&_.icon]:text-(--overview-phase-accent) [&_small]:block [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:leading-4 [&_small]:text-(--color-text-muted) [&_strong]:block [&_strong]:min-w-0 [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
+  "overview-phase-facts m-0 grid list-none grid-cols-3 gap-0 p-0 max-[767px]:grid-cols-1 [&_li]:grid [&_li]:grid-cols-[24px_minmax(0,1fr)] [&_li]:items-start [&_li]:gap-2 [&_li]:border-l [&_li]:border-[color-mix(in_srgb,var(--overview-phase-accent)_16%,var(--color-border))] [&_li]:px-3 [&_li]:py-1.5 [&_li:first-child]:border-l-0 max-[767px]:[&_li]:border-l-0 max-[767px]:[&_li]:border-t max-[767px]:[&_li:first-child]:border-t-0 max-[767px]:[&_li]:px-0 [&_.icon]:mt-0.5 [&_.icon]:size-[16px] [&_.icon]:text-(--overview-phase-accent) [&_small]:block [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:leading-4 [&_small]:text-(--color-text-muted) [&_strong]:block [&_strong]:min-w-0 [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
 export const overviewReadinessChipsClassName =
   "overview-readiness-chips flex min-w-0 flex-wrap gap-1.5 [&_span]:min-w-0 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--color-primary)_14%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.68)] [&_span]:px-[7px] [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-[15px] [&_span]:text-(--color-text-muted)";
 
@@ -37,15 +37,15 @@ export const taskDialogActionsClassName =
   "dialog-actions flex justify-end gap-2.5 border-t border-(--color-border) bg-(--color-surface-subtle) px-5 pb-[18px] pt-3.5 max-[767px]:grid [&_.button]:min-h-[38px] [&_.button]:min-w-[104px] [&_.button]:w-auto";
 
 export const overviewGridClassName =
-  "overview-grid m-0 grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1.18fr)_minmax(300px,0.82fr)] gap-3 overflow-hidden max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
+  "overview-grid m-0 grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-4 overflow-hidden max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
 export const overviewPanelClassName =
-  `overview-panel grid min-h-40 min-w-0 max-w-full content-start gap-2.5 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)`;
+  `overview-panel grid min-h-36 min-w-0 max-w-full content-start gap-3 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] ${workspaceResponsivePanelResetClassName} [&>span]:text-xs [&>span]:font-bold [&>span]:text-(--color-text-muted) [&>strong]:text-xl [&>strong]:font-extrabold [&>strong]:leading-7 [&>strong]:text-(--color-text)`;
 export const overviewPanelWideClassName = "overview-panel--wide col-start-1 max-[1199px]:col-auto";
 export const overviewPanelHealthClassName = "overview-panel--health min-h-[132px]";
 export const overviewPanelButtonClassName =
   "overview-panel--button w-full cursor-pointer text-left text-inherit transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_4px_8px_rgb(15_23_42_/_0.06)] focus-visible:-translate-y-px focus-visible:border-(--color-primary) focus-visible:shadow-[0_0_0_3px_rgb(15_118_110_/_0.16)] focus-visible:outline-none";
 export const overviewTaskPanelClassName =
-  "overview-task-panel col-start-2 row-[1/span_2] min-h-0 self-start max-[1199px]:col-auto max-[1199px]:row-auto";
+  "overview-task-panel col-start-2 row-[1/span_2] min-h-0 self-start border-(--color-primary-border) max-[1199px]:col-auto max-[1199px]:row-auto";
 export const overviewPanelTitleClassName =
   workspacePanelHeadingOverviewClassName;
 export const overviewHealthGridClassName =

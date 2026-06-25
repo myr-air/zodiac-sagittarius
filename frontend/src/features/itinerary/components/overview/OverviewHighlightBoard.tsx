@@ -66,11 +66,11 @@ export function HighlightBoard({
                       alt={item.activity}
                       fill
                       sizes="(max-width: 767px) 240px, 25vw"
-                      className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-108"
+                      className="absolute inset-0 w-full h-full object-cover opacity-78 transition-transform duration-500 group-hover:scale-105"
                       priority={index === 0}
                       loading={index === 0 ? "eager" : undefined}
                     />
-                    <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgb(15_23_42_/_0.12),rgb(15_23_42_/_0.82))]" />
+                    <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgb(15_23_42_/_0.04),rgb(15_23_42_/_0.72))]" />
                   </>
                 )}
                 <span className={cn("relative z-10 mb-1 text-[11px] font-bold uppercase tracking-normal", imgUrl ? "text-white/82" : "text-(--overview-highlight-accent)")}>
