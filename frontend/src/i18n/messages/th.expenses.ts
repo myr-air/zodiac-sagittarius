@@ -230,6 +230,7 @@ export const thExpensesMessages = {
           paidAtSource: "จ่ายตอนเกิดรายการ",
           closed: "ปิดยอดด้วยเรทที่ล็อกไว้",
           covered: "จ่ายคืนแล้ว",
+          netClearedUnallocated: "เคลียร์ผ่านยอดรวมแล้ว ยังไม่ผูกกับบิลรายใบ",
           partial: "จ่ายคืนบางส่วน",
           unpaid: "ยังไม่พบรายการจ่ายคืน",
           recorded: "บันทึกเคลียร์ยอด",

@@ -295,6 +295,63 @@ describe("personal statement display", () => {
     });
   });
 
+  it("marks indirect net-cleared debt as unallocated instead of unpaid", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "aom-dinner",
+            title: "Aom dinner",
+            amount: 100,
+            paidBy: "member-aom",
+            splits: { "member-beam": 100 },
+            category: "food",
+          },
+          {
+            id: "nam-ticket",
+            title: "Nam ticket",
+            amount: 50,
+            paidBy: "member-nam",
+            splits: { "member-beam": 50 },
+            category: "tickets",
+          },
+          {
+            id: "nam-covered-aom-taxi",
+            title: "Nam covered Aom taxi",
+            amount: 100,
+            paidBy: "member-nam",
+            splits: { "member-aom": 100 },
+            category: "transport",
+          },
+          {
+            id: "beam-paid-nam-net",
+            title: "Beam paid Nam net balance",
+            amount: 150,
+            paidBy: "member-beam",
+            splits: { "member-nam": 150 },
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-aom-dinner-member-beam")).toMatchObject({
+      paidWithLabel: "Cleared in net balance, not linked to this bill",
+      settlementState: "netClearedUnallocated",
+    });
+    expect(rows.find((row) => row.id === "spend-nam-ticket-member-beam")).toMatchObject({
+      paidWithLabel: "Paid back · Beam paid Nam net balance",
+      settlementState: "covered",
+    });
+  });
+
   it("treats a closed statement snapshot as settled even when paid amount is lower than debt", () => {
     const rows = personalStatementRows({
       copy,

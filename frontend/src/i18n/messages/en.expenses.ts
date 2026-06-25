@@ -230,6 +230,7 @@ export const enExpensesMessages = {
           paidAtSource: "Paid at source",
           closed: "Closed with locked rate",
           covered: "Paid back",
+          netClearedUnallocated: "Cleared in net balance, not linked to this bill",
           partial: "Partly paid back",
           unpaid: "Not paid back yet",
           recorded: "Settlement record",

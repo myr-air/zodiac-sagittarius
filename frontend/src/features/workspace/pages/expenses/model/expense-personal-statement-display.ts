@@ -1,6 +1,7 @@
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById } from "@/src/trip/members";
 import {
+  buildExpenseSummary,
   convertToSettlementCurrency,
   expenseExchangeRate,
   formatMoney,
@@ -24,6 +25,7 @@ export type PersonalStatementSettlementState =
   | "paidAtSource"
   | "closed"
   | "covered"
+  | "netClearedUnallocated"
   | "partial"
   | "unpaid"
   | "recorded";
@@ -102,6 +104,10 @@ export function personalStatementRows({
   trip,
 }: PersonalStatementRowsInput): PersonalStatementRow[] {
   const settlementPlansByMemberId = new Map<string, SettlementAllocationPlan>();
+  const currentMemberNet = buildExpenseSummary(trip.expenses, currentMemberId, [], {
+    settlementCurrency,
+  }).netByMember[currentMemberId] ?? 0;
+  const isCurrentMemberNetCleared = currentMemberNet >= -0.01;
   const settlementPlanForMember = (memberId: string) => {
     const existingPlan = settlementPlansByMemberId.get(memberId);
     if (existingPlan) return existingPlan;
@@ -137,10 +143,11 @@ export function personalStatementRows({
         displayCurrency,
         displayExchangeRate,
         expense,
+        isCurrentMemberNetCleared,
         locale,
         settlementCurrency,
-          trip,
-        });
+        trip,
+      });
       })
     .sort((left, right) => left.dateKey.localeCompare(right.dateKey) || left.title.localeCompare(right.title));
 }
@@ -165,6 +172,7 @@ function spendRowForMember({
   displayCurrency,
   displayExchangeRate,
   expense,
+  isCurrentMemberNetCleared,
   locale,
   settlementCurrency,
   trip,
@@ -175,6 +183,7 @@ function spendRowForMember({
   displayCurrency: string;
   displayExchangeRate: number;
   expense: Expense;
+  isCurrentMemberNetCleared: boolean;
   locale: "en" | "th";
   settlementCurrency: string;
   trip: Trip;
@@ -196,7 +205,7 @@ function spendRowForMember({
     : "friendPaid";
   const settlementState = isPaidByCurrentMember
     ? "paidAtSource"
-    : settlementStateForCoverage(shareInSettlementCurrency, coverage);
+    : settlementStateForCoverage(shareInSettlementCurrency, coverage, isCurrentMemberNetCleared);
   const paidWithLabel = isPaidByCurrentMember
     ? copy.paymentMethod.paidAtSource
       : coverage?.settlementTitles.length
@@ -437,9 +446,10 @@ function inferredSettlementAllocationsForMember({
 function settlementStateForCoverage(
   debtAmount: number,
   coverage?: DebtCoverage,
+  isAccountNetCleared = false,
 ): PersonalStatementSettlementState {
   const coveredAmount = coverage?.coveredAmount ?? 0;
-  if (coveredAmount <= 0) return "unpaid";
+  if (coveredAmount <= 0) return isAccountNetCleared ? "netClearedUnallocated" : "unpaid";
   if (coverage?.hasClosedStatement) return "closed";
   return coveredAmount + 0.01 >= debtAmount ? "covered" : "partial";
 }
