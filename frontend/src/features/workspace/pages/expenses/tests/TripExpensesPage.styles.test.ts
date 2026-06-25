@@ -17,6 +17,7 @@ import {
   scopeAuditRowClassName,
   settingsActionsClassName,
   settlementRowClassName,
+  statementTableBodyClassName,
   statementMobileRowClassName,
   transactionDetailActionsClassName,
   transactionDetailClassName,
@@ -78,5 +79,10 @@ describe("TripExpensesPage styles", () => {
     expect(statementMobileRowClassName).toContain("bg-transparent");
     expect(statementMobileRowClassName).not.toContain("rounded-(--radius-md)");
     expect(settingsActionsClassName).toContain("[&>*]:min-h-10");
+  });
+
+  it("keeps statement table cells aligned from the same row edge", () => {
+    expect(statementTableBodyClassName).toContain("[&_td]:align-top");
+    expect(statementTableBodyClassName).not.toContain("[&_td]:align-middle");
   });
 });
