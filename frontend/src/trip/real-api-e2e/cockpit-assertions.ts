@@ -55,18 +55,32 @@ export function expectLoadedCockpit(cockpit: TripCockpit, tripId: string): void 
     })],
   });
   expect(cockpit.expenseSummary).toEqual({
-    groupSpend: 240,
+    groupSpend: 5028,
     netByMember: {
-      "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 120,
-      "018f4e81-77a4-7b8f-b3bd-0d0f493ac563": -120,
+      "018f4e81-77a4-7b8f-b3bd-0d0f493ac561": 630,
+      "018f4e81-77a4-7b8f-b3bd-0d0f493ac562": 330,
+      "018f4e81-77a4-7b8f-b3bd-0d0f493ac563": -1260,
+      "018f4e81-77a4-7b8f-b3bd-0d0f493ac564": 300,
     },
     settlementCurrency: "HKD",
-    currentUserNetLabel: "You are owed HK$120.00",
+    currentUserNetLabel: "You are owed HK$630.00",
     settlementSuggestions: [{
-      amount: 120,
+      amount: 630,
       currency: "HKD",
       from: "018f4e81-77a4-7b8f-b3bd-0d0f493ac563",
       to: "018f4e81-77a4-7b8f-b3bd-0d0f493ac561",
+      lastRemindedAt: null,
+    }, {
+      amount: 330,
+      currency: "HKD",
+      from: "018f4e81-77a4-7b8f-b3bd-0d0f493ac563",
+      to: "018f4e81-77a4-7b8f-b3bd-0d0f493ac562",
+      lastRemindedAt: null,
+    }, {
+      amount: 300,
+      currency: "HKD",
+      from: "018f4e81-77a4-7b8f-b3bd-0d0f493ac563",
+      to: "018f4e81-77a4-7b8f-b3bd-0d0f493ac564",
       lastRemindedAt: null,
     }],
   });
