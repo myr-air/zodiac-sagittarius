@@ -104,7 +104,7 @@ export const mobileEditDialogLayerPlay: ExpensesPagePlay = async ({ canvas, canv
 
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
   await userEvent.click(canvas.getByRole("tab", { name: /Tools/i }));
-  await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
+  await expect(canvas.getByRole("region", { name: /^Tools$/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();
 };
