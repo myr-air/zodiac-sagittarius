@@ -16,6 +16,9 @@ assignment, labels, comments, and closing history.
   - [#17 Production migrations need owner-capable database role](https://github.com/myr-air/zodiac-sagittarius/issues/17)
 - Active design follow-ups:
   - [#22 Production web redesign audit follow-up](https://github.com/myr-air/zodiac-sagittarius/issues/22), sourced from [redesign.md](redesign.md)
+  - [#72 Make members mobile controls more symmetric and show member rows sooner](https://github.com/myr-air/zodiac-sagittarius/issues/72)
+  - [#73 Balance trip settings layout across desktop and mobile](https://github.com/myr-air/zodiac-sagittarius/issues/73)
+  - [#74 Improve Bookings mobile folder rail semantics and symmetry](https://github.com/myr-air/zodiac-sagittarius/issues/74)
 - Active spending follow-ups:
   - [#70 Support stored-value travel wallets in trip spending](https://github.com/myr-air/zodiac-sagittarius/issues/70)
   - [#71 Capture receipts with camera or OCR into spending drafts](https://github.com/myr-air/zodiac-sagittarius/issues/71)
