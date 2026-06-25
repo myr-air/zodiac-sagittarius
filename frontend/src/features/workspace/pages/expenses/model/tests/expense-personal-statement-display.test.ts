@@ -343,12 +343,73 @@ describe("personal statement display", () => {
     });
 
     expect(rows.find((row) => row.id === "spend-aom-dinner-member-beam")).toMatchObject({
-      paidWithLabel: "Cleared in net balance, not linked to this bill",
+      paidWithLabel: "Cleared in net balance, not linked to this bill · Beam paid Nam net balance",
       settlementState: "netClearedUnallocated",
     });
     expect(rows.find((row) => row.id === "spend-nam-ticket-member-beam")).toMatchObject({
       paidWithLabel: "Paid back · Beam paid Nam net balance",
       settlementState: "covered",
+    });
+  });
+
+  it("does not mark an indirectly cleared debt as unpaid when another debt remains open", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        members: [
+          ...seedTrip.members,
+          { id: "member-family", displayName: "Family", role: "traveler", presence: "offline", color: "#64748b" },
+        ],
+        expenses: [
+          {
+            id: "aom-paid-beam",
+            title: "Aom paid Beam",
+            amount: 100,
+            paidBy: "member-aom",
+            splits: { "member-beam": 100 },
+            category: "food",
+          },
+          {
+            id: "nam-paid-aom",
+            title: "Nam paid Aom",
+            amount: 100,
+            paidBy: "member-nam",
+            splits: { "member-aom": 100 },
+            category: "transport",
+          },
+          {
+            id: "beam-paid-nam-for-aom",
+            title: "Beam paid Nam for Aom",
+            amount: 100,
+            paidBy: "member-beam",
+            splits: { "member-nam": 100 },
+            category: "settlement",
+          },
+          {
+            id: "family-paid-beam",
+            title: "Family paid Beam",
+            amount: 20,
+            paidBy: "member-family",
+            splits: { "member-beam": 20 },
+            category: "food",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-aom-paid-beam-member-beam")).toMatchObject({
+      paidWithLabel: "Cleared in net balance, not linked to this bill · Beam paid Nam for Aom",
+      settlementState: "netClearedUnallocated",
+    });
+    expect(rows.find((row) => row.id === "spend-family-paid-beam-member-beam")).toMatchObject({
+      paidWithLabel: "Not paid back yet",
+      settlementState: "unpaid",
     });
   });
 

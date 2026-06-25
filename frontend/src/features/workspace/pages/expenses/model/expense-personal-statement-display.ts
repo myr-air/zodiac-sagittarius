@@ -85,6 +85,7 @@ interface PersonalStatementRowsInput {
 interface DebtCoverage {
   coveredAmount: number;
   hasClosedStatement: boolean;
+  indirectCoveredAmount: number;
   settlementTitles: string[];
 }
 
@@ -347,12 +348,24 @@ function settlementAllocationPlanForMember({
         settlementCurrency,
         trip,
       });
-      if (inferredAllocations.length) {
-        inferredAllocationsBySettlementId.set(settlement.id, inferredAllocations);
-        labelsBySettlementId.set(settlement.id, allocationLabels(inferredAllocations, trip).join(", "));
-      }
       for (const allocation of inferredAllocations) {
-        addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title, false);
+        addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title, false, false);
+      }
+      const indirectAllocations = inferredIndirectSettlementAllocationsForMember({
+        coverageByExpenseId,
+        directAllocations: inferredAllocations,
+        memberId,
+        settlement,
+        settlementCurrency,
+        trip,
+      });
+      for (const allocation of indirectAllocations) {
+        addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title, false, true);
+      }
+      const allInferredAllocations = [...inferredAllocations, ...indirectAllocations];
+      if (allInferredAllocations.length) {
+        inferredAllocationsBySettlementId.set(settlement.id, allInferredAllocations);
+        labelsBySettlementId.set(settlement.id, allocationLabels(allInferredAllocations, trip).join(", "));
       }
       continue;
     }
@@ -365,6 +378,7 @@ function settlementAllocationPlanForMember({
         settlementAllocationCoverageAmount(allocation),
         settlement.title,
         isClosedSettlementAllocation(allocation),
+        false,
       );
     }
   }
@@ -378,15 +392,18 @@ function addDebtCoverage(
   amount: number,
   settlementTitle: string,
   hasClosedStatement: boolean,
+  isIndirect: boolean,
 ) {
   const current = coverageByExpenseId.get(expenseId) ?? {
     coveredAmount: 0,
     hasClosedStatement: false,
+    indirectCoveredAmount: 0,
     settlementTitles: [],
   };
   coverageByExpenseId.set(expenseId, {
     coveredAmount: roundMoney(current.coveredAmount + amount),
     hasClosedStatement: current.hasClosedStatement || hasClosedStatement,
+    indirectCoveredAmount: isIndirect ? roundMoney(current.indirectCoveredAmount + amount) : current.indirectCoveredAmount,
     settlementTitles: current.settlementTitles.includes(settlementTitle)
       ? current.settlementTitles
       : [...current.settlementTitles, settlementTitle],
@@ -443,6 +460,117 @@ function inferredSettlementAllocationsForMember({
   return allocations;
 }
 
+function inferredIndirectSettlementAllocationsForMember({
+  coverageByExpenseId,
+  directAllocations,
+  memberId,
+  settlement,
+  settlementCurrency,
+  trip,
+}: {
+  coverageByExpenseId: Map<string, DebtCoverage>;
+  directAllocations: { amount: number; expenseId: string }[];
+  memberId: string;
+  settlement: Expense;
+  settlementCurrency: string;
+  trip: Trip;
+}): { amount: number; expenseId: string }[] {
+  if (settlement.category !== "settlement" || settlement.paidBy !== memberId) return [];
+  const allocations: { amount: number; expenseId: string }[] = [];
+  for (const [recipientId, recipientAmount] of Object.entries(settlement.splits)) {
+    let remaining = roundMoney(
+      amountInSettlementCurrency(recipientAmount, settlement, settlementCurrency)
+        - directAllocatedAmountForRecipient({ allocations: directAllocations, recipientId, trip }),
+    );
+    if (remaining <= 0) continue;
+    const intermediaryCapacities = indirectSettlementCapacitiesByIntermediary({
+      memberId,
+      recipientId,
+      settlementCurrency,
+      trip,
+    });
+    for (const [intermediaryId, capacity] of intermediaryCapacities) {
+      let intermediaryRemaining = capacity;
+      if (intermediaryRemaining <= 0) continue;
+      const memberDebtExpenses = trip.expenses
+        .filter((expense) =>
+          expense.category !== "settlement" &&
+          expense.paidBy === intermediaryId &&
+          expense.id !== settlement.id &&
+          (expense.splits[memberId] ?? 0) > 0
+        )
+        .sort((left, right) => expenseSourceSortKey(trip, left).localeCompare(expenseSourceSortKey(trip, right)));
+
+      for (const expense of memberDebtExpenses) {
+        const debtAmount = amountInSettlementCurrency(expense.splits[memberId] ?? 0, expense, settlementCurrency);
+        const alreadyCovered = coverageByExpenseId.get(expense.id)?.coveredAmount ?? 0;
+        const outstandingAmount = roundMoney(debtAmount - alreadyCovered);
+        if (outstandingAmount <= 0) continue;
+        const amount = roundMoney(Math.min(remaining, intermediaryRemaining, outstandingAmount));
+        if (amount <= 0) continue;
+        allocations.push({ amount, expenseId: expense.id });
+        remaining = roundMoney(remaining - amount);
+        intermediaryRemaining = roundMoney(intermediaryRemaining - amount);
+        if (remaining <= 0) break;
+      }
+      if (remaining <= 0) break;
+    }
+  }
+  return allocations;
+}
+
+function directAllocatedAmountForRecipient({
+  allocations,
+  recipientId,
+  trip,
+}: {
+  allocations: { amount: number; expenseId: string }[];
+  recipientId: string;
+  trip: Trip;
+}): number {
+  return roundMoney(allocations.reduce((total, allocation) => {
+    const expense = trip.expenses.find((candidate) => candidate.id === allocation.expenseId);
+    return expense?.paidBy === recipientId ? total + allocation.amount : total;
+  }, 0));
+}
+
+function indirectSettlementCapacitiesByIntermediary({
+  memberId,
+  recipientId,
+  settlementCurrency,
+  trip,
+}: {
+  memberId: string;
+  recipientId: string;
+  settlementCurrency: string;
+  trip: Trip;
+}): Map<string, number> {
+  const capacities = new Map<string, number>();
+  const chainDebtExpenses = trip.expenses
+    .filter((expense) => expense.category !== "settlement" && expense.paidBy === recipientId)
+    .sort((left, right) => expenseSourceSortKey(trip, left).localeCompare(expenseSourceSortKey(trip, right)));
+  for (const expense of chainDebtExpenses) {
+    for (const [intermediaryId, share] of Object.entries(expense.splits)) {
+      if (intermediaryId === memberId || share <= 0) continue;
+      capacities.set(
+        intermediaryId,
+        roundMoney((capacities.get(intermediaryId) ?? 0) + amountInSettlementCurrency(share, expense, settlementCurrency)),
+      );
+    }
+  }
+  for (const settlement of trip.expenses.filter((expense) => expense.category === "settlement")) {
+    const currentCapacity = capacities.get(settlement.paidBy);
+    if (!currentCapacity) continue;
+    const paidToRecipient = settlement.splits[recipientId] ?? 0;
+    if (paidToRecipient <= 0) continue;
+    capacities.set(
+      settlement.paidBy,
+      Math.max(0, roundMoney(currentCapacity - amountInSettlementCurrency(paidToRecipient, settlement, settlementCurrency))),
+    );
+  }
+  return capacities;
+}
+
 function settlementStateForCoverage(
   debtAmount: number,
   coverage?: DebtCoverage,
@@ -451,6 +579,10 @@ function settlementStateForCoverage(
   const coveredAmount = coverage?.coveredAmount ?? 0;
   if (coveredAmount <= 0) return isAccountNetCleared ? "netClearedUnallocated" : "unpaid";
   if (coverage?.hasClosedStatement) return "closed";
+  const directCoveredAmount = roundMoney(coveredAmount - (coverage?.indirectCoveredAmount ?? 0));
+  if (coveredAmount + 0.01 >= debtAmount && directCoveredAmount + 0.01 < debtAmount) {
+    return "netClearedUnallocated";
+  }
   return coveredAmount + 0.01 >= debtAmount ? "covered" : "partial";
 }
 
