@@ -66,6 +66,7 @@ export const thExpensesMessages = {
       balance: "คงเหลือ",
       topUp: "เติมเข้า",
       spend: "ใช้ไป",
+      cardNone: "ไม่ใช้บัตรเติมเงิน",
       transactionTypes: {
         none: "ไม่กระทบยอดบัตร",
         topup: "เติมเงินเข้าบัตร",

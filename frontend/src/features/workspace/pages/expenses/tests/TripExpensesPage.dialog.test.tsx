@@ -39,6 +39,32 @@ describe("TripExpensesPage edit dialog", () => {
     }));
   });
 
+  it("selects an existing stored-value card instead of typing a card name", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "MTR ride");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "18");
+    await user.click(within(dialog).getByRole("button", { name: /โน้ต.*ลิงก์ใบเสร็จ/i }));
+
+    const cardSelect = within(dialog).getByRole("combobox", { name: /บัตรเติมเงิน/i });
+    expect(cardSelect).toBeInstanceOf(HTMLSelectElement);
+    expect(within(cardSelect).getByRole("option", { name: "Octopus" })).toHaveValue("Octopus");
+
+    await user.selectOptions(cardSelect, "Octopus");
+    await user.selectOptions(within(dialog).getByLabelText(/ผลต่อยอดบัตร/i), "spend");
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
+      title: "MTR ride",
+    }));
+  });
+
   it("opens quick personal accounting with the current member as the only split", async () => {
     const user = userEvent.setup();
     const props = renderExpenses();
@@ -123,7 +149,8 @@ describe("TripExpensesPage edit dialog", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim sum receipt/i })[0]);
+    await openExpenseDetail(user, "Dim sum receipt");
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim sum receipt/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     expect(dialog).toHaveTextContent("Receipt uploaded by Aom.");
     await user.type(within(dialog).getByLabelText(/เพิ่มโน้ต/i), "I'll transfer tonight.");
@@ -158,7 +185,8 @@ describe("TripExpensesPage edit dialog", () => {
     renderExpenses({ onUpdateExpense });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
+    await openExpenseDetail(user, "Dim Dim Sum brunch");
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
 
@@ -167,3 +195,11 @@ describe("TripExpensesPage edit dialog", () => {
     await waitFor(() => expect(screen.queryByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i })).not.toBeInTheDocument());
   });
 });
+
+async function openExpenseDetail(user: ReturnType<typeof userEvent.setup>, title: string) {
+  const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
+  const rowButton = Array.from(ledger.querySelectorAll<HTMLButtonElement>(".expense-ledger-row-button"))
+    .find((button) => button.textContent?.includes(title));
+  expect(rowButton).toBeInstanceOf(HTMLButtonElement);
+  await user.click(rowButton!);
+}

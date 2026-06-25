@@ -66,6 +66,7 @@ export const enExpensesMessages = {
       balance: "Balance",
       topUp: "Top-up",
       spend: "Spend",
+      cardNone: "No stored-value card",
       transactionTypes: {
         none: "Not card balance",
         topup: "Top-up adds balance",

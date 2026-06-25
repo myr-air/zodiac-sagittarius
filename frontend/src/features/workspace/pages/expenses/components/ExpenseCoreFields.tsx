@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { SelectOptions } from "@/src/shared/components/select-options";
+import type { SelectOption } from "@/src/shared/select-options";
 import { majorCurrencySelectOptions } from "@/src/trip/currencies";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -18,6 +19,7 @@ interface ExpenseCoreFieldsProps {
   repeatCount: string;
   settlementCurrency: string;
   spentOn: string;
+  storedValueCardOptions: SelectOption[];
   storedValueCardName: string;
   storedValueTransactionType: "topup" | "spend" | "refund" | "";
   title: string;
@@ -35,6 +37,7 @@ interface ExpenseCoreFieldsProps {
       title: string;
     };
     storedValue: {
+      cardNone: string;
       transactionTypes: {
         none: string;
         refund: string;
@@ -68,6 +71,7 @@ export function ExpenseCoreFields({
   repeatCount,
   settlementCurrency,
   spentOn,
+  storedValueCardOptions,
   storedValueCardName,
   storedValueTransactionType,
   title,
@@ -175,11 +179,14 @@ export function ExpenseCoreFields({
               ) : null}
               <label className={expenseStyles.fieldClassName}>
                 <span>{copy.fields.storedValueCardName}</span>
-                <input
-                  placeholder="Octopus"
+                <Select
+                  aria-label={copy.fields.storedValueCardName}
                   value={storedValueCardName}
                   onChange={(event) => onStoredValueCardNameChange(event.target.value)}
-                />
+                >
+                  <option value="">{copy.storedValue.cardNone}</option>
+                  <SelectOptions options={storedValueCardOptions} />
+                </Select>
               </label>
               <label className={expenseStyles.fieldClassName}>
                 <span>{copy.fields.storedValueTransactionType}</span>

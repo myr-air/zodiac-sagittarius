@@ -1,4 +1,5 @@
 import type { ExpenseSplitMode } from "@/src/trip/expenses";
+import type { SelectOption } from "@/src/shared/select-options";
 import type { Expense, ItineraryItem, Trip, TripPlan } from "@/src/trip/types";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { ExpenseCoreFields } from "./ExpenseCoreFields";
@@ -21,6 +22,7 @@ interface ExpenseDetailsFieldsProps {
   repeatCount: string;
   settlementCurrency: string;
   spentOn: string;
+  storedValueCardOptions: SelectOption[];
   storedValueCardName: string;
   storedValueTransactionType: NonNullable<Expense["storedValueTransactionType"]> | "";
   splitMode: ExpenseSplitMode;
@@ -54,6 +56,7 @@ interface ExpenseDetailsFieldsProps {
       tripPlan: string;
     };
     storedValue: {
+      cardNone: string;
       transactionTypes: {
         none: string;
         refund: string;
@@ -98,6 +101,7 @@ export function ExpenseDetailsFields({
   repeatCount,
   settlementCurrency,
   spentOn,
+  storedValueCardOptions,
   storedValueCardName,
   storedValueTransactionType,
   splitMode,
@@ -141,6 +145,7 @@ export function ExpenseDetailsFields({
             repeatCount={repeatCount}
             settlementCurrency={settlementCurrency}
             spentOn={spentOn}
+            storedValueCardOptions={storedValueCardOptions}
             storedValueCardName={storedValueCardName}
             storedValueTransactionType={storedValueTransactionType}
             title={title}
