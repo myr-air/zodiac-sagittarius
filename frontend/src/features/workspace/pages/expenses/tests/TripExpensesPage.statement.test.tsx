@@ -32,6 +32,7 @@ describe("TripExpensesPage statement", () => {
     expect(within(personalStatement).getAllByText("Explorer Friend จ่ายแทนเรา").length).toBeGreaterThan(0);
     expect(within(panel).queryByRole("table", { name: /รายการเงินทริปแบบละเอียด/i })).not.toBeInTheDocument();
     expect(within(panel).queryByRole("radio", { name: /ไม่ต้องคืน|ตรวจยอด|ทั้งหมด/i })).not.toBeInTheDocument();
+    expect(within(panel).queryByText("ไม่ผูกวัน")).not.toBeInTheDocument();
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 
