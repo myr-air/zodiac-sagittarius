@@ -1,18 +1,21 @@
 import { stopDialogFieldIds } from "./stop-dialog-field-ids";
+import { stopPlaceSuggestionListId } from "./StopDialogPrimaryFields";
 import type { StopDetailFieldsProps } from "./stop-dialog.types";
 
-export function StopDialogDetails({ detailLabels, detailType, detailValues, updateDetail }: StopDetailFieldsProps) {
+export function StopDialogDetails({ detailLabels, detailType, detailValues, placeSuggestions, updateDetail }: StopDetailFieldsProps) {
   if (detailType === "transportation") {
     return (
       <>
         <DetailInput
           id={stopDialogFieldIds.origin}
+          listId={placeSuggestions.length ? stopPlaceSuggestionListId : undefined}
           label={detailLabels.fields.origin}
           value={detailValues.origin}
           onChange={(value) => updateDetail("origin", value)}
         />
         <DetailInput
           id={stopDialogFieldIds.destination}
+          listId={placeSuggestions.length ? stopPlaceSuggestionListId : undefined}
           label={detailLabels.fields.destination}
           value={detailValues.destination}
           onChange={(value) => updateDetail("destination", value)}
@@ -75,6 +78,7 @@ export function StopDialogDetails({ detailLabels, detailType, detailValues, upda
         />
         <DetailInput
           id={stopDialogFieldIds.meetingPoint}
+          listId={placeSuggestions.length ? stopPlaceSuggestionListId : undefined}
           label={detailLabels.fields.relatedPlace}
           value={detailValues.meetingPoint}
           onChange={(value) => updateDetail("meetingPoint", value)}
@@ -93,6 +97,7 @@ export function StopDialogDetails({ detailLabels, detailType, detailValues, upda
       />
       <DetailInput
         id={stopDialogFieldIds.meetingPoint}
+        listId={placeSuggestions.length ? stopPlaceSuggestionListId : undefined}
         label={detailLabels.fields.meetingPoint}
         value={detailValues.meetingPoint}
         onChange={(value) => updateDetail("meetingPoint", value)}
@@ -107,11 +112,28 @@ export function StopDialogDetails({ detailLabels, detailType, detailValues, upda
   );
 }
 
-function DetailInput({ id, label, onChange, value }: { id: string; label: string; onChange: (value: string) => void; value: string }) {
+function DetailInput({
+  id,
+  label,
+  listId,
+  onChange,
+  value,
+}: {
+  id: string;
+  label: string;
+  listId?: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
   return (
     <label htmlFor={id}>
       <span>{label}</span>
-      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        id={id}
+        list={listId}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }

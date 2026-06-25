@@ -1,6 +1,7 @@
 import type {
   ItineraryItem,
   PlaceResolutionCandidate,
+  PlaceSuggestion,
 } from "@/src/trip/types";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
@@ -31,6 +32,7 @@ export interface StopDialogProps {
   onDelete?: () => void;
   onPromoteFoodRecommendation?: () => void;
   onSubmit: (values: StopFormValues) => void | Promise<void>;
+  placeSuggestions?: PlaceSuggestion[];
   placeResolution?: {
     state: "idle" | "resolving" | "ambiguous" | "unresolved";
     candidates: PlaceResolutionCandidate[];
@@ -58,6 +60,7 @@ export interface StopDialogFormFieldsProps {
   mode: StopDialogProps["mode"];
   model: StopDialogModel;
   placeResolution: StopDialogProps["placeResolution"];
+  placeSuggestions: PlaceSuggestion[];
   startDate?: string;
   stopDialogCopy: StopDialogCopy;
   stopDialogMessages: Messages["stopDialog"];
@@ -70,6 +73,7 @@ export interface StopDialogPrimaryFieldsProps {
   isFocusedEdit: boolean;
   noteLabel: string;
   placeLabel: string;
+  placeSuggestions: PlaceSuggestion[];
   transportationLabel: string;
   values: StopFormValues;
   onUpdate: StopFormUpdateHandler;
@@ -80,5 +84,6 @@ export interface StopDetailFieldsProps {
   detailLabels: ReturnType<typeof stopDetailLabels>;
   detailType: StopDetailType;
   detailValues: StopDetailValues;
+  placeSuggestions: PlaceSuggestion[];
   updateDetail: StopDetailUpdateHandler;
 }

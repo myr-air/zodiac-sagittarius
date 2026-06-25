@@ -745,7 +745,7 @@ async fn openrouter_place_queries(request: &ResolvePlaceRequest) -> Option<Vec<S
             messages: vec![
                 OpenRouterPlaceQueryMessage {
                     role: "system",
-                    content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Include transit from/to endpoints, place, and location hints when present. Do not invent coordinates.".to_string(),
+                    content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Prefer airport, train station, transit station, landmark, and highlighted place names when they match the input. Stay inside the provided destination and country context, include transit from/to endpoints, place, and location hints when present, and do not invent coordinates.".to_string(),
                 },
                 OpenRouterPlaceQueryMessage {
                     role: "user",
