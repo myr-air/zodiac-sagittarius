@@ -38,6 +38,7 @@ export function ExpenseStatementSection({
 }: ExpenseStatementSectionProps) {
   const personalRows = useMemo(() => personalStatementRows({
     copy: {
+      accountContext: t.expenses.statement.personal.accountContext,
       dateFallback: t.expenses.statement.dateFallback,
       flow: t.expenses.statement.personal.flow,
       includedLineItems: t.expenses.statement.personal.includedLineItems,
@@ -162,13 +163,14 @@ export function ExpenseStatementSection({
                       <td>
                         <div className={expenseStyles.statementItemCellClassName}>
                           <strong>{row.title}</strong>
+                          {row.contextLabel ? <span>{row.contextLabel}</span> : null}
                           <span>{row.includedLabel}</span>
                         </div>
                       </td>
                       <td className={expenseStyles.statementMetaCellClassName}>{row.flowLabel}</td>
                       <td className={expenseStyles.statementMetaCellClassName}>{row.relatedMemberLabel}</td>
                       <td className={expenseStyles.statementMetaCellClassName}>{row.paidWithLabel}</td>
-                      <td className={expenseStyles.statementAmountCellClassName}>
+                      <td className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
                         {row.amountLabel}
                         {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
                       </td>
@@ -184,31 +186,35 @@ export function ExpenseStatementSection({
                   className={expenseStyles.personalStatementMobileRowClassName}
                   key={row.id}
                 >
-                  <div className={expenseStyles.personalStatementMobileTopClassName}>
-                    <div className={expenseStyles.statementMobileTitleClassName}>
-                      <strong>{row.title}</strong>
-                      <span>{row.dateLabel}</span>
+                  <details className={expenseStyles.personalStatementMobileDetailsClassName}>
+                    <summary>
+                      <div className={expenseStyles.personalStatementMobileTopClassName}>
+                        <div className={expenseStyles.statementMobileTitleClassName}>
+                          <strong>{row.title}</strong>
+                          <span>{row.dateLabel} · {row.flowLabel}</span>
+                        </div>
+                        <div className={`${expenseStyles.statementAmountCellClassName} ${expenseStyles.personalStatementAmountToneClassNames[row.amountTone]}`}>
+                          {row.amountLabel}
+                          {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
+                          <small>{t.expenses.statement.mobileDetails}</small>
+                        </div>
+                      </div>
+                    </summary>
+                    <div className={expenseStyles.personalStatementMobileIncludedClassName}>
+                      {row.contextLabel ? <span>{row.contextLabel}</span> : null}
+                      <span>{row.includedLabel}</span>
                     </div>
-                    <div className={expenseStyles.statementAmountCellClassName}>
-                      {row.amountLabel}
-                      {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
-                    </div>
-                  </div>
-                  <div className={expenseStyles.personalStatementMobileIncludedClassName}>{row.includedLabel}</div>
-                  <dl className={expenseStyles.personalStatementMobileMetaClassName}>
-                    <div>
-                      <dt>{t.expenses.statement.personal.columns.flow}</dt>
-                      <dd>{row.flowLabel}</dd>
-                    </div>
-                    <div>
-                      <dt>{t.expenses.statement.personal.columns.relatedMember}</dt>
-                      <dd>{row.relatedMemberLabel}</dd>
-                    </div>
-                    <div>
-                      <dt>{t.expenses.statement.personal.columns.paidWith}</dt>
-                      <dd>{row.paidWithLabel}</dd>
-                    </div>
-                  </dl>
+                    <dl className={expenseStyles.personalStatementMobileMetaClassName}>
+                      <div>
+                        <dt>{t.expenses.statement.personal.columns.relatedMember}</dt>
+                        <dd>{row.relatedMemberLabel}</dd>
+                      </div>
+                      <div>
+                        <dt>{t.expenses.statement.personal.columns.paidWith}</dt>
+                        <dd>{row.paidWithLabel}</dd>
+                      </div>
+                    </dl>
+                  </details>
                 </li>
               ))}
             </ul>

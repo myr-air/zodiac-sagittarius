@@ -203,6 +203,10 @@ export const enExpensesMessages = {
         noPaybacks: "No suggested paybacks for this account.",
         noDirectAllocation: "Recorded payback. Not linked to specific receipt rows yet.",
         includedLineItems: ({ count }: { count: number }) => `${count} included receipt line${count === 1 ? "" : "s"}`,
+        accountContext: {
+          groupBill: ({ share, total }: { share: string; total: string }) => `Your share ${share} · Group bill ${total}`,
+          advanceForGroup: ({ total }: { total: string }) => `Advance for group ${total}`,
+        },
         columns: {
           date: "Date",
           item: "What it was",

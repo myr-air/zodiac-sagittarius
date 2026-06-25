@@ -203,6 +203,10 @@ export const thExpensesMessages = {
         noPaybacks: "บัญชีนี้ไม่มียอดจ่ายคืนที่ต้องจัดการ",
         noDirectAllocation: "เป็นรายการจ่ายคืนที่บันทึกไว้ แต่ยังไม่ได้ผูกกับบิลย่อยแบบรายใบ",
         includedLineItems: ({ count }: { count: number }) => `รวม ${count} รายการย่อย`,
+        accountContext: {
+          groupBill: ({ share, total }: { share: string; total: string }) => `ส่วนของเรา ${share} · ทั้งบิล ${total}`,
+          advanceForGroup: ({ total }: { total: string }) => `สำรองจ่ายให้กลุ่ม ${total}`,
+        },
         columns: {
           date: "วัน",
           item: "ค่าอะไร",

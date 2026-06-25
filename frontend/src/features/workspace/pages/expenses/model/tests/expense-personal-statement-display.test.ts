@@ -4,6 +4,7 @@ import { seedTrip } from "@/src/trip/seed";
 import { personalStatementRows } from "../expense-personal-statement-display";
 
 const copy = {
+  accountContext: enExpensesMessages.statement.personal.accountContext,
   dateFallback: enExpensesMessages.statement.dateFallback,
   flow: enExpensesMessages.statement.personal.flow,
   includedLineItems: enExpensesMessages.statement.personal.includedLineItems,
@@ -25,19 +26,23 @@ describe("personal statement display", () => {
     });
 
     expect(rows.find((row) => row.id === "spend-expense-airport-express-member-beam")).toMatchObject({
-      amountLabel: "HK$460.00",
+      amountLabel: "-HK$115.00",
+      amountTone: "outflow",
+      contextLabel: "Your share HK$115.00 · Group bill HK$460.00",
       flow: "paidForGroup",
       paidWithLabel: "Paid at source",
       relatedMemberLabel: "You paid",
     });
     expect(rows.find((row) => row.id === "spend-expense-luk-yu-dinner-member-beam")).toMatchObject({
-      amountLabel: "HK$380.00",
+      amountLabel: "-HK$380.00",
+      amountTone: "outflow",
       flow: "friendPaid",
       paidWithLabel: "Not paid back yet",
       relatedMemberLabel: "Paid for you by Explorer Friend",
     });
     expect(rows.find((row) => row.id === "settlement-sent-expense-beam-paid-aom")).toMatchObject({
-      amountLabel: "HK$650.00",
+      amountLabel: "-HK$650.00",
+      amountTone: "outflow",
       flow: "paybackSent",
       includedLabel: "Tsim Sha Tsui hotel deposit, Dim Dim Sum brunch",
       relatedMemberLabel: "Sent to Demo Traveler",
@@ -65,6 +70,25 @@ describe("personal statement display", () => {
       flow: "friendPaid",
       paidWithLabel: "Paid back · Aom received Beam payback",
       settlementState: "covered",
+    });
+  });
+
+  it("marks received paybacks as positive account money", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-aom",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: seedTrip,
+    });
+
+    expect(rows.find((row) => row.id === "settlement-received-expense-beam-paid-aom-member-aom")).toMatchObject({
+      amountLabel: "+HK$650.00",
+      amountTone: "inflow",
+      flow: "paybackReceived",
+      relatedMemberLabel: "Received from Travel Mate",
     });
   });
 
@@ -121,6 +145,113 @@ describe("personal statement display", () => {
     });
   });
 
+  it("auto-matches an unallocated lump settlement back to the payer receipts", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "aom-breakfast",
+            title: "Aom breakfast",
+            amount: 90,
+            paidBy: "member-aom",
+            splits: { "member-beam": 90 },
+            category: "food",
+          },
+          {
+            id: "aom-taxi",
+            title: "Aom taxi",
+            amount: 80,
+            paidBy: "member-aom",
+            splits: { "member-beam": 80 },
+            category: "transport",
+          },
+          {
+            id: "beam-paid-aom-lump",
+            title: "Beam paid Aom back",
+            amount: 120,
+            paidBy: "member-beam",
+            splits: { "member-aom": 120 },
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-aom-breakfast-member-beam")).toMatchObject({
+      settlementState: "covered",
+      paidWithLabel: "Paid back · Beam paid Aom back",
+    });
+    expect(rows.find((row) => row.id === "spend-aom-taxi-member-beam")).toMatchObject({
+      settlementState: "partial",
+      paidWithLabel: "Partly paid back · Beam paid Aom back",
+    });
+    expect(rows.find((row) => row.id === "settlement-sent-beam-paid-aom-lump")).toMatchObject({
+      includedLabel: "Aom breakfast, Aom taxi",
+    });
+  });
+
+  it("keeps inferred settlement labels aligned across multiple lump paybacks", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "aom-breakfast",
+            title: "Aom breakfast",
+            amount: 90,
+            paidBy: "member-aom",
+            splits: { "member-beam": 90 },
+            category: "food",
+          },
+          {
+            id: "aom-taxi",
+            title: "Aom taxi",
+            amount: 80,
+            paidBy: "member-aom",
+            splits: { "member-beam": 80 },
+            category: "transport",
+          },
+          {
+            id: "beam-paid-aom-first",
+            title: "Beam paid Aom first",
+            amount: 90,
+            paidBy: "member-beam",
+            splits: { "member-aom": 90 },
+            category: "settlement",
+          },
+          {
+            id: "beam-paid-aom-second",
+            title: "Beam paid Aom second",
+            amount: 80,
+            paidBy: "member-beam",
+            splits: { "member-aom": 80 },
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "settlement-sent-beam-paid-aom-first")).toMatchObject({
+      includedLabel: "Aom breakfast",
+    });
+    expect(rows.find((row) => row.id === "settlement-sent-beam-paid-aom-second")).toMatchObject({
+      includedLabel: "Aom taxi",
+    });
+  });
+
   it("lists payer-only advances even when the current member has no personal split", () => {
     const rows = personalStatementRows({
       copy,
@@ -146,7 +277,9 @@ describe("personal statement display", () => {
     });
 
     expect(rows.find((row) => row.id === "spend-advance-for-friends-member-beam")).toMatchObject({
-      amountLabel: "HK$300.00",
+      amountLabel: "-HK$300.00",
+      amountTone: "outflow",
+      contextLabel: "Advance for group HK$300.00",
       flow: "paidForGroup",
       relatedMemberLabel: "You paid",
     });
