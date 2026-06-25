@@ -17,7 +17,8 @@ describe("TripExpensesPage plan scope", () => {
     const props = renderExpenses({ selectedTripPlanId: "plan-main" });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
+    await openExpenseDetail(user, "Dim Dim Sum brunch");
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.selectOptions(within(dialog).getByLabelText("แผนทริป"), "plan-rain");
     await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
@@ -158,7 +159,8 @@ describe("TripExpensesPage plan scope", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getAllByRole("button", { name: /แก้ไข Arrival taxi receipt/i })[0]);
+    await openExpenseDetail(user, "Arrival taxi receipt");
+    await user.click(screen.getByRole("button", { name: /แก้ไข Arrival taxi receipt/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     const planSelect = within(dialog).getByLabelText("แผนทริป");
 
@@ -167,3 +169,10 @@ describe("TripExpensesPage plan scope", () => {
     expect(dialog).toHaveTextContent("แผนจะตามจุดที่ผูกไว้");
   });
 });
+
+async function openExpenseDetail(user: ReturnType<typeof userEvent.setup>, title: string) {
+  const rowButton = Array.from(document.querySelectorAll<HTMLButtonElement>(".expense-ledger-row-button"))
+    .find((button) => button.textContent?.includes(title));
+  expect(rowButton).toBeInstanceOf(HTMLButtonElement);
+  await user.click(rowButton!);
+}

@@ -58,6 +58,29 @@ describe("expense dialog calculated state", () => {
     expect(calculated.hasValidRepeatCount).toBe(false);
   });
 
+  it("calculates amount formulas before building splits", () => {
+    const calculated = calculateExpenseDialogState({
+      amount: "90+64+40-14",
+      currency: "hkd",
+      exchangeRate: "1",
+      expense: null,
+      lineItems: [],
+      members,
+      paidBy: members[0].id,
+      repeatCount: "1",
+      settlementCurrency: "HKD",
+      splitMode: "equal",
+      splitValues: {},
+    });
+
+    expect(calculated.amountNumber).toBe(180);
+    expect(calculated.amountExpression.isExpression).toBe(true);
+    expect(calculated.splits).toEqual({
+      [members[0].id]: 90,
+      [members[1].id]: 90,
+    });
+  });
+
   it("accepts repeat counts at the configured bounds for new expenses", () => {
     const baseInput = {
       amount: "10",

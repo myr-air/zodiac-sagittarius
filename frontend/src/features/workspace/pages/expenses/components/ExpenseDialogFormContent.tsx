@@ -1,5 +1,6 @@
 import type { Expense, Trip } from "@/src/trip/types";
 import type { SelectOption } from "@/src/shared/select-options";
+import { formatMoney } from "@/src/trip/expenses";
 import { Button } from "@/src/ui";
 import { useMemo } from "react";
 import type { useExpenseDialogState } from "../hooks/useExpenseDialogState";
@@ -32,12 +33,25 @@ export function ExpenseDialogFormContent({
     () => storedValueCardSelectOptions(trip.expenses, state.storedValueCardName),
     [state.storedValueCardName, trip.expenses],
   );
+  const amountFeedback = state.amount.trim()
+    ? state.calculatedState.amountExpression.error === "syntax"
+      ? { tone: "danger" as const, text: t.expenses.dialog.amountExpressionInvalid }
+      : state.calculatedState.amountExpression.isExpression && Number.isFinite(state.calculatedState.amountNumber)
+        ? {
+          tone: "muted" as const,
+          text: t.expenses.dialog.amountExpressionPreview({
+            amount: formatMoney(state.calculatedState.amountNumber, state.calculatedState.normalizedCurrency),
+          }),
+        }
+        : null
+    : null;
 
   return (
     <>
       <div className={expenseStyles.dialogFormScrollClassName}>
         <ExpenseDetailsFields
           amount={state.amount}
+          amountFeedback={amountFeedback}
           category={state.category}
           currency={state.currency}
           effectiveTripPlanId={state.effectiveTripPlanId}

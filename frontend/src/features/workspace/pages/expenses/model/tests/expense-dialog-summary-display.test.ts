@@ -3,6 +3,11 @@ import { expenseDialogSummaryDisplay } from "../expense-dialog-summary-display";
 import type { ExpenseDialogCalculatedState } from "../expense-dialog-calculation";
 
 const baseCalculation: ExpenseDialogCalculatedState = {
+  amountExpression: {
+    error: null,
+    isExpression: false,
+    value: 30,
+  },
   amountNumber: 30,
   exchangeRateNumber: 1,
   hasValidExchangeRate: true,

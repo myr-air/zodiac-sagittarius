@@ -65,6 +65,39 @@ describe("TripExpensesPage edit dialog", () => {
     }));
   });
 
+  it("calculates amount formulas in the expense dialog before saving", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Receipt stack");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "90+64+40-14");
+
+    expect(within(dialog).getByText("คำนวณได้ HK$180.00")).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i }));
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      amount: 180,
+    }));
+  });
+
+  it("blocks malformed amount formulas in the expense dialog", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
+    const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
+    await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Bad receipt");
+    await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
+    await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "90++64");
+
+    expect(within(dialog).getByText(/สมการจำนวนเงินไม่ถูกต้อง/i)).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /บันทึกค่าใช้จ่าย/i })).toBeDisabled();
+    expect(props.onCreateExpense).not.toHaveBeenCalled();
+  });
+
   it("opens quick personal accounting with the current member as the only split", async () => {
     const user = userEvent.setup();
     const props = renderExpenses();

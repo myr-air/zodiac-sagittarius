@@ -7,6 +7,7 @@ import { ExpenseLinkingFields } from "./ExpenseLinkingFields";
 
 interface ExpenseDetailsFieldsProps {
   amount: string;
+  amountFeedback: { tone: "danger" | "muted"; text: string } | null;
   category: Expense["category"];
   currency: string;
   effectiveTripPlanId: string;
@@ -86,6 +87,7 @@ interface ExpenseDetailsFieldsProps {
 
 export function ExpenseDetailsFields({
   amount,
+  amountFeedback,
   category,
   currency,
   effectiveTripPlanId,
@@ -134,6 +136,7 @@ export function ExpenseDetailsFields({
         <div className={expenseStyles.dialogStackClassName}>
           <ExpenseCoreFields
             amount={amount}
+            amountFeedback={amountFeedback}
             copy={copy}
             currency={currency}
             exchangeRate={exchangeRate}

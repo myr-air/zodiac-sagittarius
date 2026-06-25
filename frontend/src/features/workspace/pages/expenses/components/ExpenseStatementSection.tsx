@@ -70,7 +70,7 @@ export function ExpenseStatementSection({
   const personalDayGroups = useMemo(() => personalStatementDayGroups(personalRows), [personalRows]);
 
   return (
-    <section className={`${expenseStyles.statementSectionClassName} ${expenseStyles.accountStatementOrderClassName}`} aria-label={t.expenses.statement.label}>
+    <section className={expenseStyles.statementSectionClassName} aria-label={t.expenses.statement.label}>
       <header className={expenseStyles.statementHeaderClassName}>
         <div className={expenseStyles.statementTitleClassName}>
           <h2>{t.expenses.statement.title}</h2>

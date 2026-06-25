@@ -44,7 +44,7 @@ describe("TripExpensesPage styles", () => {
     expect(financeTabsClassName).toContain("expense-finance-tabs");
     expect(financeTabsClassName).toContain("bg-(--color-surface)");
     expect(financeTabsClassName).toContain("max-[767px]:sticky");
-    expect(financeTabsClassName).toContain("grid-cols-3");
+    expect(financeTabsClassName).toContain("grid-cols-4");
     expect(financeTabsClassName).not.toContain("linear-gradient");
     expect(financeTabClassName).toContain("min-h-10");
     expect(financeTabClassName).toContain("min-w-0");

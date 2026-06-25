@@ -9,6 +9,7 @@ import { expenseDialogRepeatCountRange } from "../model/expense-dialog-constrain
 
 interface ExpenseCoreFieldsProps {
   amount: string;
+  amountFeedback: { tone: "danger" | "muted"; text: string } | null;
   currency: string;
   exchangeRate: string;
   isEditing: boolean;
@@ -60,6 +61,7 @@ interface ExpenseCoreFieldsProps {
 
 export function ExpenseCoreFields({
   amount,
+  amountFeedback,
   copy,
   currency,
   exchangeRate,
@@ -100,10 +102,15 @@ export function ExpenseCoreFields({
           <span>{copy.fields.amount}</span>
           <input
             inputMode="decimal"
-            placeholder="420.00"
+            placeholder="420.00 หรือ 90+64+40-14"
             value={amount}
             onChange={(event) => onAmountChange(event.target.value)}
           />
+          {amountFeedback ? (
+            <small className={amountFeedback.tone === "danger" ? expenseStyles.fieldErrorClassName : expenseStyles.fieldHintClassName}>
+              {amountFeedback.text}
+            </small>
+          ) : null}
         </label>
         <label className={expenseStyles.fieldClassName}>
           <span>{copy.fields.currency}</span>
