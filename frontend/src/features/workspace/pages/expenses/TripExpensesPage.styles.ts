@@ -191,11 +191,11 @@ export const personalStatementHeaderClassName = "grid grid-cols-[minmax(0,1fr)_a
 export const personalStatementTableWrapClassName = `min-h-0 overflow-auto bg-(--color-surface) ${workspaceResponsiveInlinePanelResetClassName} max-[767px]:hidden`;
 export const personalStatementTableClassName = "expense-personal-statement-table w-full min-w-[1060px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
 export const personalStatementDayRowClassName = "[&_th]:border-b [&_th]:border-(--color-border) [&_th]:bg-[#f1f5f9] [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-normal [&_th]:text-(--color-text-muted)";
-export const personalStatementMobileListClassName = "hidden list-none gap-2.5 p-3 max-[767px]:grid";
-export const personalStatementMobileDayGroupClassName = "grid gap-2";
-export const personalStatementMobileDayClassName = "sticky top-0 z-10 border-b border-(--color-border) bg-[#f8fafc] px-1 py-1.5 text-xs font-black uppercase tracking-normal text-(--color-text-muted)";
-export const personalStatementMobileDayRowsClassName = "grid list-none gap-2.5 p-0";
-export const personalStatementMobileRowClassName = "grid rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-3 py-2.5";
+export const personalStatementMobileListClassName = "hidden list-none gap-3 px-3 py-2 max-[767px]:grid";
+export const personalStatementMobileDayGroupClassName = "grid gap-1";
+export const personalStatementMobileDayClassName = "sticky top-0 z-10 border-b border-(--color-border) bg-[#f8fafc] px-0.5 py-1.5 text-xs font-black uppercase tracking-normal text-(--color-text-muted)";
+export const personalStatementMobileDayRowsClassName = "grid list-none p-0";
+export const personalStatementMobileRowClassName = "grid border-b border-(--color-border) bg-transparent py-2.5 last:border-b-0";
 export const personalStatementMobileTopClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3";
 export const personalStatementMobileDetailsClassName = "grid gap-2 [&_summary]:grid [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden";
 export const personalStatementMobileIncludedClassName = "grid gap-1 pt-2 text-xs font-bold leading-5 text-(--color-text-muted)";
@@ -220,8 +220,8 @@ export const statementStatusToneClassNames = {
   settlementRecorded: "border-(--color-success-border) bg-(--color-success-soft) text-[#166534]",
   recorded: "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
 };
-export const statementMobileListClassName = `hidden gap-2.5 max-[767px]:grid ${workspaceResponsiveInlinePanelResetClassName}`;
-export const statementMobileRowClassName = "grid gap-2.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left shadow-none";
+export const statementMobileListClassName = `hidden gap-0 max-[767px]:grid ${workspaceResponsiveInlinePanelResetClassName}`;
+export const statementMobileRowClassName = "grid gap-2.5 border-b border-(--color-border) bg-transparent py-3 text-left last:border-b-0";
 export const statementMobileTopClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3";
 export const statementMobileTitleClassName = "grid min-w-0 gap-1 [&_strong]:truncate [&_strong]:font-black [&_strong]:text-(--color-text) [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted)";
 export const statementMobileSummaryClassName = "flex min-w-0 items-center justify-between gap-2 text-xs font-extrabold text-(--color-text-muted) [&>span:first-child]:truncate";

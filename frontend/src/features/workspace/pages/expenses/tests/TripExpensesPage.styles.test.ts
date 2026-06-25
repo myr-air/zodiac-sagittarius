@@ -12,10 +12,12 @@ import {
   ledgerWorkspaceClassName,
   mobileLedgerCardClassName,
   mobileLedgerCardSelectedClassName,
+  personalStatementMobileRowClassName,
   scopeAuditListClassName,
   scopeAuditRowClassName,
   settingsActionsClassName,
   settlementRowClassName,
+  statementMobileRowClassName,
   transactionDetailActionsClassName,
   transactionDetailClassName,
   transactionDetailDangerActionClassName,
@@ -69,6 +71,12 @@ describe("TripExpensesPage styles", () => {
   it("keeps mobile feed and settings actions touch-safe", () => {
     expect(mobileLedgerCardClassName).toContain("shadow-none");
     expect(mobileLedgerCardSelectedClassName).toContain("bg-(--color-primary-soft)");
+    expect(personalStatementMobileRowClassName).toContain("border-b");
+    expect(personalStatementMobileRowClassName).toContain("bg-transparent");
+    expect(personalStatementMobileRowClassName).not.toContain("rounded-(--radius-md)");
+    expect(statementMobileRowClassName).toContain("border-b");
+    expect(statementMobileRowClassName).toContain("bg-transparent");
+    expect(statementMobileRowClassName).not.toContain("rounded-(--radius-md)");
     expect(settingsActionsClassName).toContain("[&>*]:min-h-10");
   });
 });
