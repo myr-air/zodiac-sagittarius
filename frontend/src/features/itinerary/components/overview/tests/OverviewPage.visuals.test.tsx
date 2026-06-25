@@ -23,36 +23,60 @@ describe("OverviewPage visual summary", () => {
     renderOverview("member-beam");
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
-    expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "grid", "gap-3");
+    expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass(
+      "overview-page",
+      "flex",
+      "flex-col",
+      "gap-4",
+      "max-[767px]:bg-(--color-surface-subtle)",
+      "max-[767px]:px-2",
+    );
     expect(document.querySelector(".overview-summary-bento")).toHaveClass("grid", "grid-cols-12", "max-[1199px]:grid-cols-1");
     expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
-    expect(hero).toHaveClass("col-span-12", "min-h-[156px]", "bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--overview-hero-sky)_100%)]");
+    expect(hero).toHaveClass(
+      "col-span-12",
+      "min-h-[126px]",
+      "bg-[linear-gradient(135deg,var(--color-surface)_0%,color-mix(in_srgb,var(--overview-hero-sky)_62%,white)_100%)]",
+    );
+    expect(hero).toHaveClass("max-[767px]:rounded-(--radius-lg)", "max-[767px]:border");
     expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:hidden");
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
-    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.72)]", "rounded-(--radius-md)");
+    expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.76)]", "rounded-(--radius-md)");
+    expect(hero.querySelector(".overview-hero-meta")).toHaveClass("max-[767px]:[&_span:nth-child(n+3)]:hidden");
+
+    expect(document.querySelector(".overview-weather-bento")).toHaveClass(
+      "max-[767px]:[&_.weather-forecast-row]:grid",
+      "max-[767px]:[&_.weather-forecast-segment:nth-child(n+4)]:hidden",
+    );
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
-    expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "gap-3", "self-start");
+    expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "col-span-12");
     expect(within(cockpit).getByText(/จุดถัดไป/i).closest(".overview-cockpit-card")).toHaveClass(
       "overview-cockpit-card",
       "grid",
-      "rounded-(--radius-lg)",
+      "border-r",
     );
     expect(within(cockpit).getByText(/จุดถัดไป/i)).toBeInTheDocument();
     expect(within(cockpit).getByText(/งบประมาณ/i)).toBeInTheDocument();
     expect(within(cockpit).getByText(/ทีมและความพร้อม/i)).toBeInTheDocument();
 
     const phase = screen.getByRole("region", { name: /ระหว่างทริป/i });
-    expect(phase).toHaveClass("overview-phase-card", "col-span-5");
+    expect(phase).toHaveClass("overview-phase-card", "col-span-12");
     expect(within(phase).getByRole("heading", { name: /ค็อกพิทวันนี้/i })).toBeInTheDocument();
     expect(within(phase).getAllByText(/จุดถัดไป/i).length).toBeGreaterThan(0);
     expect(within(phase).getByText(/ช่วงอากาศ/i)).toBeInTheDocument();
 
+    const readiness = screen.getByRole("region", { name: /ความพร้อมของทริป/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
+    expect(readiness.compareDocumentPosition(phase)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(checklist.compareDocumentPosition(phase)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
     const board = screen.getByRole("region", { name: /ไฮไลต์ทริป/i });
+    expect(phase.compareDocumentPosition(board)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(within(board).getByRole("heading", { name: /ไฮไลต์ทริป/i })).toBeInTheDocument();
     expect(within(board).getByText(/ของกินและสถานที่จากแผนนี้/i)).toBeInTheDocument();
     expect(within(board).getByText(/Dim Dim Sum ที่ Tim Ho Wan/i)).toBeInTheDocument();
@@ -115,6 +139,15 @@ describe("OverviewPage visual summary", () => {
     const afterTrip = screen.getByRole("region", { name: /หลังจบทริป/i });
     expect(within(afterTrip).getByRole("heading", { name: /ปิดงานทริป/i })).toBeInTheDocument();
     expect(within(afterTrip).getByText(/3 รายการชำระคืน/i)).toBeInTheDocument();
+    const readiness = screen.getByRole("region", { name: /ความพร้อมของทริป/i });
+    const checklist = screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i });
+    expect(afterTrip.compareDocumentPosition(readiness)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(afterTrip.compareDocumentPosition(checklist)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(checklist).not.toHaveClass("overview-task-panel");
+    const expenseShortcut = screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(expenseShortcut).toHaveClass("overview-panel--button");
+    expect(expenseShortcut.querySelector(".icon")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toHaveClass("max-[767px]:[&_.overview-task-filters]:hidden");
     expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
     expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
   });

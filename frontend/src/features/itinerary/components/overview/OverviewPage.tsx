@@ -2,7 +2,10 @@ import {
   overviewGridClassName,
   overviewPageClassName,
 } from "./overview-page.styles";
+import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
+import { HighlightBoard } from "./OverviewHighlightBoard";
 import { OverviewLensPanels } from "./OverviewLensPanels";
+import { OverviewPhasePanel } from "./OverviewPhasePanel";
 import { OverviewSummaryBand } from "./OverviewSummaryBand";
 import { OverviewTaskLayer } from "./OverviewTaskLayer";
 import type { OverviewPageProps } from "./OverviewPage.types";
@@ -10,12 +13,12 @@ import { useOverviewPageState } from "./use-overview-page-state";
 
 export function OverviewPage(props: OverviewPageProps) {
   const {
-  trip,
-  expenseSummary,
-  items,
-  tasks,
-  dailyBriefings = [],
-  onSaveDailyBriefingOverrides,
+    trip,
+    expenseSummary,
+    items,
+    tasks,
+    dailyBriefings = [],
+    onSaveDailyBriefingOverrides,
   } = props;
   const {
     currentMemberCard,
@@ -70,6 +73,19 @@ export function OverviewPage(props: OverviewPageProps) {
     undoTaskToggle,
     visibleTasks,
   } = taskState;
+  const phasePanel = (
+    <OverviewPhasePanel
+      activeMembers={activeMembers}
+      countdown={countdown}
+      dailyBriefings={dailyBriefings}
+      highlightItems={highlightItems}
+      nextStop={nextStop}
+      pendingSuggestions={pendingSuggestions}
+      settlementCount={settlementCount}
+      tasks={tasks}
+      warningCount={warningCount}
+    />
+  );
 
   return (
     <section className={overviewPageClassName} aria-label={t.overview.pageLabel}>
@@ -80,19 +96,19 @@ export function OverviewPage(props: OverviewPageProps) {
         dailyBriefings={dailyBriefings}
         groupSpendLabel={groupSpendLabel}
         heroVisual={heroVisual}
-        highlightItems={highlightItems}
         isManagerLens={isManagerLens}
         items={items}
         nextStop={nextStop}
         pendingSuggestions={pendingSuggestions}
         roleLens={roleLens}
         settlementCount={settlementCount}
-        tasks={tasks}
         trip={trip}
         warningCount={warningCount}
         onOpenExpenses={openExpenses}
         onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
       />
+
+      {isCompleted ? phasePanel : null}
 
       <div className={overviewGridClassName}>
         <OverviewLensPanels
@@ -134,6 +150,21 @@ export function OverviewPage(props: OverviewPageProps) {
           visibleTasks={visibleTasks}
         />
       </div>
+
+      {isCompleted ? null : phasePanel}
+
+      <HighlightBoard
+        items={highlightItems}
+        startDate={trip.startDate}
+        locale={locale}
+        emptyMessage={
+          isManagerLens
+            ? t.overview.empty.highlights
+            : photoBoardEmptyMessage(t.overview.empty.highlights)
+        }
+        title={t.overview.highlightBoard.title}
+        subtitle={t.overview.highlightBoard.subtitle}
+      />
       <OverviewTaskLayer
         assignableMembers={assignableMembers}
         assigneeId={newTaskAssigneeId}

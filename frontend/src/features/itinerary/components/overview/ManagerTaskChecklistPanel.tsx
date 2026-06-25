@@ -33,6 +33,7 @@ interface ManagerTaskChecklistPanelProps {
   onStatusFilterChange: (filter: TaskStatusFilter) => void;
   onToggleTask: (task: TripTask) => void;
   openLabel: string;
+  pinPanel?: boolean;
   scopeFilter: TaskScopeFilter;
   scopeFilterLabel: string;
   statusFilter: TaskStatusFilter;
@@ -60,6 +61,7 @@ export function ManagerTaskChecklistPanel({
   onStatusFilterChange,
   onToggleTask,
   openLabel,
+  pinPanel = true,
   scopeFilter,
   scopeFilterLabel,
   statusFilter,
@@ -75,9 +77,12 @@ export function ManagerTaskChecklistPanel({
     mine: mineLabel,
     trip: tripLabel,
   };
+  const panelClassName = pinPanel
+    ? `${overviewPanelClassName} ${overviewTaskPanelClassName}`
+    : `${overviewPanelClassName} max-[767px]:[&_.overview-task-filters]:hidden`;
 
   return (
-    <section className={`${overviewPanelClassName} ${overviewTaskPanelClassName}`} aria-label={ariaLabel}>
+    <section className={panelClassName} aria-label={ariaLabel}>
       <OverviewPanelTitle icon="check" title={title} />
       <div className={overviewTaskToolbarClassName}>
         <SegmentedControl

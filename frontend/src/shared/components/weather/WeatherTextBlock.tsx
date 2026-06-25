@@ -3,12 +3,12 @@ import { briefingBlockClassName } from "./weather-briefing-drawer.styles";
 import type { WeatherTextBlockProps } from "./weather-briefing-drawer.types";
 import { WeatherSourceMeta } from "./WeatherSourceMeta";
 
-export function WeatherTextBlock({ title, block, locale }: WeatherTextBlockProps) {
+export function WeatherTextBlock({ className = briefingBlockClassName, showMeta = true, title, block, locale }: WeatherTextBlockProps) {
   return (
-    <section className={briefingBlockClassName}>
+    <section className={className}>
       <h3 className="m-0 text-sm font-black">{title}</h3>
       <p className="m-0 text-sm font-bold text-(--color-text-muted)">{block?.body ?? emptyText(locale)}</p>
-      <WeatherSourceMeta source={block?.meta.source} fetchedAt={block?.meta.fetchedAt} expiresAt={block?.meta.expiresAt} locale={locale} />
+      {showMeta ? <WeatherSourceMeta source={block?.meta.source} fetchedAt={block?.meta.fetchedAt} expiresAt={block?.meta.expiresAt} locale={locale} /> : null}
     </section>
   );
 }

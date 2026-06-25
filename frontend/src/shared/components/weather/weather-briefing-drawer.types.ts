@@ -18,15 +18,19 @@ export interface WeatherBriefingDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveOverrides?: WeatherBriefingOverrideSaveHandler;
+  variant?: "overlay" | "inline";
 }
 
 export interface OrganizerOverrideFormProps {
   briefing: TripDailyBriefing;
+  compact?: boolean;
   locale: Locale;
   onSaveOverrides?: WeatherBriefingOverrideSaveHandler;
 }
 
 export interface WeatherTextBlockProps {
+  className?: string;
+  showMeta?: boolean;
   title: string;
   block: TextBriefingBlock | null;
   locale: Locale;
