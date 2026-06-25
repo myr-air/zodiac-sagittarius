@@ -40,17 +40,17 @@ export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(ledger).toHaveClass("expense-ledger-table");
 
   await userEvent.type(canvas.getByLabelText(/Find spend/i), "tram");
-  await expect(canvas.getByRole("heading", { name: "Peak Tram tickets" })).toBeVisible();
-  await expect(canvas.queryByRole("heading", { name: "Dim Dim Sum brunch" })).toBeNull();
+  await expect(within(ledger).getAllByRole("button", { name: /Peak Tram tickets/i })[0]).toBeVisible();
+  await expect(within(ledger).queryByRole("button", { name: /Dim Dim Sum brunch/i })).toBeNull();
 
   await userEvent.click(canvas.getByRole("button", { name: /Filters/i }));
   await userEvent.selectOptions(within(canvas.getByRole("tabpanel", { name: /Manage expenses/i })).getByLabelText("Category"), "transport");
   await expect(canvas.getByText(/No expenses match this filter/i)).toBeVisible();
 
   await userEvent.click(canvas.getByRole("button", { name: /Clear filters/i }));
-  await expect(canvas.getByRole("heading", { name: "Dim Dim Sum brunch" })).toBeVisible();
+  await userEvent.click(within(ledger).getAllByRole("button", { name: /Dim Dim Sum brunch/i })[0]);
   await expect(within(ledger).getByText("Octopus top-up")).toBeVisible();
-  await expect(canvas.getByRole("region", { name: "Dim Dim Sum brunch" })).toHaveClass("expense-transaction-detail");
+  await expect(within(ledger).getByText("Receipt details")).toBeVisible();
 };
 
 export const planScopeAuditPlay: ExpensesPagePlay = async ({ canvas }) => {

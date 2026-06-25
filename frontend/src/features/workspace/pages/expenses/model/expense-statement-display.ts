@@ -5,6 +5,7 @@ import {
   expenseExchangeRate,
   formatMoney,
   refundAmount,
+  roundMoney,
   sumShares,
 } from "@/src/trip/expenses";
 import { formatDayLabel } from "@/src/trip/itinerary-core/itinerary-view";
@@ -72,10 +73,11 @@ export function expenseStatementRows({
   settlementCurrency,
   trip,
 }: ExpenseStatementRowsInput): ExpenseStatementRow[] {
+  const inferredAllocationsBySettlementId = inferredSettlementAllocationsBySettlementId(trip, settlementCurrency);
   return [...trip.expenses]
     .sort((left, right) => {
-      const leftDay = findItineraryItemById(trip.itineraryItems, left.itineraryItemId)?.day ?? "9999-99-99";
-      const rightDay = findItineraryItemById(trip.itineraryItems, right.itineraryItemId)?.day ?? "9999-99-99";
+      const leftDay = statementDay(trip, left, inferredAllocationsBySettlementId) ?? "9999-99-99";
+      const rightDay = statementDay(trip, right, inferredAllocationsBySettlementId) ?? "9999-99-99";
       return leftDay.localeCompare(rightDay) || left.title.localeCompare(right.title);
     })
     .map((expense) => {
@@ -97,7 +99,7 @@ export function expenseStatementRows({
         id: expense.id,
         amountLabel: formatMoney(expense.amount, currency),
         categoryLabel: copy.categories[expense.category],
-        dateLabel: linkedItem ? `${formatDayLabel(linkedItem.day, trip.startDate, locale)} · ${linkedItem.day}` : copy.dateFallback,
+        dateLabel: statementDateLabel(expense, trip, locale, copy.dateFallback, inferredAllocationsBySettlementId),
         displayAmountLabel: normalizedDisplayCurrency === normalizedSettlementCurrency ? undefined : displayAmountLabel,
         linkedStopLabel: linkedItem?.activity ?? copy.linkedStopFallback,
         paidByLabel: payer?.displayName ?? expense.paidBy,
@@ -111,6 +113,107 @@ export function expenseStatementRows({
         typeLabel: expense.category === "settlement" ? copy.type.settlement : copy.type.spend,
       };
     });
+}
+
+function statementDateLabel(
+  expense: Expense,
+  trip: Trip,
+  locale: "en" | "th",
+  fallback: string,
+  inferredAllocationsBySettlementId: Map<string, { expenseId: string }[]>,
+): string {
+  const day = statementDay(trip, expense, inferredAllocationsBySettlementId);
+  return day ? `${formatDayLabel(day, trip.startDate, locale)} · ${day}` : fallback;
+}
+
+function statementDay(
+  trip: Trip,
+  expense: Expense,
+  inferredAllocationsBySettlementId: Map<string, { expenseId: string }[]>,
+  seen = new Set<string>(),
+): string | null {
+  if (seen.has(expense.id)) return null;
+  seen.add(expense.id);
+  const directDay = findItineraryItemById(trip.itineraryItems, expense.itineraryItemId)?.day ?? expense.spentOn ?? null;
+  if (directDay || expense.category !== "settlement") return directDay;
+  const explicitAllocations = expense.settlementAllocations ?? [];
+  const allocatedExpenses = explicitAllocations.length
+    ? explicitAllocations
+      .map((allocation) => trip.expenses.find((candidate) => candidate.id === allocation.expenseId))
+    : (inferredAllocationsBySettlementId.get(expense.id) ?? [])
+      .map((allocation) => trip.expenses.find((candidate) => candidate.id === allocation.expenseId));
+  return allocatedExpenses
+    .filter((allocatedExpense): allocatedExpense is Expense => Boolean(allocatedExpense))
+    .map((allocatedExpense) => statementDay(trip, allocatedExpense, inferredAllocationsBySettlementId, seen))
+    .find(Boolean) ?? null;
+}
+
+function inferredSettlementAllocationsBySettlementId(
+  trip: Trip,
+  settlementCurrency: string,
+): Map<string, { expenseId: string }[]> {
+  const allocationsBySettlementId = new Map<string, { expenseId: string }[]>();
+  const coverageByPayerExpense = new Map<string, number>();
+  const settlements = trip.expenses.filter((expense) => expense.category === "settlement");
+  for (const settlement of settlements) {
+    const explicitAllocations = settlement.settlementAllocations ?? [];
+    if (explicitAllocations.length) {
+      for (const allocation of explicitAllocations) {
+        const coverageKey = `${allocation.memberId}::${allocation.expenseId}`;
+        const coverageAmount = allocation.statementStatus === "closed" && (allocation.closedAmount ?? 0) > 0
+          ? allocation.closedAmount ?? allocation.amount
+          : allocation.amount;
+        coverageByPayerExpense.set(
+          coverageKey,
+          roundMoney((coverageByPayerExpense.get(coverageKey) ?? 0) + coverageAmount),
+        );
+      }
+      continue;
+    }
+    const allocations: { expenseId: string }[] = [];
+    for (const [recipientId, recipientAmount] of Object.entries(settlement.splits)) {
+      let remaining = amountInSettlementCurrency(recipientAmount, settlement, settlementCurrency);
+      if (remaining <= 0) continue;
+      const recipientDebtExpenses = trip.expenses
+        .filter((expense) =>
+          expense.category !== "settlement" &&
+          expense.paidBy === recipientId &&
+          (expense.splits[settlement.paidBy] ?? 0) > 0
+        )
+        .sort((left, right) => expenseSourceSortKey(trip, left).localeCompare(expenseSourceSortKey(trip, right)));
+      for (const expense of recipientDebtExpenses) {
+        const coverageKey = `${settlement.paidBy}::${expense.id}`;
+        const debtAmount = amountInSettlementCurrency(expense.splits[settlement.paidBy] ?? 0, expense, settlementCurrency);
+        const alreadyCovered = coverageByPayerExpense.get(coverageKey) ?? 0;
+        const outstandingAmount = roundMoney(debtAmount - alreadyCovered);
+        if (outstandingAmount <= 0) continue;
+        const amount = roundMoney(Math.min(remaining, outstandingAmount));
+        if (amount <= 0) continue;
+        allocations.push({ expenseId: expense.id });
+        coverageByPayerExpense.set(coverageKey, roundMoney(alreadyCovered + amount));
+        remaining = roundMoney(remaining - amount);
+        if (remaining <= 0) break;
+      }
+    }
+    if (allocations.length) allocationsBySettlementId.set(settlement.id, allocations);
+  }
+  return allocationsBySettlementId;
+}
+
+function expenseSourceSortKey(trip: Trip, expense: Expense): string {
+  const day = findItineraryItemById(trip.itineraryItems, expense.itineraryItemId)?.day ?? expense.spentOn ?? "9999-99-99";
+  return `${day}-${expense.title}`;
+}
+
+function amountInSettlementCurrency(
+  amount: number,
+  expense: Expense,
+  settlementCurrency: string,
+): number {
+  return convertToSettlementCurrency(
+    amount,
+    expenseExchangeRate(expense, settlementCurrency),
+  );
 }
 
 export function expenseStatementStatus(expense: Expense): ExpenseStatementStatus {

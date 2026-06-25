@@ -23,6 +23,8 @@ describe("TripExpensesPage statement", () => {
     expect(personalStatement).toHaveClass("expense-personal-statement-table");
     expect(within(personalStatement).getByRole("columnheader", { name: "ค่าอะไร" })).toBeVisible();
     expect(within(personalStatement).getByRole("columnheader", { name: "วิธีเคลียร์" })).toBeVisible();
+    expect(within(personalStatement).getByText("วันที่ 1 · 2026-06-18")).toBeInTheDocument();
+    expect(within(personalStatement).getByText("วันที่ 3 · 2026-06-20")).toBeInTheDocument();
     expect(within(personalStatement).getByText("Aom received Beam payback")).toBeInTheDocument();
     expect(within(personalStatement).getByText("เราจ่ายคืน")).toBeInTheDocument();
     expect(within(personalStatement).getByText("จ่ายให้ Demo Traveler")).toBeInTheDocument();
@@ -30,6 +32,7 @@ describe("TripExpensesPage statement", () => {
     expect(within(personalStatement).getAllByText("Explorer Friend จ่ายแทนเรา").length).toBeGreaterThan(0);
     expect(within(panel).queryByRole("table", { name: /รายการเงินทริปแบบละเอียด/i })).not.toBeInTheDocument();
     expect(within(panel).queryByRole("radio", { name: /ไม่ต้องคืน|ตรวจยอด|ทั้งหมด/i })).not.toBeInTheDocument();
+    expect(within(panel).queryByText("ไม่ผูกวัน")).not.toBeInTheDocument();
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 

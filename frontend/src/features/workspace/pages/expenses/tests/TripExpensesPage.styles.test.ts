@@ -7,13 +7,17 @@ import {
   financeTabActiveClassName,
   financeTabClassName,
   financeTabsClassName,
+  ledgerDetailActionsClassName,
+  ledgerDetailHeaderClassName,
   ledgerWorkspaceClassName,
   mobileLedgerCardClassName,
   mobileLedgerCardSelectedClassName,
+  personalStatementMobileRowClassName,
   scopeAuditListClassName,
   scopeAuditRowClassName,
   settingsActionsClassName,
   settlementRowClassName,
+  statementMobileRowClassName,
   transactionDetailActionsClassName,
   transactionDetailClassName,
   transactionDetailDangerActionClassName,
@@ -49,8 +53,9 @@ describe("TripExpensesPage styles", () => {
   });
 
   it("keeps ledger detail layouts responsive without nested card chrome", () => {
-    expect(ledgerWorkspaceClassName).toContain("grid-cols-[minmax(0,1fr)_300px]");
-    expect(ledgerWorkspaceClassName).toContain("max-[1279px]:grid-cols-1");
+    expect(ledgerWorkspaceClassName).not.toContain("grid-cols-[minmax(0,1fr)_300px]");
+    expect(ledgerDetailHeaderClassName).toContain("grid-cols-[minmax(0,1fr)_auto]");
+    expect(ledgerDetailActionsClassName).toContain("max-[1023px]:flex");
     expect(transactionDetailClassName).toContain("expense-transaction-detail");
     expect(transactionDetailClassName).toContain("max-[767px]:fixed");
     expect(transactionDetailClassName).not.toContain("backdrop-blur");
@@ -66,6 +71,12 @@ describe("TripExpensesPage styles", () => {
   it("keeps mobile feed and settings actions touch-safe", () => {
     expect(mobileLedgerCardClassName).toContain("shadow-none");
     expect(mobileLedgerCardSelectedClassName).toContain("bg-(--color-primary-soft)");
+    expect(personalStatementMobileRowClassName).toContain("border-b");
+    expect(personalStatementMobileRowClassName).toContain("bg-transparent");
+    expect(personalStatementMobileRowClassName).not.toContain("rounded-(--radius-md)");
+    expect(statementMobileRowClassName).toContain("border-b");
+    expect(statementMobileRowClassName).toContain("bg-transparent");
+    expect(statementMobileRowClassName).not.toContain("rounded-(--radius-md)");
     expect(settingsActionsClassName).toContain("[&>*]:min-h-10");
   });
 });

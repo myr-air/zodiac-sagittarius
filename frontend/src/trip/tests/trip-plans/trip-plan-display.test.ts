@@ -42,6 +42,36 @@ describe("trip plan display", () => {
     );
   });
 
+  it("defaults to the main Trip Plan even when it is not the first option", () => {
+    const backupPlan = {
+      ...seedTrip.planVariants[1],
+      id: "plan-backup-first",
+      kind: "backup" as const,
+      status: "backup" as const,
+    };
+    const mainPlan = {
+      ...seedTrip.planVariants[0],
+      id: "plan-main-second",
+      kind: "main" as const,
+      status: "main" as const,
+    };
+
+    expect(defaultTripPlanId({
+      ...seedTrip,
+      activePlanVariantId: "",
+      mainTripPlanId: "",
+      planVariants: [backupPlan, mainPlan],
+      tripPlans: [backupPlan, mainPlan],
+    })).toBe("plan-main-second");
+    expect(defaultTripPlanId({
+      ...seedTrip,
+      activePlanVariantId: "plan-backup-first",
+      mainTripPlanId: "",
+      planVariants: [backupPlan, mainPlan],
+      tripPlans: [backupPlan, mainPlan],
+    })).toBe("plan-main-second");
+  });
+
   it("resolves Trip Plan names from canonical tripPlans", () => {
     expect(tripPlanName(seedTrip, "plan-rain")).toBe("แผนฝนตก");
     expect(findTripPlanById(seedTrip, "plan-rain")?.name).toBe("แผนฝนตก");

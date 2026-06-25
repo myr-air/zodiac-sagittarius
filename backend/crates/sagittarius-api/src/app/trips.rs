@@ -263,6 +263,7 @@ pub(crate) fn build_expense_summary(
     let settlement_currency = "HKD";
     let mut net_minor_by_member = BTreeMap::new();
     let mut group_spend_minor = 0_i64;
+    let closed_coverage_by_share = closed_statement_coverage_by_share(&expenses);
 
     for expense in expenses {
         if matches!(
@@ -271,27 +272,61 @@ pub(crate) fn build_expense_summary(
         ) {
             continue;
         }
-        let amount_minor = convert_minor_to_settlement_currency(
+        let converted_amount_minor = convert_minor_to_settlement_currency(
             i64::from(expense.amount_minor),
             expense.exchange_rate_to_settlement_currency,
         );
+        let mut amount_minor = if expense.category == "settlement" {
+            closed_statement_minor(&expense).unwrap_or(converted_amount_minor)
+        } else {
+            0
+        };
         if expense.category != "settlement" {
-            group_spend_minor += amount_minor;
+            group_spend_minor += converted_amount_minor;
         }
-        *net_minor_by_member.entry(expense.paid_by).or_insert(0) += amount_minor;
 
         if let Some(splits) = expense.splits.as_object() {
+            let split_members: Vec<_> = splits
+                .iter()
+                .filter(|(_, share)| json_number_to_i64(share) > 0)
+                .map(|(member_id, _)| member_id.as_str())
+                .collect();
             for (member_id, share) in splits {
                 let Ok(member_id) = Uuid::parse_str(member_id) else {
                     continue;
                 };
-                let share_minor = convert_minor_to_settlement_currency(
-                    json_number_to_i64(share),
-                    expense.exchange_rate_to_settlement_currency,
-                );
+                let share_minor = if expense.category == "settlement" && split_members.len() == 1 {
+                    closed_statement_minor(&expense).unwrap_or_else(|| {
+                        convert_minor_to_settlement_currency(
+                            json_number_to_i64(share),
+                            expense.exchange_rate_to_settlement_currency,
+                        )
+                    })
+                } else if expense.category != "settlement" {
+                    closed_coverage_by_share
+                        .get(&(expense.id, member_id))
+                        .copied()
+                        .unwrap_or_else(|| {
+                            convert_minor_to_settlement_currency(
+                                json_number_to_i64(share),
+                                expense.exchange_rate_to_settlement_currency,
+                            )
+                        })
+                } else {
+                    convert_minor_to_settlement_currency(
+                        json_number_to_i64(share),
+                        expense.exchange_rate_to_settlement_currency,
+                    )
+                };
+                if expense.category != "settlement" {
+                    amount_minor += share_minor;
+                }
                 *net_minor_by_member.entry(member_id).or_insert(0) -= share_minor;
             }
+        } else if expense.category != "settlement" {
+            amount_minor = converted_amount_minor;
         }
+        *net_minor_by_member.entry(expense.paid_by).or_insert(0) += amount_minor;
     }
 
     let current_net_minor = *net_minor_by_member.get(&current_member_id).unwrap_or(&0);
@@ -310,6 +345,84 @@ pub(crate) fn build_expense_summary(
             reminders,
         ),
     }
+}
+
+fn closed_statement_minor(expense: &ExpenseSplitRecord) -> Option<i64> {
+    if expense.category != "settlement" {
+        return None;
+    }
+    let allocations = expense.settlement_allocations.as_array()?;
+    let total_minor = allocations.iter().fold(0_i64, |sum, allocation| {
+        let Some(allocation) = allocation.as_object() else {
+            return sum;
+        };
+        if allocation
+            .get("statementStatus")
+            .and_then(serde_json::Value::as_str)
+            != Some("closed")
+        {
+            return sum;
+        }
+        let amount = allocation
+            .get("closedAmount")
+            .and_then(serde_json::Value::as_f64)
+            .unwrap_or(0.0);
+        if !amount.is_finite() || amount <= 0.0 {
+            return sum;
+        }
+        sum + (amount * 100.0).round() as i64
+    });
+    (total_minor > 0).then_some(total_minor)
+}
+
+fn closed_statement_coverage_by_share(
+    expenses: &[ExpenseSplitRecord],
+) -> BTreeMap<(Uuid, Uuid), i64> {
+    let mut coverage = BTreeMap::new();
+    for expense in expenses {
+        if expense.category != "settlement" {
+            continue;
+        }
+        let Some(allocations) = expense.settlement_allocations.as_array() else {
+            continue;
+        };
+        for allocation in allocations {
+            let Some(allocation) = allocation.as_object() else {
+                continue;
+            };
+            if allocation
+                .get("statementStatus")
+                .and_then(serde_json::Value::as_str)
+                != Some("closed")
+            {
+                continue;
+            }
+            let Some(expense_id) = allocation
+                .get("expenseId")
+                .and_then(serde_json::Value::as_str)
+                .and_then(|value| Uuid::parse_str(value).ok())
+            else {
+                continue;
+            };
+            let Some(member_id) = allocation
+                .get("memberId")
+                .and_then(serde_json::Value::as_str)
+                .and_then(|value| Uuid::parse_str(value).ok())
+            else {
+                continue;
+            };
+            let amount = allocation
+                .get("closedAmount")
+                .and_then(serde_json::Value::as_f64)
+                .unwrap_or(0.0);
+            if !amount.is_finite() || amount <= 0.0 {
+                continue;
+            }
+            *coverage.entry((expense_id, member_id)).or_insert(0) +=
+                (amount * 100.0).round() as i64;
+        }
+    }
+    coverage
 }
 
 fn attach_reminder_history(
@@ -424,12 +537,14 @@ mod tests {
         let settled = Uuid::now_v7();
         let expenses = vec![
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 10_000,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "transport".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 2500,
                     debtor.to_string(): 7500,
@@ -437,24 +552,28 @@ mod tests {
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: settled,
                 amount_minor: 125,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     settled.to_string(): 124.6,
                     debtor.to_string(): "ignored"
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: debtor,
                 amount_minor: 0,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!("not an object"),
             },
         ];
@@ -478,24 +597,28 @@ mod tests {
         let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
         let expenses = vec![
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 9_000,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 4500,
                     debtor.to_string(): 4500
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: debtor,
                 amount_minor: 4_500,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "settlement".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 4500
                 }),
@@ -515,35 +638,41 @@ mod tests {
         let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
         let expenses = vec![
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 80_000,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "transport".to_string(),
                 stored_value_transaction_type: Some("topup".to_string()),
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 80_000
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 1_200,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "transport".to_string(),
                 stored_value_transaction_type: Some("spend".to_string()),
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 600,
                     debtor.to_string(): 600
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 5_000,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "transport".to_string(),
                 stored_value_transaction_type: Some("refund".to_string()),
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 5_000
                 }),
@@ -564,24 +693,28 @@ mod tests {
         let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
         let expenses = vec![
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: payer,
                 amount_minor: 12_000,
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 6000,
                     debtor.to_string(): 6000
                 }),
             },
             ExpenseSplitRecord {
+                id: Uuid::now_v7(),
                 paid_by: debtor,
                 amount_minor: 10_000,
                 currency: "CNY".to_string(),
                 exchange_rate_to_settlement_currency: 1.1,
                 category: "transport".to_string(),
                 stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
                 splits: json!({
                     payer.to_string(): 5000,
                     debtor.to_string(): 5000
@@ -608,12 +741,14 @@ mod tests {
         let stale_reminder_at = "2026-06-05T11:00:00Z".to_string();
         let matching_reminder_at = "2026-06-05T12:00:00Z".to_string();
         let expenses = vec![ExpenseSplitRecord {
+            id: Uuid::now_v7(),
             paid_by: payer,
             amount_minor: 9_000,
             currency: "HKD".to_string(),
             exchange_rate_to_settlement_currency: 1.0,
             category: "food".to_string(),
             stored_value_transaction_type: None,
+            settlement_allocations: json!([]),
             splits: json!({
                 payer.to_string(): 4500,
                 debtor.to_string(): 4500
@@ -652,6 +787,60 @@ mod tests {
             summary.settlement_suggestions[0].last_reminded_at,
             Some(matching_reminder_at)
         );
+    }
+
+    #[test]
+    fn closed_statement_snapshots_clear_accepted_payback_differences() {
+        let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
+        let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
+        let expense_id = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac563").unwrap();
+        let expenses = vec![
+            ExpenseSplitRecord {
+                id: expense_id,
+                paid_by: payer,
+                amount_minor: 65_000,
+                currency: "CNY".to_string(),
+                exchange_rate_to_settlement_currency: 1.2,
+                category: "food".to_string(),
+                stored_value_transaction_type: None,
+                settlement_allocations: json!([]),
+                splits: json!({
+                    debtor.to_string(): 65_000
+                }),
+            },
+            ExpenseSplitRecord {
+                id: Uuid::now_v7(),
+                paid_by: debtor,
+                amount_minor: 64_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "settlement".to_string(),
+                stored_value_transaction_type: None,
+                settlement_allocations: json!([
+                    {
+                        "expenseId": expense_id.to_string(),
+                        "memberId": debtor.to_string(),
+                        "amount": 640.0,
+                        "closedAmount": 650.0,
+                        "closedAt": "2026-06-25T04:00:00.000Z",
+                        "lockedCurrency": "HKD",
+                        "lockedExchangeRate": 1.0,
+                        "statementStatus": "closed"
+                    }
+                ]),
+                splits: json!({
+                    payer.to_string(): 64_000
+                }),
+            },
+        ];
+
+        let summary = build_expense_summary(expenses, debtor, Vec::new());
+
+        assert_eq!(summary.group_spend, 780.0);
+        assert_eq!(summary.current_user_net_label, "You are settled");
+        assert_eq!(summary.net_by_member[&payer], 0.0);
+        assert_eq!(summary.net_by_member[&debtor], 0.0);
+        assert!(summary.settlement_suggestions.is_empty());
     }
 
     #[test]

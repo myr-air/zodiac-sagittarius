@@ -82,6 +82,7 @@ export const thExpensesMessages = {
       downloadCsv: "ส่งออกไฟล์",
       saveExpense: "บันทึกค่าใช้จ่าย",
       saveSettlement: "บันทึกจ่ายคืน",
+      closeStatement: "ปิดยอดบัญชี",
       moreExpenseActions: "คำสั่งเพิ่มเติม",
       editExpenseShort: "แก้ไขบิล",
       duplicateAsEstimateShort: "สร้างประมาณการจอง",
@@ -203,6 +204,10 @@ export const thExpensesMessages = {
         noPaybacks: "บัญชีนี้ไม่มียอดจ่ายคืนที่ต้องจัดการ",
         noDirectAllocation: "เป็นรายการจ่ายคืนที่บันทึกไว้ แต่ยังไม่ได้ผูกกับบิลย่อยแบบรายใบ",
         includedLineItems: ({ count }: { count: number }) => `รวม ${count} รายการย่อย`,
+        accountContext: {
+          groupBill: ({ share, total }: { share: string; total: string }) => `ส่วนของเรา ${share} · ทั้งบิล ${total}`,
+          advanceForGroup: ({ total }: { total: string }) => `สำรองจ่ายให้กลุ่ม ${total}`,
+        },
         columns: {
           date: "วัน",
           item: "ค่าอะไร",
@@ -220,6 +225,7 @@ export const thExpensesMessages = {
         },
         paymentMethod: {
           paidAtSource: "จ่ายตอนเกิดรายการ",
+          closed: "ปิดยอดด้วยเรทที่ล็อกไว้",
           covered: "จ่ายคืนแล้ว",
           partial: "จ่ายคืนบางส่วน",
           unpaid: "ยังไม่พบรายการจ่ายคืน",

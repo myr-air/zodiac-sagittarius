@@ -50,8 +50,12 @@ describe("TripExpensesPage overview and filters", () => {
     const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
       .find((button) => button.textContent?.includes("Dim Dim Sum brunch"));
     expect(rowButton).toBeInstanceOf(HTMLButtonElement);
+    expect(rowButton).toHaveAttribute("aria-expanded", "false");
     await user.click(rowButton as HTMLButtonElement);
-    expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
+    expect(rowButton).toHaveAttribute("aria-expanded", "true");
+    expect(within(ledger).getAllByText("แชร์กับ").length).toBeGreaterThan(1);
+    await user.click(rowButton as HTMLButtonElement);
+    expect(rowButton).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
     expect(screen.getAllByLabelText("แผนทริป")[0]).toHaveValue("plan-main");
@@ -88,7 +92,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(rowButton?.querySelector("strong")).toHaveClass("break-words");
 
     await user.click(rowButton as HTMLButtonElement);
-    expect(screen.getByRole("region", { name: /Octopus card permanent stored value/i })).toHaveTextContent("แชร์กับ");
+    expect(within(ledger).getAllByText("แชร์กับ").length).toBeGreaterThan(1);
   });
 
   it("filters the expense ledger by search text and category, then resets filters", async () => {

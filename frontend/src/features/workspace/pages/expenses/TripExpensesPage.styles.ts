@@ -22,7 +22,7 @@ export const expensesPageClassName = "expenses-page grid min-h-full min-w-0 cont
 export const expensesSummaryClassName = `expenses-summary ${workspaceSummaryGridFourClassName} max-[767px]:grid-cols-2`;
 export const statClassName = `expense-stat ${workspaceSummaryStatSurfaceClassName} [&>strong]:tabular-nums`;
 export const financeTabsClassName = `expense-finance-tabs grid min-w-0 grid-cols-3 items-center gap-1 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-1 shadow-none ${workspaceResponsiveInlinePanelResetClassName} max-[767px]:sticky max-[767px]:top-0 max-[767px]:z-[12] max-[767px]:rounded-none max-[767px]:border-x-0`;
-export const financeTabClassName = "inline-flex min-h-10 min-w-0 items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap rounded-(--radius-sm) border border-transparent px-3 text-sm font-bold leading-5 text-(--color-text-muted) transition hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:border-(--color-primary-border) max-[767px]:px-1.5 max-[767px]:text-xs max-[767px]:leading-4 max-[420px]:whitespace-normal";
+export const financeTabClassName = "inline-flex min-h-10 min-w-0 items-center justify-center overflow-hidden rounded-(--radius-sm) border border-transparent px-3 text-center text-sm font-extrabold leading-4 text-(--color-text-muted) transition hover:bg-(--color-surface-subtle) hover:text-(--color-text) focus-visible:border-(--color-primary-border) max-[767px]:px-2 max-[767px]:text-xs max-[767px]:whitespace-normal max-[767px]:break-words min-[768px]:text-ellipsis min-[768px]:whitespace-nowrap";
 export const financeTabActiveClassName = `${financeTabClassName} border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)`;
 export const financeViewClassName = "grid min-w-0 gap-3";
 export const headerPlanSelectClassName = "grid min-w-0 gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2 [&_span]:min-w-0 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap [&_span]:text-[11px] [&_span]:font-black [&_span]:uppercase [&_span]:text-(--color-text-muted) [&_select]:min-w-0 [&_select]:max-w-full [&_select]:overflow-hidden [&_select]:text-ellipsis";
@@ -50,7 +50,7 @@ export const quickCaptureSplitButtonActiveClassName = "border-(--color-primary-b
 export const quickCaptureSubmitClassName = "w-full justify-center";
 export const overviewActionMenuClassName = "relative inline-grid justify-self-start";
 export const overviewIconButtonClassName = "inline-grid min-h-9 min-w-9 place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-(--color-text-muted) transition hover:border-(--color-border-strong) hover:text-(--color-text) [&_summary]:grid [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:place-items-center [&_summary::-webkit-details-marker]:hidden";
-export const overviewActionMenuPanelClassName = "absolute left-0 top-[calc(100%+6px)] z-20 grid min-w-[220px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] [&_button]:w-full [&_button]:justify-start";
+export const overviewActionMenuPanelClassName = "absolute left-0 top-[calc(100%+6px)] z-50 grid min-w-[220px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] [&_button]:w-full [&_button]:justify-start";
 export const balanceNameClassName = "font-extrabold text-(--color-text)";
 export const balanceMetaClassName = "text-(--color-text-muted)";
 export const amountClassName = "font-extrabold tabular-nums";
@@ -60,24 +60,24 @@ export const summaryValueToneClassNames = {
   positive: positiveClassName,
   negative: negativeClassName,
 };
-export const commandBarClassName = `expenses-command-bar grid content-start gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-3.5 shadow-none ${workspaceResponsivePanelResetClassName} max-[1199px]:p-3`;
-export const commandBarHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 max-[767px]:grid-cols-1";
+export const commandBarClassName = `expenses-command-bar grid content-start gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2.5 shadow-none ${workspaceResponsivePanelResetClassName} max-[1199px]:p-3`;
+export const commandBarHeaderClassName = "grid grid-cols-[minmax(150px,0.8fr)_minmax(240px,1.1fr)_auto] items-start gap-2.5 max-[1023px]:grid-cols-[minmax(0,1fr)_auto] max-[767px]:grid-cols-1";
 export const commandTitleGroupClassName = "grid gap-1";
-export const commandTitleClassName = "m-0 text-base font-bold leading-6 text-(--color-text)";
-export const commandMetaClassName = "flex flex-wrap items-center gap-2 text-xs font-semibold text-(--color-text-muted)";
-export const filterGridClassName = "grid grid-cols-[minmax(150px,220px)_minmax(150px,220px)_minmax(150px,220px)_auto] items-end gap-2 max-[1199px]:grid-cols-2 max-[767px]:grid-cols-1";
-export const searchRowClassName = "grid grid-cols-[minmax(240px,420px)] max-[767px]:grid-cols-1";
-export const commandActionsClassName = "expenses-command-actions flex min-w-0 items-center justify-end gap-2 [&>*]:min-h-10 max-[767px]:sticky max-[767px]:bottom-3 max-[767px]:z-[18] max-[767px]:justify-start max-[767px]:rounded-(--radius-lg) max-[767px]:border max-[767px]:border-(--color-border) max-[767px]:bg-(--color-surface) max-[767px]:p-2 max-[767px]:shadow-[0_10px_24px_rgb(15_23_42_/_0.14)]";
+export const commandTitleClassName = "m-0 text-base font-extrabold leading-6 text-(--color-text)";
+export const commandMetaClassName = "flex flex-wrap items-center gap-2 text-xs font-bold text-(--color-text-muted)";
+export const filterGridClassName = "grid grid-cols-[minmax(120px,180px)_minmax(130px,190px)_minmax(140px,200px)_auto] items-end justify-start gap-2 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) p-2 max-[1023px]:grid-cols-2 max-[767px]:grid-cols-1 [&_button]:min-h-9";
+export const searchFieldClassName = "min-w-0 max-[1023px]:col-span-2 max-[767px]:col-span-1";
+export const commandActionsClassName = "expenses-command-actions flex min-w-0 items-center justify-end gap-2 [&>*]:min-h-10 max-[1023px]:col-start-2 max-[1023px]:row-start-1 max-[767px]:sticky max-[767px]:bottom-3 max-[767px]:z-[18] max-[767px]:col-start-auto max-[767px]:row-start-auto max-[767px]:justify-start max-[767px]:rounded-(--radius-lg) max-[767px]:border max-[767px]:border-(--color-border) max-[767px]:bg-(--color-surface) max-[767px]:p-2 max-[767px]:shadow-[0_10px_24px_rgb(15_23_42_/_0.14)]";
 export const commandPrimaryButtonClassName = "max-w-[180px] min-w-0 overflow-hidden text-ellipsis whitespace-nowrap max-[767px]:max-w-none max-[767px]:flex-1";
 export const commandIconButtonClassName = "min-w-10 px-2.5 max-[767px]:[&_span]:sr-only";
 export const commandMenuClassName = "relative";
-export const commandMenuPanelClassName = "absolute right-0 top-[calc(100%+6px)] z-20 grid min-w-[220px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] [&_button]:w-full [&_button]:justify-start max-[767px]:top-auto max-[767px]:bottom-[calc(100%+6px)] max-[767px]:right-0";
-export const liveStatusClassName = "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-success-border) bg-(--color-success-soft) px-2.5 text-xs font-bold text-[#166534]";
+export const commandMenuPanelClassName = "absolute right-0 top-[calc(100%+6px)] z-50 grid min-w-[220px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] [&_button]:w-full [&_button]:justify-start max-[767px]:top-auto max-[767px]:bottom-[calc(100%+6px)] max-[767px]:right-0";
+export const liveStatusClassName = "inline-flex min-h-8 items-center rounded-(--radius-sm) border border-(--color-success-border) bg-(--color-success-soft) px-2.5 text-xs font-extrabold text-[#166534]";
 export const copyFeedbackClassName = `expense-copy-feedback ${workspaceCopyFeedbackSubtleBadgeClassName}`;
 export const fieldClassName = workspaceFieldClassName;
-export const ledgerWorkspaceClassName = "grid min-h-0 items-start grid-cols-[minmax(0,1fr)_300px] gap-3 max-[1279px]:grid-cols-1";
+export const ledgerWorkspaceClassName = "grid min-h-0 items-start gap-3";
 export const tableWrapClassName = `expenses-table-wrap min-h-0 overflow-auto rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-none ${workspaceResponsiveInlinePanelResetClassName} max-[1199px]:p-0 max-[767px]:hidden`;
-export const tableClassName = "expense-ledger-table w-full min-w-[760px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
+export const tableClassName = "expense-ledger-table w-full min-w-[880px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
 export const tableHeaderClassName = "sticky top-0 z-[1] border-b border-(--color-border) bg-(--color-surface-subtle) text-[11px] font-black text-(--color-text-muted) [&_th]:px-3 [&_th]:py-2.5";
 export const tableBodyClassName = "[&_td]:border-b [&_td]:border-(--color-border) [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3.5 [&_td]:align-middle [&_tr:hover_td]:bg-[color-mix(in_srgb,var(--color-primary-soft)_24%,var(--color-surface))]";
 export const ledgerSelectedRowClassName = "[&_td]:bg-(--color-primary-soft)!";
@@ -89,7 +89,12 @@ export const ledgerRowButtonClassName = "expense-ledger-row-button flex w-full m
 export const ledgerTitleClassName = "min-w-0 max-w-full break-words text-[15px] font-extrabold leading-5";
 export const ledgerDetailRowClassName = "[&_td]:rounded-(--radius-sm)! [&_td]:border! [&_td]:border-[color-mix(in_srgb,var(--color-route-border)_52%,var(--color-border))]! [&_td]:bg-(--color-surface-subtle)! [&_td]:px-3! [&_td]:py-2.5! [&_td]:shadow-none!";
 export const ledgerDetailPanelClassName = "grid gap-2 text-xs font-semibold leading-5 text-(--color-text-muted)";
-export const ledgerDetailGridClassName = "grid grid-cols-[minmax(150px,0.7fr)_minmax(220px,1fr)_minmax(280px,1.35fr)] gap-3 max-[920px]:grid-cols-1 [&_dd]:m-0 [&_dt]:text-[10px] [&_dt]:font-black [&_dt]:uppercase [&_dt]:text-(--color-text-muted)";
+export const ledgerDetailHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 max-[1023px]:grid-cols-1";
+export const ledgerDetailGridClassName = "grid grid-cols-[minmax(130px,0.7fr)_minmax(150px,0.75fr)_minmax(260px,1.55fr)] gap-3 max-[920px]:grid-cols-1 [&_dd]:m-0 [&_dd]:min-w-0 [&_dt]:text-[10px] [&_dt]:font-black [&_dt]:uppercase [&_dt]:text-(--color-text-muted)";
+export const ledgerDetailStackClassName = "grid min-w-0 gap-1";
+export const ledgerDetailActionsClassName = "grid min-w-[168px] gap-1.5 max-[1023px]:flex max-[1023px]:min-w-0 max-[1023px]:flex-wrap";
+export const ledgerDetailActionClassName = "min-h-9 justify-start px-2.5 text-xs max-[1023px]:min-w-[116px]";
+export const ledgerDetailDisclosureClassName = "rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 py-2 [&_summary]:cursor-pointer [&_summary]:font-extrabold [&_ul]:mt-2";
 export const ledgerMemberListClassName = "m-0 grid list-disc gap-1 pl-4";
 export const ledgerSplitCellClassName = "font-extrabold tabular-nums text-(--color-text)";
 export const ledgerStopPillClassName = "inline-flex max-w-[220px] items-center rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-1 text-xs font-bold leading-4 text-(--color-text-muted)";
@@ -178,35 +183,45 @@ export const accountPaybackTextClassName = "grid min-w-0 gap-1 [&_strong]:min-w-
 export const accountPaybackMenuPanelClassName = "absolute bottom-[calc(100%+6px)] right-0 z-20 grid min-w-[220px] gap-1 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-2 shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] [&_button]:w-full [&_button]:justify-start";
 export const accountPaybackEmptyClassName = "m-0 rounded-(--radius-sm) bg-(--color-surface-subtle) px-3 py-2 text-sm font-bold text-(--color-text-muted)";
 export const statementFilterBarClassName = "flex min-w-0 flex-wrap items-center gap-2 max-[767px]:flex-nowrap max-[767px]:overflow-x-auto max-[767px]:pb-1";
-export const statementFilterButtonClassName = "inline-flex min-h-10 items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold text-(--color-text-muted) transition hover:border-(--color-border-strong) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) max-[767px]:min-h-10 max-[767px]:shrink-0";
+export const statementFilterButtonClassName = "inline-flex min-h-10 max-w-[180px] items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-3 text-xs font-extrabold leading-4 text-(--color-text-muted) transition hover:border-(--color-border-strong) hover:text-(--color-text) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) max-[767px]:min-h-10 max-[767px]:max-w-[132px] max-[767px]:shrink-0 max-[767px]:whitespace-normal max-[767px]:break-words";
 export const statementFilterButtonActiveClassName = "border-(--color-primary-border)! bg-(--color-primary-soft)! text-(--color-primary-strong)!";
 export const statementTableClassName = "expense-statement-table w-full min-w-[920px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
 export const personalStatementSectionClassName = `${panelClassName} min-w-0 gap-3 p-0`;
 export const personalStatementHeaderClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-(--color-border) p-3 max-[767px]:grid-cols-1";
 export const personalStatementTableWrapClassName = `min-h-0 overflow-auto bg-(--color-surface) ${workspaceResponsiveInlinePanelResetClassName} max-[767px]:hidden`;
 export const personalStatementTableClassName = "expense-personal-statement-table w-full min-w-[1060px] table-fixed border-collapse bg-(--color-surface) text-left text-sm";
-export const personalStatementMobileListClassName = "hidden list-none gap-2.5 p-3 max-[767px]:grid";
-export const personalStatementMobileRowClassName = "grid gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3";
+export const personalStatementDayRowClassName = "[&_th]:border-b [&_th]:border-(--color-border) [&_th]:bg-[#f1f5f9] [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-normal [&_th]:text-(--color-text-muted)";
+export const personalStatementMobileListClassName = "hidden list-none gap-3 px-3 py-2 max-[767px]:grid";
+export const personalStatementMobileDayGroupClassName = "grid gap-1";
+export const personalStatementMobileDayClassName = "sticky top-0 z-10 border-b border-(--color-border) bg-[#f8fafc] px-0.5 py-1.5 text-xs font-black uppercase tracking-normal text-(--color-text-muted)";
+export const personalStatementMobileDayRowsClassName = "grid list-none p-0";
+export const personalStatementMobileRowClassName = "grid border-b border-(--color-border) bg-transparent py-2.5 last:border-b-0";
 export const personalStatementMobileTopClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3";
-export const personalStatementMobileIncludedClassName = "text-xs font-bold leading-5 text-(--color-text-muted)";
+export const personalStatementMobileDetailsClassName = "grid gap-2 [&_summary]:grid [&_summary]:cursor-pointer [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden";
+export const personalStatementMobileIncludedClassName = "grid gap-1 pt-2 text-xs font-bold leading-5 text-(--color-text-muted)";
 export const personalStatementMobileMetaClassName = "grid gap-1.5 border-t border-(--color-border) pt-2 text-xs font-bold text-(--color-text-muted) [&_div]:grid [&_div]:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] [&_div]:gap-2 [&_dd]:m-0 [&_dd]:text-(--color-text) [&_dt]:font-black";
 export const statementTableBodyClassName = "[&_td]:border-b [&_td]:border-(--color-border) [&_td]:bg-(--color-surface) [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_tr:hover_td]:bg-[color-mix(in_srgb,var(--color-primary-soft)_22%,var(--color-surface))]";
 export const statementItemCellClassName = "grid min-w-0 gap-1 [&_strong]:truncate [&_strong]:font-black [&_strong]:text-(--color-text) [&_span]:truncate [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted)";
 export const statementMetaCellClassName = "text-xs font-bold leading-5 text-(--color-text-muted)";
-export const statementAmountCellClassName = "text-right font-black tabular-nums text-(--color-primary-strong) [&_span]:mt-1 [&_span]:block [&_span]:text-[11px] [&_span]:font-bold [&_span]:text-(--color-text-muted)";
+export const statementAmountCellClassName = "text-right font-black tabular-nums text-(--color-primary-strong) [&_small]:mt-1 [&_small]:block [&_small]:text-[10px] [&_small]:font-black [&_small]:uppercase [&_small]:tracking-normal [&_small]:text-(--color-text-muted) [&_span]:mt-1 [&_span]:block [&_span]:text-[11px] [&_span]:font-bold [&_span]:text-(--color-text-muted)";
+export const personalStatementAmountToneClassNames = {
+  outflow: "text-[#b91c1c]",
+  inflow: "text-[#15803d]",
+  neutral: "text-(--color-primary-strong)",
+};
 export const statementStatusCellClassName = "grid max-w-[220px] gap-1.5";
 export const statementStatusClassName = "inline-flex max-w-full justify-self-start items-center rounded-full border px-2.5 py-1 text-xs font-black leading-4";
 export const statementStatusReasonClassName = "text-[11px] font-semibold leading-4 text-(--color-text-muted)";
 export const statementStatusReasonRowClassName = "flex min-w-0 items-center gap-1.5";
-export const statementReasonTooltipClassName = "relative inline-grid size-5 shrink-0 place-items-center rounded-full border border-(--color-border) bg-(--color-surface) text-[11px] font-black italic leading-none text-(--color-text-muted) hover:border-(--color-border-strong) hover:text-(--color-text) focus-within:border-(--color-primary-border) [&_summary]:grid [&_summary]:size-full [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:place-items-center [&_summary::-webkit-details-marker]:hidden [&_span]:pointer-events-none [&_span]:absolute [&_span]:left-1/2 [&_span]:top-6 [&_span]:z-20 [&_span]:hidden [&_span]:w-[220px] [&_span]:-translate-x-1/2 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-(--color-border) [&_span]:bg-(--color-surface) [&_span]:p-2 [&_span]:text-left [&_span]:text-xs [&_span]:font-bold [&_span]:not-italic [&_span]:leading-5 [&_span]:text-(--color-text) [&_span]:shadow-[0_10px_24px_rgb(15_23_42_/_0.12)] hover:[&_span]:block focus-within:[&_span]:block [&[open]_span]:block";
+export const statementReasonTooltipClassName = "relative inline-grid size-5 shrink-0 place-items-center rounded-full border border-(--color-border) bg-(--color-surface) text-[11px] font-black italic leading-none text-(--color-text-muted) hover:border-(--color-border-strong) hover:text-(--color-text) focus-within:border-(--color-primary-border) [&_summary]:grid [&_summary]:size-full [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:place-items-center [&_summary::-webkit-details-marker]:hidden [&_span]:pointer-events-none [&_span]:absolute [&_span]:right-0 [&_span]:top-6 [&_span]:z-50 [&_span]:hidden [&_span]:w-[min(260px,calc(100vw-32px))] [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-(--color-border) [&_span]:bg-(--color-surface) [&_span]:p-2 [&_span]:text-left [&_span]:text-xs [&_span]:font-bold [&_span]:not-italic [&_span]:leading-5 [&_span]:text-(--color-text) [&_span]:shadow-[0_10px_24px_rgb(15_23_42_/_0.12)] hover:[&_span]:block focus-within:[&_span]:block [&[open]_span]:block";
 export const statementStatusToneClassNames = {
   needsReview: "border-(--color-warning-border) bg-(--color-warning-soft) text-(--color-warning-strong)",
   noPaybackNeeded: "border-(--color-success-border) bg-(--color-success-soft) text-[#166534]",
   settlementRecorded: "border-(--color-success-border) bg-(--color-success-soft) text-[#166534]",
   recorded: "border-(--color-primary-border) bg-(--color-primary-soft) text-(--color-primary-strong)",
 };
-export const statementMobileListClassName = `hidden gap-2.5 max-[767px]:grid ${workspaceResponsiveInlinePanelResetClassName}`;
-export const statementMobileRowClassName = "grid gap-2.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left shadow-none";
+export const statementMobileListClassName = `hidden gap-0 max-[767px]:grid ${workspaceResponsiveInlinePanelResetClassName}`;
+export const statementMobileRowClassName = "grid gap-2.5 border-b border-(--color-border) bg-transparent py-3 text-left last:border-b-0";
 export const statementMobileTopClassName = "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3";
 export const statementMobileTitleClassName = "grid min-w-0 gap-1 [&_strong]:truncate [&_strong]:font-black [&_strong]:text-(--color-text) [&_span]:text-xs [&_span]:font-bold [&_span]:text-(--color-text-muted)";
 export const statementMobileSummaryClassName = "flex min-w-0 items-center justify-between gap-2 text-xs font-extrabold text-(--color-text-muted) [&>span:first-child]:truncate";

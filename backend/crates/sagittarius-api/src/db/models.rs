@@ -810,12 +810,14 @@ pub struct NewStopNote<'a> {
 
 #[derive(Debug, Clone, FromRow)]
 pub struct ExpenseSplitRecord {
+    pub id: Uuid,
     pub paid_by: Uuid,
     pub amount_minor: i32,
     pub currency: String,
     pub exchange_rate_to_settlement_currency: f64,
     pub category: String,
     pub stored_value_transaction_type: Option<String>,
+    pub settlement_allocations: serde_json::Value,
     pub splits: serde_json::Value,
 }
 
