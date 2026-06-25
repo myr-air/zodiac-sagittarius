@@ -71,7 +71,8 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
 
     await screen.findByRole("region", { name: /เงินทริป/i });
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
+    await user.click(ledgerRowButton("Dim Dim Sum brunch"));
+    await user.click(screen.getByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i }));
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.selectOptions(within(dialog).getByLabelText(/Trip Plan|แผนทริป/i), [
       "plan-variant-backup",
@@ -128,3 +129,10 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
     expect(screen.queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
   });
 });
+
+function ledgerRowButton(title: string): HTMLButtonElement {
+  const button = Array.from(document.querySelectorAll<HTMLButtonElement>(".expense-ledger-row-button"))
+    .find((candidate) => candidate.textContent?.includes(title));
+  expect(button).toBeInstanceOf(HTMLButtonElement);
+  return button!;
+}
