@@ -22,17 +22,19 @@ describe("TripMembersPage management", () => {
       "members-page",
       "grid",
       "gap-3",
+      "grid-rows-[auto_auto_auto_minmax(0,1fr)]",
     );
     expect(screen.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass(
       "member-stat-grid",
       "grid",
-      "gap-3",
+      "gap-2",
     );
     expect(screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")).toHaveClass(
       "member-stat",
       "grid",
       "rounded-(--radius-md)",
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+      "shadow-none",
+      "min-h-14",
     );
     expect(
       screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")?.className,
@@ -40,10 +42,11 @@ describe("TripMembersPage management", () => {
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass(
       "member-command-bar",
       "grid",
-      "gap-3",
+      "gap-2",
     );
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass(
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+      "bg-(--color-surface)",
+      "shadow-none",
     );
 
     fireEvent.click(screen.getByRole("button", { name: /รีเซ็ตรหัสผ่าน Travel Mate/i }));
@@ -72,12 +75,13 @@ describe("TripMembersPage management", () => {
       "rounded-(--radius-lg)",
     );
     expect(screen.getByRole("region", { name: /เพิ่มสมาชิก/i })).toHaveClass(
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+      "bg-(--color-surface)",
+      "shadow-none",
     );
     expect(screen.getByLabelText(/ชื่อสมาชิกใหม่/i).closest("form")).toHaveClass(
       "member-create-form",
       "grid",
-      "gap-3",
+      "gap-2",
     );
     fireEvent.change(screen.getByLabelText(/ชื่อสมาชิกใหม่/i), {
       target: { value: "Guide" },

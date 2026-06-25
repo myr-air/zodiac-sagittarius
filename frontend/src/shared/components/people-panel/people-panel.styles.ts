@@ -1,12 +1,12 @@
 import type { Member } from "@/src/trip/types";
 
 export const peopleModuleClassName =
-  "detail-section people-module grid w-full min-w-0 gap-3 rounded-(--radius-md) border border-[color-mix(in_srgb,var(--color-route-border)_48%,var(--color-border))] bg-[linear-gradient(180deg,rgb(255_255_255)_0%,color-mix(in_srgb,var(--color-route-soft)_34%,var(--color-surface))_100%)] p-3.5 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
+  "detail-section people-module grid w-full min-w-0 gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 shadow-none";
 export const peopleHeadingClassName =
   "m-0 text-[15px] font-extrabold leading-[21px] text-(--color-text)";
 export const peopleListClassName = "people-list grid min-w-0 gap-2";
 export const personRowClassName =
-  "person-row grid min-h-[68px] min-w-0 grid-cols-[34px_minmax(220px,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-[color-mix(in_srgb,var(--color-border)_78%,var(--color-route-border))] bg-[rgb(255_255_255_/_0.82)] p-2.5 text-[11px] leading-4 text-(--color-text-muted) shadow-[0_1px_0_rgb(15_23_42_/_0.035)] data-[access-status=disabled]:bg-(--color-surface-muted) data-[access-status=disabled]:opacity-75 max-[1199px]:grid-cols-[34px_minmax(0,1fr)]";
+  "person-row grid min-h-[68px] min-w-0 grid-cols-[34px_minmax(220px,1fr)_auto] items-center gap-2.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) p-2.5 text-[11px] leading-4 text-(--color-text-muted) shadow-none data-[access-status=disabled]:bg-(--color-surface-muted) data-[access-status=disabled]:opacity-75 max-[1199px]:grid-cols-[34px_minmax(0,1fr)]";
 export const personAvatarClassName =
   "person-avatar grid size-[34px] place-items-center rounded-full text-sm font-extrabold text-white";
 export const memberIdentityClassName =
