@@ -23,7 +23,14 @@ describe("OverviewPage visual summary", () => {
     renderOverview("member-beam");
 
     const hero = screen.getByRole("region", { name: /Hong Kong \+ Shenzhen Trip/i });
-    expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass("overview-page", "flex", "flex-col", "gap-4");
+    expect(screen.getByRole("region", { name: /Trip overview/i })).toHaveClass(
+      "overview-page",
+      "flex",
+      "flex-col",
+      "gap-4",
+      "max-[767px]:bg-(--color-surface-subtle)",
+      "max-[767px]:px-2",
+    );
     expect(document.querySelector(".overview-summary-bento")).toHaveClass("grid", "grid-cols-12", "max-[1199px]:grid-cols-1");
     expect(hero).toHaveClass("overview-hero", "grid", "overflow-hidden", "rounded-(--radius-lg)");
     expect(hero).toHaveClass(
@@ -31,6 +38,7 @@ describe("OverviewPage visual summary", () => {
       "min-h-[126px]",
       "bg-[linear-gradient(135deg,var(--color-surface)_0%,color-mix(in_srgb,var(--overview-hero-sky)_62%,white)_100%)]",
     );
+    expect(hero).toHaveClass("max-[767px]:rounded-(--radius-lg)", "max-[767px]:border");
     expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
     expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:hidden");
@@ -130,6 +138,9 @@ describe("OverviewPage visual summary", () => {
     expect(afterTrip.compareDocumentPosition(readiness)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(afterTrip.compareDocumentPosition(checklist)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(checklist).not.toHaveClass("overview-task-panel");
+    const expenseShortcut = screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i });
+    expect(expenseShortcut).toHaveClass("overview-panel--button");
+    expect(expenseShortcut.querySelector(".icon")).toBeInTheDocument();
     expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
     expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
   });
