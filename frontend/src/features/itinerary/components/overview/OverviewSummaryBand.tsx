@@ -4,6 +4,7 @@ import type {
   ItineraryItem,
   Trip,
   TripDailyBriefing,
+  TripTask,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
@@ -38,6 +39,7 @@ interface OverviewSummaryBandProps {
   pendingSuggestions: number;
   roleLens: OverviewRoleLens;
   settlementCount: number;
+  tasks: TripTask[];
   trip: Trip;
   warningCount: number;
   onOpenExpenses: () => void;
@@ -68,6 +70,7 @@ export function OverviewSummaryBand({
   pendingSuggestions,
   roleLens,
   settlementCount,
+  tasks,
   trip,
   warningCount,
   onOpenExpenses,
@@ -79,19 +82,24 @@ export function OverviewSummaryBand({
     warnings: warningCount,
     suggestions: pendingSuggestions,
   });
+  const openTaskCount = tasks.filter((task) => task.status === "open").length;
   const phaseLabels = t.overview.phase[countdown.type];
   let phaseFacts: PhaseFact[];
   if (countdown.type === "incoming") {
     const labels = t.overview.phase.incoming;
     phaseFacts = [
-      { icon: "calendar", label: labels.facts.countdown, value: countdown.text },
-      { icon: "warning", label: labels.facts.routeReview, value: routeReviewSummary },
-      { icon: "ticket", label: labels.facts.nextBooking, value: nextStop?.place ?? labels.fallback },
+      { icon: "warning", label: labels.facts.blockers, value: routeReviewSummary },
+      {
+        icon: "list",
+        label: labels.facts.checklist,
+        value: t.overview.readiness.openChecklistCount({ count: openTaskCount }),
+      },
+      { icon: "ticket", label: labels.facts.firstMove, value: nextStop?.place ?? labels.fallback },
     ];
   } else if (countdown.type === "active") {
     const labels = t.overview.phase.active;
     phaseFacts = [
-      { icon: "route", label: labels.facts.nextStop, value: nextStop?.place ?? labels.fallback },
+      { icon: "route", label: labels.facts.nextMove, value: nextStop?.place ?? labels.fallback },
       { icon: "cloud", label: labels.facts.weather, value: t.dates.dayCount({ count: dailyBriefings.length }) },
       { icon: "users", label: labels.facts.crew, value: activeMembersLabel },
     ];
@@ -104,7 +112,7 @@ export function OverviewSummaryBand({
         value: t.overview.money.settlementsCount({ count: settlementCount }),
       },
       { icon: "location", label: labels.facts.highlights, value: String(highlightItems.length) },
-      { icon: "check", label: labels.facts.archive, value: labels.fallback },
+      { icon: "check", label: labels.facts.recap, value: labels.fallback },
     ];
   }
 

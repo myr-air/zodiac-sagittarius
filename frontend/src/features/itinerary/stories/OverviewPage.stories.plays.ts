@@ -49,6 +49,30 @@ export const emptyPlay: OverviewPagePlay = async ({ canvas, canvasElement }) => 
   await expect(canvasElement.querySelectorAll(".overview-task-item").length).toBe(0);
 };
 
+export const beforeTripPlay: OverviewPagePlay = async ({ canvas, canvasElement }) => {
+  await expectOverviewStructure(canvasElement);
+  await expect(canvas.getByRole("region", { name: /Before trip/i })).toBeVisible();
+  await expect(canvas.getByRole("heading", { name: /Plan readiness/i })).toBeVisible();
+  await expect(canvas.getByText(/Fix before travel/i)).toBeVisible();
+  await expect(canvas.getByText(/Open checklist/i)).toBeVisible();
+};
+
+export const duringTripPlay: OverviewPagePlay = async ({ canvas, canvasElement }) => {
+  await expectOverviewStructure(canvasElement);
+  await expect(canvas.getByRole("region", { name: /During trip/i })).toBeVisible();
+  await expect(canvas.getByRole("heading", { name: /Today cockpit/i })).toBeVisible();
+  await expect(canvas.getAllByText(/Next move/i).length).toBeGreaterThan(0);
+  await expect(canvas.getByText(/Weather window/i)).toBeVisible();
+};
+
+export const afterTripPlay: OverviewPagePlay = async ({ canvas, canvasElement }) => {
+  await expectOverviewStructure(canvasElement);
+  await expect(canvas.getByRole("region", { name: /After trip/i })).toBeVisible();
+  await expect(canvas.getByRole("heading", { name: /Trip close-out/i })).toBeVisible();
+  await expect(canvas.getByText(/Money to settle/i)).toBeVisible();
+  await expect(canvas.getByText(/Share recap/i)).toBeVisible();
+};
+
 export const addTaskDialogOpenPlay: OverviewPagePlay = async ({ canvas }) => {
   await userEvent.click(canvas.getByRole("button", { name: /Add checklist/i }));
   await expect(canvas.getByRole("dialog", { name: /Add checklist/i })).toBeVisible();

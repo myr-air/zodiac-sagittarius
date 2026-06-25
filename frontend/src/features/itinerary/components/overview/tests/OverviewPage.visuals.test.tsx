@@ -48,9 +48,9 @@ describe("OverviewPage visual summary", () => {
 
     const phase = screen.getByRole("region", { name: /ระหว่างทริป/i });
     expect(phase).toHaveClass("overview-phase-card", "col-span-5");
-    expect(within(phase).getByRole("heading", { name: /สถานะทริปสด/i })).toBeInTheDocument();
-    expect(within(phase).getByText(/จุดถัดไป/i)).toBeInTheDocument();
-    expect(within(phase).getByText(/การ์ดอากาศ/i)).toBeInTheDocument();
+    expect(within(phase).getByRole("heading", { name: /ค็อกพิทวันนี้/i })).toBeInTheDocument();
+    expect(within(phase).getAllByText(/จุดถัดไป/i).length).toBeGreaterThan(0);
+    expect(within(phase).getByText(/ช่วงอากาศ/i)).toBeInTheDocument();
 
     const board = screen.getByRole("region", { name: /ไฮไลต์ทริป/i });
     expect(within(board).getByRole("heading", { name: /ไฮไลต์ทริป/i })).toBeInTheDocument();
@@ -100,8 +100,9 @@ describe("OverviewPage visual summary", () => {
       />,
     );
     const beforeTrip = screen.getByRole("region", { name: /ก่อนวันเดินทาง/i });
-    expect(within(beforeTrip).getByRole("heading", { name: /เรดาร์เตรียมทริป/i })).toBeInTheDocument();
-    expect(within(beforeTrip).getByText(/เส้นทางที่ต้องตรวจ/i)).toBeInTheDocument();
+    expect(within(beforeTrip).getByRole("heading", { name: /ความพร้อมก่อนออกเดินทาง/i })).toBeInTheDocument();
+    expect(within(beforeTrip).getByText(/ต้องแก้ก่อนเดินทาง/i)).toBeInTheDocument();
+    expect(within(beforeTrip).getByText(/เช็กลิสต์ค้าง/i)).toBeInTheDocument();
 
     unmount();
 
@@ -112,7 +113,7 @@ describe("OverviewPage visual summary", () => {
       />,
     );
     const afterTrip = screen.getByRole("region", { name: /หลังจบทริป/i });
-    expect(within(afterTrip).getByRole("heading", { name: /โต๊ะปิดงานทริป/i })).toBeInTheDocument();
+    expect(within(afterTrip).getByRole("heading", { name: /ปิดงานทริป/i })).toBeInTheDocument();
     expect(within(afterTrip).getByText(/3 รายการชำระคืน/i)).toBeInTheDocument();
     expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
     expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
