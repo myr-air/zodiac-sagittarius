@@ -37,6 +37,7 @@ export const thExpensesMessages = {
       priorityTitle: "รายการใช้จ่ายสำคัญล่าสุด",
       settlementNudge: ({ count }: { count: number }) => `มี ${count} รายการจ่ายคืนที่ควรจัดการ`,
       spendingNudge: "เพิ่มค่าใช้จ่ายร่วม หรือค่าใช้จ่ายส่วนตัวเมื่อแผนทริปเปลี่ยน",
+      organizerPaybackHint: "ให้คนจัดทริปบันทึกจ่ายคืนหลังมีการโอนเงินจริง",
     },
     quickCapture: {
       amountPlaceholder: "0.00",
@@ -114,6 +115,8 @@ export const thExpensesMessages = {
       displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `อัตราแลกเปลี่ยน ${currency} เป็น ${displayCurrency}`,
       hideFilters: "ซ่อนตัวกรอง",
       showFilters: "ตัวกรอง",
+      activeFilters: ({ count }: { count: number }) => `ใช้อยู่ ${count} ตัวกรอง`,
+      showFiltersWithCount: ({ count }: { count: number }) => `ตัวกรอง ${count}`,
       unlinkedDay: "ไม่ผูกวัน",
     },
     table: {

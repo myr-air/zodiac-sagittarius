@@ -36,6 +36,20 @@ describe("TripExpensesPage statement", () => {
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 
+  it("prioritizes the statement before tools on mobile while keeping desktop tools first", async () => {
+    const user = userEvent.setup();
+    renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+
+    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    const tools = within(panel).getByRole("region", { name: /เครื่องมือ/i });
+    const statement = within(panel).getByRole("region", { name: /รายการเงินแบบละเอียด/i });
+
+    expect(tools).toHaveClass("min-[768px]:order-1", "max-[767px]:order-2");
+    expect(statement).toHaveClass("min-[768px]:order-2", "max-[767px]:order-1");
+  });
+
   it("shows an account-scoped empty payback state", async () => {
     const user = userEvent.setup();
     renderExpenses({

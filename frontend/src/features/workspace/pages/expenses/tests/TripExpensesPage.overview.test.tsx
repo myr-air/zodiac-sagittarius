@@ -105,19 +105,24 @@ describe("TripExpensesPage overview and filters", () => {
 
     expect(within(ledger).getAllByText("Peak Tram tickets").length).toBeGreaterThan(0);
     expect(within(ledger).queryByText("Dim Dim Sum brunch")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ตัวกรอง 1/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
+    await user.click(screen.getByRole("button", { name: /ตัวกรอง 1/i }));
     await user.selectOptions(
       within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText("ประเภท"),
       "transport",
     );
 
     expect(screen.getByText("ไม่พบค่าใช้จ่ายตามตัวกรอง")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ตัวกรอง 2/i })).toBeInTheDocument();
+    expect(screen.getByText(/ใช้อยู่ 2 ตัวกรอง/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /ล้างตัวกรอง/i }));
 
     expect(within(ledger).getAllByText("Dim Dim Sum brunch").length).toBeGreaterThan(0);
     expect(within(ledger).getByText("Octopus top-up")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^ตัวกรอง$/i })).toBeInTheDocument();
+    expect(screen.queryByText(/ใช้อยู่/i)).not.toBeInTheDocument();
   });
 
   it("filters the ledger by linked itinerary day", async () => {
@@ -170,6 +175,11 @@ describe("TripExpensesPage overview and filters", () => {
 
     expect(screen.getByText("เพิ่มรายการได้")).toBeInTheDocument();
     const quickAdd = screen.getByRole("region", { name: /เพิ่มค่าใช้จ่ายล่าสุด/i });
+    const settleSection = screen.getByRole("region", { name: /รายการจ่ายคืนที่แนะนำ/i });
+    expect(quickAdd.compareDocumentPosition(settleSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(settleSection).queryByRole("button", { name: /บันทึกจ่ายคืน|ปิดรอบยอด/i })).not.toBeInTheDocument();
+    expect(within(settleSection).getByText(/ให้คนจัดทริปบันทึกจ่ายคืน/i)).toBeInTheDocument();
+
     await user.type(within(quickAdd).getByLabelText(/จำนวนเงิน/i), "300");
     await user.click(within(quickAdd).getByRole("button", { name: /บันทึกเร็ว/i }));
 
