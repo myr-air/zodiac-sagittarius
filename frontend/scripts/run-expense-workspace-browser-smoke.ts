@@ -129,6 +129,8 @@ async function smokeWorkspace(
     await openFinanceTab(page, "Personal account");
     await expectText(page, "Personal account");
     await expectText(page, "Display currency");
+    await expectText(page, "Suggested paybacks");
+    await openPersonalPaybackActions(page);
     await cycleStatementFilters(page);
     screenshots.push(await screenshot(page, `${name}-account-statement`));
 
@@ -193,6 +195,20 @@ async function cycleStatementFilters(page: Page) {
   }
 }
 
+async function openPersonalPaybackActions(page: Page) {
+  const accountPanel = page.getByRole("tabpanel", { name: /Personal account/i });
+  const paybackPanel = accountPanel.getByRole("region", { name: /Suggested paybacks/i });
+  await paybackPanel.getByRole("button", { name: /Actions/i }).first().click();
+  await paybackPanel.getByRole("button", { name: /Copy reminder/i }).first().waitFor({
+    state: "visible",
+    timeout: 10_000,
+  });
+  await paybackPanel.getByRole("button", { name: /Record payback/i }).first().waitFor({
+    state: "visible",
+    timeout: 10_000,
+  });
+}
+
 async function openFirstExpenseActionMenu(page: Page) {
   const detailMore = page.getByRole("button", { name: /More expense actions/i }).first();
   if (await detailMore.isVisible().catch(() => false)) {
@@ -249,7 +265,10 @@ async function newCheckedPage(
   const apiEvents: ApiEvent[] = [];
 
   page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+    const text = message.text();
+    if (message.type() === "error" && !isExpectedAccountAuthProbeConsole(text)) {
+      consoleErrors.push(text);
+    }
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   page.on("requestfailed", (request) => {
@@ -274,7 +293,7 @@ async function newCheckedPage(
       type: "response",
       url: response.url(),
     });
-    if (status >= 400) {
+    if (status >= 400 && !isExpectedAccountAuthProbeResponse(response)) {
       consoleErrors.push(
         `API ${status} ${response.request().method()} ${response.url()} ${await response.text().catch(() => "")}`,
       );
@@ -288,6 +307,22 @@ async function newCheckedPage(
     },
     page,
   };
+}
+
+function isExpectedAccountAuthProbeConsole(text: string) {
+  return (
+    text === "Failed to load resource: the server responded with a status of 401 (Unauthorized)" ||
+    (text.includes("API 401 GET") && text.includes("/api/v1/account"))
+  );
+}
+
+function isExpectedAccountAuthProbeResponse(response: { request(): { method(): string }; status(): number; url(): string }) {
+  if (response.status() !== 401 || response.request().method() !== "GET") return false;
+  try {
+    return new URL(response.url()).pathname === "/api/v1/account";
+  } catch {
+    return false;
+  }
 }
 
 async function expectText(page: Page, text: string) {

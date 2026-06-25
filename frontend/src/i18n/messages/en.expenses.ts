@@ -183,6 +183,10 @@ export const enExpensesMessages = {
         tableLabel: ({ name }: { name: string }) => `${name}'s detailed account statement`,
         summary: ({ count }: { count: number }) => `${count} personal row${count === 1 ? "" : "s"}`,
         empty: "No personal statement rows for this account.",
+        paybackTitle: "Suggested paybacks",
+        paybackDescription: "What this account should pay or receive back from the trip balance.",
+        paybackSummary: ({ count }: { count: number }) => `${count} payback${count === 1 ? "" : "s"} to clear`,
+        noPaybacks: "No suggested paybacks for this account.",
         noDirectAllocation: "Recorded payback. Not linked to specific receipt rows yet.",
         includedLineItems: ({ count }: { count: number }) => `${count} included receipt line${count === 1 ? "" : "s"}`,
         columns: {

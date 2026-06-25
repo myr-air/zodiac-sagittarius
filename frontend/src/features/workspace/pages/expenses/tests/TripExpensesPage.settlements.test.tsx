@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderExpenses } from "../testing/support/render-expenses-page";
@@ -21,6 +21,21 @@ describe("TripExpensesPage settlement exports", () => {
       amount: expect.any(Number),
       paidBy: expect.any(String),
       splits: expect.any(Object),
+    }));
+  });
+
+  it("records an account-scoped suggested payback from personal account", async () => {
+    const user = userEvent.setup();
+    const props = renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    const accountPanel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
+    await user.click(within(accountPanel).getByRole("button", { name: /บันทึกจ่ายคืน/i }));
+
+    expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      category: "settlement",
+      paidBy: "member-beam",
+      splits: { "member-family": 665 },
     }));
   });
 

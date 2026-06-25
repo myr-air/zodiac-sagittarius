@@ -248,11 +248,16 @@ export function TripExpensesPage({
             onDownloadCsv={downloadCsv}
           />
           <ExpenseStatementSection
+            canEditExpenses={canEditExpenses}
             currentMember={currentMember}
             displayCurrency={displayCurrency}
             displayExchangeRateNumber={displayExchangeRateNumber}
             locale={locale}
+            onCopyPaybackReminder={(suggestion) => void copyPaybackReminder(suggestion)}
+            onRecordSettlement={recordSettlement}
+            pendingSettlementKeys={pendingSettlementKeys}
             settlementCurrency={settlementCurrency}
+            settlementSuggestions={expenseSummary.settlementSuggestions}
             t={t}
             trip={trip}
           />

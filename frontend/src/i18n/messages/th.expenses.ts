@@ -183,6 +183,10 @@ export const thExpensesMessages = {
         tableLabel: ({ name }: { name: string }) => `รายการบัญชีส่วนตัวของ ${name}`,
         summary: ({ count }: { count: number }) => `${count} รายการของบัญชีนี้`,
         empty: "ไม่พบรายการของบัญชีนี้",
+        paybackTitle: "รายการจ่ายคืนที่แนะนำ",
+        paybackDescription: "สิ่งที่บัญชีนี้ควรจ่ายคืนหรือควรได้รับคืน จากยอดคงเหลือของทริป",
+        paybackSummary: ({ count }: { count: number }) => `${count} รายการต้องเคลียร์`,
+        noPaybacks: "บัญชีนี้ไม่มียอดจ่ายคืนที่ต้องจัดการ",
         noDirectAllocation: "เป็นรายการจ่ายคืนที่บันทึกไว้ แต่ยังไม่ได้ผูกกับบิลย่อยแบบรายใบ",
         includedLineItems: ({ count }: { count: number }) => `รวม ${count} รายการย่อย`,
         columns: {
