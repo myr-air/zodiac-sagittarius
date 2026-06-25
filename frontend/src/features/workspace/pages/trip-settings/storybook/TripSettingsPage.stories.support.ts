@@ -40,6 +40,8 @@ export const tripSettingsPlanImpactStoryArgs = {
 } satisfies TripSettingsPageStoryArgs;
 
 export async function expectSettingsResponsiveContract(canvasElement: HTMLElement) {
-  await expectStoryElementClasses(canvasElement, ".content-grid", "content-grid", "max-[920px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".content-grid", "content-grid", "grid-cols-[minmax(0,1fr)_340px]", "max-[920px]:grid-cols-1");
   await expectStoryElementClasses(canvasElement, ".field-grid", "field-grid", "max-[767px]:grid-cols-1");
+  await expectStoryElementClasses(canvasElement, ".trip-settings-header .page-header-meta", "page-header-meta");
+  await expectStoryElementClasses(canvasElement, ".trip-settings-impact-row", "trip-settings-impact-row", "grid-cols-[20px_minmax(0,1fr)]");
 }

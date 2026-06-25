@@ -28,6 +28,8 @@ describe("TripMembersPage management", () => {
       "member-stat-grid",
       "grid",
       "gap-2",
+      "max-[767px]:flex",
+      "max-[767px]:overflow-x-auto",
     );
     expect(screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")).toHaveClass(
       "member-stat",

@@ -9,7 +9,11 @@ describe("TripSettingsHeader", () => {
         title="Trip settings"
         subtitle="Hong Kong food crawl"
         description="Keep the source of truth for this trip."
+        locale="en"
+        memberCountLabel="4 members"
         roleLabel="Current role: owner"
+        tripEndDate="2025-03-15"
+        tripStartDate="2025-03-10"
       />,
     );
 
@@ -20,6 +24,8 @@ describe("TripSettingsHeader", () => {
     expect(
       screen.getByText("Keep the source of truth for this trip."),
     ).toBeInTheDocument();
+    expect(screen.getByText("Mar 10–15, 2025")).toBeInTheDocument();
+    expect(screen.getByText("4 members")).toBeInTheDocument();
     expect(screen.getByText("Current role: owner")).toBeInTheDocument();
   });
 });

@@ -25,7 +25,7 @@ export function TripSettingsPage({ canEdit, currentMember, trip, onSave }: TripS
 }
 
 function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripSettingsPageProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const {
     canSubmit,
     error,
@@ -49,7 +49,11 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
           title={t.tripSettings.title}
           subtitle={trip.name}
           description={t.tripSettings.detail}
+          locale={locale}
+          memberCountLabel={t.dates.memberCount({ count: trip.members.length })}
           roleLabel={t.tripSettings.currentRole({ role: currentMember.role })}
+          tripEndDate={trip.endDate}
+          tripStartDate={trip.startDate}
         />
 
         <div className={settingsStyles.contentGridClassName}>
@@ -64,7 +68,13 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
             onSubmit={submitSettings}
           />
 
-          <TripSettingsImpactCard outsideStopCount={outsideStopCount} />
+          <TripSettingsImpactCard
+            defaultTimezone={form.defaultTimezone}
+            endDate={form.endDate}
+            outsideStopCount={outsideStopCount}
+            partySize={form.partySize}
+            startDate={form.startDate}
+          />
         </div>
       </div>
     </WorkspacePage>
