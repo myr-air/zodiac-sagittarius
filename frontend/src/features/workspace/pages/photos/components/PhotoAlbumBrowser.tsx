@@ -57,13 +57,13 @@ export function PhotoAlbumBrowser({
             aria-pressed={activeProvider === provider}
             aria-label={copy.providerCount(photoProviderLabel(provider, copy), providerCounts[provider] ?? 0)}
           >
-            <span className="flex items-center justify-between gap-2">
-              <span className="grid size-9 place-items-center rounded-(--radius-md) border border-(--color-primary-border) bg-(--color-surface-subtle) text-(--color-primary-strong)">
-                <Icon name={photoProviderIcon(provider)} />
-              </span>
-              <strong className="tabular-nums text-sm text-(--color-text)">{providerCounts[provider] ?? 0}</strong>
+            <span className="grid size-5 place-items-center text-(--color-primary-strong)">
+              <Icon name={photoProviderIcon(provider)} />
             </span>
-            <strong className="text-sm font-extrabold text-(--color-text)">{photoProviderLabel(provider, copy)}</strong>
+            <span>{photoProviderLabel(provider, copy)}</span>
+            <strong className="rounded-full bg-(--color-surface-subtle) px-1.5 text-[11px] tabular-nums text-(--color-text)">
+              {providerCounts[provider] ?? 0}
+            </strong>
           </button>
         ))}
       </div>

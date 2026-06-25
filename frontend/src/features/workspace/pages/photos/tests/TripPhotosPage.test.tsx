@@ -13,16 +13,17 @@ describe("TripPhotosPage", () => {
     expect(screen.getByText("3 albums").closest(".photos-stat")).toHaveClass(
       "bg-(--color-surface)",
       "rounded-(--radius-md)",
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
+      "shadow-none",
+      "min-h-14",
     );
-    expect(document.querySelector(".photos-panel")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
-    expect(document.querySelector(".photos-inspector")).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(document.querySelector(".photos-panel")).toHaveClass("shadow-none", "content-start");
+    expect(document.querySelector(".photos-inspector")).toHaveClass("shadow-none");
     expect(screen.getByText("3 albums")).toBeInTheDocument();
     expect(screen.getByText("1 collaborative")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Google Photos, 1 albums" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Select Google Photos group album/i })).toBeInTheDocument();
     const cover = screen.getByLabelText("Cover for Google Photos group album");
-    expect(cover).toHaveClass("bg-(--color-surface-subtle)");
+    expect(cover).toHaveClass("h-[72px]", "rounded-(--radius-sm)", "bg-(--color-surface-subtle)");
     expect(cover.className).not.toContain("linear-gradient");
     expect(cover).toHaveStyle({ backgroundImage: "url(https://images.example.test/hong-kong-album.jpg)" });
     expect(screen.getByRole("heading", { name: "Google Photos group album" })).toBeInTheDocument();
