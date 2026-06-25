@@ -79,7 +79,7 @@ export function ManagerTaskChecklistPanel({
   };
   const panelClassName = pinPanel
     ? `${overviewPanelClassName} ${overviewTaskPanelClassName}`
-    : overviewPanelClassName;
+    : `${overviewPanelClassName} max-[767px]:[&_.overview-task-filters]:hidden`;
 
   return (
     <section className={panelClassName} aria-label={ariaLabel}>

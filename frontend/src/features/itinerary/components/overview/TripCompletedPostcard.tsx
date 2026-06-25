@@ -29,31 +29,31 @@ export function TripCompletedPostcard({
 
   return (
     <div className={tripCompletedClassName}>
-      <div className="absolute top-4 right-4 flex h-14 w-12 rotate-[6deg] select-none flex-col items-center justify-center rounded-(--radius-sm) border-2 border-dashed border-(--color-warning-border) opacity-70">
+      <div className="absolute top-4 right-4 flex h-14 w-12 rotate-[6deg] select-none flex-col items-center justify-center rounded-(--radius-sm) border-2 border-dashed border-(--color-warning-border) opacity-70 max-[767px]:hidden">
         <Icon name="location" className="size-5 text-(--color-warning-strong)" />
         <span className="mt-0.5 font-mono text-[7px] font-black uppercase tracking-normal text-(--color-warning-strong)">Joii Map</span>
       </div>
 
-      <div className="flex max-w-[85%] flex-col gap-2.5">
+      <div className="flex max-w-[85%] flex-col gap-2.5 max-[767px]:max-w-full max-[767px]:gap-1.5">
         <strong className="flex items-center gap-1.5 text-base font-extrabold leading-tight text-(--color-text)">
           <Icon name="calendar" className="size-4.5 text-(--color-warning-strong)" />
           {labels.title}
         </strong>
-        <p className="m-0 text-xs font-bold leading-relaxed text-(--color-text-muted)">
+        <p className="m-0 text-xs font-bold leading-relaxed text-(--color-text-muted) max-[767px]:hidden">
           {labels.message}
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center max-[480px]:grid-cols-1 max-[480px]:text-left">
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-(--color-warning-border) pt-4 text-center max-[767px]:mt-3 max-[767px]:grid-cols-2 max-[767px]:pt-3 max-[480px]:text-center">
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.durationLabel}</span>
           <strong className="text-lg font-black text-(--color-text)">{labels.durationValue}</strong>
         </div>
-        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border) max-[480px]:border-x-0 max-[480px]:border-y max-[480px]:py-2">
+        <div className="flex flex-col gap-0.5 border-x border-(--color-warning-border) max-[767px]:border-r-0">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.stopsLabel}</span>
           <strong className="text-lg font-black text-(--color-text)">{labels.stopsValue}</strong>
         </div>
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 max-[767px]:hidden">
           <span className="text-[10px] font-extrabold uppercase tracking-normal text-(--color-warning-strong)">{labels.budgetLabel}</span>
           <strong className="text-lg font-black text-(--color-text) [overflow-wrap:anywhere]">{groupSpendLabel}</strong>
         </div>

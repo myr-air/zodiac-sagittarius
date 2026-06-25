@@ -46,6 +46,12 @@ describe("OverviewPage visual summary", () => {
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.76)]", "rounded-(--radius-md)");
+    expect(hero.querySelector(".overview-hero-meta")).toHaveClass("max-[767px]:[&_span:nth-child(n+3)]:hidden");
+
+    expect(document.querySelector(".overview-weather-bento")).toHaveClass(
+      "max-[767px]:[&_.weather-forecast-row]:grid",
+      "max-[767px]:[&_.weather-forecast-segment:nth-child(n+4)]:hidden",
+    );
 
     const cockpit = screen.getByRole("region", { name: /travel cockpit/i });
     expect(cockpit).toHaveClass("overview-travel-cockpit", "grid", "grid-cols-3", "col-span-12");
@@ -141,6 +147,7 @@ describe("OverviewPage visual summary", () => {
     const expenseShortcut = screen.getByRole("button", { name: /เพิ่มค่าใช้จ่าย/i });
     expect(expenseShortcut).toHaveClass("overview-panel--button");
     expect(expenseShortcut.querySelector(".icon")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /เช็กลิสต์ของทริป/i })).toHaveClass("max-[767px]:[&_.overview-task-filters]:hidden");
     expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
     expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
   });
