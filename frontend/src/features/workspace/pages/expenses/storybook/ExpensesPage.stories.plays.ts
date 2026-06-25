@@ -34,7 +34,7 @@ export const addExpenseDialogOpenPlay: ExpensesPagePlay = async ({ canvas }) => 
 };
 
 export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Spending/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Manage expenses/i }));
   const ledger = canvas.getByRole("table", { name: /Spending log/i });
   await expect(ledger).toHaveClass("expense-ledger-table");
 
@@ -54,7 +54,6 @@ export const filteredLedgerPlay: ExpensesPagePlay = async ({ canvas }) => {
 
 export const planScopeAuditPlay: ExpensesPagePlay = async ({ canvas }) => {
   onStoryUpdateExpense.mockClear();
-  await userEvent.click(canvas.getByRole("tab", { name: /Categories/i }));
   const audit = canvas.getByRole("region", { name: /Plan scope audit/i });
   await expect(audit).toHaveTextContent("Dim Dim Sum brunch");
   await expect(audit).toHaveTextContent("Inferred scope: แผนฝนตก");
@@ -73,7 +72,7 @@ export const responsivePlay: ExpensesPagePlay = async ({ canvasElement }) => {
 };
 
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Tools/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Personal account/i }));
   await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();

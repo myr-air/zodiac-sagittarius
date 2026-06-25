@@ -170,6 +170,15 @@ fn embedded_migrations() -> Vec<Migration> {
     ]
 }
 
+fn legacy_migration_alias(version: &str) -> Option<&'static str> {
+    match version {
+        "0030_expense_settlement_allocations.sql" => {
+            Some("0035_expense_settlement_allocations.sql")
+        }
+        _ => None,
+    }
+}
+
 fn pending_migrations<'a>(
     migrations: &'a [Migration],
     applied: &BTreeMap<String, String>,
@@ -178,20 +187,44 @@ fn pending_migrations<'a>(
         .iter()
         .map(|migration| migration.version)
         .collect::<std::collections::BTreeSet<_>>();
+    let migration_by_version = migrations
+        .iter()
+        .map(|migration| (migration.version, *migration))
+        .collect::<BTreeMap<_, _>>();
+    let mut applied_by_known_version = BTreeMap::new();
 
-    for version in applied.keys() {
-        if !known.contains(version.as_str()) {
-            return Err(MigrationError::UnknownAppliedMigration {
-                version: version.clone(),
-            });
+    for (version, checksum) in applied {
+        if known.contains(version.as_str()) {
+            applied_by_known_version.insert(version.clone(), checksum.clone());
+            continue;
         }
+        if let Some(alias) = legacy_migration_alias(version.as_str()) {
+            let Some(migration) = migration_by_version.get(alias) else {
+                return Err(MigrationError::UnknownAppliedMigration {
+                    version: version.clone(),
+                });
+            };
+            let expected = checksum_hex(migration.sql.as_bytes());
+            if checksum != &expected {
+                return Err(MigrationError::ChecksumMismatch {
+                    version: version.clone(),
+                    expected,
+                    found: checksum.clone(),
+                });
+            }
+            applied_by_known_version.insert(alias.to_string(), checksum.clone());
+            continue;
+        }
+        return Err(MigrationError::UnknownAppliedMigration {
+            version: version.clone(),
+        });
     }
 
     migrations
         .iter()
         .filter_map(|migration| {
             let expected = checksum_hex(migration.sql.as_bytes());
-            match applied.get(migration.version) {
+            match applied_by_known_version.get(migration.version) {
                 Some(found) if found == &expected => None,
                 Some(found) => Some(Err(MigrationError::ChecksumMismatch {
                     version: migration.version.to_string(),
@@ -362,6 +395,45 @@ mod tests {
 
         let error = pending_migrations(&migrations, &applied).expect_err("checksum mismatch");
 
+        assert!(error.to_string().contains("checksum mismatch"));
+    }
+
+    #[test]
+    fn pending_migrations_accept_legacy_settlement_allocation_version() {
+        let migrations = vec![Migration {
+            version: "0035_expense_settlement_allocations.sql",
+            sql: "alter table expenses add column settlement_allocations jsonb;",
+        }];
+        let applied = BTreeMap::from([(
+            "0030_expense_settlement_allocations.sql".to_string(),
+            checksum_hex(
+                "alter table expenses add column settlement_allocations jsonb;".as_bytes(),
+            ),
+        )]);
+
+        let pending = pending_migrations(&migrations, &applied).expect("legacy alias");
+
+        assert!(pending.is_empty());
+    }
+
+    #[test]
+    fn pending_migrations_reject_changed_legacy_settlement_allocation_sql() {
+        let migrations = vec![Migration {
+            version: "0035_expense_settlement_allocations.sql",
+            sql: "alter table expenses add column settlement_allocations jsonb;",
+        }];
+        let applied = BTreeMap::from([(
+            "0030_expense_settlement_allocations.sql".to_string(),
+            checksum_hex("select changed;".as_bytes()),
+        )]);
+
+        let error = pending_migrations(&migrations, &applied).expect_err("checksum mismatch");
+
+        assert!(
+            error
+                .to_string()
+                .contains("0030_expense_settlement_allocations.sql")
+        );
         assert!(error.to_string().contains("checksum mismatch"));
     }
 

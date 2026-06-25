@@ -10,7 +10,8 @@ export const enExpensesMessages = {
     tabs: {
       label: "Trip money sections",
       overview: "Overview",
-      spending: "Spending",
+      spending: "Manage expenses",
+      account: "Personal account",
       statement: "Statement",
       balances: "Balances",
       categories: "Categories",
@@ -67,6 +68,7 @@ export const enExpensesMessages = {
       downloadCsv: "Export",
       saveExpense: "Save expense",
       saveSettlement: "Record payback",
+      moreExpenseActions: "More expense actions",
       editExpenseShort: "Edit receipt",
       duplicateAsEstimateShort: "Create booking estimate",
       recordRefundShort: "Record refund",

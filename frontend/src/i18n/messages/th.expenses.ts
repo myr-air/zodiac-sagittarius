@@ -10,7 +10,8 @@ export const thExpensesMessages = {
     tabs: {
       label: "ส่วนการเงินของทริป",
       overview: "ภาพรวม",
-      spending: "รายการใช้จ่าย",
+      spending: "จัดการค่าใช้จ่าย",
+      account: "บัญชีส่วนตัว",
       statement: "รายการละเอียด",
       balances: "ยอดคงเหลือ",
       categories: "ประเภท",
@@ -67,6 +68,7 @@ export const thExpensesMessages = {
       downloadCsv: "ส่งออกไฟล์",
       saveExpense: "บันทึกค่าใช้จ่าย",
       saveSettlement: "บันทึกจ่ายคืน",
+      moreExpenseActions: "คำสั่งเพิ่มเติม",
       editExpenseShort: "แก้ไขบิล",
       duplicateAsEstimateShort: "สร้างประมาณการจอง",
       recordRefundShort: "บันทึกเงินคืน",

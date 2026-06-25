@@ -8,9 +8,9 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการละเอียด/i }));
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
 
-    const panel = screen.getByRole("tabpanel", { name: /รายการละเอียด/i });
+    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
     expect(within(panel).getByRole("heading", { name: "รายการละเอียด" })).toBeInTheDocument();
     expect(within(panel).getByText(/ดูว่าแต่ละรายการคือค่าอะไร/i)).toBeInTheDocument();
 
@@ -42,8 +42,8 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการละเอียด/i }));
-    const panel = screen.getByRole("tabpanel", { name: /รายการละเอียด/i });
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
     await user.click(within(panel).getByRole("radio", { name: /ไม่ต้องคืน/i }));
 
     const statement = within(panel).getByRole("table", { name: /รายการเงินทริปแบบละเอียด/i });

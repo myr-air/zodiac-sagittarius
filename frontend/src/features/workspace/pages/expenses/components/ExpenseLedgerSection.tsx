@@ -36,12 +36,9 @@ interface ExpenseLedgerSectionProps {
   pendingRefundExpenseIds: Set<string>;
   payerFilter: string;
   query: string;
-  selectedTripPlanId: string;
   settlementCurrency: string;
   t: ReturnType<typeof import("@/src/i18n/I18nProvider").useI18n>["t"];
   trip: Trip;
-  workspaceTrip: Trip;
-  onTripPlanChange?: (tripPlanId: string) => void;
 }
 
 export function ExpenseLedgerSection({
@@ -66,12 +63,9 @@ export function ExpenseLedgerSection({
   pendingRefundExpenseIds,
   payerFilter,
   query,
-  selectedTripPlanId,
   settlementCurrency,
   t,
   trip,
-  workspaceTrip,
-  onTripPlanChange,
 }: ExpenseLedgerSectionProps) {
   const isMobileLedger = useIsMobileLedger();
   const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(
@@ -115,9 +109,7 @@ export function ExpenseLedgerSection({
         members={members}
         payerFilter={payerFilter}
         query={query}
-        selectedTripPlanId={selectedTripPlanId}
         t={t}
-        tripPlanOptions={workspaceTrip.tripPlans ?? workspaceTrip.planVariants}
         onAddExpense={onAddExpense}
         onAddPersonalExpense={onAddPersonalExpense}
         onCategoryFilterChange={onCategoryFilterChange}
@@ -125,7 +117,6 @@ export function ExpenseLedgerSection({
         onDayFilterChange={onDayFilterChange}
         onPayerFilterChange={onPayerFilterChange}
         onQueryChange={onQueryChange}
-        onTripPlanChange={onTripPlanChange}
       />
 
       <div className={expenseStyles.ledgerWorkspaceClassName}>

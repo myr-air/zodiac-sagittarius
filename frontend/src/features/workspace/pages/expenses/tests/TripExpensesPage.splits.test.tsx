@@ -44,6 +44,7 @@ describe("TripExpensesPage split forms", () => {
       currency: "HKD",
       exchangeRateToSettlementCurrency: 1,
       paidBy: "member-beam",
+      spentOn: "2026-06-25",
       category: "transport",
       splits: {
         "member-aom": 150,

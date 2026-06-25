@@ -25,6 +25,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("0_8px_18px");
     expect(screen.getByRole("tablist", { name: /ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
+    expect(screen.getAllByRole("tab")).toHaveLength(3);
     expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-none");
     expect(document.querySelector(".expenses-panel")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
@@ -33,10 +34,10 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("Octopus");
     expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("HK$288.00");
 
-    await user.click(screen.getByRole("tab", { name: /ยอดคงเหลือ/i }));
     expect(screen.getByRole("region", { name: /ยอดคงเหลือของเพื่อน/i })).toHaveTextContent("Travel Mate");
+    expect(screen.getByRole("region", { name: /ใช้จ่ายตามประเภท/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     expect(document.querySelector(".expense-ledger-table thead")).not.toHaveClass("sr-only");
     expect(document.querySelector(".expense-ledger-table thead")?.className).not.toContain("linear-gradient");
     expect(document.querySelector(".expenses-command-bar")).toHaveClass("shadow-none");
@@ -51,10 +52,10 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /Dim Dim Sum brunch/i })).toHaveTextContent("แชร์กับ");
     expect(screen.getByRole("status", { name: /สถานะอัปเดตค่าใช้จ่าย/i })).toHaveTextContent(/กำลังแสดง/i);
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
-    expect(screen.getByLabelText("แผนทริป")).toHaveValue("plan-main");
-    expect(screen.getByLabelText(/วัน/i)).toHaveValue("all");
+    expect(screen.getAllByLabelText("แผนทริป")[0]).toHaveValue("plan-main");
+    expect(within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText(/วัน/i)).toHaveValue("all");
 
-    await user.click(screen.getByRole("tab", { name: /เครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
   });
 
@@ -75,7 +76,7 @@ describe("TripExpensesPage overview and filters", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
       .find((button) => button.textContent?.includes("Octopus card permanent stored value top-up"));
@@ -92,7 +93,7 @@ describe("TripExpensesPage overview and filters", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     await user.type(screen.getByLabelText(/ค้นหารายการ/i), "tram");
 
@@ -101,7 +102,7 @@ describe("TripExpensesPage overview and filters", () => {
 
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
     await user.selectOptions(
-      within(screen.getByRole("tabpanel", { name: /รายการใช้จ่าย/i })).getByLabelText("ประเภท"),
+      within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText("ประเภท"),
       "transport",
     );
 
@@ -137,9 +138,12 @@ describe("TripExpensesPage overview and filters", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
-    await user.selectOptions(screen.getByLabelText(/วัน/i), "2026-06-18");
+    await user.selectOptions(
+      within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText(/วัน/i),
+      "2026-06-18",
+    );
 
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(within(ledger).getAllByText("Arrival taxi").length).toBeGreaterThan(0);

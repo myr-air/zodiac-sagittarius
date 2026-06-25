@@ -18,7 +18,8 @@ describe("TripExpensesPage actual expense actions", () => {
       onDuplicateExpenseAsEstimate: vi.fn(),
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
     await user.click(
       screen.getByRole("button", {
         name: /สร้างประมาณการจองจาก Dim Dim Sum brunch/i,
@@ -38,7 +39,8 @@ describe("TripExpensesPage actual expense actions", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
     await user.click(
       screen.getByRole("button", {
         name: /บันทึกเงินคืนของ Dim Dim Sum brunch/i,
@@ -47,7 +49,7 @@ describe("TripExpensesPage actual expense actions", () => {
 
     expect(props.onCreateExpense).toHaveBeenCalledWith({
       itemId: null,
-      tripPlanId: null,
+      tripPlanId: "plan-main",
       title: "Refund: Dim Dim Sum brunch",
       amount: 384,
       currency: "HKD",
@@ -55,6 +57,7 @@ describe("TripExpensesPage actual expense actions", () => {
       notes: "Refund settlement for actual expense: Dim Dim Sum brunch",
       paidBy: "member-aom",
       category: "settlement",
+      settlementAllocations: expect.any(Array),
       splits: {
         "member-beam": 128,
         "member-nam": 128,
@@ -68,7 +71,8 @@ describe("TripExpensesPage actual expense actions", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
     await user.click(
       screen.getByRole("button", { name: /ลบ Dim Dim Sum brunch/i }),
     );
@@ -99,7 +103,7 @@ describe("TripExpensesPage actual expense actions", () => {
       expenseSummary: buildExpenseSummary(trip.expenses, seedTrip.members[1].id),
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
 
     expect(screen.getAllByRole("button", { name: /แก้ไข Beam paid Aom/i })[0]).toBeDisabled();
   });
