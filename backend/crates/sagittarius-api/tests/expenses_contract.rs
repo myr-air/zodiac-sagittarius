@@ -145,6 +145,7 @@ async fn expenses_contract_traveler_can_create_but_not_patch_expenses(pool: sqlx
     assert_eq!(create_response.status(), StatusCode::OK);
 
     let patch_response = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method(Method::PATCH)
@@ -169,6 +170,24 @@ async fn expenses_contract_traveler_can_create_but_not_patch_expenses(pool: sqlx
         .unwrap();
 
     assert_eq!(patch_response.status(), StatusCode::FORBIDDEN);
+
+    let delete_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::DELETE)
+                .uri(format!(
+                    "/api/v1/trips/{}/expenses/{}",
+                    support::TRIP_ID,
+                    support::EXPENSE_ID
+                ))
+                .header(header::AUTHORIZATION, format!("Bearer {traveler}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(delete_response.status(), StatusCode::FORBIDDEN);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

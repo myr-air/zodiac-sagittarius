@@ -187,6 +187,10 @@ describe("TripExpensesPage overview and filters", () => {
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     expect(screen.queryByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    expect(screen.queryByLabelText(/สกุลเงินที่แสดง/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ดาวน์โหลด CSV/i })).not.toBeInTheDocument();
   });
 
   it("records quick spend as personal when the traveler chooses just mine", async () => {
