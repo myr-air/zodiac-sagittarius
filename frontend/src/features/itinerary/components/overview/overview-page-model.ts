@@ -60,7 +60,7 @@ export function buildOverviewPageModel({
           a.sortOrder - b.sortOrder ||
           a.startTime.localeCompare(b.startTime),
       );
-  const nextStop = sortedItems[0];
+  const nextStop = isCompleted ? undefined : sortedItems[0];
   const warningCount =
     itineraryView?.warningCount ??
     items.reduce((total, item) => total + (item.advisories?.length ?? 0), 0);

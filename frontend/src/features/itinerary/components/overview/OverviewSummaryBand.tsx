@@ -141,7 +141,10 @@ export function OverviewSummaryBand({
           crewReadiness: t.overview.cockpit.crewReadiness,
           dayCount: t.dates.dayCount,
           memberCount: t.dates.memberCount,
-          nextStop: t.overview.cockpit.nextStop,
+          nextStop:
+            countdown.type === "completed"
+              ? t.overview.cockpit.completedStops
+              : t.overview.cockpit.nextStop,
           openExpenses: t.overview.money.openExpenses,
           settlementSuggestions: t.overview.money.settlementSuggestions,
           stopCount: t.dates.stopCount,

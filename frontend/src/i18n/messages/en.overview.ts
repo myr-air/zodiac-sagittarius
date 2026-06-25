@@ -44,6 +44,7 @@ export const enOverviewMessages = {
     },
     cockpit: {
       nextStop: "Next stop",
+      completedStops: "Completed stops",
       budget: "Budget",
       crewReadiness: "Crew & readiness",
     },

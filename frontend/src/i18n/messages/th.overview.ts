@@ -44,6 +44,7 @@ export const thOverviewMessages = {
     },
     cockpit: {
       nextStop: "จุดถัดไป",
+      completedStops: "จุดที่ไปแล้ว",
       budget: "งบประมาณ",
       crewReadiness: "ทีมและความพร้อม",
     },

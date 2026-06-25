@@ -114,6 +114,8 @@ describe("OverviewPage visual summary", () => {
     const afterTrip = screen.getByRole("region", { name: /หลังจบทริป/i });
     expect(within(afterTrip).getByRole("heading", { name: /โต๊ะปิดงานทริป/i })).toBeInTheDocument();
     expect(within(afterTrip).getByText(/3 รายการชำระคืน/i)).toBeInTheDocument();
+    expect(screen.queryByText(/จุดถัดไป/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/จุดที่ไปแล้ว/i)).toBeInTheDocument();
   });
 
   it("does not spend a full-width highlight board on one repeated highlight", () => {
