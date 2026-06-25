@@ -26,7 +26,7 @@ describe("Sagittarius cockpit expense creation", () => {
       "page",
     );
 
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));
     const dialog = screen.getByRole("dialog", { name: /เพิ่มค่าใช้จ่าย/i });
     await user.type(
