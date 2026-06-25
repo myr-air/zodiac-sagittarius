@@ -103,14 +103,14 @@ export const mobileEditDialogLayerPlay: ExpensesPagePlay = async ({ canvas, canv
 };
 
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Statement & tools/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Tools/i }));
   await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();
 };
 
 export const accountMobilePlay: ExpensesPagePlay = async ({ canvas, canvasElement }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Statement & tools|รายการและเครื่องมือ/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Statement|รายการบัญชี/i }));
   await expect(canvasElement.querySelector(".expense-statement")).not.toBeNull();
   await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
 };

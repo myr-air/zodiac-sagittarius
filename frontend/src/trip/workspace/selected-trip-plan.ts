@@ -18,7 +18,7 @@ export function resolveSelectedTripPlanId(
   if (preferredTripPlanId && tripHasPlan(trip, preferredTripPlanId)) {
     return preferredTripPlanId;
   }
-  return browserSelectedTripPlanId(trip) ?? initialSelectedTripPlanId(trip);
+  return urlSelectedTripPlanId(trip) ?? initialSelectedTripPlanId(trip);
 }
 
 export function rememberSelectedTripPlanId(trip: Trip, tripPlanId: string) {
@@ -46,18 +46,11 @@ export function selectedTripPlanStorageKey(tripId: string): string {
   return `${selectedTripPlanSessionStoragePrefix}${tripId}`;
 }
 
-function browserSelectedTripPlanId(trip: Trip): string | null {
+function urlSelectedTripPlanId(trip: Trip): string | null {
   if (typeof window === "undefined") return null;
   const searchParams = new URLSearchParams(window.location.search);
   const urlTripPlanId = searchParams.get(selectedTripPlanQueryParam);
   if (urlTripPlanId && tripHasPlan(trip, urlTripPlanId)) return urlTripPlanId;
-
-  const storedTripPlanId = safeSessionStorage()?.getItem(
-    selectedTripPlanStorageKey(trip.id),
-  );
-  if (storedTripPlanId && tripHasPlan(trip, storedTripPlanId)) {
-    return storedTripPlanId;
-  }
   return null;
 }
 

@@ -25,7 +25,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("region", { name: /สรุปเงิน/i }).querySelector(".expense-stat")?.className).not.toContain("0_8px_18px");
     expect(screen.getByRole("tablist", { name: /ส่วนการเงินของทริป/i })).toHaveClass("expense-finance-tabs");
-    expect(screen.getAllByRole("tab")).toHaveLength(3);
+    expect(screen.getAllByRole("tab")).toHaveLength(4);
     expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-none");
     expect(document.querySelector(".expenses-panel")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
@@ -47,6 +47,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-table-wrap")).toHaveClass("shadow-none");
     const ledger = screen.getByRole("table", { name: /บันทึกใช้จ่าย/i });
     expect(ledger).toBeInTheDocument();
+    expect(within(ledger).queryByRole("columnheader", { name: "คำสั่ง" })).not.toBeInTheDocument();
     const rowButton = Array.from(ledger.querySelectorAll(".expense-ledger-row-button"))
       .find((button) => button.textContent?.includes("Dim Dim Sum brunch"));
     expect(rowButton).toBeInstanceOf(HTMLButtonElement);
@@ -61,7 +62,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getAllByLabelText("แผนทริป")[0]).toHaveValue("plan-main");
     expect(within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText(/วัน/i)).toHaveValue("all");
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /^เครื่องมือ$/i }));
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
   });
 
@@ -202,7 +203,7 @@ describe("TripExpensesPage overview and filters", () => {
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     expect(screen.queryByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /^เครื่องมือ$/i }));
     expect(screen.queryByLabelText(/สกุลเงินที่แสดง/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /ดาวน์โหลด CSV/i })).not.toBeInTheDocument();
   });

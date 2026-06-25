@@ -169,10 +169,8 @@ export function ExpenseTransactionDetail({
       </div>
 
       <div className={expenseStyles.transactionDetailAmountClassName}>
-        <strong>{display.displayAmountLabel ?? display.amountLabel}</strong>
-        {display.displayAmountLabel && display.displayAmountLabel !== display.amountLabel ? (
-          <span>{tableCopy.details.originalAmount}: {display.amountLabel}</span>
-        ) : null}
+        <strong>{display.amountLabel}</strong>
+        {display.approximateDisplayAmountLabel ? <span>{display.approximateDisplayAmountLabel}</span> : null}
       </div>
 
       {canEditExpenses ? (

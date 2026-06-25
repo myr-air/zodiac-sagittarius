@@ -8,9 +8,9 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการบัญชี/i }));
 
-    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    const panel = screen.getByRole("tabpanel", { name: /รายการบัญชี/i });
     expect(within(panel).getByRole("heading", { name: "รายการละเอียด" })).toBeInTheDocument();
     expect(within(panel).getByText(/ดูว่าแต่ละรายการคือค่าอะไร/i)).toBeInTheDocument();
     expect(within(panel).getByRole("heading", { name: "รายการจ่ายคืนที่แนะนำ" })).toBeInTheDocument();
@@ -36,18 +36,29 @@ describe("TripExpensesPage statement", () => {
     expect(within(panel).queryByRole("button", { name: /แก้ไข|ลบ|บันทึกเงินคืน/i })).not.toBeInTheDocument();
   });
 
-  it("prioritizes the statement before tools on mobile while keeping desktop tools first", async () => {
+  it("keeps setup tools out of the statement tab", async () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการบัญชี/i }));
 
-    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
-    const tools = within(panel).getByRole("region", { name: /เครื่องมือ/i });
-    const statement = within(panel).getByRole("region", { name: /รายการเงินแบบละเอียด/i });
+    const panel = screen.getByRole("tabpanel", { name: /รายการบัญชี/i });
+    expect(within(panel).getByRole("region", { name: /รายการเงินแบบละเอียด/i })).toBeInTheDocument();
+    expect(within(panel).queryByRole("region", { name: /^เครื่องมือ$/i })).not.toBeInTheDocument();
+    expect(within(panel).queryByLabelText(/สกุลเงินที่แสดง/i)).not.toBeInTheDocument();
+  });
 
-    expect(tools).toHaveClass("min-[768px]:order-1", "max-[767px]:order-2");
-    expect(statement).toHaveClass("min-[768px]:order-2", "max-[767px]:order-1");
+  it("shows setup controls and a calculator in the tools tab", async () => {
+    const user = userEvent.setup();
+    renderExpenses();
+
+    await user.click(screen.getByRole("tab", { name: /^เครื่องมือ$/i }));
+
+    const panel = screen.getByRole("tabpanel", { name: /^เครื่องมือ$/i });
+    expect(within(panel).getByRole("region", { name: /เครื่องคิดเลข/i })).toBeInTheDocument();
+    await user.type(within(panel).getByLabelText(/สมการ/i), "90+64+40-14");
+    expect(within(panel).getByText("ผลลัพธ์ HK$180.00")).toBeInTheDocument();
+    expect(within(panel).getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
   });
 
   it("shows an account-scoped empty payback state", async () => {
@@ -61,8 +72,8 @@ describe("TripExpensesPage statement", () => {
       },
     });
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
-    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    await user.click(screen.getByRole("tab", { name: /รายการบัญชี/i }));
+    const panel = screen.getByRole("tabpanel", { name: /รายการบัญชี/i });
     expect(within(panel).getByText("บัญชีนี้ไม่มียอดจ่ายคืนที่ต้องจัดการ")).toBeInTheDocument();
   });
 });

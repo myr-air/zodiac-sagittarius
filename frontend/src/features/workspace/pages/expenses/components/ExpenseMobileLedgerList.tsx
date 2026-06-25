@@ -93,7 +93,8 @@ export function ExpenseMobileLedgerList({
                     <ExpenseCategoryBadge category={expense.category} label={tableCopy.categories[expense.category]} />
                   </div>
                   <span className={expenseStyles.mobileLedgerCardAmountClassName}>
-                    {display.displayAmountLabel ?? display.amountLabel}
+                    {display.amountLabel}
+                    {display.approximateDisplayAmountLabel ? <small>{display.approximateDisplayAmountLabel}</small> : null}
                   </span>
                 </div>
                 <div className={expenseStyles.mobileLedgerMetaClassName}>

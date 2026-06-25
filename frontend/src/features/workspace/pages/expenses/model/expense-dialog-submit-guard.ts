@@ -10,6 +10,7 @@ export function canSubmitExpenseDialog({ isSaving, state, title }: ExpenseDialog
   return (
     !isSaving
     && Boolean(title.trim())
+    && !state.amountExpression.error
     && Number.isFinite(state.amountNumber)
     && state.amountNumber > 0
     && !state.splitMismatch

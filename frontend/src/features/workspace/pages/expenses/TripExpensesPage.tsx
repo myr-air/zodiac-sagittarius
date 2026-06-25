@@ -1,11 +1,11 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { ExpenseDialogLayer } from "./components/ExpenseDialogLayer";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
-import { ExpenseMoneySettings } from "./components/ExpenseMoneySettings";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
 import { ExpensePageHeader, ExpenseTripPlanPicker } from "./components/ExpensePageHeader";
 import { ExpenseStatementSection } from "./components/ExpenseStatementSection";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
+import { ExpenseToolsSection } from "./components/ExpenseToolsSection";
 import { WorkspaceConfirmDialog } from "@/src/shared/components/workspace-dialog";
 import { defaultTripPlanId } from "@/src/trip/trip-plans";
 import * as expenseStyles from "./TripExpensesPage.styles";
@@ -24,7 +24,7 @@ export type {
   UpdateExpenseHandler,
 } from "./model/expense-page-types";
 
-type ExpenseFinanceView = "overview" | "spending" | "account";
+type ExpenseFinanceView = "overview" | "spending" | "statement" | "tools";
 
 export function TripExpensesPage({
   trip,
@@ -92,7 +92,7 @@ export function TripExpensesPage({
     trip,
   });
   const pendingDeleteExpense = trip.expenses.find((expense) => expense.id === pendingDeleteExpenseId) ?? null;
-  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "account"];
+  const financeViews: ExpenseFinanceView[] = ["overview", "spending", "statement", "tools"];
   const openAddExpense = () => {
     if (canEditExpenses) {
       setDialogExpense("new");
@@ -249,10 +249,10 @@ export function TripExpensesPage({
       </div>
 
       <div
-        id="trip-money-panel-account"
+        id="trip-money-panel-statement"
         role="tabpanel"
-        aria-labelledby="trip-money-tab-account"
-        hidden={activeView !== "account"}
+        aria-labelledby="trip-money-tab-statement"
+        hidden={activeView !== "statement"}
       >
         <div className={expenseStyles.financeViewClassName}>
           <ExpenseStatementSection
@@ -269,20 +269,27 @@ export function TripExpensesPage({
             t={t}
             trip={trip}
           />
-          {canEditExpenses ? (
-            <ExpenseMoneySettings
-              copyState={copyState}
-              displayCurrency={displayCurrency}
-              displayExchangeRate={displayExchangeRate}
-              settlementCurrency={settlementCurrency}
-              t={t}
-              onCopyStatement={() => void copyStatement()}
-              onDisplayCurrencyChange={setDisplayCurrency}
-              onDisplayExchangeRateChange={setDisplayExchangeRate}
-              onDownloadCsv={downloadCsv}
-            />
-          ) : null}
         </div>
+      </div>
+
+      <div
+        id="trip-money-panel-tools"
+        role="tabpanel"
+        aria-labelledby="trip-money-tab-tools"
+        hidden={activeView !== "tools"}
+      >
+        <ExpenseToolsSection
+          canEditExpenses={canEditExpenses}
+          copyState={copyState}
+          displayCurrency={displayCurrency}
+          displayExchangeRate={displayExchangeRate}
+          settlementCurrency={settlementCurrency}
+          t={t}
+          onCopyStatement={() => void copyStatement()}
+          onDisplayCurrencyChange={setDisplayCurrency}
+          onDisplayExchangeRateChange={setDisplayExchangeRate}
+          onDownloadCsv={downloadCsv}
+        />
       </div>
 
       <ExpenseDialogLayer

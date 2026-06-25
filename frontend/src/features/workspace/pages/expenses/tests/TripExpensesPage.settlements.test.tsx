@@ -28,8 +28,8 @@ describe("TripExpensesPage settlement exports", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
-    const accountPanel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    await user.click(screen.getByRole("tab", { name: /รายการบัญชี/i }));
+    const accountPanel = screen.getByRole("tabpanel", { name: /รายการบัญชี/i });
     await user.click(within(accountPanel).getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -64,7 +64,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /^เครื่องมือ$/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกสรุปยอด/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
@@ -109,7 +109,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    await user.click(screen.getByRole("tab", { name: /^เครื่องมือ$/i }));
     await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));

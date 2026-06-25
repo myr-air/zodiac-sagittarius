@@ -70,7 +70,7 @@ export function ExpenseStatementSection({
   const personalDayGroups = useMemo(() => personalStatementDayGroups(personalRows), [personalRows]);
 
   return (
-    <section className={`${expenseStyles.statementSectionClassName} ${expenseStyles.accountStatementOrderClassName}`} aria-label={t.expenses.statement.label}>
+    <section className={expenseStyles.statementSectionClassName} aria-label={t.expenses.statement.label}>
       <header className={expenseStyles.statementHeaderClassName}>
         <div className={expenseStyles.statementTitleClassName}>
           <h2>{t.expenses.statement.title}</h2>
@@ -143,11 +143,11 @@ export function ExpenseStatementSection({
             <div className={expenseStyles.personalStatementTableWrapClassName}>
               <table className={expenseStyles.personalStatementTableClassName} aria-label={t.expenses.statement.personal.tableLabel({ name: currentMember.displayName })}>
                 <colgroup>
-                  <col className="w-[250px]" />
-                  <col className="w-[160px]" />
-                  <col className="w-[160px]" />
-                  <col className="w-[220px]" />
-                  <col className="w-[140px]" />
+                  <col className="w-[30%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[17%]" />
+                  <col className="w-[25%]" />
+                  <col className="w-[13%]" />
                 </colgroup>
                 <thead className={expenseStyles.tableHeaderClassName}>
                   <tr>

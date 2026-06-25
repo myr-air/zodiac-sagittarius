@@ -14,6 +14,10 @@ import {
   type EditableExpenseLineItem,
   validExpenseLineItems,
 } from "./expense-dialog-line-items";
+import {
+  parseExpenseAmountExpression,
+  type ExpenseAmountExpressionResult,
+} from "./expense-amount-expression";
 import { validExpenseDialogRepeatCount } from "./expense-dialog-constraints";
 
 interface ExpenseDialogStateInput {
@@ -31,6 +35,7 @@ interface ExpenseDialogStateInput {
 }
 
 export interface ExpenseDialogCalculatedState {
+  amountExpression: ExpenseAmountExpressionResult;
   amountNumber: number;
   exchangeRateNumber: number;
   hasValidExchangeRate: boolean;
@@ -58,7 +63,8 @@ export function calculateExpenseDialogState({
   splitMode,
   splitValues,
 }: ExpenseDialogStateInput): ExpenseDialogCalculatedState {
-  const amountNumber = Number(amount);
+  const amountExpression = parseExpenseAmountExpression(amount);
+  const amountNumber = amountExpression.value;
   const exchangeRateNumber = Number(exchangeRate);
   const repeatCountNumber = Number(repeatCount);
   const normalizedCurrency = normalizeCurrencyCode(currency);
@@ -81,6 +87,7 @@ export function calculateExpenseDialogState({
   const invalidItemizedLines = splitMode === "itemized" && (!validLineItems.length || validLineItems.length !== lineItems.length);
 
   return {
+    amountExpression,
     amountNumber,
     exchangeRateNumber,
     hasValidExchangeRate,

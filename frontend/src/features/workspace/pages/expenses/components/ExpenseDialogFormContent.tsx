@@ -1,5 +1,8 @@
 import type { Expense, Trip } from "@/src/trip/types";
+import type { SelectOption } from "@/src/shared/select-options";
+import { formatMoney } from "@/src/trip/expenses";
 import { Button } from "@/src/ui";
+import { useMemo } from "react";
 import type { useExpenseDialogState } from "../hooks/useExpenseDialogState";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type { ExpensePageLabels } from "../model/expense-page-types";
@@ -26,12 +29,29 @@ export function ExpenseDialogFormContent({
   trip,
 }: ExpenseDialogFormContentProps) {
   const hasSplitDetails = state.splitEditor.splitMode !== "equal" && state.splitEditor.splitMode !== "personal";
+  const storedValueCardOptions = useMemo(
+    () => storedValueCardSelectOptions(trip.expenses, state.storedValueCardName),
+    [state.storedValueCardName, trip.expenses],
+  );
+  const amountFeedback = state.amount.trim()
+    ? state.calculatedState.amountExpression.error === "syntax"
+      ? { tone: "danger" as const, text: t.expenses.dialog.amountExpressionInvalid }
+      : state.calculatedState.amountExpression.isExpression && Number.isFinite(state.calculatedState.amountNumber)
+        ? {
+          tone: "muted" as const,
+          text: t.expenses.dialog.amountExpressionPreview({
+            amount: formatMoney(state.calculatedState.amountNumber, state.calculatedState.normalizedCurrency),
+          }),
+        }
+        : null
+    : null;
 
   return (
     <>
       <div className={expenseStyles.dialogFormScrollClassName}>
         <ExpenseDetailsFields
           amount={state.amount}
+          amountFeedback={amountFeedback}
           category={state.category}
           currency={state.currency}
           effectiveTripPlanId={state.effectiveTripPlanId}
@@ -47,6 +67,7 @@ export function ExpenseDialogFormContent({
           repeatCount={state.repeatCount}
           settlementCurrency={settlementCurrency}
           spentOn={state.spentOn}
+          storedValueCardOptions={storedValueCardOptions}
           storedValueCardName={state.storedValueCardName}
           storedValueTransactionType={state.storedValueTransactionType}
           splitMode={state.splitEditor.splitMode}
@@ -122,5 +143,24 @@ export function ExpenseDialogFormContent({
         </div>
       </div>
     </>
+  );
+}
+
+function storedValueCardSelectOptions(
+  expenses: Trip["expenses"],
+  currentCardName: string,
+): SelectOption[] {
+  const cardsByName = new Map<string, SelectOption>();
+  for (const expense of expenses) {
+    const cardName = expense.storedValueCardName?.trim();
+    if (!cardName || cardsByName.has(cardName)) continue;
+    cardsByName.set(cardName, { value: cardName, label: cardName });
+  }
+  const currentName = currentCardName.trim();
+  if (currentName && !cardsByName.has(currentName)) {
+    cardsByName.set(currentName, { value: currentName, label: currentName });
+  }
+  return Array.from(cardsByName.values()).sort((left, right) =>
+    left.label.localeCompare(right.label),
   );
 }

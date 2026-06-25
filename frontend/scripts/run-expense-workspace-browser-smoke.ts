@@ -126,20 +126,23 @@ async function smokeWorkspace(
     await expectText(page, "Trip spend");
     screenshots.push(await screenshot(page, `${name}-overview`));
 
-    await openFinanceTab(page, "Statement & tools");
-    await expectText(page, "Statement & tools");
+    await openFinanceTab(page, "Tools");
     await expectText(page, "Display currency");
-    await expectText(page, "Suggested paybacks");
-    await openPersonalPaybackActions(page);
-    await cycleStatementFilters(page);
-    screenshots.push(await screenshot(page, `${name}-account-statement`));
-
+    await expectText(page, "Calculator");
+    await page.getByLabel("Formula").fill("90+64+40-14");
+    await expectText(page, "Result HK$180.00");
     const downloadPromise = page.waitForEvent("download", { timeout: 10_000 });
     await page.getByRole("button", { name: /Export/i }).click();
     const download = await downloadPromise;
     if (!download.suggestedFilename().endsWith(".csv")) {
       throw new Error(`Expected CSV download, got ${download.suggestedFilename()}`);
     }
+
+    await openFinanceTab(page, "Statement");
+    await expectText(page, "Suggested paybacks");
+    await openPersonalPaybackActions(page);
+    await cycleStatementFilters(page);
+    screenshots.push(await screenshot(page, `${name}-account-statement`));
 
     await openFinanceTab(page, "Manage expenses");
     await expectText(page, "Dim sum breakfast");
@@ -180,7 +183,7 @@ async function joinTripIfNeeded(page: Page) {
   }
 }
 
-async function openFinanceTab(page: Page, name: "Manage expenses" | "Statement & tools") {
+async function openFinanceTab(page: Page, name: "Manage expenses" | "Statement" | "Tools") {
   await page.getByRole("tab", { name }).click();
   await page.getByRole("tab", { name, selected: true }).waitFor({ timeout: 5_000 });
 }
@@ -196,7 +199,7 @@ async function cycleStatementFilters(page: Page) {
 }
 
 async function openPersonalPaybackActions(page: Page) {
-  const accountPanel = page.getByRole("tabpanel", { name: /Statement & tools/i });
+  const accountPanel = page.getByRole("tabpanel", { name: /Statement/i });
   const paybackPanel = accountPanel.getByRole("region", { name: /Suggested paybacks/i });
   await paybackPanel.getByRole("button", { name: /Copy reminder/i }).first().waitFor({
     state: "visible",

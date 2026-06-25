@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { SelectOptions } from "@/src/shared/components/select-options";
+import type { SelectOption } from "@/src/shared/select-options";
 import { majorCurrencySelectOptions } from "@/src/trip/currencies";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -8,6 +9,7 @@ import { expenseDialogRepeatCountRange } from "../model/expense-dialog-constrain
 
 interface ExpenseCoreFieldsProps {
   amount: string;
+  amountFeedback: { tone: "danger" | "muted"; text: string } | null;
   currency: string;
   exchangeRate: string;
   isEditing: boolean;
@@ -18,6 +20,7 @@ interface ExpenseCoreFieldsProps {
   repeatCount: string;
   settlementCurrency: string;
   spentOn: string;
+  storedValueCardOptions: SelectOption[];
   storedValueCardName: string;
   storedValueTransactionType: "topup" | "spend" | "refund" | "";
   title: string;
@@ -35,6 +38,7 @@ interface ExpenseCoreFieldsProps {
       title: string;
     };
     storedValue: {
+      cardNone: string;
       transactionTypes: {
         none: string;
         refund: string;
@@ -57,6 +61,7 @@ interface ExpenseCoreFieldsProps {
 
 export function ExpenseCoreFields({
   amount,
+  amountFeedback,
   copy,
   currency,
   exchangeRate,
@@ -68,6 +73,7 @@ export function ExpenseCoreFields({
   repeatCount,
   settlementCurrency,
   spentOn,
+  storedValueCardOptions,
   storedValueCardName,
   storedValueTransactionType,
   title,
@@ -96,10 +102,15 @@ export function ExpenseCoreFields({
           <span>{copy.fields.amount}</span>
           <input
             inputMode="decimal"
-            placeholder="420.00"
+            placeholder="420.00 หรือ 90+64+40-14"
             value={amount}
             onChange={(event) => onAmountChange(event.target.value)}
           />
+          {amountFeedback ? (
+            <small className={amountFeedback.tone === "danger" ? expenseStyles.fieldErrorClassName : expenseStyles.fieldHintClassName}>
+              {amountFeedback.text}
+            </small>
+          ) : null}
         </label>
         <label className={expenseStyles.fieldClassName}>
           <span>{copy.fields.currency}</span>
@@ -175,11 +186,14 @@ export function ExpenseCoreFields({
               ) : null}
               <label className={expenseStyles.fieldClassName}>
                 <span>{copy.fields.storedValueCardName}</span>
-                <input
-                  placeholder="Octopus"
+                <Select
+                  aria-label={copy.fields.storedValueCardName}
                   value={storedValueCardName}
                   onChange={(event) => onStoredValueCardNameChange(event.target.value)}
-                />
+                >
+                  <option value="">{copy.storedValue.cardNone}</option>
+                  <SelectOptions options={storedValueCardOptions} />
+                </Select>
               </label>
               <label className={expenseStyles.fieldClassName}>
                 <span>{copy.fields.storedValueTransactionType}</span>
