@@ -9,6 +9,7 @@ describe("ExpensePageHeader", () => {
   it("renders localized trip metadata for editable expense pages", () => {
     render(
       <ExpensePageHeader
+        canCreateExpenses
         canEditExpenses
         currentTripPlanId="plan-main"
         locale="th"
@@ -28,6 +29,7 @@ describe("ExpensePageHeader", () => {
   it("renders read-only edit status", () => {
     render(
       <ExpensePageHeader
+        canCreateExpenses={false}
         canEditExpenses={false}
         currentTripPlanId="plan-main"
         locale="en"
@@ -39,11 +41,27 @@ describe("ExpensePageHeader", () => {
     expect(screen.getByText("Money view only")).toBeInTheDocument();
   });
 
+  it("renders create-only expense status", () => {
+    render(
+      <ExpensePageHeader
+        canCreateExpenses
+        canEditExpenses={false}
+        currentTripPlanId="plan-main"
+        locale="en"
+        t={getMessages("en")}
+        trip={seedTrip}
+      />,
+    );
+
+    expect(screen.getByText("Can add spend")).toBeInTheDocument();
+  });
+
   it("forwards trip plan changes from the header", async () => {
     const user = userEvent.setup();
     const onTripPlanChange = vi.fn();
     render(
       <ExpensePageHeader
+        canCreateExpenses
         canEditExpenses
         currentTripPlanId="plan-main"
         locale="en"

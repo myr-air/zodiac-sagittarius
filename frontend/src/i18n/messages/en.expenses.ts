@@ -6,6 +6,7 @@ export const enExpensesMessages = {
     balanceLabel: "Friend balances",
     ledgerLabel: "Spending log",
     canEdit: "Can manage money",
+    canCreate: "Can add spend",
     readOnly: "Money view only",
     tabs: {
       label: "Trip money sections",
@@ -30,9 +31,22 @@ export const enExpensesMessages = {
     },
     overview: {
       nextActionTitle: "Next money action",
+      addSpendTitle: "Add recent spend",
+      addSpendDescription: "Capture a trip cost now. Details can be cleaned up later by the organizers.",
+      settleNowTitle: "Settle now",
       priorityTitle: "Recent high-value spend",
       settlementNudge: ({ count }: { count: number }) => `${count} payback${count === 1 ? "" : "s"} need attention.`,
       spendingNudge: "Add shared or personal spend as the trip changes.",
+    },
+    quickCapture: {
+      amountPlaceholder: "0.00",
+      fallbackTitle: ({ date }: { date: string }) => `Expense ${date}`,
+      groupSplit: "Split with group",
+      justMine: "Just mine",
+      notePlaceholder: "Taxi, snacks, tickets",
+      save: "Quick add",
+      title: "Quick add",
+      titlePlaceholder: "What was this?",
     },
     stats: {
       tripSpend: "Trip spend",

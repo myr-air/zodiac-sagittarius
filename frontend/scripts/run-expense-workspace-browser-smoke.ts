@@ -198,7 +198,6 @@ async function cycleStatementFilters(page: Page) {
 async function openPersonalPaybackActions(page: Page) {
   const accountPanel = page.getByRole("tabpanel", { name: /Statement & tools/i });
   const paybackPanel = accountPanel.getByRole("region", { name: /Suggested paybacks/i });
-  await paybackPanel.getByRole("button", { name: /Actions/i }).first().click();
   await paybackPanel.getByRole("button", { name: /Copy reminder/i }).first().waitFor({
     state: "visible",
     timeout: 10_000,

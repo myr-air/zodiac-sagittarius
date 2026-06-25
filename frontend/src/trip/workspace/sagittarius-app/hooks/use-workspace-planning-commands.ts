@@ -6,6 +6,7 @@ import type { UseWorkspacePlanningCommandsParams } from "./use-workspace-plannin
 
 export function useWorkspacePlanningCommands({
   activeMemberId,
+  canCreateExpenses,
   canEdit,
   canEditBookings,
   canEditExpenses,
@@ -92,6 +93,7 @@ export function useWorkspacePlanningCommands({
 
   const expenseCommands = useWorkspaceExpenses({
     apiClient: resolvedApiClient,
+    canCreateExpenses,
     canEditBookings,
     canEditExpenses,
     commitTrip,

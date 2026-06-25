@@ -3,6 +3,7 @@ import type { TripRole } from "@/src/trip/types";
 
 export interface WorkspacePermissions {
   canCreateStopNote: boolean;
+  canCreateExpenses: boolean;
   canCreateSuggestion: boolean;
   canEdit: boolean;
   canEditBookings: boolean;
@@ -16,11 +17,13 @@ export interface WorkspacePermissions {
 
 export function deriveWorkspacePermissions(role: TripRole): WorkspacePermissions {
   const canEdit = canTripRole(role, "editItinerary");
+  const canCreateExpenses = canTripRole(role, "createExpense");
   const canCreateSuggestion = canTripRole(role, "createSuggestion");
   const canEditExpenses = canTripRole(role, "editExpenses");
 
   return {
     canCreateStopNote: canCreateSuggestion || canEdit,
+    canCreateExpenses,
     canCreateSuggestion,
     canEdit,
     canEditBookings: canEdit || canEditExpenses,

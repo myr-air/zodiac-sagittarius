@@ -33,6 +33,7 @@ export const expensesOwnerStoryArgs = {
   trip: storyTrip,
   currentMember: ownerStoryMember,
   expenseSummary: storyExpenseSummaries.owner,
+  canCreateExpenses: true,
   canEditExpenses: true,
   onCreateExpense: noop,
   onUpdateExpense: noop,
@@ -43,12 +44,15 @@ export const expensesTravelerStoryArgs = {
   ...expensesOwnerStoryArgs,
   currentMember: travelerStoryMember,
   expenseSummary: storyExpenseSummaries.traveler,
+  canCreateExpenses: true,
+  canEditExpenses: false,
 } satisfies TripExpensesPageStoryArgs;
 
 export const expensesViewerStoryArgs = {
   ...expensesOwnerStoryArgs,
   currentMember: viewerStoryMember,
   expenseSummary: storyExpenseSummaries.viewer,
+  canCreateExpenses: false,
   canEditExpenses: false,
 } satisfies TripExpensesPageStoryArgs;
 
@@ -56,6 +60,49 @@ export const denseExpenseSummary = buildExpenseSummary(
   denseTrip.expenses,
   denseTrip.members[0].id,
 );
+
+export const longNameMobileTrip = {
+  ...storyTrip,
+  members: storyTrip.members.map((member, index) => ({
+    ...member,
+    displayName: [
+      "Nattaporn Sirirattanakul Long Passport Name",
+      "Benjamin Alexander Montgomery-Wong",
+      "ศศิธร วงศ์วัฒนากุล ชื่อยาวมาก",
+      "Family viewer with extra long label",
+    ][index] ?? member.displayName,
+  })),
+};
+
+export const longExpenseOverflowTrip = {
+  ...storyTrip,
+  expenses: storyTrip.expenses.map((expense, index) => index === 0
+    ? {
+        ...expense,
+        title: "Airport Express family pass plus Octopus reload reimbursement with extremely long receipt title",
+        amount: 1234567.89,
+      }
+    : expense),
+};
+
+export const itemizedHeavyTrip = {
+  ...longNameMobileTrip,
+  expenses: [
+    {
+      ...longNameMobileTrip.expenses[0],
+      title: "Night market itemized receipt with many friends",
+      lineItems: Array.from({ length: 8 }, (_, index) => ({
+        id: `heavy-line-${index + 1}`,
+        title: `Shared snack bundle ${index + 1}`,
+        amount: 80 + index * 12,
+        participantIds: longNameMobileTrip.members
+          .filter((member) => member.role !== "viewer")
+          .map((member) => member.id),
+      })),
+    },
+    ...longNameMobileTrip.expenses.slice(1),
+  ],
+};
 
 export const emptyExpenseSummary = buildExpenseSummary(
   emptyTrip.expenses,
@@ -72,6 +119,35 @@ export const denseExpensesStoryArgs = {
   trip: denseTrip,
   currentMember: denseTrip.members[0],
   expenseSummary: denseExpenseSummary,
+} satisfies TripExpensesPageStoryArgs;
+
+export const denseLongNamesMobileStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: longNameMobileTrip,
+  currentMember: longNameMobileTrip.members[0],
+  expenseSummary: buildExpenseSummary(
+    longNameMobileTrip.expenses,
+    longNameMobileTrip.members[0].id,
+  ),
+} satisfies TripExpensesPageStoryArgs;
+
+export const longExpenseOverflowStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: longExpenseOverflowTrip,
+  expenseSummary: buildExpenseSummary(
+    longExpenseOverflowTrip.expenses,
+    ownerStoryMember.id,
+  ),
+} satisfies TripExpensesPageStoryArgs;
+
+export const itemizedHeavyStoryArgs = {
+  ...expensesOwnerStoryArgs,
+  trip: itemizedHeavyTrip,
+  currentMember: itemizedHeavyTrip.members[0],
+  expenseSummary: buildExpenseSummary(
+    itemizedHeavyTrip.expenses,
+    itemizedHeavyTrip.members[0].id,
+  ),
 } satisfies TripExpensesPageStoryArgs;
 
 export const emptyExpensesStoryArgs = {

@@ -55,7 +55,9 @@ pub async fn create_expense(
     let session = db::queries::find_active_member_session_in_tx(&mut tx, trip_id, &token_hash)
         .await?
         .ok_or(ServiceError::Unauthenticated)?;
-    if !can(session.role, Capability::EditExpenses) {
+    if !can(session.role, Capability::CreateExpense)
+        && !can(session.role, Capability::EditExpenses)
+    {
         return Err(ServiceError::Forbidden);
     }
     mutation_guard::reject_duplicate_mutation(

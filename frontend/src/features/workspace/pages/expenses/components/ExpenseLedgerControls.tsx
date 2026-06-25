@@ -9,6 +9,7 @@ import { expenseCategoryFilterSelectOptions } from "../model/expense-page-option
 import type { ExpenseCategoryFilter, ExpensePageLabels } from "../model/expense-page-types";
 
 interface ExpenseLedgerControlsProps {
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   categoryFilter: ExpenseCategoryFilter;
   dayFilter: string;
@@ -28,6 +29,7 @@ interface ExpenseLedgerControlsProps {
 }
 
 export function ExpenseLedgerControls({
+  canCreateExpenses,
   canEditExpenses,
   categoryFilter,
   dayFilter,
@@ -85,7 +87,7 @@ export function ExpenseLedgerControls({
             <Icon name="settings" />
             <span>{t.expenses.filters.showFilters}</span>
           </Button>
-          <Button type="button" className={expenseStyles.commandPrimaryButtonClassName} disabled={!canEditExpenses} onClick={onAddExpense}>
+          <Button type="button" className={expenseStyles.commandPrimaryButtonClassName} disabled={!canCreateExpenses && !canEditExpenses} onClick={onAddExpense}>
             <Icon name="plus" /> {t.expenses.actions.addExpense}
           </Button>
           <div

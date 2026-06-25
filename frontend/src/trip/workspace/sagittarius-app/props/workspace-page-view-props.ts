@@ -11,6 +11,7 @@ type WorkspacePageViewProps = Pick<
 export function buildWorkspacePageViewProps({
   apiBaseUrl,
   bookingDocs,
+  canCreateExpenses,
   canEditBookings,
   canEditExpenses,
   canEditPhotoAlbums,
@@ -87,6 +88,7 @@ export function buildWorkspacePageViewProps({
       trip: scopedTripForRecords,
       currentMember,
       expenseSummary,
+      canCreateExpenses,
       canEditExpenses,
       selectedTripPlanId,
       workspaceTrip: trip,

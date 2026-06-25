@@ -16,7 +16,6 @@ describe("TripExpensesPage statement", () => {
     expect(within(panel).getByRole("heading", { name: "รายการจ่ายคืนที่แนะนำ" })).toBeInTheDocument();
     expect(within(panel).getByText(/Travel Mate จ่าย Family Member/i)).toBeInTheDocument();
     expect(within(panel).getByText(/รายการต้องเคลียร์/i)).toBeInTheDocument();
-    await user.click(within(panel).getByRole("button", { name: /คำสั่ง/i }));
     expect(within(panel).getByRole("button", { name: /คัดลอกข้อความเตือน/i })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: /บันทึกจ่ายคืน/i })).toBeInTheDocument();
 

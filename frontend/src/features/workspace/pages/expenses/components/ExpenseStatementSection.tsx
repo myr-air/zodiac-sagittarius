@@ -6,7 +6,6 @@ import type { SettlementSuggestion, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { useMemo } from "react";
-import { ExpenseActionDetails } from "./ExpenseActionDetails";
 
 interface ExpenseStatementSectionProps {
   canEditExpenses: boolean;
@@ -107,17 +106,14 @@ export function ExpenseStatementSection({
                     <strong>{display.label}</strong>
                     {display.lastReminderLabel ? <span>{display.lastReminderLabel}</span> : null}
                   </div>
-                  <ExpenseActionDetails
-                    menuClassName={expenseStyles.accountPaybackMenuPanelClassName}
-                    title={t.expenses.table.actions}
-                  >
+                  <div className={expenseStyles.balanceActionsClassName}>
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => onCopyPaybackReminder(suggestion)}>
                       <Icon name="copy" /> {t.expenses.actions.copyReminder}
                     </Button>
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
                       <Icon name="check" /> {t.expenses.actions.saveSettlement}
                     </Button>
-                  </ExpenseActionDetails>
+                  </div>
                 </div>
               );
             })}

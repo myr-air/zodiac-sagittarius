@@ -6,6 +6,7 @@ export const thExpensesMessages = {
     balanceLabel: "ยอดคงเหลือของเพื่อน",
     ledgerLabel: "บันทึกใช้จ่าย",
     canEdit: "จัดการเงินได้",
+    canCreate: "เพิ่มรายการได้",
     readOnly: "ดูเงินอย่างเดียว",
     tabs: {
       label: "ส่วนการเงินของทริป",
@@ -30,9 +31,22 @@ export const thExpensesMessages = {
     },
     overview: {
       nextActionTitle: "สิ่งที่ควรทำต่อ",
+      addSpendTitle: "เพิ่มค่าใช้จ่ายล่าสุด",
+      addSpendDescription: "บันทึกยอดตอนนี้ รายละเอียดค่อยให้คนจัดทริปจัดระเบียบทีหลังได้",
+      settleNowTitle: "เคลียร์ยอดตอนนี้",
       priorityTitle: "รายการใช้จ่ายสำคัญล่าสุด",
       settlementNudge: ({ count }: { count: number }) => `มี ${count} รายการจ่ายคืนที่ควรจัดการ`,
       spendingNudge: "เพิ่มค่าใช้จ่ายร่วม หรือค่าใช้จ่ายส่วนตัวเมื่อแผนทริปเปลี่ยน",
+    },
+    quickCapture: {
+      amountPlaceholder: "0.00",
+      fallbackTitle: ({ date }: { date: string }) => `ค่าใช้จ่าย ${date}`,
+      groupSplit: "แชร์กับกลุ่ม",
+      justMine: "ของฉันคนเดียว",
+      notePlaceholder: "taxi, ขนม, ตั๋ว",
+      save: "บันทึกเร็ว",
+      title: "เพิ่มเร็ว",
+      titlePlaceholder: "ค่าอะไร",
     },
     stats: {
       tripSpend: "ค่าใช้จ่ายทริป",

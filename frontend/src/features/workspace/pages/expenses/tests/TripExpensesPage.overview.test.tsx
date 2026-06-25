@@ -152,4 +152,84 @@ describe("TripExpensesPage overview and filters", () => {
     expect(within(ledger).queryByText("General tram")).not.toBeInTheDocument();
     expect(within(ledger).getByText(/2026-06-18/)).toBeInTheDocument();
   });
+
+  it("lets create-only travelers quick-add group spend without edit access or viewer splits", async () => {
+    const user = userEvent.setup();
+    const onCreateExpense = vi.fn().mockResolvedValue(undefined);
+    renderExpenses({
+      currentMember: seedTrip.members[2],
+      expenseSummary: buildExpenseSummary(seedTrip.expenses, seedTrip.members[2].id),
+      canCreateExpenses: true,
+      canEditExpenses: false,
+      onCreateExpense,
+    });
+
+    expect(screen.getByText("เพิ่มรายการได้")).toBeInTheDocument();
+    const quickAdd = screen.getByRole("region", { name: /เพิ่มค่าใช้จ่ายล่าสุด/i });
+    await user.type(within(quickAdd).getByLabelText(/จำนวนเงิน/i), "300");
+    await user.click(within(quickAdd).getByRole("button", { name: /บันทึกเร็ว/i }));
+
+    expect(onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      amount: 300,
+      category: "food",
+      currency: "HKD",
+      exchangeRateToSettlementCurrency: 1,
+      itemId: null,
+      paidBy: seedTrip.members[2].id,
+      tripPlanId: "plan-main",
+      splits: expect.objectContaining({
+        [seedTrip.members[0].id]: 100,
+        [seedTrip.members[1].id]: 100,
+        [seedTrip.members[2].id]: 100,
+      }),
+    }));
+    expect(onCreateExpense.mock.calls[0][0].splits).not.toHaveProperty(seedTrip.members[3].id);
+
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+    expect(screen.queryByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })).not.toBeInTheDocument();
+  });
+
+  it("records quick spend as personal when the traveler chooses just mine", async () => {
+    const user = userEvent.setup();
+    const onCreateExpense = vi.fn().mockResolvedValue(undefined);
+    renderExpenses({
+      currentMember: seedTrip.members[2],
+      expenseSummary: buildExpenseSummary(seedTrip.expenses, seedTrip.members[2].id),
+      canCreateExpenses: true,
+      canEditExpenses: false,
+      onCreateExpense,
+    });
+
+    const quickAdd = screen.getByRole("region", { name: /เพิ่มค่าใช้จ่ายล่าสุด/i });
+    await user.type(within(quickAdd).getByLabelText(/จำนวนเงิน/i), "75");
+    await user.type(within(quickAdd).getByLabelText(/ชื่อค่าใช้จ่าย/i), "MTR snack");
+    await user.click(within(quickAdd).getByRole("button", { name: /ของฉันคนเดียว/i }));
+    await user.click(within(quickAdd).getByRole("button", { name: /บันทึกเร็ว/i }));
+
+    expect(onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
+      title: "MTR snack",
+      splits: {
+        [seedTrip.members[2].id]: 75,
+      },
+    }));
+  });
+
+  it("does not mount a selected desktop receipt detail on initial mobile ledger render", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", vi.fn().mockImplementation((query: string) => ({
+      matches: query === "(max-width: 767px)",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+
+    renderExpenses();
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
+
+    expect(document.querySelector(".expense-transaction-detail")).toBeNull();
+    const firstMobileExpense = document.querySelector(".expense-mobile-ledger button");
+    expect(firstMobileExpense).toBeInstanceOf(HTMLButtonElement);
+    await user.click(firstMobileExpense as HTMLButtonElement);
+    expect(document.querySelector(".expense-transaction-detail")).toBeInTheDocument();
+  });
 });

@@ -8,6 +8,7 @@ export function useWorkspaceCommands({
   accountClient,
   accountSession,
   activeMemberId,
+  canCreateExpenses,
   canEdit,
   canEditBookings,
   canEditExpenses,
@@ -59,6 +60,7 @@ export function useWorkspaceCommands({
 }: UseWorkspaceCommandsParams) {
   const planningCommands = useWorkspacePlanningCommands({
     activeMemberId,
+    canCreateExpenses,
     canEdit,
     canEditBookings,
     canEditExpenses,

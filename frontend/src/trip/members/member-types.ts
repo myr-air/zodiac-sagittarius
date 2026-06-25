@@ -17,6 +17,7 @@ export type TripCapability =
   | "reviewSuggestions"
   | "createSuggestion"
   | "viewExpenses"
+  | "createExpense"
   | "editExpenses"
   | "managePeople"
   | "manageTripPlans"

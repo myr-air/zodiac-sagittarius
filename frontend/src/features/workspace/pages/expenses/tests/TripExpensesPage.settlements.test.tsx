@@ -14,8 +14,7 @@ describe("TripExpensesPage settlement exports", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
-    await user.click(screen.getByRole("button", { name: /บันทึกจ่ายคืน/i }));
+    await user.click(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
       category: "settlement",
@@ -31,8 +30,7 @@ describe("TripExpensesPage settlement exports", () => {
 
     await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     const accountPanel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
-    await user.click(within(accountPanel).getByRole("button", { name: /คำสั่ง/i }));
-    await user.click(within(accountPanel).getByRole("button", { name: /บันทึกจ่ายคืน/i }));
+    await user.click(within(accountPanel).getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
       category: "settlement",
@@ -48,8 +46,7 @@ describe("TripExpensesPage settlement exports", () => {
       resolveCreate = resolve;
     }));
     renderExpenses({ onCreateExpense });
-    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
-    const paybackButton = screen.getByRole("button", { name: /บันทึกจ่ายคืน/i });
+    const paybackButton = screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0];
 
     await user.dblClick(paybackButton);
 
@@ -132,8 +129,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
-    await user.click(screen.getByRole("button", { name: /คัดลอกข้อความเตือน/i }));
+    await user.click(screen.getAllByRole("button", { name: /คัดลอกข้อความเตือน/i })[0]);
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("please pay"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Hong Kong + Shenzhen Trip"));

@@ -14,6 +14,7 @@ import type { WorkspacePlanningBackendExpenseSummary } from "./use-workspace-pla
 export interface UseWorkspacePlanningContextParams {
   activePlanItems: ItineraryItem[];
   backendExpenseSummary: WorkspacePlanningBackendExpenseSummary;
+  canCreateExpenses: boolean;
   canCreateStopNote: boolean;
   canCreateSuggestion: boolean;
   canEdit: boolean;

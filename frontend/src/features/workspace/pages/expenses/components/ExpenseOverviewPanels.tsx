@@ -26,6 +26,8 @@ import {
 import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 import { ExpenseMemberLine } from "./ExpenseMemberLine";
 import { ExpenseActionDetails } from "./ExpenseActionDetails";
+import { ExpenseQuickCapture } from "./ExpenseQuickCapture";
+import type { CreateExpenseHandler } from "../model/expense-page-types";
 
 interface ExpenseOverviewPanelsProps {
   view?: "overview" | "balances" | "categories";
@@ -36,11 +38,14 @@ interface ExpenseOverviewPanelsProps {
   displayCurrency: string;
   displayExchangeRate: number;
   inferredScopeExpenses: Expense[];
+  selectedTripPlanId: string;
   settlementCurrency: string;
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   copyState: ExpenseCopyState;
   onAddExpense?: () => void;
   onAddPersonalExpense: () => void;
+  onCreateQuickExpense: CreateExpenseHandler;
   onCopyPaybackReminder: (suggestion: SettlementSuggestion) => void;
   pendingSettlementKeys: Set<string>;
   onRecordSettlement: (suggestion: SettlementSuggestion) => void;
@@ -56,11 +61,14 @@ export function ExpenseOverviewPanels({
   displayCurrency,
   displayExchangeRate,
   inferredScopeExpenses,
+  selectedTripPlanId,
   settlementCurrency,
+  canCreateExpenses,
   canEditExpenses,
   copyState,
   onAddExpense,
   onAddPersonalExpense,
+  onCreateQuickExpense,
   onCopyPaybackReminder,
   pendingSettlementKeys,
   onRecordSettlement,
@@ -109,6 +117,7 @@ export function ExpenseOverviewPanels({
   const showPersonal = view === "overview" || view === "balances";
   const showCategories = view === "overview" || view === "categories";
   const showScopeAudit = view === "overview" || view === "categories";
+  const hasSettlementSuggestions = expenseSummary.settlementSuggestions.length > 0;
   const priorityExpenses = [...trip.expenses]
     .filter((expense) => !isStoredValueFundingExpense(expense))
     .sort((left, right) => right.amount - left.amount)
@@ -123,42 +132,52 @@ export function ExpenseOverviewPanels({
 
   return (
     <section className={expenseStyles.overviewRailClassName}>
-      {showOverviewActions ? (
-        <section className={expenseStyles.panelClassName} aria-label={t.expenses.overview.nextActionTitle}>
-          <WorkspacePanelHeading
-            className={expenseStyles.panelHeadingClassName}
-            icon="wallet"
-            title={t.expenses.overview.nextActionTitle}
+      {showOverviewActions && !hasSettlementSuggestions ? (
+        <section className={expenseStyles.decisionLaneClassName} aria-label={t.expenses.overview.addSpendTitle}>
+          <div className={expenseStyles.decisionLaneHeaderClassName}>
+            <h2>{t.expenses.overview.addSpendTitle}</h2>
+            <p>{t.expenses.overview.addSpendDescription}</p>
+          </div>
+          <ExpenseQuickCapture
+            canCreateExpenses={canCreateExpenses}
+            currentMember={currentMember}
+            onCreateExpense={onCreateQuickExpense}
+            selectedTripPlanId={selectedTripPlanId}
+            settlementCurrency={settlementCurrency}
+            t={t}
+            trip={trip}
           />
-          <p className={expenseStyles.balanceMetaClassName}>
-            {expenseSummary.settlementSuggestions.length
-              ? t.expenses.overview.settlementNudge({
-                  count: expenseSummary.settlementSuggestions.length,
-                })
-              : t.expenses.overview.spendingNudge}
-          </p>
-          <div className={expenseStyles.balanceActionsClassName}>
-            {onAddExpense ? (
-              <Button type="button" disabled={!canEditExpenses} onClick={onAddExpense}>
-                <Icon name="plus" /> {t.expenses.actions.addExpense}
-              </Button>
-            ) : null}
-            <ExpenseActionDetails title={t.expenses.table.actions}>
-              <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+          {canEditExpenses ? (
+            <div className={expenseStyles.balanceActionsClassName}>
+              {onAddExpense ? (
+                <Button type="button" variant="ghost" onClick={onAddExpense}>
+                  <Icon name="plus" /> {t.expenses.actions.addExpense}
+                </Button>
+              ) : null}
+              <Button type="button" variant="ghost" onClick={onAddPersonalExpense}>
                 <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
               </Button>
-            </ExpenseActionDetails>
-          </div>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
       {showSettle ? (
-      <section className={expenseStyles.panelClassName} aria-label={t.expenses.panels.settle}>
-        <WorkspacePanelHeading
-          className={expenseStyles.panelHeadingClassName}
-          icon="wallet"
-          title={t.expenses.panels.settle}
-        />
+      <section className={hasSettlementSuggestions && showOverviewActions ? expenseStyles.decisionLaneClassName : expenseStyles.panelClassName} aria-label={t.expenses.panels.settle}>
+        {hasSettlementSuggestions && showOverviewActions ? (
+          <div className={expenseStyles.decisionLaneHeaderClassName}>
+            <h2>{t.expenses.overview.settleNowTitle}</h2>
+            <p>{t.expenses.overview.settlementNudge({
+              count: expenseSummary.settlementSuggestions.length,
+            })}</p>
+          </div>
+        ) : (
+          <WorkspacePanelHeading
+            className={expenseStyles.panelHeadingClassName}
+            icon="wallet"
+            title={t.expenses.panels.settle}
+          />
+        )}
         <ExpenseCopyFeedback copyState={copyState} t={t} />
         {expenseSummary.settlementSuggestions.length ? (
           <div className={expenseStyles.balanceListClassName}>
@@ -186,14 +205,14 @@ export function ExpenseOverviewPanels({
                       {display.lastReminderLabel}
                     </span>
                   ) : null}
-                  <ExpenseActionDetails title={t.expenses.table.actions}>
+                  <div className={expenseStyles.balanceActionsClassName}>
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => onCopyPaybackReminder(suggestion)}>
                       <Icon name="copy" /> {t.expenses.actions.copyReminder}
                     </Button>
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
-                      {t.expenses.actions.saveSettlement}
+                      <Icon name="check" /> {t.expenses.actions.saveSettlement}
                     </Button>
-                  </ExpenseActionDetails>
+                  </div>
                 </div>
               );
             })}
@@ -201,7 +220,30 @@ export function ExpenseOverviewPanels({
         ) : (
           <p className={expenseStyles.balanceMetaClassName}>{t.expenses.balance.noPaybacks}</p>
         )}
+        {hasSettlementSuggestions && showOverviewActions && onAddExpense ? (
+          <Button type="button" variant="ghost" disabled={!canCreateExpenses && !canEditExpenses} onClick={onAddExpense}>
+            <Icon name="plus" /> {t.expenses.actions.addExpense}
+          </Button>
+        ) : null}
       </section>
+      ) : null}
+
+      {showOverviewActions && hasSettlementSuggestions ? (
+        <section className={expenseStyles.panelClassName} aria-label={t.expenses.overview.addSpendTitle}>
+          <div className={expenseStyles.decisionLaneHeaderClassName}>
+            <h2>{t.expenses.overview.addSpendTitle}</h2>
+            <p>{t.expenses.overview.addSpendDescription}</p>
+          </div>
+          <ExpenseQuickCapture
+            canCreateExpenses={canCreateExpenses}
+            currentMember={currentMember}
+            onCreateExpense={onCreateQuickExpense}
+            selectedTripPlanId={selectedTripPlanId}
+            settlementCurrency={settlementCurrency}
+            t={t}
+            trip={trip}
+          />
+        </section>
       ) : null}
 
       {showStoredValue ? (

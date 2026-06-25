@@ -26,6 +26,7 @@ export function buildWorkspacePlanningContextParams(
   return {
     activePlanItems: setup.activePlanItems,
     backendExpenseSummary: setup.backendExpenseSummary,
+    canCreateExpenses: setup.canCreateExpenses,
     canCreateStopNote: setup.canCreateStopNote,
     canCreateSuggestion: setup.canCreateSuggestion,
     canReviewSuggestions: setup.canReviewSuggestions,
@@ -73,6 +74,7 @@ export function buildWorkspaceCommandsParams(
 ): UseWorkspaceCommandsParams {
   return {
     canEdit: setup.canEdit,
+    canCreateExpenses: setup.canCreateExpenses,
     canEditBookings: setup.canEditBookings,
     canEditExpenses: setup.canEditExpenses,
     canManagePeople: setup.canManagePeople,

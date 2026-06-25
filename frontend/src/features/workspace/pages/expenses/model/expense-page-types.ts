@@ -67,6 +67,7 @@ export interface TripExpensesPageProps {
   trip: Trip;
   currentMember: Member;
   expenseSummary: ExpenseSummary;
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   selectedTripPlanId?: string | null;
   workspaceTrip?: Trip;

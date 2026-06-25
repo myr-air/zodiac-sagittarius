@@ -11,6 +11,7 @@ import type {
 
 export interface UseWorkspaceExpenseMutationCommandsOptions {
   apiClient?: TripApiClient;
+  canCreateExpenses: boolean;
   canEditExpenses: boolean;
   commitTrip: (updater: (current: Trip) => Trip) => void;
   isApiMode: boolean;

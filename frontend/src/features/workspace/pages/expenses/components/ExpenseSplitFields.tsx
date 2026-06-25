@@ -65,7 +65,7 @@ export function ExpenseSplitFields({
                     checked={lineItem.participantIds.includes(member.id)}
                     onChange={() => onToggleLineParticipant(index, member.id)}
                   />
-                  {member.displayName}
+                  <span>{member.displayName}</span>
                 </label>
               ))}
             </div>
