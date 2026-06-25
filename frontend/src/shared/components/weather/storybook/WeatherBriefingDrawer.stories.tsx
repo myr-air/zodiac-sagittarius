@@ -26,6 +26,19 @@ const drawerBriefing = {
 
 const partialBriefing = {
   ...weatherBriefings[5],
+  weather: {
+    ...weatherBriefings[5].weather!,
+    cloudCoverMeanPercent: null,
+    humidityPercent: null,
+    precipitationHours: null,
+    precipitationSumMm: null,
+    rainChancePercent: null,
+    sunrise: null,
+    sunset: null,
+    visibilityMinMeters: null,
+    windGustsKph: null,
+    windSpeedKph: null,
+  },
   holiday: null,
   festival: { title: "Festival", body: "Festival data is still being checked for this date.", meta: { source: "Curated research", sourceUrl: null, fetchedAt: null, expiresAt: null, confidence: "unknown" as const, unavailableReason: "Pending source review" } },
   facts: null,

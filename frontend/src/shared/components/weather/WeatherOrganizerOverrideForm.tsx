@@ -5,13 +5,14 @@ import {
   weatherDrawerCopy,
 } from "./model/weather-briefing-drawer-model";
 import {
-  briefingBlockClassName,
+  organizerFormClassName,
   textAreaClassName,
 } from "./weather-briefing-drawer.styles";
 import type { OrganizerOverrideFormProps } from "./weather-briefing-drawer.types";
 
 export function WeatherOrganizerOverrideForm({
   briefing,
+  compact = false,
   locale,
   onSaveOverrides,
 }: OrganizerOverrideFormProps) {
@@ -30,20 +31,23 @@ export function WeatherOrganizerOverrideForm({
   }
 
   return (
-    <form className={briefingBlockClassName} onSubmit={submitOverrides}>
-      <h3 className="m-0 text-sm font-black">{copy.organizerNotes}</h3>
+    <form className={organizerFormClassName} onSubmit={submitOverrides}>
       <label className="grid gap-1 text-xs font-extrabold text-(--color-text-muted)">
         {copy.outfitOverride}
         <textarea className={textAreaClassName} value={outfitAdvice} onChange={(event) => setOutfitAdvice(event.target.value)} />
       </label>
-      <label className="grid gap-1 text-xs font-extrabold text-(--color-text-muted)">
-        {copy.festivalOverride}
-        <textarea className={textAreaClassName} value={festivalNote} onChange={(event) => setFestivalNote(event.target.value)} />
-      </label>
-      <label className="grid gap-1 text-xs font-extrabold text-(--color-text-muted)">
-        {copy.factsOverride}
-        <textarea className={textAreaClassName} value={factsNote} onChange={(event) => setFactsNote(event.target.value)} />
-      </label>
+      {compact ? null : (
+        <>
+          <label className="grid gap-1 text-xs font-extrabold text-(--color-text-muted)">
+            {copy.festivalOverride}
+            <textarea className={textAreaClassName} value={festivalNote} onChange={(event) => setFestivalNote(event.target.value)} />
+          </label>
+          <label className="grid gap-1 text-xs font-extrabold text-(--color-text-muted)">
+            {copy.factsOverride}
+            <textarea className={textAreaClassName} value={factsNote} onChange={(event) => setFactsNote(event.target.value)} />
+          </label>
+        </>
+      )}
       <Button type="submit">{copy.save}</Button>
     </form>
   );

@@ -25,7 +25,7 @@ export function OverviewWeatherBriefing({
         briefings={dailyBriefings}
         locale={locale}
         selectedDate={selectedBriefingDate}
-        onSelect={setSelectedBriefingDate}
+        onSelect={(date) => setSelectedBriefingDate((current) => (current === date ? null : date))}
       />
       <WeatherBriefingDrawer
         briefing={selectedBriefing}
@@ -34,6 +34,7 @@ export function OverviewWeatherBriefing({
         isOpen={Boolean(selectedBriefing)}
         onClose={() => setSelectedBriefingDate(null)}
         onSaveOverrides={onSaveDailyBriefingOverrides}
+        variant="inline"
       />
     </>
   );

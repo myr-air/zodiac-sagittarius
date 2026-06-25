@@ -49,22 +49,29 @@ describe("WeatherBriefingDrawer", () => {
     expect(inspector).not.toHaveAttribute("aria-modal");
     expect(screen.queryByRole("dialog", { name: /weather briefing/i })).not.toBeInTheDocument();
     expect(screen.getByText(/Rain · 33° 28°/)).toBeInTheDocument();
-    expect(screen.getByText(/Humidity 82%/)).toBeInTheDocument();
-    expect(screen.getByText(/Sunrise 05:46 · Sunset 18:47/)).toBeInTheDocument();
+    expect(screen.getByText("82%")).toBeInTheDocument();
+    expect(screen.getByText("05:46 / 18:47")).toBeInTheDocument();
+    expect(screen.getByText("64%")).toBeInTheDocument();
+    expect(screen.getByText("16 km/h")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /trip impact/i })).toBeInTheDocument();
+    expect(screen.getByText(/Umbrella \+ buffer/i)).toBeInTheDocument();
     expect(screen.getByText(/Feels like 38° 31° · UV 8.2/)).toBeInTheDocument();
     expect(screen.getByText(/Rain amount 12.4 mm · Rain hours 4 h · Wind gust 42 km\/h/)).toBeInTheDocument();
     expect(screen.getByText(/Min visibility 1.9 km · Cloud cover 80%/)).toBeInTheDocument();
+    expect(screen.getByText(/Updated/i)).toBeInTheDocument();
+    expect(screen.queryByText(/2026-06-04T00:00:00Z/i)).not.toBeInTheDocument();
     expect(screen.getByText("Light shirt and compact umbrella.")).toBeInTheDocument();
 
     await userEvent.click(screen.getAllByRole("button", { name: /close/i }).at(-1)!);
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("shows organizer edit controls only when editable", () => {
+  it("shows organizer edit controls only when editable", async () => {
     const { rerender } = render(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit={false} isOpen onClose={() => {}} />);
     expect(screen.queryByLabelText(/outfit advice override/i)).not.toBeInTheDocument();
 
     rerender(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit isOpen onClose={() => {}} />);
+    await userEvent.click(screen.getByText(/organizer notes/i));
     expect(screen.getByLabelText(/outfit advice override/i)).toBeInTheDocument();
   });
 
@@ -73,22 +80,53 @@ describe("WeatherBriefingDrawer", () => {
 
     expect(screen.getByRole("region", { name: /รายละเอียดพยากรณ์อากาศ/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "สภาพอากาศ" })).toBeInTheDocument();
-    expect(screen.getByText(/ความชื้น 82%/)).toBeInTheDocument();
+    expect(screen.getByText("ความชื้น")).toBeInTheDocument();
+    expect(screen.getByText("82%")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "คำแนะนำการแต่งตัว" })).toBeInTheDocument();
-    expect(screen.getByLabelText(/ปรับคำแนะนำการแต่งตัว/i)).toBeInTheDocument();
+    expect(screen.getByText("โน้ตผู้จัดทริป")).toBeInTheDocument();
   });
 
   it("keeps missing temperature data out of the weather summary", () => {
-    render(<WeatherBriefingDrawer briefing={{ ...briefing, weather: { ...briefing.weather!, conditionLabel: "Forecast pending", temperatureMaxCelsius: null, temperatureMinCelsius: null } }} locale="en" canEdit isOpen onClose={() => {}} />);
+    render(<WeatherBriefingDrawer briefing={{
+      ...briefing,
+      festival: null,
+      facts: null,
+      holiday: null,
+      outfitAdvice: null,
+      weather: {
+        ...briefing.weather!,
+        conditionLabel: "Forecast pending",
+        temperatureMaxCelsius: null,
+        temperatureMinCelsius: null,
+        apparentTemperatureMaxCelsius: null,
+        apparentTemperatureMinCelsius: null,
+        humidityPercent: null,
+        windSpeedKph: null,
+        windGustsKph: null,
+        rainChancePercent: null,
+        precipitationSumMm: null,
+        precipitationHours: null,
+        cloudCoverMeanPercent: null,
+        visibilityMinMeters: null,
+        uvIndexMax: null,
+        sunrise: null,
+        sunset: null,
+      },
+    }} locale="en" canEdit isOpen onClose={() => {}} />);
 
     expect(screen.getByRole("heading", { name: "Forecast pending" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /--° --°/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Forecast syncing/i)).toBeInTheDocument();
+    expect(screen.getByText(/Check again before departure/i)).toBeInTheDocument();
+    expect(screen.queryByText("No data yet")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /organizer notes/i })).not.toBeInTheDocument();
   });
 
   it("submits manual overrides with date and version", async () => {
     const onSaveOverrides = vi.fn();
     render(<WeatherBriefingDrawer briefing={briefing} locale="en" canEdit isOpen onClose={() => {}} onSaveOverrides={onSaveOverrides} />);
 
+    await userEvent.click(screen.getByText(/organizer notes/i));
     await userEvent.type(screen.getByLabelText(/outfit advice override/i), "Bring a hat");
     await userEvent.click(screen.getByRole("button", { name: /save/i }));
 
