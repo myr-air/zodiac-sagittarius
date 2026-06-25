@@ -1,5 +1,6 @@
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { ManagerReadinessPanel } from "./ManagerReadinessPanel";
+import { ManagerAdminFollowupPanel } from "./ManagerAdminFollowupPanel";
 import { ManagerTaskChecklistPanel } from "./ManagerTaskChecklistPanel";
 import { OverviewExpenseShortcut } from "./OverviewExpenseShortcut";
 import { OverviewFocusSection } from "./OverviewFocusSection";
@@ -10,6 +11,7 @@ export function ManagerOverviewPanels({
   locale,
   items,
   groupSpendLabel,
+  expenseSettlementSuggestionsLabel,
   nextStop,
   nextDayItems,
   focusTodayHeading,
@@ -70,6 +72,22 @@ export function ManagerOverviewPanels({
       tripLabel={t.overview.filters.trip}
     />
   );
+  const mobileAdminFollowupPanel = (
+    <ManagerAdminFollowupPanel
+      addChecklistLabel={t.overview.headings.addChecklist}
+      ariaLabel="Mobile overview admin follow-up"
+      myChecklistLabel={t.overview.readiness.myChecklist}
+      myOpenTasks={myOpenTasks}
+      onAddTask={openTaskDialog}
+      onToggleTask={onToggleTask}
+      pendingSuggestions={pendingSuggestions}
+      pendingSuggestionsLabel={t.overview.readiness.pendingSuggestions}
+      sharedChecklistLabel={t.overview.readiness.sharedChecklist}
+      sharedOpenTasks={sharedOpenTasks}
+      task={visibleTasks[0]}
+      title={t.overview.headings.tripChecklist}
+    />
+  );
   const focusPanel = (
     <OverviewFocusSection
       ariaLabel={t.overview.sections.todayFocus}
@@ -93,6 +111,13 @@ export function ManagerOverviewPanels({
       title={t.overview.generalExpense}
       value={t.overview.money.generalExamples}
       detail={t.overview.money.generalDetail}
+      facts={[
+        { label: t.overview.cockpit.budget, value: groupSpendLabel },
+        {
+          label: t.overview.phase.completed.facts.settlements,
+          value: expenseSettlementSuggestionsLabel ?? t.overview.money.settlementsCount({ count: 0 }),
+        },
+      ]}
       ariaLabel={t.overview.generalExpense}
       onClick={openExpenses}
     />
@@ -103,8 +128,9 @@ export function ManagerOverviewPanels({
       <>
         {focusPanel}
         {expensePanel}
-        {readinessPanel}
-        {checklistPanel}
+        {mobileAdminFollowupPanel}
+        <div className="contents max-[767px]:hidden">{readinessPanel}</div>
+        <div className="contents max-[767px]:hidden">{checklistPanel}</div>
       </>
     );
   }

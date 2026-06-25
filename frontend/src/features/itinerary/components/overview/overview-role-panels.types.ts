@@ -16,6 +16,7 @@ interface OverviewChecklistPanelBaseProps {
   locale: Locale;
   items: ItineraryItem[];
   groupSpendLabel: string;
+  expenseSettlementSuggestionsLabel?: string;
   nextStop: ItineraryItem | undefined;
   nextDayItems: ItineraryItem[];
   focusTodayHeading: string;

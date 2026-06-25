@@ -93,6 +93,7 @@ export function OverviewLensPanels({
           locale={locale}
           items={items}
           groupSpendLabel={groupSpendLabel}
+          expenseSettlementSuggestionsLabel={money.settlementSuggestions}
           nextStop={nextStop}
           nextDayItems={nextDayItems}
           focusTodayHeading={focusTodayHeading}
@@ -110,7 +111,6 @@ export function OverviewLensPanels({
           onTaskTitleChange={onTaskTitleChange}
           onSubmitTask={onSubmitTask}
           expenseNetLabel={expenseSummary.currentUserNetLabel}
-          expenseSettlementSuggestionsLabel={money.settlementSuggestions}
         />
       ) : null}
 

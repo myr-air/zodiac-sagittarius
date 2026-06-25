@@ -48,6 +48,10 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
           const low = weather?.temperatureMinCelsius;
           const dayLabel = formatWeatherStripDayLabel(briefing.date, locale);
           const condition = weatherGraphicLabel(weather?.conditionCode);
+          const compactCondition =
+            condition === "Forecast pending"
+              ? locale === "th" ? "รอพยากรณ์" : "Pending"
+              : condition;
           const hasForecastTemps = typeof high === "number" && typeof low === "number";
           const hasWeatherIcon = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
           const temperatureLabel = hasForecastTemps ? `${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : "";
@@ -74,7 +78,12 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
                   <span className={tempHighClassName}>{formatWeatherTemp(high)}</span>
                   <span className={tempLowClassName}>{formatWeatherTemp(low)}</span>
                 </span>
-              ) : <span className={pendingClassName}>{condition}</span>}
+              ) : (
+                <>
+                  <span className={`${pendingClassName} max-[767px]:hidden`}>{condition}</span>
+                  <span className={`${pendingClassName} hidden max-[767px]:inline`}>{compactCondition}</span>
+                </>
+              )}
               {sunrise && sunset ? <span className={solarClassName}>{sunrise} / {sunset}</span> : null}
             </button>
           );
