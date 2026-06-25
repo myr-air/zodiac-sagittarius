@@ -7,7 +7,6 @@ import {
 import { workspaceBadgeFrameClassName } from "@/src/shared/components/workspace-badge";
 
 export const pageClassName = "bookings-docs-page grid-rows-[auto_minmax(0,1fr)] max-[767px]:min-h-[calc(100dvh-48px)]";
-export const headerClassName = "bookings-docs-header flex flex-wrap items-end justify-between gap-3 rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) px-4 py-3 max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:border-t-0";
 export const headerAsideClassName = "booking-docs-header-actions flex min-w-0 items-center justify-end gap-2";
 export const headerActionRowClassName = "flex min-w-0 flex-wrap items-center justify-end gap-2 max-[767px]:w-full max-[767px]:justify-start";
 export const mobileAddButtonClassName = "bookings-mobile-add-button !hidden";
@@ -29,9 +28,9 @@ export const fileRowClassName = "booking-file-row booking-ticket-card grid min-w
 export const selectedFileRowClassName = "bg-(--color-primary-soft)";
 export const lockedRowClassName = "booking-row-locked grid min-h-[46px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-(--color-border) px-3 py-2 text-sm";
 export const badgeClassName = workspaceBadgeFrameClassName;
-export const inspectorClassName = "booking-inspector sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto shadow-none max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[767px]:!fixed max-[767px]:bottom-0 max-[767px]:left-0 max-[767px]:transition-[transform,opacity] motion-reduce:max-[1199px]:transition-none";
+export const desktopInspectorClassName = "booking-inspector-desktop sticky top-3 grid max-h-[calc(100vh-92px)] content-start gap-3 overflow-auto shadow-none max-[1199px]:hidden";
+export const inspectorClassName = "booking-inspector hidden content-start gap-3 overflow-auto shadow-none max-[1199px]:!fixed max-[1199px]:bottom-0 max-[1199px]:left-[74px] max-[1199px]:right-0 max-[1199px]:top-auto max-[1199px]:z-30 max-[1199px]:!max-h-[72vh] max-[1199px]:rounded-b-none max-[1199px]:rounded-t-(--radius-lg) max-[1199px]:border-x-0 max-[1199px]:border-b-0 max-[1199px]:p-3 max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))] max-[1199px]:shadow-[0_-8px_16px_rgb(15_23_42_/_0.14)] max-[1199px]:transition-[transform,opacity] max-[1199px]:duration-200 max-[1199px]:ease-out max-[1199px]:grid max-[767px]:!fixed max-[767px]:bottom-0 max-[767px]:left-0 max-[767px]:transition-[transform,opacity] motion-reduce:max-[1199px]:transition-none";
 export const mobileInspectorOpenClassName = "max-[1199px]:translate-y-0 max-[1199px]:opacity-100 max-[1199px]:pointer-events-auto";
-export const mobileInspectorClosedClassName = "max-[1199px]:translate-y-full max-[1199px]:opacity-0 max-[1199px]:pointer-events-none";
 export const inspectorSectionClassName = "grid gap-2 border-t border-(--color-border) pt-3 text-sm";
 export const dialogClassName = "booking-dialog max-h-[min(760px,calc(100vh_-_32px))] max-w-[760px] shadow-[0_10px_18px_rgb(15_23_42_/_0.14)]";
 export const dialogFormClassName = workspaceDialogFormClassName;

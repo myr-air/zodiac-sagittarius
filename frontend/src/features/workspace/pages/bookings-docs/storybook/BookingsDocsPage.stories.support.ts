@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import { noop } from "@/src/testing/storybook-actions";
 import {
@@ -65,5 +65,6 @@ export async function expectBookingsResponsiveContract(canvasElement: HTMLElemen
   await expectStoryElementClasses(canvasElement, ".booking-folder-rail", "booking-folder-rail", "max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
   await expectStoryElementClasses(canvasElement, ".bookings-file-panel", "bookings-file-panel", "max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)]", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
   await expectStoryElementClasses(canvasElement, ".bookings-mobile-add-button", "bookings-mobile-add-button", "!hidden");
-  await expectStoryElementClasses(canvasElement, ".booking-inspector", "booking-inspector", "max-[767px]:!fixed", "max-[767px]:bottom-0", "max-[767px]:transition-[transform,opacity]");
+  await expectStoryElementClasses(canvasElement, ".booking-inspector-desktop", "booking-inspector-desktop", "max-[1199px]:hidden");
+  await expect(canvasElement.querySelector(".booking-inspector")).toBeNull();
 }

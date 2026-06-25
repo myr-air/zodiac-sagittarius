@@ -6,7 +6,6 @@ import {
   PageHeaderTripDateMetaItem,
 } from "@/src/shared/components/page-header";
 import { SelectOptions } from "@/src/shared/components/select-options";
-import { TravelMotif } from "@/src/shared/components/travel-motifs";
 import { buildTripPlanSelectOptions } from "@/src/trip/trip-plans";
 import type { Trip, TripPlan } from "@/src/trip/types";
 import { Select } from "@/src/ui";
@@ -36,6 +35,8 @@ export function ExpensePageHeader({
   return (
     <PageHeader
       allowOverflow
+      className="expenses-page-header"
+      variant="compact"
       title={t.expenses.title}
       subtitle={trip.name}
       meta={(
@@ -53,7 +54,6 @@ export function ExpensePageHeader({
           onTripPlanChange={onTripPlanChange}
         />
       )}
-      motif={<TravelMotif tone="route" />}
     />
   );
 }

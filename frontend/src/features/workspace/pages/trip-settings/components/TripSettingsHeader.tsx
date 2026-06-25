@@ -18,6 +18,8 @@ export function TripSettingsHeader({
 }: TripSettingsHeaderProps) {
   return (
     <PageHeader
+      className="trip-settings-header"
+      variant="compact"
       title={title}
       subtitle={subtitle}
       description={description}

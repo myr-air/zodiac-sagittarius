@@ -2,7 +2,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { ExpenseDialogLayer } from "./components/ExpenseDialogLayer";
 import { ExpenseLedgerSection } from "./components/ExpenseLedgerSection";
 import { ExpenseOverviewPanels } from "./components/ExpenseOverviewPanels";
-import { ExpensePageHeader, ExpenseTripPlanPicker } from "./components/ExpensePageHeader";
+import { ExpensePageHeader } from "./components/ExpensePageHeader";
 import { ExpenseStatementSection } from "./components/ExpenseStatementSection";
 import { ExpenseSummaryStats } from "./components/ExpenseSummaryStats";
 import { ExpenseToolsSection } from "./components/ExpenseToolsSection";
@@ -136,18 +136,6 @@ export function TripExpensesPage({
         t={t}
         trip={planSourceTrip}
       />
-      <div className={expenseStyles.mobileHeaderClassName}>
-        <h1>{t.expenses.title}</h1>
-        <p>{planSourceTrip.name}</p>
-      </div>
-      <div className={expenseStyles.mobilePlanBarClassName}>
-        <ExpenseTripPlanPicker
-          currentTripPlanId={activeTripPlanId}
-          label={t.expenses.fields.tripPlan}
-          tripPlanOptions={planSourceTrip.tripPlans ?? planSourceTrip.planVariants}
-          onTripPlanChange={onChangeTripPlan}
-        />
-      </div>
 
       <nav
         className={expenseStyles.financeTabsClassName}

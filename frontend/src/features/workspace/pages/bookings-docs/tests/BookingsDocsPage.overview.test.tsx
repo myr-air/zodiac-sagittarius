@@ -17,7 +17,8 @@ describe("BookingsDocsPage overview", () => {
     expect(screen.queryByText("Can edit bookings")).not.toBeInTheDocument();
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("shadow-none");
     expect(document.querySelector(".bookings-file-panel")).toHaveClass("shadow-none");
-    expect(document.querySelector(".booking-inspector")).toHaveClass("shadow-none");
+    expect(document.querySelector(".booking-inspector-desktop")).toHaveClass("shadow-none", "max-[1199px]:hidden");
+    expect(document.querySelector(".booking-inspector")).toBeNull();
     expect(document.querySelector(".bookings-docs-page")).toHaveClass("max-[1199px]:px-0", "max-[1199px]:py-0", "grid-rows-[auto_minmax(0,1fr)]", "max-[767px]:min-h-[calc(100dvh-48px)]");
     expect(document.querySelector(".bookings-mobile-add-button")).toHaveClass("!hidden");
     expect(document.querySelector(".booking-folder-rail")).toHaveClass("max-[1199px]:grid-cols-7", "max-[1199px]:rounded-none", "max-[1199px]:shadow-none");
@@ -26,7 +27,7 @@ describe("BookingsDocsPage overview", () => {
     expect(document.querySelector(".bookings-file-toolbar")).toHaveClass("max-[1199px]:px-3", "max-[767px]:px-2");
     expect(document.querySelector(".bookings-file-panel > div:nth-child(2)")).toHaveClass("max-[767px]:px-3");
     expect(document.querySelector(".booking-file-list > div:first-child")).toHaveClass("sticky", "top-0", "min-w-[760px]", "max-[1199px]:hidden");
-    expect(document.querySelector(".booking-inspector")).toHaveClass("max-[1199px]:!fixed", "max-[1199px]:left-[74px]", "max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))]", "max-[1199px]:translate-y-full", "max-[767px]:left-0");
+    expect(document.querySelector(".booking-inspector-desktop")).toHaveClass("sticky", "top-3", "max-[1199px]:hidden");
     expect(screen.getByText("Everything saved for this trip · 5 visible items")).toHaveClass("max-[767px]:hidden");
     expect(screen.getByPlaceholderText("Search bookings, docs, links")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Transport/i })).toBeInTheDocument();
@@ -43,14 +44,14 @@ describe("BookingsDocsPage overview", () => {
     const user = userEvent.setup();
     renderBookingsDocsPage();
 
-    const inspector = document.querySelector(".booking-inspector");
-    expect(inspector).toHaveClass("max-[1199px]:translate-y-full");
+    expect(document.querySelector(".booking-inspector")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: /Select Peak Tram tickets/i }));
-    expect(inspector).toHaveClass("max-[1199px]:translate-y-0", "max-[1199px]:opacity-100");
+    const inspector = document.querySelector(".booking-inspector");
+    expect(inspector).toHaveClass("max-[1199px]:!fixed", "max-[1199px]:left-[74px]", "max-[1199px]:pb-[calc(12px+env(safe-area-inset-bottom))]", "max-[1199px]:translate-y-0", "max-[1199px]:opacity-100", "max-[767px]:left-0");
 
     await user.click(screen.getByRole("button", { name: "Close booking preview" }));
-    expect(inspector).toHaveClass("max-[1199px]:translate-y-full", "max-[1199px]:opacity-0");
+    expect(document.querySelector(".booking-inspector")).toBeNull();
   });
 
   it("locks sensitive records for viewers while leaving shared rows visible", () => {

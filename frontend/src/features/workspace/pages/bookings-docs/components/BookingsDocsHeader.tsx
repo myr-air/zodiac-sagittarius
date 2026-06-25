@@ -1,5 +1,9 @@
 import type { Locale } from "@/src/i18n/types";
-import { formatTripRange } from "@/src/shared/components/page-header";
+import {
+  PageHeader,
+  PageHeaderMetaItem,
+  PageHeaderTripDateMetaItem,
+} from "@/src/shared/components/page-header";
 import type { Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -24,25 +28,22 @@ export function BookingsDocsHeader({
   trip,
 }: BookingsDocsHeaderProps) {
   return (
-    <header className={bookingStyles.headerClassName}>
-      <div className="grid min-w-0 gap-0.5">
-        <h1 className="m-0 text-2xl font-black leading-8 text-(--color-text) max-[767px]:text-xl">
-          {copy.title}
-        </h1>
-        <span className="truncate text-sm font-extrabold text-(--color-text-muted)">
-          {trip.name}
-        </span>
-      </div>
-      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 max-[767px]:w-full max-[767px]:justify-start">
-        <div className="flex flex-wrap items-center gap-1.5 text-xs font-extrabold text-(--color-text-muted)">
-          <span className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5">
-            <Icon name="calendar" /> {formatTripRange(trip.startDate, trip.endDate, locale)}
-          </span>
-          <span className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5">
-            <Icon name="ticket" /> {copy.records(recordCount)}
-          </span>
-        </div>
-        {canEditBookings ? (
+    <PageHeader
+      className="bookings-docs-header"
+      variant="compact"
+      title={copy.title}
+      subtitle={trip.name}
+      meta={(
+        <>
+          <PageHeaderTripDateMetaItem
+            startDate={trip.startDate}
+            endDate={trip.endDate}
+            locale={locale}
+          />
+          <PageHeaderMetaItem icon="ticket">{copy.records(recordCount)}</PageHeaderMetaItem>
+        </>
+      )}
+      aside={canEditBookings ? (
         <div className={bookingStyles.headerAsideClassName}>
           <div className={bookingStyles.headerActionRowClassName}>
             <Button type="button" onClick={onAddBooking} aria-label={copy.addBooking}>
@@ -50,8 +51,7 @@ export function BookingsDocsHeader({
             </Button>
           </div>
         </div>
-        ) : null}
-      </div>
-    </header>
+      ) : null}
+    />
   );
 }
