@@ -42,8 +42,10 @@ export function PhotoAlbumDialog({
       onSubmit={(event) => void state.submit(event)}
       title={title}
     >
-      <PhotoAlbumDialogFields copy={copy} state={state} trip={trip} />
-      <PhotoAlbumDialogRelatedItems copy={copy} state={state} trip={trip} />
+      <div className={photoStyles.dialogBodyClassName}>
+        <PhotoAlbumDialogFields copy={copy} state={state} trip={trip} />
+        <PhotoAlbumDialogRelatedItems copy={copy} state={state} trip={trip} />
+      </div>
       <div className={photoStyles.dialogActionsClassName}>
         <Button type="button" variant="ghost" onClick={onCancel}>{copy.cancel}</Button>
         <Button type="submit">{copy.saveAlbum}</Button>

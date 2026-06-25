@@ -49,6 +49,7 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
           const dayLabel = formatWeatherStripDayLabel(briefing.date, locale);
           const condition = weatherGraphicLabel(weather?.conditionCode);
           const hasForecastTemps = typeof high === "number" && typeof low === "number";
+          const hasWeatherIcon = Boolean(weather?.conditionCode && weather.conditionCode !== "unavailable");
           const temperatureLabel = hasForecastTemps ? `${formatWeatherTemp(high)} ${formatWeatherTemp(low)}` : "";
           const sunrise = formatSolarTime(weather?.sunrise);
           const sunset = formatSolarTime(weather?.sunset);
@@ -63,9 +64,11 @@ export function WeatherForecastStrip({ briefings, locale, selectedDate, onSelect
               onClick={() => onSelect(briefing.date)}
             >
               <span className={cn(dayClassName, tone.className, tone.chipClassName)}>{dayLabel}</span>
-              <span className={iconClassName} aria-hidden="true">
-                <Icon name={weatherIconForCondition(weather?.conditionCode)} />
-              </span>
+              {hasWeatherIcon ? (
+                <span className={iconClassName} aria-hidden="true">
+                  <Icon name={weatherIconForCondition(weather?.conditionCode)} />
+                </span>
+              ) : null}
               {hasForecastTemps ? (
                 <span className={tempClassName}>
                   <span className={tempHighClassName}>{formatWeatherTemp(high)}</span>

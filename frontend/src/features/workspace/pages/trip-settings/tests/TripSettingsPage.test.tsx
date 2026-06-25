@@ -12,13 +12,17 @@ describe("TripSettingsPage", () => {
 
     expect(screen.getByRole("heading", { name: "Trip settings", level: 1 }).closest("header")).toHaveClass(
       "page-header",
+      "page-header--compact",
       "bg-(--color-surface)",
-      "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]",
-      "max-[767px]:hidden",
+      "shadow-none",
+      "trip-settings-header",
     );
     expect(page.querySelector(".page-header-meta")).toHaveClass("[&>span]:bg-(--color-surface-subtle)", "[&>span]:border-(--color-border)");
     expect(screen.getByRole("form", { name: "Trip details" })).toHaveClass("bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(screen.getByRole("region", { name: "Plan impact" })).toHaveClass("bg-(--color-surface)", "shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
+    expect(screen.getByText("5 members")).toBeInTheDocument();
+    expect(screen.getAllByText("Default timezone")).toHaveLength(2);
+    expect(document.querySelectorAll(".trip-settings-impact-row")).toHaveLength(4);
   });
 
   it("normalizes trip settings before saving", async () => {

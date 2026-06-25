@@ -5,7 +5,10 @@ import {
   type ManualActivityPathOption,
 } from "@/src/trip/itinerary-paths";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
-import type { StopPlaceResolutionState } from "@/src/trip/places";
+import {
+  placeAutocompleteSuggestions,
+  type StopPlaceResolutionState,
+} from "@/src/trip/places";
 import type { ItineraryDialogState } from "./hooks/itinerary/itinerary-dialog-state";
 
 export interface WorkspaceStopDialogProps {
@@ -66,6 +69,7 @@ export function WorkspaceStopDialog({
           : undefined
       }
       onSubmit={dialogState.mode === "edit" ? updateSelectedStop : createStop}
+      placeSuggestions={placeAutocompleteSuggestions(trip)}
       placeResolution={stopPlaceResolution}
     />
   );

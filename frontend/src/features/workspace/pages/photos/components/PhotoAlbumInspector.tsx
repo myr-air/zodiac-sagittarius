@@ -58,13 +58,18 @@ export function PhotoAlbumInspector({
       aria-label={copy.inspectorLabel}
     >
       <div className="grid gap-2">
-        <Badge tone={photoAccessBadgeTone(album.access)}>
-          {photoProviderLabel(album.provider, copy)}
-        </Badge>
-        <h2 className="m-0 text-xl font-black text-(--color-text)">
+        <span className="flex items-center justify-between gap-2">
+          <Badge tone={photoAccessBadgeTone(album.access)}>
+            {photoProviderLabel(album.provider, copy)}
+          </Badge>
+          <span className="text-xs font-extrabold text-(--color-text-muted)">
+            {photoAccessLabel(album.access, copy)}
+          </span>
+        </span>
+        <h2 className="m-0 text-[17px] font-black leading-6 text-(--color-text)">
           {album.title}
         </h2>
-        <span className="text-sm font-semibold leading-6 text-(--color-text-muted)">
+        <span className="text-xs font-semibold leading-5 text-(--color-text-muted)">
           {copy.externalProviderNote}
         </span>
       </div>
@@ -96,7 +101,6 @@ export function PhotoAlbumInspector({
       </div>
       <div className={photoStyles.inspectorSectionClassName}>
         <strong className="text-(--color-text)">{copy.access}</strong>
-        <span>{photoAccessLabel(album.access, copy)}</span>
         <span className="text-(--color-text-muted)">
           {photoAlbumAccessNoteDisplay(album, copy)}
         </span>

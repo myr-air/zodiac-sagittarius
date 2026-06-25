@@ -21,7 +21,10 @@ describe("BookingsDocsHeader", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass("text-[24px]");
+    expect(screen.getByRole("heading", { name: "Bookings & Docs" })).toHaveClass(
+      "text-2xl",
+      "max-[767px]:text-xl",
+    );
     expect(screen.getByText("Hong Kong + Shenzhen Trip")).toBeInTheDocument();
     expect(screen.getByText("Jun 18–23, 2026")).toBeInTheDocument();
     expect(screen.getByText("5 records")).toBeInTheDocument();

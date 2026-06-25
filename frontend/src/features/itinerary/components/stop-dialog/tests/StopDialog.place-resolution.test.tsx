@@ -91,4 +91,46 @@ describe("StopDialog place resolution", () => {
       place: "Hong Kong Disneyland",
     }));
   });
+
+  it("offers scoped place suggestions for place and transit endpoints", async () => {
+    const user = userEvent.setup();
+    renderEn(
+      <StopDialog
+        mode="create"
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+        placeSuggestions={[
+          {
+            kind: "airport",
+            label: "Airport · Hong Kong, Hong Kong",
+            value: "HKG Hong Kong International Airport",
+          },
+          {
+            kind: "station",
+            label: "Train station · Shenzhen, China",
+            value: "Shenzhen North Railway Station",
+          },
+        ]}
+      />,
+    );
+
+    const placeInput = screen.getByLabelText("Place");
+    expect(placeInput).toHaveAttribute("list", "stop-place-suggestions");
+    expect(
+      document.querySelector(
+        'datalist#stop-place-suggestions option[value="HKG Hong Kong International Airport"]',
+      ),
+    ).toHaveAttribute("label", "Airport · Hong Kong, Hong Kong");
+
+    await user.selectOptions(screen.getByLabelText("Type"), "transportation");
+
+    expect(screen.getByLabelText("From")).toHaveAttribute(
+      "list",
+      "stop-place-suggestions",
+    );
+    expect(screen.getByLabelText("To")).toHaveAttribute(
+      "list",
+      "stop-place-suggestions",
+    );
+  });
 });

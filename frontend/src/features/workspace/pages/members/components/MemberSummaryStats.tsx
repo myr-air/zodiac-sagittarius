@@ -21,7 +21,7 @@ interface MemberSummaryStatsProps {
 
 export function MemberSummaryStats({ labels, stats, summaryLabel }: MemberSummaryStatsProps) {
   return (
-    <section className={memberStyles.memberStatGridClassName} aria-label={summaryLabel}>
+    <section className={memberStyles.memberStatGridClassName} aria-label={summaryLabel} tabIndex={0}>
       <WorkspaceSummaryStat
         className={memberStyles.memberStatClassName}
         icon="users"

@@ -17,6 +17,7 @@ export function StopDialogFormFields({
   mode,
   model,
   placeResolution,
+  placeSuggestions,
   startDate,
   stopDialogCopy,
   stopDialogMessages,
@@ -91,6 +92,7 @@ export function StopDialogFormFields({
         isFocusedEdit={isFocusedEdit}
         noteLabel={stopDialogMessages.fields.note}
         placeLabel={stopDialogMessages.fields.place}
+        placeSuggestions={placeSuggestions}
         transportationLabel={stopDialogMessages.fields.transportation}
         values={values}
         onUpdate={update}
@@ -104,6 +106,7 @@ export function StopDialogFormFields({
         mapLink={values.mapLink}
         mapLinkLabel={stopDialogMessages.fields.mapLink}
         moreDetailsLabel={stopDialogCopy.moreDetailsLabel}
+        placeSuggestions={placeSuggestions}
         onMapLinkChange={(mapLink) => update("mapLink", mapLink)}
         updateDetail={updateDetail}
       />

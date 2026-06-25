@@ -44,12 +44,48 @@ export const thOverviewMessages = {
     },
     cockpit: {
       nextStop: "จุดถัดไป",
+      completedStops: "จุดที่ไปแล้ว",
       budget: "งบประมาณ",
       crewReadiness: "ทีมและความพร้อม",
     },
     highlightBoard: {
       title: "ไฮไลต์ทริป",
       subtitle: "ของกินและสถานที่จากแผนนี้",
+    },
+    phase: {
+      incoming: {
+        eyebrow: "ก่อนวันเดินทาง",
+        title: "ความพร้อมก่อนออกเดินทาง",
+        detail: "ปิดสิ่งติดขัด งานเตรียมตัว และจุดเริ่มเดินทางก่อนถึงวันจริง",
+        facts: {
+          blockers: "ต้องแก้ก่อนเดินทาง",
+          checklist: "เช็กลิสต์ค้าง",
+          firstMove: "จุดเริ่มเดินทาง",
+        },
+        fallback: "ยืนยันจุดแรกของทริป",
+      },
+      active: {
+        eyebrow: "ระหว่างทริป",
+        title: "ค็อกพิทวันนี้",
+        detail: "โฟกัสจุดถัดไป สภาพอากาศ และคนที่พร้อมตอนนี้",
+        facts: {
+          nextMove: "จุดถัดไป",
+          weather: "ช่วงอากาศ",
+          crew: "ทีมที่ออนไลน์",
+        },
+        fallback: "ดูแผนของวันนี้",
+      },
+      completed: {
+        eyebrow: "หลังจบทริป",
+        title: "ปิดงานทริป",
+        detail: "เคลียร์เงิน เก็บความทรงจำ และเตรียมแผนไว้แชร์ต่อ",
+        facts: {
+          settlements: "เงินที่ต้องเคลียร์",
+          highlights: "ไฮไลต์ที่เก็บไว้",
+          recap: "แชร์สรุปทริป",
+        },
+        fallback: "แชร์บันทึกและรูปภาพ",
+      },
     },
     filters: {
       scopeLabel: "ตัวกรองขอบเขตเช็กลิสต์",
@@ -103,6 +139,7 @@ export const thOverviewMessages = {
       myChecklist: "เช็กลิสต์ของฉัน",
       sharedChecklist: "เช็กลิสต์ที่แชร์",
       pendingSuggestions: "เรื่องรอคุย",
+      openChecklistCount: ({ count }: { count: number }) => `${count} รายการค้าง`,
       alertSummary: ({ warnings, suggestions }: { warnings: number; suggestions: number }) =>
         `${warnings} จุดควรตรวจ และ ${suggestions} ข้อเสนอรอพิจารณา`,
     },

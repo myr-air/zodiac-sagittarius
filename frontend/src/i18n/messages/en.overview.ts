@@ -44,12 +44,48 @@ export const enOverviewMessages = {
     },
     cockpit: {
       nextStop: "Next stop",
+      completedStops: "Completed stops",
       budget: "Budget",
       crewReadiness: "Crew & readiness",
     },
     highlightBoard: {
       title: "Trip highlights",
       subtitle: "Food and places from this itinerary",
+    },
+    phase: {
+      incoming: {
+        eyebrow: "Before trip",
+        title: "Plan readiness",
+        detail: "Close blockers, prep work, and the first move before departure.",
+        facts: {
+          blockers: "Fix before travel",
+          checklist: "Open checklist",
+          firstMove: "First move",
+        },
+        fallback: "Confirm the first stop",
+      },
+      active: {
+        eyebrow: "During trip",
+        title: "Today cockpit",
+        detail: "Prioritize the next move, weather risk, and who is active now.",
+        facts: {
+          nextMove: "Next move",
+          weather: "Weather window",
+          crew: "Active crew",
+        },
+        fallback: "Check today's itinerary",
+      },
+      completed: {
+        eyebrow: "After trip",
+        title: "Trip close-out",
+        detail: "Settle money, save memories, and leave the plan ready to share.",
+        facts: {
+          settlements: "Money to settle",
+          highlights: "Highlights saved",
+          recap: "Share recap",
+        },
+        fallback: "Share notes and photos",
+      },
     },
     filters: {
       scopeLabel: "Checklist scope filters",
@@ -103,6 +139,7 @@ export const enOverviewMessages = {
       myChecklist: "my checklist items",
       sharedChecklist: "shared checklist items",
       pendingSuggestions: "pending suggestions",
+      openChecklistCount: ({ count }: { count: number }) => count === 1 ? "1 open item" : `${count} open items`,
       alertSummary: ({ warnings, suggestions }: { warnings: number; suggestions: number }) =>
         `${warnings} stops to review and ${suggestions} suggestions pending`,
     },

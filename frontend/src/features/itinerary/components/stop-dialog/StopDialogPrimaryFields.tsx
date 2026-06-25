@@ -8,6 +8,7 @@ export function StopDialogPrimaryFields({
   isFocusedEdit,
   noteLabel,
   placeLabel,
+  placeSuggestions,
   transportationLabel,
   values,
   onUpdate,
@@ -28,10 +29,22 @@ export function StopDialogPrimaryFields({
         <span>{placeLabel}</span>
         <input
           id={stopDialogFieldIds.place}
+          list={placeSuggestions.length ? stopPlaceSuggestionListId : undefined}
           value={values.place}
           onChange={(event) => onUpdate("place", event.target.value)}
           required={detailType !== "transportation"}
         />
+        {placeSuggestions.length ? (
+          <datalist id={stopPlaceSuggestionListId}>
+            {placeSuggestions.map((suggestion) => (
+              <option
+                key={`${suggestion.kind}:${suggestion.value}`}
+                value={suggestion.value}
+                label={suggestion.label}
+              />
+            ))}
+          </datalist>
+        ) : null}
       </label>
       {!isFocusedEdit && detailType !== "transportation" ? (
         <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.transportation}>
@@ -57,3 +70,5 @@ export function StopDialogPrimaryFields({
     </>
   );
 }
+
+export const stopPlaceSuggestionListId = "stop-place-suggestions";

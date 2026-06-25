@@ -19,6 +19,10 @@ assignment, labels, comments, and closing history.
 - Active spending follow-ups:
   - [#70 Support stored-value travel wallets in trip spending](https://github.com/myr-air/zodiac-sagittarius/issues/70)
   - [#71 Capture receipts with camera or OCR into spending drafts](https://github.com/myr-air/zodiac-sagittarius/issues/71)
+- Workspace symmetry follow-ups closed on 2026-06-25:
+  - [#72 Make members mobile controls more symmetric and show member rows sooner](https://github.com/myr-air/zodiac-sagittarius/issues/72)
+  - [#73 Balance trip settings layout across desktop and mobile](https://github.com/myr-air/zodiac-sagittarius/issues/73)
+  - [#74 Improve Bookings mobile folder rail semantics and symmetry](https://github.com/myr-air/zodiac-sagittarius/issues/74)
 - Production readiness follow-ups closed on 2026-06-07:
   - [#9 Production readiness local gate fails in auth browser e2e under next dev](https://github.com/myr-air/zodiac-sagittarius/issues/9)
   - [#10 Production browser QA fails because trip nav selector uses raw UUID instead of encoded route](https://github.com/myr-air/zodiac-sagittarius/issues/10)

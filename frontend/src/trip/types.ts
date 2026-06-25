@@ -64,6 +64,10 @@ export type {
   TripCity,
 } from "./places/place-types";
 export type {
+  PlaceSuggestion,
+  PlaceSuggestionKind,
+} from "./places/place-suggestions";
+export type {
   Expense,
   ExpenseCategory,
   ExpenseComment,

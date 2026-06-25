@@ -25,9 +25,11 @@ export function PhotoPageHeader({
 }: PhotoPageHeaderProps) {
   return (
     <PageHeader
+      className="photos-page-header"
+      variant="compact"
       title={copy.title}
       subtitle={tripName}
-      meta={
+      meta={(
         <>
           <PageHeaderTripDateMetaItem
             startDate={tripStartDate}
@@ -36,7 +38,7 @@ export function PhotoPageHeader({
           />
           <PageHeaderMetaItem icon="cloud">{copy.albumLinks(albumCount)}</PageHeaderMetaItem>
         </>
-      }
+      )}
     />
   );
 }

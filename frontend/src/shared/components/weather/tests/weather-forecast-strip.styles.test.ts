@@ -14,7 +14,7 @@ describe("weather forecast strip styles", () => {
     expect(rowClassName).toContain("weather-forecast-row");
     expect(rowClassName).toContain("max-[767px]:snap-x");
     expect(segmentClassName).toContain("weather-forecast-segment");
-    expect(segmentClassName).toContain("max-[767px]:w-[106px]");
+    expect(segmentClassName).toContain("max-[767px]:w-[118px]");
     expect(tempHighClassName).toContain("weather-forecast-temp-high");
     expect(emptyClassName).toContain("weather-forecast-empty-state");
   });

@@ -25,7 +25,7 @@ export function PeoplePanel({
   const copy = peoplePanelCopy(locale);
   return (
     <section className={peopleModuleClassName} aria-label="People and presence">
-      <h3 className={peopleHeadingClassName}>{copy.heading}</h3>
+      <h2 className={peopleHeadingClassName}>{copy.heading}</h2>
       <div className={peopleListClassName}>
         {members.length === 0 ? (
           <PeoplePanelEmptyState

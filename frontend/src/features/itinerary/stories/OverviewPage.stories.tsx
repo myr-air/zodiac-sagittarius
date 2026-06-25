@@ -2,9 +2,12 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { OverviewPage } from "@/src/features/itinerary/components";
 import {
   addTaskDialogOpenPlay,
+  afterTripPlay,
+  beforeTripPlay,
   densePlay,
   desktop1440Play,
   emptyPlay,
+  duringTripPlay,
   mobilePlay,
   ownerPlay,
   ownerThaiPlay,
@@ -15,6 +18,9 @@ import {
 import {
   overviewPageDenseStoryArgs,
   overviewPageEmptyStoryArgs,
+  overviewPageAfterTripStoryArgs,
+  overviewPageBeforeTripStoryArgs,
+  overviewPageDuringTripStoryArgs,
   overviewPageOwnerStoryArgs,
   overviewPageTravelerStoryArgs,
   overviewPageViewerStoryArgs,
@@ -63,6 +69,21 @@ export const Dense: Story = {
 export const Empty: Story = {
   args: overviewPageEmptyStoryArgs,
   play: emptyPlay,
+};
+
+export const BeforeTrip: Story = {
+  args: overviewPageBeforeTripStoryArgs,
+  play: beforeTripPlay,
+};
+
+export const DuringTrip: Story = {
+  args: overviewPageDuringTripStoryArgs,
+  play: duringTripPlay,
+};
+
+export const AfterTrip: Story = {
+  args: overviewPageAfterTripStoryArgs,
+  play: afterTripPlay,
 };
 
 export const AddTaskDialogOpen: Story = ownerStory(

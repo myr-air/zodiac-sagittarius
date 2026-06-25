@@ -17,6 +17,7 @@ const HIGH_CONFIDENCE_THRESHOLD: f64 = 0.85;
 const NOMINATIM_DEFAULT_BASE_URL: &str = "https://nominatim.openstreetmap.org";
 const NOMINATIM_MIN_INTERVAL: Duration = Duration::from_secs(1);
 const OPEN_METEO_GEOCODE_BASE_URL: &str = "https://geocoding-api.open-meteo.com/v1";
+const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
 static NOMINATIM_LAST_REQUEST: LazyLock<Mutex<Option<Instant>>> =
     LazyLock::new(|| Mutex::new(None));
@@ -66,6 +67,46 @@ pub struct ResolvePlaceResponse {
     pub candidates: Vec<PlaceCandidate>,
 }
 
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryRequest<'a> {
+    model: &'a str,
+    messages: Vec<OpenRouterPlaceQueryMessage<'a>>,
+    temperature: f64,
+    response_format: OpenRouterPlaceQueryResponseFormat,
+}
+
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryMessage<'a> {
+    role: &'a str,
+    content: String,
+}
+
+#[derive(Debug, Serialize)]
+struct OpenRouterPlaceQueryResponseFormat {
+    #[serde(rename = "type")]
+    response_type: &'static str,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryResponse {
+    choices: Vec<OpenRouterPlaceQueryChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryChoice {
+    message: OpenRouterPlaceQueryResponseMessage,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryResponseMessage {
+    content: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenRouterPlaceQueryPayload {
+    queries: Vec<String>,
+}
+
 pub async fn resolve_place(
     pool: &PgPool,
     trip_id: Uuid,
@@ -90,7 +131,7 @@ pub async fn resolve_place(
 
     let country_codes = destination_country_codes(&request.countries);
     let route_bounds = route_candidate_bounds(&request);
-    let queries = place_queries(&request);
+    let queries = resolved_place_queries(&request).await;
     for query in &queries {
         let normalized_query = normalized_destination_query(query, &country_codes);
         if let Some(record) = db::queries::find_place_geocode_cache(pool, &normalized_query).await?
@@ -244,14 +285,6 @@ fn country_code_for_name(value: &str) -> Option<String> {
 
 fn route_candidate_bounds(request: &ResolvePlaceRequest) -> Vec<GeoBounds> {
     let destination = request.destination_label.to_ascii_lowercase();
-    let is_compact_delta_route = destination.contains("hong kong")
-        || destination.contains("shenzhen")
-        || destination.contains("macau")
-        || destination.contains("macao");
-    if !is_compact_delta_route {
-        return Vec::new();
-    }
-
     let mut bounds = Vec::new();
     if destination.contains("hong kong") {
         bounds.push(GeoBounds {
@@ -277,18 +310,67 @@ fn route_candidate_bounds(request: &ResolvePlaceRequest) -> Vec<GeoBounds> {
             max_lng: 113.75,
         });
     }
-    if destination_country_codes(&request.countries)
-        .iter()
-        .any(|country| country == "th")
-    {
-        bounds.push(GeoBounds {
+
+    for country in destination_country_codes(&request.countries) {
+        if let Some(country_bounds) = country_candidate_bounds(&country) {
+            bounds.push(country_bounds);
+        }
+    }
+    bounds
+}
+
+fn country_candidate_bounds(country_code: &str) -> Option<GeoBounds> {
+    match country_code {
+        "hk" => Some(GeoBounds {
+            min_lat: 21.95,
+            max_lat: 22.65,
+            min_lng: 113.75,
+            max_lng: 114.55,
+        }),
+        "jp" => Some(GeoBounds {
+            min_lat: 24.0,
+            max_lat: 46.5,
+            min_lng: 122.0,
+            max_lng: 146.5,
+        }),
+        "kr" => Some(GeoBounds {
+            min_lat: 33.0,
+            max_lat: 39.5,
+            min_lng: 124.0,
+            max_lng: 132.0,
+        }),
+        "mo" => Some(GeoBounds {
+            min_lat: 22.05,
+            max_lat: 22.35,
+            min_lng: 113.45,
+            max_lng: 113.75,
+        }),
+        "sg" => Some(GeoBounds {
+            min_lat: 1.15,
+            max_lat: 1.5,
+            min_lng: 103.55,
+            max_lng: 104.1,
+        }),
+        "th" => Some(GeoBounds {
             min_lat: 5.5,
             max_lat: 20.8,
             min_lng: 97.0,
             max_lng: 106.5,
-        });
+        }),
+        "tw" => Some(GeoBounds {
+            min_lat: 21.8,
+            max_lat: 25.5,
+            min_lng: 119.0,
+            max_lng: 122.5,
+        }),
+        "vn" => Some(GeoBounds {
+            min_lat: 8.0,
+            max_lat: 23.5,
+            min_lng: 102.0,
+            max_lng: 110.0,
+        }),
+        _ => None,
     }
-    bounds
 }
 
 fn filter_candidates_for_bounds(
@@ -623,6 +705,92 @@ fn place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
     queries
 }
 
+async fn resolved_place_queries(request: &ResolvePlaceRequest) -> Vec<String> {
+    merge_place_queries(
+        openrouter_place_queries(request).await.unwrap_or_default(),
+        place_queries(request),
+    )
+}
+
+fn merge_place_queries(primary: Vec<String>, fallback: Vec<String>) -> Vec<String> {
+    let mut queries = Vec::new();
+    for query in primary.into_iter().chain(fallback) {
+        let query = compact_query(&[&query]);
+        if query.is_empty() || queries.contains(&query) {
+            continue;
+        }
+        queries.push(query);
+    }
+    queries
+}
+
+async fn openrouter_place_queries(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
+    let api_key = std::env::var("OPENROUTER_API_KEY")
+        .or_else(|_| std::env::var("SAGITTARIUS_OPENROUTER_API_KEY"))
+        .ok()?;
+    let model = std::env::var("OPENROUTER_MODEL")
+        .or_else(|_| std::env::var("SAGITTARIUS_AI_MODEL"))
+        .unwrap_or_else(|_| "openai/gpt-5.2".to_string());
+    let client = reqwest::Client::new();
+    let mut builder = client
+        .post(OPENROUTER_CHAT_COMPLETIONS_URL)
+        .bearer_auth(api_key)
+        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
+        .json(&OpenRouterPlaceQueryRequest {
+            model: &model,
+            temperature: 0.0,
+            response_format: OpenRouterPlaceQueryResponseFormat {
+                response_type: "json_object",
+            },
+            messages: vec![
+                OpenRouterPlaceQueryMessage {
+                    role: "system",
+                    content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Prefer airport, train station, transit station, landmark, and highlighted place names when they match the input. Stay inside the provided destination and country context, include transit from/to endpoints, place, and location hints when present, and do not invent coordinates.".to_string(),
+                },
+                OpenRouterPlaceQueryMessage {
+                    role: "user",
+                    content: openrouter_place_query_prompt(request),
+                },
+            ],
+        });
+    if let Ok(site_url) = std::env::var("OPENROUTER_SITE_URL") {
+        builder = builder.header("HTTP-Referer", site_url);
+    }
+    if let Ok(site_name) = std::env::var("OPENROUTER_SITE_NAME") {
+        builder = builder.header("X-Title", site_name);
+    }
+    let response = builder.send().await.ok()?;
+    if !response.status().is_success() {
+        return None;
+    }
+    let raw = response.json::<OpenRouterPlaceQueryResponse>().await.ok()?;
+    let content = raw.choices.first()?.message.content.as_str();
+    parse_openrouter_place_queries(content)
+}
+
+fn openrouter_place_query_prompt(request: &ResolvePlaceRequest) -> String {
+    format!(
+        "activity: {}\nplaceHint: {}\ndestination: {}\ncountries: {}\nday: {}",
+        request.activity,
+        request.place_hint,
+        request.destination_label,
+        request.countries.join(", "),
+        request.day
+    )
+}
+
+fn parse_openrouter_place_queries(content: &str) -> Option<Vec<String>> {
+    let payload = serde_json::from_str::<OpenRouterPlaceQueryPayload>(content).ok()?;
+    let queries = payload
+        .queries
+        .into_iter()
+        .map(|query| compact_query(&[&query]))
+        .filter(|query| !query.is_empty())
+        .take(3)
+        .collect::<Vec<_>>();
+    (!queries.is_empty()).then_some(queries)
+}
+
 fn full_place_query(request: &ResolvePlaceRequest) -> String {
     compact_query(&[
         &request.activity,
@@ -727,6 +895,57 @@ mod tests {
     }
 
     #[test]
+    fn openrouter_queries_are_merged_before_fallback_queries() {
+        let queries = merge_place_queries(
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+            ],
+            place_queries(&request()),
+        );
+
+        assert_eq!(
+            queries,
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Dim Dim Sum near Elements Hong Kong".to_string(),
+                "near Elements".to_string(),
+                "near Elements Hong Kong".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn openrouter_place_query_parser_keeps_three_compact_queries() {
+        let queries = parse_openrouter_place_queries(
+            r#"{"queries":["  HKG  Hong Kong International Airport  ","Chek Lap Kok Hong Kong","Airport Express Hong Kong","extra"]}"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            queries,
+            vec![
+                "HKG Hong Kong International Airport".to_string(),
+                "Chek Lap Kok Hong Kong".to_string(),
+                "Airport Express Hong Kong".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn openrouter_place_query_prompt_preserves_transit_context() {
+        let mut request = request();
+        request.activity = "Airport transfer from Suvarnabhumi Airport to HKG".to_string();
+        request.place_hint = "Hong Kong Airport".to_string();
+
+        let prompt = openrouter_place_query_prompt(&request);
+
+        assert!(prompt.contains("from Suvarnabhumi Airport to HKG"));
+        assert!(prompt.contains("placeHint: Hong Kong Airport"));
+        assert!(prompt.contains("countries: HK, Thailand"));
+    }
+
+    #[test]
     fn confidence_uses_query_specificity() {
         let mut request = request();
         assert_eq!(confidence_for_request(&request), 0.9);
@@ -771,7 +990,11 @@ mod tests {
     fn compact_delta_routes_reject_candidates_outside_route_bounds() {
         let mut request = request();
         request.destination_label = "Shenzhen, Hong Kong".to_string();
-        request.countries = vec!["Hong Kong".to_string(), "China".to_string()];
+        request.countries = vec![
+            "Hong Kong".to_string(),
+            "China".to_string(),
+            "Thailand".to_string(),
+        ];
         let bounds = route_candidate_bounds(&request);
         let shenzhen = PlaceCandidate {
             name: "MOCAPE".to_string(),
@@ -799,10 +1022,48 @@ mod tests {
             },
             ..shenzhen.clone()
         };
+        let bangkok = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 13.69,
+                lng: 100.75,
+            },
+            ..shenzhen.clone()
+        };
 
         assert!(candidate_matches_bounds(&shenzhen, &bounds));
+        assert!(candidate_matches_bounds(&bangkok, &bounds));
         assert!(!candidate_matches_bounds(&europe, &bounds));
         assert!(!candidate_matches_bounds(&shanghai, &bounds));
+    }
+
+    #[test]
+    fn country_bounds_reject_impossible_locations_without_compact_route_label() {
+        let mut request = request();
+        request.destination_label = "Bangkok".to_string();
+        request.countries = vec!["Thailand".to_string()];
+        let bounds = route_candidate_bounds(&request);
+        let bangkok = PlaceCandidate {
+            name: "Airport Rail Link".to_string(),
+            address: "Bangkok".to_string(),
+            coordinates: PlaceCoordinates {
+                lat: 13.7563,
+                lng: 100.5018,
+            },
+            map_link: String::new(),
+            confidence: 0.9,
+            source: "test".to_string(),
+            evidence: Vec::new(),
+        };
+        let paris = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 48.8566,
+                lng: 2.3522,
+            },
+            ..bangkok.clone()
+        };
+
+        assert!(candidate_matches_bounds(&bangkok, &bounds));
+        assert!(!candidate_matches_bounds(&paris, &bounds));
     }
 
     #[test]

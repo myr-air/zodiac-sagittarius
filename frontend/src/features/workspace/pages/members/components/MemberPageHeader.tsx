@@ -1,10 +1,9 @@
+import type { Locale } from "@/src/i18n/types";
 import {
   PageHeader,
   PageHeaderMetaItem,
   PageHeaderTripDateMetaItem,
 } from "@/src/shared/components/page-header";
-import { TravelMotif } from "@/src/shared/components/travel-motifs";
-import type { Locale } from "@/src/i18n/types";
 
 interface MemberPageHeaderProps {
   locale: Locale;
@@ -25,9 +24,11 @@ export function MemberPageHeader({
 }: MemberPageHeaderProps) {
   return (
     <PageHeader
+      className="members-page-header"
+      variant="compact"
       title={title}
       subtitle={subtitle}
-      meta={
+      meta={(
         <>
           <PageHeaderTripDateMetaItem
             startDate={tripStartDate}
@@ -36,8 +37,7 @@ export function MemberPageHeader({
           />
           <PageHeaderMetaItem icon="users">{memberCountLabel}</PageHeaderMetaItem>
         </>
-      }
-      motif={<TravelMotif tone="sunshine" />}
+      )}
     />
   );
 }

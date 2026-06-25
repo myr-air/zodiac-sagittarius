@@ -1,4 +1,5 @@
 import type { OverviewPageProps } from "@/src/features/itinerary/components";
+import type { ItineraryItem, Trip, TripDailyBriefing } from "@/src/trip/types";
 import {
   expectStoryElementClasses,
   expectStoryElementPresent,
@@ -113,6 +114,83 @@ export const overviewPageEmptyStoryArgs = buildOverviewPageStoryArgs({
   ...emptyOverviewStoryOverrides,
   dailyBriefings: [],
 });
+
+function dateOffsetDays(date: string, offsetDays: number): string {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  parsed.setUTCDate(parsed.getUTCDate() + offsetDays);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function todayIsoDate(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function dayOffset(fromDate: string, toDate: string): number {
+  const fromMs = Date.parse(`${fromDate}T00:00:00.000Z`);
+  const toMs = Date.parse(`${toDate}T00:00:00.000Z`);
+  return Math.round(
+    (toMs - fromMs) / (24 * 60 * 60 * 1000),
+  );
+}
+
+function shiftTripForPhase(
+  startDate: string,
+  endDate: string,
+): Pick<OverviewStoryArgs, "trip" | "items" | "dailyBriefings"> {
+  const offset = dayOffset(tripFixture.trip.startDate, startDate);
+  const items = tripFixture.planItems.map((item): ItineraryItem => ({
+    ...item,
+    day: dateOffsetDays(item.day, offset),
+  }));
+  const trip: Trip = {
+    ...tripFixture.trip,
+    startDate,
+    endDate,
+    itineraryItems: tripFixture.trip.itineraryItems.map((item) => ({
+      ...item,
+      day: dateOffsetDays(item.day, offset),
+    })),
+  };
+  const briefingOffset = dayOffset(weatherBriefings[0]?.date ?? startDate, startDate);
+  const dailyBriefings = weatherBriefings.map((briefing): TripDailyBriefing => {
+    const date = dateOffsetDays(briefing.date, briefingOffset);
+    return {
+      ...briefing,
+      date,
+      weather: briefing.weather
+        ? {
+            ...briefing.weather,
+            sunrise: briefing.weather.sunrise ? `${date}T05:46` : null,
+            sunset: briefing.weather.sunset ? `${date}T18:47` : null,
+          }
+        : null,
+    };
+  });
+  return { trip, items, dailyBriefings };
+}
+
+const overviewStoryToday = todayIsoDate();
+
+export const overviewPageBeforeTripStoryArgs = buildOverviewPageStoryArgs(
+  shiftTripForPhase(
+    dateOffsetDays(overviewStoryToday, 16),
+    dateOffsetDays(overviewStoryToday, 21),
+  ),
+);
+
+export const overviewPageDuringTripStoryArgs = buildOverviewPageStoryArgs(
+  shiftTripForPhase(overviewStoryToday, dateOffsetDays(overviewStoryToday, 5)),
+);
+
+export const overviewPageAfterTripStoryArgs = buildOverviewPageStoryArgs(
+  shiftTripForPhase(
+    dateOffsetDays(overviewStoryToday, -10),
+    dateOffsetDays(overviewStoryToday, -5),
+  ),
+);
 
 export async function expectOverviewStructure(canvasElement: HTMLElement) {
   await expectStoryElementPresent(canvasElement, ".overview-page");

@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { expectStoryElementClasses } from "@/src/shared/storybook/story-assertions";
 import { noop } from "@/src/testing/storybook-actions";
 import {
@@ -59,11 +59,13 @@ export const paidCommitmentLifecycleStoryArgs = {
 } satisfies BookingsDocsPageStoryArgs;
 
 export async function expectBookingsResponsiveContract(canvasElement: HTMLElement) {
-  await expectStoryElementClasses(canvasElement, ".page-header", "page-header", "bg-(--color-surface)", "max-[767px]:hidden");
+  await expectStoryElementClasses(canvasElement, ".bookings-docs-header", "bookings-docs-header", "bg-(--color-surface)", "max-[1199px]:rounded-none");
   await expectStoryElementClasses(canvasElement, ".booking-docs-header-actions", "booking-docs-header-actions", "justify-end");
   await expectStoryElementClasses(canvasElement, ".bookings-content", "bookings-content", "max-[767px]:grid-cols-1", "max-[767px]:gap-0");
-  await expectStoryElementClasses(canvasElement, ".booking-folder-rail", "booking-folder-rail", "max-[767px]:grid-cols-7", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
+  await expectStoryElementClasses(canvasElement, ".booking-folder-rail", "booking-folder-rail", "max-[1199px]:flex", "max-[1199px]:overflow-x-auto", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
+  await expectStoryElementClasses(canvasElement, ".booking-folder-rail button", "max-[1199px]:min-w-[128px]", "max-[1199px]:grid-cols-[22px_minmax(0,1fr)_auto]");
   await expectStoryElementClasses(canvasElement, ".bookings-file-panel", "bookings-file-panel", "max-[767px]:grid-rows-[auto_auto_minmax(0,1fr)]", "max-[767px]:rounded-none", "max-[767px]:shadow-none");
-  await expectStoryElementClasses(canvasElement, ".bookings-mobile-add-button", "bookings-mobile-add-button", "max-[767px]:fixed");
-  await expectStoryElementClasses(canvasElement, ".booking-inspector", "booking-inspector", "max-[767px]:!fixed", "max-[767px]:bottom-0", "max-[767px]:transition-[transform,opacity]");
+  await expectStoryElementClasses(canvasElement, ".bookings-mobile-add-button", "bookings-mobile-add-button", "!hidden");
+  await expectStoryElementClasses(canvasElement, ".booking-inspector-desktop", "booking-inspector-desktop", "max-[1199px]:hidden");
+  await expect(canvasElement.querySelector(".booking-inspector")).toBeNull();
 }

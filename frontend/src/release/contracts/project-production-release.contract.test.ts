@@ -218,7 +218,18 @@ describe("Sagittarius production release contracts", () => {
     expect(workflow).toContain("bun install --frozen-lockfile");
     expect(workflow).toContain("bunx playwright install --with-deps chromium");
     expect(workflow).toContain('SAGITTARIUS_PERF_SMOKE_MAX_P95_MS: "3000"');
-    expect(workflow).toContain("make production-readiness-fast PSQL=psql");
+    expect(workflow).toContain("name: Frontend verification");
+    expect(workflow).toContain("make frontend-verify");
+    expect(workflow).toContain("name: Backend and rollback checks");
+    expect(workflow).toContain("make backend-test PSQL=psql");
+    expect(workflow).toContain("make db-rollback-stop-notes-test PSQL=psql");
+    expect(workflow).toContain("name: API e2e smokes");
+    expect(workflow).toContain("make staging-preflight PSQL=psql");
+    expect(workflow).toContain("make frontend-e2e-local PSQL=psql");
+    expect(workflow).toContain("make api-trace-smoke PSQL=psql");
+    expect(workflow).toContain("name: Browser smokes");
+    expect(workflow).toContain("make frontend-e2e-auth-browser PSQL=psql");
+    expect(workflow).toContain("make expense-browser-smoke PSQL=psql");
     expect(workflow).toContain("name: Production container image build");
     expect(workflow).toContain("make container-build");
     expect(workflow).toContain(

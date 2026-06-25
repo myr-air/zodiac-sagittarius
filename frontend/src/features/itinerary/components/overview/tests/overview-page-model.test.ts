@@ -36,6 +36,9 @@ describe("overview page model", () => {
   });
 
   it("uses itinerary view overrides when supplied", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-18T12:00:00.000Z"));
+
     const item = getTripFixtureItineraryItem("item-dimdim");
 
     const model = buildOverviewPageModel({
@@ -65,5 +68,24 @@ describe("overview page model", () => {
     expect(model.sortedItems).toEqual([item]);
     expect(model.warningCount).toBe(42);
     expect(model.nextDayItems).toEqual([item]);
+  });
+
+  it("does not expose a next stop after the trip is completed", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-25T12:00:00.000Z"));
+
+    const model = buildOverviewPageModel({
+      currentMemberId: "member-beam",
+      expenseSummary: buildExpenseSummary(seedTrip.expenses, "member-beam"),
+      focusTodayLabel: "Focus today",
+      items: seedTrip.itineraryItems,
+      locale: "en",
+      suggestions: [],
+      trip: seedTrip,
+    });
+
+    expect(model.countdown.type).toBe("completed");
+    expect(model.nextStop).toBeUndefined();
+    expect(model.nextDayItems).toEqual([]);
   });
 });

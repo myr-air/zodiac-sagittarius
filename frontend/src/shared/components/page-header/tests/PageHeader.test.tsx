@@ -64,6 +64,32 @@ describe("PageHeader", () => {
     expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
   });
 
+  it("renders a compact mobile-visible page header variant", () => {
+    render(
+      <PageHeader
+        className="photos-page-header"
+        variant="compact"
+        title="Photos & Albums"
+        subtitle="Hong Kong friends trip"
+        meta={<PageHeaderMetaItem icon="cloud">3 album links</PageHeaderMetaItem>}
+      />,
+    );
+
+    const header = screen.getByRole("banner");
+
+    expect(header).toHaveClass(
+      "page-header",
+      "page-header--compact",
+      "photos-page-header",
+      "shadow-none",
+      "max-[1199px]:rounded-none",
+    );
+    expect(header).not.toHaveClass("max-[767px]:hidden");
+    expect(screen.getByLabelText("Photos & Albums summary")).toHaveClass("page-header-meta");
+    expect(screen.getByText("Hong Kong friends trip")).toHaveClass("truncate");
+    expect(screen.queryByRole("heading", { name: "Hong Kong friends trip", level: 2 })).not.toBeInTheDocument();
+  });
+
   it("renders the compact page user card", () => {
     render(<PageUserCard color="#0f766e" label="Current user" name="Aom" />);
 

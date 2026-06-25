@@ -25,6 +25,7 @@ export function StopDialog({
   onDelete,
   onPromoteFoodRecommendation,
   onSubmit,
+  placeSuggestions = [],
   placeResolution,
   startDate,
 }: StopDialogProps) {
@@ -74,6 +75,7 @@ export function StopDialog({
             mode={mode}
             model={model}
             placeResolution={placeResolution}
+            placeSuggestions={placeSuggestions}
             startDate={startDate}
             stopDialogCopy={copy}
             stopDialogMessages={t.stopDialog}

@@ -13,6 +13,7 @@ export function OverviewPage(props: OverviewPageProps) {
   trip,
   expenseSummary,
   items,
+  tasks,
   dailyBriefings = [],
   onSaveDailyBriefingOverrides,
   } = props;
@@ -86,6 +87,7 @@ export function OverviewPage(props: OverviewPageProps) {
         pendingSuggestions={pendingSuggestions}
         roleLens={roleLens}
         settlementCount={settlementCount}
+        tasks={tasks}
         trip={trip}
         warningCount={warningCount}
         onOpenExpenses={openExpenses}

@@ -3,6 +3,7 @@ import {
   type StopDetailValues,
   stopDetailLabels,
 } from "@/src/features/itinerary/domain/stop-details";
+import type { PlaceSuggestion } from "@/src/trip/types";
 import {
   advancedDetailsClassName,
   advancedDetailsGridClassName,
@@ -19,6 +20,7 @@ export function StopDialogDetailSection({
   mapLink,
   mapLinkLabel,
   moreDetailsLabel,
+  placeSuggestions,
   onMapLinkChange,
   updateDetail,
 }: {
@@ -29,6 +31,7 @@ export function StopDialogDetailSection({
   mapLink: string | null | undefined;
   mapLinkLabel: string;
   moreDetailsLabel: string;
+  placeSuggestions: PlaceSuggestion[];
   onMapLinkChange: (mapLink: string) => void;
   updateDetail: <K extends keyof StopDetailValues>(
     key: K,
@@ -55,6 +58,7 @@ export function StopDialogDetailSection({
         detailLabels={detailLabels}
         detailType={detailType}
         detailValues={detailValues}
+        placeSuggestions={placeSuggestions}
         updateDetail={updateDetail}
       />
     </>

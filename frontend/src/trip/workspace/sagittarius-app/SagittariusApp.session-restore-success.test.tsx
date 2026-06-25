@@ -55,8 +55,7 @@ describe("Sagittarius cockpit session restore success", () => {
         "account-created-session-token",
       ),
     );
-    expect(
-      await screen.findByRole("heading", { name: /Account Created API Trip/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Account Owner")).toBeInTheDocument();
+    expect(document.querySelector(".members-page-header")).toHaveTextContent("Account Created API Trip");
   });
 });

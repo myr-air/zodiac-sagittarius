@@ -39,22 +39,75 @@ export function BookingInspector({
 }: BookingInspectorProps) {
   if (!booking || !relations) {
     return (
-      <WorkspaceSurface className={cn(bookingStyles.inspectorClassName, bookingStyles.mobileInspectorClosedClassName)} density="compact" aria-label={copy.bookingDetails}>
+      <WorkspaceSurface
+        className={bookingStyles.desktopInspectorClassName}
+        density="compact"
+        aria-label={copy.bookingDetails}
+      >
         <strong className="text-(--color-text)">{copy.noBookingSelected}</strong>
       </WorkspaceSurface>
     );
   }
 
   return (
-    <WorkspaceSurface
-      className={cn(bookingStyles.inspectorClassName, mobileOpen ? bookingStyles.mobileInspectorOpenClassName : bookingStyles.mobileInspectorClosedClassName)}
-      density="compact"
-      aria-label={copy.bookingDetails}
-    >
-      <div className="hidden max-[767px]:grid max-[767px]:grid-cols-[minmax(0,1fr)_auto] max-[767px]:items-center max-[767px]:gap-2">
-        <span className="mx-auto h-1 w-10 rounded-full bg-(--color-border-strong)" aria-hidden="true" />
-        <IconButton type="button" aria-label={copy.closeBookingPreview} onClick={onClose}><Icon name="x" /></IconButton>
-      </div>
+    <>
+      <WorkspaceSurface
+        className={bookingStyles.desktopInspectorClassName}
+        density="compact"
+        aria-label={copy.bookingDetails}
+      >
+        <BookingInspectorContent
+          booking={booking}
+          canEdit={canEdit}
+          copy={copy}
+          onDelete={onDelete}
+          onEdit={onEdit}
+          relations={relations}
+        />
+      </WorkspaceSurface>
+      {mobileOpen ? (
+        <WorkspaceSurface
+          className={cn(bookingStyles.inspectorClassName, bookingStyles.mobileInspectorOpenClassName)}
+          density="compact"
+          aria-label={`${copy.bookingDetails} preview`}
+        >
+          <div className="hidden max-[767px]:grid max-[767px]:grid-cols-[minmax(0,1fr)_auto] max-[767px]:items-center max-[767px]:gap-2">
+            <span className="mx-auto h-1 w-10 rounded-full bg-(--color-border-strong)" aria-hidden="true" />
+            <IconButton type="button" aria-label={copy.closeBookingPreview} onClick={onClose}><Icon name="x" /></IconButton>
+          </div>
+          <BookingInspectorContent
+            booking={booking}
+            canEdit={canEdit}
+            copy={copy}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            relations={relations}
+          />
+        </WorkspaceSurface>
+      ) : null}
+    </>
+  );
+}
+
+interface BookingInspectorContentProps {
+  booking: BookingDoc;
+  canEdit: boolean;
+  copy: BookingCopy;
+  onDelete: () => void;
+  onEdit: () => void;
+  relations: BookingDocRelations;
+}
+
+function BookingInspectorContent({
+  booking,
+  canEdit,
+  copy,
+  onDelete,
+  onEdit,
+  relations,
+}: BookingInspectorContentProps) {
+  return (
+    <>
       <div className="grid gap-1">
         <BookingStatusBadge copy={copy} status={booking.status} />
         <h2 className="m-0 text-lg font-extrabold text-(--color-text)">{booking.title}</h2>
@@ -95,6 +148,6 @@ export function BookingInspector({
         <span>{copy.notes(relations.notes.length)}</span>
         <span>{bookingTravelerNamesDisplay(relations.travelers, copy)}</span>
       </div>
-    </WorkspaceSurface>
+    </>
   );
 }

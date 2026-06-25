@@ -3,7 +3,7 @@ import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import {
   buildMapPlaceResolutionRequest,
   type MapCoordinateResolutionResult,
-  mapResolutionPlaceHint,
+  mapResolutionPlaceHints,
   type PlaceResolver,
 } from "@/src/trip/places";
 import type { ItineraryItem, Trip } from "@/src/trip/types";
@@ -39,33 +39,35 @@ export function useWorkspaceItineraryMapCommands({
       for (const item of itemsToResolve) {
         if (item.coordinates) continue;
         result.attempted += 1;
-        const placeHint = mapResolutionPlaceHint(item);
-        if (!placeHint) {
+        const placeHints = mapResolutionPlaceHints(item);
+        if (placeHints.length === 0) {
           result.skipped += 1;
           continue;
         }
         try {
-          const response = await effectivePlaceResolver(
-            buildMapPlaceResolutionRequest(item, trip, {
-              clientMutationId: nextClientMutationId("map-place-resolve"),
-              placeHint,
-            }),
-          );
-          if (response.status !== "resolved") {
-            result.skipped += 1;
-            continue;
+          let resolved = false;
+          for (const placeHint of placeHints) {
+            const response = await effectivePlaceResolver(
+              buildMapPlaceResolutionRequest(item, trip, {
+                clientMutationId: nextClientMutationId("map-place-resolve"),
+                placeHint,
+              }),
+            );
+            if (response.status !== "resolved") continue;
+            const candidate = response.candidates[0];
+            if (!candidate) continue;
+            await updateItineraryItemInline(item.id, {
+              address: candidate.address,
+              coordinates: candidate.coordinates,
+              mapLink: candidate.mapLink,
+            });
+            result.resolved += 1;
+            resolved = true;
+            break;
           }
-          const candidate = response.candidates[0];
-          if (!candidate) {
+          if (!resolved) {
             result.skipped += 1;
-            continue;
           }
-          await updateItineraryItemInline(item.id, {
-            address: candidate.address,
-            coordinates: candidate.coordinates,
-            mapLink: candidate.mapLink,
-          });
-          result.resolved += 1;
         } catch {
           result.failed += 1;
         }
