@@ -21,9 +21,11 @@ export const dayDateClassName =
 export const dayRouteClassName =
   "day-route ml-[10px] min-w-0 max-[767px]:ml-0 max-[520px]:order-4 max-[520px]:ml-6 max-[520px]:basis-[calc(100%_-_1.5rem)]";
 export const dayWeatherChipClassName =
-  "day-weather-chip inline-flex min-h-6 shrink-0 items-center gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-bold text-(--color-route) max-[520px]:order-3 [&_strong]:text-(--color-text)";
+  "day-weather-chip inline-flex min-h-6 shrink-0 items-center justify-center gap-1 rounded-(--radius-sm) border border-(--color-route-border) bg-(--color-route-soft) px-1.5 text-[11px] font-bold text-(--color-route) max-[520px]:order-3 [&_strong]:text-(--color-text)";
+export const dayWeatherIconClassName =
+  "day-weather-icon inline-grid size-[18px] shrink-0 place-items-center text-(--color-route) [&_.icon]:size-[16px]";
 export const dayWeatherSolarClassName =
-  "inline-flex items-center gap-0.5 font-semibold text-(--color-text-muted) max-[520px]:hidden [&_.icon]:size-3.5";
+  "inline-flex items-center justify-center gap-0.5 font-semibold text-(--color-text-muted) max-[520px]:hidden [&_.icon]:size-3.5";
 export const dayPathControlsClassName =
   "ml-auto inline-flex min-w-0 items-center gap-2 max-[767px]:ml-2 max-[767px]:shrink-0";
 export const dayPathPickerClassName =

@@ -4,6 +4,7 @@ import { Icon } from "@/src/ui/icons";
 import { buildWeatherChipDisplay } from "@/src/features/itinerary/domain/weather-chip-display";
 import {
   dayWeatherChipClassName,
+  dayWeatherIconClassName,
   dayWeatherSolarClassName,
 } from "./smart-itinerary-table.styles";
 
@@ -25,7 +26,7 @@ export function DayWeatherChip({
       aria-label={`Weather for ${dayLabel}: ${display.tooltip.replace(/\n/g, ", ")}`}
       title={display.tooltip}
     >
-      <span aria-hidden="true">
+      <span className={dayWeatherIconClassName} aria-hidden="true">
         <Icon name={weatherIconForCondition(weather?.conditionCode)} />
       </span>{" "}
       {display.hasForecastTemps ? (

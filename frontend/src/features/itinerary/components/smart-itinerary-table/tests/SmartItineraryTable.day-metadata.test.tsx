@@ -39,6 +39,11 @@ describe("SmartItineraryTable day metadata", () => {
 
     const weatherChip = screen.getByLabelText(/Weather for Day 2/i);
     expect(weatherChip.querySelector(".icon")).toBeInTheDocument();
+    expect(weatherChip).toHaveClass("items-center", "justify-center");
+    expect(weatherChip.querySelector(".day-weather-icon")).toHaveClass(
+      "inline-grid",
+      "place-items-center",
+    );
     expect(weatherChip).toHaveTextContent("33° 28°");
     expect(weatherChip).toHaveTextContent("05:46");
     expect(weatherChip).toHaveTextContent("18:47");
