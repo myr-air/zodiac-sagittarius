@@ -71,8 +71,31 @@ export const responsivePlay: ExpensesPagePlay = async ({ canvasElement }) => {
   await expectExpensesResponsiveContract(canvasElement);
 };
 
+export const mobileEditDialogLayerPlay: ExpensesPagePlay = async ({ canvas, canvasElement }) => {
+  await userEvent.click(canvas.getByRole("tab", { name: /Manage expenses/i }));
+  const mobileLedger = canvasElement.querySelector(".expense-mobile-ledger");
+  await expect(mobileLedger).not.toBeNull();
+  const firstMobileExpense = mobileLedger?.querySelector("button");
+  await expect(firstMobileExpense).not.toBeNull();
+  if (!firstMobileExpense) return;
+
+  await userEvent.click(firstMobileExpense);
+  const detail = canvas.getByRole("dialog");
+  await expect(detail).toHaveClass("expense-transaction-detail");
+  await userEvent.click(within(detail).getByRole("button", { name: /Edit /i }));
+
+  const editDialog = canvas.getByRole("dialog", { name: /Edit expense/i });
+  await expect(editDialog).toBeVisible();
+  const bounds = editDialog.getBoundingClientRect();
+  const topElement = document.elementFromPoint(
+    bounds.left + bounds.width / 2,
+    Math.min(bounds.top + bounds.height / 2, window.innerHeight / 2),
+  );
+  expect(topElement?.closest(".expense-transaction-detail")).toBeNull();
+};
+
 export const settingsTabPlay: ExpensesPagePlay = async ({ canvas }) => {
-  await userEvent.click(canvas.getByRole("tab", { name: /Personal account/i }));
+  await userEvent.click(canvas.getByRole("tab", { name: /Statement & tools/i }));
   await expect(canvas.getByRole("region", { name: /Tools/i })).toBeVisible();
   await expect(canvas.getByLabelText(/Display currency/i)).toBeVisible();
   await expect(canvas.getByRole("button", { name: /Export/i })).toBeVisible();

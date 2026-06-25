@@ -25,6 +25,7 @@ import {
 } from "./ExpenseOverviewSections";
 import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
 import { ExpenseMemberLine } from "./ExpenseMemberLine";
+import { ExpenseActionDetails } from "./ExpenseActionDetails";
 
 interface ExpenseOverviewPanelsProps {
   view?: "overview" | "balances" | "categories";
@@ -142,16 +143,11 @@ export function ExpenseOverviewPanels({
                 <Icon name="plus" /> {t.expenses.actions.addExpense}
               </Button>
             ) : null}
-            <details className={`${expenseStyles.overviewActionMenuClassName} ${expenseStyles.overviewIconButtonClassName}`}>
-              <summary aria-label={t.expenses.table.actions} role="button" title={t.expenses.table.actions}>
-                <Icon name="dots" />
-              </summary>
-              <div className={expenseStyles.overviewActionMenuPanelClassName}>
-                <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
-                  <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
-                </Button>
-              </div>
-            </details>
+            <ExpenseActionDetails title={t.expenses.table.actions}>
+              <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+                <Icon name="wallet" /> {t.expenses.actions.addPersonalExpense}
+              </Button>
+            </ExpenseActionDetails>
           </div>
         </section>
       ) : null}
@@ -190,19 +186,14 @@ export function ExpenseOverviewPanels({
                       {display.lastReminderLabel}
                     </span>
                   ) : null}
-                  <details className={`${expenseStyles.overviewActionMenuClassName} ${expenseStyles.overviewIconButtonClassName}`}>
-                    <summary aria-label={t.expenses.table.actions} role="button" title={t.expenses.table.actions}>
-                      <Icon name="dots" />
-                    </summary>
-                    <div className={expenseStyles.overviewActionMenuPanelClassName}>
-                      <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => onCopyPaybackReminder(suggestion)}>
-                        <Icon name="copy" /> {t.expenses.actions.copyReminder}
-                      </Button>
-                      <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
-                        {t.expenses.actions.saveSettlement}
-                      </Button>
-                    </div>
-                  </details>
+                  <ExpenseActionDetails title={t.expenses.table.actions}>
+                    <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => onCopyPaybackReminder(suggestion)}>
+                      <Icon name="copy" /> {t.expenses.actions.copyReminder}
+                    </Button>
+                    <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
+                      {t.expenses.actions.saveSettlement}
+                    </Button>
+                  </ExpenseActionDetails>
                 </div>
               );
             })}
@@ -308,16 +299,11 @@ export function ExpenseOverviewPanels({
             <strong>{personalMoney(currentMemberShare)}</strong>
           </div>
         </div>
-        <details className={`${expenseStyles.overviewActionMenuClassName} ${expenseStyles.overviewIconButtonClassName}`}>
-          <summary aria-label={t.expenses.table.actions} role="button" title={t.expenses.table.actions}>
-            <Icon name="dots" />
-          </summary>
-          <div className={expenseStyles.overviewActionMenuPanelClassName}>
-            <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
-              <Icon name="plus" /> {t.expenses.actions.addPersonalExpense}
-            </Button>
-          </div>
-        </details>
+        <ExpenseActionDetails title={t.expenses.table.actions}>
+          <Button type="button" variant="ghost" disabled={!canEditExpenses} onClick={onAddPersonalExpense}>
+            <Icon name="plus" /> {t.expenses.actions.addPersonalExpense}
+          </Button>
+        </ExpenseActionDetails>
       </section>
       ) : null}
 

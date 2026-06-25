@@ -11,7 +11,7 @@ export const enExpensesMessages = {
       label: "Trip money sections",
       overview: "Overview",
       spending: "Manage expenses",
-      account: "Personal account",
+      account: "Statement & tools",
       statement: "Statement",
       balances: "Balances",
       categories: "Categories",
@@ -106,7 +106,7 @@ export const enExpensesMessages = {
       amount: "Cost",
       paidBy: "Paid by",
       split: "Shared",
-      linkedStop: "Trip note",
+      linkedStop: "Linked stop",
       category: "Category",
       actions: "Actions",
       details: {

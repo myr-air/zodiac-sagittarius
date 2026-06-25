@@ -8,14 +8,15 @@ describe("TripExpensesPage statement", () => {
     const user = userEvent.setup();
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
 
-    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
+    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
     expect(within(panel).getByRole("heading", { name: "รายการละเอียด" })).toBeInTheDocument();
     expect(within(panel).getByText(/ดูว่าแต่ละรายการคือค่าอะไร/i)).toBeInTheDocument();
     expect(within(panel).getByRole("heading", { name: "รายการจ่ายคืนที่แนะนำ" })).toBeInTheDocument();
     expect(within(panel).getByText(/Travel Mate จ่าย Family Member/i)).toBeInTheDocument();
     expect(within(panel).getByText(/รายการต้องเคลียร์/i)).toBeInTheDocument();
+    await user.click(within(panel).getByRole("button", { name: /คำสั่ง/i }));
     expect(within(panel).getByRole("button", { name: /คัดลอกข้อความเตือน/i })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: /บันทึกจ่ายคืน/i })).toBeInTheDocument();
 
@@ -44,8 +45,8 @@ describe("TripExpensesPage statement", () => {
       },
     });
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
-    const panel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    const panel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
     expect(within(panel).getByText("บัญชีนี้ไม่มียอดจ่ายคืนที่ต้องจัดการ")).toBeInTheDocument();
   });
 });

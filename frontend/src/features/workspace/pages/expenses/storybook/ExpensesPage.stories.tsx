@@ -7,6 +7,7 @@ import { TripExpensesPage } from "../TripExpensesPage";
 import {
   addExpenseDialogOpenPlay,
   filteredLedgerPlay,
+  mobileEditDialogLayerPlay,
   ownerPlay,
   ownerThaiPlay,
   planScopeAuditPlay,
@@ -107,4 +108,10 @@ export const Mobile: Story = viewportStoryForOwner(
   Owner.args,
   "mobile320",
   responsivePlay,
+);
+
+export const MobileEditDialogLayer: Story = viewportStoryForOwner(
+  Owner.args,
+  "mobile320",
+  mobileEditDialogLayerPlay,
 );

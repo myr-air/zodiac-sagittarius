@@ -3,7 +3,7 @@ import { SelectOptions } from "@/src/shared/components/select-options";
 import type { Member } from "@/src/trip/types";
 import { Button, Select } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import { expenseCategoryFilterSelectOptions } from "../model/expense-page-options";
 import type { ExpenseCategoryFilter, ExpensePageLabels } from "../model/expense-page-types";
@@ -47,8 +47,20 @@ export function ExpenseLedgerControls({
 }: ExpenseLedgerControlsProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const filterPanelId = "expense-ledger-filters";
   const actionsPanelId = "expense-ledger-actions";
+
+  useEffect(() => {
+    if (!showActions) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!event.target || actionsRef.current?.contains(event.target as Node)) return;
+      setShowActions(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [showActions]);
+
   return (
     <div className={expenseStyles.commandBarClassName}>
       <div className={expenseStyles.commandBarHeaderClassName}>
@@ -76,7 +88,15 @@ export function ExpenseLedgerControls({
           <Button type="button" className={expenseStyles.commandPrimaryButtonClassName} disabled={!canEditExpenses} onClick={onAddExpense}>
             <Icon name="plus" /> {t.expenses.actions.addExpense}
           </Button>
-          <div className={expenseStyles.commandMenuClassName}>
+          <div
+            ref={actionsRef}
+            className={expenseStyles.commandMenuClassName}
+            onKeyDown={(event) => {
+              if (event.key !== "Escape") return;
+              event.preventDefault();
+              setShowActions(false);
+            }}
+          >
             <Button
               type="button"
               variant="ghost"

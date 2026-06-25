@@ -14,7 +14,8 @@ describe("TripExpensesPage settlement exports", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
+    await user.click(screen.getByRole("button", { name: /บันทึกจ่ายคืน/i }));
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
       category: "settlement",
@@ -28,8 +29,9 @@ describe("TripExpensesPage settlement exports", () => {
     const user = userEvent.setup();
     const props = renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
-    const accountPanel = screen.getByRole("tabpanel", { name: /บัญชีส่วนตัว/i });
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
+    const accountPanel = screen.getByRole("tabpanel", { name: /รายการและเครื่องมือ/i });
+    await user.click(within(accountPanel).getByRole("button", { name: /คำสั่ง/i }));
     await user.click(within(accountPanel).getByRole("button", { name: /บันทึกจ่ายคืน/i }));
 
     expect(props.onCreateExpense).toHaveBeenCalledWith(expect.objectContaining({
@@ -46,7 +48,8 @@ describe("TripExpensesPage settlement exports", () => {
       resolveCreate = resolve;
     }));
     renderExpenses({ onCreateExpense });
-    const paybackButton = screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i })[0];
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
+    const paybackButton = screen.getByRole("button", { name: /บันทึกจ่ายคืน/i });
 
     await user.dblClick(paybackButton);
 
@@ -64,7 +67,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     await user.click(screen.getByRole("button", { name: /คัดลอกสรุปยอด/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Trip money - Hong Kong + Shenzhen Trip"));
@@ -109,7 +112,7 @@ describe("TripExpensesPage settlement exports", () => {
     });
     renderExpenses();
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     await user.click(screen.getByRole("button", { name: /ส่งออก/i }));
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
@@ -129,7 +132,8 @@ describe("TripExpensesPage settlement exports", () => {
     });
     const props = renderExpenses();
 
-    await user.click(screen.getAllByRole("button", { name: /คัดลอกข้อความเตือน/i })[0]);
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
+    await user.click(screen.getByRole("button", { name: /คัดลอกข้อความเตือน/i }));
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("please pay"));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Hong Kong + Shenzhen Trip"));

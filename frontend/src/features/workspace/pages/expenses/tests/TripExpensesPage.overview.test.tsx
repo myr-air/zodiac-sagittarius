@@ -29,7 +29,9 @@ describe("TripExpensesPage overview and filters", () => {
     expect(document.querySelector(".expenses-panel")).toHaveClass("shadow-none");
     expect(document.querySelector(".expenses-panel")?.className).not.toContain("linear-gradient");
     expect(screen.getByRole("button", { name: /เพิ่มรายการ/i })).toBeEnabled();
-    expect(screen.getAllByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })[0]).toBeEnabled();
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[0]);
+    expect(screen.getByRole("button", { name: /บันทึกใช้จ่ายส่วนตัว/i })).toBeEnabled();
+    await user.click(screen.getAllByRole("button", { name: /คำสั่ง/i })[1]);
     expect(screen.getAllByRole("button", { name: /บันทึกจ่ายคืน/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("Octopus");
     expect(screen.getByRole("region", { name: /บัตรเดินทาง/i })).toHaveTextContent("HK$288.00");
@@ -55,7 +57,7 @@ describe("TripExpensesPage overview and filters", () => {
     expect(screen.getAllByLabelText("แผนทริป")[0]).toHaveValue("plan-main");
     expect(within(screen.getByRole("tabpanel", { name: /จัดการค่าใช้จ่าย/i })).getByLabelText(/วัน/i)).toHaveValue("all");
 
-    await user.click(screen.getByRole("tab", { name: /บัญชีส่วนตัว/i }));
+    await user.click(screen.getByRole("tab", { name: /รายการและเครื่องมือ/i }));
     expect(screen.getByLabelText(/สกุลเงินที่แสดง/i)).toHaveValue("HKD");
   });
 

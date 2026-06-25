@@ -11,7 +11,7 @@ export const thExpensesMessages = {
       label: "ส่วนการเงินของทริป",
       overview: "ภาพรวม",
       spending: "จัดการค่าใช้จ่าย",
-      account: "บัญชีส่วนตัว",
+      account: "รายการและเครื่องมือ",
       statement: "รายการละเอียด",
       balances: "ยอดคงเหลือ",
       categories: "ประเภท",

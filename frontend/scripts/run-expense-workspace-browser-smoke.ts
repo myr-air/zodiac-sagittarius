@@ -126,8 +126,8 @@ async function smokeWorkspace(
     await expectText(page, "Trip spend");
     screenshots.push(await screenshot(page, `${name}-overview`));
 
-    await openFinanceTab(page, "Personal account");
-    await expectText(page, "Personal account");
+    await openFinanceTab(page, "Statement & tools");
+    await expectText(page, "Statement & tools");
     await expectText(page, "Display currency");
     await expectText(page, "Suggested paybacks");
     await openPersonalPaybackActions(page);
@@ -180,7 +180,7 @@ async function joinTripIfNeeded(page: Page) {
   }
 }
 
-async function openFinanceTab(page: Page, name: "Manage expenses" | "Personal account") {
+async function openFinanceTab(page: Page, name: "Manage expenses" | "Statement & tools") {
   await page.getByRole("tab", { name }).click();
   await page.getByRole("tab", { name, selected: true }).waitFor({ timeout: 5_000 });
 }
@@ -196,7 +196,7 @@ async function cycleStatementFilters(page: Page) {
 }
 
 async function openPersonalPaybackActions(page: Page) {
-  const accountPanel = page.getByRole("tabpanel", { name: /Personal account/i });
+  const accountPanel = page.getByRole("tabpanel", { name: /Statement & tools/i });
   const paybackPanel = accountPanel.getByRole("region", { name: /Suggested paybacks/i });
   await paybackPanel.getByRole("button", { name: /Actions/i }).first().click();
   await paybackPanel.getByRole("button", { name: /Copy reminder/i }).first().waitFor({

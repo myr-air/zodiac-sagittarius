@@ -125,6 +125,10 @@ export function TripExpensesPage({
         t={t}
         trip={planSourceTrip}
       />
+      <div className={expenseStyles.mobileHeaderClassName}>
+        <h1>{t.expenses.title}</h1>
+        <p>{planSourceTrip.name}</p>
+      </div>
       <div className={expenseStyles.mobilePlanBarClassName}>
         <ExpenseTripPlanPicker
           currentTripPlanId={activeTripPlanId}
