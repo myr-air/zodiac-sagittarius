@@ -21,8 +21,8 @@ describe("Sagittarius cockpit local Trip Plan scoped records", () => {
     const { unmount } = render(<SagittariusApp initialView="expenses" />);
 
     expect(
-      await screen.findByText("Backup gallery tickets"),
-    ).toBeInTheDocument();
+      (await screen.findAllByText("Backup gallery tickets")).length,
+    ).toBeGreaterThan(0);
     expect(
       screen.queryByText("Main plan dim sum receipt"),
     ).not.toBeInTheDocument();

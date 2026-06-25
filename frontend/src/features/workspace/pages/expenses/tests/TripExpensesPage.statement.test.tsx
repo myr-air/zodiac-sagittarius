@@ -14,6 +14,16 @@ describe("TripExpensesPage statement", () => {
     expect(within(panel).getByRole("heading", { name: "รายการละเอียด" })).toBeInTheDocument();
     expect(within(panel).getByText(/ดูว่าแต่ละรายการคือค่าอะไร/i)).toBeInTheDocument();
 
+    const personalStatement = within(panel).getByRole("table", { name: /รายการบัญชีส่วนตัวของ Travel Mate/i });
+    expect(personalStatement).toHaveClass("expense-personal-statement-table");
+    expect(within(personalStatement).getByRole("columnheader", { name: "ค่าอะไร" })).toBeVisible();
+    expect(within(personalStatement).getByRole("columnheader", { name: "จ่ายคืน/เคลียร์ด้วยอะไร" })).toBeVisible();
+    expect(within(personalStatement).getByText("Aom received Beam payback")).toBeInTheDocument();
+    expect(within(personalStatement).getByText("เราจ่ายคืน")).toBeInTheDocument();
+    expect(within(personalStatement).getByText("จ่ายให้ Demo Traveler")).toBeInTheDocument();
+    expect(within(personalStatement).getByText("Luk Yu dinner")).toBeInTheDocument();
+    expect(within(personalStatement).getAllByText("Explorer Friend จ่ายแทนเรา").length).toBeGreaterThan(0);
+
     const statement = within(panel).getByRole("table", { name: /รายการเงินทริปแบบละเอียด/i });
     expect(statement).toHaveClass("expense-statement-table");
     expect(within(statement).getByRole("columnheader", { name: "วัน" })).toBeVisible();

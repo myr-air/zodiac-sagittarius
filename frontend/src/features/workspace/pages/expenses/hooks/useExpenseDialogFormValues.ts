@@ -58,6 +58,11 @@ export function useExpenseDialogFormValues({
       updateFormValue("receiptUrl", receiptUrl),
     setRepeatCount: (repeatCount: string) =>
       updateFormValue("repeatCount", repeatCount),
+    setSpentOn: (spentOn: string) => updateFormValue("spentOn", spentOn),
+    setStoredValueCardName: (storedValueCardName: string) =>
+      updateFormValue("storedValueCardName", storedValueCardName),
+    setStoredValueTransactionType: (storedValueTransactionType: NonNullable<Expense["storedValueTransactionType"]> | "") =>
+      updateFormValue("storedValueTransactionType", storedValueTransactionType),
     setTitle: (title: string) => updateFormValue("title", title),
   };
 }

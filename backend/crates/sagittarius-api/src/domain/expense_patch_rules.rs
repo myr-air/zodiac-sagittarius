@@ -33,6 +33,39 @@ pub(crate) fn validate_expense_category(value: &str) -> Result<(), ServiceError>
     }
 }
 
+pub(crate) fn validate_stored_value_transaction_type(
+    value: Option<&str>,
+) -> Result<(), ServiceError> {
+    match value {
+        None | Some("topup" | "spend" | "refund") => Ok(()),
+        Some(_) => Err(ServiceError::InvalidRequest(
+            "stored value transaction type is invalid",
+        )),
+    }
+}
+
+pub(crate) fn validate_stored_value_fields(
+    transaction_type: Option<&str>,
+    card_id: Option<&str>,
+    card_name: Option<&str>,
+) -> Result<(), ServiceError> {
+    validate_stored_value_transaction_type(transaction_type)?;
+    if transaction_type.is_none() {
+        return Ok(());
+    }
+    let has_card_key = [card_id, card_name]
+        .into_iter()
+        .flatten()
+        .any(|value| !value.trim().is_empty());
+    if has_card_key {
+        Ok(())
+    } else {
+        Err(ServiceError::InvalidRequest(
+            "stored value card is required",
+        ))
+    }
+}
+
 pub(crate) fn validate_splits(value: &Value) -> Result<(), ServiceError> {
     if !value.is_object() {
         return Err(ServiceError::InvalidRequest(
@@ -64,6 +97,50 @@ pub(crate) fn validate_comments(value: Option<&Value>) -> Result<(), ServiceErro
         return Err(ServiceError::InvalidRequest(
             "expense comments must be an array",
         ));
+    }
+
+    Ok(())
+}
+
+pub(crate) fn validate_settlement_allocations(value: Option<&Value>) -> Result<(), ServiceError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if !value.is_array() {
+        return Err(ServiceError::InvalidRequest(
+            "expense settlement allocations must be an array",
+        ));
+    }
+    for allocation in value.as_array().expect("validated allocations array") {
+        let Some(allocation) = allocation.as_object() else {
+            return Err(ServiceError::InvalidRequest(
+                "expense settlement allocation must be an object",
+            ));
+        };
+        let expense_id = allocation.get("expenseId").and_then(Value::as_str);
+        if expense_id
+            .and_then(|value| Uuid::parse_str(value).ok())
+            .is_none()
+        {
+            return Err(ServiceError::InvalidRequest(
+                "expense settlement allocation expense is invalid",
+            ));
+        }
+        let member_id = allocation.get("memberId").and_then(Value::as_str);
+        if member_id
+            .and_then(|value| Uuid::parse_str(value).ok())
+            .is_none()
+        {
+            return Err(ServiceError::InvalidRequest(
+                "expense settlement allocation member is invalid",
+            ));
+        }
+        let amount = allocation.get("amount").and_then(Value::as_f64);
+        if amount.is_none_or(|amount| !amount.is_finite() || amount <= 0.0) {
+            return Err(ServiceError::InvalidRequest(
+                "expense settlement allocation amount must be greater than zero",
+            ));
+        }
     }
 
     Ok(())

@@ -17,6 +17,7 @@ describe("expense page action builders", () => {
           to: "member-aom",
           amount: 42.5,
         },
+        trip: seedTrip,
       }),
     ).toMatchObject({
       itemId: null,
@@ -26,6 +27,11 @@ describe("expense page action builders", () => {
       paidBy: "member-beam",
       category: "settlement",
       splits: { "member-aom": 42.5 },
+      settlementAllocations: [{
+        expenseId: "expense-dimsum",
+        memberId: "member-beam",
+        amount: 42.5,
+      }],
     });
   });
 
@@ -63,7 +69,31 @@ describe("expense page action builders", () => {
       paidBy: "member-aom",
       category: "settlement",
       splits: { "member-beam": 20.125 },
+      settlementAllocations: [{
+        expenseId: "expense-refundable",
+        memberId: "member-beam",
+        amount: 20.125,
+      }],
     });
+  });
+
+  it("does not allocate a new settlement to already-covered expenses", () => {
+    expect(
+      buildSettlementExpenseInput({
+        members: seedTrip.members,
+        settlementCurrency: "HKD",
+        suggestion: {
+          from: "member-beam",
+          to: "member-aom",
+          amount: 78,
+        },
+        trip: seedTrip,
+      }).settlementAllocations,
+    ).toEqual([{
+      expenseId: "expense-dimsum",
+      memberId: "member-beam",
+      amount: 78,
+    }]);
   });
 
   it("returns null when there is no refundable share", () => {

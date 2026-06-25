@@ -3,6 +3,7 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSettlementAllocation,
   TripPhotoAlbumLink,
 } from "../types";
 
@@ -15,8 +16,13 @@ export interface CreateExpenseApiRequest {
   exchangeRateToSettlementCurrency?: number;
   notes?: string | null;
   receiptUrl?: string | null;
+  spentOn?: string | null;
+  storedValueCardId?: string | null;
+  storedValueCardName?: string | null;
+  storedValueTransactionType?: Expense["storedValueTransactionType"];
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   paidBy: string;
   category: Expense["category"];
   splits: Record<string, number>;
@@ -40,8 +46,13 @@ export interface PatchExpenseApiRequest {
   exchangeRateToSettlementCurrency?: number;
   notes?: string | null;
   receiptUrl?: string | null;
+  spentOn?: string | null;
+  storedValueCardId?: string | null;
+  storedValueCardName?: string | null;
+  storedValueTransactionType?: Expense["storedValueTransactionType"];
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   paidBy?: string;
   category?: Expense["category"];
   splits?: Record<string, number>;

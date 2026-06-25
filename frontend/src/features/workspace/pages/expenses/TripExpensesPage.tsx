@@ -256,6 +256,7 @@ export function TripExpensesPage({
         hidden={activeView !== "statement"}
       >
           <ExpenseStatementSection
+            currentMember={currentMember}
             displayCurrency={displayCurrency}
             displayExchangeRateNumber={displayExchangeRateNumber}
             locale={locale}

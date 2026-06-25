@@ -91,10 +91,15 @@ export function ExpenseLedgerRows({
           return [
             <tr className={selected ? expenseStyles.ledgerSelectedRowClassName : undefined} key={expense.id}>
               <td className={expenseStyles.tableTitleClassName}>
-                <div className={expenseStyles.ledgerTitleLineClassName}>
+                <button
+                  type="button"
+                  className={expenseStyles.ledgerRowButtonClassName}
+                  aria-pressed={selected}
+                  onClick={() => onSelectExpense(expense)}
+                >
                   <strong className={expenseStyles.ledgerTitleClassName}>{expense.title}</strong>
                   <ExpenseCategoryBadge category={expense.category} label={tableCopy.categories[expense.category]} />
-                </div>
+                </button>
               </td>
               <td>
                 <span className={expenseStyles.ledgerAmountClassName}>

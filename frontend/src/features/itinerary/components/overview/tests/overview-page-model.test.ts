@@ -31,7 +31,7 @@ describe("overview page model", () => {
     expect(model.activeMembers).toBeGreaterThan(0);
     expect(model.nextStop?.day).toBe(seedTrip.startDate);
     expect(model.focusTodayHeading).toBe("Focus today");
-    expect(model.groupSpendLabel).toBe("HK$1,672.00");
+    expect(model.groupSpendLabel).toBe("HK$10,888.00");
     expect(model.highlightItems.length).toBeGreaterThan(0);
   });
 

@@ -17,6 +17,9 @@ interface ExpenseCoreFieldsProps {
   receiptUrl: string;
   repeatCount: string;
   settlementCurrency: string;
+  spentOn: string;
+  storedValueCardName: string;
+  storedValueTransactionType: "topup" | "spend" | "refund" | "";
   title: string;
   copy: {
     fields: {
@@ -26,7 +29,18 @@ interface ExpenseCoreFieldsProps {
       notes: string;
       receiptUrl: string;
       repeatCount: string;
+      spentOn: string;
+      storedValueCardName: string;
+      storedValueTransactionType: string;
       title: string;
+    };
+    storedValue: {
+      transactionTypes: {
+        none: string;
+        refund: string;
+        spend: string;
+        topup: string;
+      };
     };
   };
   onAmountChange: (value: string) => void;
@@ -35,6 +49,9 @@ interface ExpenseCoreFieldsProps {
   onNotesChange: (value: string) => void;
   onReceiptUrlChange: (value: string) => void;
   onRepeatCountChange: (value: string) => void;
+  onSpentOnChange: (value: string) => void;
+  onStoredValueCardNameChange: (value: string) => void;
+  onStoredValueTransactionTypeChange: (value: "topup" | "spend" | "refund" | "") => void;
   onTitleChange: (value: string) => void;
 }
 
@@ -50,6 +67,9 @@ export function ExpenseCoreFields({
   receiptUrl,
   repeatCount,
   settlementCurrency,
+  spentOn,
+  storedValueCardName,
+  storedValueTransactionType,
   title,
   onAmountChange,
   onCurrencyChange,
@@ -57,6 +77,9 @@ export function ExpenseCoreFields({
   onNotesChange,
   onReceiptUrlChange,
   onRepeatCountChange,
+  onSpentOnChange,
+  onStoredValueCardNameChange,
+  onStoredValueTransactionTypeChange,
   onTitleChange,
 }: ExpenseCoreFieldsProps) {
   const advancedSectionId = useId();
@@ -91,6 +114,14 @@ export function ExpenseCoreFields({
           placeholder="Airport taxi"
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
+        />
+      </label>
+      <label className={expenseStyles.fieldClassName}>
+        <span>{copy.fields.spentOn}</span>
+        <input
+          type="date"
+          value={spentOn}
+          onChange={(event) => onSpentOnChange(event.target.value)}
         />
       </label>
 
@@ -142,6 +173,27 @@ export function ExpenseCoreFields({
                   />
                 </label>
               ) : null}
+              <label className={expenseStyles.fieldClassName}>
+                <span>{copy.fields.storedValueCardName}</span>
+                <input
+                  placeholder="Octopus"
+                  value={storedValueCardName}
+                  onChange={(event) => onStoredValueCardNameChange(event.target.value)}
+                />
+              </label>
+              <label className={expenseStyles.fieldClassName}>
+                <span>{copy.fields.storedValueTransactionType}</span>
+                <Select
+                  aria-label={copy.fields.storedValueTransactionType}
+                  value={storedValueTransactionType}
+                  onChange={(event) => onStoredValueTransactionTypeChange(event.target.value as typeof storedValueTransactionType)}
+                >
+                  <option value="">{copy.storedValue.transactionTypes.none}</option>
+                  <option value="topup">{copy.storedValue.transactionTypes.topup}</option>
+                  <option value="spend">{copy.storedValue.transactionTypes.spend}</option>
+                  <option value="refund">{copy.storedValue.transactionTypes.refund}</option>
+                </Select>
+              </label>
             </div>
             <label className={expenseStyles.fieldClassName}>
               <span>{copy.fields.notes}</span>

@@ -24,6 +24,12 @@ export {
   refundSplits,
   sumShares,
 } from "./expense-refunds";
+export {
+  buildStoredValueCardBalances,
+  isStoredValueFundingExpense,
+  storedValueCardBalanceLabels,
+  type StoredValueCardBalance,
+} from "./expense-stored-value";
 export { formatReminderDate } from "./expense-reminder-display";
 export {
   buildExpenseCsv,

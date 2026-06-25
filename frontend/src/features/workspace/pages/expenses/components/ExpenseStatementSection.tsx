@@ -1,5 +1,6 @@
 import type { ExpenseStatementStatus } from "../model/expense-statement-display";
 import { expenseStatementRows } from "../model/expense-statement-display";
+import { personalStatementRows } from "../model/expense-personal-statement-display";
 import * as expenseStyles from "../TripExpensesPage.styles";
 import type { Trip } from "@/src/trip/types";
 import { type KeyboardEvent, useMemo, useState } from "react";
@@ -7,6 +8,7 @@ import { type KeyboardEvent, useMemo, useState } from "react";
 type ExpenseStatementFilter = "all" | ExpenseStatementStatus;
 
 interface ExpenseStatementSectionProps {
+  currentMember: Trip["members"][number];
   displayCurrency: string;
   displayExchangeRateNumber: number;
   locale: "en" | "th";
@@ -16,6 +18,7 @@ interface ExpenseStatementSectionProps {
 }
 
 export function ExpenseStatementSection({
+  currentMember,
   displayCurrency,
   displayExchangeRateNumber,
   locale,
@@ -24,6 +27,30 @@ export function ExpenseStatementSection({
   trip,
 }: ExpenseStatementSectionProps) {
   const [activeFilter, setActiveFilter] = useState<ExpenseStatementFilter>("all");
+  const personalRows = useMemo(() => personalStatementRows({
+    copy: {
+      dateFallback: t.expenses.statement.dateFallback,
+      flow: t.expenses.statement.personal.flow,
+      includedLineItems: t.expenses.statement.personal.includedLineItems,
+      noDirectAllocation: t.expenses.statement.personal.noDirectAllocation,
+      paymentMethod: t.expenses.statement.personal.paymentMethod,
+      relatedMember: t.expenses.statement.personal.relatedMember,
+    },
+    currentMemberId: currentMember.id,
+    displayCurrency,
+    displayExchangeRate: displayExchangeRateNumber,
+    locale,
+    settlementCurrency,
+    trip,
+  }), [
+    currentMember.id,
+    displayCurrency,
+    displayExchangeRateNumber,
+    locale,
+    settlementCurrency,
+    t,
+    trip,
+  ]);
   const rows = useMemo(() => expenseStatementRows({
     copy: {
       categories: t.expenses.categories,
@@ -93,6 +120,97 @@ export function ExpenseStatementSection({
           <span>{t.expenses.statement.summaryNeedsReview({ count: rows.filter((row) => row.status === "needsReview").length })}</span>
         </div>
       </header>
+
+      <section className={expenseStyles.personalStatementSectionClassName} aria-label={t.expenses.statement.personal.tableLabel({ name: currentMember.displayName })}>
+        <header className={expenseStyles.personalStatementHeaderClassName}>
+          <div className={expenseStyles.statementTitleClassName}>
+            <h3>{t.expenses.statement.personal.title({ name: currentMember.displayName })}</h3>
+            <p>{t.expenses.statement.personal.description}</p>
+          </div>
+          <div className={expenseStyles.statementSummaryClassName}>
+            <span>{t.expenses.statement.personal.summary({ count: personalRows.length })}</span>
+          </div>
+        </header>
+        {personalRows.length ? (
+          <>
+            <div className={expenseStyles.personalStatementTableWrapClassName}>
+              <table className={expenseStyles.personalStatementTableClassName} aria-label={t.expenses.statement.personal.tableLabel({ name: currentMember.displayName })}>
+                <colgroup>
+                  <col className="w-[132px]" />
+                  <col className="w-[250px]" />
+                  <col className="w-[160px]" />
+                  <col className="w-[160px]" />
+                  <col className="w-[220px]" />
+                  <col className="w-[140px]" />
+                </colgroup>
+                <thead className={expenseStyles.tableHeaderClassName}>
+                  <tr>
+                    <th>{t.expenses.statement.personal.columns.date}</th>
+                    <th>{t.expenses.statement.personal.columns.item}</th>
+                    <th>{t.expenses.statement.personal.columns.flow}</th>
+                    <th>{t.expenses.statement.personal.columns.relatedMember}</th>
+                    <th>{t.expenses.statement.personal.columns.paidWith}</th>
+                    <th className="text-right">{t.expenses.statement.personal.columns.amount}</th>
+                  </tr>
+                </thead>
+                <tbody className={expenseStyles.statementTableBodyClassName}>
+                  {personalRows.map((row) => (
+                    <tr key={row.id}>
+                      <td className={expenseStyles.statementMetaCellClassName}>{row.dateLabel}</td>
+                      <td>
+                        <div className={expenseStyles.statementItemCellClassName}>
+                          <strong>{row.title}</strong>
+                          <span>{row.includedLabel}</span>
+                        </div>
+                      </td>
+                      <td className={expenseStyles.statementMetaCellClassName}>{row.flowLabel}</td>
+                      <td className={expenseStyles.statementMetaCellClassName}>{row.relatedMemberLabel}</td>
+                      <td className={expenseStyles.statementMetaCellClassName}>{row.paidWithLabel}</td>
+                      <td className={expenseStyles.statementAmountCellClassName}>
+                        {row.amountLabel}
+                        {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className={expenseStyles.personalStatementMobileListClassName}>
+              {personalRows.map((row) => (
+                <article className={expenseStyles.personalStatementMobileRowClassName} key={row.id}>
+                  <div className={expenseStyles.personalStatementMobileTopClassName}>
+                    <div className={expenseStyles.statementMobileTitleClassName}>
+                      <strong>{row.title}</strong>
+                      <span>{row.dateLabel}</span>
+                    </div>
+                    <div className={expenseStyles.statementAmountCellClassName}>
+                      {row.amountLabel}
+                      {row.displayAmountLabel ? <span>{row.displayAmountLabel}</span> : null}
+                    </div>
+                  </div>
+                  <div className={expenseStyles.personalStatementMobileIncludedClassName}>{row.includedLabel}</div>
+                  <dl className={expenseStyles.personalStatementMobileMetaClassName}>
+                    <div>
+                      <dt>{t.expenses.statement.personal.columns.flow}</dt>
+                      <dd>{row.flowLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.expenses.statement.personal.columns.relatedMember}</dt>
+                      <dd>{row.relatedMemberLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.expenses.statement.personal.columns.paidWith}</dt>
+                      <dd>{row.paidWithLabel}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className={expenseStyles.statementEmptyClassName}>{t.expenses.statement.personal.empty}</p>
+        )}
+      </section>
 
       <div className={expenseStyles.statementFilterBarClassName} aria-label={t.expenses.statement.filters.label} role="radiogroup">
         {filterOptions.map((option) => (

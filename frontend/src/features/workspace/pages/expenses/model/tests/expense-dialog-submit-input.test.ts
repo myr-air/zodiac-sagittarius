@@ -34,6 +34,9 @@ describe("expense dialog submit input", () => {
         paidBy: members[0].id,
         receiptUrl: "  https://receipt.example  ",
         splitMode: "equal",
+        spentOn: "2026-06-25",
+        storedValueCardName: "",
+        storedValueTransactionType: "",
         title: "  Dinner  ",
       }),
     ).toMatchObject({
@@ -45,6 +48,7 @@ describe("expense dialog submit input", () => {
       exchangeRateToSettlementCurrency: 1.08,
       notes: "Pay cash",
       receiptUrl: "https://receipt.example",
+      spentOn: "2026-06-25",
       repeatCount: 3,
       paidBy: members[0].id,
       category: "food",
@@ -84,14 +88,107 @@ describe("expense dialog submit input", () => {
         paidBy: members[0].id,
         receiptUrl: "",
         splitMode: "itemized",
+        spentOn: "2026-06-26",
+        storedValueCardName: "Octopus",
+        storedValueTransactionType: "spend",
         title: "Tea",
       }),
     ).toMatchObject({
       itemId: null,
       tripPlanId: null,
       exchangeRateToSettlementCurrency: 1,
+      spentOn: "2026-06-26",
+      storedValueCardId: "octopus",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
       comments: [{ id: "comment-1" }],
       lineItems: [{ id: "line-tea", title: "Tea", amount: 12 }],
+    });
+  });
+
+  it("clears stored-value metadata when an existing expense is changed back to a normal expense", () => {
+    const calculatedState = calculateExpenseDialogState({
+      amount: "12",
+      currency: "HKD",
+      exchangeRate: "1",
+      expense: { id: "expense-existing" } as Expense,
+      lineItems: [],
+      members,
+      paidBy: members[0].id,
+      repeatCount: "1",
+      settlementCurrency: "HKD",
+      splitMode: "equal",
+      splitValues: {},
+    });
+
+    expect(
+      buildExpenseDialogSubmitInput({
+        calculatedState,
+        category: "food",
+        comments: [],
+        effectiveTripPlanId: "",
+        expense: { id: "expense-existing" } as Expense,
+        itemId: "",
+        notes: "",
+        paidBy: members[0].id,
+        receiptUrl: "",
+        splitMode: "equal",
+        spentOn: "2026-06-26",
+        storedValueCardName: "",
+        storedValueTransactionType: "",
+        title: "Tea",
+      }),
+    ).toMatchObject({
+      storedValueCardId: null,
+      storedValueCardName: null,
+      storedValueTransactionType: null,
+    });
+  });
+
+  it("preserves an existing stored-value card id when editing without changing the card name", () => {
+    const calculatedState = calculateExpenseDialogState({
+      amount: "12",
+      currency: "HKD",
+      exchangeRate: "1",
+      expense: {
+        id: "expense-existing",
+        storedValueCardId: "octopus-hk-2026",
+        storedValueCardName: "Octopus",
+      } as Expense,
+      lineItems: [],
+      members,
+      paidBy: members[0].id,
+      repeatCount: "1",
+      settlementCurrency: "HKD",
+      splitMode: "equal",
+      splitValues: {},
+    });
+
+    expect(
+      buildExpenseDialogSubmitInput({
+        calculatedState,
+        category: "transport",
+        comments: [],
+        effectiveTripPlanId: "",
+        expense: {
+          id: "expense-existing",
+          storedValueCardId: "octopus-hk-2026",
+          storedValueCardName: "Octopus",
+        } as Expense,
+        itemId: "",
+        notes: "",
+        paidBy: members[0].id,
+        receiptUrl: "",
+        splitMode: "equal",
+        spentOn: "2026-06-26",
+        storedValueCardName: "Octopus",
+        storedValueTransactionType: "spend",
+        title: "Tea",
+      }),
+    ).toMatchObject({
+      storedValueCardId: "octopus-hk-2026",
+      storedValueCardName: "Octopus",
+      storedValueTransactionType: "spend",
     });
   });
 });

@@ -5,6 +5,7 @@ import {
 import {
   expenseAmountInSettlementCurrency,
   formatMoney,
+  isStoredValueFundingExpense,
 } from "@/src/trip/expenses";
 import { findItineraryItemById } from "@/src/trip/itinerary-items";
 import { findMemberById } from "@/src/trip/members";
@@ -42,7 +43,7 @@ export function expenseCategorySpend(
 ): Array<[Expense["category"], number]> {
   const totals = new Map<Expense["category"], number>();
   for (const expense of expenses) {
-    if (expense.category === "settlement") continue;
+    if (expense.category === "settlement" || isStoredValueFundingExpense(expense)) continue;
     totals.set(
       expense.category,
       (totals.get(expense.category) ?? 0) +
@@ -68,7 +69,7 @@ export function filterExpenses({
       itineraryItems,
       expense.itineraryItemId,
     );
-    const expenseDay = linkedItem?.day ?? "unlinked";
+    const expenseDay = expense.spentOn ?? linkedItem?.day ?? "unlinked";
     const matchesQuery = valuesMatchSearchQuery(
       [expense.title, payer?.displayName, linkedItem?.activity],
       normalizedQuery,
@@ -91,14 +92,21 @@ export interface ExpenseLedgerDayGroup {
 
 export function expenseDayFilterOptions({
   allDaysLabel,
+  expenses = [],
   itineraryItems,
   unlinkedLabel,
 }: {
   allDaysLabel: string;
+  expenses?: Expense[];
   itineraryItems: ItineraryItem[];
   unlinkedLabel: string;
 }): SelectOption[] {
-  const days = Array.from(new Set(itineraryItems.map((item) => item.day))).sort();
+  const days = Array.from(
+    new Set([
+      ...itineraryItems.map((item) => item.day),
+      ...expenses.flatMap((expense) => expense.spentOn ? [expense.spentOn] : []),
+    ]),
+  ).sort();
   return [
     { label: allDaysLabel, value: "all" },
     ...days.map((day) => ({ label: day, value: day })),
@@ -125,7 +133,7 @@ export function expenseLedgerDayGroups({
       itineraryItems,
       expense.itineraryItemId,
     );
-    const key = linkedItem?.day ?? "unlinked";
+    const key = expense.spentOn ?? linkedItem?.day ?? "unlinked";
     groups.set(key, [...(groups.get(key) ?? []), expense]);
   }
 

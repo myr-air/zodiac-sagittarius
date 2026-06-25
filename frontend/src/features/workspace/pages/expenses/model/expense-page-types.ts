@@ -4,6 +4,7 @@ import type {
   Expense,
   ExpenseComment,
   ExpenseLineItem,
+  ExpenseSettlementAllocation,
   ExpenseSummary,
   Member,
   SettlementSuggestion,
@@ -25,8 +26,13 @@ export interface ExpenseInput {
   exchangeRateToSettlementCurrency?: number;
   notes?: string;
   receiptUrl?: string | null;
+  spentOn?: string | null;
+  storedValueCardId?: string | null;
+  storedValueCardName?: string | null;
+  storedValueTransactionType?: Expense["storedValueTransactionType"];
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   repeatCount?: number;
   paidBy: string;
   category: Expense["category"];

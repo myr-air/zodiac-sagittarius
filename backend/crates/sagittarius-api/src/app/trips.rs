@@ -265,6 +265,12 @@ pub(crate) fn build_expense_summary(
     let mut group_spend_minor = 0_i64;
 
     for expense in expenses {
+        if matches!(
+            expense.stored_value_transaction_type.as_deref(),
+            Some("topup" | "refund")
+        ) {
+            continue;
+        }
         let amount_minor = convert_minor_to_settlement_currency(
             i64::from(expense.amount_minor),
             expense.exchange_rate_to_settlement_currency,
@@ -423,6 +429,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "transport".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     payer.to_string(): 2500,
                     debtor.to_string(): 7500,
@@ -435,6 +442,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     settled.to_string(): 124.6,
                     debtor.to_string(): "ignored"
@@ -446,6 +454,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!("not an object"),
             },
         ];
@@ -474,6 +483,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     payer.to_string(): 4500,
                     debtor.to_string(): 4500
@@ -485,6 +495,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "settlement".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     payer.to_string(): 4500
                 }),
@@ -499,6 +510,55 @@ mod tests {
     }
 
     #[test]
+    fn stored_value_funding_transactions_do_not_inflate_group_spend_or_balances() {
+        let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
+        let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
+        let expenses = vec![
+            ExpenseSplitRecord {
+                paid_by: payer,
+                amount_minor: 80_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "transport".to_string(),
+                stored_value_transaction_type: Some("topup".to_string()),
+                splits: json!({
+                    payer.to_string(): 80_000
+                }),
+            },
+            ExpenseSplitRecord {
+                paid_by: payer,
+                amount_minor: 1_200,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "transport".to_string(),
+                stored_value_transaction_type: Some("spend".to_string()),
+                splits: json!({
+                    payer.to_string(): 600,
+                    debtor.to_string(): 600
+                }),
+            },
+            ExpenseSplitRecord {
+                paid_by: payer,
+                amount_minor: 5_000,
+                currency: "HKD".to_string(),
+                exchange_rate_to_settlement_currency: 1.0,
+                category: "transport".to_string(),
+                stored_value_transaction_type: Some("refund".to_string()),
+                splits: json!({
+                    payer.to_string(): 5_000
+                }),
+            },
+        ];
+
+        let summary = build_expense_summary(expenses, debtor, Vec::new());
+
+        assert_eq!(summary.group_spend, 12.0);
+        assert_eq!(summary.net_by_member[&payer], 6.0);
+        assert_eq!(summary.net_by_member[&debtor], -6.0);
+        assert_eq!(summary.settlement_suggestions[0].amount, 6.0);
+    }
+
+    #[test]
     fn expense_summary_converts_foreign_currency_before_balancing_members() {
         let payer = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac561").unwrap();
         let debtor = Uuid::parse_str("018f4e81-77a4-7b8f-b3bd-0d0f493ac562").unwrap();
@@ -509,6 +569,7 @@ mod tests {
                 currency: "HKD".to_string(),
                 exchange_rate_to_settlement_currency: 1.0,
                 category: "food".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     payer.to_string(): 6000,
                     debtor.to_string(): 6000
@@ -520,6 +581,7 @@ mod tests {
                 currency: "CNY".to_string(),
                 exchange_rate_to_settlement_currency: 1.1,
                 category: "transport".to_string(),
+                stored_value_transaction_type: None,
                 splits: json!({
                     payer.to_string(): 5000,
                     debtor.to_string(): 5000
@@ -551,6 +613,7 @@ mod tests {
             currency: "HKD".to_string(),
             exchange_rate_to_settlement_currency: 1.0,
             category: "food".to_string(),
+            stored_value_transaction_type: None,
             splits: json!({
                 payer.to_string(): 4500,
                 debtor.to_string(): 4500

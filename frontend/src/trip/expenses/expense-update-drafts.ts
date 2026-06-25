@@ -47,6 +47,18 @@ export function buildExpenseUpdateDraft<
     itineraryItemId,
     input.tripPlanId ?? existing.tripPlanId ?? options.selectedTripPlanId,
   );
+  const storedValueCardId =
+    "storedValueCardId" in input
+      ? input.storedValueCardId ?? null
+      : existing.storedValueCardId ?? null;
+  const storedValueCardName =
+    "storedValueCardName" in input
+      ? input.storedValueCardName ?? null
+      : existing.storedValueCardName ?? null;
+  const storedValueTransactionType =
+    "storedValueTransactionType" in input
+      ? input.storedValueTransactionType ?? null
+      : existing.storedValueTransactionType ?? null;
 
   return {
     expenseId: input.expenseId,
@@ -60,6 +72,10 @@ export function buildExpenseUpdateDraft<
       1,
     notes: input.notes ?? existing.notes ?? "",
     receiptUrl: input.receiptUrl ?? existing.receiptUrl ?? null,
+    spentOn: input.spentOn ?? existing.spentOn ?? null,
+    storedValueCardId,
+    storedValueCardName,
+    storedValueTransactionType,
     lineItems: input.lineItems ?? existing.lineItems ?? [],
     comments: input.comments ?? existing.comments ?? [],
     tripPlanId,

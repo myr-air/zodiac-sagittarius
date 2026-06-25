@@ -7,6 +7,8 @@ export const expenseCategoryValues = [
   "settlement",
 ] as const;
 export type ExpenseCategory = (typeof expenseCategoryValues)[number];
+export const storedValueTransactionTypeValues = ["topup", "spend", "refund"] as const;
+export type StoredValueTransactionType = (typeof storedValueTransactionTypeValues)[number];
 
 export interface Expense {
   id: string;
@@ -19,13 +21,24 @@ export interface Expense {
   exchangeRateToSettlementCurrency?: number;
   notes?: string;
   receiptUrl?: string | null;
+  spentOn?: string | null;
+  storedValueCardId?: string | null;
+  storedValueCardName?: string | null;
+  storedValueTransactionType?: StoredValueTransactionType | null;
   lineItems?: ExpenseLineItem[];
   comments?: ExpenseComment[];
+  settlementAllocations?: ExpenseSettlementAllocation[];
   paidBy: string;
   splits: Record<string, number>;
   category: ExpenseCategory;
   itineraryItemId?: string | null;
   version?: number;
+}
+
+export interface ExpenseSettlementAllocation {
+  expenseId: string;
+  memberId: string;
+  amount: number;
 }
 
 export interface ExpenseLineItem {

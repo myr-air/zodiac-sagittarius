@@ -67,6 +67,7 @@ describe("expense page filters", () => {
         ...seedTrip.expenses[2],
         id: "expense-unlinked",
         itineraryItemId: null,
+        spentOn: "2026-06-20",
         title: "General top-up",
       },
     ];
@@ -83,9 +84,13 @@ describe("expense page filters", () => {
 
     expect(expenseDayFilterOptions({
       allDaysLabel: "All days",
+      expenses,
       itineraryItems: seedTrip.itineraryItems,
       unlinkedLabel: "No day",
-    })).toContainEqual({ label: "2026-06-18", value: "2026-06-18" });
+    })).toEqual(expect.arrayContaining([
+      { label: "2026-06-18", value: "2026-06-18" },
+      { label: "2026-06-20", value: "2026-06-20" },
+    ]));
 
     expect(expenseLedgerDayGroups({
       expenses,
@@ -111,9 +116,9 @@ describe("expense page filters", () => {
         titles: ["Peak snack"],
       },
       {
-        id: "unlinked",
-        label: "No day",
-        totalLabel: "HK$280.00",
+        id: "2026-06-20",
+        label: "2026-06-20",
+        totalLabel: "HK$800.00",
         titles: ["General top-up"],
       },
     ]);

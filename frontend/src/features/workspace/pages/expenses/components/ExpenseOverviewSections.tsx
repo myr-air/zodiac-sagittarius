@@ -1,4 +1,8 @@
 import { WorkspacePanelHeading } from "@/src/shared/components/workspace-panel-heading";
+import {
+  buildStoredValueCardBalances,
+  storedValueCardBalanceLabels,
+} from "@/src/trip/expenses";
 import type { Expense, Trip } from "@/src/trip/types";
 import { Button } from "@/src/ui";
 import * as expenseStyles from "../TripExpensesPage.styles";
@@ -111,6 +115,53 @@ export function ExpenseScopeAuditSection({
               >
                 {copy.review({ title: display.title })}
               </Button>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+interface ExpenseStoredValueSectionProps {
+  copy: {
+    balance: string;
+    spend: string;
+    title: string;
+    topUp: string;
+  };
+  expenses: Expense[];
+}
+
+export function ExpenseStoredValueSection({
+  copy,
+  expenses,
+}: ExpenseStoredValueSectionProps) {
+  const balances = buildStoredValueCardBalances(expenses);
+  if (!balances.length) return null;
+
+  return (
+    <section className={expenseStyles.panelClassName} aria-label={copy.title}>
+      <WorkspacePanelHeading
+        className={expenseStyles.panelHeadingClassName}
+        icon="wallet"
+        title={copy.title}
+      />
+      <div className={expenseStyles.balanceListClassName}>
+        {balances.map((balance) => {
+          const labels = storedValueCardBalanceLabels(balance);
+          return (
+            <div className={expenseStyles.storedValueCardRowClassName} key={`${balance.cardId}:${balance.currency}`}>
+              <div className="grid min-w-0 gap-1">
+                <strong className={expenseStyles.balanceNameClassName}>{balance.cardName}</strong>
+                <span className={expenseStyles.balanceMetaClassName}>
+                  {copy.topUp}: {labels.topUpLabel} · {copy.spend}: {labels.spendLabel}
+                </span>
+              </div>
+              <span className="grid justify-items-end gap-0.5">
+                <span className={expenseStyles.balanceMetaClassName}>{copy.balance}</span>
+                <strong className={expenseStyles.amountClassName}>{labels.balanceLabel}</strong>
+              </span>
             </div>
           );
         })}
