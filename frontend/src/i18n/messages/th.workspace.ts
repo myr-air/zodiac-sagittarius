@@ -45,6 +45,7 @@ export const thAppShellMessages = {
     tripDuration: ({ days, nights }: { days: number; nights: number }) => `${days} วัน ${nights} คืน`,
     placeCount: ({ count }: { count: number }) => `${count} สถานที่`,
     viewDetails: "ดูสรุปรายละเอียด",
+    myTrips: "ทริปของฉัน",
     switchIdentity: "เปลี่ยนตัวตน",
     confirmSwitchIdentity: ({ name }: { name: string }) =>
       `เปลี่ยนตัวตนจาก ${name}? คุณจะต้องยืนยันตัวตนใหม่เพื่อกลับเข้ามา`,

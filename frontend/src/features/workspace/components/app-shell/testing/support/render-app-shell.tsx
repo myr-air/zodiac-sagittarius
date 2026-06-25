@@ -12,6 +12,7 @@ type RenderAppShellOptions = Partial<Omit<AppShellProps, "children">> & {
 };
 
 export function renderAppShell({
+  accountPortalHref,
   activeView = "overview",
   children = <main>content</main>,
   collapsed = false,
@@ -24,6 +25,7 @@ export function renderAppShell({
 }: RenderAppShellOptions = {}) {
   return renderWithI18n(
     <AppShell
+      accountPortalHref={accountPortalHref}
       activeView={activeView}
       collapsed={collapsed}
       currentMember={currentMember}

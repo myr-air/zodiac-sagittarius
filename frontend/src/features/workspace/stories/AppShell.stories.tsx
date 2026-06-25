@@ -6,6 +6,7 @@ import {
 } from "@/src/shared/storybook/story-builders";
 import { ownerPlay, ownerThaiPlay, travelerPlay, viewerPlay } from "./AppShell.stories.plays";
 import {
+  appShellAccountOwnerStoryArgs,
   appShellOwnerStoryArgs,
   appShellTravelerStoryArgs,
   appShellViewerStoryArgs,
@@ -27,6 +28,11 @@ const viewportStoryForOwner = viewportStory<Story>;
 
 export const Owner: Story = {
   args: appShellOwnerStoryArgs,
+  play: ownerPlay,
+};
+
+export const AccountOwner: Story = {
+  args: appShellAccountOwnerStoryArgs,
   play: ownerPlay,
 };
 

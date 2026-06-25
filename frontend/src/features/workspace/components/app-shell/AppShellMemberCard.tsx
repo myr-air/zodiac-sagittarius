@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { cn } from "@/src/lib/cn";
 import { PersonAvatar } from "@/src/shared/components/person-avatar";
@@ -10,6 +11,7 @@ import type { AppShellMemberCardProps } from "./app-shell.types";
 import {
   identityDialogClassName,
   memberAvatarClassName,
+  memberActionsClassName,
   memberCardBaseClassName,
   memberCardColClassName,
   memberCardCopyClassName,
@@ -17,20 +19,22 @@ import {
   memberCardNameClassName,
   memberCardRoleClassName,
   memberFallbackIconClassName,
+  memberPortalLinkClassName,
   memberSwitchButtonClassName,
 } from "./AppShell.styles";
 import { useAppShellMemberCardActions } from "./useAppShellMemberCardActions";
 
-export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipantSession }: AppShellMemberCardProps) {
+export function AppShellMemberCard({ accountPortalHref, collapsed, currentMember, onLeaveParticipantSession }: AppShellMemberCardProps) {
   const { t } = useI18n();
   const actions = useAppShellMemberCardActions({
     onLeaveParticipantSession,
   });
+  const hasMemberActions = Boolean((accountPortalHref || onLeaveParticipantSession) && !collapsed);
 
   return (
     <>
-      <div className={cn(memberCardBaseClassName, onLeaveParticipantSession && !collapsed ? memberCardColClassName : memberCardGridClassName)} data-collapsed={collapsed ? "true" : "false"}>
-        {onLeaveParticipantSession && !collapsed ? (
+      <div className={cn(memberCardBaseClassName, hasMemberActions ? memberCardColClassName : memberCardGridClassName)} data-collapsed={collapsed ? "true" : "false"}>
+        {hasMemberActions ? (
           <>
             <div className="flex items-center gap-2.5 min-w-0 w-full">
               <PersonAvatar
@@ -43,9 +47,19 @@ export function AppShellMemberCard({ collapsed, currentMember, onLeaveParticipan
                 <span className={memberCardRoleClassName}>{roleLabel(currentMember.role, t.appShell.roles)}</span>
               </div>
             </div>
-            <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={actions.openLeaveParticipantSessionDialog}>
-              {t.appShell.switchIdentity}
-            </button>
+            <div className={memberActionsClassName}>
+              {accountPortalHref ? (
+                <Link className={memberPortalLinkClassName} data-collapsed={collapsed ? "true" : "false"} href={accountPortalHref}>
+                  <Icon name="calendar" />
+                  {t.appShell.myTrips}
+                </Link>
+              ) : null}
+              {onLeaveParticipantSession ? (
+                <button className={memberSwitchButtonClassName} data-collapsed={collapsed ? "true" : "false"} type="button" onClick={actions.openLeaveParticipantSessionDialog}>
+                  {t.appShell.switchIdentity}
+                </button>
+              ) : null}
+            </div>
           </>
         ) : (
           <>

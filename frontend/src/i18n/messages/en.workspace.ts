@@ -45,6 +45,7 @@ export const enAppShellMessages = {
     tripDuration: ({ days, nights }: { days: number; nights: number }) => `${days} days ${nights} nights`,
     placeCount: ({ count }: { count: number }) => `${count} places`,
     viewDetails: "View details",
+    myTrips: "My Trips",
     switchIdentity: "Switch identity",
     confirmSwitchIdentity: ({ name }: { name: string }) =>
       `Switch identity from ${name}? You will need to verify again to return.`,

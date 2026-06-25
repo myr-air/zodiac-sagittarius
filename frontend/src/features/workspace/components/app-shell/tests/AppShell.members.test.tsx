@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { appRoutes } from "@/src/routes/app-routes";
 import { getTripFixtureMember } from "@/src/trip/testing/fixtures/trip-fixtures";
 import { renderAppShell } from "../testing/support/render-app-shell";
 
@@ -48,5 +49,29 @@ describe("AppShell members", () => {
 
     await screen.findByText("ผู้จัดทริป");
     expect(screen.getByText("Travel Mate").closest(".member-card")).toHaveTextContent("ผู้จัดทริป");
+  });
+
+  it("adds account portal navigation to the identity card when an account session is available", async () => {
+    const owner = getTripFixtureMember("owner");
+    renderAppShell({
+      accountPortalHref: appRoutes.portalMyTrips(),
+      currentMember: owner,
+    });
+
+    const memberCard = screen.getByText(owner.displayName).closest(".member-card") as HTMLElement;
+    expect(within(memberCard).getByRole("link", { name: /ทริปของฉัน/i })).toHaveAttribute(
+      "href",
+      appRoutes.portalMyTrips(),
+    );
+  });
+
+  it("does not show account portal navigation for a trip-only session", async () => {
+    const owner = getTripFixtureMember("owner");
+    renderAppShell({
+      currentMember: owner,
+    });
+
+    const memberCard = screen.getByText(owner.displayName).closest(".member-card") as HTMLElement;
+    expect(within(memberCard).queryByRole("link", { name: /ทริปของฉัน/i })).not.toBeInTheDocument();
   });
 });

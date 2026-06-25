@@ -1,4 +1,5 @@
 import type { WorkspaceAppFrameProps } from "../WorkspaceAppFrame";
+import { appRoutes } from "@/src/routes/app-routes";
 import { buildWorkspaceDialogsProps } from "./workspace-dialogs-props";
 import { buildWorkspaceRailProps } from "./workspace-rail-props";
 import { buildWorkspaceToastProps } from "./workspace-toast-props";
@@ -106,6 +107,7 @@ export function buildWorkspaceShellProps(input: BuildWorkspaceShellPropsInput): 
 
   return {
     appShellProps: {
+      accountPortalHref: input.accountSession?.kind === "trusted" ? appRoutes.portalMyTrips() : undefined,
       activeView: currentView,
       collapsed: sidebarCollapsed,
       currentMember,

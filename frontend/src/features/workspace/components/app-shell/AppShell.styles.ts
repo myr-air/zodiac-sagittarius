@@ -21,6 +21,8 @@ export const memberAvatarClassName = "person-avatar grid size-[30px] place-items
 export const memberCardCopyClassName = "grid min-w-0 gap-0.5 data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const memberCardNameClassName = "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold leading-[18px] text-(--color-text)";
 export const memberCardRoleClassName = "text-(--color-text-muted)";
-export const memberSwitchButtonClassName = "member-switch-button min-h-8 whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong) data-[collapsed=true]:hidden max-[1199px]:hidden";
+export const memberActionsClassName = "grid gap-2";
+export const memberPortalLinkClassName = "member-portal-link inline-flex min-h-8 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-primary-soft) px-2 text-[11px] font-extrabold text-(--color-primary-strong) no-underline transition-[background,border-color,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-surface) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) data-[collapsed=true]:hidden max-[1199px]:hidden [&_.icon]:size-3.5";
+export const memberSwitchButtonClassName = "member-switch-button min-h-8 w-full whitespace-nowrap rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2 text-[11px] font-extrabold text-(--color-primary-strong) data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const memberFallbackIconClassName = "data-[collapsed=true]:hidden max-[1199px]:hidden";
 export const identityDialogClassName = "identity-switch-dialog w-[min(420px,100%)]";
