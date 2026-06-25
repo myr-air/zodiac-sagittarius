@@ -15,6 +15,7 @@ import {
   planScopeAuditPlay,
   responsivePlay,
   settingsTabPlay,
+  travelerPlay,
   viewerPlay,
 } from "./ExpensesPage.stories.plays";
 import {
@@ -48,7 +49,7 @@ export const Owner: Story = {
 
 export const Traveler: Story = {
   args: expensesTravelerStoryArgs,
-  play: ownerPlay,
+  play: travelerPlay,
 };
 
 export const Viewer: Story = {

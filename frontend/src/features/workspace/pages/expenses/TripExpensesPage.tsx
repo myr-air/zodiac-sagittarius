@@ -255,19 +255,6 @@ export function TripExpensesPage({
         hidden={activeView !== "account"}
       >
         <div className={expenseStyles.financeViewClassName}>
-          {canEditExpenses ? (
-            <ExpenseMoneySettings
-              copyState={copyState}
-              displayCurrency={displayCurrency}
-              displayExchangeRate={displayExchangeRate}
-              settlementCurrency={settlementCurrency}
-              t={t}
-              onCopyStatement={() => void copyStatement()}
-              onDisplayCurrencyChange={setDisplayCurrency}
-              onDisplayExchangeRateChange={setDisplayExchangeRate}
-              onDownloadCsv={downloadCsv}
-            />
-          ) : null}
           <ExpenseStatementSection
             canEditExpenses={canEditExpenses}
             currentMember={currentMember}
@@ -282,6 +269,19 @@ export function TripExpensesPage({
             t={t}
             trip={trip}
           />
+          {canEditExpenses ? (
+            <ExpenseMoneySettings
+              copyState={copyState}
+              displayCurrency={displayCurrency}
+              displayExchangeRate={displayExchangeRate}
+              settlementCurrency={settlementCurrency}
+              t={t}
+              onCopyStatement={() => void copyStatement()}
+              onDisplayCurrencyChange={setDisplayCurrency}
+              onDisplayExchangeRateChange={setDisplayExchangeRate}
+              onDownloadCsv={downloadCsv}
+            />
+          ) : null}
         </div>
       </div>
 

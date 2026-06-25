@@ -37,6 +37,7 @@ export const enExpensesMessages = {
       priorityTitle: "Recent high-value spend",
       settlementNudge: ({ count }: { count: number }) => `${count} payback${count === 1 ? "" : "s"} need attention.`,
       spendingNudge: "Add shared or personal spend as the trip changes.",
+      organizerPaybackHint: "Ask an organizer to record paybacks after money changes hands.",
     },
     quickCapture: {
       amountPlaceholder: "0.00",
@@ -114,6 +115,8 @@ export const enExpensesMessages = {
       displayExchangeRate: ({ currency, displayCurrency }: { currency: string; displayCurrency: string }) => `${currency} to ${displayCurrency} rate`,
       hideFilters: "Hide filters",
       showFilters: "Filters",
+      activeFilters: ({ count }: { count: number }) => `${count} active filter${count === 1 ? "" : "s"}`,
+      showFiltersWithCount: ({ count }: { count: number }) => `Filters ${count}`,
       unlinkedDay: "No day",
     },
     table: {

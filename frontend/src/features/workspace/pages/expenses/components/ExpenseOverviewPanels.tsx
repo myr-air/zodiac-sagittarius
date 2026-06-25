@@ -118,6 +118,8 @@ export function ExpenseOverviewPanels({
   const showCategories = view === "overview" || view === "categories";
   const showScopeAudit = view === "overview" || view === "categories";
   const hasSettlementSuggestions = expenseSummary.settlementSuggestions.length > 0;
+  const shouldLeadWithQuickCapture = showOverviewActions && canCreateExpenses && (!hasSettlementSuggestions || !canEditExpenses);
+  const shouldShowSecondaryQuickCapture = showOverviewActions && canCreateExpenses && hasSettlementSuggestions && !shouldLeadWithQuickCapture;
   const priorityExpenses = [...trip.expenses]
     .filter((expense) => !isStoredValueFundingExpense(expense))
     .sort((left, right) => right.amount - left.amount)
@@ -132,7 +134,7 @@ export function ExpenseOverviewPanels({
 
   return (
     <section className={expenseStyles.overviewRailClassName}>
-      {showOverviewActions && !hasSettlementSuggestions ? (
+      {shouldLeadWithQuickCapture ? (
         <section className={expenseStyles.decisionLaneClassName} aria-label={t.expenses.overview.addSpendTitle}>
           <div className={expenseStyles.decisionLaneHeaderClassName}>
             <h2>{t.expenses.overview.addSpendTitle}</h2>
@@ -209,12 +211,16 @@ export function ExpenseOverviewPanels({
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" onClick={() => onCopyPaybackReminder(suggestion)}>
                       <Icon name="copy" /> {t.expenses.actions.copyReminder}
                     </Button>
-                    <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
-                      <Icon name="check" /> {t.expenses.actions.saveSettlement}
-                    </Button>
-                    <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion, { closeStatement: true })}>
-                      <Icon name="check" /> {t.expenses.actions.closeStatement}
-                    </Button>
+                    {canEditExpenses ? (
+                      <>
+                        <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={isPending} onClick={() => void onRecordSettlement(suggestion)}>
+                          <Icon name="check" /> {t.expenses.actions.saveSettlement}
+                        </Button>
+                        <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={isPending} onClick={() => void onRecordSettlement(suggestion, { closeStatement: true })}>
+                          <Icon name="check" /> {t.expenses.actions.closeStatement}
+                        </Button>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               );
@@ -223,7 +229,10 @@ export function ExpenseOverviewPanels({
         ) : (
           <p className={expenseStyles.balanceMetaClassName}>{t.expenses.balance.noPaybacks}</p>
         )}
-        {hasSettlementSuggestions && showOverviewActions && onAddExpense ? (
+        {hasSettlementSuggestions && !canEditExpenses ? (
+          <p className={expenseStyles.balanceMetaClassName}>{t.expenses.overview.organizerPaybackHint}</p>
+        ) : null}
+        {hasSettlementSuggestions && showOverviewActions && canEditExpenses && onAddExpense ? (
           <Button type="button" variant="ghost" disabled={!canCreateExpenses && !canEditExpenses} onClick={onAddExpense}>
             <Icon name="plus" /> {t.expenses.actions.addExpense}
           </Button>
@@ -231,7 +240,7 @@ export function ExpenseOverviewPanels({
       </section>
       ) : null}
 
-      {showOverviewActions && hasSettlementSuggestions ? (
+      {shouldShowSecondaryQuickCapture ? (
         <section className={expenseStyles.panelClassName} aria-label={t.expenses.overview.addSpendTitle}>
           <div className={expenseStyles.decisionLaneHeaderClassName}>
             <h2>{t.expenses.overview.addSpendTitle}</h2>

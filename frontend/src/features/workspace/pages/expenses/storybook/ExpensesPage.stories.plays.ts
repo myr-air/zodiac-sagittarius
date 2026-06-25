@@ -14,9 +14,16 @@ export const ownerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("tablist", { name: /Trip money sections/i })).toHaveClass("expense-finance-tabs");
 };
 
+export const travelerPlay: ExpensesPagePlay = async ({ canvas }) => {
+  await expect(canvas.getByText(/Can add spend/i)).toBeVisible();
+  await expect(canvas.getByRole("region", { name: /Add recent spend/i })).toBeVisible();
+  await expect(canvas.getByRole("button", { name: /Quick add/i })).toBeDisabled();
+  await expect(canvas.queryByRole("button", { name: /Record payback|Close statement/i })).toBeNull();
+};
+
 export const viewerPlay: ExpensesPagePlay = async ({ canvas }) => {
   await expect(canvas.getByText(/Money view only/i)).toBeVisible();
-  await expect(canvas.getByRole("button", { name: /Add spend/i })).toBeDisabled();
+  await expect(canvas.queryByRole("button", { name: /Add spend|Quick add/i })).toBeNull();
 };
 
 export const ownerThaiPlay: ExpensesPagePlay = async ({ canvas }) => {

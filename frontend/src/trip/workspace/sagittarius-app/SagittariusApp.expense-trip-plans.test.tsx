@@ -31,7 +31,7 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
       "plan-variant-backup",
     ]);
     await user.click(screen.getByRole("link", { name: /ค่าใช้จ่าย/i }));
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(
       await screen.findByRole("button", { name: /เพิ่มรายการ/i }),
     );
@@ -70,7 +70,7 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
     render(<SagittariusApp initialView="expenses" />);
 
     await screen.findByRole("region", { name: /เงินทริป/i });
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getAllByRole("button", { name: /แก้ไข Dim Dim Sum brunch/i })[0]);
     const dialog = screen.getByRole("dialog", { name: /แก้ไขค่าใช้จ่าย/i });
     await user.selectOptions(within(dialog).getByLabelText(/Trip Plan|แผนทริป/i), [
@@ -114,12 +114,11 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
     render(<SagittariusApp initialView="expenses" />);
 
     await screen.findByRole("region", { name: /เงินทริป/i });
-    await user.click(screen.getByRole("tab", { name: /รายการใช้จ่าย/i }));
+    await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     expect(screen.getAllByText("Dim Dim Sum brunch").length).toBeGreaterThan(0);
     expect(screen.queryByText("Rain gallery snack")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /ตัวกรอง/i }));
-    await user.selectOptions(screen.getByLabelText(/Trip Plan|แผนทริป/i), [
+    await user.selectOptions(screen.getAllByLabelText(/Trip Plan|แผนทริป/i)[0], [
       "plan-variant-backup",
     ]);
 

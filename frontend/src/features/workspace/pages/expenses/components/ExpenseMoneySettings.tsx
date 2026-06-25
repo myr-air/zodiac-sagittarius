@@ -32,7 +32,7 @@ export function ExpenseMoneySettings({
   const needsDisplayExchangeRate = displayCurrency !== settlementCurrency;
 
   return (
-    <section className={expenseStyles.panelClassName} aria-label={t.expenses.tabs.settings}>
+    <section className={`${expenseStyles.panelClassName} ${expenseStyles.accountToolsOrderClassName}`} aria-label={t.expenses.tabs.settings}>
       <div className={expenseStyles.settingsHeaderClassName}>
         <div>
           <h2>{t.expenses.tabs.settings}</h2>

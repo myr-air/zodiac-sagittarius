@@ -52,6 +52,14 @@ export function ExpenseLedgerControls({
   const actionsRef = useRef<HTMLDivElement>(null);
   const filterPanelId = "expense-ledger-filters";
   const actionsPanelId = "expense-ledger-actions";
+  const activeFilterCount =
+    (query.trim() ? 1 : 0) +
+    (dayFilter !== "all" ? 1 : 0) +
+    (categoryFilter !== "all" ? 1 : 0) +
+    (payerFilter !== "all" ? 1 : 0);
+  const filterButtonLabel = activeFilterCount
+    ? t.expenses.filters.showFiltersWithCount({ count: activeFilterCount })
+    : t.expenses.filters.showFilters;
 
   useEffect(() => {
     if (!showActions) return;
@@ -89,7 +97,7 @@ export function ExpenseLedgerControls({
             onClick={() => setShowFilters((current) => !current)}
           >
             <Icon name="settings" />
-            <span>{t.expenses.filters.showFilters}</span>
+            <span>{filterButtonLabel}</span>
           </Button>
           <Button type="button" className={expenseStyles.commandPrimaryButtonClassName} disabled={!canCreateExpenses && !canEditExpenses} onClick={onAddExpense}>
             <Icon name="plus" /> {t.expenses.actions.addExpense}
@@ -123,6 +131,13 @@ export function ExpenseLedgerControls({
           </div>
         </div>
       </div>
+      {activeFilterCount ? (
+        <div className={expenseStyles.commandMetaClassName}>
+          <span className={expenseStyles.filterActiveSummaryClassName}>
+            {t.expenses.filters.activeFilters({ count: activeFilterCount })}
+          </span>
+        </div>
+      ) : null}
       <div className={expenseStyles.filterGridClassName} id={filterPanelId} hidden={!showFilters}>
         <label className={expenseStyles.fieldClassName}>
           <span>{t.expenses.filters.day}</span>
