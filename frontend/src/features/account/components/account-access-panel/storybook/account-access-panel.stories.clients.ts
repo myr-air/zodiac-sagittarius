@@ -33,6 +33,7 @@ export const accountStoryClient: AccountApiClient = {
   }),
   finishEmailLogin: async () => trustedStorySession,
   finishPasswordLogin: async () => trustedStorySession,
+  restoreSession: async () => trustedStorySession,
   loadSettings: async () => accountSettings,
   updateSettings: async (
     _sessionToken: string,

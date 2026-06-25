@@ -74,10 +74,9 @@ describe("Sagittarius cockpit account trip access", () => {
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringContaining(accountTripMemberSessionsRoute),
         expect.objectContaining({
+          credentials: "include",
           method: "POST",
-          headers: expect.objectContaining({
-            Authorization: "Bearer playwright-account-session",
-          }),
+          headers: expect.not.objectContaining({ Authorization: expect.any(String) }),
         }),
       );
     } finally {
@@ -116,7 +115,7 @@ describe("Sagittarius cockpit account trip access", () => {
       expect(storage.getItem(accountSessionStorageKey)).toBeNull();
       expect(
         window.sessionStorage.getItem(accountSessionStorageKey),
-      ).toContain("transient-account-session");
+      ).toBeNull();
       expect(storage.getItem(tripParticipantSessionStorageKey)).toBeNull();
       expect(replaceMock).not.toHaveBeenCalledWith(
         expect.stringContaining(appRoutes.join()),

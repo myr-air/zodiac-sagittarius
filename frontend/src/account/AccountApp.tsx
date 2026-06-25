@@ -62,12 +62,30 @@ export function AccountApp({
 
   useEffect(() => {
     if (accountSessionLoaded) return;
+    let cancelled = false;
     const timeout = window.setTimeout(() => {
-      setAccountSession(loadPersistedAccountSession());
-      setAccountSessionLoaded(true);
+      const legacySession = loadPersistedAccountSession();
+      if (legacySession) {
+        setAccountSession(legacySession);
+        setAccountSessionLoaded(true);
+        return;
+      }
+      resolvedAccountClient.restoreSession()
+        .then((session) => {
+          if (cancelled) return;
+          setAccountSession(session);
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          if (cancelled) return;
+          setAccountSessionLoaded(true);
+        });
     }, 0);
-    return () => window.clearTimeout(timeout);
-  }, [accountSessionLoaded]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [accountSessionLoaded, resolvedAccountClient]);
 
   useEffect(() => {
     if (!accountSessionLoaded) return;

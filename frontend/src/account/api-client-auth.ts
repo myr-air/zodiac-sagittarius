@@ -24,7 +24,7 @@ type AccountAuthApiClient = Pick<
 
 export function createAccountAuthApiClient(
   request: JsonApiRequester,
-  authHeaders: (sessionToken: string) => { Authorization: string },
+  authHeaders: (sessionToken: string) => HeadersInit,
 ): AccountAuthApiClient {
   return {
     startEmailLogin(email) {

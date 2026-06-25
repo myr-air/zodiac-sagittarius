@@ -52,6 +52,7 @@ export interface AccountApiClient {
     trustDevice: boolean;
     deviceLabel: string;
   }): Promise<AccountSession>;
+  restoreSession(): Promise<AccountSession>;
   loadSettings(sessionToken: string): Promise<AccountSettings>;
   updateSettings(sessionToken: string, request: AccountSettingsUpdateRequest): Promise<AccountSettings>;
   listTrips(sessionToken: string): Promise<AccountTripSummary[]>;

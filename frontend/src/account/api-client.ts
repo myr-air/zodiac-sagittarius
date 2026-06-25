@@ -42,16 +42,33 @@ export type {
 export function createAccountApiClient(options: AccountApiClientOptions = {}): AccountApiClient {
   const request = createJsonApiRequester({
     baseUrl: options.baseUrl ?? "",
+    credentials: "include",
     fetcher: options.fetchImpl,
     createError: (input) => new TripApiError(input),
   });
 
-  function authHeaders(sessionToken: string) {
+  const cookieSessionToken = "cookie-account-session";
+
+  function authHeaders(sessionToken: string): HeadersInit {
+    if (sessionToken === cookieSessionToken) return {};
     return { Authorization: `Bearer ${sessionToken}` };
   }
 
   return {
     ...createAccountAuthApiClient(request, authHeaders),
+    async restoreSession() {
+      const settings = await request<AccountSettings>(accountApiRoutes.account(), {
+        method: "GET",
+      });
+      return {
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        kind: "trusted",
+        sessionToken: cookieSessionToken,
+        trustedDeviceId: null,
+        userId: settings.profile.id,
+      };
+    },
     loadSettings(sessionToken) {
       return request<AccountSettings>(accountApiRoutes.account(), {
         method: "GET",

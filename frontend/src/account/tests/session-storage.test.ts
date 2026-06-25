@@ -29,24 +29,20 @@ describe("account session storage", () => {
     restoreStorage();
   });
 
-  it("persists trusted sessions in sessionStorage and clears legacy localStorage", () => {
+  it("does not persist trusted account session tokens in browser storage", () => {
     window.localStorage.setItem(accountSessionStorageKey, "legacy");
 
     persistAccountSession(trustedSession);
 
-    expect(window.sessionStorage.getItem(accountSessionStorageKey)).toBe(
-      JSON.stringify(trustedSession),
-    );
+    expect(window.sessionStorage.getItem(accountSessionStorageKey)).toBeNull();
     expect(window.localStorage.getItem(accountSessionStorageKey)).toBeNull();
   });
 
-  it("loads and migrates valid legacy trusted sessions", () => {
+  it("clears legacy trusted sessions instead of restoring readable tokens", () => {
     window.localStorage.setItem(accountSessionStorageKey, JSON.stringify(trustedSession));
 
-    expect(loadPersistedAccountSession()).toEqual(trustedSession);
-    expect(window.sessionStorage.getItem(accountSessionStorageKey)).toBe(
-      JSON.stringify(trustedSession),
-    );
+    expect(loadPersistedAccountSession()).toBeNull();
+    expect(window.sessionStorage.getItem(accountSessionStorageKey)).toBeNull();
     expect(window.localStorage.getItem(accountSessionStorageKey)).toBeNull();
   });
 

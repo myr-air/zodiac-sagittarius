@@ -97,7 +97,7 @@ describe("Sagittarius cockpit account access", () => {
       expect(
         screen.queryByRole("button", { name: /ส่งรหัส sign-in/i }),
       ).not.toBeInTheDocument();
-      await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6));
+      await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(7));
     } finally {
       storage.clear();
       fetchSpy.mockRestore();

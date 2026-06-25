@@ -48,7 +48,7 @@ export function useWorkspaceSession({
     accountSession,
     accountSessionLoaded,
     changeAccountSession,
-  } = useWorkspaceAccountSession();
+  } = useWorkspaceAccountSession(accountClient);
   const [accountTripAccessDeniedRouteId, setAccountTripAccessDeniedRouteId] =
     useState<string | null>(null);
 

@@ -271,16 +271,17 @@ fn cors_layer() -> CorsLayer {
             Method::OPTIONS,
         ])
         .allow_headers([AUTHORIZATION, CONTENT_TYPE])
+        .allow_credentials(true)
 }
 
 #[derive(Clone, Debug)]
-struct CorsOriginPolicy {
+pub(crate) struct CorsOriginPolicy {
     allowed_origins: Vec<String>,
     allow_local_development_origins: bool,
 }
 
 impl CorsOriginPolicy {
-    fn from_env() -> Self {
+    pub(crate) fn from_env() -> Self {
         let runtime_env = std::env::var("SAGITTARIUS_ENV").unwrap_or_default();
         let allow_local_override = std::env::var("SAGITTARIUS_ALLOW_LOCAL_CORS").ok();
         let allowed_origins = std::env::var("SAGITTARIUS_ALLOWED_ORIGINS").ok();
@@ -313,7 +314,7 @@ impl CorsOriginPolicy {
         }
     }
 
-    fn allows(&self, origin: &str) -> bool {
+    pub(crate) fn allows(&self, origin: &str) -> bool {
         if self.allow_local_development_origins && local_development_origin(origin) {
             return true;
         }

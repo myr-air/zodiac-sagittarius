@@ -68,6 +68,19 @@ async fn get_with_auth(
         .unwrap()
 }
 
+async fn get_with_cookie(app: axum::Router, uri: &str, cookie: &str) -> Response<axum::body::Body> {
+    app.oneshot(
+        Request::builder()
+            .method(Method::GET)
+            .uri(uri)
+            .header(header::COOKIE, cookie)
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await
+    .unwrap()
+}
+
 async fn post_with_auth(
     app: axum::Router,
     uri: &str,
@@ -114,6 +127,27 @@ async fn patch_json_with_auth(
         .header(header::CONTENT_TYPE, "application/json");
     if let Some(authorization) = authorization {
         request = request.header(header::AUTHORIZATION, authorization);
+    }
+
+    app.oneshot(request.body(Body::from(body.to_string())).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn patch_json_with_cookie(
+    app: axum::Router,
+    uri: &str,
+    cookie: &str,
+    origin: Option<&str>,
+    body: Value,
+) -> Response<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(Method::PATCH)
+        .uri(uri)
+        .header(header::COOKIE, cookie)
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(origin) = origin {
+        request = request.header(header::ORIGIN, origin);
     }
 
     app.oneshot(request.body(Body::from(body.to_string())).unwrap())
@@ -216,6 +250,177 @@ async fn account_settings_can_update_profile_fields(pool: sqlx::PgPool) {
             "Asia/Tokyo".to_string()
         )
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn trusted_password_login_sets_account_session_cookie(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let response = post_json(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "cookie-owner@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": true,
+            "deviceLabel": "Cookie laptop"
+        }),
+    )
+    .await;
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let cookie = response
+        .headers()
+        .get(header::SET_COOKIE)
+        .and_then(|value| value.to_str().ok())
+        .expect("trusted login should set account cookie");
+    assert!(cookie.starts_with("sagittarius-account-session="));
+    assert!(cookie.contains("HttpOnly"));
+    assert!(cookie.contains("SameSite=Lax"));
+    assert!(cookie.contains("Path=/"));
+    assert!(cookie.contains("Max-Age=2592000"));
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn temporary_password_login_does_not_set_account_session_cookie(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let _registered = post_json(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "temporary-cookie@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": true,
+            "deviceLabel": "Cookie laptop"
+        }),
+    )
+    .await;
+
+    let response = post_json(
+        app,
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": "temporary-cookie@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response.headers().get(header::SET_COOKIE).is_none());
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_settings_loads_with_trusted_cookie(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let response = post_json(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "cookie-settings@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": true,
+            "deviceLabel": "Cookie laptop"
+        }),
+    )
+    .await;
+    let cookie = response
+        .headers()
+        .get(header::SET_COOKIE)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .to_string();
+
+    let (status, body) =
+        response_json(get_with_cookie(app, "/api/v1/account", &cookie).await).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        body["profile"]["primaryEmail"],
+        "cookie-settings@example.com"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn cookie_account_mutation_requires_allowed_origin(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let response = post_json(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "cookie-csrf@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": true,
+            "deviceLabel": "Cookie laptop"
+        }),
+    )
+    .await;
+    let cookie = response
+        .headers()
+        .get(header::SET_COOKIE)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .to_string();
+    let payload = json!({
+        "displayName": "CSRF Blocked",
+        "avatarColor": "#ABCDEF",
+        "locale": "en-US",
+        "timezone": "Asia/Tokyo"
+    });
+
+    let (missing_status, _) = response_json(
+        patch_json_with_cookie(
+            app.clone(),
+            "/api/v1/account",
+            &cookie,
+            None,
+            payload.clone(),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(missing_status, StatusCode::FORBIDDEN);
+
+    let (evil_status, _) = response_json(
+        patch_json_with_cookie(
+            app.clone(),
+            "/api/v1/account",
+            &cookie,
+            Some("https://evil.example.test"),
+            payload.clone(),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(evil_status, StatusCode::FORBIDDEN);
+
+    let (allowed_status, body) = response_json(
+        patch_json_with_cookie(
+            app,
+            "/api/v1/account",
+            &cookie,
+            Some("http://127.0.0.1:5180"),
+            payload,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(allowed_status, StatusCode::OK);
+    assert_eq!(body["profile"]["displayName"], "CSRF Blocked");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

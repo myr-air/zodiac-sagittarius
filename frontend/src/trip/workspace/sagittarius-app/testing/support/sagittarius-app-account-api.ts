@@ -9,6 +9,19 @@ import { fetchRequestUrl } from "@/src/testing/fetch-request-url";
 import { jsonResponse } from "@/src/testing/json-response";
 import type { TripParticipantSession } from "@/src/trip/types";
 
+const accountSettingsBody = {
+  profile: {
+    id: "11111111-1111-1111-1111-111111111111",
+    displayName: "Aom",
+    avatarColor: "#0f766e",
+    locale: "en-US",
+    timezone: "UTC",
+    primaryEmail: "aom@example.com",
+  },
+  passkeys: [],
+  trustedDevices: [],
+};
+
 export function mockAccountPortalApiFetch({
   trips = [],
   tripStats = {
@@ -31,22 +44,9 @@ export function mockAccountPortalApiFetch({
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const request = fetchRequestUrl(input);
 
-    if (
-      request.includes("/api/v1/account") &&
-      !request.includes("/api/v1/account/trips") &&
-      !request.includes("/api/v1/account/trip-stats")
-    ) {
+    if (request.endsWith("/api/v1/account")) {
       return jsonResponse({
-        profile: {
-          id: "11111111-1111-1111-1111-111111111111",
-          displayName: "Aom",
-          avatarColor: "#0f766e",
-          locale: "en-US",
-          timezone: "UTC",
-          primaryEmail: "aom@example.com",
-        },
-        passkeys: [],
-        trustedDevices: [],
+        ...accountSettingsBody,
       });
     }
 
@@ -91,6 +91,10 @@ export function mockAccountTripMemberSessionFetch({
       return jsonResponse(memberSession);
     }
 
+    if (request.endsWith("/api/v1/account")) {
+      return jsonResponse(accountSettingsBody);
+    }
+
     return jsonResponse(fallbackBody, fallbackStatus);
   });
 }
@@ -104,6 +108,10 @@ export function mockRejectedAccountTripMemberSessionFetch(
 
     if (request.includes(accountApiRoutes.accountTripMemberSessions(tripId))) {
       throw error;
+    }
+
+    if (request.endsWith("/api/v1/account")) {
+      return jsonResponse(accountSettingsBody);
     }
 
     return jsonResponse({}, 404);
