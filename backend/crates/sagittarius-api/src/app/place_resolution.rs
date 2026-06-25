@@ -285,14 +285,6 @@ fn country_code_for_name(value: &str) -> Option<String> {
 
 fn route_candidate_bounds(request: &ResolvePlaceRequest) -> Vec<GeoBounds> {
     let destination = request.destination_label.to_ascii_lowercase();
-    let is_compact_delta_route = destination.contains("hong kong")
-        || destination.contains("shenzhen")
-        || destination.contains("macau")
-        || destination.contains("macao");
-    if !is_compact_delta_route {
-        return Vec::new();
-    }
-
     let mut bounds = Vec::new();
     if destination.contains("hong kong") {
         bounds.push(GeoBounds {
@@ -318,18 +310,67 @@ fn route_candidate_bounds(request: &ResolvePlaceRequest) -> Vec<GeoBounds> {
             max_lng: 113.75,
         });
     }
-    if destination_country_codes(&request.countries)
-        .iter()
-        .any(|country| country == "th")
-    {
-        bounds.push(GeoBounds {
+
+    for country in destination_country_codes(&request.countries) {
+        if let Some(country_bounds) = country_candidate_bounds(&country) {
+            bounds.push(country_bounds);
+        }
+    }
+    bounds
+}
+
+fn country_candidate_bounds(country_code: &str) -> Option<GeoBounds> {
+    match country_code {
+        "hk" => Some(GeoBounds {
+            min_lat: 21.95,
+            max_lat: 22.65,
+            min_lng: 113.75,
+            max_lng: 114.55,
+        }),
+        "jp" => Some(GeoBounds {
+            min_lat: 24.0,
+            max_lat: 46.5,
+            min_lng: 122.0,
+            max_lng: 146.5,
+        }),
+        "kr" => Some(GeoBounds {
+            min_lat: 33.0,
+            max_lat: 39.5,
+            min_lng: 124.0,
+            max_lng: 132.0,
+        }),
+        "mo" => Some(GeoBounds {
+            min_lat: 22.05,
+            max_lat: 22.35,
+            min_lng: 113.45,
+            max_lng: 113.75,
+        }),
+        "sg" => Some(GeoBounds {
+            min_lat: 1.15,
+            max_lat: 1.5,
+            min_lng: 103.55,
+            max_lng: 104.1,
+        }),
+        "th" => Some(GeoBounds {
             min_lat: 5.5,
             max_lat: 20.8,
             min_lng: 97.0,
             max_lng: 106.5,
-        });
+        }),
+        "tw" => Some(GeoBounds {
+            min_lat: 21.8,
+            max_lat: 25.5,
+            min_lng: 119.0,
+            max_lng: 122.5,
+        }),
+        "vn" => Some(GeoBounds {
+            min_lat: 8.0,
+            max_lat: 23.5,
+            min_lng: 102.0,
+            max_lng: 110.0,
+        }),
+        _ => None,
     }
-    bounds
 }
 
 fn filter_candidates_for_bounds(
@@ -949,7 +990,11 @@ mod tests {
     fn compact_delta_routes_reject_candidates_outside_route_bounds() {
         let mut request = request();
         request.destination_label = "Shenzhen, Hong Kong".to_string();
-        request.countries = vec!["Hong Kong".to_string(), "China".to_string()];
+        request.countries = vec![
+            "Hong Kong".to_string(),
+            "China".to_string(),
+            "Thailand".to_string(),
+        ];
         let bounds = route_candidate_bounds(&request);
         let shenzhen = PlaceCandidate {
             name: "MOCAPE".to_string(),
@@ -977,10 +1022,48 @@ mod tests {
             },
             ..shenzhen.clone()
         };
+        let bangkok = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 13.69,
+                lng: 100.75,
+            },
+            ..shenzhen.clone()
+        };
 
         assert!(candidate_matches_bounds(&shenzhen, &bounds));
+        assert!(candidate_matches_bounds(&bangkok, &bounds));
         assert!(!candidate_matches_bounds(&europe, &bounds));
         assert!(!candidate_matches_bounds(&shanghai, &bounds));
+    }
+
+    #[test]
+    fn country_bounds_reject_impossible_locations_without_compact_route_label() {
+        let mut request = request();
+        request.destination_label = "Bangkok".to_string();
+        request.countries = vec!["Thailand".to_string()];
+        let bounds = route_candidate_bounds(&request);
+        let bangkok = PlaceCandidate {
+            name: "Airport Rail Link".to_string(),
+            address: "Bangkok".to_string(),
+            coordinates: PlaceCoordinates {
+                lat: 13.7563,
+                lng: 100.5018,
+            },
+            map_link: String::new(),
+            confidence: 0.9,
+            source: "test".to_string(),
+            evidence: Vec::new(),
+        };
+        let paris = PlaceCandidate {
+            coordinates: PlaceCoordinates {
+                lat: 48.8566,
+                lng: 2.3522,
+            },
+            ..bangkok.clone()
+        };
+
+        assert!(candidate_matches_bounds(&bangkok, &bounds));
+        assert!(!candidate_matches_bounds(&paris, &bounds));
     }
 
     #[test]
