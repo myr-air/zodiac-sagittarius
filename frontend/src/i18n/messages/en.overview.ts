@@ -51,6 +51,41 @@ export const enOverviewMessages = {
       title: "Trip highlights",
       subtitle: "Food and places from this itinerary",
     },
+    phase: {
+      incoming: {
+        eyebrow: "Before trip",
+        title: "Prep radar",
+        detail: "Resolve planning gaps before the first travel day.",
+        facts: {
+          countdown: "Countdown",
+          routeReview: "Routes to review",
+          nextBooking: "Next booking focus",
+        },
+        fallback: "Confirm the first stop",
+      },
+      active: {
+        eyebrow: "During trip",
+        title: "Live trip pulse",
+        detail: "Keep today's movement, weather, and crew status visible.",
+        facts: {
+          nextStop: "Next stop",
+          weather: "Weather cards",
+          crew: "Active crew",
+        },
+        fallback: "Check today’s itinerary",
+      },
+      completed: {
+        eyebrow: "After trip",
+        title: "Close-out desk",
+        detail: "Settle shared money and preserve trip highlights.",
+        facts: {
+          settlements: "Settlements",
+          highlights: "Highlights saved",
+          archive: "Archive note",
+        },
+        fallback: "Share notes and photos",
+      },
+    },
     filters: {
       scopeLabel: "Checklist scope filters",
       statusLabel: "Checklist status filters",

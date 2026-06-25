@@ -3,8 +3,23 @@ import { workspacePanelHeadingOverviewClassName } from "@/src/shared/components/
 
 export const overviewPageClassName =
   "overview-page grid min-h-full min-w-0 max-w-full overflow-hidden gap-3 bg-transparent px-6 py-[22px] pb-7 max-[1199px]:min-h-[calc(100dvh-48px)] max-[1199px]:gap-0 max-[1199px]:bg-(--color-surface) max-[1199px]:px-0 max-[1199px]:py-0 max-[1199px]:pb-0 max-[767px]:overflow-y-auto";
+export const overviewSummaryBentoClassName =
+  "overview-summary-bento grid min-w-0 max-w-full grid-cols-12 auto-rows-min gap-3 max-[1199px]:grid-cols-1 max-[1199px]:gap-0";
+export const overviewWeatherBentoClassName =
+  "overview-weather-bento col-span-5 min-w-0 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none [&_.weather-forecast-strip]:m-0 [&_.weather-forecast-strip]:w-full [&_.weather-forecast-strip]:rounded-none [&_.weather-forecast-strip]:border-0 [&_.weather-forecast-strip]:px-4 [&_.weather-forecast-strip]:pb-3 [&_.weather-forecast-strip]:pt-4 [&_.weather-forecast-strip]:shadow-none";
 export const overviewCockpitClassName =
-  "overview-travel-cockpit mb-3.5 grid w-full min-w-0 max-w-full grid-cols-3 gap-3 overflow-hidden max-[1199px]:mb-0 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[1199px]:[&_.overview-cockpit-card:nth-child(3)]:col-span-full";
+  "overview-travel-cockpit col-span-7 grid w-full min-w-0 max-w-full grid-cols-3 gap-3 overflow-hidden max-[1199px]:col-auto max-[1199px]:mb-0 max-[1199px]:grid-cols-2 max-[1199px]:gap-0 max-[1199px]:[&_.overview-cockpit-card:nth-child(3)]:col-span-full";
+export const overviewPhaseCardClassName =
+  "overview-phase-card col-span-5 grid min-w-0 content-between gap-4 overflow-hidden rounded-(--radius-lg) border border-[color-mix(in_srgb,var(--overview-phase-accent)_18%,var(--color-border))] bg-[linear-gradient(145deg,var(--color-surface)_0%,var(--overview-phase-wash)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] [--overview-phase-accent:var(--color-primary)] [--overview-phase-wash:var(--color-surface-subtle)] max-[1199px]:col-auto max-[1199px]:rounded-none max-[1199px]:border-x-0 max-[1199px]:shadow-none";
+export const overviewPhaseToneClassNames = {
+  incoming: "[--overview-phase-accent:var(--color-primary)] [--overview-phase-wash:var(--color-primary-soft)]",
+  active: "[--overview-phase-accent:var(--color-warning-strong)] [--overview-phase-wash:var(--color-warning-soft)]",
+  completed: "[--overview-phase-accent:var(--color-route)] [--overview-phase-wash:var(--color-route-soft)]",
+} as const;
+export const overviewPhaseHeaderClassName =
+  "overview-phase-header grid gap-1.5 [&_span]:w-fit [&_span]:rounded-full [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--overview-phase-accent)_26%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.7)] [&_span]:px-2.5 [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-4 [&_span]:text-(--overview-phase-accent) [&_h2]:m-0 [&_h2]:text-[18px] [&_h2]:font-black [&_h2]:leading-6 [&_h2]:text-(--color-text) [&_p]:m-0 [&_p]:text-xs [&_p]:font-bold [&_p]:leading-5 [&_p]:text-(--color-text-muted)";
+export const overviewPhaseFactListClassName =
+  "overview-phase-facts m-0 grid list-none gap-2 p-0 [&_li]:grid [&_li]:grid-cols-[28px_minmax(0,1fr)] [&_li]:items-start [&_li]:gap-2 [&_li]:rounded-(--radius-sm) [&_li]:border [&_li]:border-[color-mix(in_srgb,var(--overview-phase-accent)_14%,var(--color-border))] [&_li]:bg-[rgb(255_255_255_/_0.62)] [&_li]:p-2.5 [&_.icon]:mt-0.5 [&_.icon]:size-[16px] [&_.icon]:text-(--overview-phase-accent) [&_small]:block [&_small]:text-[11px] [&_small]:font-extrabold [&_small]:leading-4 [&_small]:text-(--color-text-muted) [&_strong]:block [&_strong]:min-w-0 [&_strong]:text-[13px] [&_strong]:font-black [&_strong]:leading-[18px] [&_strong]:text-(--color-text) [&_strong]:[overflow-wrap:anywhere]";
 export const overviewReadinessChipsClassName =
   "overview-readiness-chips flex min-w-0 flex-wrap gap-1.5 [&_span]:min-w-0 [&_span]:rounded-(--radius-sm) [&_span]:border [&_span]:border-[color-mix(in_srgb,var(--color-primary)_14%,var(--color-border))] [&_span]:bg-[rgb(255_255_255_/_0.68)] [&_span]:px-[7px] [&_span]:py-1 [&_span]:text-[11px] [&_span]:font-extrabold [&_span]:leading-[15px] [&_span]:text-(--color-text-muted)";
 

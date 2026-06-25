@@ -6,13 +6,23 @@ import type {
   TripDailyBriefing,
 } from "@/src/trip/types";
 import { useI18n } from "@/src/i18n/I18nProvider";
+import { cn } from "@/src/lib/cn";
 import { formatTripRange } from "@/src/shared/components/page-header";
 import { photoBoardEmptyMessage } from "@/src/features/itinerary/domain/overview";
 import type { OverviewRoleLens } from "@/src/features/itinerary/domain/overview";
+import { Icon, type IconName } from "@/src/ui/icons";
 import { HighlightBoard, type HighlightBoardProps } from "./OverviewHighlightBoard";
 import { OverviewHero, type OverviewHeroProps } from "./OverviewHero";
 import { OverviewCockpit } from "./OverviewCockpit";
 import { OverviewWeatherBriefing } from "./OverviewWeatherBriefing";
+import {
+  overviewPhaseCardClassName,
+  overviewPhaseFactListClassName,
+  overviewPhaseHeaderClassName,
+  overviewPhaseToneClassNames,
+  overviewSummaryBentoClassName,
+  overviewWeatherBentoClassName,
+} from "./overview-page.styles";
 
 interface OverviewSummaryBandProps {
   activeMembers: number;
@@ -38,6 +48,12 @@ interface OverviewSummaryBandProps {
   ) => void;
 }
 
+interface PhaseFact {
+  icon: IconName;
+  label: string;
+  value: string;
+}
+
 export function OverviewSummaryBand({
   activeMembers,
   countdown,
@@ -58,27 +74,84 @@ export function OverviewSummaryBand({
   onSaveDailyBriefingOverrides,
 }: OverviewSummaryBandProps) {
   const { locale, t } = useI18n();
+  const activeMembersLabel = t.dates.activeMembers({ count: activeMembers });
+  const routeReviewSummary = t.overview.readiness.alertSummary({
+    warnings: warningCount,
+    suggestions: pendingSuggestions,
+  });
+  const phaseLabels = t.overview.phase[countdown.type];
+  let phaseFacts: PhaseFact[];
+  if (countdown.type === "incoming") {
+    const labels = t.overview.phase.incoming;
+    phaseFacts = [
+      { icon: "calendar", label: labels.facts.countdown, value: countdown.text },
+      { icon: "warning", label: labels.facts.routeReview, value: routeReviewSummary },
+      { icon: "ticket", label: labels.facts.nextBooking, value: nextStop?.place ?? labels.fallback },
+    ];
+  } else if (countdown.type === "active") {
+    const labels = t.overview.phase.active;
+    phaseFacts = [
+      { icon: "route", label: labels.facts.nextStop, value: nextStop?.place ?? labels.fallback },
+      { icon: "cloud", label: labels.facts.weather, value: t.dates.dayCount({ count: dailyBriefings.length }) },
+      { icon: "users", label: labels.facts.crew, value: activeMembersLabel },
+    ];
+  } else {
+    const labels = t.overview.phase.completed;
+    phaseFacts = [
+      {
+        icon: "wallet",
+        label: labels.facts.settlements,
+        value: t.overview.money.settlementsCount({ count: settlementCount }),
+      },
+      { icon: "location", label: labels.facts.highlights, value: String(highlightItems.length) },
+      { icon: "check", label: labels.facts.archive, value: labels.fallback },
+    ];
+  }
 
   return (
-    <>
+    <div className={overviewSummaryBentoClassName}>
       <OverviewHero
         title={trip.name}
         roleTitle={t.overview.roleHeadings[roleLens]}
         destinationLabel={trip.destinationLabel}
         dateRange={formatTripRange(trip.startDate, trip.endDate, locale)}
-        activeMembersLabel={t.dates.activeMembers({ count: activeMembers })}
+        activeMembersLabel={activeMembersLabel}
         groupSpendLabel={groupSpendLabel}
         settlementCount={settlementCount}
         visual={heroVisual}
         currentMemberCard={currentMemberCard}
         countdown={countdown}
       />
-      <OverviewWeatherBriefing
-        canEdit={isManagerLens}
-        dailyBriefings={dailyBriefings}
-        locale={locale}
-        onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
-      />
+      <div className={overviewWeatherBentoClassName}>
+        <OverviewWeatherBriefing
+          canEdit={isManagerLens}
+          dailyBriefings={dailyBriefings}
+          locale={locale}
+          onSaveDailyBriefingOverrides={onSaveDailyBriefingOverrides}
+        />
+      </div>
+
+      <section
+        className={cn(overviewPhaseCardClassName, overviewPhaseToneClassNames[countdown.type])}
+        aria-label={phaseLabels.eyebrow}
+      >
+        <div className={overviewPhaseHeaderClassName}>
+          <span>{phaseLabels.eyebrow}</span>
+          <h2>{phaseLabels.title}</h2>
+          <p>{phaseLabels.detail}</p>
+        </div>
+        <ul className={overviewPhaseFactListClassName}>
+          {phaseFacts.map((fact) => (
+            <li key={fact.label}>
+              <Icon name={fact.icon} />
+              <span>
+                <small>{fact.label}</small>
+                <strong>{fact.value}</strong>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <OverviewCockpit
         activeMembers={activeMembers}
@@ -116,6 +189,6 @@ export function OverviewSummaryBand({
         title={t.overview.highlightBoard.title}
         subtitle={t.overview.highlightBoard.subtitle}
       />
-    </>
+    </div>
   );
 }
