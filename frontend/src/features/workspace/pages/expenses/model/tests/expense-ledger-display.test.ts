@@ -140,6 +140,7 @@ describe("expense ledger display", () => {
       ),
     ).toEqual(expect.objectContaining({
       amountLabel: "HK$100.00",
+      approximateDisplayAmountLabel: "≈ US$13.50",
       calculationLabel: "Paid in HKD. Trip amount is ฿450.00. Shown as US$13.50.",
       displayAmountLabel: "US$13.50",
       memberBreakdown: [
@@ -149,6 +150,27 @@ describe("expense ledger display", () => {
       ],
       settlementAmountLabel: "฿450.00",
       sourceLabel: "Built from receipt items: Noodles",
+    }));
+  });
+
+  it("does not add an approximate display amount when the selected currency matches the paid currency", () => {
+    expect(
+      expenseLedgerRowDisplay(
+        buildExpense({
+          amount: 100,
+          currency: "HKD",
+          exchangeRateToSettlementCurrency: 4.5,
+        }),
+        "THB",
+        {
+          displayCurrency: "HKD",
+          displayExchangeRate: 0.22,
+          members,
+        },
+      ),
+    ).toEqual(expect.objectContaining({
+      amountLabel: "HK$100.00",
+      approximateDisplayAmountLabel: undefined,
     }));
   });
 });

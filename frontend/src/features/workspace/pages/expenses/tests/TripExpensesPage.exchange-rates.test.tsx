@@ -75,11 +75,13 @@ describe("TripExpensesPage exchange rates", () => {
 
     await waitFor(() => expect(screen.getByLabelText(/อัตราแลกเปลี่ยน HKD เป็น THB/i)).toHaveValue("4.6"));
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    expect(screen.getAllByText("฿2,355.20").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("HK$512.00").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("≈ ฿2,355.20").length).toBeGreaterThan(0);
     const rowButton = Array.from(document.querySelectorAll<HTMLButtonElement>(".expense-ledger-row-button"))
       .find((button) => button.textContent?.includes("Dim Dim Sum brunch"));
     expect(rowButton).toBeInstanceOf(HTMLButtonElement);
     await user.click(rowButton!);
+    expect(screen.getAllByText("≈ ฿2,355.20").length).toBeGreaterThan(0);
     expect(screen.getByText(/Paid in HKD\. No currency conversion needed\. Shown as ฿2,355\.20\./)).toBeInTheDocument();
   });
 });

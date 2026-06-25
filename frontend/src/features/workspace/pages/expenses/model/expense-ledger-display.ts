@@ -16,6 +16,7 @@ import {
 
 export interface ExpenseLedgerRowDisplay {
   amountLabel: string;
+  approximateDisplayAmountLabel?: string;
   canRecordRefund: boolean;
   calculationLabel?: string;
   displayAmountLabel?: string;
@@ -57,6 +58,10 @@ export function expenseLedgerRowDisplay(
     settlementCurrency,
   };
   const targetCurrency = displayCurrencyCode(displayOptions);
+  const sourceCurrency = displayCurrencyCode({
+    displayCurrency: currency,
+    settlementCurrency,
+  });
   const normalizedSettlementCurrency = displayCurrencyCode({
     settlementCurrency,
   });
@@ -75,6 +80,9 @@ export function expenseLedgerRowDisplay(
 
   return {
     ...baseDisplay,
+    approximateDisplayAmountLabel: targetCurrency === sourceCurrency
+      ? undefined
+      : `≈ ${displayAmountLabel}`,
     calculationLabel: `${conversionLabel}${displayMath}`,
     displayAmountLabel,
     memberBreakdown: options.members.map((member) => {

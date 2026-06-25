@@ -119,11 +119,11 @@ export function ExpenseLedgerRows({
               </td>
               <td>
                 <span className={expenseStyles.ledgerAmountClassName}>
-                  {display.displayAmountLabel ?? display.amountLabel}
+                  {display.amountLabel}
                 </span>
-                {display.displayAmountLabel && display.displayAmountLabel !== display.amountLabel ? (
+                {display.approximateDisplayAmountLabel ? (
                   <span className={expenseStyles.ledgerSubAmountClassName}>
-                    {tableCopy.details.originalAmount}: {display.amountLabel}
+                    {display.approximateDisplayAmountLabel}
                   </span>
                 ) : null}
               </td>
