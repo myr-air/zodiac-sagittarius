@@ -74,6 +74,10 @@ export function ExpenseLedgerControls({
             </span>
           </div>
         </div>
+        <label className={`${expenseStyles.fieldClassName} ${expenseStyles.searchFieldClassName}`}>
+          <span>{t.expenses.filters.search}</span>
+          <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
+        </label>
         <div className={expenseStyles.commandActionsClassName}>
           <Button
             type="button"
@@ -118,12 +122,6 @@ export function ExpenseLedgerControls({
             </div>
           </div>
         </div>
-      </div>
-      <div className={expenseStyles.searchRowClassName}>
-        <label className={expenseStyles.fieldClassName}>
-          <span>{t.expenses.filters.search}</span>
-          <input value={query} placeholder={t.expenses.filters.searchPlaceholder} onChange={(event) => onQueryChange(event.target.value)} />
-        </label>
       </div>
       <div className={expenseStyles.filterGridClassName} id={filterPanelId} hidden={!showFilters}>
         <label className={expenseStyles.fieldClassName}>

@@ -7,6 +7,8 @@ import {
   financeTabActiveClassName,
   financeTabClassName,
   financeTabsClassName,
+  ledgerDetailActionsClassName,
+  ledgerDetailHeaderClassName,
   ledgerWorkspaceClassName,
   mobileLedgerCardClassName,
   mobileLedgerCardSelectedClassName,
@@ -49,8 +51,9 @@ describe("TripExpensesPage styles", () => {
   });
 
   it("keeps ledger detail layouts responsive without nested card chrome", () => {
-    expect(ledgerWorkspaceClassName).toContain("grid-cols-[minmax(0,1fr)_300px]");
-    expect(ledgerWorkspaceClassName).toContain("max-[1279px]:grid-cols-1");
+    expect(ledgerWorkspaceClassName).not.toContain("grid-cols-[minmax(0,1fr)_300px]");
+    expect(ledgerDetailHeaderClassName).toContain("grid-cols-[minmax(0,1fr)_auto]");
+    expect(ledgerDetailActionsClassName).toContain("max-[1023px]:flex");
     expect(transactionDetailClassName).toContain("expense-transaction-detail");
     expect(transactionDetailClassName).toContain("max-[767px]:fixed");
     expect(transactionDetailClassName).not.toContain("backdrop-blur");

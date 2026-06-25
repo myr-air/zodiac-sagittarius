@@ -209,14 +209,17 @@ async function openPersonalPaybackActions(page: Page) {
 }
 
 async function openFirstExpenseActionMenu(page: Page) {
-  const detailMore = page.getByRole("button", { name: /More expense actions/i }).first();
-  if (await detailMore.isVisible().catch(() => false)) {
-    await detailMore.click();
-    await expectText(page, "Record refund");
-    await expectText(page, "Create booking estimate");
-    return;
+  const desktopRow = page.locator(".expense-ledger-row-button").first();
+  const mobileCard = page.locator(".expense-mobile-ledger button").first();
+  if (await desktopRow.isVisible().catch(() => false)) {
+    await desktopRow.click();
+  } else {
+    await mobileCard.click();
+    const more = page.getByRole("button", { name: /More expense actions/i }).first();
+    if (await more.isVisible().catch(() => false)) await more.click();
   }
-  await page.getByRole("button", { name: /Actions/i }).first().click();
+  await expectText(page, "Record refund");
+  await expectText(page, "Create booking estimate");
 }
 
 async function screenshot(page: Page, name: string) {

@@ -74,10 +74,11 @@ export function ExpenseLedgerSection({
     null,
   );
   const selectedExpense =
-    filteredExpenses.find((expense) => expense.id === selectedExpenseId) ??
-    (isMobileLedger === false ? filteredExpenses[0] : null) ??
-    null;
+    filteredExpenses.find((expense) => expense.id === selectedExpenseId) ?? null;
   const selectedLedgerExpenseId = selectedExpense?.id ?? null;
+  const toggleSelectedExpense = (expense: Expense) => {
+    setSelectedExpenseId((current) => current === expense.id ? null : expense.id);
+  };
   const tableCopy = {
     actions: t.expenses.actions,
     categories: t.expenses.categories,
@@ -139,12 +140,12 @@ export function ExpenseLedgerSection({
           <div className={expenseStyles.tableWrapClassName}>
             <table className={expenseStyles.tableClassName} aria-label={t.expenses.ledgerLabel}>
               <colgroup>
-                <col className="w-[220px]" />
-                <col className="w-[128px]" />
-                <col className="w-[156px]" />
-                <col className="w-[104px]" />
-                <col className="w-[132px]" />
-                <col className="w-[84px]" />
+                <col className="w-[32%]" />
+                <col className="w-[16%]" />
+                <col className="w-[18%]" />
+                <col className="w-[12%]" />
+                <col className="w-[14%]" />
+                <col className="w-[8%]" />
               </colgroup>
               <thead className={expenseStyles.tableHeaderClassName}>
                 <tr>
@@ -162,8 +163,12 @@ export function ExpenseLedgerSection({
                 displayCurrency={displayCurrency}
                 displayExchangeRate={displayExchangeRateNumber}
                 members={members}
+                onDeleteExpense={onDeleteExpense}
+                onDuplicateExpenseAsEstimate={onDuplicateExpenseAsEstimate}
                 onEditExpense={onEditExpense}
-                onSelectExpense={(expense) => setSelectedExpenseId(expense.id)}
+                onRecordRefund={onRecordRefund}
+                onSelectExpense={toggleSelectedExpense}
+                pendingRefundExpenseIds={pendingRefundExpenseIds}
                 selectedExpenseId={selectedLedgerExpenseId}
                 settlementCurrency={settlementCurrency}
                 tableCopy={tableCopy}
@@ -173,7 +178,7 @@ export function ExpenseLedgerSection({
           </div>
         ) : null}
 
-        {selectedExpense || isMobileLedger === false ? (
+        {selectedExpense && isMobileLedger === true ? (
           <ExpenseTransactionDetail
             canEditExpenses={canEditExpenses}
             displayCurrency={displayCurrency}

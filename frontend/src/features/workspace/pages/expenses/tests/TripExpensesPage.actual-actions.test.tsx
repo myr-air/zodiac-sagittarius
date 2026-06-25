@@ -19,7 +19,7 @@ describe("TripExpensesPage actual expense actions", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
+    await user.click(ledgerRowButton("Dim Dim Sum brunch"));
     await user.click(
       screen.getByRole("button", {
         name: /สร้างประมาณการจองจาก Dim Dim Sum brunch/i,
@@ -40,7 +40,7 @@ describe("TripExpensesPage actual expense actions", () => {
     const props = renderExpenses();
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
+    await user.click(ledgerRowButton("Dim Dim Sum brunch"));
     await user.click(
       screen.getByRole("button", {
         name: /บันทึกเงินคืนของ Dim Dim Sum brunch/i,
@@ -72,7 +72,7 @@ describe("TripExpensesPage actual expense actions", () => {
     const props = renderExpenses();
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
-    await user.click(screen.getByRole("button", { name: /คำสั่งเพิ่มเติม/i }));
+    await user.click(ledgerRowButton("Dim Dim Sum brunch"));
     await user.click(
       screen.getByRole("button", { name: /ลบ Dim Dim Sum brunch/i }),
     );
@@ -108,3 +108,10 @@ describe("TripExpensesPage actual expense actions", () => {
     expect(screen.getAllByRole("button", { name: /แก้ไข Beam paid Aom/i })[0]).toBeDisabled();
   });
 });
+
+function ledgerRowButton(title: string): HTMLButtonElement {
+  const button = Array.from(document.querySelectorAll<HTMLButtonElement>(".expense-ledger-row-button"))
+    .find((candidate) => candidate.textContent?.includes(title));
+  expect(button).toBeInstanceOf(HTMLButtonElement);
+  return button!;
+}

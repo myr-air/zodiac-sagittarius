@@ -69,7 +69,7 @@ export function filterExpenses({
       itineraryItems,
       expense.itineraryItemId,
     );
-    const expenseDay = expense.spentOn ?? linkedItem?.day ?? "unlinked";
+    const expenseDay = linkedItem?.day ?? expense.spentOn ?? "unlinked";
     const matchesQuery = valuesMatchSearchQuery(
       [expense.title, payer?.displayName, linkedItem?.activity],
       normalizedQuery,
@@ -133,7 +133,7 @@ export function expenseLedgerDayGroups({
       itineraryItems,
       expense.itineraryItemId,
     );
-    const key = expense.spentOn ?? linkedItem?.day ?? "unlinked";
+    const key = linkedItem?.day ?? expense.spentOn ?? "unlinked";
     groups.set(key, [...(groups.get(key) ?? []), expense]);
   }
 
