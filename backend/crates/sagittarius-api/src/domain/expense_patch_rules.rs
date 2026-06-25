@@ -141,6 +141,69 @@ pub(crate) fn validate_settlement_allocations(value: Option<&Value>) -> Result<(
                 "expense settlement allocation amount must be greater than zero",
             ));
         }
+        let has_closed_snapshot = allocation.contains_key("closedAmount")
+            || allocation.contains_key("closedAt")
+            || allocation.contains_key("lockedCurrency")
+            || allocation.contains_key("lockedExchangeRate")
+            || allocation.contains_key("statementStatus");
+        if has_closed_snapshot {
+            for field in [
+                "closedAmount",
+                "closedAt",
+                "lockedCurrency",
+                "lockedExchangeRate",
+                "statementStatus",
+            ] {
+                if !allocation.contains_key(field) {
+                    return Err(ServiceError::InvalidRequest(
+                        "expense settlement allocation closed snapshot is incomplete",
+                    ));
+                }
+            }
+        }
+        if let Some(closed_amount) = allocation.get("closedAmount") {
+            let closed_amount = closed_amount.as_f64();
+            if closed_amount.is_none_or(|amount| !amount.is_finite() || amount <= 0.0) {
+                return Err(ServiceError::InvalidRequest(
+                    "expense settlement allocation closed amount must be greater than zero",
+                ));
+            }
+        }
+        if let Some(locked_exchange_rate) = allocation.get("lockedExchangeRate") {
+            let locked_exchange_rate = locked_exchange_rate.as_f64();
+            if locked_exchange_rate.is_none_or(|rate| !rate.is_finite() || rate <= 0.0) {
+                return Err(ServiceError::InvalidRequest(
+                    "expense settlement allocation locked exchange rate must be greater than zero",
+                ));
+            }
+        }
+        if let Some(locked_currency) = allocation.get("lockedCurrency") {
+            if locked_currency
+                .as_str()
+                .is_none_or(|value| value.trim().is_empty())
+            {
+                return Err(ServiceError::InvalidRequest(
+                    "expense settlement allocation locked currency is invalid",
+                ));
+            }
+        }
+        if let Some(closed_at) = allocation.get("closedAt") {
+            if closed_at
+                .as_str()
+                .is_none_or(|value| value.trim().is_empty())
+            {
+                return Err(ServiceError::InvalidRequest(
+                    "expense settlement allocation closed_at is invalid",
+                ));
+            }
+        }
+        if let Some(statement_status) = allocation.get("statementStatus") {
+            if statement_status.as_str() != Some("closed") {
+                return Err(ServiceError::InvalidRequest(
+                    "expense settlement allocation statement status is invalid",
+                ));
+            }
+        }
     }
 
     Ok(())

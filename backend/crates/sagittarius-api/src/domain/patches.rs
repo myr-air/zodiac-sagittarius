@@ -1680,6 +1680,84 @@ mod tests {
     }
 
     #[test]
+    fn expense_create_accepts_closed_statement_allocation_snapshot() {
+        let payer = Uuid::now_v7();
+        let recipient = Uuid::now_v7();
+        let expense = Uuid::now_v7();
+        let request = CreateExpenseRequest {
+            client_mutation_id: "expense-create-closed-statement".to_string(),
+            trip_plan_id: None,
+            title: "Beam paid Aom back".to_string(),
+            amount_minor: 64_000,
+            currency: Some("HKD".to_string()),
+            exchange_rate_to_settlement_currency: None,
+            notes: None,
+            receipt_url: None,
+            spent_on: None,
+            stored_value_card_id: None,
+            stored_value_card_name: None,
+            stored_value_transaction_type: None,
+            line_items: None,
+            comments: None,
+            settlement_allocations: Some(json!([{
+                "expenseId": expense,
+                "memberId": payer,
+                "amount": 640.0,
+                "closedAmount": 650.0,
+                "closedAt": "2026-06-25T04:00:00.000Z",
+                "lockedCurrency": "HKD",
+                "lockedExchangeRate": 1.0,
+                "statementStatus": "closed"
+            }])),
+            paid_by: payer,
+            category: "settlement".to_string(),
+            splits: json!({ recipient.to_string(): 64_000 }),
+            itinerary_item_id: None,
+        };
+
+        assert!(request.validate().is_ok());
+    }
+
+    #[test]
+    fn expense_create_rejects_incomplete_closed_statement_snapshot() {
+        let payer = Uuid::now_v7();
+        let recipient = Uuid::now_v7();
+        let expense = Uuid::now_v7();
+        let request = CreateExpenseRequest {
+            client_mutation_id: "expense-create-incomplete-closed-statement".to_string(),
+            trip_plan_id: None,
+            title: "Beam paid Aom back".to_string(),
+            amount_minor: 64_000,
+            currency: Some("HKD".to_string()),
+            exchange_rate_to_settlement_currency: None,
+            notes: None,
+            receipt_url: None,
+            spent_on: None,
+            stored_value_card_id: None,
+            stored_value_card_name: None,
+            stored_value_transaction_type: None,
+            line_items: None,
+            comments: None,
+            settlement_allocations: Some(json!([{
+                "expenseId": expense,
+                "memberId": payer,
+                "amount": 640.0,
+                "closedAmount": 650.0,
+                "statementStatus": "closed"
+            }])),
+            paid_by: payer,
+            category: "settlement".to_string(),
+            splits: json!({ recipient.to_string(): 64_000 }),
+            itinerary_item_id: None,
+        };
+
+        assert_eq!(
+            invalid_message(request.validate()),
+            "expense settlement allocation closed snapshot is incomplete"
+        );
+    }
+
+    #[test]
     fn expense_patch_deserializes_stored_value_nulls_as_explicit_clears() {
         let patch: PatchExpenseRequest = serde_json::from_value(json!({
             "clientMutationId": "expense-clear-stored-value",

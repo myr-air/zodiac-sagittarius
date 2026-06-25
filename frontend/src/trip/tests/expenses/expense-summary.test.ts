@@ -113,6 +113,89 @@ describe("expense summary", () => {
     ]);
   });
 
+  it("uses closed statement snapshots to clear accepted payback differences", () => {
+    const dinner: Expense = {
+      id: "expense-dinner",
+      title: "Dinner",
+      amount: 650,
+      paidBy: "member-aom",
+      splits: { "member-beam": 650 },
+      category: "food",
+    };
+    const settlement: Expense = {
+      id: "expense-settlement",
+      title: "Beam paid accepted amount",
+      amount: 640,
+      paidBy: "member-beam",
+      splits: { "member-aom": 640 },
+      category: "settlement",
+      settlementAllocations: [{
+        expenseId: "expense-dinner",
+        memberId: "member-beam",
+        amount: 640,
+        closedAmount: 650,
+        closedAt: "2026-06-25T04:00:00.000Z",
+        lockedCurrency: "HKD",
+        lockedExchangeRate: 1,
+        statementStatus: "closed",
+      }],
+    };
+
+    const summary = buildExpenseSummary([dinner, settlement], "member-beam");
+
+    expect(summary.currentUserNetLabel).toBe("You are settled");
+    expect(summary.netByMember).toEqual({
+      "member-aom": 0,
+      "member-beam": 0,
+    });
+    expect(summary.settlementSuggestions).toEqual([]);
+  });
+
+  it("keeps closed statement snapshots settled after the source exchange rate changes", () => {
+    const expenses: Expense[] = [
+      {
+        id: "expense-cny-hotel",
+        title: "Shenzhen hotel balance",
+        amount: 650,
+        currency: "CNY",
+        exchangeRateToSettlementCurrency: 1.2,
+        paidBy: "member-aom",
+        splits: { "member-beam": 650 },
+        category: "stay",
+      },
+      {
+        id: "settlement-accepted-rate",
+        title: "Beam paid Aom accepted rate",
+        amount: 640,
+        paidBy: "member-beam",
+        splits: { "member-aom": 640 },
+        settlementAllocations: [
+          {
+            expenseId: "expense-cny-hotel",
+            memberId: "member-beam",
+            amount: 640,
+            closedAmount: 650,
+            closedAt: "2026-06-25T04:00:00.000Z",
+            lockedCurrency: "HKD",
+            lockedExchangeRate: 1,
+            statementStatus: "closed",
+          },
+        ],
+        category: "settlement",
+      },
+    ];
+
+    const summary = buildExpenseSummary(expenses, "member-beam", [], { settlementCurrency: "HKD" });
+
+    expect(summary.groupSpend).toBe(780);
+    expect(summary.currentUserNetLabel).toBe("You are settled");
+    expect(summary.netByMember).toMatchObject({
+      "member-aom": 0,
+      "member-beam": 0,
+    });
+    expect(summary.settlementSuggestions).toEqual([]);
+  });
+
   it("excludes stored-value funding transactions from trip spend and friend balances", () => {
     const topup: Expense = {
       id: "expense-octopus-topup",

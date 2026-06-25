@@ -13,7 +13,7 @@ pub async fn list_expense_splits(
     trip_plan_id: Option<Uuid>,
 ) -> Result<Vec<ExpenseSplitRecord>, sqlx::Error> {
     sqlx::query_as::<_, ExpenseSplitRecord>(
-        "select paid_by, amount_minor, currency, exchange_rate_to_settlement_currency, category, stored_value_transaction_type, splits
+        "select id, paid_by, amount_minor, currency, exchange_rate_to_settlement_currency, category, stored_value_transaction_type, settlement_allocations, splits
          from expenses
          where trip_id = $1
            and ($2::uuid is null or trip_plan_id = $2)

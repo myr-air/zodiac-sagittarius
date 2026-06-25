@@ -48,7 +48,7 @@ interface ExpenseOverviewPanelsProps {
   onCreateQuickExpense: CreateExpenseHandler;
   onCopyPaybackReminder: (suggestion: SettlementSuggestion) => void;
   pendingSettlementKeys: Set<string>;
-  onRecordSettlement: (suggestion: SettlementSuggestion) => void;
+  onRecordSettlement: (suggestion: SettlementSuggestion, options?: { closeStatement?: boolean }) => void;
   onReviewExpense: (expense: Expense) => void;
 }
 
@@ -211,6 +211,9 @@ export function ExpenseOverviewPanels({
                     </Button>
                     <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion)}>
                       <Icon name="check" /> {t.expenses.actions.saveSettlement}
+                    </Button>
+                    <Button type="button" variant="ghost" className="min-h-8 px-2 py-1 text-xs" disabled={!canEditExpenses || isPending} onClick={() => void onRecordSettlement(suggestion, { closeStatement: true })}>
+                      <Icon name="check" /> {t.expenses.actions.closeStatement}
                     </Button>
                   </div>
                 </div>

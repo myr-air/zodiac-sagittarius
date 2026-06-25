@@ -82,6 +82,7 @@ export const thExpensesMessages = {
       downloadCsv: "ส่งออกไฟล์",
       saveExpense: "บันทึกค่าใช้จ่าย",
       saveSettlement: "บันทึกจ่ายคืน",
+      closeStatement: "ปิดยอดบัญชี",
       moreExpenseActions: "คำสั่งเพิ่มเติม",
       editExpenseShort: "แก้ไขบิล",
       duplicateAsEstimateShort: "สร้างประมาณการจอง",
@@ -224,6 +225,7 @@ export const thExpensesMessages = {
         },
         paymentMethod: {
           paidAtSource: "จ่ายตอนเกิดรายการ",
+          closed: "ปิดยอดด้วยเรทที่ล็อกไว้",
           covered: "จ่ายคืนแล้ว",
           partial: "จ่ายคืนบางส่วน",
           unpaid: "ยังไม่พบรายการจ่ายคืน",

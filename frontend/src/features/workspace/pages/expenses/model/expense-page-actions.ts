@@ -11,12 +11,16 @@ import type { Expense, ExpenseSettlementAllocation, Member, SettlementSuggestion
 import type { ExpenseInput } from "./expense-page-types";
 
 export function buildSettlementExpenseInput({
+  closeStatement = false,
+  closedAt,
   members,
   selectedTripPlanId,
   settlementCurrency,
   suggestion,
   trip,
 }: {
+  closeStatement?: boolean;
+  closedAt?: string;
   members: Member[];
   selectedTripPlanId?: string | null;
   settlementCurrency: string;
@@ -36,6 +40,8 @@ export function buildSettlementExpenseInput({
     category: "settlement",
     splits: { [suggestion.to]: suggestion.amount },
     settlementAllocations: settlementAllocationsForSuggestion({
+      closeStatement,
+      closedAt,
       settlementCurrency,
       suggestion,
       trip,
@@ -83,10 +89,14 @@ export function buildRefundExpenseInput({
 }
 
 function settlementAllocationsForSuggestion({
+  closeStatement = false,
+  closedAt,
   settlementCurrency,
   suggestion,
   trip,
 }: {
+  closeStatement?: boolean;
+  closedAt?: string;
   settlementCurrency: string;
   suggestion: SettlementSuggestion;
   trip: Pick<Trip, "expenses">;
@@ -116,11 +126,19 @@ function settlementAllocationsForSuggestion({
     );
     const amount = Math.min(outstanding, remaining);
     if (amount <= 0) continue;
-    allocations.push({
+    const allocation: ExpenseSettlementAllocation = {
       expenseId: expense.id,
       memberId: suggestion.from,
       amount: roundMoney(amount),
-    });
+    };
+    if (closeStatement) {
+      allocation.closedAmount = roundMoney(outstanding);
+      allocation.closedAt = closedAt ?? new Date().toISOString();
+      allocation.lockedCurrency = settlementCurrency;
+      allocation.lockedExchangeRate = expenseExchangeRate(expense, settlementCurrency);
+      allocation.statementStatus = "closed";
+    }
+    allocations.push(allocation);
     remaining = roundMoney(remaining - amount);
   }
 
@@ -138,9 +156,12 @@ function existingSettlementCoverageForMember({
   for (const settlement of trip.expenses.filter((expense) => expense.category === "settlement" && expense.paidBy === memberId)) {
     for (const allocation of settlement.settlementAllocations ?? []) {
       if (allocation.memberId !== memberId || allocation.amount <= 0) continue;
+      const coverageAmount = allocation.statementStatus === "closed" && (allocation.closedAmount ?? 0) > 0
+        ? allocation.closedAmount ?? allocation.amount
+        : allocation.amount;
       coverage.set(
         allocation.expenseId,
-        roundMoney((coverage.get(allocation.expenseId) ?? 0) + allocation.amount),
+        roundMoney((coverage.get(allocation.expenseId) ?? 0) + coverageAmount),
       );
     }
   }

@@ -17,6 +17,10 @@ interface UseExpenseSettlementActionsInput {
   trip: Trip;
 }
 
+interface RecordSettlementOptions {
+  closeStatement?: boolean;
+}
+
 export function useExpenseSettlementActions({
   onCreateExpense,
   selectedTripPlanId,
@@ -44,13 +48,17 @@ export function useExpenseSettlementActions({
     cooldownTimersRef.current.push(timer);
   }
 
-  async function recordSettlement(suggestion: SettlementSuggestion) {
+  async function recordSettlement(
+    suggestion: SettlementSuggestion,
+    options: RecordSettlementOptions = {},
+  ) {
     const key = settlementSuggestionKey(suggestion, settlementCurrency);
     if (recentSettlementKeysRef.current.has(key)) return;
     recentSettlementKeysRef.current.add(key);
     setPendingSettlementKeys((current) => new Set(current).add(key));
     try {
       await onCreateExpense(buildSettlementExpenseInput({
+        closeStatement: options.closeStatement,
         members: trip.members,
         selectedTripPlanId,
         settlementCurrency,

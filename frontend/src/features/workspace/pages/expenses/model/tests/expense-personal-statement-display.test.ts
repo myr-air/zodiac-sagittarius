@@ -197,6 +197,128 @@ describe("personal statement display", () => {
     });
   });
 
+  it("treats a closed statement snapshot as settled even when paid amount is lower than debt", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "hotel",
+            title: "Hotel",
+            amount: 600,
+            paidBy: "member-aom",
+            splits: { "member-beam": 600 },
+            category: "stay",
+          },
+          {
+            id: "brunch",
+            title: "Brunch",
+            amount: 50,
+            paidBy: "member-aom",
+            splits: { "member-beam": 50 },
+            category: "food",
+          },
+          {
+            id: "beam-paid-aom-accepted",
+            title: "Beam paid Aom accepted amount",
+            amount: 640,
+            paidBy: "member-beam",
+            splits: { "member-aom": 640 },
+            settlementAllocations: [
+              {
+                expenseId: "hotel",
+                memberId: "member-beam",
+                amount: 600,
+                closedAmount: 600,
+                closedAt: "2026-06-25T04:00:00.000Z",
+                lockedCurrency: "HKD",
+                lockedExchangeRate: 1,
+                statementStatus: "closed",
+              },
+              {
+                expenseId: "brunch",
+                memberId: "member-beam",
+                amount: 40,
+                closedAmount: 50,
+                closedAt: "2026-06-25T04:00:00.000Z",
+                lockedCurrency: "HKD",
+                lockedExchangeRate: 1,
+                statementStatus: "closed",
+              },
+            ],
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-brunch-member-beam")).toMatchObject({
+      paidWithLabel: "Closed with locked rate · Beam paid Aom accepted amount",
+      settlementState: "closed",
+    });
+    expect(rows.find((row) => row.id === "settlement-sent-beam-paid-aom-accepted")).toMatchObject({
+      amountLabel: "-HK$640.00",
+      includedLabel: "Hotel, Brunch",
+    });
+  });
+
+  it("keeps closed statement rows closed after the source exchange rate changes", () => {
+    const rows = personalStatementRows({
+      copy,
+      currentMemberId: "member-beam",
+      displayCurrency: "HKD",
+      displayExchangeRate: 1,
+      locale: "en",
+      settlementCurrency: "HKD",
+      trip: {
+        ...seedTrip,
+        expenses: [
+          {
+            id: "cny-hotel",
+            title: "Shenzhen hotel balance",
+            amount: 650,
+            currency: "CNY",
+            exchangeRateToSettlementCurrency: 1.2,
+            paidBy: "member-aom",
+            splits: { "member-beam": 650 },
+            category: "stay",
+          },
+          {
+            id: "beam-paid-aom-locked-rate",
+            title: "Beam paid Aom locked rate",
+            amount: 640,
+            paidBy: "member-beam",
+            splits: { "member-aom": 640 },
+            settlementAllocations: [
+              {
+                expenseId: "cny-hotel",
+                memberId: "member-beam",
+                amount: 640,
+                closedAmount: 650,
+                closedAt: "2026-06-25T04:00:00.000Z",
+                lockedCurrency: "HKD",
+                lockedExchangeRate: 1,
+                statementStatus: "closed",
+              },
+            ],
+            category: "settlement",
+          },
+        ],
+      },
+    });
+
+    expect(rows.find((row) => row.id === "spend-cny-hotel-member-beam")).toMatchObject({
+      paidWithLabel: "Closed with locked rate · Beam paid Aom locked rate",
+      settlementState: "closed",
+    });
+  });
+
   it("keeps inferred settlement labels aligned across multiple lump paybacks", () => {
     const rows = personalStatementRows({
       copy,

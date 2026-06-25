@@ -82,6 +82,7 @@ export const enExpensesMessages = {
       downloadCsv: "Export",
       saveExpense: "Save expense",
       saveSettlement: "Record payback",
+      closeStatement: "Close statement",
       moreExpenseActions: "More expense actions",
       editExpenseShort: "Edit receipt",
       duplicateAsEstimateShort: "Create booking estimate",
@@ -224,6 +225,7 @@ export const enExpensesMessages = {
         },
         paymentMethod: {
           paidAtSource: "Paid at source",
+          closed: "Closed with locked rate",
           covered: "Paid back",
           partial: "Partly paid back",
           unpaid: "Not paid back yet",

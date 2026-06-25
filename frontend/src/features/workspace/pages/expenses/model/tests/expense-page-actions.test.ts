@@ -96,6 +96,64 @@ describe("expense page action builders", () => {
     }]);
   });
 
+  it("can close a statement snapshot even when the paid amount is accepted below the debt amount", () => {
+    expect(
+      buildSettlementExpenseInput({
+        closeStatement: true,
+        closedAt: "2026-06-25T04:00:00.000Z",
+        members: seedTrip.members,
+        settlementCurrency: "HKD",
+        suggestion: {
+          from: "member-beam",
+          to: "member-aom",
+          amount: 640,
+        },
+        trip: {
+          ...seedTrip,
+          expenses: [
+            {
+              id: "hotel",
+              title: "Hotel",
+              amount: 600,
+              paidBy: "member-aom",
+              splits: { "member-beam": 600 },
+              category: "stay",
+            },
+            {
+              id: "brunch",
+              title: "Brunch",
+              amount: 50,
+              paidBy: "member-aom",
+              splits: { "member-beam": 50 },
+              category: "food",
+            },
+          ],
+        },
+      }).settlementAllocations,
+    ).toEqual([
+      {
+        expenseId: "hotel",
+        memberId: "member-beam",
+        amount: 600,
+        closedAmount: 600,
+        closedAt: "2026-06-25T04:00:00.000Z",
+        lockedCurrency: "HKD",
+        lockedExchangeRate: 1,
+        statementStatus: "closed",
+      },
+      {
+        expenseId: "brunch",
+        memberId: "member-beam",
+        amount: 40,
+        closedAmount: 50,
+        closedAt: "2026-06-25T04:00:00.000Z",
+        lockedCurrency: "HKD",
+        lockedExchangeRate: 1,
+        statementStatus: "closed",
+      },
+    ]);
+  });
+
   it("allocates net settlements to the debtor's underlying expenses even when a different member is paid", () => {
     expect(
       buildSettlementExpenseInput({

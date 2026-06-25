@@ -22,6 +22,7 @@ export type PersonalStatementFlow =
 
 export type PersonalStatementSettlementState =
   | "paidAtSource"
+  | "closed"
   | "covered"
   | "partial"
   | "unpaid"
@@ -75,6 +76,7 @@ interface PersonalStatementRowsInput {
 
 interface DebtCoverage {
   coveredAmount: number;
+  hasClosedStatement: boolean;
   settlementTitles: string[];
 }
 
@@ -174,7 +176,7 @@ function spendRowForMember({
     : "friendPaid";
   const settlementState = isPaidByCurrentMember
     ? "paidAtSource"
-    : settlementStateForCoverage(shareInSettlementCurrency, coverage?.coveredAmount ?? 0);
+    : settlementStateForCoverage(shareInSettlementCurrency, coverage);
   const paidWithLabel = isPaidByCurrentMember
     ? copy.paymentMethod.paidAtSource
       : coverage?.settlementTitles.length
@@ -311,14 +313,20 @@ function settlementAllocationPlanForMember({
         labelsBySettlementId.set(settlement.id, allocationLabels(inferredAllocations, trip).join(", "));
       }
       for (const allocation of inferredAllocations) {
-        addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title);
+        addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title, false);
       }
       continue;
     }
 
     for (const allocation of explicitAllocations) {
       if (allocation.memberId !== memberId || allocation.amount <= 0) continue;
-      addDebtCoverage(coverageByExpenseId, allocation.expenseId, allocation.amount, settlement.title);
+      addDebtCoverage(
+        coverageByExpenseId,
+        allocation.expenseId,
+        settlementAllocationCoverageAmount(allocation),
+        settlement.title,
+        isClosedSettlementAllocation(allocation),
+      );
     }
   }
 
@@ -330,17 +338,28 @@ function addDebtCoverage(
   expenseId: string,
   amount: number,
   settlementTitle: string,
+  hasClosedStatement: boolean,
 ) {
   const current = coverageByExpenseId.get(expenseId) ?? {
     coveredAmount: 0,
+    hasClosedStatement: false,
     settlementTitles: [],
   };
   coverageByExpenseId.set(expenseId, {
     coveredAmount: roundMoney(current.coveredAmount + amount),
+    hasClosedStatement: current.hasClosedStatement || hasClosedStatement,
     settlementTitles: current.settlementTitles.includes(settlementTitle)
       ? current.settlementTitles
       : [...current.settlementTitles, settlementTitle],
   });
+}
+
+function isClosedSettlementAllocation(allocation: { closedAmount?: number; statementStatus?: string }): boolean {
+  return allocation.statementStatus === "closed" && (allocation.closedAmount ?? 0) > 0;
+}
+
+function settlementAllocationCoverageAmount(allocation: { amount: number; closedAmount?: number; statementStatus?: string }): number {
+  return isClosedSettlementAllocation(allocation) ? allocation.closedAmount ?? allocation.amount : allocation.amount;
 }
 
 function inferredSettlementAllocationsForMember({
@@ -387,9 +406,11 @@ function inferredSettlementAllocationsForMember({
 
 function settlementStateForCoverage(
   debtAmount: number,
-  coveredAmount: number,
+  coverage?: DebtCoverage,
 ): PersonalStatementSettlementState {
+  const coveredAmount = coverage?.coveredAmount ?? 0;
   if (coveredAmount <= 0) return "unpaid";
+  if (coverage?.hasClosedStatement) return "closed";
   return coveredAmount + 0.01 >= debtAmount ? "covered" : "partial";
 }
 

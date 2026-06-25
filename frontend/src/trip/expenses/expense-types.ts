@@ -39,6 +39,11 @@ export interface ExpenseSettlementAllocation {
   expenseId: string;
   memberId: string;
   amount: number;
+  closedAmount?: number;
+  closedAt?: string;
+  lockedCurrency?: string;
+  lockedExchangeRate?: number;
+  statementStatus?: "closed";
 }
 
 export interface ExpenseLineItem {
