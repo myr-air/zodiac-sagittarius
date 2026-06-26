@@ -22,6 +22,8 @@ describe("TripExpensesPage split forms", () => {
     expect(dialog).toHaveClass("!max-w-4xl");
     expect(dialog.className).not.toContain("0_14px_34px");
     await user.type(within(dialog).getByLabelText(/ชื่อค่าใช้จ่าย/i), "Airport taxi");
+    await user.clear(within(dialog).getByLabelText(/วันที่จ่าย/i));
+    await user.type(within(dialog).getByLabelText(/วันที่จ่าย/i), "2026-06-25");
     await user.clear(within(dialog).getByLabelText(/จำนวนเงิน/i));
     await user.type(within(dialog).getByLabelText(/จำนวนเงิน/i), "300");
     await user.selectOptions(within(dialog).getByLabelText(/จ่ายโดย/i), "member-beam");
