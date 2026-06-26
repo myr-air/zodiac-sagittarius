@@ -36,7 +36,7 @@ export const weatherDetailPillClassName =
   "rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-2.5 py-1.5 text-xs font-extrabold leading-4 text-(--color-text-muted)";
 export const pendingBriefingClassName =
   "weather-pending-briefing col-span-full grid grid-cols-[48px_minmax(0,1fr)] items-center gap-3 self-start rounded-(--radius-md) border border-(--color-route-border) bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-route-soft)_100%)] p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)] max-[767px]:grid-cols-[36px_minmax(0,1fr)] max-[767px]:gap-2.5 max-[767px]:p-3 max-[767px]:[&>span]:size-9 max-[767px]:[&>span_.icon]:size-4 [&_.weather-source-meta]:col-span-full [&_.weather-source-meta]:mt-1 max-[767px]:[&_.weather-source-meta]:hidden";
-export const metaClassName = "weather-source-meta m-0 text-[10px] font-extrabold leading-4 text-(--color-text-muted) opacity-75 max-[767px]:truncate";
+export const metaClassName = "weather-source-meta m-0 text-[10px] font-extrabold leading-4 text-(--color-text-muted) max-[767px]:truncate";
 export const organizerFormClassName =
   "weather-organizer-form grid content-start gap-2";
 export const organizerDisclosureClassName =

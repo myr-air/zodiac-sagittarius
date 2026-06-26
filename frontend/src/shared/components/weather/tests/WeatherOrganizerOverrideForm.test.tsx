@@ -33,7 +33,8 @@ describe("WeatherOrganizerOverrideForm", () => {
   it("localizes organizer fields", () => {
     render(<WeatherOrganizerOverrideForm briefing={weatherBriefings[0]} locale="th" onSaveOverrides={() => {}} />);
 
-    expect(screen.getByRole("heading", { name: "โน้ตผู้จัดทริป" })).toBeInTheDocument();
     expect(screen.getByLabelText(/ปรับคำแนะนำการแต่งตัว/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/ปรับโน้ตเทศกาล/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/ปรับเกร็ดประจำวัน/i)).toBeInTheDocument();
   });
 });

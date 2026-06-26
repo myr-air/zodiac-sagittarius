@@ -8,6 +8,7 @@ export type AppShellToggleHandler = () => void;
 
 export interface AppShellProps {
   activeView: PlanningView;
+  accountPortalHref?: string;
   children: ReactNode;
   collapsed: boolean;
   currentMember: Member;
@@ -18,6 +19,7 @@ export interface AppShellProps {
 }
 
 export interface AppShellMemberCardProps {
+  accountPortalHref?: string;
   collapsed: boolean;
   currentMember: Member;
   onLeaveParticipantSession?: AppShellLeaveSessionHandler;

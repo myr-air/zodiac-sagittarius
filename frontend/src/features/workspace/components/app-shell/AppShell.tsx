@@ -16,6 +16,7 @@ import { AppShellMemberCard } from "./AppShellMemberCard";
 import { AppShellRailNavigation } from "./AppShellRailNavigation";
 
 export function AppShell({
+  accountPortalHref,
   activeView,
   children,
   collapsed,
@@ -86,6 +87,7 @@ export function AppShell({
         />
 
         <AppShellMemberCard
+          accountPortalHref={accountPortalHref}
           collapsed={collapsed}
           currentMember={currentMember}
           onLeaveParticipantSession={onLeaveParticipantSession}

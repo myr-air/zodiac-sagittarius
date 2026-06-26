@@ -1,4 +1,5 @@
 import { OverviewPage } from "@/src/features/itinerary/components";
+import { appRoutes } from "@/src/routes/app-routes";
 import { noop } from "@/src/testing/storybook-actions";
 import {
   ownerStoryMember,
@@ -55,6 +56,9 @@ export function buildAppShellStoryArgs(
 }
 
 export const appShellOwnerStoryArgs = buildAppShellStoryArgs();
+export const appShellAccountOwnerStoryArgs = buildAppShellStoryArgs({
+  accountPortalHref: appRoutes.portalMyTrips(),
+});
 export const appShellTravelerStoryArgs = buildAppShellStoryArgs({
   currentMember: travelerStoryMember,
 });

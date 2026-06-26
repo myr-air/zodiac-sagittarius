@@ -25,8 +25,8 @@ describe("WeatherTextBlock", () => {
 
     expect(screen.getByRole("heading", { name: "Festival" })).toBeInTheDocument();
     expect(screen.getByText("Dragon boat events near the harbor.")).toBeInTheDocument();
-    expect(screen.getByText(/Local events/)).toHaveTextContent("fetched 2026-06-04T00:00:00Z");
-    expect(screen.getByText(/Local events/)).toHaveTextContent("expires 2026-06-05T00:00:00Z");
+    expect(screen.getByText(/Local events/)).toHaveTextContent(/Updated Jun 4,/);
+    expect(screen.getByText(/Local events/)).not.toHaveTextContent("valid until");
   });
 
   it("uses localized empty text and no-source fallback", () => {
