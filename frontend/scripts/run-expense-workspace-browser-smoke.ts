@@ -122,7 +122,7 @@ async function smokeWorkspace(
     await page.waitForURL(`**${tripRoute}`, { timeout: 20_000 });
     await expectText(page, "Trip spend");
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "load" });
     await expectText(page, "Trip spend");
     screenshots.push(await screenshot(page, `${name}-overview`));
 
