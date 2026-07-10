@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useMemo, useState, useCallback } from "react";
 import type { Phase } from "./phase";
 import { derivePhase, type DerivePhaseInput } from "./derive-phase";
 
@@ -15,26 +15,13 @@ export interface UseDerivePhaseResult {
  * React hook: derives the default journey phase from trip data and allows
  * user overrides. Re-derives when trip data changes. Manual phase switching
  * persists until trip data changes (re-derive on data change).
- *
- * The user override is cleared when the input reference changes, causing
- * a re-derive to the data-driven default phase.
  */
 export function useDerivePhase(input: DerivePhaseInput): UseDerivePhaseResult {
   const derived = useMemo(() => derivePhase(input), [input]);
 
   const [userPhase, setUserPhase] = useState<Phase | null>(null);
-  const initialRenderRef = useRef(true);
 
-  // Clear user override when input changes (trip data changed).
-  // Skip the initial render to avoid clearing before any user interaction.
-  useEffect(() => {
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
-      return;
-    }
-    setUserPhase(null);
-  }, [input]);
-
+  // Re-derive when input changes — clear user override if the derived default changes
   const currentPhase = useMemo(() => {
     if (userPhase && derived.availablePhases.has(userPhase)) {
       return userPhase;
