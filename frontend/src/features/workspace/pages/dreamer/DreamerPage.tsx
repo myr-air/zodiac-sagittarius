@@ -30,6 +30,13 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
   const { t } = useI18n();
   const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
 
+  const seasonLabels: Record<string, string> = {
+    spring: t.dreamer.spring,
+    summer: t.dreamer.summer,
+    autumn: t.dreamer.autumn,
+    winter: t.dreamer.winter,
+  };
+
   const roughMonth = trip.dateWindowStart || trip.startDate || null;
   const roughLabel = roughMonth
     ? new Date(`${roughMonth}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })
@@ -38,7 +45,7 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
   const hasImage = false; // Destination photo from trip data — deferred to later pass
 
   return (
-    <WorkspacePage className={pageClass} aria-label={t("dreamer.title")}>
+    <WorkspacePage className={pageClass} aria-label={t.dreamer.title}>
       {/* Destination photo */}
       <div className={photoContainerClass} style={{ maxHeight: 280 }}>
         {hasImage ? (
@@ -54,7 +61,7 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
             style={{ aspectRatio: "16/9", maxHeight: 280 }}
             data-testid="photo-fallback"
           >
-            <span>{trip.destinationLabel || t("dreamer.noDestinationFallback")}</span>
+            <span>{trip.destinationLabel || t.dreamer.noDestinationFallback}</span>
           </div>
         )}
       </div>
@@ -69,7 +76,7 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
 
       {/* Seasonal cards */}
       <div className={seasonalSectionClass}>
-        <h2 className={seasonalTitleClass}>{t("dreamer.seasonalTitle")}</h2>
+        <h2 className={seasonalTitleClass}>{t.dreamer.seasonalTitle}</h2>
         <div className={seasonalCardsRow} data-testid="seasonal-cards">
           {SEASONS.map(({ key, icon }) => (
             <button
@@ -81,7 +88,7 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
               data-testid={`season-${key}`}
             >
               <span>{icon}</span>
-              <span className={seasonalCardTextClass}>{t(`dreamer.${key}`)}</span>
+              <span className={seasonalCardTextClass}>{seasonLabels[key]}</span>
             </button>
           ))}
         </div>
@@ -89,12 +96,12 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
 
       {/* CTA */}
       <button type="button" className={ctaClass} onClick={onStartPlanning} data-testid="start-planning-cta">
-        {t("dreamer.startPlanningCTA")}
+        {t.dreamer.startPlanningCTA}
       </button>
 
       {/* Budget estimate */}
       <p className={budgetEstimateClass} data-testid="budget-estimate">
-        {t("dreamer.budgetEstimateLabel")}: —
+        {t.dreamer.budgetEstimateLabel}: —
       </p>
     </WorkspacePage>
   );
