@@ -3,6 +3,9 @@ import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell
 import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar";
 import { PHASE_ORDER, type Phase } from "@/src/trip/workspace/phase";
+import { useDerivePhase } from "@/src/trip/workspace/use-derive-phase";
+import type { DerivePhaseInput } from "@/src/trip/workspace/derive-phase";
+import type { Trip } from "@/src/trip/types";
 import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
@@ -41,6 +44,34 @@ const PHASES_WITHOUT_CONTEXT_RAIL: Set<Phase> = new Set([
   "on-trip-companion",
 ]);
 
+/** Derive a DerivePhaseInput from the Trip object accessible in the shell. */
+function tripToDerivePhaseInput(trip: Trip): DerivePhaseInput {
+  const today = new Date().toISOString().slice(0, 10);
+  const isTripActive = trip.startDate <= today && trip.endDate >= today;
+  return {
+    name: trip.name,
+    destinationLabel: trip.destinationLabel,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    activityCount: trip.itineraryItems?.length ?? 0,
+    hasWaypoints: false,
+    hasDateWindow: false,
+    memberCount: trip.members?.length ?? 1,
+    isTripActive,
+  };
+}
+
+/** Format a date range label from start/end dates (YYYY-MM-DD). */
+function formatDateWindowLabel(startDate: string, endDate: string): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const startLabel = `${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+  const endLabel = `${monthNames[end.getMonth()]} ${end.getFullYear()}`;
+  if (startLabel === endLabel) return startLabel;
+  return `${startLabel} – ${endLabel}`;
+}
+
 export function WorkspaceMainShell({
   appShellProps,
   dialogsProps,
@@ -51,10 +82,33 @@ export function WorkspaceMainShell({
   showToast,
   toastProps,
   viewsProps,
-  currentPhase,
-  onPhaseChange,
+  currentPhase: externalPhase,
+  onPhaseChange: externalOnPhaseChange,
 }: WorkspaceMainShellProps) {
-  const hasPhaseBar = currentPhase !== undefined && onPhaseChange !== undefined;
+  // Derive phase from trip data when no external phase is provided.
+  const deriveInput = useMemo(
+    () => tripToDerivePhaseInput(appShellProps.trip),
+    [appShellProps.trip],
+  );
+  const { currentPhase: derivedPhase, availablePhases, setPhase } = useDerivePhase(deriveInput);
+
+  // Use external phase if provided, otherwise use derived phase.
+  const currentPhase = externalPhase ?? derivedPhase;
+  const onPhaseChange = externalOnPhaseChange ?? setPhase;
+
+  // PhaseBar is always rendered when we have a trip (phase is always derivable).
+  const hasPhaseBar = true;
+
+  // Compute unavailable phases from availablePhases.
+  const unavailablePhases = useMemo(() => {
+    const unavailable = new Set<Phase>();
+    for (const phase of PHASE_ORDER) {
+      if (!availablePhases.has(phase)) {
+        unavailable.add(phase);
+      }
+    }
+    return unavailable;
+  }, [availablePhases]);
 
   // Phases 1 (dreamer), 2 (flexible-hunter), and 6 (on-trip-companion) don't use the right context rail.
   const phaseAwareSupportsContextRail = useMemo(() => {
@@ -63,14 +117,12 @@ export function WorkspaceMainShell({
     return frameProps.supportsContextRail;
   }, [currentPhase, frameProps.supportsContextRail]);
 
-  // Compute unavailable phases: all phases beyond those with prerequisite data are unavailable.
-  // When no trip data is available, only dreamer is available.
-  const unavailablePhases = useMemo(() => {
-    if (!currentPhase) return new Set<Phase>();
-    // All phases are considered available for exploration when PhaseBar is active.
-    // Unavailability is determined by the parent based on trip data.
-    return new Set<Phase>();
-  }, [currentPhase]);
+  // Derive command bar props from trip data.
+  const tripName = appShellProps.trip.name;
+  const dateWindowLabel = formatDateWindowLabel(
+    appShellProps.trip.startDate,
+    appShellProps.trip.endDate,
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -89,6 +141,8 @@ export function WorkspaceMainShell({
           <TripWorkspaceFrame
             {...frameProps}
             supportsContextRail={phaseAwareSupportsContextRail}
+            tripName={tripName}
+            dateWindowLabel={dateWindowLabel}
             rail={<TripWorkspaceRail {...railProps} />}
           >
             <TripWorkspaceViews {...viewsProps} />
