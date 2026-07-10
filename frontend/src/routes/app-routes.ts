@@ -64,6 +64,8 @@ export const appRoutes = {
   tripDreamer: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/dreamer`,
   tripFlexibleHunter: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/flexible-hunter`,
   tripBudget: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/budget`,
+  tripRouteBuilder: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/route-builder`,
+  tripDetailPlanner: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/detail-planner`,
 };
 
 interface TripWorkspaceNavItem {

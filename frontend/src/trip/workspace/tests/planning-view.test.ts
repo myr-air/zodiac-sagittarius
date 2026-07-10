@@ -31,6 +31,11 @@ describe("planning-view helpers", () => {
     ).toEqual(["overview", "itinerary", "timeline", "detail-planner"]);
   });
 
+  it("returns context rail support for Phase 3 views", () => {
+    expect(workspaceViewSupportsContextRail("route-builder")).toBe(false);
+    expect(workspaceViewSupportsContextRail("detail-planner")).toBe(true);
+  });
+
   it("syncs backend expense summaries for expenses and context rail views", () => {
     expect(
       allViews.filter((view) =>

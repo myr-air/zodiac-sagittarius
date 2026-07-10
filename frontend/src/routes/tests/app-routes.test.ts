@@ -42,6 +42,8 @@ describe("app route helpers", () => {
     expect(appRoutes.tripDreamer("trip 1")).toBe("/trips/trip%201/dreamer");
     expect(appRoutes.tripFlexibleHunter("trip 1")).toBe("/trips/trip%201/flexible-hunter");
     expect(appRoutes.tripBudget("trip 1")).toBe("/trips/trip%201/budget");
+    expect(appRoutes.tripRouteBuilder("trip 1")).toBe("/trips/trip%201/route-builder");
+    expect(appRoutes.tripDetailPlanner("trip 1")).toBe("/trips/trip%201/detail-planner");
     expect(appRoutes.tripOverview("018f4e80-5788-7de0-a45c-8a555d17fc2d")).toBe("/trips/AY9OgFeIfeCkXIpVXRf8LQ");
     expect(appRoutes.join()).toBe("/join");
     expect(appRoutes.join("HK-SZ-2025")).toBe("/join/HK-SZ-2025");

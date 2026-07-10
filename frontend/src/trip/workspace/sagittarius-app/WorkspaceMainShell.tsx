@@ -10,6 +10,7 @@ import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/wor
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
 import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
+import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview, type WorkspaceRolePreviewProps } from "./WorkspaceRolePreview";
@@ -36,6 +37,7 @@ export interface WorkspaceMainShellProps {
 const PHASES_WITHOUT_CONTEXT_RAIL: Set<Phase> = new Set([
   "dreamer",
   "flexible-hunter",
+  "route-builder",
   "on-trip-companion",
 ]);
 
@@ -145,6 +147,19 @@ export function WorkspaceMainShell({
       },
       onBudgetEdit: (_id: string, _updates: { estimated: number }) => {
         // Phase 2 UX is display-first — optimistic update deferred to API integration
+      },
+    },
+    routeBuilderProps: viewsProps.routeBuilderProps ?? {
+      waypoints: appShellProps.trip.waypoints ?? [],
+      tripDestination: appShellProps.trip.destinationCities?.[0]
+        ? {
+            lat: appShellProps.trip.destinationCities[0].latitude,
+            lng: appShellProps.trip.destinationCities[0].longitude,
+            label: appShellProps.trip.destinationLabel,
+          }
+        : undefined,
+      onWaypointsChange: (_waypoints) => {
+        // Phase 3 UX is display-first — optimistic update deferred to API integration
       },
     },
     detailPlannerProps: viewsProps.detailPlannerProps ?? {

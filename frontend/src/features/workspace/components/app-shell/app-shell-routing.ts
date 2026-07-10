@@ -29,5 +29,7 @@ export function resolveViewFromPath(pathname: string, tripId: string, initialVie
   if (viewSegment === "dreamer") return "dreamer";
   if (viewSegment === "flexible-hunter") return "flexible-hunter";
   if (viewSegment === "budget") return "budget";
+  if (viewSegment === "route-builder") return "route-builder";
+  if (viewSegment === "detail-planner") return "detail-planner";
   return initialView;
 }

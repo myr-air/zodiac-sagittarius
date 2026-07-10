@@ -14,6 +14,8 @@ import { TripPhotosPage, type TripPhotosPageProps } from "@/src/features/workspa
 import { TripSettingsPage, type TripSettingsPageProps } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
 import { DetailPlannerPage } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage";
 import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
+import { RouteBuilderPage } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage";
+import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import { DreamerPage } from "@/src/features/workspace/pages/dreamer/DreamerPage";
 import type { DreamerPageProps } from "@/src/features/workspace/pages/dreamer/DreamerPage.types";
 import { FlexibleHunterPage } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage";
@@ -24,6 +26,7 @@ export interface TripWorkspaceViewsProps {
   currentView: PlanningView;
   bookingsProps: BookingsDocsPageProps;
   detailPlannerProps?: DetailPlannerPageProps;
+  routeBuilderProps?: RouteBuilderPageProps;
   expensesProps: TripExpensesPageProps;
   itineraryProps: SmartItineraryTableProps;
   mapProps: RouteMapViewProps;
@@ -40,6 +43,7 @@ export function TripWorkspaceViews({
   currentView,
   bookingsProps,
   detailPlannerProps,
+  routeBuilderProps,
   expensesProps,
   itineraryProps,
   mapProps,
@@ -89,6 +93,10 @@ export function TripWorkspaceViews({
 
   if (currentView === "flexible-hunter" && flexibleHunterProps) {
     return <FlexibleHunterPage {...flexibleHunterProps} />;
+  }
+
+  if (currentView === "route-builder" && routeBuilderProps) {
+    return <RouteBuilderPage {...routeBuilderProps} />;
   }
 
   if (currentView === "detail-planner" && detailPlannerProps) {
