@@ -14,10 +14,6 @@ import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./places/place-types";
 import type { TripTask } from "./records/task-types";
 import type { BudgetCategory } from "./budget/budget-types";
-import type { Waypoint } from "./waypoints/waypoint-types";
-export type {
-  Waypoint,
-} from "./waypoints/waypoint-types";
 export type {
   BriefingCoordinates,
   BriefingSourceMeta,

@@ -85,6 +85,42 @@ describe("derivePhase", () => {
     });
   });
 
+  describe("date window integration", () => {
+    it("derives flexible-hunter when trip has dateWindowStart set", () => {
+      // Simulates the integration path: trip with dateWindowStart → hasDateWindow: true → flexible-hunter
+      const result = derivePhase(makeInput({
+        hasDateWindow: true,
+        hasWaypoints: false,
+        activityCount: 0,
+      }));
+      expect(result.defaultPhase).toBe("flexible-hunter");
+      expect(result.availablePhases.has("flexible-hunter")).toBe(true);
+    });
+
+    it("derives flexible-hunter from date window even when budget data exists", () => {
+      // BudgetCategories do not affect phase derivation — they are Phase 2 display data only.
+      // When only date window is present (no waypoints, no activities), default stays at flexible-hunter.
+      const result = derivePhase(makeInput({
+        hasDateWindow: true,
+        hasWaypoints: false,
+        activityCount: 0,
+        memberCount: 1,
+      }));
+      expect(result.defaultPhase).toBe("flexible-hunter");
+    });
+
+    it("does not change default phase when only budget data exists (no date window)", () => {
+      // Budget data is display-only for Phase 2. Without a date window, the trip stays at dreamer.
+      const result = derivePhase(makeInput({
+        hasDateWindow: false,
+        hasWaypoints: false,
+        activityCount: 0,
+      }));
+      expect(result.defaultPhase).toBe("dreamer");
+      expect(result.availablePhases.has("flexible-hunter")).toBe(false);
+    });
+  });
+
   describe("edge cases", () => {
     it("dreamer with zero activities, no waypoints, no date window", () => {
       const result = derivePhase(makeInput());

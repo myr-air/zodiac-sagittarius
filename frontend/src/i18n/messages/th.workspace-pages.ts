@@ -1,8 +1,6 @@
 export { thContextRailMessages } from "./th.workspace-pages.context-rail";
-export { thDetailPlannerMessages } from "./th.workspace-pages.detail-planner";
 export { thDreamerMessages } from "./th.workspace-pages.dreamer";
 export { thFlexibleHunterMessages } from "./th.workspace-pages.flexible-hunter";
-export { thGroupWranglerMessages } from "./th.workspace-pages.group-wrangler";
 export { thMapMessages } from "./th.workspace-pages.map";
 export { thMembersMessages } from "./th.workspace-pages.members";
 export { thOnTripCompanionMessages } from "./th.workspace-pages.on-trip-companion";
