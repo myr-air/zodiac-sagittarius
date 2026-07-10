@@ -86,8 +86,8 @@ export function PhaseBar({
             onKeyDown={(e) => handleKeyDown(e, index)}
             title={isUnavailable ? `Need data to unlock: ${label}` : label}
           >
-            <Icon name={iconName} className={cn(phaseBarIconClassName)} />
-            <span className={cn(phaseBarLabelClassName)}>{label}</span>
+            <Icon name={iconName} className={phaseBarIconClassName} />
+            <span className={phaseBarLabelClassName}>{label}</span>
           </button>
         );
       })}

@@ -4,12 +4,9 @@ export const phaseBarRootClassName = [
   "items-center",
   "gap-0.5",
   "px-2",
-  "h-12",
   "border-b",
   "border-(--color-border)",
   "bg-(--color-surface)",
-  "max-[767px]:overflow-x-auto",
-  "max-[767px]:overflow-y-hidden",
 ];
 
 export const phaseBarTabBase = [
@@ -49,10 +46,10 @@ export const phaseBarTabAvailable = [
   "cursor-pointer",
 ];
 
-/** Unavailable: subtle, no hover, not-allowed cursor. Icon at 50% opacity. */
+/** Unavailable: subtle, no hover, not-allowed cursor. */
 export const phaseBarTabUnavailable = [
   "text-(--color-text-subtle)",
-  "[&_.icon]:opacity-50",
+  "opacity-50",
   "cursor-not-allowed",
 ];
 
