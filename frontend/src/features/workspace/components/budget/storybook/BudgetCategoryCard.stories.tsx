@@ -22,16 +22,20 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { category: sampleCategory },
+  args: { category: sampleCategory, onEdit: () => {} },
 };
 
 export const ApproachingBudget: Story = {
   args: {
     category: { ...sampleCategory, estimated: 5000, actual: 4500 },
+    onEdit: () => {},
   },
 };
 
 export const Thai: Story = {
-  args: { category: { ...sampleCategory, category: "ตั๋วเครื่องบิน" } },
+  args: {
+    category: { ...sampleCategory, category: "ตั๋วเครื่องบิน" },
+    onEdit: () => {},
+  },
   parameters: { locale: "th" },
 };
