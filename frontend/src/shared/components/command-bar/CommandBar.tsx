@@ -43,11 +43,11 @@ export function CommandBar({
 
   return (
     <div className={cn(commandBarRootClassName, className)}>
-      <div className={cn(commandBarContentClassName)}>
-        <span className={cn(commandBarTripNameClassName)} title={tripName}>
+      <div className={commandBarContentClassName}>
+        <span className={commandBarTripNameClassName} title={tripName}>
           {truncatedName}
         </span>
-        <span className={cn(commandBarDateLabelClassName)}>{dateWindowLabel}</span>
+        <span className={commandBarDateLabelClassName}>{dateWindowLabel}</span>
         <span
           className={cn(
             commandBarBadgeBaseClassName,

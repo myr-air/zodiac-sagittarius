@@ -114,7 +114,7 @@ export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLa
 /** PlanningView ids shown in the left rail for each journey phase. */
 const PHASE_NAV_ITEMS: Record<Phase, Set<PlanningView>> = {
   dreamer: new Set<PlanningView>(["overview", "photos"]),
-  "flexible-hunter": new Set<PlanningView>(["overview", "budget"]),
+  "flexible-hunter": new Set<PlanningView>(["overview", "expenses"]),
   "route-builder": new Set<PlanningView>(["map", "itinerary"]),
   "detail-planner": new Set<PlanningView>(["itinerary", "map", "timeline", "bookings"]),
   "group-wrangler": new Set<PlanningView>(["members", "expenses"]),

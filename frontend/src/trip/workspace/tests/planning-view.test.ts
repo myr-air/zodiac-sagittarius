@@ -15,7 +15,6 @@ const allViews: PlanningView[] = [
   "members",
   "expenses",
   "settings",
-  "budget",
   "dreamer",
   "flexible-hunter",
   "route-builder",
@@ -29,11 +28,6 @@ describe("planning-view helpers", () => {
     expect(
       allViews.filter((view) => workspaceViewSupportsContextRail(view)),
     ).toEqual(["overview", "itinerary", "timeline", "detail-planner"]);
-  });
-
-  it("returns context rail support for Phase 3 views", () => {
-    expect(workspaceViewSupportsContextRail("route-builder")).toBe(false);
-    expect(workspaceViewSupportsContextRail("detail-planner")).toBe(true);
   });
 
   it("syncs backend expense summaries for expenses and context rail views", () => {
@@ -57,7 +51,6 @@ describe("planning-view helpers", () => {
   it("phase views do not sync backend expense summaries (except detail-planner)", () => {
     expect(workspaceViewShouldSyncBackendExpenseSummary("dreamer")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("flexible-hunter")).toBe(false);
-    expect(workspaceViewShouldSyncBackendExpenseSummary("budget")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("route-builder")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("detail-planner")).toBe(true);
     expect(workspaceViewShouldSyncBackendExpenseSummary("group-wrangler")).toBe(false);

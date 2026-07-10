@@ -8,7 +8,6 @@ export type PlanningView =
   | "members"
   | "expenses"
   | "settings"
-  | "budget"
   | "dreamer"
   | "flexible-hunter"
   | "route-builder"

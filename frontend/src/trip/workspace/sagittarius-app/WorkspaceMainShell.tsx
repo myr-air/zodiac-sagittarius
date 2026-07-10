@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
 import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar";
 import { PHASE_ORDER, type Phase } from "@/src/trip/workspace/phase";
-import { useDerivePhase } from "@/src/trip/workspace/use-derive-phase";
-import type { DerivePhaseInput } from "@/src/trip/workspace/derive-phase";
-import type { Trip, TripRole } from "@/src/trip/types";
 import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
@@ -41,53 +38,8 @@ export interface WorkspaceMainShellProps {
 const PHASES_WITHOUT_CONTEXT_RAIL: Set<Phase> = new Set([
   "dreamer",
   "flexible-hunter",
-  "route-builder",
   "on-trip-companion",
 ]);
-
-/** Derive a DerivePhaseInput from the Trip object accessible in the shell. */
-function tripToDerivePhaseInput(trip: Trip): DerivePhaseInput {
-  const today = new Date().toISOString().slice(0, 10);
-  const isTripActive = trip.startDate <= today && trip.endDate >= today;
-  return {
-    name: trip.name,
-    destinationLabel: trip.destinationLabel,
-    startDate: trip.startDate,
-    endDate: trip.endDate,
-    activityCount: trip.itineraryItems?.length ?? 0,
-    hasWaypoints: (trip.waypoints?.length ?? 0) > 0,
-    hasDateWindow: !!trip.dateWindowStart,
-    memberCount: trip.members?.length ?? 1,
-    isTripActive,
-  };
-}
-
-/** Create a typed no-op handler that warns about unimplemented Phase 3 wiring. */
-function noOpHandler<T extends (...args: any[]) => any>(handlerName: string): T {
-  return ((...args: unknown[]) => {
-    console.warn(`[DetailPlannerPage] ${handlerName} is not wired yet`, ...args);
-  }) as T;
-}
-
-/** Format a date range label from start/end dates (YYYY-MM-DD). */
-function formatDateWindowLabel(startDate: string, endDate: string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const startLabel = `${monthNames[start.getMonth()]} ${start.getFullYear()}`;
-  const endLabel = `${monthNames[end.getMonth()]} ${end.getFullYear()}`;
-  if (startLabel === endLabel) return startLabel;
-  return `${startLabel} – ${endLabel}`;
-}
-
-const fallbackMember: Member = {
-  id: "",
-  displayName: "Unknown",
-  role: "viewer",
-  presence: "offline",
-  color: "#0d9488",
-  accessStatus: "active",
-};
 
 export function WorkspaceMainShell({
   appShellProps,
@@ -99,33 +51,10 @@ export function WorkspaceMainShell({
   showToast,
   toastProps,
   viewsProps,
-  currentPhase: externalPhase,
-  onPhaseChange: externalOnPhaseChange,
+  currentPhase,
+  onPhaseChange,
 }: WorkspaceMainShellProps) {
-  // Derive phase from trip data when no external phase is provided.
-  const deriveInput = useMemo(
-    () => tripToDerivePhaseInput(appShellProps.trip),
-    [appShellProps.trip],
-  );
-  const { currentPhase: derivedPhase, availablePhases, setPhase } = useDerivePhase(deriveInput);
-
-  // Use external phase if provided, otherwise use derived phase.
-  const currentPhase = externalPhase ?? derivedPhase;
-  const onPhaseChange = externalOnPhaseChange ?? setPhase;
-
-  // PhaseBar is always rendered when we have a trip (phase is always derivable).
-  const hasPhaseBar = true;
-
-  // Compute unavailable phases from availablePhases.
-  const unavailablePhases = useMemo(() => {
-    const unavailable = new Set<Phase>();
-    for (const phase of PHASE_ORDER) {
-      if (!availablePhases.has(phase)) {
-        unavailable.add(phase);
-      }
-    }
-    return unavailable;
-  }, [availablePhases]);
+  const hasPhaseBar = currentPhase !== undefined && onPhaseChange !== undefined;
 
   // Phases 1 (dreamer), 2 (flexible-hunter), and 6 (on-trip-companion) don't use the right context rail.
   const phaseAwareSupportsContextRail = useMemo(() => {
@@ -134,227 +63,14 @@ export function WorkspaceMainShell({
     return frameProps.supportsContextRail;
   }, [currentPhase, frameProps.supportsContextRail]);
 
-  // Derive command bar props from trip data.
-  const tripName = appShellProps.trip.name;
-  const dateWindowLabel = formatDateWindowLabel(
-    appShellProps.trip.startDate,
-    appShellProps.trip.endDate,
-  );
-
-  // Construct dreamer page props from trip when not provided externally.
-  const handleStartPlanning = useCallback(() => {
-    setPhase("flexible-hunter");
-    if (externalOnPhaseChange) externalOnPhaseChange("flexible-hunter");
-  }, [setPhase, externalOnPhaseChange]);
-
-  const enhancedViewsProps = useMemo<TripWorkspaceViewsProps>(() => ({
-    ...viewsProps,
-    dreamerProps: viewsProps.dreamerProps ?? {
-      trip: appShellProps.trip,
-      onStartPlanning: handleStartPlanning,
-    },
-    flexibleHunterProps: viewsProps.flexibleHunterProps ?? {
-      trip: appShellProps.trip,
-      onDateWindowChange: (_start: string, _end: string) => {
-        // Phase 2 UX is display-first — optimistic update deferred to API integration
-      },
-      onBudgetEdit: (_id: string, _updates: { estimated: number }) => {
-        // Phase 2 UX is display-first — optimistic update deferred to API integration
-      },
-    },
-    routeBuilderProps: viewsProps.routeBuilderProps ?? {
-      waypoints: appShellProps.trip.waypoints ?? [],
-      tripDestination: appShellProps.trip.destinationCities?.[0]
-        ? {
-            lat: appShellProps.trip.destinationCities[0].latitude,
-            lng: appShellProps.trip.destinationCities[0].longitude,
-            label: appShellProps.trip.destinationLabel,
-          }
-        : undefined,
-      onWaypointsChange: (_waypoints) => {
-        // Phase 3 UX is display-first — optimistic update deferred to API integration
-      },
-    },
-    detailPlannerProps: viewsProps.detailPlannerProps ?? {
-      tableProps: {
-        items: appShellProps.trip.itineraryItems,
-        startDate: appShellProps.trip.startDate,
-        endDate: appShellProps.trip.endDate,
-        tripPlans: appShellProps.trip.planVariants,
-        selectedTripPlanId: appShellProps.trip.activePlanVariantId,
-        mainTripPlanId: appShellProps.trip.mainTripPlanId ?? appShellProps.trip.activePlanVariantId,
-        tripPlanError: null,
-        isTripPlanBusy: false,
-        role: (appShellProps.trip.members[0]?.role ?? "owner") as TripRole,
-        selectedItemId: appShellProps.trip.itineraryItems[0]?.id ?? "",
-        tripName: appShellProps.trip.name,
-        onAddStop: noOpHandler<DetailPlannerPageProps["tableProps"]["onAddStop"]>("onAddStop"),
-        onOpenItemDetails: noOpHandler<DetailPlannerPageProps["tableProps"]["onOpenItemDetails"]>("onOpenItemDetails"),
-        onSelectItem: noOpHandler<DetailPlannerPageProps["tableProps"]["onSelectItem"]>("onSelectItem"),
-        onChangeTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onChangeTripPlan"]>("onChangeTripPlan"),
-        onChangeTripPlanStatus: noOpHandler<DetailPlannerPageProps["tableProps"]["onChangeTripPlanStatus"]>("onChangeTripPlanStatus"),
-        onSetMainTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onSetMainTripPlan"]>("onSetMainTripPlan"),
-        onCreateTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onCreateTripPlan"]>("onCreateTripPlan"),
-        onRenameTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onRenameTripPlan"]>("onRenameTripPlan"),
-      },
-      waypoints: appShellProps.trip.waypoints ?? [],
-      onImportApply: noOpHandler<NonNullable<DetailPlannerPageProps["onImportApply"]>>("onImportApply"),
-      onConvertWaypoints: noOpHandler<NonNullable<DetailPlannerPageProps["onConvertWaypoints"]>>("onConvertWaypoints"),
-    },
-    groupWranglerProps: viewsProps.groupWranglerProps ?? (() => {
-      const trip = appShellProps.trip;
-      const currentMember = trip.members?.[0];
-      const inviteUrl = typeof window !== "undefined"
-        ? `${window.location.origin}/join/${trip.joinId}`
-        : `/join/${trip.joinId}`;
-
-      // Extract polls and rsvps from itinerary items
-      const polls = trip.itineraryItems
-        ?.filter((item) => item.poll)
-        .map((item) => item.poll!)
-        ?? [];
-      const rsvps = trip.itineraryItems
-        ?.flatMap((item) => item.rsvp ?? [])
-        ?? [];
-
-      // Compute settlement suggestions
-      const netByMember: Record<string, number> = {};
-      for (const expense of trip.expenses ?? []) {
-        const totalSplits = Object.values(expense.splits ?? {}).reduce((a, b) => a + b, 0) || 1;
-        for (const [memberId, share] of Object.entries(expense.splits ?? {})) {
-          netByMember[memberId] = (netByMember[memberId] ?? 0) - share;
-        }
-        netByMember[expense.paidBy] = (netByMember[expense.paidBy] ?? 0) + totalSplits;
-      }
-      const settlementSuggestions = buildSettlementSuggestions(netByMember, "THB");
-
-      return {
-        members: trip.members ?? [],
-        currentMember: currentMember ?? fallbackMember,
-        activities: trip.itineraryItems ?? [],
-        polls,
-        rsvps,
-        settlementSuggestions,
-        inviteUrl,
-        canManagePeople: currentMember?.role === "owner" || currentMember?.role === "organizer",
-        onVote: (activityId: string, optionId: string) => {
-          console.warn("[GroupWranglerPage] onVote not wired", activityId, optionId);
-        },
-        onToggleRsvp: (activityId: string, status: RsvpStatus) => {
-          console.warn("[GroupWranglerPage] onToggleRsvp not wired", activityId, status);
-        },
-        onCopyInviteLink: () => {
-          console.warn("[GroupWranglerPage] onCopyInviteLink not wired");
-        },
-      };
-    })(),
-    onTripCompanionProps: viewsProps.onTripCompanionProps ?? (() => {
-      const trip = appShellProps.trip;
-      const today = new Date().toISOString().slice(0, 10);
-
-      // Generate all trip days between startDate and endDate
-      const tripDays: string[] = [];
-      const start = new Date(trip.startDate + "T00:00:00");
-      const end = new Date(trip.endDate + "T00:00:00");
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        tripDays.push(d.toISOString().slice(0, 10));
-      }
-
-      // Sort itinerary items by start time for NowNextState computation
-      const sortedItems = [...(trip.itineraryItems ?? [])].sort(
-        (a, b) => a.startTime.localeCompare(b.startTime)
-      );
-
-      // Find current activity (starts before now, ends after now, or is the first activity if earlier)
-      const now = new Date();
-      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-      const nowItem = sortedItems.find(
-        (item) => item.day === today && item.startTime <= currentTime && (item.endTime ?? "99:99") >= currentTime
-      ) ?? null;
-
-      // Next activity is the one after current, or first upcoming today
-      const nextIndex = nowItem ? sortedItems.indexOf(nowItem) + 1 : sortedItems.findIndex((item) => item.day === today && item.startTime > currentTime);
-      const nextItem = nextIndex >= 0 && nextIndex < sortedItems.length ? sortedItems[nextIndex] : null;
-
-      const nowNextState: NowNextState = {
-        current: nowItem,
-        next: nextItem,
-        fallbackReason: null,
-      };
-
-      return {
-        itineraryItems: trip.itineraryItems ?? [],
-        nowNextState,
-        currentDay: today,
-        tripStartDate: trip.startDate,
-        tripEndDate: trip.endDate,
-        tripDays,
-        onDayChange: (day: string) => {
-          console.warn("[OnTripCompanionPage] onDayChange not wired", day);
-        },
-        onCheckOff: (activityId: string) => {
-          console.warn("[OnTripCompanionPage] onCheckOff not wired", activityId);
-        },
-        onUndoCheckOff: (activityId: string) => {
-          console.warn("[OnTripCompanionPage] onUndoCheckOff not wired", activityId);
-        },
-        onNavigate: () => {
-          console.warn("[OnTripCompanionPage] onNavigate not wired");
-        },
-        activeNavTab: "now" as const,
-        onNavChange: (tab: "now" | "map" | "checklist" | "expenses") => {
-          console.warn("[OnTripCompanionPage] onNavChange not wired", tab);
-        },
-      };
-    })(),
-  }), [viewsProps, appShellProps.trip, handleStartPlanning]);
-
-  // Phase transition animation: 200ms opacity cross-fade.
-  const [animPhase, setAnimPhase] = useState(currentPhase);
-  const [opacity, setOpacity] = useState(1);
-  const reducedMotionRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      reducedMotionRef.current = false;
-      return;
-    }
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotionRef.current = mql.matches;
-    const handler = (e: MediaQueryListEvent) => {
-      reducedMotionRef.current = e.matches;
-    };
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
-
-  useEffect(() => {
-    if (currentPhase !== animPhase) {
-      if (reducedMotionRef.current) {
-        // Instant switch — no animation
-        setAnimPhase(currentPhase);
-        return;
-      }
-      // Fade out
-      setOpacity(0);
-      const timer = setTimeout(() => {
-        setAnimPhase(currentPhase);
-        setOpacity(0);
-        // Fade in on next paint cycle — double rAF ensures browser has painted opacity:0
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setOpacity(1);
-          });
-        });
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [currentPhase, animPhase]);
-
-  const transitionStyle = reducedMotionRef.current
-    ? undefined
-    : { transition: "opacity 200ms ease" } as React.CSSProperties;
+  // Compute unavailable phases: all phases beyond those with prerequisite data are unavailable.
+  // When no trip data is available, only dreamer is available.
+  const unavailablePhases = useMemo(() => {
+    if (!currentPhase) return new Set<Phase>();
+    // All phases are considered available for exploration when PhaseBar is active.
+    // Unavailability is determined by the parent based on trip data.
+    return new Set<Phase>();
+  }, [currentPhase]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -366,7 +82,6 @@ export function WorkspaceMainShell({
           unavailablePhases={unavailablePhases}
         />
       ) : null}
-      <OfflineBanner />
       <AppShell {...appShellProps} phase={currentPhase}>
         <main className={workspaceShellClassName}>
           {showToast ? <WorkspaceToast {...toastProps} /> : null}
@@ -374,13 +89,9 @@ export function WorkspaceMainShell({
           <TripWorkspaceFrame
             {...frameProps}
             supportsContextRail={phaseAwareSupportsContextRail}
-            tripName={tripName}
-            dateWindowLabel={dateWindowLabel}
             rail={<TripWorkspaceRail {...railProps} />}
           >
-            <div key={animPhase} style={{ ...transitionStyle, opacity }}>
-              <TripWorkspaceViews {...enhancedViewsProps} />
-            </div>
+            <TripWorkspaceViews {...viewsProps} />
           </TripWorkspaceFrame>
           <WorkspaceDialogs {...dialogsProps} />
         </main>
