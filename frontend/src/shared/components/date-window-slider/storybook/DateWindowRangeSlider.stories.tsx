@@ -23,7 +23,7 @@ const defaultArgs = {
 };
 
 export const Default: Story = {
-  args: { ...defaultArgs, onChange: () => {} },
+  args: defaultArgs,
 };
 
 export const Edges: Story = {
@@ -31,12 +31,11 @@ export const Edges: Story = {
     ...defaultArgs,
     start: "2026-01-01",
     end: "2026-12-01",
-    onChange: () => {},
   },
 };
 
 export const NarrowViewport: Story = {
-  args: { ...defaultArgs, onChange: () => {} },
+  args: defaultArgs,
   parameters: {
     viewport: { defaultViewport: "mobile1" },
   },
@@ -47,7 +46,6 @@ export const Thai: Story = {
     ...defaultArgs,
     ariaLabelStart: "ช่วงเริ่มต้น",
     ariaLabelEnd: "ช่วงสิ้นสุด",
-    onChange: () => {},
   },
   parameters: { locale: "th" },
 };
