@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
 import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar";
@@ -124,6 +124,71 @@ export function WorkspaceMainShell({
     appShellProps.trip.endDate,
   );
 
+  // Construct dreamer page props from trip when not provided externally.
+  const handleStartPlanning = useCallback(() => {
+    setPhase("flexible-hunter");
+    if (externalOnPhaseChange) externalOnPhaseChange("flexible-hunter");
+  }, [setPhase, externalOnPhaseChange]);
+
+  const enhancedViewsProps = useMemo<TripWorkspaceViewsProps>(() => ({
+    ...viewsProps,
+    dreamerProps: viewsProps.dreamerProps ?? {
+      trip: appShellProps.trip,
+      onStartPlanning: handleStartPlanning,
+    },
+    flexibleHunterProps: viewsProps.flexibleHunterProps ?? {
+      trip: appShellProps.trip,
+      onDateWindowChange: (_start: string, _end: string) => {
+        // Phase 2 UX is display-first — optimistic update deferred to API integration
+      },
+      onBudgetEdit: (_id: string, _updates: { estimated: number }) => {
+        // Phase 2 UX is display-first — optimistic update deferred to API integration
+      },
+    },
+  }), [viewsProps, appShellProps.trip, handleStartPlanning]);
+
+  // Phase transition animation: 200ms opacity cross-fade.
+  const [animPhase, setAnimPhase] = useState(currentPhase);
+  const [opacity, setOpacity] = useState(1);
+  const reducedMotionRef = useRef(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotionRef.current = mql.matches;
+    const handler = (e: MediaQueryListEvent) => {
+      reducedMotionRef.current = e.matches;
+    };
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (currentPhase !== animPhase) {
+      if (reducedMotionRef.current) {
+        // Instant switch — no animation
+        setAnimPhase(currentPhase);
+        return;
+      }
+      // Fade out
+      setOpacity(0);
+      const timer = setTimeout(() => {
+        setAnimPhase(currentPhase);
+        setOpacity(0);
+        // Fade in on next paint cycle — double rAF ensures browser has painted opacity:0
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setOpacity(1);
+          });
+        });
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPhase, animPhase]);
+
+  const transitionStyle = reducedMotionRef.current
+    ? undefined
+    : { transition: "opacity 200ms ease" } as React.CSSProperties;
+
   return (
     <div className="flex flex-col min-h-screen">
       {hasPhaseBar ? (
@@ -145,7 +210,9 @@ export function WorkspaceMainShell({
             dateWindowLabel={dateWindowLabel}
             rail={<TripWorkspaceRail {...railProps} />}
           >
-            <TripWorkspaceViews {...viewsProps} />
+            <div key={animPhase} style={{ ...transitionStyle, opacity }}>
+              <TripWorkspaceViews {...enhancedViewsProps} />
+            </div>
           </TripWorkspaceFrame>
           <WorkspaceDialogs {...dialogsProps} />
         </main>

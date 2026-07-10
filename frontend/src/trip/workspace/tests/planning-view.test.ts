@@ -15,6 +15,7 @@ const allViews: PlanningView[] = [
   "members",
   "expenses",
   "settings",
+  "budget",
   "dreamer",
   "flexible-hunter",
   "route-builder",
@@ -51,6 +52,7 @@ describe("planning-view helpers", () => {
   it("phase views do not sync backend expense summaries (except detail-planner)", () => {
     expect(workspaceViewShouldSyncBackendExpenseSummary("dreamer")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("flexible-hunter")).toBe(false);
+    expect(workspaceViewShouldSyncBackendExpenseSummary("budget")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("route-builder")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("detail-planner")).toBe(true);
     expect(workspaceViewShouldSyncBackendExpenseSummary("group-wrangler")).toBe(false);

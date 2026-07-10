@@ -12,18 +12,10 @@ import { TripExpensesPage, type TripExpensesPageProps } from "@/src/features/wor
 import { TripMembersPage, type TripMembersPageProps } from "@/src/features/workspace/pages/members/TripMembersPage";
 import { TripPhotosPage, type TripPhotosPageProps } from "@/src/features/workspace/pages/photos/TripPhotosPage";
 import { TripSettingsPage, type TripSettingsPageProps } from "@/src/features/workspace/pages/trip-settings/TripSettingsPage";
-import { DetailPlannerPage } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage";
-import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
-import { RouteBuilderPage } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage";
-import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import { DreamerPage } from "@/src/features/workspace/pages/dreamer/DreamerPage";
 import type { DreamerPageProps } from "@/src/features/workspace/pages/dreamer/DreamerPage.types";
 import { FlexibleHunterPage } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage";
 import type { FlexibleHunterPageProps } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage.types";
-import { GroupWranglerPage } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage";
-import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
-import { OnTripCompanionPage } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage";
-import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
 import type { PlanningView } from "./planning-view";
 
 export interface TripWorkspaceViewsProps {
@@ -41,8 +33,6 @@ export interface TripWorkspaceViewsProps {
   timelineProps: TimelineViewProps;
   dreamerProps?: DreamerPageProps;
   flexibleHunterProps?: FlexibleHunterPageProps;
-  groupWranglerProps?: GroupWranglerPageProps;
-  onTripCompanionProps?: OnTripCompanionPageProps;
 }
 
 export function TripWorkspaceViews({
@@ -60,8 +50,6 @@ export function TripWorkspaceViews({
   timelineProps,
   dreamerProps,
   flexibleHunterProps,
-  groupWranglerProps,
-  onTripCompanionProps,
 }: TripWorkspaceViewsProps) {
   if (currentView === "settings") {
     return <TripSettingsPage {...settingsProps} />;
@@ -101,22 +89,6 @@ export function TripWorkspaceViews({
 
   if (currentView === "flexible-hunter" && flexibleHunterProps) {
     return <FlexibleHunterPage {...flexibleHunterProps} />;
-  }
-
-  if (currentView === "route-builder" && routeBuilderProps) {
-    return <RouteBuilderPage {...routeBuilderProps} />;
-  }
-
-  if (currentView === "detail-planner" && detailPlannerProps) {
-    return <DetailPlannerPage {...detailPlannerProps} />;
-  }
-
-  if (currentView === "group-wrangler" && groupWranglerProps) {
-    return <GroupWranglerPage {...groupWranglerProps} />;
-  }
-
-  if (currentView === "on-trip-companion" && onTripCompanionProps) {
-    return <OnTripCompanionPage {...onTripCompanionProps} />;
   }
 
   return <TimelineView {...timelineProps} />;

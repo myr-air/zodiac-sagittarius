@@ -64,10 +64,6 @@ export const appRoutes = {
   tripDreamer: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/dreamer`,
   tripFlexibleHunter: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/flexible-hunter`,
   tripBudget: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/budget`,
-  tripRouteBuilder: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/route-builder`,
-  tripDetailPlanner: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/detail-planner`,
-  tripOnTripCompanion: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/on-trip`,
-  tripGroupWrangler: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/group-wrangler`,
 };
 
 interface TripWorkspaceNavItem {
@@ -114,7 +110,7 @@ export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLa
 /** PlanningView ids shown in the left rail for each journey phase. */
 const PHASE_NAV_ITEMS: Record<Phase, Set<PlanningView>> = {
   dreamer: new Set<PlanningView>(["overview", "photos"]),
-  "flexible-hunter": new Set<PlanningView>(["overview", "expenses"]),
+  "flexible-hunter": new Set<PlanningView>(["overview", "budget"]),
   "route-builder": new Set<PlanningView>(["map", "itinerary"]),
   "detail-planner": new Set<PlanningView>(["itinerary", "map", "timeline", "bookings"]),
   "group-wrangler": new Set<PlanningView>(["members", "expenses"]),
