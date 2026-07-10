@@ -29,17 +29,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NewDreamer: Story = {
-  args: { trip: mockTrip, onStartPlanning: () => {} },
+  args: { trip: mockTrip },
 };
 
 export const WithRoughMonth: Story = {
   args: {
     trip: { ...mockTrip, dateWindowStart: "2026-04-01" },
-    onStartPlanning: () => {},
   },
 };
 
 export const Thai: Story = {
-  args: { trip: mockTrip, onStartPlanning: () => {} },
+  args: { trip: mockTrip },
   parameters: { locale: "th" },
 };
