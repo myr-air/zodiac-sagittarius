@@ -54,7 +54,7 @@ function tripToDerivePhaseInput(trip: Trip): DerivePhaseInput {
     startDate: trip.startDate,
     endDate: trip.endDate,
     activityCount: trip.itineraryItems?.length ?? 0,
-    hasWaypoints: false,
+    hasWaypoints: (trip.waypoints?.length ?? 0) > 0,
     hasDateWindow: !!trip.dateWindowStart,
     memberCount: trip.members?.length ?? 1,
     isTripActive,

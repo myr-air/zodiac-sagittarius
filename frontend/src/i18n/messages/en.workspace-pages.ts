@@ -1,9 +1,9 @@
 export { enContextRailMessages } from "./en.workspace-pages.context-rail";
+export { enDetailPlannerMessages } from "./en.workspace-pages.detail-planner";
 export { enDreamerMessages } from "./en.workspace-pages.dreamer";
 export { enFlexibleHunterMessages } from "./en.workspace-pages.flexible-hunter";
 export { enMapMessages } from "./en.workspace-pages.map";
 export { enMembersMessages } from "./en.workspace-pages.members";
-export { enOnTripCompanionMessages } from "./en.workspace-pages.on-trip-companion";
 export { enRouteBuilderMessages } from "./en.workspace-pages.route-builder";
 export { enStopDialogMessages } from "./en.workspace-pages.stop-dialog";
 export { enSuggestionsMessages } from "./en.workspace-pages.suggestions";
