@@ -13,6 +13,11 @@ import type { Member } from "./members/member-types";
 import type { PlanVariant, TripPlan } from "./trip-plans/trip-plan-types";
 import type { TripCity } from "./places/place-types";
 import type { TripTask } from "./records/task-types";
+import type { BudgetCategory } from "./budget/budget-types";
+import type { Waypoint } from "./waypoints/waypoint-types";
+export type {
+  Waypoint,
+} from "./waypoints/waypoint-types";
 export type {
   BriefingCoordinates,
   BriefingSourceMeta,
@@ -111,6 +116,7 @@ export type {
   PlanSuggestionSeverity,
   PlanSuggestionStatus,
 } from "./trip-plans/plan-suggestion-types";
+export type { BudgetCategory } from "./budget/budget-types";
 
 export interface Trip {
   id: string;
@@ -128,6 +134,9 @@ export interface Trip {
   defaultTimezone?: string;
   startDate: string;
   endDate: string;
+  dateWindowStart?: string;
+  dateWindowEnd?: string;
+  budgetCategories?: BudgetCategory[];
   activePlanVariantId: string;
   mainTripPlanId?: string;
   planVariants: PlanVariant[];
@@ -135,6 +144,7 @@ export interface Trip {
   itineraryPaths?: ItineraryPath[];
   members: Member[];
   itineraryItems: ItineraryItem[];
+  waypoints?: Waypoint[];
   expenses: Expense[];
   bookingDocs?: BookingDoc[];
   photoAlbumLinks?: TripPhotoAlbumLink[];

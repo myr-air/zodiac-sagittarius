@@ -1,0 +1,16 @@
+export const enFlexibleHunterMessages = {
+  title: "Hunt dates",
+  dateRangeLabel: "Date window",
+  startLabel: "Start",
+  endLabel: "End",
+  budgetTitle: "Budget",
+  totalBudgetLabel: "Total budget",
+  whatIfTitle: "What if?",
+  whatIfOptionEarlier: "1 week earlier",
+  whatIfOptionLater: "1 week later",
+  whatIfOptionCustom: "Custom",
+  progressUnderLimit: "Under budget",
+  progressApproaching: "Approaching limit",
+  progressOver: "Over budget",
+  noCategoriesPlaceholder: "No budget categories yet",
+} as const;

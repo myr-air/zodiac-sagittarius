@@ -7,14 +7,22 @@ export type PlanningView =
   | "photos"
   | "members"
   | "expenses"
-  | "settings";
+  | "settings"
+  | "budget"
+  | "dreamer"
+  | "flexible-hunter"
+  | "route-builder"
+  | "detail-planner"
+  | "group-wrangler"
+  | "on-trip-companion";
 
 export function workspaceViewSupportsContextRail(view: PlanningView): boolean {
-  return view === "overview" || view === "itinerary" || view === "timeline";
+  return view === "overview" || view === "itinerary" || view === "timeline" || view === "detail-planner";
 }
 
 export function workspaceViewShouldSyncBackendExpenseSummary(
   view: PlanningView,
 ): boolean {
+  if (view === "dreamer" || view === "flexible-hunter" || view === "budget") return false;
   return view === "expenses" || workspaceViewSupportsContextRail(view);
 }

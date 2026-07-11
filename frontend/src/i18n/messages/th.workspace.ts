@@ -35,6 +35,7 @@ export const thAppShellMessages = {
       members: "สมาชิก",
       expenses: "ค่าใช้จ่าย",
       settings: "ตั้งค่า",
+      budget: "งบประมาณ",
     },
     expandNavigation: "ขยายเมนู",
     collapseNavigation: "ย่อเมนู",
@@ -67,6 +68,7 @@ export const thRoutesMessages = {
     members: "สมาชิก",
     expenses: "ค่าใช้จ่าย",
     settings: "ตั้งค่า",
+    budget: "งบประมาณ",
   } as const;
 
 export const thTripSettingsMessages = {
@@ -90,6 +92,15 @@ export const thTripSettingsMessages = {
     saved: "บันทึกการตั้งค่าทริปแล้ว",
     saveFailed: "บันทึกการตั้งค่าทริปไม่สำเร็จ",
     currentRole: ({ role }: { role: string }) => `สิทธิ์ปัจจุบัน: ${role}`,
+  } as const;
+
+export const thPhaseMessages = {
+    dreamer: "ฝัน",
+    flexibleHunter: "ล่าช่วงเวลา",
+    routeBuilder: "เส้นทาง",
+    detailPlanner: "จัดรายละเอียด",
+    groupWrangler: "กลุ่ม",
+    onTripCompanion: "ระหว่างเที่ยว",
   } as const;
 
 export const thDatesMessages = {

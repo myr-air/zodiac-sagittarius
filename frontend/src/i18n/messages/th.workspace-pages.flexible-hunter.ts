@@ -1,0 +1,16 @@
+export const thFlexibleHunterMessages = {
+  title: "ล่าช่วงเวลา",
+  dateRangeLabel: "ช่วงวันที่",
+  startLabel: "เริ่ม",
+  endLabel: "สิ้นสุด",
+  budgetTitle: "งบประมาณ",
+  totalBudgetLabel: "งบประมาณทั้งหมด",
+  whatIfTitle: "จะเกิดอะไรขึ้นถ้า",
+  whatIfOptionEarlier: "เร็วขึ้น 1 สัปดาห์",
+  whatIfOptionLater: "ช้าลง 1 สัปดาห์",
+  whatIfOptionCustom: "กำหนดเอง",
+  progressUnderLimit: "ยังอยู่ในงบ",
+  progressApproaching: "ใกล้ถึงขีดจำกัด",
+  progressOver: "เกินงบประมาณ",
+  noCategoriesPlaceholder: "ยังไม่มีหมวดหมู่งบประมาณ",
+} as const;
