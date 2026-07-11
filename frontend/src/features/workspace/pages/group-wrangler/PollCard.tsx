@@ -63,7 +63,7 @@ export function PollCard({
               disabled={disabled || !onVote}
               className={cn(
                 "w-full text-left rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-2 transition-colors",
-                !disabled && onVote && "cursor-pointer hover:border-(--color-border-strong) hover:bg-(--color-surface-muted)",
+                !disabled && onVote && "hover:bg-(--color-surface-subtle)",
                 disabled && "cursor-default",
               )}
               onClick={() => onVote?.(option.id)}
