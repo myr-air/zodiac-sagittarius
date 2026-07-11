@@ -20,6 +20,8 @@ import { DreamerPage } from "@/src/features/workspace/pages/dreamer/DreamerPage"
 import type { DreamerPageProps } from "@/src/features/workspace/pages/dreamer/DreamerPage.types";
 import { FlexibleHunterPage } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage";
 import type { FlexibleHunterPageProps } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage.types";
+import { GroupWranglerPage } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage";
+import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
 import type { PlanningView } from "./planning-view";
 
 export interface TripWorkspaceViewsProps {
@@ -37,6 +39,7 @@ export interface TripWorkspaceViewsProps {
   timelineProps: TimelineViewProps;
   dreamerProps?: DreamerPageProps;
   flexibleHunterProps?: FlexibleHunterPageProps;
+  groupWranglerProps?: GroupWranglerPageProps;
 }
 
 export function TripWorkspaceViews({
@@ -54,6 +57,7 @@ export function TripWorkspaceViews({
   timelineProps,
   dreamerProps,
   flexibleHunterProps,
+  groupWranglerProps,
 }: TripWorkspaceViewsProps) {
   if (currentView === "settings") {
     return <TripSettingsPage {...settingsProps} />;
@@ -101,6 +105,10 @@ export function TripWorkspaceViews({
 
   if (currentView === "detail-planner" && detailPlannerProps) {
     return <DetailPlannerPage {...detailPlannerProps} />;
+  }
+
+  if (currentView === "group-wrangler" && groupWranglerProps) {
+    return <GroupWranglerPage {...groupWranglerProps} />;
   }
 
   return <TimelineView {...timelineProps} />;

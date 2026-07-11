@@ -66,6 +66,7 @@ export const appRoutes = {
   tripBudget: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/budget`,
   tripRouteBuilder: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/route-builder`,
   tripDetailPlanner: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/detail-planner`,
+  tripGroupWrangler: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/group-wrangler`,
 };
 
 interface TripWorkspaceNavItem {

@@ -11,6 +11,8 @@ import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/works
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
 import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
 import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
+import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
+import { buildSettlementSuggestions } from "@/src/trip/expenses/expense-settlements";
 import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview, type WorkspaceRolePreviewProps } from "./WorkspaceRolePreview";
@@ -188,6 +190,53 @@ export function WorkspaceMainShell({
       onImportApply: noOpHandler<NonNullable<DetailPlannerPageProps["onImportApply"]>>("onImportApply"),
       onConvertWaypoints: noOpHandler<NonNullable<DetailPlannerPageProps["onConvertWaypoints"]>>("onConvertWaypoints"),
     },
+    groupWranglerProps: viewsProps.groupWranglerProps ?? (() => {
+      const trip = appShellProps.trip;
+      const currentMember = trip.members?.[0];
+      const inviteUrl = typeof window !== "undefined"
+        ? `${window.location.origin}/join/${trip.joinId}`
+        : `/join/${trip.joinId}`;
+
+      // Extract polls and rsvps from itinerary items
+      const polls = trip.itineraryItems
+        ?.filter((item) => item.poll)
+        .map((item) => item.poll!)
+        ?? [];
+      const rsvps = trip.itineraryItems
+        ?.flatMap((item) => item.rsvp ?? [])
+        ?? [];
+
+      // Compute settlement suggestions
+      const netByMember: Record<string, number> = {};
+      for (const expense of trip.expenses ?? []) {
+        const totalSplits = Object.values(expense.splits ?? {}).reduce((a, b) => a + b, 0) || 1;
+        for (const [memberId, share] of Object.entries(expense.splits ?? {})) {
+          netByMember[memberId] = (netByMember[memberId] ?? 0) - share;
+        }
+        netByMember[expense.paidBy] = (netByMember[expense.paidBy] ?? 0) + totalSplits;
+      }
+      const settlementSuggestions = buildSettlementSuggestions(netByMember, "THB");
+
+      return {
+        members: trip.members ?? [],
+        currentMember: currentMember ?? { id: "", name: "", color: "#0d9488" } as any,
+        activities: trip.itineraryItems ?? [],
+        polls,
+        rsvps,
+        settlementSuggestions,
+        inviteUrl,
+        canManagePeople: currentMember?.role === "owner" || currentMember?.role === "organizer",
+        onVote: (activityId: string, optionId: string) => {
+          console.warn("[GroupWranglerPage] onVote not wired", activityId, optionId);
+        },
+        onToggleRsvp: (activityId: string, status: string) => {
+          console.warn("[GroupWranglerPage] onToggleRsvp not wired", activityId, status);
+        },
+        onCopyInviteLink: () => {
+          console.warn("[GroupWranglerPage] onCopyInviteLink not wired");
+        },
+      } as GroupWranglerPageProps;
+    })(),
   }), [viewsProps, appShellProps.trip, handleStartPlanning]);
 
   // Phase transition animation: 200ms opacity cross-fade.
@@ -196,6 +245,10 @@ export function WorkspaceMainShell({
   const reducedMotionRef = useRef(false);
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      reducedMotionRef.current = false;
+      return;
+    }
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
     reducedMotionRef.current = mql.matches;
     const handler = (e: MediaQueryListEvent) => {
