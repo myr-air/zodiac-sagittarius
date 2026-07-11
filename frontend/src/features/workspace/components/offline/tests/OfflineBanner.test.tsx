@@ -15,13 +15,13 @@ describe("OfflineBanner", () => {
 
   it("does not render when online", () => {
     renderWithI18n(<OfflineBanner />, { locale: "en" });
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("renders when offline", () => {
     vi.stubGlobal("navigator", { onLine: false });
     renderWithI18n(<OfflineBanner />, { locale: "en" });
-    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText(/Offline/)).toBeInTheDocument();
   });
 
@@ -29,12 +29,12 @@ describe("OfflineBanner", () => {
     vi.stubGlobal("navigator", { onLine: false });
     renderWithI18n(<OfflineBanner />, { locale: "en" });
     fireEvent.click(screen.getByLabelText(/Close/));
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("uses aria-live polite", () => {
     vi.stubGlobal("navigator", { onLine: false });
     renderWithI18n(<OfflineBanner />, { locale: "en" });
-    expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
+    expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "polite");
   });
 });

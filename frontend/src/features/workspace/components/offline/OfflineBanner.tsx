@@ -45,7 +45,7 @@ export function OfflineBanner() {
   if (!isOffline || dismissed) return null;
 
   return (
-    <div className={styles.bannerClassName} role="status" aria-live="polite">
+    <div className={styles.bannerClassName} role="alert" aria-live="polite">
       <div className={styles.bannerContentClassName}>
         <Icon name="warning" className="text-(--color-warning)" />
         <span>{t.onTripCompanion.offlineBanner}</span>
