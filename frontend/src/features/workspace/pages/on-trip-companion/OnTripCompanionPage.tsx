@@ -29,15 +29,16 @@ export function OnTripCompanionPage({
   const otc = t.onTripCompanion;
 
   // Calculate countdown for current activity
-  const countdownMinutes = useMemo(() => {
-    if (!nowNextState.current?.endTime) return null;
-    const now = new Date();
-    const [hours, minutes] = nowNextState.current.endTime.split(":").map(Number);
-    const endTime = new Date(now);
-    endTime.setHours(hours, minutes, 0, 0);
-    const diffMs = endTime.getTime() - now.getTime();
-    return diffMs > 0 ? Math.floor(diffMs / 60000) : null;
-  }, [nowNextState.current]);
+  const countdownMinutes = !nowNextState.current?.endTime
+    ? null
+    : (() => {
+        const now = new Date();
+        const [hours, minutes] = nowNextState.current.endTime.split(":").map(Number);
+        const endTime = new Date(now);
+        endTime.setHours(hours, minutes, 0, 0);
+        const diffMs = endTime.getTime() - now.getTime();
+        return diffMs > 0 ? Math.floor(diffMs / 60000) : null;
+      })();
 
   // Day labels
   const dayLabels = useMemo(() => {
