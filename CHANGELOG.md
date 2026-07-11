@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.7.1] — 2026-07-11
+
+### Changed
+- AGENTS.md: rewritten for SC-Commander integration with resolver gate, lane
+  detection, agent delegation, gate discipline, project map, tooling commands,
+  git conventions, checkpoint discipline, and 6-phase journey model context.
+- DESIGN.md: restructured from 643 to 420 lines — tighter sections, typography
+  scale and states as tables, non-design content migrated to AGENTS.md,
+  integrated Do/Don't into relevant sections, tightened frontmatter.
+
+### Fixed
+- `@/src` path alias now resolved in vitest unit mode via native
+  `resolve.tsconfigPaths` (replaced deprecated `vite-tsconfig-paths` plugin).
+
+### Removed
+- Legacy docs, infra files, planning artifacts, screenshots, and root
+  project files no longer relevant to the current workflow.
+
 ## [0.7.0] — 2026-07-11
 
 ### Added
@@ -36,4 +54,3 @@
 ### Known Limitations
 - Desktop fallback viewport detection deferred (display-first)
 - Location sharing toggle, expense capture, bottom nav routing deferred (API integration pending)
-- `@/src` path alias not resolved in vitest unit mode (workaround: Storybook verification)

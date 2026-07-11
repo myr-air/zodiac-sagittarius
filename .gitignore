@@ -39,3 +39,5 @@ members.png
 timeline.png
 .space
 scripts/spacecraft
+screenshots/
+frontend/next-env.d.ts
