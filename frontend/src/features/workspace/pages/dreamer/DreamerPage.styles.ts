@@ -1,0 +1,14 @@
+export const pageClass = "max-w-[720px] mx-auto flex flex-col gap-8 px-4 py-6";
+export const photoContainerClass = "w-full rounded-(--radius-lg) overflow-hidden";
+export const photoClass = "w-full object-cover";
+export const photoFallbackClass = "w-full bg-(--color-surface-subtle) flex items-center justify-center text-(--color-text-muted)";
+export const tripNameClass = "text-[28px] font-extrabold text-(--color-text)";
+export const destinationTextClass = "text-lg text-(--color-text-muted)";
+export const seasonalSectionClass = "flex flex-col gap-3";
+export const seasonalTitleClass = "text-base font-semibold text-(--color-text)";
+export const seasonalCardsRow = "flex gap-3 overflow-x-auto pb-2";
+export const seasonalCardClass = "flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-(--radius-md) bg-(--color-surface) border-2 border-transparent cursor-pointer";
+export const seasonalCardSelectedClass = "border-(--color-primary)";
+export const seasonalCardTextClass = "text-sm text-(--color-text)";
+export const ctaClass = "h-11 bg-(--color-primary) text-white rounded-(--radius-md) font-semibold text-base px-6 flex items-center justify-center self-start";
+export const budgetEstimateClass = "text-sm text-(--color-text-muted)";

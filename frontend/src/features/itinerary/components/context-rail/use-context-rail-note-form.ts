@@ -25,13 +25,14 @@ export function useContextRailNoteForm({
   onUpdateNote,
 }: UseContextRailNoteFormOptions) {
   const [state, setState] = useState(initialContextRailNoteFormState);
-  const { submitNote, submitNoteEdit } = useContextRailNoteFormActions({
-    itemId,
-    onCreateNote,
-    onUpdateNote,
-    setState,
-    state,
-  });
+  const { saveNote, saveNoteEdit, submitNote, submitNoteEdit } =
+    useContextRailNoteFormActions({
+      itemId,
+      onCreateNote,
+      onUpdateNote,
+      setState,
+      state,
+    });
 
   function startEditingNote(note: StopNote) {
     setState((current) => startContextRailEditingNote(current, note));
@@ -42,6 +43,8 @@ export function useContextRailNoteForm({
   }
 
   return {
+    blurSaveNote: saveNote,
+    blurSaveNoteEdit: saveNoteEdit,
     cancelEditingNote,
     editingNoteBody: state.editingNoteBody,
     editingNoteId: state.editingNoteId,

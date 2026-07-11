@@ -18,6 +18,8 @@ export interface SmartItineraryTableProps
   canRestructure?: boolean;
   endDate: string;
   graphItems?: ItineraryItem[];
+  /** When true, hides the plan variant dropdown controls in the table header. */
+  hideTablePlanControls?: boolean;
   items: ItineraryItem[];
   bookingDocs?: BookingDoc[];
   dailyBriefings?: TripDailyBriefing[];

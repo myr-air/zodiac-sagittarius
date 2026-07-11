@@ -13,6 +13,7 @@ export function SmartItineraryTable({
   canRestructure = true,
   endDate,
   graphItems,
+  hideTablePlanControls = false,
   itineraryView,
   items,
   dailyBriefings = [],
@@ -93,6 +94,7 @@ export function SmartItineraryTable({
         endDate={endDate}
         filterOptions={filterOptions}
         groupsCount={groups.length}
+        hideTablePlanControls={hideTablePlanControls}
         isTripPlanBusy={isTripPlanBusy}
         itemsCount={items.length}
         mainTripPlanId={mainTripPlanId}

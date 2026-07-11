@@ -27,23 +27,33 @@ export function useContextRailNoteFormActions({
   setState,
   state,
 }: UseContextRailNoteFormActionsOptions) {
-  function submitNote(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function saveNote() {
     const submission = buildContextRailNoteCreateSubmission(state);
     if (!submission || !itemId) return;
     onCreateNote({ itemId, body: submission.body });
     setState((current) => clearContextRailNoteBody(current));
   }
 
-  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function saveNoteEdit() {
     const submission = buildContextRailNoteEditSubmission(state);
     if (!submission) return;
     onUpdateNote(submission);
     setState((current) => clearContextRailEditingNote(current));
   }
 
+  function submitNote(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    saveNote();
+  }
+
+  function submitNoteEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    saveNoteEdit();
+  }
+
   return {
+    saveNote,
+    saveNoteEdit,
     submitNote,
     submitNoteEdit,
   };

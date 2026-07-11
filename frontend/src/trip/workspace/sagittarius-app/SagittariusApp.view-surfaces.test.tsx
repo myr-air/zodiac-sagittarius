@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   SagittariusApp,
 } from "@/src/app/SagittariusApp";
+import { seedTrip } from "@/src/trip/seed";
 import {
   render,
   resetSagittariusAppTestEnvironment,
@@ -160,4 +161,14 @@ describe("Sagittarius cockpit view surfaces", () => {
     );
   });
 
+  it("renders the group-wrangler workspace surface", () => {
+    const { container } = render(<SagittariusApp accessMode="trip-access" dataSource="local" initialView="group-wrangler" routeTripId={seedTrip.id} />);
+    // The group-wrangler view should render its members section
+    expect(container.querySelector('[aria-label="กลุ่ม"]')).toBeTruthy();
+  });
+
+  it("renders the on-trip-companion workspace surface", () => {
+    const { container } = render(<SagittariusApp accessMode="trip-access" dataSource="local" initialView="on-trip-companion" routeTripId={seedTrip.id} />);
+    expect(container.querySelector('[data-testid="companion-bottom-nav"]')).toBeTruthy();
+  });
 });

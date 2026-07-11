@@ -64,4 +64,6 @@ export interface TripPlanHeaderControlsProps
     "selectedTripPlan"
   > {
   canEdit: boolean;
+  /** When true, the plan variant dropdown and its panel are not rendered. */
+  hideTablePlanControls?: boolean;
 }

@@ -37,6 +37,7 @@
     "d3-geo": "^3.1.1",
     "maplibre-gl": "^5.24.0",
     "next": "16.2.6",
+    "qrcode": "^1.5.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "topojson-client": "^3.1.0",
@@ -57,6 +58,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/d3-geo": "^3.1.0",
     "@types/node": "25.9.1",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
     "@types/topojson-client": "^3.1.5",
@@ -72,6 +74,7 @@
     "playwright": "^1.60.0",
     "postcss": "8.5.15",
     "tailwindcss": "4.2.4",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "4.1.7"
   },
   "msw": {

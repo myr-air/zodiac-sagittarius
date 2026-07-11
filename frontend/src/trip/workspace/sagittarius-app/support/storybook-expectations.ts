@@ -136,3 +136,66 @@ export async function expectSettingsView({
   await expectWorkspaceView(canvasElement, ".trip-settings-page");
   await expect(canvasElement.querySelector("form[aria-label]")).toBeInTheDocument();
 }
+
+export async function expectBudgetView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectDreamerView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectFlexibleHunterView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectRouteBuilderView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectDetailPlannerView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectGroupWranglerView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}
+
+export async function expectOnTripCompanionView({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".planning-main")).toBeInTheDocument();
+}

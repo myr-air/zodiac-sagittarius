@@ -22,6 +22,8 @@ export function ContextRailNotesSection({
 }: ContextRailNotesSectionProps) {
   const { t } = useI18n();
   const {
+    blurSaveNote,
+    blurSaveNoteEdit,
     cancelEditingNote,
     editingNoteBody,
     editingNoteId,
@@ -57,6 +59,7 @@ export function ContextRailNotesSection({
               note={note}
               onCancelEditingNote={cancelEditingNote}
               onDeleteNote={onDeleteNote}
+              onBlurNoteEdit={blurSaveNoteEdit}
               onEditingNoteBodyChange={setEditingNoteBody}
               onStartEditingNote={startEditingNote}
               onSubmitNoteEdit={submitNoteEdit}
@@ -71,6 +74,7 @@ export function ContextRailNotesSection({
         canCreateNote={canCreateNote}
         currentMemberName={currentMember.displayName}
         noteBody={noteBody}
+        onBlurNote={blurSaveNote}
         onNoteBodyChange={setNoteBody}
         onSubmitNote={submitNote}
       />
