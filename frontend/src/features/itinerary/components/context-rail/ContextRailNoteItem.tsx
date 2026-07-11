@@ -20,6 +20,7 @@ interface ContextRailNoteItemProps {
   editingNoteBody: string;
   isEditing: boolean;
   note: StopNote;
+  onBlurNoteEdit?: () => void;
   onCancelEditingNote: () => void;
   onDeleteNote: (noteId: string) => void;
   onEditingNoteBodyChange: (body: string) => void;
@@ -33,6 +34,7 @@ export function ContextRailNoteItem({
   editingNoteBody,
   isEditing,
   note,
+  onBlurNoteEdit,
   onCancelEditingNote,
   onDeleteNote,
   onEditingNoteBodyChange,
@@ -71,6 +73,13 @@ export function ContextRailNoteItem({
               className={noteEditTextareaClassName}
               value={editingNoteBody}
               onChange={(event) => onEditingNoteBodyChange(event.target.value)}
+              onBlur={(event) => {
+                const relatedTarget = event.relatedTarget as Node | null;
+                if (relatedTarget && event.currentTarget.form?.contains(relatedTarget)) {
+                  return;
+                }
+                onBlurNoteEdit?.();
+              }}
               rows={3}
             />
           </label>

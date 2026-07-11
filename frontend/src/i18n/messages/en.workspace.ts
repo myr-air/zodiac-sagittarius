@@ -35,6 +35,7 @@ export const enAppShellMessages = {
       members: "Members",
       expenses: "Expenses",
       settings: "Settings",
+      budget: "Budget",
     },
     expandNavigation: "Expand navigation",
     collapseNavigation: "Collapse navigation",
@@ -67,6 +68,7 @@ export const enRoutesMessages = {
     members: "Members",
     expenses: "Expenses",
     settings: "Settings",
+    budget: "Budget",
   } as const;
 
 export const enTripSettingsMessages = {
@@ -90,6 +92,15 @@ export const enTripSettingsMessages = {
     saved: "Trip settings saved.",
     saveFailed: "Could not save trip settings.",
     currentRole: ({ role }: { role: string }) => `Current role: ${role}`,
+  } as const;
+
+export const enPhaseMessages = {
+    dreamer: "Dream",
+    flexibleHunter: "Hunt dates",
+    routeBuilder: "Route",
+    detailPlanner: "Detail",
+    groupWrangler: "Group",
+    onTripCompanion: "On-trip",
   } as const;
 
 export const enDatesMessages = {

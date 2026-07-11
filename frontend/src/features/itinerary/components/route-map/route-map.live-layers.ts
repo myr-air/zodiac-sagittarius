@@ -1,3 +1,4 @@
+import type GeoJSON from "geojson";
 import { hasCoordinates } from "@/src/features/itinerary/domain/route-map-model";
 import { allDaysFilter, type DayFilter, type RouteDayGroup } from "./route-map.types";
 

@@ -1,3 +1,6 @@
+import type { ActivityPoll } from "../polls/poll-types";
+import type { ActivityRsvp } from "../rsvp/rsvp-types";
+
 export const activityTypeValues = [
   "travel",
   "food",
@@ -119,6 +122,8 @@ export interface ItineraryItem {
   createdBy: string;
   updatedAt: string;
   version: number;
+  poll?: ActivityPoll;
+  rsvp?: ActivityRsvp[];
 }
 
 export interface StopNote {

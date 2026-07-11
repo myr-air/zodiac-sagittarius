@@ -14,6 +14,7 @@ export function SmartItineraryTableHeaderControls({
   canEdit,
   canManageTripPlans,
   filterOptions,
+  hideTablePlanControls = false,
   itineraryLabels,
   isTripPlanBusy,
   mainTripPlanId,
@@ -42,6 +43,10 @@ export function SmartItineraryTableHeaderControls({
     selectedTripPlanId,
     tripPlans,
   });
+
+  if (hideTablePlanControls) {
+    return null;
+  }
 
   return (
     <div

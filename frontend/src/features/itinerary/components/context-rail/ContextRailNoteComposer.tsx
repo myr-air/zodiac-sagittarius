@@ -13,6 +13,7 @@ interface ContextRailNoteComposerProps {
   canCreateNote: boolean;
   currentMemberName: string;
   noteBody: string;
+  onBlurNote?: () => void;
   onNoteBodyChange: (body: string) => void;
   onSubmitNote: (event: FormEvent<HTMLFormElement>) => void;
 }
@@ -21,6 +22,7 @@ export function ContextRailNoteComposer({
   canCreateNote,
   currentMemberName,
   noteBody,
+  onBlurNote,
   onNoteBodyChange,
   onSubmitNote,
 }: ContextRailNoteComposerProps) {
@@ -35,6 +37,13 @@ export function ContextRailNoteComposer({
           value={noteBody}
           disabled={!canCreateNote}
           onChange={(event) => onNoteBodyChange(event.target.value)}
+          onBlur={(event) => {
+            const relatedTarget = event.relatedTarget as Node | null;
+            if (relatedTarget && event.currentTarget.form?.contains(relatedTarget)) {
+              return;
+            }
+            onBlurNote?.();
+          }}
           rows={3}
         />
       </label>

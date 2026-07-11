@@ -11,6 +11,7 @@ interface SmartItineraryTablePageHeaderProps {
   endDate: string;
   filterOptions: { id: string; name: string }[];
   groupsCount: number;
+  hideTablePlanControls?: boolean;
   isTripPlanBusy: boolean;
   itemsCount: number;
   mainTripPlanId: string;
@@ -42,6 +43,7 @@ export function SmartItineraryTablePageHeader({
   endDate,
   filterOptions,
   groupsCount,
+  hideTablePlanControls,
   isTripPlanBusy,
   itemsCount,
   mainTripPlanId,
@@ -88,6 +90,7 @@ export function SmartItineraryTablePageHeader({
           canEdit={canEdit}
           canManageTripPlans={canManageTripPlans}
           filterOptions={filterOptions}
+          hideTablePlanControls={hideTablePlanControls}
           itineraryLabels={t.itinerary}
           isTripPlanBusy={isTripPlanBusy}
           mainTripPlanId={mainTripPlanId}

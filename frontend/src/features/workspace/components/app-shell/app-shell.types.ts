@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import type { Phase } from "@/src/trip/workspace/phase";
 import type { Member, Trip } from "@/src/trip/types";
 
 export type AppShellLeaveSessionHandler = () => void;
@@ -14,6 +15,8 @@ export interface AppShellProps {
   currentMember: Member;
   onLeaveParticipantSession?: AppShellLeaveSessionHandler;
   onNavigateView?: AppShellNavigationHandler;
+  /** Current journey phase. When provided, left rail shows only phase-relevant nav items. */
+  phase?: Phase;
   trip: Trip;
   onToggleCollapsed: AppShellToggleHandler;
 }

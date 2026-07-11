@@ -23,13 +23,14 @@ export function AppShell({
   currentMember,
   onLeaveParticipantSession,
   onNavigateView,
+  phase,
   trip,
   onToggleCollapsed,
 }: AppShellProps) {
   const { t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const navItems = tripWorkspaceNavItems(trip.id, t.routes);
+  const navItems = tripWorkspaceNavItems(trip.id, t.routes, phase);
   const settingsView: PlanningView = "settings";
   const settingsHref = appRoutes.tripSettings(trip.id);
   const activeNavLabel =

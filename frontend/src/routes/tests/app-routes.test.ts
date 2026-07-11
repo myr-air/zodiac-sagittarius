@@ -11,6 +11,7 @@ const labels = {
   members: "Members",
   expenses: "Expenses",
   settings: "Settings",
+  budget: "Budget",
 };
 
 describe("app route helpers", () => {
@@ -38,6 +39,13 @@ describe("app route helpers", () => {
     expect(appRoutes.tripMembers("trip 1")).toBe("/trips/trip%201/members");
     expect(appRoutes.tripExpenses("trip 1")).toBe("/trips/trip%201/expenses");
     expect(appRoutes.tripSettings("trip 1")).toBe("/trips/trip%201/settings");
+    expect(appRoutes.tripDreamer("trip 1")).toBe("/trips/trip%201/dreamer");
+    expect(appRoutes.tripFlexibleHunter("trip 1")).toBe("/trips/trip%201/flexible-hunter");
+    expect(appRoutes.tripBudget("trip 1")).toBe("/trips/trip%201/budget");
+    expect(appRoutes.tripRouteBuilder("trip 1")).toBe("/trips/trip%201/route-builder");
+    expect(appRoutes.tripDetailPlanner("trip 1")).toBe("/trips/trip%201/detail-planner");
+    expect(appRoutes.tripOnTripCompanion("trip 1")).toBe("/trips/trip%201/on-trip");
+    expect(appRoutes.tripGroupWrangler("trip 1")).toBe("/trips/trip%201/group-wrangler");
     expect(appRoutes.tripOverview("018f4e80-5788-7de0-a45c-8a555d17fc2d")).toBe("/trips/AY9OgFeIfeCkXIpVXRf8LQ");
     expect(appRoutes.join()).toBe("/join");
     expect(appRoutes.join("HK-SZ-2025")).toBe("/join/HK-SZ-2025");
@@ -68,6 +76,7 @@ describe("app route helpers", () => {
       "/trips/trip-1/photos",
       "/trips/trip-1/members",
       "/trips/trip-1/expenses",
+      "/trips/trip-1/budget",
     ]);
   });
 });

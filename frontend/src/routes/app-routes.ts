@@ -1,5 +1,6 @@
 import { encodeTripId } from "@/src/trip/identity";
 import type { PlanningView } from "@/src/trip/workspace/planning-view";
+import type { Phase } from "@/src/trip/workspace/phase";
 
 export function encodeReturnTo(path: string): string {
   try {
@@ -60,6 +61,13 @@ export const appRoutes = {
   tripMembers: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/members`,
   tripExpenses: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/expenses`,
   tripSettings: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/settings`,
+  tripDreamer: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/dreamer`,
+  tripFlexibleHunter: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/flexible-hunter`,
+  tripBudget: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/budget`,
+  tripRouteBuilder: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/route-builder`,
+  tripDetailPlanner: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/detail-planner`,
+  tripOnTripCompanion: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/on-trip`,
+  tripGroupWrangler: (tripId: string) => `/trips/${tripRouteSegment(tripId)}/group-wrangler`,
 };
 
 interface TripWorkspaceNavItem {
@@ -79,10 +87,11 @@ export interface TripWorkspaceNavLabels {
   members: string;
   expenses: string;
   settings: string;
+  budget: string;
 }
 
-export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLabels): TripWorkspaceNavItem[] {
-  return [
+export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLabels, phase?: Phase): TripWorkspaceNavItem[] {
+  const allItems: TripWorkspaceNavItem[] = [
     { id: "overview", label: labels.overview, icon: "home", href: appRoutes.tripOverview(tripId) },
     { id: "itinerary", label: labels.itinerary, icon: "calendar", href: appRoutes.tripItinerary(tripId) },
     { id: "map", label: labels.map, icon: "map", href: appRoutes.tripMap(tripId) },
@@ -91,5 +100,23 @@ export function tripWorkspaceNavItems(tripId: string, labels: TripWorkspaceNavLa
     { id: "photos", label: labels.photos, icon: "cloud", href: appRoutes.tripPhotos(tripId) },
     { id: "members", label: labels.members, icon: "users", href: appRoutes.tripMembers(tripId) },
     { id: "expenses", label: labels.expenses, icon: "wallet", href: appRoutes.tripExpenses(tripId) },
+    { id: "budget", label: labels.budget, icon: "wallet", href: appRoutes.tripBudget(tripId) },
   ];
+
+  if (phase === undefined) {
+    return allItems;
+  }
+
+  const phaseViewIds = PHASE_NAV_ITEMS[phase];
+  return allItems.filter((item) => phaseViewIds.has(item.id));
 }
+
+/** PlanningView ids shown in the left rail for each journey phase. */
+const PHASE_NAV_ITEMS: Record<Phase, Set<PlanningView>> = {
+  dreamer: new Set<PlanningView>(["overview", "photos"]),
+  "flexible-hunter": new Set<PlanningView>(["overview", "budget"]),
+  "route-builder": new Set<PlanningView>(["map", "itinerary"]),
+  "detail-planner": new Set<PlanningView>(["itinerary", "map", "timeline", "bookings"]),
+  "group-wrangler": new Set<PlanningView>(["members", "expenses"]),
+  "on-trip-companion": new Set<PlanningView>(),
+};

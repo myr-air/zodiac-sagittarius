@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CommandBar } from "@/src/shared/components/command-bar/CommandBar";
 
 const workspaceGridClassName =
   "workspace-grid relative grid h-screen min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden max-[1199px]:h-auto max-[1199px]:grid-cols-1 max-[1199px]:overflow-visible";
@@ -14,6 +15,14 @@ export interface TripWorkspaceFrameProps {
   importError: string | null;
   rail: ReactNode;
   supportsContextRail: boolean;
+  /** Trip name for the cross-phase command bar. */
+  tripName?: string;
+  /** Date window or fixed date range label for the command bar. */
+  dateWindowLabel?: string;
+  /** Whether there are unsaved trip changes (shows draft badge). */
+  isTripDirty?: boolean;
+  /** When true, hides the command bar (e.g. Phase 6 mobile). */
+  commandBarHidden?: boolean;
 }
 
 export function TripWorkspaceFrame({
@@ -22,13 +31,27 @@ export function TripWorkspaceFrame({
   importError,
   rail,
   supportsContextRail,
+  tripName,
+  dateWindowLabel,
+  isTripDirty,
+  commandBarHidden,
 }: TripWorkspaceFrameProps) {
+  const showCommandBar = tripName !== undefined;
+
   return (
     <div
       className={workspaceGridClassName}
       data-context-rail={contextRailOpen ? "open" : "closed"}
-      data-command-bar="hidden"
+      data-command-bar={showCommandBar && !commandBarHidden ? "visible" : "hidden"}
     >
+      {showCommandBar ? (
+        <CommandBar
+          tripName={tripName}
+          dateWindowLabel={dateWindowLabel ?? ""}
+          isDirty={isTripDirty}
+          hidden={commandBarHidden}
+        />
+      ) : null}
       <div
         className={`${planningMainClassName} ${
           contextRailOpen && supportsContextRail
