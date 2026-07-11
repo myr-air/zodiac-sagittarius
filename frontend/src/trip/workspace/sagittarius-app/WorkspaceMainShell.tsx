@@ -12,6 +12,8 @@ import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/wor
 import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
 import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
+import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
+import type { NowNextState } from "@/src/trip/itinerary-core/itinerary-types";
 import { buildSettlementSuggestions } from "@/src/trip/expenses/expense-settlements";
 import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
@@ -236,6 +238,66 @@ export function WorkspaceMainShell({
           console.warn("[GroupWranglerPage] onCopyInviteLink not wired");
         },
       } as GroupWranglerPageProps;
+    })(),
+    onTripCompanionProps: viewsProps.onTripCompanionProps ?? (() => {
+      const trip = appShellProps.trip;
+      const today = new Date().toISOString().slice(0, 10);
+
+      // Generate all trip days between startDate and endDate
+      const tripDays: string[] = [];
+      const start = new Date(trip.startDate + "T00:00:00");
+      const end = new Date(trip.endDate + "T00:00:00");
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        tripDays.push(d.toISOString().slice(0, 10));
+      }
+
+      // Sort itinerary items by start time for NowNextState computation
+      const sortedItems = [...(trip.itineraryItems ?? [])].sort(
+        (a, b) => a.startTime.localeCompare(b.startTime)
+      );
+
+      // Find current activity (starts before now, ends after now, or is the first activity if earlier)
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+      const nowItem = sortedItems.find(
+        (item) => item.day === today && item.startTime <= currentTime && (item.endTime ?? "99:99") >= currentTime
+      ) ?? null;
+
+      // Next activity is the one after current, or first upcoming today
+      const nextIndex = nowItem ? sortedItems.indexOf(nowItem) + 1 : sortedItems.findIndex((item) => item.day === today && item.startTime > currentTime);
+      const nextItem = nextIndex >= 0 && nextIndex < sortedItems.length ? sortedItems[nextIndex] : null;
+
+      const nowNextState: NowNextState = {
+        current: nowItem,
+        next: nextItem,
+        fallbackReason: null,
+      };
+
+      return {
+        itineraryItems: trip.itineraryItems ?? [],
+        nowNextState,
+        currentDay: today,
+        tripStartDate: trip.startDate,
+        tripEndDate: trip.endDate,
+        tripDays,
+        onDayChange: (day: string) => {
+          console.warn("[OnTripCompanionPage] onDayChange not wired", day);
+        },
+        onCheckOff: (activityId: string) => {
+          console.warn("[OnTripCompanionPage] onCheckOff not wired", activityId);
+        },
+        onUndoCheckOff: (activityId: string) => {
+          console.warn("[OnTripCompanionPage] onUndoCheckOff not wired", activityId);
+        },
+        onNavigate: () => {
+          console.warn("[OnTripCompanionPage] onNavigate not wired");
+        },
+        activeNavTab: "now" as const,
+        onNavChange: (tab: string) => {
+          console.warn("[OnTripCompanionPage] onNavChange not wired", tab);
+        },
+      } as OnTripCompanionPageProps;
     })(),
   }), [viewsProps, appShellProps.trip, handleStartPlanning]);
 

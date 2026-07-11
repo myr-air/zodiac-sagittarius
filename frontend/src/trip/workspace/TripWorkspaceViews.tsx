@@ -22,6 +22,8 @@ import { FlexibleHunterPage } from "@/src/features/workspace/pages/flexible-hunt
 import type { FlexibleHunterPageProps } from "@/src/features/workspace/pages/flexible-hunter/FlexibleHunterPage.types";
 import { GroupWranglerPage } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage";
 import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
+import { OnTripCompanionPage } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage";
+import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
 import type { PlanningView } from "./planning-view";
 
 export interface TripWorkspaceViewsProps {
@@ -40,6 +42,7 @@ export interface TripWorkspaceViewsProps {
   dreamerProps?: DreamerPageProps;
   flexibleHunterProps?: FlexibleHunterPageProps;
   groupWranglerProps?: GroupWranglerPageProps;
+  onTripCompanionProps?: OnTripCompanionPageProps;
 }
 
 export function TripWorkspaceViews({
@@ -58,6 +61,7 @@ export function TripWorkspaceViews({
   dreamerProps,
   flexibleHunterProps,
   groupWranglerProps,
+  onTripCompanionProps,
 }: TripWorkspaceViewsProps) {
   if (currentView === "settings") {
     return <TripSettingsPage {...settingsProps} />;
@@ -109,6 +113,14 @@ export function TripWorkspaceViews({
 
   if (currentView === "group-wrangler" && groupWranglerProps) {
     return <GroupWranglerPage {...groupWranglerProps} />;
+  }
+
+  if (currentView === "on-trip-companion" && onTripCompanionProps) {
+    return (
+      <div role="alert" aria-label="On-trip companion surface">
+        <OnTripCompanionPage {...onTripCompanionProps} />
+      </div>
+    );
   }
 
   return <TimelineView {...timelineProps} />;

@@ -13,6 +13,7 @@ describe("AppShell routing", () => {
     expect(resolveViewFromPath(appRoutes.tripOverview(seedTrip.id), seedTrip.id, "overview")).toBe("overview");
     expect(resolveViewFromPath(appRoutes.tripRouteBuilder(seedTrip.id), seedTrip.id, "overview")).toBe("route-builder");
     expect(resolveViewFromPath(appRoutes.tripDetailPlanner(seedTrip.id), seedTrip.id, "overview")).toBe("detail-planner");
+    expect(resolveViewFromPath(appRoutes.tripOnTripCompanion(seedTrip.id), seedTrip.id, "overview")).toBe("on-trip-companion");
     expect(resolveViewFromPath(appRoutes.tripGroupWrangler(seedTrip.id), seedTrip.id, "overview")).toBe("group-wrangler");
   });
 });

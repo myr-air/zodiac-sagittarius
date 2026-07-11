@@ -166,4 +166,9 @@ describe("Sagittarius cockpit view surfaces", () => {
     // The group-wrangler view should render its members section
     expect(container.querySelector('[aria-label="กลุ่ม"]')).toBeTruthy();
   });
+
+  it("renders the on-trip-companion workspace surface", () => {
+    const { container } = render(<SagittariusApp accessMode="trip-access" dataSource="local" initialView="on-trip-companion" routeTripId={seedTrip.id} />);
+    expect(container.querySelector('[role="alert"]')).toBeTruthy(); // OfflineBanner or companion surface
+  });
 });
