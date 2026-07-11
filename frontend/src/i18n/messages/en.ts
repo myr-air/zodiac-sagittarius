@@ -7,7 +7,7 @@ import { enExpensesMessages } from "./en.expenses";
 
 import { enAboutAppMessages, enAppShellMessages, enRoutesMessages, enTripSettingsMessages, enDatesMessages, enPhaseMessages } from "./en.workspace";
 
-import { enMapMessages, enTimelineMessages, enMembersMessages, enContextRailMessages, enStopDialogMessages, enSuggestionsMessages, enDreamerMessages, enFlexibleHunterMessages, enRouteBuilderMessages, enDetailPlannerMessages } from "./en.workspace-pages";
+import { enMapMessages, enTimelineMessages, enMembersMessages, enContextRailMessages, enStopDialogMessages, enSuggestionsMessages, enDreamerMessages, enFlexibleHunterMessages, enRouteBuilderMessages, enDetailPlannerMessages, enGroupWranglerMessages, enOnTripCompanionMessages } from "./en.workspace-pages";
 
 export const enMessages = {
   common: {
@@ -64,6 +64,8 @@ export const enMessages = {
   flexibleHunter: enFlexibleHunterMessages,
   routeBuilder: enRouteBuilderMessages,
   detailPlanner: enDetailPlannerMessages,
+  groupWrangler: enGroupWranglerMessages,
+  onTripCompanion: enOnTripCompanionMessages,
   access: enAccessMessages,
   join: enJoinMessages,
 } as const;

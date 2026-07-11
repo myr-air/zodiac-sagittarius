@@ -7,7 +7,7 @@ import { thExpensesMessages } from "./th.expenses";
 
 import { thAboutAppMessages, thAppShellMessages, thRoutesMessages, thTripSettingsMessages, thDatesMessages, thPhaseMessages } from "./th.workspace";
 
-import { thMapMessages, thTimelineMessages, thMembersMessages, thContextRailMessages, thStopDialogMessages, thSuggestionsMessages, thDreamerMessages, thFlexibleHunterMessages, thRouteBuilderMessages, thDetailPlannerMessages } from "./th.workspace-pages";
+import { thMapMessages, thTimelineMessages, thMembersMessages, thContextRailMessages, thStopDialogMessages, thSuggestionsMessages, thDreamerMessages, thFlexibleHunterMessages, thRouteBuilderMessages, thDetailPlannerMessages, thGroupWranglerMessages, thOnTripCompanionMessages } from "./th.workspace-pages";
 
 export const thMessages = {
   common: {
@@ -64,6 +64,8 @@ export const thMessages = {
   flexibleHunter: thFlexibleHunterMessages,
   routeBuilder: thRouteBuilderMessages,
   detailPlanner: thDetailPlannerMessages,
+  groupWrangler: thGroupWranglerMessages,
+  onTripCompanion: thOnTripCompanionMessages,
   access: thAccessMessages,
   join: thJoinMessages,
 } as const;
