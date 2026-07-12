@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.5] — 2026-07-12
+
+### Fixed
+- #95: Trip Map blank canvas — sw.js tile hostname mismatch fixed (`tile.openfreemap.org` → `tiles.openfreemap.org`) enabling cache-first tile strategy
+- #95: Map canvas mobile collapse fixed — `min-h-0` replaced with `min-h-[280px]` at ≤767px viewports
+- #95: Tile-failure detection added to all 3 MapLibre mount points — `sourcedata` + `styleimagemissing` listeners with 4s timeout transition to static fallback instead of blank canvas
+- #95: Regression test for tile-failure → static fallback transition (2 test cases)
+
 ## [0.7.4] — 2026-07-12
 
 ### Fixed
@@ -10,9 +18,6 @@
 - #85: Error handling UX — styled 404 page, trip-not-found user message, bad join code descriptive feedback
 - #94: Detail Planner plan variant controls restored — `hideTablePlanControls` changed to `false`
 - #59: Itinerary path fields (`pathGroupId`, `pathId`, `pathName`, `pathRole`) now preserved in PATCH requests, preventing data loss on reload
-
-### Deferred
-- #95: Trip Map blank canvas requires browser-level diagnosis — deferred to follow-up mission
 
 ## [0.7.2] — 2026-07-11
 

@@ -42,6 +42,7 @@ export function useWaypointMap({
   const mapRef = useRef<MapLibreMap | null>(null);
   const moduleRef = useRef<typeof import("maplibre-gl") | null>(null);
   const markersRef = useRef<Map<string, MapLibreMarker>>(new Map());
+  const tileLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onMapClickRef = useRef(onMapClick);
   const onWaypointMoveRef = useRef(onWaypointMove);
   const waypointsRef = useRef(waypoints);
@@ -223,11 +224,64 @@ export function useWaypointMap({
           "top-right",
         );
 
+        const rect = container.getBoundingClientRect();
+        console.log(
+          "[useWaypointMap] container dimensions:",
+          `${Math.round(rect.width)}×${Math.round(rect.height)}`,
+        );
+
+        map.on("sourcedata", (event: {
+          isSourceLoaded: boolean;
+          sourceId: string;
+          source?: { type: string };
+        }) => {
+          if (disposed) return;
+          console.log(
+            "[useWaypointMap] sourcedata:",
+            event.sourceId,
+            "isSourceLoaded:",
+            event.isSourceLoaded,
+            "source type:",
+            event.source?.type,
+          );
+          if (
+            event.isSourceLoaded &&
+            event.sourceId &&
+            event.source?.type !== "geojson"
+          ) {
+            if (tileLoadTimerRef.current) {
+              clearTimeout(tileLoadTimerRef.current);
+              tileLoadTimerRef.current = null;
+              console.log(
+                "[useWaypointMap] tile source loaded, timeout cleared",
+              );
+            }
+          }
+        });
+
+        map.on("styleimagemissing", (event: { id: string }) => {
+          if (disposed) return;
+          console.log(
+            "[useWaypointMap] style image missing:",
+            event.id,
+          );
+        });
+
         map.on("load", () => {
           if (disposed) return;
           syncMarkers(map, maplibregl, sorted);
           syncRouteLine(map, sorted);
           setMapState("ready");
+          console.log(
+            "[useWaypointMap] map load fired, starting tile-load timeout (4s)",
+          );
+          tileLoadTimerRef.current = setTimeout(() => {
+            if (disposed) return;
+            console.log(
+              "[useWaypointMap] tile-load timeout expired, transitioning to error",
+            );
+            setMapState("error");
+          }, 4000);
         });
 
         map.on("error", () => {
@@ -248,6 +302,10 @@ export function useWaypointMap({
 
     return () => {
       disposed = true;
+      if (tileLoadTimerRef.current) {
+        clearTimeout(tileLoadTimerRef.current);
+        tileLoadTimerRef.current = null;
+      }
       const map = mapRef.current;
       if (map) {
         try {

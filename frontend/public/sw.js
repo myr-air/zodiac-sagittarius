@@ -37,7 +37,7 @@ self.addEventListener("fetch", (event) => {
     (url.pathname.includes("itinerary") || url.pathname.includes("/plan"))
   ) {
     event.respondWith(cacheFirst(event.request));
-  } else if (url.hostname.includes("tile.openfreemap.org")) {
+  } else if (url.hostname.includes("tiles.openfreemap.org")) {
     event.respondWith(cacheFirst(event.request));
   } else if (url.pathname.includes("checklist")) {
     event.respondWith(cacheFirst(event.request));
