@@ -11,9 +11,9 @@ import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/works
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
 import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
 import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
+import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
+import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
 import type { NowNextState } from "@/src/trip/itinerary-core/itinerary-types";
-import type { Member } from "@/src/trip/members/member-types";
-import type { RsvpStatus } from "@/src/trip/rsvp";
 import { buildSettlementSuggestions } from "@/src/trip/expenses/expense-settlements";
 import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
@@ -79,15 +79,6 @@ function formatDateWindowLabel(startDate: string, endDate: string): string {
   if (startLabel === endLabel) return startLabel;
   return `${startLabel} – ${endLabel}`;
 }
-
-const fallbackMember: Member = {
-  id: "",
-  displayName: "Unknown",
-  role: "viewer",
-  presence: "offline",
-  color: "#0d9488",
-  accessStatus: "active",
-};
 
 export function WorkspaceMainShell({
   appShellProps,
@@ -230,7 +221,7 @@ export function WorkspaceMainShell({
 
       return {
         members: trip.members ?? [],
-        currentMember: currentMember ?? fallbackMember,
+        currentMember: currentMember ?? { id: "", name: "", color: "#0d9488" } as any,
         activities: trip.itineraryItems ?? [],
         polls,
         rsvps,
@@ -240,13 +231,13 @@ export function WorkspaceMainShell({
         onVote: (activityId: string, optionId: string) => {
           console.warn("[GroupWranglerPage] onVote not wired", activityId, optionId);
         },
-        onToggleRsvp: (activityId: string, status: RsvpStatus) => {
+        onToggleRsvp: (activityId: string, status: string) => {
           console.warn("[GroupWranglerPage] onToggleRsvp not wired", activityId, status);
         },
         onCopyInviteLink: () => {
           console.warn("[GroupWranglerPage] onCopyInviteLink not wired");
         },
-      };
+      } as GroupWranglerPageProps;
     })(),
     onTripCompanionProps: viewsProps.onTripCompanionProps ?? (() => {
       const trip = appShellProps.trip;
@@ -303,10 +294,10 @@ export function WorkspaceMainShell({
           console.warn("[OnTripCompanionPage] onNavigate not wired");
         },
         activeNavTab: "now" as const,
-        onNavChange: (tab: "now" | "map" | "checklist" | "expenses") => {
+        onNavChange: (tab: string) => {
           console.warn("[OnTripCompanionPage] onNavChange not wired", tab);
         },
-      };
+      } as OnTripCompanionPageProps;
     })(),
   }), [viewsProps, appShellProps.trip, handleStartPlanning]);
 
@@ -366,7 +357,6 @@ export function WorkspaceMainShell({
           unavailablePhases={unavailablePhases}
         />
       ) : null}
-      <OfflineBanner />
       <AppShell {...appShellProps} phase={currentPhase}>
         <main className={workspaceShellClassName}>
           {showToast ? <WorkspaceToast {...toastProps} /> : null}

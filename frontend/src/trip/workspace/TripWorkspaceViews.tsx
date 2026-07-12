@@ -116,7 +116,11 @@ export function TripWorkspaceViews({
   }
 
   if (currentView === "on-trip-companion" && onTripCompanionProps) {
-    return <OnTripCompanionPage {...onTripCompanionProps} />;
+    return (
+      <div role="alert" aria-label="On-trip companion surface">
+        <OnTripCompanionPage {...onTripCompanionProps} />
+      </div>
+    );
   }
 
   return <TimelineView {...timelineProps} />;

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.2] — 2026-07-11
+
+### Added
+- T25: Location sharing toggle with geolocation permission handling and desktop fallback
+- T26: On-Trip Companion page — mobile-first Now/Next card, day switcher, check-off with undo toast, companion bottom nav
+- PWA manifest, service worker (cache-first for itinerary/map/checklist, network-first for PII), offline banner
+
+### Changed
+- Workspace shell: 6-phase workspace fully wired across all phases (Dreamer → Flexible Hunter → Route Builder → Detail Planner → Group Wrangler → On-Trip Companion)
+- PhaseBar: On-Trip Companion phase suppresses left rail, enables bottom nav
+- i18n: Full EN/TH coverage for all companion views
+
+### Fixed
+- useMemo ref lint error in OnTripCompanionPage
+- Protected file restoration after rebase (AGENTS.md, DESIGN.md, vitest.config.ts preserved)
+
 ## [0.7.1] — 2026-07-11
 
 ### Changed

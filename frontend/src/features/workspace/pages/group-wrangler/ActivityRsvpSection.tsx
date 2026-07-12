@@ -80,7 +80,6 @@ export function ActivityRsvpSection({
             type="button"
             variant={currentRsvp?.status === "going" ? "primary" : "secondary"}
             className="flex-1 min-h-10"
-            aria-pressed={currentRsvp?.status === "going"}
             onClick={() => onToggleRsvp("going")}
           >
             {goingLabel}
@@ -92,7 +91,6 @@ export function ActivityRsvpSection({
               "flex-1 min-h-10",
               currentRsvp?.status === "not-going" && "bg-(--color-border-strong) text-white",
             )}
-            aria-pressed={currentRsvp?.status === "not-going"}
             onClick={() => onToggleRsvp("not-going")}
           >
             {notGoingLabel}
