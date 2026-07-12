@@ -60,6 +60,10 @@ export function buildWorkspaceStopUpdatePatchRequest({
       ...updateLocationOptions({ locationFields }),
       clientMutationId,
       expectedVersion: item.version,
+      pathGroupId: item.pathGroupId,
+      pathId: item.pathId,
+      pathName: item.pathName,
+      pathRole: item.pathRole,
     },
   );
 }

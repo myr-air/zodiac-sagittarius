@@ -32,6 +32,10 @@ describe("workspace itinerary stop update inputs", () => {
           ...stopLocationFields,
           clientMutationId: "mutation-1",
           expectedVersion: item.version,
+          pathGroupId: item.pathGroupId,
+          pathId: item.pathId,
+          pathName: item.pathName,
+          pathRole: item.pathRole,
         },
       ),
     );

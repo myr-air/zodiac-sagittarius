@@ -82,7 +82,7 @@ describe("AboutAppPage model", () => {
         ],
         icon: "layout",
         label: "Web app version",
-        value: "sagittarius-web v0.3.0",
+        value: "Joii v0.3.0",
       },
       {
         details: [
@@ -92,7 +92,7 @@ describe("AboutAppPage model", () => {
         icon: "cloud",
         label: "API version",
         muted: false,
-        value: "sagittarius-api v0.2.0",
+        value: "Joii v0.2.0",
       },
     ]);
 
@@ -112,6 +112,19 @@ describe("AboutAppPage model", () => {
       muted: true,
       value: "API version unavailable",
     });
+  });
+
+  it("does not expose internal codename in version panels", () => {
+    const panels = buildAboutVersionPanels({
+      apiVersion: { status: "ready", value: apiVersion },
+      labels,
+      webVersion,
+    });
+
+    for (const panel of panels) {
+      expect(panel.value).toEqual(expect.not.stringContaining("sagittarius"));
+      expect(panel.value).toEqual(expect.not.stringContaining("Sagittarius"));
+    }
   });
 
   it("prefers API environment and schema details when available", () => {

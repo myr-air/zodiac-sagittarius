@@ -78,5 +78,6 @@ export const enAccountPortalPortalMessages = {
     submit: "Save to vault",
     success: "Saved to Travel Vault.",
     error: "Could not save vault item.",
+    openExternal: "Open",
   },
 } as const;

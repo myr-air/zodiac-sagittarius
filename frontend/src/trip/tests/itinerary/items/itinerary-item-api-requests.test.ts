@@ -96,6 +96,10 @@ describe("itinerary item API request builders", () => {
           coordinates: undefined,
           expectedVersion: 7,
           mapLink: "https://maps.example/temple-street",
+          pathGroupId: "main",
+          pathId: "main",
+          pathName: "Main",
+          pathRole: "main",
         },
       ),
     ).toEqual({
@@ -122,6 +126,10 @@ describe("itinerary item API request builders", () => {
         transportation: "Taxi",
         details: { bookingRef: "DIN-1" },
         note: "Window table",
+        pathGroupId: "main",
+        pathId: "main",
+        pathName: "Main",
+        pathRole: "main",
       },
     });
   });

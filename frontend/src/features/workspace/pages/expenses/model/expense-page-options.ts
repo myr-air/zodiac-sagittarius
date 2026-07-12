@@ -35,8 +35,15 @@ const categoryTones: Record<Expense["category"], CategoryTone> = {
   settlement: { background: "#f0fdf4", border: "#bbf7d0", dot: "#16a34a", text: "#166534" },
 };
 
+const fallbackTone: CategoryTone = {
+  background: "#f5f5f5",
+  border: "#e5e5e5",
+  dot: "#737373",
+  text: "#404040",
+};
+
 export function categoryTone(category: Expense["category"]): CategoryTone {
-  return categoryTones[category];
+  return categoryTones[category] ?? fallbackTone;
 }
 
 export { type ExpenseCategorySelectOption };

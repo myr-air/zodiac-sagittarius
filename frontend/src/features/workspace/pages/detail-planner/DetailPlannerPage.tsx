@@ -17,7 +17,7 @@ export function DetailPlannerPage({
   tableProps,
   waypoints = [],
   onImportApply,
-  hideTablePlanControls = true,
+  hideTablePlanControls = false,
   onConvertWaypoints,
 }: DetailPlannerPageProps) {
   const { t } = useT();

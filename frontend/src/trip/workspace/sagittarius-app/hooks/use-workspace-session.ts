@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   isForbidden,
+  isNotFound,
   isUnauthenticated,
-} from "@/src/trip/api-client";
+} from "@/src/trip/api-client/api-errors";
 import type { AccountApiClient } from "@/src/account/api-client";
 import {
   clearParticipantSession,
@@ -97,6 +98,10 @@ export function useWorkspaceSession({
         if (isForbidden(caught)) {
           setAccountTripAccessDeniedRouteId(routeTripId);
           clearParticipantSession();
+          return;
+        }
+        if (isNotFound(caught)) {
+          setAccessError("not_found");
           return;
         }
         setAccessError("trip access check failed");

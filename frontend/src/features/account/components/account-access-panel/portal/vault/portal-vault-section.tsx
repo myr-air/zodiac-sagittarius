@@ -111,6 +111,17 @@ export function PortalVaultSection({
               title={item.title}
               detail={item.detail}
               badge={<Badge tone={item.badgeTone}>{item.badgeLabel}</Badge>}
+              action={item.externalUrl ? (
+                <a
+                  href={item.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1"
+                >
+                  <Icon name="external" />
+                  <span>{t.access.portal.vaultCreate.openExternal}</span>
+                </a>
+              ) : undefined}
             />
           ))}
         </PortalList>

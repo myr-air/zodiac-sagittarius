@@ -31,6 +31,20 @@ describe("expense page options", () => {
     });
   });
 
+  it("returns a valid tone object for unknown categories without crashing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = categoryTone("other" as any);
+    expect(result).not.toBeUndefined();
+    expect(result).toEqual(
+      expect.objectContaining({
+        background: expect.any(String),
+        border: expect.any(String),
+        dot: expect.any(String),
+        text: expect.any(String),
+      }),
+    );
+  });
+
   const labels = {
     food: "Food",
     transport: "Transport",

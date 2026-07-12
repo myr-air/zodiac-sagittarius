@@ -13,6 +13,10 @@ export interface BuildPatchItineraryItemRequestOptions {
   coordinates: ItineraryItem["coordinates"];
   expectedVersion: number;
   mapLink: string;
+  pathGroupId: ItineraryItem["pathGroupId"];
+  pathId: ItineraryItem["pathId"];
+  pathName: ItineraryItem["pathName"];
+  pathRole: ItineraryItem["pathRole"];
 }
 
 export interface BuildInlineItineraryItemPatchRequestOptions {
@@ -83,6 +87,10 @@ export function buildPatchItineraryItemRequest(
       transportation: input.transportation,
       details: input.details,
       note: input.note,
+      pathGroupId: options.pathGroupId,
+      pathId: options.pathId,
+      pathName: options.pathName,
+      pathRole: options.pathRole,
     },
   };
 }

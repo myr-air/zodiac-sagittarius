@@ -568,6 +568,10 @@ pub async fn create_trip_member_session(
     trip_id: Uuid,
 ) -> Result<MemberSession, ServiceError> {
     let user_id = authenticate_user_session(pool, session_token).await?;
+    // Check trip exists before membership query
+    let _ = db::queries::find_trip_by_id(pool, trip_id)
+        .await?
+        .ok_or(ServiceError::NotFound)?;
     let mut tx = pool.begin().await?;
     let member_id =
         db::account_queries::find_active_account_member_id_in_tx(&mut tx, user_id, trip_id)

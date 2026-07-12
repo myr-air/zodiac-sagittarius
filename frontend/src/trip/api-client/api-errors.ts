@@ -8,6 +8,10 @@ export function isForbidden(caught: unknown): boolean {
   return caught instanceof TripApiError && caught.status === 403;
 }
 
+export function isNotFound(caught: unknown): boolean {
+  return caught instanceof TripApiError && caught.status === 404;
+}
+
 export function isVersionConflict(caught: unknown): boolean {
   return caught instanceof TripApiError && caught.code === "version_conflict";
 }

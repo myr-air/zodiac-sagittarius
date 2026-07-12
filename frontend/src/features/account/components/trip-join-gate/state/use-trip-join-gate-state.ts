@@ -15,6 +15,7 @@ interface TripJoinGateErrorCopy {
   shortPassword: string;
   tripCredentials: string;
   tripLoad: string;
+  inviteNotFound: string;
 }
 
 interface UseTripJoinGateStateArgs {

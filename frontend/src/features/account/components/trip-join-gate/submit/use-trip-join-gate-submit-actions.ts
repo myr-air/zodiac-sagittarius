@@ -68,7 +68,7 @@ export function useTripJoinGateSubmitActions({
       setError(null);
       setStep("participant");
     } catch (caught) {
-      setError(errorMessage(caught, errors.tripCredentials));
+      setError(errorMessage(caught, errors.tripCredentials, errors.inviteNotFound));
     } finally {
       setIsSubmitting(false);
     }
@@ -141,7 +141,7 @@ export function useTripJoinGateSubmitActions({
       onTripChange(claimedTrip);
       onAuthenticated(createTripParticipantSession(claimedTrip, selectedMember.id));
     } catch (caught) {
-      setError(errorMessage(caught, errors.participantPassword));
+      setError(errorMessage(caught, errors.participantPassword, errors.inviteNotFound));
     } finally {
       setIsSubmitting(false);
     }

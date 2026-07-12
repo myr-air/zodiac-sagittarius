@@ -78,5 +78,6 @@ export const thAccountPortalPortalMessages = {
     submit: "บันทึกเข้า Travel Vault",
     success: "Saved to Travel Vault.",
     error: "Could not save vault item.",
+    openExternal: "เปิด",
   },
 } as const;
