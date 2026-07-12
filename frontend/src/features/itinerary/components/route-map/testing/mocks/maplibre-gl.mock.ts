@@ -12,7 +12,7 @@ export type MapLibreTestMap = {
   removeSource: ReturnType<typeof vi.fn>;
   remove: ReturnType<typeof vi.fn>;
   setPaintProperty: ReturnType<typeof vi.fn>;
-  trigger: (event: string) => void;
+  trigger: (event: string, eventData?: Record<string, unknown>) => void;
 };
 
 const maplibreMock = vi.hoisted(() => ({
@@ -20,12 +20,13 @@ const maplibreMock = vi.hoisted(() => ({
   markers: [] as Array<{ element: HTMLElement; remove: ReturnType<typeof vi.fn> }>,
   loadDelay: 0,
   throwOnCreate: false,
+  simulateTileFailure: false,
 }));
 
 vi.mock("maplibre-gl", () => ({
   Map: vi.fn().mockImplementation(function (options: { container: HTMLElement }) {
     if (maplibreMock.throwOnCreate) throw new Error("map failed");
-    const handlers = new Map<string, () => void>();
+    const handlers = new Map<string, (eventData?: Record<string, unknown>) => void>();
     const map: MapLibreTestMap = {
       addControl: vi.fn(),
       addLayer: vi.fn(),
@@ -38,12 +39,14 @@ vi.mock("maplibre-gl", () => ({
       removeSource: vi.fn(),
       remove: vi.fn(),
       setPaintProperty: vi.fn(),
-      trigger: (event: string) => handlers.get(event)?.(),
+      trigger: (event: string, eventData?: Record<string, unknown>) => {
+        handlers.get(event)?.(eventData);
+      },
     };
     Object.assign(map, {
-      on: vi.fn((event: string, callback: () => void) => {
+      on: vi.fn((event: string, callback: (eventData?: Record<string, unknown>) => void) => {
         handlers.set(event, callback);
-        if (event === "load") window.setTimeout(callback, maplibreMock.loadDelay);
+        if (event === "load") window.setTimeout(() => callback(), maplibreMock.loadDelay);
       }),
     });
     const chromeButton = document.createElement("button");
@@ -72,12 +75,13 @@ export function resetMaplibreMock() {
   maplibreMock.markers.length = 0;
   maplibreMock.loadDelay = 0;
   maplibreMock.throwOnCreate = false;
+  maplibreMock.simulateTileFailure = false;
 }
 
 export function getMaplibreMock() {
   return maplibreMock;
 }
 
-export function triggerLiveMapEvent(map: MapLibreTestMap | undefined, event: string) {
-  map?.trigger(event);
+export function triggerLiveMapEvent(map: MapLibreTestMap | undefined, event: string, eventData?: Record<string, unknown>) {
+  map?.trigger(event, eventData);
 }
