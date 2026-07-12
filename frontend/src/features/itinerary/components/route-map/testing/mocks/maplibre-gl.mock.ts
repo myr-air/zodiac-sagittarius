@@ -20,7 +20,6 @@ const maplibreMock = vi.hoisted(() => ({
   markers: [] as Array<{ element: HTMLElement; remove: ReturnType<typeof vi.fn> }>,
   loadDelay: 0,
   throwOnCreate: false,
-  simulateTileFailure: false,
 }));
 
 vi.mock("maplibre-gl", () => ({
@@ -75,7 +74,6 @@ export function resetMaplibreMock() {
   maplibreMock.markers.length = 0;
   maplibreMock.loadDelay = 0;
   maplibreMock.throwOnCreate = false;
-  maplibreMock.simulateTileFailure = false;
 }
 
 export function getMaplibreMock() {

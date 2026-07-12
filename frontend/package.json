@@ -1,6 +1,6 @@
 {
   "name": "sagittarius-travel-cockpit",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.5",
@@ -19,6 +19,7 @@
     "test:itinerary-import-browser-qa": "bun run scripts/run-itinerary-import-browser-qa.ts",
     "test:itinerary-entry-browser-qa": "bun run scripts/run-itinerary-entry-browser-qa.ts",
     "test:trip-plan-browser-qa": "bun run scripts/run-trip-plan-browser-qa.ts",
+    "test:map-browser-qa": "bun run scripts/run-map-browser-qa.ts",
     "test:production-browser-qa": "bun run scripts/run-local-production-browser-qa.ts",
     "test:create-trip-ux-qa": "bun run scripts/run-create-trip-ux-qa.ts",
     "test:api-trace-smoke": "bun run scripts/run-local-api-trace-smoke.ts",
