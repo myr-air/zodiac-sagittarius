@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useEffect } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useRef } from "react";
 import type { RouteViewport } from "./route-map.config";
 import {
   applyRouteMapTheme,
@@ -40,6 +40,8 @@ export function useRouteLiveMapMount({
   retryKey,
   setLiveMapLifecycleState,
 }: UseRouteLiveMapMountInput) {
+  const tileLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !liveMapEnabled || liveMapAvailability !== "auto") return undefined;
 
@@ -71,6 +73,49 @@ export function useRouteLiveMapMount({
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         removeMapChromeFromTabOrder(container);
 
+        const rect = container.getBoundingClientRect();
+        console.log(
+          "[useRouteLiveMap Mount] container dimensions:",
+          `${Math.round(rect.width)}×${Math.round(rect.height)}`,
+        );
+
+        map.on("sourcedata", (event: {
+          isSourceLoaded: boolean;
+          sourceId: string;
+          source?: { type: string };
+        }) => {
+          if (disposed) return;
+          console.log(
+            "[useRouteLiveMap Mount] sourcedata:",
+            event.sourceId,
+            "isSourceLoaded:",
+            event.isSourceLoaded,
+            "source type:",
+            event.source?.type,
+          );
+          if (
+            event.isSourceLoaded &&
+            event.sourceId &&
+            event.source?.type !== "geojson"
+          ) {
+            if (tileLoadTimerRef.current) {
+              clearTimeout(tileLoadTimerRef.current);
+              tileLoadTimerRef.current = null;
+              console.log(
+                "[useRouteLiveMap Mount] tile source loaded, timeout cleared",
+              );
+            }
+          }
+        });
+
+        map.on("styleimagemissing", (event: { id: string }) => {
+          if (disposed) return;
+          console.log(
+            "[useRouteLiveMap Mount] style image missing:",
+            event.id,
+          );
+        });
+
         map.on("load", () => {
           if (disposed) return;
           applyRouteMapTheme(map);
@@ -78,6 +123,18 @@ export function useRouteLiveMapMount({
           setLiveMapLifecycleState((current) =>
             setRouteLiveMapState(current, "ready"),
           );
+          console.log(
+            "[useRouteLiveMap Mount] map load fired, starting tile-load timeout (4s)",
+          );
+          tileLoadTimerRef.current = setTimeout(() => {
+            if (disposed) return;
+            console.log(
+              "[useRouteLiveMap Mount] tile-load timeout expired, transitioning to error",
+            );
+            setLiveMapLifecycleState((current) =>
+              setRouteLiveMapState(current, "error"),
+            );
+          }, 4000);
         });
 
         map.on("error", () => {
@@ -100,6 +157,10 @@ export function useRouteLiveMapMount({
 
     return () => {
       disposed = true;
+      if (tileLoadTimerRef.current) {
+        clearTimeout(tileLoadTimerRef.current);
+        tileLoadTimerRef.current = null;
+      }
       cleanupLiveMap(liveMapContainer);
     };
   }, [

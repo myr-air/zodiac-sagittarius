@@ -21,6 +21,7 @@ export function useTripPreviewLiveMap({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const markersRef = useRef<Array<import("maplibre-gl").Marker>>([]);
+  const tileLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mapState, setMapState] = useState<MapLoadState>("idle");
   const liveMapEnabled = process.env.NODE_ENV !== "test";
 
@@ -49,6 +50,49 @@ export function useTripPreviewLiveMap({
         });
         mapRef.current = map;
 
+        const rect = container.getBoundingClientRect();
+        console.log(
+          "[useTripPreviewLiveMap] container dimensions:",
+          `${Math.round(rect.width)}×${Math.round(rect.height)}`,
+        );
+
+        map.on("sourcedata", (event: {
+          isSourceLoaded: boolean;
+          sourceId: string;
+          source?: { type: string };
+        }) => {
+          if (disposed) return;
+          console.log(
+            "[useTripPreviewLiveMap] sourcedata:",
+            event.sourceId,
+            "isSourceLoaded:",
+            event.isSourceLoaded,
+            "source type:",
+            event.source?.type,
+          );
+          if (
+            event.isSourceLoaded &&
+            event.sourceId &&
+            event.source?.type !== "geojson"
+          ) {
+            if (tileLoadTimerRef.current) {
+              clearTimeout(tileLoadTimerRef.current);
+              tileLoadTimerRef.current = null;
+              console.log(
+                "[useTripPreviewLiveMap] tile source loaded, timeout cleared",
+              );
+            }
+          }
+        });
+
+        map.on("styleimagemissing", (event: { id: string }) => {
+          if (disposed) return;
+          console.log(
+            "[useTripPreviewLiveMap] style image missing:",
+            event.id,
+          );
+        });
+
         coordinates.forEach((coordinate, index) => {
           const markerElement = document.createElement("span");
           markerElement.className = tripPreviewLiveMarkerClassName;
@@ -65,6 +109,16 @@ export function useTripPreviewLiveMap({
           fitPreviewMap(map, coordinates);
           container.inert = false;
           setMapState("ready");
+          console.log(
+            "[useTripPreviewLiveMap] map load fired, starting tile-load timeout (4s)",
+          );
+          tileLoadTimerRef.current = setTimeout(() => {
+            if (disposed) return;
+            console.log(
+              "[useTripPreviewLiveMap] tile-load timeout expired, transitioning to error",
+            );
+            setMapState("error");
+          }, 4000);
         });
         map.on("error", () => {
           if (!disposed) setMapState("error");
@@ -78,6 +132,10 @@ export function useTripPreviewLiveMap({
 
     return () => {
       disposed = true;
+      if (tileLoadTimerRef.current) {
+        clearTimeout(tileLoadTimerRef.current);
+        tileLoadTimerRef.current = null;
+      }
       markers.forEach((marker) => marker.remove());
       markers.length = 0;
       mapRef.current?.remove();
