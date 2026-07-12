@@ -16,6 +16,8 @@ const meta = {
     tItinerary: messages.en.itinerary,
     totalMinutes: 1320,
     warningCount: 0,
+    subActivitiesCount: 0,
+    flexibleItemsCount: 0,
   },
 } satisfies Meta<typeof SmartItineraryTableMeta>;
 

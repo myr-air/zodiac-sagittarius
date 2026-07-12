@@ -11,9 +11,14 @@ export interface ItineraryHeaderMetaProps {
   locale: Locale;
   startDate: string;
   tDates: Messages["dates"];
-  tItinerary: Pick<Messages["itinerary"], "dayItems">;
+  tItinerary: Pick<
+    Messages["itinerary"],
+    "dayItems" | "subActivitiesCount" | "flexibleItemsCount"
+  >;
   totalMinutes: number;
   warningCount: number;
+  subActivitiesCount?: number;
+  flexibleItemsCount?: number;
 }
 
 export function ItineraryHeaderMeta({
@@ -26,6 +31,8 @@ export function ItineraryHeaderMeta({
   tItinerary,
   totalMinutes,
   warningCount,
+  subActivitiesCount,
+  flexibleItemsCount,
 }: ItineraryHeaderMetaProps) {
   return (
     <>
@@ -34,6 +41,12 @@ export function ItineraryHeaderMeta({
         <Icon name="route" />{" "}
         {tItinerary.dayItems({ days: daysCount, stops: itemsCount })}
       </span>
+      {subActivitiesCount ? (
+        <span>{tItinerary.subActivitiesCount({ count: subActivitiesCount })}</span>
+      ) : null}
+      {flexibleItemsCount ? (
+        <span>{tItinerary.flexibleItemsCount({ count: flexibleItemsCount })}</span>
+      ) : null}
       <span>
         <Icon name="warning" /> {tDates.warningCount({ count: warningCount })}
       </span>

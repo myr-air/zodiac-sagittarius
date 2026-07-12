@@ -17,6 +17,8 @@ describe("SmartItineraryTableMeta", () => {
         tItinerary={messages.en.itinerary}
         totalMinutes={135}
         warningCount={2}
+        subActivitiesCount={0}
+        flexibleItemsCount={0}
       />,
     );
 

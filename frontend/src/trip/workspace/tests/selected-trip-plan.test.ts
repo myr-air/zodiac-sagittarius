@@ -35,7 +35,39 @@ describe("selected trip plan workspace state", () => {
       selectedTripPlanStorageKey(trip.id),
       "plan-rain",
     );
+    expect(resolveSelectedTripPlanId(trip)).toBe("plan-rain");
+  });
+
+  it("follows the full fallback chain: preferred -> URL -> sessionStorage -> default", () => {
+    const trip = tripWithPlans();
+
     expect(resolveSelectedTripPlanId(trip)).toBe("plan-main");
+
+    window.sessionStorage.setItem(
+      selectedTripPlanStorageKey(trip.id),
+      "plan-rain",
+    );
+    expect(resolveSelectedTripPlanId(trip)).toBe("plan-rain");
+
+    window.history.replaceState(
+      null,
+      "",
+      `${tripRoutes.itinerary(tripFixture.trip.id)}?tripPlanId=plan-main`,
+    );
+    expect(resolveSelectedTripPlanId(trip)).toBe("plan-main");
+
+    expect(resolveSelectedTripPlanId(trip, "plan-rain")).toBe("plan-rain");
+
+    window.history.replaceState(
+      null,
+      "",
+      `${tripRoutes.itinerary(tripFixture.trip.id)}?tripPlanId=missing-plan`,
+    );
+    expect(resolveSelectedTripPlanId(trip)).toBe("plan-rain");
+  });
+
+  it("falls back to default plan when sessionStorage contains an invalid plan id", () => {
+    const trip = tripWithPlans();
 
     window.sessionStorage.setItem(
       selectedTripPlanStorageKey(trip.id),

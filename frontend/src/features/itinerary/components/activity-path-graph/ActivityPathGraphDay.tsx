@@ -46,7 +46,7 @@ export function ActivityPathGraphDay({
   const graphEdges = buildGraphEdges(graphNodes, graphWidth, graphLayout.startY, graphLayout.endY);
 
   return (
-    <div ref={graphRef} className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height: fallbackLayout.height }}>
+    <div ref={graphRef} className={graphClassName} role="group" aria-label={`Activity path graph for ${dayLabel}`} style={{ height: graphLayout.height }}>
       <svg
         className="pointer-events-none absolute left-0 top-0 z-[1] w-full overflow-visible"
         viewBox={`0 0 ${graphWidth} ${graphLayout.height}`}

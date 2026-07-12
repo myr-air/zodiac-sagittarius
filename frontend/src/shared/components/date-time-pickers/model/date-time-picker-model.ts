@@ -62,6 +62,46 @@ export function toDateValue(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+export function normalizeTimeInput(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  let hourText: string;
+  let minuteText: string;
+
+  if (trimmed.includes(":")) {
+    const [hourPart, minutePart, ...rest] = trimmed.split(":");
+    if (!hourPart || !minutePart || rest.length > 0) return null;
+    hourText = hourPart;
+    minuteText = minutePart;
+  } else {
+    const digits = trimmed.replace(/\D/g, "");
+    if (!digits || digits.length > 4) return null;
+    if (digits.length <= 2) {
+      hourText = digits;
+      minuteText = "00";
+    } else {
+      hourText = digits.slice(0, -2);
+      minuteText = digits.slice(-2);
+    }
+  }
+
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (
+    Number.isNaN(hour) ||
+    Number.isNaN(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 export function normalizeTime(value: string) {
-  return /^\d{2}:\d{2}$/.test(value) ? value : "";
+  return normalizeTimeInput(value) ?? "";
 }

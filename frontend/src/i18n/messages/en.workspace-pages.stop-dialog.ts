@@ -1,7 +1,13 @@
 export const enStopDialogMessages = {
   titles: {
     create: "Add activity",
+    createParentBlock: "Create parent block",
+    createSubActivity: "Add sub-activity",
     edit: "Edit details",
+  },
+  context: {
+    parentBlockHint: "A parent block groups related sub-activities (e.g. a museum visit with gallery stops).",
+    subActivityHint: "Adds an activity inside a parent block.",
   },
   closeForm: "Close form",
   fields: {
@@ -18,6 +24,9 @@ export const enStopDialogMessages = {
     mapLink: "Map link",
     transportation: "Transportation",
     note: "Note",
+    required: "Required",
+    parentBlock: "Parent block",
+    subActivity: "Sub-activity",
   },
   actions: {
     cancel: "Cancel",
@@ -34,5 +43,10 @@ export const enStopDialogMessages = {
   messages: {
     saving: "Saving...",
     saveFailed: "Could not save activity. Check required fields or try again.",
+    requiredField: "Required",
+  },
+  validation: {
+    activityRequired: "Activity name is required",
+    dayRequired: "Select a day",
   },
 } as const;

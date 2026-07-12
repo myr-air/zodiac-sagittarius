@@ -76,6 +76,8 @@ export function SmartItineraryTable({
     graphColumnWidth,
     warningCount,
     totalMinutes,
+    subActivitiesCount,
+    flexibleItemsCount,
     toggleDay,
     togglePlanFilter,
     selectedFilterLabel,
@@ -111,10 +113,13 @@ export function SmartItineraryTable({
         showAllPaths={showAllPaths}
         startDate={startDate}
         totalMinutes={totalMinutes}
+        subActivitiesCount={subActivitiesCount}
+        flexibleItemsCount={flexibleItemsCount}
         tripName={tripName}
         tripPlanError={tripPlanError}
         tripPlans={tripPlans}
         warningCount={warningCount}
+        onAddStop={canEdit ? onAddStop : undefined}
       />
       <SmartItineraryTableViewport
         canRestructureItems={canRestructureItems}

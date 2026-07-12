@@ -147,7 +147,8 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(modal).not.toContain("formatDuration");
     expect(modal).not.toContain("parseTimeToMinutes");
     expect(modalModel).toContain("export function buildTimeEditModalModel");
-    expect(modalModel).toContain("timeEditModalCopy");
+    expect(modalModel).toContain("getMessages");
+    expect(modalModel).toContain("row.timeEdit");
     expect(modalModel).toContain("nextDayEndLabel");
     expect(modalModel).toContain("formatDuration");
     expect(modalModel).toContain("parseTimeToMinutes");

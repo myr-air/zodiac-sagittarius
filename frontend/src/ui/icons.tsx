@@ -2,6 +2,7 @@ import type { SVGProps } from "react";
 
 export type IconName =
   | "alertCircle"
+  | "block"
   | "bus"
   | "calendar"
   | "car"
@@ -66,6 +67,7 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   };
 
   if (name === "alertCircle") return <svg {...common}><circle cx="12" cy="12" r="10" /><path d="M12 8v5M12 16h.01" /></svg>;
+  if (name === "block") return <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>;
   if (name === "calendar") {
     return <svg {...common}><path d="M8 2v4M16 2v4M3 10h18" /><rect x="3" y="4" width="18" height="18" rx="2" /></svg>;
   }

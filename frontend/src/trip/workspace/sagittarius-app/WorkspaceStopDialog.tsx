@@ -43,7 +43,7 @@ export function WorkspaceStopDialog({
       key={
         dialogState.mode === "edit"
           ? `edit-${dialogState.item.id}`
-          : "create-stop"
+          : `create-stop-${dialogState.createSequence ?? 0}`
       }
       mode={dialogState.mode}
       startDate={trip.startDate}

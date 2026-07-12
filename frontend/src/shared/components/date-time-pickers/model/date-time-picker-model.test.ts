@@ -3,6 +3,7 @@ import {
   addMonths,
   buildCalendarDays,
   normalizeTime,
+  normalizeTimeInput,
   pickerWeekdays,
   timePickerPresets,
   toDateValue,
@@ -29,6 +30,22 @@ describe("date time picker model", () => {
     expect(timePickerPresets).toContain("22:00");
     expect(toDateValue(new Date("2026-06-19T12:34:00"))).toBe("2026-06-19");
     expect(normalizeTime("09:30")).toBe("09:30");
-    expect(normalizeTime("9:30")).toBe("");
+    expect(normalizeTime("9:30")).toBe("09:30");
+  });
+
+  it("normalizes partial time inputs to HH:mm", () => {
+    expect(normalizeTimeInput("09:30")).toBe("09:30");
+    expect(normalizeTimeInput("9:30")).toBe("09:30");
+    expect(normalizeTimeInput("930")).toBe("09:30");
+    expect(normalizeTimeInput("9:3")).toBe("09:03");
+    expect(normalizeTimeInput(" 9:30 ")).toBe("09:30");
+  });
+
+  it("rejects time inputs that cannot be parsed", () => {
+    expect(normalizeTimeInput("abc")).toBeNull();
+    expect(normalizeTimeInput("")).toBeNull();
+    expect(normalizeTimeInput("25:00")).toBeNull();
+    expect(normalizeTimeInput("09:60")).toBeNull();
+    expect(normalizeTimeInput("9:3:0")).toBeNull();
   });
 });

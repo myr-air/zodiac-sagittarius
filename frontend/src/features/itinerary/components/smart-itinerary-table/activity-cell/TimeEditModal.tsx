@@ -71,6 +71,11 @@ export function TimeEditModal({
                 value={startTime}
                 onChange={updateStartTime}
               />
+              {model.startError ? (
+                <p className="text-xs text-(--color-danger)" role="alert">
+                  {model.startError}
+                </p>
+              ) : null}
             </label>
             <label className={timeEditFieldClassName}>
               <span>{model.endLabel}</span>
@@ -79,6 +84,11 @@ export function TimeEditModal({
                 value={endTime}
                 onChange={updateEndTime}
               />
+              {model.endError ? (
+                <p className="text-xs text-(--color-danger)" role="alert">
+                  {model.endError}
+                </p>
+              ) : null}
             </label>
           </div>
           <p className={timeEditHelperClassName}>
@@ -100,20 +110,15 @@ export function TimeEditModal({
             </strong>
             <span>{model.durationLabel}</span>
           </div>
-          {model.errorMessage ? (
-            <p className="text-xs font-bold text-(--color-danger)" role="alert">
-              {model.errorMessage}
-            </p>
-          ) : null}
         </div>
         <footer className={timeEditModalFooterClassName}>
           <ActivityCellModalActions
             cancelClassName={timeEditCancelButtonClassName}
-            cancelLabel={itineraryLabels.row.durationCancel}
+            cancelLabel={itineraryLabels.row.timeEdit.cancel}
             onCancel={onClose}
             saveClassName={timeEditSaveButtonClassName}
-            saveDisabled={saving || Boolean(model.errorMessage)}
-            saveLabel={itineraryLabels.row.durationSave}
+            saveDisabled={saving || Boolean(model.startError) || Boolean(model.endError)}
+            saveLabel={itineraryLabels.row.timeEdit.save}
           />
         </footer>
       </form>

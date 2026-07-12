@@ -27,6 +27,8 @@ export interface SmartItineraryTableDerivedState {
   smartTableStyle: CSSProperties;
   totalMinutes: number;
   warningCount: number;
+  subActivitiesCount: number;
+  flexibleItemsCount: number;
 }
 
 export interface SmartItineraryTableState

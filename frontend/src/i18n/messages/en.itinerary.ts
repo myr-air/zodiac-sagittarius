@@ -24,6 +24,10 @@ export const enItineraryMessages = {
     mobileInspectorLabel: "Selected stop details",
     caption: "Trip itinerary rows grouped by day.",
     dayItems: ({ days, stops }: { days: number; stops: number }) => `${days} days / ${stops} stops`,
+    subActivitiesCount: ({ count }: { count: number }) =>
+      `${count} sub-activit${count === 1 ? "y" : "ies"}`,
+    flexibleItemsCount: ({ count }: { count: number }) =>
+      `${count} flexible item${count === 1 ? "" : "s"}`,
     headers: {
       reorder: "Reorder",
       time: "Time",
@@ -112,6 +116,22 @@ export const enItineraryMessages = {
       durationMinutes: "Minutes",
       durationSave: "Save",
       durationCancel: "Cancel",
+      timeEdit: {
+        cancel: "Cancel",
+        closeLabel: "Close time editor",
+        durationHidden: "Duration hidden",
+        durationPrefix: "Duration",
+        endLabel: "End time",
+        invalidEndTime: "End time must use HH:MM, for example 09:30.",
+        invalidStartTime: "Start time must use HH:MM, for example 09:30.",
+        needsStartForEnd: "Add a start time before adding an end time.",
+        nextDayEndLabel: "next day end",
+        optionalEndHint: "End time is optional. Leave it blank to hide duration.",
+        previewLabel: "Display preview",
+        save: "Save",
+        startLabel: "Start time",
+        timeFormatHint: "Use 24-hour time, for example 08:30.",
+      },
       confirmDeleteTitle: ({ activity }: { activity: string }) => `Confirm delete ${activity}`,
       confirmDeleteBody: ({ activity }: { activity: string }) => `Delete "${activity}" from the itinerary?`,
       confirmDeleteYes: "Delete activity",

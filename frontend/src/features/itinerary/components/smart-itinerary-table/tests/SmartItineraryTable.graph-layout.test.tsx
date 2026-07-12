@@ -64,7 +64,7 @@ describe("SmartItineraryTable graph layout", () => {
       const graph = screen.getByRole("group", {
         name: /Activity path graph for Day 2/i,
       });
-      expect(graph).toHaveStyle({ height: "201.5px" });
+      expect(graph).toHaveStyle({ height: "284px" });
       expect(graph.querySelector("svg")).toHaveStyle({ height: "284px" });
     } finally {
       rectSpy.mockRestore();

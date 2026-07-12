@@ -15,10 +15,16 @@ export function activityActionMenuLabel(
 export function activityNoteActionLabel(
   item: Pick<ItineraryItem, "activity">,
   locale: Locale,
+  note?: string,
 ): string {
+  const hasNote = note && note.trim().length > 0;
   return locale === "th"
-    ? `เพิ่มโน้ต ${item.activity}`
-    : `Add note for ${item.activity}`;
+    ? hasNote
+      ? `ดูโน้ต ${item.activity}`
+      : `เพิ่มโน้ต ${item.activity}`
+    : hasNote
+      ? `View note for ${item.activity}`
+      : `Add note for ${item.activity}`;
 }
 
 export function activityMapActionLabel(
@@ -26,4 +32,18 @@ export function activityMapActionLabel(
   mapFallback: string,
 ): string {
   return `${mapFallback}: ${item.place || item.activity}`;
+}
+
+export function activityBlockToggleLabel(
+  item: Pick<ItineraryItem, "activity">,
+  locale: Locale,
+  isPlanBlock: boolean,
+): string {
+  return locale === "th"
+    ? isPlanBlock
+      ? `เลิก activity block ${item.activity}`
+      : `เปลี่ยน ${item.activity} เป็น activity block`
+    : isPlanBlock
+      ? `Undo activity block for ${item.activity}`
+      : `Convert ${item.activity} to activity block`;
 }

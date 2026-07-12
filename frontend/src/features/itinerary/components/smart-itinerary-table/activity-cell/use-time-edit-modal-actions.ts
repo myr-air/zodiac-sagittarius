@@ -41,7 +41,7 @@ export function useTimeEditModalActions({
 }: UseTimeEditModalActionsOptions) {
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (state.saving || model.errorMessage) return;
+    if (state.saving || model.startError || model.endError) return;
     setState((current) => setTimeEditModalSaving(current, true));
     try {
       await onSave(

@@ -13,6 +13,7 @@ export {
   activityRouteLineClassName,
   activityRouteLabelClassName,
   activityPlaceLineClassName,
+  activityNoteLineClassName,
   activityMobilePlaceInputClassName,
   activityActionsClassName,
   activityActionClusterClassName,
