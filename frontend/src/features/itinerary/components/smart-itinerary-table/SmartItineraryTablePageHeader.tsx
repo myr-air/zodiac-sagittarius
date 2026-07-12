@@ -111,7 +111,6 @@ export function SmartItineraryTablePageHeader({
             canEdit={canEdit}
             canManageTripPlans={canManageTripPlans}
             filterOptions={filterOptions}
-            hideTablePlanControls={hideTablePlanControls}
             itineraryLabels={t.itinerary}
             isTripPlanBusy={isTripPlanBusy}
             mainTripPlanId={mainTripPlanId}
