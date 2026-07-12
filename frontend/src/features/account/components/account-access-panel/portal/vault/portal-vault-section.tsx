@@ -118,7 +118,7 @@ export function PortalVaultSection({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1"
                 >
-                  <Icon name="link" />
+                  <Icon name="external" />
                   <span>Open</span>
                 </a>
               ) : undefined}

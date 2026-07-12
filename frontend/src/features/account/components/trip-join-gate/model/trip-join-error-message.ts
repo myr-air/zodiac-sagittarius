@@ -2,7 +2,7 @@ import { TripApiError } from "@/src/trip/api-client";
 
 export function errorMessage(caught: unknown, fallback: string): string {
   if (caught instanceof TripApiError) {
-    if (caught.status === 404) return fallback;
+    if (caught.status === 404) return "This invite link is invalid or has expired.";
     if (caught.status === 401 || caught.status === 403) return fallback;
     if (caught.status === 400 || caught.code === "invalid_request") return fallback;
     if (caught.status >= 500) return fallback;
