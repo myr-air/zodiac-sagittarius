@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.4] — 2026-07-12
+
+### Fixed
+- #75: Expenses page crash — null-guard `categoryTone()` for unknown categories
+- #77: Invalid trip UUID now returns 404 (not 403) — backend `create_trip_member_session` checks trip existence before membership
+- #80: Codename "Sagittarius" removed from public About page — replaced with "Joii"
+- #82: Portal Vault document file items now have accessible external link action (localized EN/TH)
+- #85: Error handling UX — styled 404 page, trip-not-found user message, bad join code descriptive feedback
+- #94: Detail Planner plan variant controls restored — `hideTablePlanControls` changed to `false`
+- #59: Itinerary path fields (`pathGroupId`, `pathId`, `pathName`, `pathRole`) now preserved in PATCH requests, preventing data loss on reload
+
+### Deferred
+- #95: Trip Map blank canvas requires browser-level diagnosis — deferred to follow-up mission
+
 ## [0.7.2] — 2026-07-11
 
 ### Added
