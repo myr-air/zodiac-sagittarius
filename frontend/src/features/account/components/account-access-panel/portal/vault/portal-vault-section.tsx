@@ -119,7 +119,7 @@ export function PortalVaultSection({
                   className="inline-flex items-center gap-1"
                 >
                   <Icon name="external" />
-                  <span>Open</span>
+                  <span>{t.access.portal.vaultCreate.openExternal}</span>
                 </a>
               ) : undefined}
             />

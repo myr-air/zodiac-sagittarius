@@ -38,7 +38,7 @@ export function useTripJoinInviteTokenResolution({
       })
       .catch((caught) => {
         if (cancelled) return;
-        onError(errorMessage(caught, fallbackError));
+        onError(errorMessage(caught, fallbackError, fallbackError));
       })
       .finally(() => {
         if (!cancelled) onSettled();

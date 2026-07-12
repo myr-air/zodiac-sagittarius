@@ -23,6 +23,7 @@ export const enJoinMessages = {
       participantPassword: "Password is incorrect.",
       tripLoad: "Password was accepted, but the trip could not be loaded. Please ask the organizer to check the trip data.",
       shortPassword: "Set a password with at least 4 characters.",
+      inviteNotFound: "This invite link is invalid or has expired.",
     },
     memberStatus: {
       ready: "Ready",

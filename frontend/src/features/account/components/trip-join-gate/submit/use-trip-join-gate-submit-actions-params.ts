@@ -7,6 +7,7 @@ export interface TripJoinGateErrorCopy {
   shortPassword: string;
   tripCredentials: string;
   tripLoad: string;
+  inviteNotFound: string;
 }
 
 export interface UseTripJoinGateSubmitActionsArgs {

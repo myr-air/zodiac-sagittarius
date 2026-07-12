@@ -23,6 +23,7 @@ export const thJoinMessages = {
       participantPassword: "รหัสไม่ถูกต้อง",
       tripLoad: "รหัสถูกแล้ว แต่โหลดข้อมูลทริปไม่สำเร็จ กรุณาให้ผู้จัดทริปตรวจข้อมูลทริป",
       shortPassword: "ตั้งรหัสอย่างน้อย 4 ตัวอักษร",
+      inviteNotFound: "ลิงก์เชิญนี้ไม่ถูกต้องหรือหมดอายุแล้ว",
     },
     memberStatus: {
       ready: "พร้อมใช้งาน",

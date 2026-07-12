@@ -32,7 +32,7 @@ describe("expense page options", () => {
   });
 
   it("returns a valid tone object for unknown categories without crashing", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentionally testing runtime behavior with unknown category
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = categoryTone("other" as any);
     expect(result).not.toBeUndefined();
     expect(result).toEqual(
