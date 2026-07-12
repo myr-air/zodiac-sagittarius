@@ -107,6 +107,7 @@ describe("portal vault section state", () => {
         badgeLabel: "note",
         badgeTone: "success",
         detail: "Seoul Spring · Keep copies ready",
+        externalUrl: null,
         icon: "note",
         id: "vault-vault-1",
         title: "Passport note",
@@ -115,10 +116,20 @@ describe("portal vault section state", () => {
         badgeLabel: "file",
         badgeTone: "neutral",
         detail: "Personal · PDF link",
+        externalUrl: "https://example.test/tickets.pdf",
         icon: "document",
         id: "vault-vault-created",
         title: "Tickets",
       },
     ]);
+  });
+
+  it("includes externalUrl in vault item rows when the vault item has one", () => {
+    const rows = buildPortalVaultItemRows(
+      [accountVaultItem, createdAccountVaultItem],
+      { personal: "Personal" },
+    );
+    expect(rows[0].externalUrl).toBeNull();
+    expect(rows[1].externalUrl).toBe("https://example.test/tickets.pdf");
   });
 });

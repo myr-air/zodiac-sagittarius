@@ -20,6 +20,7 @@ export interface PortalVaultItemRow {
   badgeLabel: string;
   badgeTone: ReturnType<typeof portalVaultItemBadgeTone>;
   detail: string;
+  externalUrl: string | null;
   icon: IconName;
   id: string;
   title: string;
@@ -75,6 +76,7 @@ export function buildPortalVaultItemRows(
     badgeLabel: item.kind,
     badgeTone: portalVaultItemBadgeTone(item),
     detail: portalVaultItemDetail(item, labels.personal),
+    externalUrl: item.externalUrl,
     icon: portalVaultItemIcon(item),
     id: `${item.source}-${item.id}`,
     title: item.title,

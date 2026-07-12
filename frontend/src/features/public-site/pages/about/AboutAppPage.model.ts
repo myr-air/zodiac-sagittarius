@@ -91,7 +91,7 @@ export function buildAboutVersionPanels({
       ],
       icon: "layout",
       label: labels.webVersion,
-      value: `${webVersion.service} v${webVersion.version}`,
+      value: `Joii v${webVersion.version}`,
     },
     {
       details: [
@@ -102,7 +102,7 @@ export function buildAboutVersionPanels({
       label: labels.apiVersion,
       muted: !apiValue,
       value: apiValue
-        ? `${apiValue.service} v${apiValue.version}`
+        ? `Joii v${apiValue.version}`
         : apiVersion.status === "loading"
           ? labels.checkingApiVersion
           : labels.apiVersionUnavailable,

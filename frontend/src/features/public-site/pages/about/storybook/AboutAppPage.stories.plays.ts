@@ -7,7 +7,7 @@ type AboutAppPagePlay = NonNullable<StoryObj<typeof AboutAppPage>["play"]>;
 export const readyPlay: AboutAppPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("heading", { name: "About Joii" })).toBeVisible();
   await expect(await canvas.findByText("API connected")).toBeVisible();
-  await expect(await canvas.findByText("sagittarius-api v0.2.0")).toBeVisible();
+  await expect(await canvas.findByText("Joii v0.2.0")).toBeVisible();
 };
 
 export const apiUnavailablePlay: AboutAppPagePlay = async ({ canvas }) => {
