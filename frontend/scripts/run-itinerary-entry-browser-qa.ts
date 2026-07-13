@@ -350,14 +350,25 @@ async function saveDialog(dialog: ReturnType<Page["getByRole"]>) {
   await dialog.waitFor({ state: "hidden", timeout: 10_000 });
 }
 
+async function openHeaderControls(page: Page) {
+  const controlsButton = page.getByRole("button", { name: /Trip Plan controls|แผน controls/i });
+  const isExpanded = await controlsButton.getAttribute("aria-expanded");
+  if (isExpanded !== "true") {
+    await controlsButton.click();
+    await page.waitForSelector("#itinerary-header-controls[data-state='open']", { timeout: 5_000 });
+  }
+}
+
 async function selectTripPlan(page: Page, tripPlanId: string) {
-  const selector = page.getByLabel(/Trip Plan|แผน/i);
+  await openHeaderControls(page);
+  const selector = page.locator("#itinerary-header-controls select").first();
   await selector.selectOption(tripPlanId);
   await ensureSelectedTripPlan(page, tripPlanId);
 }
 
 async function ensureSelectedTripPlan(page: Page, tripPlanId: string) {
-  const selector = page.getByLabel(/Trip Plan|แผน/i);
+  await openHeaderControls(page);
+  const selector = page.locator("#itinerary-header-controls select").first();
   if ((await selector.inputValue()) !== tripPlanId) {
     await selector.selectOption(tripPlanId);
   }

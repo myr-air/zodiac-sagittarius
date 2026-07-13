@@ -127,7 +127,7 @@ describe("SmartItineraryTable activity editing", () => {
     const row = getItineraryItemRow("mobile-travel-subtype-row");
     const typeButton = within(row)
       .getAllByRole("button", { name: /แก้ไขประเภท Mobile transfer/i })
-      .find((button) => button.className.includes("activity-type-picker-mobile"));
+      .find((button) => button.className.includes("activity-type-picker "));
     expect(typeButton).toBeDefined();
 
     await user.click(typeButton as HTMLElement);

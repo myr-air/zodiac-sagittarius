@@ -38,5 +38,9 @@ export const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 export const addStopRowClassName =
   "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface) [&_td]:px-2.5 [&_td]:py-1";
+export const planVariantGroupLabelRowClassName =
+  "plan-variant-group-label-row [&_td]:border-t [&_td]:border-(--color-border-strong) [&_td]:bg-(--color-surface-muted) [&_td]:px-2.5 [&_td]:py-1 [&_td]:text-[12px] [&_td]:leading-4 [&_td]:font-semibold [&_td]:text-(--color-text-muted)";
+export const planVariantGroupItemRowClassName =
+  "plan-variant-group-item-row activity-row group/activity [&_td]:bg-(--color-surface-muted)";
 export const graphCellClassName =
   "activity-path-graph-cell !h-auto !bg-transparent !p-0 !align-top !shadow-none";
