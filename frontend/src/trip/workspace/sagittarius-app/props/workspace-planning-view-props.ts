@@ -9,7 +9,7 @@ import type {
 
 type WorkspacePlanningViewProps = Pick<
   WorkspaceViewsProps,
-  "itineraryProps" | "mapProps" | "overviewProps" | "timelineProps"
+  "itineraryProps" | "mapProps" | "overviewProps" | "timelineProps" | "detailPlannerProps"
 >;
 
 export function buildWorkspacePlanningViewProps({
@@ -140,6 +140,30 @@ export function buildWorkspacePlanningViewProps({
       tripName: trip.name,
       onSelectItem,
       onToggleContextRail,
+    },
+    detailPlannerProps: {
+      tableProps: {
+        items: planItems,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        tripPlans: tripPlanOptions(trip),
+        selectedTripPlanId,
+        mainTripPlanId: defaultTripPlanId(trip),
+        tripPlanError,
+        isTripPlanBusy,
+        role: currentMember.role,
+        selectedItemId: selectedItemIdForView,
+        tripName: trip.name,
+        onAddStop,
+        onOpenItemDetails,
+        onSelectItem,
+        onChangeTripPlan,
+        onChangeTripPlanStatus,
+        onSetMainTripPlan,
+        onCreateTripPlan,
+        onRenameTripPlan,
+      },
+      waypoints: trip.waypoints ?? [],
     },
   };
 }

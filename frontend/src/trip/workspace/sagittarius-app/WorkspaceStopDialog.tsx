@@ -38,6 +38,11 @@ export function WorkspaceStopDialog({
 }: WorkspaceStopDialogProps) {
   if (!dialogState) return null;
 
+  const parentItemActivity =
+    dialogState.mode === "create" && dialogState.parentItemId
+      ? trip.itineraryItems.find((item) => item.id === dialogState.parentItemId)?.activity
+      : undefined;
+
   return (
     <StopDialog
       key={
@@ -58,6 +63,7 @@ export function WorkspaceStopDialog({
         dialogState.mode === "create" ? dialogState.parentItemId : undefined
       }
       manualPathOptions={manualPathOptionsForDialog(trip, dialogState)}
+      parentItemActivity={parentItemActivity}
       onClose={() => {
         setStopPlaceResolution({ state: "idle", candidates: [] });
         setDialogState(null);

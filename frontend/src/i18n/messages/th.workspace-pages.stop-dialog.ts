@@ -8,6 +8,7 @@ export const thStopDialogMessages = {
   context: {
     parentBlockHint: "บล็อกหลักใช้รวมกลุ่มกิจกรรมย่อย (เช่น พิพิธภัณฑ์ที่มีจุดย่อย)",
     subActivityHint: "เพิ่มกิจกรรมภายในบล็อกหลัก",
+    subActivityHintWithParent: ({ parent }: { parent: string }) => `เพิ่มกิจกรรมภายใน ${parent}`,
   },
   closeForm: "ปิดฟอร์ม",
   fields: {

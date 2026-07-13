@@ -136,5 +136,6 @@ export const thItineraryMessages = {
       confirmDeleteNo: "ไม่ลบ",
       select: ({ activity }: { activity: string }) => `เลือกจุด ${activity}`,
       mapFallback: "แผนที่",
+      flexibleTimeBadge: "ยืดหยุ่น",
     },
   } as const;

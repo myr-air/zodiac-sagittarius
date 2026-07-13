@@ -84,7 +84,7 @@ export function StopDialogContextFields({
           </Select>
         </label>
       ) : null}
-      <label htmlFor={stopDialogFieldIds.activityType}>
+      <label className={dialogFieldWideClassName} htmlFor={stopDialogFieldIds.activityType}>
         <span>{typeLabel}</span>
         <Select
           id={stopDialogFieldIds.activityType}
