@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.8] — 2026-07-13
+
+### Docs
+- Surveyed itinerary UX follow-ups #61-#66 from the production flow review
+- Filed supplementary issues #111-#114 decomposing E2E linked-workflow verification
+
 ## [0.7.7] — 2026-07-13
 
 ### Fixed
