@@ -11,8 +11,6 @@ const inlineOptionPickerButtonClassName = cn(
   inlineFieldClassName,
   "inline-option-picker-button inline-flex !min-h-8 items-center justify-between gap-2 text-left font-semibold",
 );
-const inlineOptionPickerCaretClassName = "shrink-0 text-(--color-text-subtle)";
-
 export function InlineOptionPicker({
   ariaLabel,
   buttonClassName,
@@ -80,9 +78,7 @@ export function InlineOptionPicker({
         <span className="inline-option-picker-label min-w-0 truncate">
           {selectedOption?.label ?? "—"}
         </span>
-        <span className={cn(inlineOptionPickerCaretClassName, "inline-option-picker-caret")} aria-hidden="true">
-          ⌄
-        </span>
+        <Icon name="chevronDown" className="size-3.5" aria-hidden="true" />
       </button>
       {open ? (
         <InlineOptionPickerMenu

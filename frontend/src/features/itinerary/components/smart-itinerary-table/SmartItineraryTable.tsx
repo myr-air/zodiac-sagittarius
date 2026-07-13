@@ -51,6 +51,7 @@ export function SmartItineraryTable({
   onChangeDayPath,
   onClearDayPath,
   onToggleShowAllPaths,
+  contextRailOpen,
 }: SmartItineraryTableProps) {
   const { locale, t, tableState } = useSmartItineraryTablePageState({
     canRestructure,
@@ -151,7 +152,8 @@ export function SmartItineraryTable({
         onSelectItem={onSelectItem}
         onSaveDayTitle={onSaveDayTitle}
         onUpdateItemInline={onUpdateItemInline}
-        onToggleDay={toggleDay}
+          onToggleDay={toggleDay}
+          contextRailOpen={contextRailOpen}
         onChangeDayPath={onChangeDayPath}
         onClearDayPath={onClearDayPath}
         scrollLabel={t.itinerary.scrollLabel}

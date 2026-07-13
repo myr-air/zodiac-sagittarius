@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.9] — 2026-07-13
+
+### Changed
+- #64: Replaced raw ⌄ glyphs with chevronDown icon in option picker controls
+- #106: Widened time rail column from 64px to 80px desktop / 58px to 72px mobile for locale safety
+- #107: Threaded contextRailOpen prop through itinerary table; compute details-open state with visual distinction via left-accent border
+
 ## [0.7.8] — 2026-07-13
 
 ### Docs

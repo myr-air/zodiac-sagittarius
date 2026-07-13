@@ -25,6 +25,7 @@ export function DayGroup({
   dayPathOverride,
   showAllPaths,
   selectedItemId,
+  contextRailOpen,
   canEdit,
   collapsed,
   onAddStop,
@@ -119,6 +120,7 @@ export function DayGroup({
           onSelectItem={onSelectItem}
           onUnlinkBookingForItem={onUnlinkBookingForItem}
           onUpdateItemInline={onUpdateItemInline}
+          contextRailOpen={contextRailOpen}
         />
       ) : null}
     </tbody>

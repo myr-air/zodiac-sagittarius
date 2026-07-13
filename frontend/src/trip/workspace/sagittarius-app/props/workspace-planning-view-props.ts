@@ -119,6 +119,7 @@ export function buildWorkspacePlanningViewProps({
       onChangeDayPath,
       onClearDayPath,
       onToggleShowAllPaths,
+      contextRailOpen,
     },
     mapProps: {
       countries: trip.countries ?? [],

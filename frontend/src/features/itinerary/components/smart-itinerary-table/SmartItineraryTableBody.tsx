@@ -40,6 +40,7 @@ export interface SmartItineraryTableBodyProps
   onMoveItemToPath?: (itemId: string, pathId: string) => void;
   onSaveDayTitle?: (date: string, version: number, title: string | null) => ItineraryAsyncVoidResult;
   onToggleDay: (day: string) => void;
+  contextRailOpen?: boolean;
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   tHeaders: Messages["itinerary"]["headers"];
@@ -76,6 +77,7 @@ export function SmartItineraryTableBody({
   onSaveDayTitle,
   onUpdateItemInline,
   onToggleDay,
+  contextRailOpen,
   onChangeDayPath,
   onClearDayPath,
   tHeaders,
@@ -122,6 +124,7 @@ export function SmartItineraryTableBody({
           onSelectItem={onSelectItem}
           onSaveDayTitle={onSaveDayTitle}
           onUpdateItemInline={onUpdateItemInline}
+          contextRailOpen={contextRailOpen}
           onToggleDay={onToggleDay}
         />
       ))}
