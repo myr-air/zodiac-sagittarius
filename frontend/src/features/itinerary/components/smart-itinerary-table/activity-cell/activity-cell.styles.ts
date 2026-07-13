@@ -19,7 +19,7 @@ export const activityBodyClassName =
   "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full";
 export const activityMainLineClassName = "grid min-w-0 grid-cols-1 items-start";
 export const activitySentenceClassName =
-  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap text-sm font-normal leading-5 text-(--color-text) max-[520px]:block max-[520px]:whitespace-normal";
+  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-normal break-words text-sm font-normal leading-5 text-(--color-text) max-[520px]:block";
 export const activityTitleInputClassName =
   "min-h-5 w-full min-w-[8ch] max-w-full shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:w-full max-[520px]:max-w-full";
 export const activityPlaceInputClassName =
