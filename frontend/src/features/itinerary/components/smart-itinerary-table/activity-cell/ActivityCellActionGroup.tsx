@@ -11,6 +11,7 @@ interface ActivityCellActionGroupProps
     | "onDeleteItem"
     | "onEditItem"
     | "onOpenItemDetails"
+    | "onUpdateItemInline"
   > {
   compact?: boolean;
   onCompactActionComplete?: () => void;
@@ -28,6 +29,7 @@ export function ActivityCellActionGroup({
   onEditItem,
   onOpenItemDetails,
   onOpenNoteForItem,
+  onUpdateItemInline,
 }: ActivityCellActionGroupProps) {
   return (
     <ActivityActionButtons
@@ -43,6 +45,7 @@ export function ActivityCellActionGroup({
           ? (target) => onOpenNoteForItem(target, compact)
           : undefined
       }
+      onToggleActivityBlock={onUpdateItemInline ? (itemId) => onUpdateItemInline(itemId, { isPlanBlock: !item.isPlanBlock }) : undefined}
     />
   );
 }
