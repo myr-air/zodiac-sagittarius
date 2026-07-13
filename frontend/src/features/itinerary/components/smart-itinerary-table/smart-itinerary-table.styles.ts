@@ -15,6 +15,7 @@ export {
   activityPlaceInputClassName,
   activityRouteLineClassName,
   activityRouteLabelClassName,
+  activityTransportLineClassName,
   activityPlaceLineClassName,
   activityNoteLineClassName,
   activityMobilePlaceInputClassName,

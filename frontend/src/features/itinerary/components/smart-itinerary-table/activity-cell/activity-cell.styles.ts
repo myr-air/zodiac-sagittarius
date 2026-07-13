@@ -1,5 +1,5 @@
 export const activityCellClassName =
-  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[80px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 data-[selected=true]:border-l-[3px] data-[selected=true]:border-l-(--color-primary) data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
+  "activity-cell relative grid min-h-[60px] min-w-0 grid-cols-[80px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 data-[selected=true]:border-l-[3px] data-[selected=true]:border-l-(--color-primary) data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
 export const activityTimeRailClassName =
   "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[520px]:grid max-[520px]:justify-items-center max-[520px]:pt-0 max-[360px]:items-center";
 export const activityTimeButtonClassName =
@@ -14,7 +14,7 @@ export const activityTimeFlexibleClassName =
 export const activityTimeNextDayClassName =
   "block leading-4 font-extrabold text-(--color-accent)";
 export const activityTypeRailClassName =
-  "flex min-w-0 items-start justify-start max-[520px]:hidden";
+  "flex min-w-0 items-start justify-start max-[520px]:absolute max-[520px]:right-0 max-[520px]:top-0 max-[520px]:z-10";
 export const activityBodyClassName =
   "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full";
 export const activityMainLineClassName = "grid min-w-0 grid-cols-1 items-start";
@@ -28,6 +28,8 @@ export const activityRouteLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-1.5 gap-y-0 text-xs leading-5 text-(--color-text-muted) max-[520px]:grid-cols-[auto_minmax(0,1fr)]";
 export const activityRouteLabelClassName =
   "text-[10px] font-extrabold uppercase text-(--color-text-muted)";
+export const activityTransportLineClassName =
+  "flex min-h-5 min-w-0 items-center gap-1.5 text-xs leading-5 text-(--color-text-muted) [&_.icon]:size-3.5 [&_.icon]:text-(--color-route) max-[520px]:flex [&_span]:text-[11px] [&_span]:font-medium";
 export const activityPlaceLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
 export const activityNoteLineClassName =
@@ -57,7 +59,7 @@ export const activityBookingButtonEmptyClassName =
 export const activityBookingButtonLinkedClassName =
   "border-(--color-route-border) bg-(--color-route-soft) text-(--color-route) hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong)";
 export const activityTypePickerClassName =
-  "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:px-1.5 max-[520px]:pt-0.5 [&_.icon]:size-3.5";
+  "activity-type-picker !min-h-[52px] h-full w-full max-w-full shrink-0 items-start justify-start rounded-(--radius-sm) border-(--color-border) bg-(--color-surface-subtle) px-2 pt-1 text-left text-[11px] font-medium text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[520px]:!min-h-7 max-[520px]:h-7 max-[520px]:w-7 max-[520px]:shrink-0 max-[520px]:justify-center max-[520px]:border-transparent max-[520px]:bg-transparent max-[520px]:!px-0 max-[520px]:!py-0 max-[520px]:[&_.inline-option-picker-label]:hidden [&_.icon]:size-3.5";
 export const activityMobileLineClassName =
   "mobile-activity-line hidden min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 max-[520px]:grid";
 export const activityMobileTypePickerClassName =
