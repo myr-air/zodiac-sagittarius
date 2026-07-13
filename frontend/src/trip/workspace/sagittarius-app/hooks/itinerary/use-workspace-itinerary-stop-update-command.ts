@@ -50,7 +50,7 @@ export function useWorkspaceItineraryStopUpdateCommand({
         trip,
         values,
       });
-      if (!resolvedLocation) return;
+      if (!resolvedLocation) throw new Error("Place resolution failed");
       values = resolvedLocation.values;
       const locationFields = resolvedLocation.locationFields;
 
