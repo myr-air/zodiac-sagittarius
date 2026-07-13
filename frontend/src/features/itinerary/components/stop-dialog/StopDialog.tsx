@@ -26,6 +26,7 @@ export function StopDialog({
   onDelete,
   onPromoteFoodRecommendation,
   onSubmit,
+  parentItemActivity,
   placeSuggestions = [],
   placeResolution,
   startDate,
@@ -73,7 +74,9 @@ export function StopDialog({
           <div className={dialogContextBannerClassName}>
             <p>
               {isSubActivity
-                ? t.stopDialog.context.subActivityHint
+                ? parentItemActivity
+                  ? t.stopDialog.context.subActivityHintWithParent({ parent: parentItemActivity })
+                  : t.stopDialog.context.subActivityHint
                 : t.stopDialog.context.parentBlockHint}
             </p>
           </div>

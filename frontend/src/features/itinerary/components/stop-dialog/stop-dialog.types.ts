@@ -32,6 +32,7 @@ export interface StopDialogProps {
   onDelete?: () => void;
   onPromoteFoodRecommendation?: () => void;
   onSubmit: (values: StopFormValues) => void | Promise<void>;
+  parentItemActivity?: string;
   placeSuggestions?: PlaceSuggestion[];
   placeResolution?: {
     state: "idle" | "resolving" | "ambiguous" | "unresolved";

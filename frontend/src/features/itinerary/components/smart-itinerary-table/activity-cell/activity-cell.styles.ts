@@ -7,6 +7,12 @@ export const activityTimeButtonClassName =
 export const activityTimeStartClassName = "block leading-4 font-medium";
 export const activityTimeEndClassName =
   "block leading-4 font-normal text-(--color-text-muted) group-hover/activity:text-(--color-text-muted)";
+export const activityTimeDurationClassName =
+  "block leading-4 font-normal text-(--color-text-muted)";
+export const activityTimeFlexibleClassName =
+  "block leading-4 font-normal text-(--color-text-muted)";
+export const activityTimeNextDayClassName =
+  "block leading-4 font-extrabold text-(--color-accent)";
 export const activityTypeRailClassName =
   "flex min-w-0 items-start justify-start max-[520px]:hidden";
 export const activityBodyClassName =
