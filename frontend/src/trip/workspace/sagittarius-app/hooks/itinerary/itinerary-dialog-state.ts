@@ -4,6 +4,7 @@ export interface ItineraryDialogStateCreate {
   mode: "create";
   day?: string;
   parentItemId?: string | null;
+  createSequence?: number;
 }
 
 export interface ItineraryDialogStateEdit {

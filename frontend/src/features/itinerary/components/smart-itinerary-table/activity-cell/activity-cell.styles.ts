@@ -24,12 +24,14 @@ export const activityRouteLabelClassName =
   "text-[10px] font-extrabold uppercase text-(--color-text-muted)";
 export const activityPlaceLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
+export const activityNoteLineClassName =
+  "min-w-0 truncate text-xs leading-5 text-(--color-text-muted)";
 export const activityMobilePlaceInputClassName =
   "min-h-5 w-full min-w-0 truncate border-0 border-b border-transparent bg-transparent px-0 py-0 text-xs font-semibold leading-5 text-(--color-text-muted) outline-none transition-colors duration-150 placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent";
 export const activityActionsClassName =
   "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap max-[1023px]:hidden";
 export const activityActionClusterClassName =
-  "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap";
+  "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 overflow-visible whitespace-nowrap";
 export const activityIconButtonClassName =
   "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 export const activityMetaClassName =

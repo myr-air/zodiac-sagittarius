@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.6] — 2026-07-13
+
+### Fixed
+- #26, #90: Smart Itinerary Table restructured — removed nested card framing, added right context rail, selected-row highlight, and command bar with itinerary actions
+- #29: Inspector now opens via double-click or explicit button, not every single click on a row
+- #44, #54: Add-activity dialog shows parent/sub-activity context with descriptive headings and progress indicator
+- #57: Validation feedback surfaced as inline errors below fields (EN + TH), not silent save failure
+- #56: Flexible sub-items no longer lost during activity save — all sub-items persist in trip data
+- #58: Consecutive add-activity flows fixed — dialog no longer blocks next entry with stale state
+- #43: Selected Trip Plan persists across page reload and direct URL navigation via sessionStorage
+- #47: Notes entered during activity creation now persist and display in activity cell after save
+- #49: Itinerary summary counts (activities, sub-activities, flexible items) update immediately after add/remove
+- #55: Activity Block conversion toggle added — converting itinerary rows to blocks no longer silently fails
+- #48: Flexible sub-activities from CSV plan import preserved when entering journey details
+- #50: Untimed flexible transport legs preserved during manual itinerary entry and across reload
+- #28: Time-window editor redesigned with clearly labeled Start/End fields in readable HH:MM format
+- #68: Action button clipping at desktop table edge fixed
+- #27: Activity path graph lanes now vertically aligned with itinerary item rows
+
 ## [0.7.5] — 2026-07-12
 
 ### Fixed

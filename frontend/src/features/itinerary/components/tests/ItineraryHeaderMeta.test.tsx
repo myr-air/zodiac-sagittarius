@@ -38,4 +38,56 @@ describe("ItineraryHeaderMeta", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("renders sub-activities count when provided", () => {
+    render(
+      <ItineraryHeaderMeta
+        daysCount={3}
+        endDate="2026-06-20"
+        itemsCount={10}
+        locale="en"
+        startDate="2026-06-18"
+        subActivitiesCount={4}
+        flexibleItemsCount={0}
+        tDates={messages.en.dates}
+        tItinerary={{
+          dayItems: messages.en.itinerary.dayItems,
+          subActivitiesCount: ({ count }: { count: number }) =>
+            `${count} sub-activities`,
+          flexibleItemsCount: ({ count }: { count: number }) =>
+            `${count} flexible`,
+        }}
+        totalMinutes={135}
+        warningCount={0}
+      />,
+    );
+
+    expect(screen.getByText("4 sub-activities")).toBeInTheDocument();
+  });
+
+  it("renders flexible items count when provided", () => {
+    render(
+      <ItineraryHeaderMeta
+        daysCount={3}
+        endDate="2026-06-20"
+        itemsCount={10}
+        locale="en"
+        startDate="2026-06-18"
+        subActivitiesCount={0}
+        flexibleItemsCount={2}
+        tDates={messages.en.dates}
+        tItinerary={{
+          dayItems: messages.en.itinerary.dayItems,
+          subActivitiesCount: ({ count }: { count: number }) =>
+            `${count} sub-activities`,
+          flexibleItemsCount: ({ count }: { count: number }) =>
+            `${count} flexible`,
+        }}
+        totalMinutes={135}
+        warningCount={0}
+      />,
+    );
+
+    expect(screen.getByText("2 flexible")).toBeInTheDocument();
+  });
 });

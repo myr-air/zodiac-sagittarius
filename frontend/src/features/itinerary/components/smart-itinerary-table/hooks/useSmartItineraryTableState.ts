@@ -27,6 +27,29 @@ import {
 } from "../smart-itinerary-table-state";
 import { useSmartItineraryPathFilters } from "./useSmartItineraryPathFilters";
 
+export interface ItinerarySummaryCounts {
+  subActivitiesCount: number;
+  flexibleItemsCount: number;
+}
+
+export function computeItinerarySummaryCounts(
+  items: ItineraryItem[],
+): ItinerarySummaryCounts {
+  let subActivitiesCount = 0;
+  let flexibleItemsCount = 0;
+
+  for (const item of items) {
+    if (item.parentItemId) {
+      subActivitiesCount += 1;
+    }
+    if (item.timeMode === "flexible") {
+      flexibleItemsCount += 1;
+    }
+  }
+
+  return { subActivitiesCount, flexibleItemsCount };
+}
+
 interface UseSmartItineraryTableStateParams {
   pathOptions: ItineraryPathOption[];
   items: ItineraryItem[];
@@ -92,6 +115,10 @@ export function useSmartItineraryTableState({
     (total, item) => total + (item.durationMinutes ?? 0),
     0,
   );
+  const {
+    subActivitiesCount,
+    flexibleItemsCount,
+  } = computeItinerarySummaryCounts(displayItems);
 
   const graphColumnWidth = buildGraphColumnWidth(
     displayItems,
@@ -123,6 +150,8 @@ export function useSmartItineraryTableState({
     graphItemsByDay,
     warningCount,
     totalMinutes,
+    subActivitiesCount,
+    flexibleItemsCount,
     graphColumnWidth,
     smartTableStyle,
     toggleDay,

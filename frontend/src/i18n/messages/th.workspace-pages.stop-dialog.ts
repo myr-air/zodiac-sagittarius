@@ -1,7 +1,13 @@
 export const thStopDialogMessages = {
   titles: {
     create: "เพิ่มกิจกรรม",
+    createParentBlock: "สร้างบล็อกหลัก",
+    createSubActivity: "เพิ่มกิจกรรมย่อย",
     edit: "แก้ไขรายละเอียด",
+  },
+  context: {
+    parentBlockHint: "บล็อกหลักใช้รวมกลุ่มกิจกรรมย่อย (เช่น พิพิธภัณฑ์ที่มีจุดย่อย)",
+    subActivityHint: "เพิ่มกิจกรรมภายในบล็อกหลัก",
   },
   closeForm: "ปิดฟอร์ม",
   fields: {
@@ -18,6 +24,9 @@ export const thStopDialogMessages = {
     mapLink: "ลิงก์แผนที่",
     transportation: "การเดินทาง",
     note: "โน้ต",
+    required: "จำเป็น",
+    parentBlock: "บล็อกหลัก",
+    subActivity: "กิจกรรมย่อย",
   },
   actions: {
     cancel: "ยกเลิก",
@@ -34,5 +43,10 @@ export const thStopDialogMessages = {
   messages: {
     saving: "กำลังบันทึก...",
     saveFailed: "บันทึกกิจกรรมไม่สำเร็จ ตรวจช่องที่จำเป็นแล้วลองอีกครั้ง",
+    requiredField: "จำเป็น",
+  },
+  validation: {
+    activityRequired: "กรุณากรอกชื่อกิจกรรม",
+    dayRequired: "เลือกวัน",
   },
 } as const;

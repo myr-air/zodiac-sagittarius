@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/cn";
-import { normalizeTime } from "./model/date-time-picker-model";
+import {
+  normalizeTime,
+  normalizeTimeInput,
+} from "./model/date-time-picker-model";
 import {
   focusInputWithoutOpening,
   PickerPanel,
@@ -49,7 +52,13 @@ export function TimePickerField({
         required={required}
         type="text"
         value={value}
-        onBlur={onBlur}
+        onBlur={() => {
+          const normalized = normalizeTimeInput(value);
+          if (normalized !== null && normalized !== value) {
+            onChange(normalized);
+          }
+          onBlur?.();
+        }}
         onChange={(event) => onChange(event.target.value)}
         onFocus={() => {
           if (suppressOpenOnFocusRef.current) return;

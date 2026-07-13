@@ -5,6 +5,7 @@ import { ActivityCellTitleLine } from "./ActivityCellTitleLine";
 import { ActivityLocationLine } from "./ActivityLocationLine";
 import {
   activityBodyClassName,
+  activityNoteLineClassName,
   activityTabletActionLayerClassName,
 } from "../smart-itinerary-table.styles";
 import type { ActivityCellProps } from "./activity-cell.types";
@@ -103,6 +104,9 @@ export function ActivityCellBody({
         itineraryLabels={itineraryLabels}
         onUpdateItemInline={onUpdateItemInline}
       />
+      {item.note?.trim() ? (
+        <div className={activityNoteLineClassName}>{item.note}</div>
+      ) : null}
       <ActivityCellMeta
         actionMenuLabel={actionMenuLabel}
         actionsExpanded={actionsExpanded}

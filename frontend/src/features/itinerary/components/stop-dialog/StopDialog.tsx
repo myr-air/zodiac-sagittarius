@@ -13,6 +13,7 @@ import type { StopDialogProps } from "./stop-dialog.types";
 import { useStopDialogModel } from "./use-stop-dialog-model";
 import { stopDetailLabels } from "@/src/features/itinerary/domain/stop-details";
 import { stopDialogCopy } from "@/src/features/itinerary/domain/stop-dialog-copy";
+import { dialogContextBannerClassName } from "./stop-dialog.styles";
 
 export function StopDialog({
   mode,
@@ -48,9 +49,12 @@ export function StopDialog({
 
   const detailLabels = stopDetailLabels(locale);
   const copy = stopDialogCopy(locale);
+  const isCreating = mode === "create";
   const title =
     mode === "create"
-      ? t.stopDialog.titles.create
+      ? isSubActivity
+        ? t.stopDialog.titles.createSubActivity
+        : t.stopDialog.titles.createParentBlock
       : isSubActivity
         ? copy.editSubActivityTitle
         : t.stopDialog.titles.edit;
@@ -64,6 +68,16 @@ export function StopDialog({
             <Icon name="x" />
           </button>
         </div>
+
+        {isCreating ? (
+          <div className={dialogContextBannerClassName}>
+            <p>
+              {isSubActivity
+                ? t.stopDialog.context.subActivityHint
+                : t.stopDialog.context.parentBlockHint}
+            </p>
+          </div>
+        ) : null}
 
         <form className={stopFormClassName} onSubmit={handleSubmit}>
           <StopDialogFormFields

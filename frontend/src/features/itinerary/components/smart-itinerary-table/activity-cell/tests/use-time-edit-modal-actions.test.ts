@@ -24,12 +24,13 @@ const validModel: TimeEditModalModel = {
   closeLabel: "Close time editor",
   derivedDuration: 90,
   durationLabel: "Duration: 1h 30m",
+  endError: null,
   endLabel: "End time",
-  errorMessage: null,
   nextDayEndLabel: "Next day end",
   optionalEndHint: "End time is optional.",
   previewLabel: "1h 30m",
   previewWindow: "08:00-09:30",
+  startError: null,
   startLabel: "Start time",
   timeFormatHint: "Use 24-hour time.",
 };
@@ -132,7 +133,7 @@ describe("time edit modal actions", () => {
     const invalid = createHook({
       model: {
         ...validModel,
-        errorMessage: "End time must be after start time",
+        endError: "End time must be after start time",
       },
     });
 

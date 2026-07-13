@@ -73,7 +73,7 @@ export function TimelineView({
             locale={locale}
             startDate={startDate}
             tDates={t.dates}
-            tItinerary={t.timeline}
+            tItinerary={t.itinerary}
             totalMinutes={totalMinutes}
             warningCount={warningCount}
           />

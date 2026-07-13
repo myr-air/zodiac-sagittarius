@@ -2,6 +2,7 @@ import type { ItineraryItem } from "@/src/trip/types";
 import type { Locale } from "@/src/i18n/types";
 import type { Messages } from "@/src/i18n/messages";
 import {
+  activityBlockToggleLabel,
   activityMapActionLabel,
   activityNoteActionLabel,
 } from "@/src/features/itinerary/domain/itinerary-activity-actions";
@@ -18,6 +19,7 @@ export function ActivityActionButtons({
   onEditItem,
   onOpenItemDetails,
   onOpenNoteForItem,
+  onToggleActivityBlock,
   showDelete = true,
   showDetails = true,
   showEdit = true,
@@ -33,6 +35,7 @@ export function ActivityActionButtons({
   onEditItem?: (itemId: string) => void;
   onOpenItemDetails?: (itemId: string) => void;
   onOpenNoteForItem?: (item: ItineraryItem) => void;
+  onToggleActivityBlock?: (itemId: string) => void;
   showDelete?: boolean;
   showDetails?: boolean;
   showEdit?: boolean;
@@ -43,7 +46,12 @@ export function ActivityActionButtons({
     item,
     itineraryLabels.row.mapFallback,
   );
-  const noteLabel = activityNoteActionLabel(item, locale);
+  const blockToggleLabel = activityBlockToggleLabel(
+    item,
+    locale,
+    item.isPlanBlock ?? false,
+  );
+  const noteLabel = activityNoteActionLabel(item, locale, item.note);
   const detailsLabel = itineraryLabels.row.openDetails({
     activity: item.activity,
   });
@@ -62,6 +70,15 @@ export function ActivityActionButtons({
           href={item.mapLink}
           iconClassName={iconClassName}
           iconName="map"
+          onActionComplete={onActionComplete}
+        />
+      ) : null}
+      {onToggleActivityBlock ? (
+        <ActivityActionButton
+          ariaLabel={blockToggleLabel}
+          iconClassName={iconClassName}
+          iconName="block"
+          onAction={() => onToggleActivityBlock(item.id)}
           onActionComplete={onActionComplete}
         />
       ) : null}

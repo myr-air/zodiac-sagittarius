@@ -10,7 +10,8 @@ describe("buildTimeEditModalModel", () => {
       startTime: "23:30",
     });
 
-    expect(model.errorMessage).toBeNull();
+    expect(model.startError).toBeNull();
+    expect(model.endError).toBeNull();
     expect(model.closeLabel).toBe("Close time editor");
     expect(model.nextDayEndLabel).toBe("next day end");
     expect(model.previewLabel).toBe("Display preview");
@@ -26,11 +27,36 @@ describe("buildTimeEditModalModel", () => {
       startTime: "",
     });
 
-    expect(model.errorMessage).toBe("ใส่เวลาเริ่มก่อนใส่เวลาจบ");
+    expect(model.startError).toBeNull();
+    expect(model.endError).toBe("ใส่เวลาเริ่มก่อนใส่เวลาจบ");
     expect(model.closeLabel).toBe("ปิดตัวแก้ไขเวลา");
     expect(model.nextDayEndLabel).toBe("จบวันถัดไป");
     expect(model.previewLabel).toBe("ตัวอย่างที่จะแสดง");
     expect(model.previewWindow).toBe("--:--");
     expect(model.durationLabel).toBe("ไม่แสดง duration");
+  });
+
+  it("reports a per-field error for an invalid start time", () => {
+    const model = buildTimeEditModalModel({
+      endOffsetDays: 0,
+      endTime: "",
+      locale: "en",
+      startTime: "25:00",
+    });
+
+    expect(model.startError).toBe("Start time must use HH:MM, for example 09:30.");
+    expect(model.endError).toBeNull();
+  });
+
+  it("reports a per-field error for an invalid end time", () => {
+    const model = buildTimeEditModalModel({
+      endOffsetDays: 0,
+      endTime: "abc",
+      locale: "en",
+      startTime: "08:00",
+    });
+
+    expect(model.startError).toBeNull();
+    expect(model.endError).toBe("End time must use HH:MM, for example 09:30.");
   });
 });

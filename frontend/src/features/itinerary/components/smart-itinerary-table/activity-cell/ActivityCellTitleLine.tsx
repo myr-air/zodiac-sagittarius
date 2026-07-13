@@ -21,7 +21,7 @@ export function ActivityCellTitleLine({
   onUpdateItemInline,
 }: ActivityCellTitleLineProps) {
   return (
-    <div className={activityMainLineClassName}>
+    <div className={activityMainLineClassName} data-activity-title-line>
       <div className={activitySentenceClassName}>
         <InlineActivityField
           ariaLabel={itineraryLabels.row.inlineActivity({

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { InlineItineraryItemPatch } from "@/src/trip/itinerary-items";
 import type { StopPlaceResolutionState } from "@/src/trip/places";
@@ -29,12 +29,15 @@ export function useWorkspaceItineraryAddCommands({
   tripPlanErrorMessage,
   updateItineraryItemInline,
 }: UseWorkspaceItineraryAddCommandsParams) {
+  const createSequenceRef = useRef(0);
+
   const addStop = useCallback(
     (day?: string, parentItemId?: string | null) => {
       if (!canEdit) return;
       setStopPlaceResolution({ state: "idle", candidates: [] });
       setContextRailVisibility(false);
-      setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null });
+      createSequenceRef.current += 1;
+      setDialogState({ mode: "create", day, parentItemId: parentItemId ?? null, createSequence: createSequenceRef.current });
     },
     [canEdit, setContextRailVisibility, setDialogState, setStopPlaceResolution],
   );

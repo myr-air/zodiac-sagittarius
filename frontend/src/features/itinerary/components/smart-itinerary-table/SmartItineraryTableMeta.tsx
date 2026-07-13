@@ -12,6 +12,8 @@ interface SmartItineraryTableMetaProps {
   tDates: Messages["dates"];
   totalMinutes: number;
   warningCount: number;
+  subActivitiesCount: number;
+  flexibleItemsCount: number;
 }
 
 export function SmartItineraryTableMeta({
@@ -24,6 +26,8 @@ export function SmartItineraryTableMeta({
   tDates,
   totalMinutes,
   warningCount,
+  subActivitiesCount,
+  flexibleItemsCount,
 }: SmartItineraryTableMetaProps) {
   return (
     <ItineraryHeaderMeta
@@ -36,6 +40,8 @@ export function SmartItineraryTableMeta({
       tItinerary={tItinerary}
       totalMinutes={totalMinutes}
       warningCount={warningCount}
+      subActivitiesCount={subActivitiesCount}
+      flexibleItemsCount={flexibleItemsCount}
     />
   );
 }
