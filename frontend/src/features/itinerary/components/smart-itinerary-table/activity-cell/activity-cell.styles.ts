@@ -1,5 +1,5 @@
 export const activityCellClassName =
-  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[80px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 group-hover/activity:bg-(--color-surface-subtle) data-[selected=true]:bg-(--color-route-soft) data-[selected=true]:shadow-[inset_0_0_0_1px_var(--color-route-border)] data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
+  "activity-cell grid min-h-[60px] min-w-0 grid-cols-[80px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 data-[selected=true]:border-l-[3px] data-[selected=true]:border-l-(--color-primary) data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
 export const activityTimeRailClassName =
   "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[520px]:grid max-[520px]:justify-items-center max-[520px]:pt-0 max-[360px]:items-center";
 export const activityTimeButtonClassName =

@@ -7,7 +7,7 @@ export const dayGroupClassName = "day-group";
 export const daySpacerRowClassName =
   "day-spacer-row [&_td]:!h-3 [&_td]:!border-0 [&_td]:!bg-(--color-page) [&_td]:!p-0";
 export const dayRowClassName =
-  "day-row [&_th]:min-h-[39px] [&_th]:bg-(--color-surface-subtle) [&_th]:px-2.5 [&_th]:py-0 [&_th]:shadow-[inset_0_-1px_0_var(--color-border-strong)] max-[520px]:[&_th]:py-1.5";
+  "day-row [&_th]:min-h-[39px] [&_th]:border-b [&_th]:border-(--color-border) [&_th]:px-2.5 [&_th]:py-0 max-[520px]:[&_th]:py-1.5";
 export const dayRowContentClassName =
   "day-row-content flex min-h-[39px] w-full min-w-0 flex-wrap items-center gap-x-[9px] gap-y-1";
 export const dayToggleClassName =
@@ -37,6 +37,6 @@ export const itemPlaceholderRowClassName =
 export const itemPlaceholderCellClassName =
   "item-placeholder-cell min-w-0 bg-(--color-surface) px-0 py-0 align-top";
 export const addStopRowClassName =
-  "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface-subtle) [&_td]:px-2.5 [&_td]:py-1";
+  "add-stop-row [&_td]:border-b [&_td]:border-r [&_td]:border-dashed [&_td]:border-(--color-border) [&_td]:bg-(--color-surface) [&_td]:px-2.5 [&_td]:py-1";
 export const graphCellClassName =
-  "activity-path-graph-cell !h-auto !bg-(--color-surface-subtle) !p-0 !align-top !shadow-none";
+  "activity-path-graph-cell !h-auto !bg-transparent !p-0 !align-top !shadow-none";
