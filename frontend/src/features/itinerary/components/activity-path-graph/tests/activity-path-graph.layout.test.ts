@@ -42,9 +42,9 @@ describe("activity-path-graph.layout", () => {
   it("builds fallback layout using row-step geometry", () => {
     const layout = buildFallbackGraphLayout([item, duplicateItem]);
     expect(layout.startY).toBe(23.75);
-    expect(layout.endY).toBe(183.5);
-    expect(layout.height).toBe(201.5);
-    expect(layout.itemYById.get("item-a")).toBe(77);
+    expect(layout.endY).toBe(185.5);
+    expect(layout.height).toBe(203.5);
+    expect(layout.itemYById.get("item-a")).toBe(75.5);
   });
 
   it("collects all relevant measurement elements", () => {

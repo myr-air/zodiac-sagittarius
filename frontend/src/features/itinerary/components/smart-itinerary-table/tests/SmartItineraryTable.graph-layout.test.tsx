@@ -14,11 +14,11 @@ describe("SmartItineraryTable graph layout", () => {
 
     const dayDropAnchors = document.querySelectorAll("[data-day-drop]");
     expect(dayDropAnchors.length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByRole("button", {
-        name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop or activity/i,
-      }),
-    ).toHaveLength(dayDropAnchors.length);
+    // ponytail: page header has an extra add-stop button, so total = anchors + 1
+    const addStopButtons = screen.getAllByRole("button", {
+      name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop or activity/i,
+    });
+    expect(addStopButtons).toHaveLength(dayDropAnchors.length + 1);
   });
 
   it("aligns graph dots with measured blank activity rows", async () => {

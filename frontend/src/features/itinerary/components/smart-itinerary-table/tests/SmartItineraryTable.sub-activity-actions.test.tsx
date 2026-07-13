@@ -30,9 +30,9 @@ describe("SmartItineraryTable sub-activity actions", () => {
     const addActivityButtons = screen.getAllByRole("button", {
       name: /เพิ่มสถานที่ \/ กิจกรรม|Add stop/i,
     });
-    expect(addActivityButtons.length).toBeGreaterThan(0);
-
-    await user.click(addActivityButtons[0]);
+    expect(addActivityButtons.length).toBeGreaterThanOrEqual(2);
+    // ponytail: index 0 is page header button, index 1 is first day-group button
+    await user.click(addActivityButtons[1]);
     expect(onAddStop).toHaveBeenCalledWith(item.day);
   });
 

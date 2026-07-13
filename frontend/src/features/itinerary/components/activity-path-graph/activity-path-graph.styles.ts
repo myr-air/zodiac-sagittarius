@@ -8,7 +8,8 @@ export const anchorClassName =
 
 export const dayRowHeight = 47.5;
 export const addStopRowHeight = 36;
-export const rowStep = 59;
+export const rowStep = 60;
+export const titleLineOffset = 28;
 export const dotLaneGap = 18;
 export const dotSize = 12;
 export const dotHitTargetSize = 36;

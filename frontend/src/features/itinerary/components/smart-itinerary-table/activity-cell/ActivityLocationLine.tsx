@@ -5,12 +5,14 @@ import type { ItineraryItem } from "@/src/trip/types";
 import { readItineraryDetailString } from "@/src/trip/itinerary-items";
 import { InlineActivityField } from "./InlineActivityField";
 import type { ItineraryAsyncVoidResult } from "../itinerary-action.types";
+import { Icon } from "@/src/ui/icons";
 import {
   activityMobilePlaceInputClassName,
   activityPlaceInputClassName,
   activityPlaceLineClassName,
   activityRouteLabelClassName,
   activityRouteLineClassName,
+  activityTransportLineClassName,
 } from "../smart-itinerary-table.styles";
 
 export function ActivityLocationLine({
@@ -75,25 +77,32 @@ export function ActivityLocationLine({
             })
           }
         />
+        <div className={activityTransportLineClassName} aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <div className={activityPlaceLineClassName}>
-      <span className={activityRouteLabelClassName}>Place</span>
-      <InlineActivityField
-        ariaLabel={itineraryLabels.row.inlinePlace({
-          activity: item.activity,
-        })}
-        className={cn(activityMobilePlaceInputClassName, "max-[520px]:block")}
-        disabled={!editable}
-        key={`${item.id}:place:${item.place}`}
-        maxLength={90}
-        placeholder=""
-        value={item.place}
-        onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
-      />
-    </div>
+    <>
+      <div className={activityPlaceLineClassName}>
+        <span className={activityRouteLabelClassName}>Place</span>
+        <InlineActivityField
+          ariaLabel={itineraryLabels.row.inlinePlace({
+            activity: item.activity,
+          })}
+          className={cn(activityMobilePlaceInputClassName, "max-[520px]:block")}
+          disabled={!editable}
+          key={`${item.id}:place:${item.place}`}
+          maxLength={90}
+          placeholder=""
+          value={item.place}
+          onCommit={(place) => onUpdateItemInline?.(item.id, { place })}
+        />
+      </div>
+      <div className={activityTransportLineClassName}>
+        <Icon name="route" />
+        <span>{item.transportation}</span>
+      </div>
+    </>
   );
 }

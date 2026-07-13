@@ -76,6 +76,7 @@ export interface BuildWorkspaceShellPropsInput {
     };
   };
   toastDismissed: boolean;
+  onToggleContextRail?: () => void;
   toggleContextRailCollapsed: WorkspaceShellProps["appShellProps"]["onToggleCollapsed"];
   toggleTaskStatus: WorkspaceShellProps["railProps"]["railProps"]["onToggleTaskStatus"];
   trip: WorkspaceShellProps["dialogsProps"]["trip"];
@@ -100,6 +101,7 @@ export function buildWorkspaceShellProps(input: BuildWorkspaceShellPropsInput): 
     sidebarCollapsed,
     supportsContextRail,
     toastDismissed,
+    onToggleContextRail,
     toggleContextRailCollapsed,
     trip,
     viewsProps,
@@ -121,6 +123,7 @@ export function buildWorkspaceShellProps(input: BuildWorkspaceShellPropsInput): 
       contextRailOpen,
       importError: importItineraryError,
       supportsContextRail,
+      onToggleContextRail: onToggleContextRail,
     },
     railProps: buildWorkspaceRailProps(input),
     rolePreviewProps: {

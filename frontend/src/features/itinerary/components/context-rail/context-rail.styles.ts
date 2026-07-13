@@ -58,7 +58,7 @@ export const expenseFormClassName =
 export const expenseItemClassName =
   `expense-item grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2 text-xs ${contextRailSurfaceItemClassName}`;
 export const contextRailClassName =
-  "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[380px] max-w-[min(380px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-(--color-surface) opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
+  "context-rail absolute right-0 top-0 z-[3] h-full min-h-0 w-[320px] max-w-[min(320px,calc(100%_-_24px))] min-w-0 translate-x-0 bg-(--color-surface) opacity-100 shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)] [transition:transform_220ms_ease,opacity_180ms_ease,box-shadow_220ms_ease] will-change-[transform,opacity] data-[state=closed]:pointer-events-none data-[state=closed]:translate-x-6 data-[state=closed]:shadow-[-8px_0_18px_rgb(15_23_42_/_0)] max-[1199px]:static max-[1199px]:w-full max-[1199px]:max-w-none max-[1199px]:shadow-none";
 export const contextRailOpenClassName =
   "context-rail--open animate-[drawer-slide-in_220ms_ease-out_both]";
 export const contextRailClosedClassName = "context-rail--closed";

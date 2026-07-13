@@ -1,7 +1,7 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { GraphLayout } from "./activity-path-graph.types";
 import type { ItineraryItem } from "@/src/trip/types";
-import { addStopRowHeight, dayRowHeight, rowStep } from "./activity-path-graph.styles";
+import { addStopRowHeight, dayRowHeight, rowStep, titleLineOffset } from "./activity-path-graph.styles";
 
 const roundPathNumber = (value: number): number => Math.round(value * 100) / 100;
 const isUsableRect = (rect: DOMRect): boolean =>
@@ -57,7 +57,7 @@ export function buildFallbackGraphLayout(rowItems: ItineraryItem[]): GraphLayout
   return {
     endY: dayRowHeight + rowItems.length * rowStep + addStopRowHeight / 2,
     height,
-    itemYById: new Map(rowItems.map((item, index) => [item.id, dayRowHeight + rowStep / 2 + index * rowStep])),
+    itemYById: new Map(rowItems.map((item, index) => [item.id, dayRowHeight + titleLineOffset + index * rowStep])),
     startY: dayRowHeight / 2,
   };
 }

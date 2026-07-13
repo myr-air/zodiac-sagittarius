@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0] — 2026-07-13
+
+### Changed
+- #110, #26: Flattened itinerary table surfaces: removed nested card framing, inset shadows, and `--color-surface-subtle` layers; table body uses `bg-(--color-surface)` only, day headers use `border-b` divider
+- #90, #29: Added right context rail (320px at ≥1200px) with default map preview + suggestions content; teal left-border row selection (no background tint); explicit `Info`/`ChevronRight` inspector button on selected rows
+- #108: Consolidated activity type picker to single DOM element per breakpoint using CSS visibility (not two copies); added visible block toggle with 44x44px hit area
+- #109: Added `--color-route` transport icon + label field for non-travel items; suppressed for travel items with stable reserved space (no layout shift)
+- #87: Plan variant groups separated by `border-(--color-border-strong)` with `bg-(--color-surface-muted)` rows and 12px/16px group labels following DESIGN.md typography
+- #105: Fixed path graph dot/row alignment using DOM-measured positions instead of hardcoded values; alignment stable through expand/collapse
+- #90: Completed command bar with right-rail toggle button in cross-phase layout
+
 ## [0.7.11] — 2026-07-13
 
 ### Fixed

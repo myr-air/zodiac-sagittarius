@@ -48,7 +48,7 @@ describe("SmartItineraryTable", () => {
     ).toHaveClass(
       "min-h-[60px]",
       "grid-cols-[80px_112px_minmax(0,1fr)]",
-      "data-[selected=true]:bg-(--color-route-soft)",
+      "data-[selected=true]:border-l-(--color-primary)",
     );
     expect(
       within(itemRows[0]).getByRole("button", {

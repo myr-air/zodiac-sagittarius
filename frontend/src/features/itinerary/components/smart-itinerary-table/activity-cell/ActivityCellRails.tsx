@@ -1,7 +1,6 @@
 import { ActivityTypePicker } from "./ActivityTypePicker";
 import { ActivityTimeButton } from "./ActivityTimeButton";
 import {
-  activityMobileTypePickerClassName,
   activityTimeRailClassName,
   activityTypePickerClassName,
   activityTypeRailClassName,
@@ -32,14 +31,6 @@ export function ActivityCellRails({
           itineraryLabels={itineraryLabels}
           locale={locale}
           onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
-        />
-        <ActivityTypePicker
-          buttonClassName={activityMobileTypePickerClassName}
-          disabled={!editable}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          onUpdateItemInline={onUpdateItemInline}
         />
       </div>
       <div className={activityTypeRailClassName}>

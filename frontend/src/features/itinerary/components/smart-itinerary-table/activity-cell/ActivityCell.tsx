@@ -58,7 +58,6 @@ export function ActivityCell({
       data-selected={selected ? "true" : undefined}
       data-details-open={detailsOpen ? "true" : undefined}
       onClick={() => onSelectItem(item.id)}
-      onDoubleClick={() => onOpenItemDetails?.(item.id)}
     >
       <ActivityCellRails
         editable={editable}
