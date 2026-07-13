@@ -48,13 +48,12 @@ interface AboutAppPageProps {
 
 export function AboutAppPage({ webVersion }: AboutAppPageProps) {
   const { t } = useI18n();
-  const [apiVersion, setApiVersion] = useState<ApiVersionState>({ status: "loading" });
+  const [apiVersion, setApiVersion] = useState<ApiVersionState>(
+    webVersion.runtimeMode === "local" ? { status: "unavailable" } : { status: "loading" },
+  );
 
   useEffect(() => {
-    if (webVersion.runtimeMode === "local") {
-      setApiVersion({ status: "unavailable" });
-      return;
-    }
+    if (webVersion.runtimeMode === "local") return;
 
     let cancelled = false;
 
@@ -74,7 +73,7 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [webVersion.apiVersionUrl]);
+  }, [webVersion.runtimeMode, webVersion.apiVersionUrl]);
 
   const status = buildAboutStatusModel(apiVersion, t.aboutApp);
   const statusClassName = status.tone === "ready" ? statusPillReadyClassName : status.tone === "loading" ? statusPillLoadingClassName : statusPillUnavailableClassName;

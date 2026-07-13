@@ -54,7 +54,7 @@ describe("SmartItineraryTable", () => {
       within(itemRows[0]).getByRole("button", {
         name: /เปิดรายละเอียดของ|Open details for/i,
       }),
-    ).toHaveClass("size-7");
+    ).toHaveClass("size-11");
     expect(
       within(itemRows[0]).getAllByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
