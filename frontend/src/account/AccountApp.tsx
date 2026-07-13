@@ -70,6 +70,10 @@ export function AccountApp({
         setAccountSessionLoaded(true);
         return;
       }
+      if (accessMode === "account-login" || accessMode === "account-register") {
+        setAccountSessionLoaded(true);
+        return;
+      }
       resolvedAccountClient.restoreSession()
         .then((session) => {
           if (cancelled) return;
@@ -85,7 +89,7 @@ export function AccountApp({
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [accountSessionLoaded, resolvedAccountClient]);
+  }, [accessMode, accountSessionLoaded, resolvedAccountClient]);
 
   useEffect(() => {
     if (!accountSessionLoaded) return;
