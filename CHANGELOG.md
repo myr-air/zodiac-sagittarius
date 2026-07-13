@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.10] — 2026-07-13
+
+### Changed
+- Recolored orange accent (rgb(194,112,0)) to teal (rgb(15,118,110)) across 11 files
+- Reduced page title from 24/31px to 28/34px
+- Enlarged IconButton tap target from 36px to 44px
+- Replaced decorative border-primary with border-strong
+
+### Fixed
+- Added focus-visible rings on Button, IconButton, and TextInput
+- AboutAppPage skips API fetch when runtimeMode is local
+- I18nProvider reads ?locale= query param, localStorage, then navigator.language
+
 ## [0.7.9] — 2026-07-13
 
 ### Changed

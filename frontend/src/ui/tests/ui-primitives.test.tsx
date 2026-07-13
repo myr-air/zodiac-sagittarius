@@ -59,7 +59,7 @@ describe("shared UI primitives", () => {
     );
     expect(screen.getByText("Ready")).toHaveClass("badge", "badge--neutral", "inline-flex", "rounded-full", "trip-badge");
     expect(screen.getByText("Blocked")).toHaveClass("badge--danger", "text-[#b91c1c]", "bg-(--color-danger-soft)");
-    expect(screen.getByRole("button", { name: "Open details" })).toHaveClass("icon-button", "inline-flex", "w-9", "details-toggle-button");
+    expect(screen.getByRole("button", { name: "Open details" })).toHaveClass("icon-button", "inline-flex", "min-h-11", "min-w-11", "details-toggle-button");
   });
 
   it("renders reusable workspace layout, surface, and field primitives", () => {

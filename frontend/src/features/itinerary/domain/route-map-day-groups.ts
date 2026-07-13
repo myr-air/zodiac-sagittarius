@@ -18,7 +18,7 @@ export function activeDayLabel(
 }
 
 export function dayColorFor(day: string, groups: RouteDayGroup[]): string {
-  return groups.find((group) => group.day === day)?.color ?? routeDayColors[0];
+  return groups.find((group) => group.day === day)?.color ?? routeDayColors[0]?.color ?? "#c24f16";
 }
 
 export function buildRouteDayGroups(
@@ -28,7 +28,7 @@ export function buildRouteDayGroups(
   locale: "en" | "th",
 ): RouteDayGroup[] {
   return groups.map((group, index) => ({
-    color: routeDayColors[index % routeDayColors.length],
+    color: routeDayColors[index % routeDayColors.length]?.color ?? routeDayColors[0]?.color ?? "#c24f16",
     day: group.day,
     label: formatDayLabel(group.day, startDate, locale),
     points: routePoints.filter((point) => point.item.day === group.day),

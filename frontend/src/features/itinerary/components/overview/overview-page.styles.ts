@@ -56,7 +56,7 @@ export const overviewTaskToolbarClassName = "overview-task-toolbar flex flex-wra
 export const overviewTaskFiltersClassName = "overview-task-filters";
 export const overviewTaskFilterActiveClassName = "overview-task-filter--active";
 export const overviewTaskAddButtonClassName =
-  "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-(--color-primary) hover:bg-(--color-primary-strong) hover:shadow-[0_8px_18px_rgb(194_79_22_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(191_219_254_/_0.72)]";
+  "overview-task-add-button inline-flex min-h-[34px] w-[34px] flex-none items-center justify-center rounded-(--radius-sm) border border-(--color-primary-border) bg-(--color-primary) p-0 text-xl font-extrabold leading-none text-white transition-[background,border-color,box-shadow,transform] duration-200 hover:border-(--color-primary) hover:bg-(--color-primary-strong) hover:shadow-[0_8px_18px_rgb(15_118_110_/_0.18)] active:translate-y-px focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[rgb(191_219_254_/_0.72)]";
 export const overviewAdminFollowupClassName =
   `${overviewPanelClassName} overview-admin-followup hidden max-[767px]:grid`;
 export const overviewAdminFollowupMetricClassName =

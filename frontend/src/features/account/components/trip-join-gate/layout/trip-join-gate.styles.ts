@@ -30,7 +30,7 @@ export const tripAccessFormClassName =
   "my-[clamp(28px,5vw,54px)] mt-[18px] !gap-3.5 max-[767px]:mt-4 max-[767px]:mb-[18px] [&_input]:!min-h-[50px] [&_input]:!rounded-(--radius-md) [&_input]:!border-(--color-border-strong) [&_label]:!gap-2";
 export const tripAccessParticipantStepClassName =
   "my-[clamp(28px,5vw,54px)] mt-[18px] max-[767px]:mt-4 max-[767px]:mb-[18px] [&_.participant-auth_label]:!gap-2 [&_.participant-auth_input]:!min-h-[50px] [&_.participant-auth_input]:!rounded-(--radius-md) [&_.participant-auth_input]:!border-(--color-border-strong)";
-export const tripAccessSubmitClassName = "!min-h-[52px] !rounded-(--radius-md) !mt-5 shadow-[0_8px_18px_rgb(194_79_22_/_0.12)]";
+export const tripAccessSubmitClassName = "!min-h-[52px] !rounded-(--radius-md) !mt-5 shadow-[0_8px_18px_rgb(15_118_110_/_0.12)]";
 export const tripAccessRightColumnClassName = "trip-access-right-col col-start-2 row-start-1 row-span-4 flex flex-col justify-start max-[767px]:col-start-1 max-[767px]:row-auto";
 export const tripAccessVisualClassName =
   "trip-access-visual relative col-start-1 row-start-1 row-span-4 min-h-[620px] overflow-hidden border-r border-(--color-border) bg-(--color-surface-subtle) p-7 max-[767px]:col-start-1 max-[767px]:row-auto max-[767px]:min-h-0 max-[767px]:border-r-0 max-[767px]:border-b max-[767px]:p-4";

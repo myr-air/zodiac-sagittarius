@@ -1,8 +1,8 @@
 export const iconButtonBaseClassName = [
   "icon-button",
   "inline-flex",
-  "min-h-9",
-  "w-9",
+  "min-h-11",
+  "min-w-11",
   "items-center",
   "justify-center",
   "rounded-(--radius-sm)",
@@ -10,6 +10,10 @@ export const iconButtonBaseClassName = [
   "border-(--color-border)",
   "bg-(--color-surface)",
   "text-[#334155]",
+  "focus-visible:outline-none",
+  "focus-visible:ring-2",
+  "focus-visible:ring-(--color-primary-border)",
+  "focus-visible:ring-offset-1",
 ];
 
 export const buttonBaseClassName = [
@@ -32,6 +36,10 @@ export const buttonBaseClassName = [
   "disabled:text-(--color-text-subtle)",
   "disabled:bg-(--color-surface-muted)",
   "disabled:shadow-none",
+  "focus-visible:outline-none",
+  "focus-visible:ring-2",
+  "focus-visible:ring-(--color-primary-border)",
+  "focus-visible:ring-offset-1",
 ];
 
 export const buttonVariantClassNames = {
@@ -39,7 +47,7 @@ export const buttonVariantClassNames = {
     "button--primary",
     "bg-(--color-primary)",
     "text-white",
-    "shadow-[0_10px_20px_rgb(194_79_22_/_0.18)]",
+    "shadow-[0_10px_20px_rgb(15_118_110_/_0.18)]",
     "hover:enabled:bg-(--color-primary-strong)",
   ],
   secondary: [
