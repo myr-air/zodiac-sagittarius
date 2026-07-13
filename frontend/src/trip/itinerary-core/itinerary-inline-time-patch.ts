@@ -26,6 +26,7 @@ export type InlineItineraryTimePatch = Partial<
     | "status"
     | "priority"
     | "transportation"
+    | "note"
   >
 >;
 

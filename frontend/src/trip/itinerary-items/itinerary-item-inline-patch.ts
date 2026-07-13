@@ -22,5 +22,6 @@ export type InlineItineraryItemPatch = Partial<
     | "status"
     | "priority"
     | "transportation"
+    | "note"
   >
 >;
