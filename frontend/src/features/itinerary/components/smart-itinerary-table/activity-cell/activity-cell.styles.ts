@@ -59,13 +59,13 @@ export const activityMetaClassName =
 export const activityMetaStatusClassName =
   "flex min-w-0 flex-wrap items-center justify-start gap-1";
 export const activityTabletActionsClassName =
-  "hidden size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[1023px]:inline-flex [&_.icon]:size-4";
+  "hidden size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[1279px]:inline-flex [&_.icon]:size-4";
 export const activityTabletActionLayerClassName =
-  "mt-1 hidden min-w-0 flex-wrap items-center justify-end gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-1 py-1 max-[1023px]:flex";
+  "mt-1 hidden min-w-0 flex-wrap items-center justify-end gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-1 py-1 max-[1279px]:flex";
 export const activityPillClassName =
-  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
 export const activityBookingButtonClassName =
-  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-full border px-1.5 text-[11px] font-extrabold leading-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
+  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-(--radius-sm) border px-1.5 text-[11px] font-extrabold leading-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 export const activityBookingButtonEmptyClassName =
   "border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-border-strong) hover:bg-(--color-surface) hover:text-(--color-text)";
 export const activityBookingButtonLinkedClassName =
