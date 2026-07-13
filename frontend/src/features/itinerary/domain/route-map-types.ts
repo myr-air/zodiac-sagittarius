@@ -5,12 +5,12 @@ export type AllDaysFilter = typeof allDaysFilter;
 export type DayFilter = AllDaysFilter | string;
 
 export const routeDayColors = [
-  "#c24f16",
-  "#2563eb",
-  "#b45309",
-  "#15803d",
-  "#be123c",
-  "#0369a1",
+  { color: "#c24f16", label: "Day 1" },
+  { color: "#2563eb", label: "Day 2" },
+  { color: "#b45309", label: "Day 3" },
+  { color: "#15803d", label: "Day 4" },
+  { color: "#be123c", label: "Day 5" },
+  { color: "#0369a1", label: "Day 6" },
 ];
 
 export interface RoutePoint {

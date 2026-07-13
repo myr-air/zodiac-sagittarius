@@ -3,7 +3,7 @@ import type { workflowStepMeta } from "./HomeLanding.meta";
 
 export const workflowToneClassNames = {
   coral: {
-    number: "bg-(--color-primary) text-white shadow-[0_14px_24px_rgb(194_79_22_/_0.22)]",
+    number: "bg-(--color-primary) text-white shadow-[0_14px_24px_rgb(15_118_110_/_0.22)]",
     icon: "bg-(--color-primary-soft) text-(--color-primary-strong)",
   },
   sand: {
@@ -26,10 +26,10 @@ export const homeNavActionsClassName =
   "home-nav-actions flex items-center gap-3 max-[760px]:grid max-[760px]:grid-cols-[auto_minmax(86px,0.7fr)_minmax(132px,1fr)] max-[760px]:gap-2.5 max-[420px]:grid-cols-[auto_minmax(0,1fr)]";
 export const homeNavSecondaryActionsClassName = "home-nav-secondary-actions inline-flex items-center gap-2.5 max-[760px]:contents";
 export const homeLanguageSwitchClassName =
-  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(194_79_22_/_0.08)] [&_.language-switch-option--active]:bg-(--color-primary) [&_.language-switch-option--active]:text-white";
+  "home-language-switch min-h-[42px] border-[color-mix(in_srgb,var(--color-primary)_36%,white)] bg-[rgb(255_255_255_/_0.86)] shadow-[0_10px_22px_rgb(15_118_110_/_0.08)] [&_.language-switch-option--active]:bg-(--color-primary) [&_.language-switch-option--active]:text-white";
 
 export const homePageClassName =
-  "home-page min-h-screen overflow-hidden bg-[linear-gradient(180deg,rgb(255_255_255_/_0.88),rgb(255_247_237_/_0.42)_54%,rgb(239_246_255_/_0.24)),linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.055)_1px,transparent_1px),radial-gradient(720px_420px_at_13%_31%,rgb(194_79_22_/_0.15),transparent_72%),radial-gradient(620px_360px_at_86%_18%,rgb(251_113_133_/_0.13),transparent_70%),radial-gradient(760px_430px_at_74%_88%,rgb(250_204_21_/_0.12),transparent_72%),var(--paper-grain),var(--color-page)] [background-size:auto,112px_112px,112px_112px,auto,auto,auto,140px_140px,auto] max-[760px]:overflow-x-hidden";
+  "home-page min-h-screen overflow-hidden bg-[linear-gradient(180deg,rgb(255_255_255_/_0.88),rgb(255_247_237_/_0.42)_54%,rgb(239_246_255_/_0.24)),linear-gradient(90deg,rgb(37_99_235_/_0.06)_1px,transparent_1px),linear-gradient(0deg,rgb(37_99_235_/_0.055)_1px,transparent_1px),radial-gradient(720px_420px_at_13%_31%,rgb(15_118_110_/_0.15),transparent_72%),radial-gradient(620px_360px_at_86%_18%,rgb(251_113_133_/_0.13),transparent_70%),radial-gradient(760px_430px_at_74%_88%,rgb(250_204_21_/_0.12),transparent_72%),var(--paper-grain),var(--color-page)] [background-size:auto,112px_112px,112px_112px,auto,auto,auto,140px_140px,auto] max-[760px]:overflow-x-hidden";
 export const homeHeroClassName =
   "home-hero relative mx-auto grid min-h-[760px] w-[min(100%_-_40px,1320px)] grid-cols-[minmax(320px,0.82fr)_minmax(620px,1.18fr)] items-center gap-14 max-[1120px]:grid-cols-1 max-[1120px]:gap-5 max-[1120px]:pt-[34px] max-[760px]:min-h-0 max-[760px]:w-[min(100%_-_28px,1320px)] max-[760px]:pt-5";
 export const homeButtonBaseClassName =
@@ -37,12 +37,12 @@ export const homeButtonBaseClassName =
 export const homeLinkButtonClassName = cn(
   "home-link-button",
   homeButtonBaseClassName,
-  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:shadow-[0_12px_24px_rgb(194_79_22_/_0.1)]",
+  "border border-[color-mix(in_srgb,var(--color-primary)_68%,white)] bg-[rgb(255_255_255_/_0.82)] px-[18px] text-(--color-primary-strong) hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:shadow-[0_12px_24px_rgb(15_118_110_/_0.1)]",
 );
 export const homePrimaryButtonClassName = cn(
   "home-primary-button",
   homeButtonBaseClassName,
-  "gap-2.5 border border-(--color-primary) bg-[linear-gradient(135deg,var(--color-primary),var(--color-primary-strong))] px-[18px] text-white shadow-[0_16px_28px_rgb(194_79_22_/_0.2)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(194_79_22_/_0.24)]",
+  "gap-2.5 border border-(--color-primary) bg-[linear-gradient(135deg,var(--color-primary),var(--color-primary-strong))] px-[18px] text-white shadow-[0_16px_28px_rgb(15_118_110_/_0.2)] hover:-translate-y-px hover:shadow-[0_18px_32px_rgb(15_118_110_/_0.24)]",
 );
 export const homeSecondaryButtonClassName = cn(
   "home-secondary-button",

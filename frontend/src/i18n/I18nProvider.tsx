@@ -76,8 +76,16 @@ function readStoredLocale(fallback: Locale = defaultLocale): Locale {
   }
 
   try {
+    const urlLocale = new URL(window.location.href).searchParams.get("locale");
+    if (isLocale(urlLocale)) return urlLocale;
+
     const stored = window.localStorage.getItem(localeStorageKey);
-    return isLocale(stored) ? stored : fallback;
+    if (isLocale(stored)) return stored;
+
+    const navigatorLang = navigator.language?.slice(0, 2);
+    if (isLocale(navigatorLang)) return navigatorLang;
+
+    return fallback;
   } catch {
     return fallback;
   }

@@ -89,7 +89,7 @@ export const mapDayFilterButtonClassName =
   "map-day-filter-button inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--color-route)_14%,var(--color-border))] bg-[rgb(255_255_255_/_0.78)] px-2.5 py-1.5 text-[11px] font-extrabold leading-4 text-(--color-text-muted) transition-[background,border-color,color,box-shadow] duration-150 hover:border-[var(--day-color,var(--color-route))] hover:bg-(--color-route-soft) hover:text-(--color-text) focus-visible:border-[var(--day-color,var(--color-route))] focus-visible:bg-(--color-route-soft) focus-visible:text-(--color-text) max-[767px]:min-h-7 max-[767px]:px-2 max-[767px]:py-1 max-[767px]:text-[10px]";
 
 export const activeMapDayFilterButtonClassName =
-  "map-day-filter-button--active border-[var(--day-color,var(--color-primary))] bg-(--color-primary-soft) text-(--color-text) shadow-[0_2px_6px_rgb(194_79_22_/_0.12)]";
+  "map-day-filter-button--active border-[var(--day-color,var(--color-primary))] bg-(--color-primary-soft) text-(--color-text) shadow-[0_2px_6px_rgb(15_118_110_/_0.12)]";
 
 export const mapDaySwatchClassName = "map-day-swatch size-[9px] rounded-full bg-[var(--day-color,var(--color-route))] shadow-[0_0_0_2px_rgb(255_255_255_/_0.94)]";
 export const routeLiveMapClassName = "route-live-map absolute inset-0 z-[4] bg-(--color-route-soft) transition-opacity duration-200";

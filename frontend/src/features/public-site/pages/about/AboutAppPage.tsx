@@ -51,6 +51,11 @@ export function AboutAppPage({ webVersion }: AboutAppPageProps) {
   const [apiVersion, setApiVersion] = useState<ApiVersionState>({ status: "loading" });
 
   useEffect(() => {
+    if (webVersion.runtimeMode === "local") {
+      setApiVersion({ status: "unavailable" });
+      return;
+    }
+
     let cancelled = false;
 
     async function loadApiVersion() {

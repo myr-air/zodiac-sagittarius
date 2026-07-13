@@ -39,7 +39,7 @@ export const activityActionsClassName =
 export const activityActionClusterClassName =
   "flex shrink-0 flex-nowrap items-center justify-end gap-0.5 overflow-visible whitespace-nowrap";
 export const activityIconButtonClassName =
-  "inline-flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) [&_.icon]:size-3.5";
 export const activityMetaClassName =
   "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 text-[11px] font-bold leading-4 text-(--color-text-muted) max-[520px]:hidden";
 export const activityMetaStatusClassName =

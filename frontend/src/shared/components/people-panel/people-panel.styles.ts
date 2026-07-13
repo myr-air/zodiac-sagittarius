@@ -30,7 +30,7 @@ export const memberControlsClassName =
 export const memberRoleSelectClassName =
   "member-role-select min-h-8 max-w-32 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) py-[5px] px-2.5 text-[13px] font-bold leading-5 text-(--color-text) cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
 export const resetClaimButtonClassName =
-  "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) py-[5px] px-3 text-[13px] font-bold text-(--color-warning-strong) transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-primary) hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
+  "reset-claim-button inline-flex min-h-8 items-center justify-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) py-[5px] px-3 text-[13px] font-bold text-(--color-warning-strong) transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-(--color-border-strong) hover:shadow-[0_6px_8px_rgb(15_118_110_/_0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
 export const presencePillClassName =
   "presence-pill col-start-2 inline-flex min-h-[22px] items-center justify-center justify-self-start gap-1.5 whitespace-nowrap rounded-full px-2 text-[11px] font-extrabold leading-4 text-(--color-text-muted) before:size-1.5 before:rounded-full before:bg-(--color-text-subtle) before:content-['']";
 export const presencePillToneClassNames = {

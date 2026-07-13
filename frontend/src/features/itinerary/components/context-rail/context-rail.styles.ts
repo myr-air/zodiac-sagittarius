@@ -23,7 +23,7 @@ export const noteHeaderClassName =
 export const noteActionsClassName =
   "stop-note-actions inline-flex items-center gap-1.5";
 export const noteActionButtonClassName =
-  "inline-grid size-8 cursor-pointer place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong) focus-visible:outline-none [&_.icon]:size-[15px]";
+  "inline-grid size-11 cursor-pointer place-items-center rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong) focus-visible:outline-none [&_.icon]:size-[15px]";
 export const noteEditFormClassName = "stop-note-edit-form grid gap-2";
 export const noteEditLabelClassName = "grid gap-1.5";
 export const noteEditTextareaClassName =
