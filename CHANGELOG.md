@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.11] — 2026-07-13
+
+### Fixed
+- #76: Skip restoreSession API call on login/register pages to prevent 401 console errors
+
 ## [0.7.10] — 2026-07-13
 
 ### Changed
