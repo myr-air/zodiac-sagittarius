@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.7] — 2026-07-13
+
+### Fixed
+- #28: ActivityTimeButton redesigned with duration indicator, flexible badge when endTime absent, next-day indicator
+- #43: Trip Plan selection wired through real handlers — removed noOpHandler stubs that silently broke persistence
+- #44: StopDialog form controls now have programmatic label associations; sub-activity context banner shows parent activity name
+
 ## [0.7.6] — 2026-07-13
 
 ### Fixed
