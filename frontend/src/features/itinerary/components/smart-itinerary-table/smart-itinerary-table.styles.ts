@@ -39,6 +39,8 @@ export {
   activityTypePickerClassName,
   activityMobileLineClassName,
   activityMobileTypePickerClassName,
+  activityCompactTypePickerClassName,
+  activityRailColumnClassName,
   activityMobileStatusClassName,
   subActivityListClassName,
   subActivityModalListClassName,

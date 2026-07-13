@@ -111,7 +111,7 @@ describe("SmartItineraryTable sub-activities", () => {
 
     const parentRow = getItineraryItemRow(parent.id);
     expect(within(parentRow).getByDisplayValue("Parent route")).toBeInTheDocument();
-    const parentBody = parentRow.querySelector(".activity-cell > div:nth-of-type(3)");
+    const parentBody = parentRow.querySelector(".activity-cell > div:nth-of-type(2)");
     expect(parentBody).not.toHaveTextContent("@");
     within(parentBody as HTMLElement)
       .getAllByLabelText(/แก้ไขสถานที่|Edit place/i)

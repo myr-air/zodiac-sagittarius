@@ -1,9 +1,9 @@
 import { ActivityTypePicker } from "./ActivityTypePicker";
 import { ActivityTimeButton } from "./ActivityTimeButton";
 import {
+  activityCompactTypePickerClassName,
+  activityRailColumnClassName,
   activityTimeRailClassName,
-  activityTypePickerClassName,
-  activityTypeRailClassName,
 } from "../smart-itinerary-table.styles";
 import type { ActivityCellProps } from "./activity-cell.types";
 
@@ -23,7 +23,7 @@ export function ActivityCellRails({
   onUpdateItemInline,
 }: ActivityCellRailsProps) {
   return (
-    <>
+    <div className={activityRailColumnClassName}>
       <div className={activityTimeRailClassName}>
         <ActivityTimeButton
           editable={editable}
@@ -33,16 +33,14 @@ export function ActivityCellRails({
           onSave={(patch) => onUpdateItemInline?.(item.id, patch)}
         />
       </div>
-      <div className={activityTypeRailClassName}>
-        <ActivityTypePicker
-          buttonClassName={activityTypePickerClassName}
-          disabled={!editable}
-          item={item}
-          itineraryLabels={itineraryLabels}
-          locale={locale}
-          onUpdateItemInline={onUpdateItemInline}
-        />
-      </div>
-    </>
+      <ActivityTypePicker
+        buttonClassName={activityCompactTypePickerClassName}
+        disabled={!editable}
+        item={item}
+        itineraryLabels={itineraryLabels}
+        locale={locale}
+        onUpdateItemInline={onUpdateItemInline}
+      />
+    </div>
   );
 }

@@ -105,11 +105,6 @@ export function ActivityCellMeta({
               {formatDuration(item.durationMinutes, locale)}
             </span>
           ) : null}
-          {item.transportation ? (
-            <span className="min-w-0 truncate">
-              {item.transportation}
-            </span>
-          ) : null}
         </div>
         <div className={activityActionClusterClassName}>
           <span className={activityActionsClassName}>
