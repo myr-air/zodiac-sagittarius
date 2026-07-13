@@ -7,6 +7,7 @@ export type IconName =
   | "calendar"
   | "car"
   | "check"
+  | "chevronDown"
   | "chevronLeft"
   | "chevronRight"
   | "clock"
@@ -76,6 +77,7 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "check") return <svg {...common}><path d="m20 6-11 11-5-5" /></svg>;
   if (name === "chevronLeft") return <svg {...common}><path d="m15 18-6-6 6-6" /></svg>;
   if (name === "chevronRight") return <svg {...common}><path d="m9 18 6-6-6-6" /></svg>;
+  if (name === "chevronDown") return <svg {...common}><path d="m6 9 6 6 6-6" /></svg>;
   if (name === "clock") return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
   if (name === "cloud") return <svg {...common}><path d="M17.5 19H7a4 4 0 0 1-.8-7.9 6 6 0 0 1 11.5-1.6A4.8 4.8 0 0 1 17.5 19Z" /><path d="m9 14 2 2 4-4" /></svg>;
   if (name === "copy") return <svg {...common}><rect x="9" y="9" width="13" height="13" rx="2" /><rect x="2" y="2" width="13" height="13" rx="2" /></svg>;

@@ -50,4 +50,5 @@ export interface SmartItineraryTableProps
   onChangeDayPath?: (day: string, pathId: string) => void;
   onClearDayPath?: (day: string) => void;
   onToggleShowAllPaths?: (showAll: boolean) => void;
+  contextRailOpen?: boolean;
 }

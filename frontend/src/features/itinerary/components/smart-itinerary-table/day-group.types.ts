@@ -31,6 +31,7 @@ export interface DayGroupProps
   dayPathOverride?: string;
   showAllPaths: boolean;
   selectedItemId: string;
+  contextRailOpen?: boolean;
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
   canEdit: boolean;

@@ -11,6 +11,7 @@ export function ActivityCell({
   itineraryLabels,
   locale,
   selected,
+  contextRailOpen,
   subItems,
   onAddSubActivity,
   onAddNoteForItem,
@@ -49,10 +50,13 @@ export function ActivityCell({
     subItems,
   });
 
+  const detailsOpen = contextRailOpen && selected;
+
   return (
     <div
       className={activityCellClassName}
       data-selected={selected ? "true" : undefined}
+      data-details-open={detailsOpen ? "true" : undefined}
       onClick={() => onSelectItem(item.id)}
       onDoubleClick={() => onOpenItemDetails?.(item.id)}
     >

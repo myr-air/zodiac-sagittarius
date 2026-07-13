@@ -29,6 +29,7 @@ interface DayGroupActivityRowsProps
     | "onUnlinkBookingForItem"
     | "onUpdateItemInline"
     | "selectedItemId"
+    | "contextRailOpen"
   > {
   childItemsByParentId: Map<string, ItineraryItem[]>;
   day: string;
@@ -56,6 +57,7 @@ export function DayGroupActivityRows({
   onUnlinkBookingForItem,
   onUpdateItemInline,
   selectedItemId,
+  contextRailOpen,
   showGraph,
   visibleItems,
 }: DayGroupActivityRowsProps) {
@@ -91,6 +93,7 @@ export function DayGroupActivityRows({
               onSelectItem={onSelectItem}
               onUnlinkBookingForItem={onUnlinkBookingForItem}
               onUpdateItemInline={onUpdateItemInline}
+              contextRailOpen={contextRailOpen}
             />
           </td>
         </tr>

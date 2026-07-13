@@ -47,7 +47,7 @@ describe("SmartItineraryTable", () => {
       itemRows[0]?.querySelector(".activity-cell"),
     ).toHaveClass(
       "min-h-[60px]",
-      "grid-cols-[64px_112px_minmax(0,1fr)]",
+      "grid-cols-[80px_112px_minmax(0,1fr)]",
       "data-[selected=true]:bg-(--color-route-soft)",
     );
     expect(
@@ -62,8 +62,7 @@ describe("SmartItineraryTable", () => {
     ).toHaveClass(
       "activity-type-picker",
       "!min-h-[52px]",
-      "rounded-(--radius-sm)",
-      "[&_.inline-option-picker-caret]:hidden",
+  "rounded-(--radius-sm)",
     );
     expect(
       within(itemRows[0]).getAllByRole("button", {

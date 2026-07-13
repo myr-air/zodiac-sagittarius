@@ -21,4 +21,5 @@ export interface ActivityCellProps
   subItems: ItineraryItem[];
   bookingDocs: BookingDoc[];
   bookingLinkItems: ItineraryItem[];
+  contextRailOpen?: boolean;
 }
