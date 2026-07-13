@@ -170,7 +170,7 @@ describe("Sagittarius itinerary architecture contracts", () => {
     expect(activityCell).not.toContain("./ActivityCellActionGroup");
     expect(activityCell).not.toContain("./ActivityTimeButton");
     expect(activityCell).not.toContain("./ActivityTypePicker");
-    expect(activityCellBody).toContain("./ActivityCellTitleLine");
+    expect(activityCellBody).toContain("./ActivityIdentityLine");
     expect(activityCellBody).toContain("./ActivityCellActionGroup");
     expect(activityCellBody).toContain("./ActivityCellMeta");
     expect(activityCellRails).toContain("./ActivityTimeButton");

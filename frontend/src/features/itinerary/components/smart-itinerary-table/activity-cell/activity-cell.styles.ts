@@ -32,6 +32,18 @@ export const activityTransportLineClassName =
   "flex min-h-5 min-w-0 items-center gap-1.5 text-xs leading-5 text-(--color-text-muted) [&_.icon]:size-3.5 [&_.icon]:text-(--color-route) max-[520px]:flex [&_span]:text-[11px] [&_span]:font-medium";
 export const activityPlaceLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
+export const activityIdentityClassName =
+  "flex min-w-0 items-baseline gap-1";
+export const activityIdentityActivityClassName =
+  "flex min-w-0 items-baseline";
+export const activityIdentityAtGlyphClassName =
+  "shrink-0 select-none text-xs font-normal leading-5 text-(--color-text-subtle)";
+export const activityIdentityPlaceClassName =
+  "flex min-w-0 items-baseline";
+export const activityDetailsToggleClassName =
+  "inline-flex size-5 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) [&_.icon]:size-3.5";
+export const activityDetailsSectionClassName =
+  "mt-1 min-w-0 space-y-1 pl-2 border-l border-(--color-border) text-xs leading-5 text-(--color-text-muted)";
 export const activityNoteLineClassName =
   "min-w-0 truncate text-xs leading-5 text-(--color-text-muted)";
 export const activityMobilePlaceInputClassName =
