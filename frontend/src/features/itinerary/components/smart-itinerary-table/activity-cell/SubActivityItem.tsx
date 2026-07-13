@@ -95,11 +95,6 @@ export function SubActivityItem({
           item={subItem}
           itineraryLabels={itineraryLabels}
           locale={locale}
-          onToggleActivityBlock={
-            onUpdateItemInline
-              ? (itemId) => onUpdateItemInline(itemId, { isPlanBlock: !subItem.isPlanBlock })
-              : undefined
-          }
           showDelete={false}
           showDetails={false}
           showEdit={false}
