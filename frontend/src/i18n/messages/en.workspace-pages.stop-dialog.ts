@@ -8,6 +8,7 @@ export const enStopDialogMessages = {
   context: {
     parentBlockHint: "A parent block groups related sub-activities (e.g. a museum visit with gallery stops).",
     subActivityHint: "Adds an activity inside a parent block.",
+    subActivityHintWithParent: ({ parent }: { parent: string }) => `Adds an activity inside ${parent}.`,
   },
   closeForm: "Close form",
   fields: {

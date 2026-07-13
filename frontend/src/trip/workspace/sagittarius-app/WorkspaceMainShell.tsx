@@ -5,11 +5,10 @@ import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar
 import { PHASE_ORDER, type Phase } from "@/src/trip/workspace/phase";
 import { useDerivePhase } from "@/src/trip/workspace/use-derive-phase";
 import type { DerivePhaseInput } from "@/src/trip/workspace/derive-phase";
-import type { Trip, TripRole } from "@/src/trip/types";
+import type { Trip } from "@/src/trip/types";
 import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
-import type { DetailPlannerPageProps } from "@/src/features/workspace/pages/detail-planner/DetailPlannerPage.types";
 import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
 import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
@@ -60,13 +59,6 @@ function tripToDerivePhaseInput(trip: Trip): DerivePhaseInput {
     memberCount: trip.members?.length ?? 1,
     isTripActive,
   };
-}
-
-/** Create a typed no-op handler that warns about unimplemented Phase 3 wiring. */
-function noOpHandler<T extends (...args: any[]) => any>(handlerName: string): T {
-  return ((...args: unknown[]) => {
-    console.warn(`[DetailPlannerPage] ${handlerName} is not wired yet`, ...args);
-  }) as T;
 }
 
 /** Format a date range label from start/end dates (YYYY-MM-DD). */
@@ -166,32 +158,7 @@ export function WorkspaceMainShell({
         // Phase 3 UX is display-first — optimistic update deferred to API integration
       },
     },
-    detailPlannerProps: viewsProps.detailPlannerProps ?? {
-      tableProps: {
-        items: appShellProps.trip.itineraryItems,
-        startDate: appShellProps.trip.startDate,
-        endDate: appShellProps.trip.endDate,
-        tripPlans: appShellProps.trip.planVariants,
-        selectedTripPlanId: appShellProps.trip.activePlanVariantId,
-        mainTripPlanId: appShellProps.trip.mainTripPlanId ?? appShellProps.trip.activePlanVariantId,
-        tripPlanError: null,
-        isTripPlanBusy: false,
-        role: (appShellProps.trip.members[0]?.role ?? "owner") as TripRole,
-        selectedItemId: appShellProps.trip.itineraryItems[0]?.id ?? "",
-        tripName: appShellProps.trip.name,
-        onAddStop: noOpHandler<DetailPlannerPageProps["tableProps"]["onAddStop"]>("onAddStop"),
-        onOpenItemDetails: noOpHandler<DetailPlannerPageProps["tableProps"]["onOpenItemDetails"]>("onOpenItemDetails"),
-        onSelectItem: noOpHandler<DetailPlannerPageProps["tableProps"]["onSelectItem"]>("onSelectItem"),
-        onChangeTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onChangeTripPlan"]>("onChangeTripPlan"),
-        onChangeTripPlanStatus: noOpHandler<DetailPlannerPageProps["tableProps"]["onChangeTripPlanStatus"]>("onChangeTripPlanStatus"),
-        onSetMainTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onSetMainTripPlan"]>("onSetMainTripPlan"),
-        onCreateTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onCreateTripPlan"]>("onCreateTripPlan"),
-        onRenameTripPlan: noOpHandler<DetailPlannerPageProps["tableProps"]["onRenameTripPlan"]>("onRenameTripPlan"),
-      },
-      waypoints: appShellProps.trip.waypoints ?? [],
-      onImportApply: noOpHandler<NonNullable<DetailPlannerPageProps["onImportApply"]>>("onImportApply"),
-      onConvertWaypoints: noOpHandler<NonNullable<DetailPlannerPageProps["onConvertWaypoints"]>>("onConvertWaypoints"),
-    },
+    detailPlannerProps: viewsProps.detailPlannerProps,
     groupWranglerProps: viewsProps.groupWranglerProps ?? (() => {
       const trip = appShellProps.trip;
       const currentMember = trip.members?.[0];
