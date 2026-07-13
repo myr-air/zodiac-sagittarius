@@ -89,7 +89,6 @@ export function useWorkspaceItineraryStopCreateCommand({
             patchedBranchItems,
           ),
         );
-        setSelectedItemId(createdItem.id);
         setContextRailVisibility(false);
         setDialogState(null);
         return;
@@ -101,7 +100,6 @@ export function useWorkspaceItineraryStopCreateCommand({
             hasParentItem,
             targetPathId,
           }).trip,
-        draftItem.id,
       );
       setContextRailVisibility(false);
       setDialogState(null);
