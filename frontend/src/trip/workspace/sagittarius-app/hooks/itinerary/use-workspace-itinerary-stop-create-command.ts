@@ -45,7 +45,7 @@ export function useWorkspaceItineraryStopCreateCommand({
         trip,
         values,
       });
-      if (!resolvedLocation) return;
+      if (!resolvedLocation) throw new Error("Place resolution failed");
       values = resolvedLocation.values;
       const locationFields = resolvedLocation.locationFields;
       const { draftItem, hasParentItem, targetPathId } =
@@ -89,7 +89,6 @@ export function useWorkspaceItineraryStopCreateCommand({
             patchedBranchItems,
           ),
         );
-        setSelectedItemId(createdItem.id);
         setContextRailVisibility(false);
         setDialogState(null);
         return;
@@ -101,7 +100,6 @@ export function useWorkspaceItineraryStopCreateCommand({
             hasParentItem,
             targetPathId,
           }).trip,
-        draftItem.id,
       );
       setContextRailVisibility(false);
       setDialogState(null);
@@ -122,7 +120,6 @@ export function useWorkspaceItineraryStopCreateCommand({
       setContextRailVisibility,
       setDialogState,
       setStopPlaceResolution,
-      setSelectedItemId,
       trip,
       updateApiTrip,
     ],

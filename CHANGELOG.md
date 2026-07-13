@@ -12,7 +12,7 @@
 - #43: Selected Trip Plan persists across page reload and direct URL navigation via sessionStorage
 - #47: Notes entered during activity creation now persist and display in activity cell after save
 - #49: Itinerary summary counts (activities, sub-activities, flexible items) update immediately after add/remove
-- #55: Activity Block conversion toggle added — converting itinerary rows to blocks no longer silently fails
+- #55: Activity Block conversion toggle wired through ActivityCellActionGroup and SubActivityItem — converting itinerary rows to blocks no longer silently fails
 - #48: Flexible sub-activities from CSV plan import preserved when entering journey details
 - #50: Untimed flexible transport legs preserved during manual itinerary entry and across reload
 - #28: Time-window editor redesigned with clearly labeled Start/End fields in readable HH:MM format

@@ -133,6 +133,11 @@ export function SubActivityItem({
               ? onOpenNoteForItem
               : undefined
           }
+          onToggleActivityBlock={
+            onUpdateItemInline
+              ? (itemId) => onUpdateItemInline(itemId, { isPlanBlock: !subItem.isPlanBlock })
+              : undefined
+          }
           showDetails={false}
           showMap={false}
         />

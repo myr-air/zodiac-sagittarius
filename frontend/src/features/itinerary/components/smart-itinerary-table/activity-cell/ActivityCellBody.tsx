@@ -87,6 +87,7 @@ export function ActivityCellBody({
       onEditItem={onEditItem}
       onOpenItemDetails={onOpenItemDetails}
       onOpenNoteForItem={onOpenNoteForItem}
+      onUpdateItemInline={onUpdateItemInline}
     />
   );
 
