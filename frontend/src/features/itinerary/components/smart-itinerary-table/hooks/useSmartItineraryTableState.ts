@@ -34,9 +34,10 @@ export interface ItinerarySummaryCounts {
 
 export function computeItinerarySummaryCounts(
   items: ItineraryItem[],
-): ItinerarySummaryCounts {
+): ItinerarySummaryCounts & { totalMinutes: number } {
   let subActivitiesCount = 0;
   let flexibleItemsCount = 0;
+  let totalMinutes = 0;
 
   for (const item of items) {
     if (item.parentItemId) {
@@ -45,9 +46,12 @@ export function computeItinerarySummaryCounts(
     if (item.timeMode === "flexible") {
       flexibleItemsCount += 1;
     }
+    if (!item.isPlanBlock && item.durationMinutes != null) {
+      totalMinutes += item.durationMinutes;
+    }
   }
 
-  return { subActivitiesCount, flexibleItemsCount };
+  return { subActivitiesCount, flexibleItemsCount, totalMinutes };
 }
 
 interface UseSmartItineraryTableStateParams {
@@ -60,6 +64,7 @@ interface UseSmartItineraryTableStateParams {
   dailyBriefings?: TripDailyBriefing[];
   itineraryView?: ItineraryView;
   canRestructure?: boolean;
+  selectedItemId?: string;
   selectedCountLabel: ({ count }: { count: number }) => string;
   selectedNamesLabel: ({ names }: { names: string }) => string;
 }
@@ -72,7 +77,7 @@ export function useSmartItineraryTableState({
   startDate,
   endDate,
   dailyBriefings = [],
-  itineraryView,
+  selectedItemId,
   canRestructure = true,
   selectedCountLabel,
   selectedNamesLabel,
@@ -108,16 +113,24 @@ export function useSmartItineraryTableState({
   );
 
   const graphItemsByDay = groupGraphItemsByDay(displayItems);
-  const warningCount =
-    itineraryView?.warningCount ??
-    displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
-  const totalMinutes = displayItems.reduce(
-    (total, item) => total + (item.durationMinutes ?? 0),
-    0,
-  );
+
+  const selectedItem = selectedItemId
+    ? allDisplayItems.find((item) => item.id === selectedItemId)
+    : undefined;
+  const selectedDay = selectedItem?.day;
+
+  const warningCount = selectedDay
+    ? displayDayGroups
+        .filter((group) => group.day === selectedDay)
+        .reduce((total, group) => total + group.warningCount, 0)
+    : displayDayGroups.reduce(
+        (total, group) => total + group.warningCount,
+        0,
+      );
   const {
     subActivitiesCount,
     flexibleItemsCount,
+    totalMinutes,
   } = computeItinerarySummaryCounts(displayItems);
 
   const graphColumnWidth = buildGraphColumnWidth(

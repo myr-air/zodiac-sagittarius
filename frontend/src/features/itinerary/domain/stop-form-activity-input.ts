@@ -39,6 +39,7 @@ export function applyStopActivityInput({
       ...applyStopDetailType({ ...values, activity }, "transportation"),
       durationMinutes: parsedRoute.durationMinutes ?? values.durationMinutes,
       startTime: parsedRoute.startTime ?? values.startTime,
+      timeMode: parsedRoute.startTime ? "scheduled" : values.timeMode,
       ...(parsedEnd
         ? {
             endTime: parsedEnd.endTime,

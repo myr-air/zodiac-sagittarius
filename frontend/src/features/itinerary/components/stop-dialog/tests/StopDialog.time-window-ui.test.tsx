@@ -17,12 +17,12 @@ describe("StopDialog time window UI", () => {
     expect(
       screen.getByRole("button", { name: "Toggle next-day end activity" }),
     ).toHaveTextContent("+1");
-    expect(screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" })).toHaveClass(
+    expect(screen.getByRole("dialog", { name: "สร้างบล็อกหลัก" })).toHaveClass(
       "stop-dialog",
       "shadow-[0_14px_34px_rgb(15_23_42_/_0.16)]",
     );
     expect(
-      screen.getByRole("dialog", { name: "เพิ่มกิจกรรม" }).className,
+      screen.getByRole("dialog", { name: "สร้างบล็อกหลัก" }).className,
     ).not.toContain("0_24px_70px");
     expect(screen.getAllByRole("button", { name: "Open time picker" })).toHaveLength(2);
     expect(screen.getByLabelText("เวลาเริ่ม")).toHaveAttribute(
@@ -57,6 +57,12 @@ describe("StopDialog time window UI", () => {
     expect(screen.getByLabelText("End time")).toHaveValue("");
     expect(screen.getByText("Not set")).toBeInTheDocument();
 
+    fireEvent.change(screen.getByLabelText("Time mode"), {
+      target: { value: "scheduled" },
+    });
+    fireEvent.change(screen.getByLabelText("Start time"), {
+      target: { value: "16:30" },
+    });
     fireEvent.change(screen.getByLabelText("End time"), {
       target: { value: "18:00" },
     });
@@ -70,6 +76,12 @@ describe("StopDialog time window UI", () => {
     const onSubmit = vi.fn();
     renderEn(<StopDialog mode="create" onClose={vi.fn()} onSubmit={onSubmit} />);
 
+    fireEvent.change(screen.getByLabelText("Time mode"), {
+      target: { value: "scheduled" },
+    });
+    fireEvent.change(screen.getByLabelText("Start time"), {
+      target: { value: "16:30" },
+    });
     fireEvent.change(screen.getByLabelText("End time"), {
       target: { value: "21:30" },
     });
@@ -112,6 +124,9 @@ describe("StopDialog time window UI", () => {
     fireEvent.change(screen.getByLabelText("Place"), {
       target: { value: "Airport" },
     });
+    fireEvent.change(screen.getByLabelText("Time mode"), {
+      target: { value: "scheduled" },
+    });
     fireEvent.change(screen.getByLabelText("Start time"), {
       target: { value: "23:00" },
     });
@@ -141,6 +156,9 @@ describe("StopDialog time window UI", () => {
     });
     fireEvent.change(screen.getByLabelText("Place"), {
       target: { value: "Airport" },
+    });
+    fireEvent.change(screen.getByLabelText("Time mode"), {
+      target: { value: "scheduled" },
     });
     fireEvent.change(screen.getByLabelText("End time"), {
       target: { value: "02:00" },

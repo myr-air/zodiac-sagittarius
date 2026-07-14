@@ -44,7 +44,7 @@ describe("Sagittarius itinerary activity-cell architecture", () => {
     expect(activityCell).not.toContain("itemStatusLabel");
     expect(activityCellBody).toContain("export function ActivityCellBody");
     expect(activityCellBody).toContain("./ActivityCellMeta");
-    expect(activityCellBody).toContain("./ActivityCellTitleLine");
+    expect(activityCellBody).toContain("./ActivityIdentityLine");
     expect(activityCellBody).toContain("./ActivityCellActionGroup");
     expect(activityCellRails).toContain("export function ActivityCellRails");
     expect(activityCellRails).toContain("./ActivityTimeButton");

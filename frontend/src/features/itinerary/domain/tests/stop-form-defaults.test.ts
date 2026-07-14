@@ -20,8 +20,22 @@ describe("stop dialog form defaults", () => {
       endTime: null,
       parentItemId: "parent-stop",
       pathId: "main",
-      startTime: "16:30",
-      timeMode: "scheduled",
+      startTime: "",
+      timeMode: "flexible",
+    });
+  });
+
+  it("new activities default to flexible with no time", () => {
+    expect(
+      buildInitialStopFormValues({
+        initialDay: "2026-06-19",
+        startDate: "2026-06-18",
+      }),
+    ).toMatchObject({
+      startTime: "",
+      endTime: null,
+      timeMode: "flexible",
+      durationMinutes: null,
     });
   });
 

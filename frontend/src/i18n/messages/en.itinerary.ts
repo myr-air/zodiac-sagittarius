@@ -138,6 +138,8 @@ export const enItineraryMessages = {
       confirmDeleteNo: "No, keep it",
       select: ({ activity }: { activity: string }) => `Select stop ${activity}`,
       mapFallback: "Map",
-      flexibleTimeBadge: "Flexible",
+      flexibleTimeBadge: "Flexible time",
+      expandDetails: ({ activity }: { activity: string }) => `Show details for ${activity}`,
+      collapseDetails: ({ activity }: { activity: string }) => `Hide details for ${activity}`,
     },
   } as const;

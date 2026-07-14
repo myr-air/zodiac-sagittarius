@@ -102,4 +102,66 @@ Thursday,18 June 2026,,Check-in at Don Mueang,,,,
       mapLink: "https://surl.amap.com/5BhaU1X31v0fK",
     });
   });
+
+  it("imports flexible transport legs without dropping or scheduling them", () => {
+    const document = parseItineraryImportDocument(
+      [
+        "Day,Date,Time,Plans,Maps,Duration,Transportation,Note",
+        "DAY1 Shenzhen,,,,,,,",
+        ",2026-06-18,,Airport -> Hotel,,,Taxi,",
+      ].join("\n"),
+    );
+
+    expect(document.items).toHaveLength(1);
+    expect(document.items[0]).toMatchObject({
+      id: "csv-row-3",
+      day: "2026-06-18",
+      activity: "Airport -> Hotel",
+      activityType: "travel",
+      itemKind: "travel",
+      timeMode: "flexible",
+      isPlanBlock: true,
+      parentItemId: null,
+      startTime: "",
+      endTime: null,
+      durationMinutes: null,
+      transportation: "Taxi",
+    });
+  });
+
+  it("keeps indented flexible transport sub-activities under the same parent block", () => {
+    const document = parseItineraryImportDocument(
+      [
+        "Day\tDate\tTime\tPlans\tMaps\tDuration\tTransportation\tNote",
+        "DAY2\t\t\t\t\t\t\t",
+        "\t2026-06-19\t\tCity tour\t\t\t\t",
+        "\t\t\t  - Hotel -> Station\t\t\tMTR\t",
+        "\t\t\t  - Lunch spot\t\t\t\t",
+      ].join("\n"),
+    );
+
+    expect(document.items).toHaveLength(3);
+    expect(document.items[0]).toMatchObject({
+      id: "csv-row-3",
+      activity: "City tour",
+      isPlanBlock: true,
+      parentItemId: null,
+    });
+    expect(document.items[1]).toMatchObject({
+      id: "csv-row-4",
+      activity: "Hotel -> Station",
+      activityType: "travel",
+      itemKind: "travel",
+      timeMode: "flexible",
+      isPlanBlock: false,
+      parentItemId: "csv-row-3",
+      transportation: "MTR",
+    });
+    expect(document.items[2]).toMatchObject({
+      id: "csv-row-5",
+      activity: "Lunch spot",
+      parentItemId: "csv-row-3",
+      isPlanBlock: false,
+    });
+  });
 });

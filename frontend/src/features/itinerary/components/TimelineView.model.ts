@@ -29,7 +29,7 @@ export function buildTimelineViewModel({
       .map((group) => dayRouteLabel(group.day, locale, group.items))
       .join(" / "),
     totalMinutes: items.reduce(
-      (total, item) => total + (item.durationMinutes ?? 0),
+      (total, item) => total + (!item.isPlanBlock ? (item.durationMinutes ?? 0) : 0),
       0,
     ),
     warningCount:

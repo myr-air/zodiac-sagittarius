@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { getMessages } from "@/src/i18n/messages";
 import { buildItineraryItem } from "@/src/features/itinerary/testing";
@@ -33,7 +34,8 @@ const baseProps = {
 };
 
 describe("ActivityCellBody", () => {
-  it("renders the item note between the location line and the meta area", () => {
+  it("renders the item note inside the expandable details section", async () => {
+    const user = userEvent.setup();
     render(
       <ActivityCellBody
         {...baseProps}
@@ -45,10 +47,14 @@ describe("ActivityCellBody", () => {
       />,
     );
 
+    const toggle = screen.getByRole("button", {
+      name: /^Show details for Beach time$/i,
+    });
+    await user.click(toggle);
     expect(screen.getByText("Bring sunscreen and water")).toBeInTheDocument();
   });
 
-  it("does not render a note line when item.note is empty", () => {
+  it("does not render the expandable toggle when item has no note or transport", () => {
     render(
       <ActivityCellBody
         {...baseProps}
@@ -56,12 +62,31 @@ describe("ActivityCellBody", () => {
           activity: "Beach time",
           activityType: "attraction",
           note: "",
+          transportation: "",
         })}
       />,
     );
 
     expect(
-      screen.queryByText("Bring sunscreen and water"),
+      screen.queryByRole("button", { name: /^Show details for Beach time$/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders the details toggle when transport is present on a non-travel item", () => {
+    render(
+      <ActivityCellBody
+        {...baseProps}
+        item={buildItineraryItem({
+          activity: "Airport hop",
+          activityType: "attraction",
+          note: "",
+          transportation: "Bus",
+        })}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /^Show details for Airport hop$/i }),
+    ).toBeInTheDocument();
   });
 });

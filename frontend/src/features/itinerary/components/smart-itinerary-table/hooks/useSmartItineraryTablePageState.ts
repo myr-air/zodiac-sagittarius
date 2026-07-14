@@ -13,6 +13,7 @@ type UseSmartItineraryTablePageStateInput = Omit<Pick<
   | "items"
   | "pathOptions"
   | "role"
+  | "selectedItemId"
   | "startDate"
 >, "pathOptions"> & {
   pathOptions: ItineraryPathOption[];
@@ -27,6 +28,7 @@ export function useSmartItineraryTablePageState({
   items,
   pathOptions,
   role,
+  selectedItemId,
   startDate,
 }: UseSmartItineraryTablePageStateInput) {
   const { locale, t } = useI18n();
@@ -39,6 +41,7 @@ export function useSmartItineraryTablePageState({
     items,
     pathOptions,
     role,
+    selectedItemId,
     selectedCountLabel: t.itinerary.filters.selectedCount,
     selectedNamesLabel: t.itinerary.filters.selectedNames,
     startDate,

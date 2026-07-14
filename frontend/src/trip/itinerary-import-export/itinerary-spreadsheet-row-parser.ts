@@ -87,13 +87,17 @@ export function parseSpreadsheetRows(
       transportation,
     });
     const id = `csv-row-${rowNumber}`;
+    const parentItemId =
+      classification.isSubActivity && lastPlanBlockId ? lastPlanBlockId : null;
+    // Sub-activities must remain children; they cannot become plan blocks even
+    // when they look like untimed travel legs.
+    const isPlanBlock = classification.isPlanBlock && !classification.isSubActivity;
     const item: ItineraryExportItem = {
       id,
       itemKind: classification.itemKind,
       timeMode: timeWindow.timeMode,
-      parentItemId:
-        classification.isSubActivity && lastPlanBlockId ? lastPlanBlockId : null,
-      isPlanBlock: classification.isPlanBlock,
+      parentItemId,
+      isPlanBlock,
       status: classification.status,
       priority: classification.priority,
       day: currentDay,

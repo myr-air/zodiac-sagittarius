@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { Messages } from "@/src/i18n/messages";
 import type { Locale } from "@/src/i18n/types";
-import type { BookingDoc, ItineraryItem } from "@/src/trip/types";
-import { Icon } from "@/src/ui/icons";
+import type { BookingDoc, ItineraryItem, ItineraryItemStatus } from "@/src/trip/types";
+import { Icon, type IconName } from "@/src/ui/icons";
 import { formatDuration } from "../../../lib/itinerary-display";
 import { ItineraryBookingButton } from "./ItineraryBookingButton";
 import { ActivityMoreActionsButton } from "./ActivityCellControls";
@@ -16,6 +16,18 @@ import {
   activityPillClassName,
 } from "../smart-itinerary-table.styles";
 import type { ActivityCellProps } from "./activity-cell.types";
+
+const STATUS_ICON_MAP: Record<
+  ItineraryItemStatus,
+  { icon: IconName; color: string }
+> = {
+  idea: { icon: "lightbulb", color: "size-3.5 text-(--color-text-subtle)" },
+  planned: { icon: "circleDot", color: "size-3.5 text-(--color-route)" },
+  booked: { icon: "ticket", color: "size-3.5 text-(--color-primary)" },
+  confirmed: { icon: "badgeCheck", color: "size-3.5 text-(--color-primary)" },
+  done: { icon: "checkCircle2", color: "size-3.5 text-(--color-success)" },
+  skipped: { icon: "minusCircle", color: "size-3.5 text-(--color-text-subtle)" },
+};
 
 interface ActivityCellMetaProps {
   actionMenuLabel: string;
@@ -50,6 +62,8 @@ export function ActivityCellMeta({
   renderSubActivityButton,
   status,
 }: ActivityCellMetaProps) {
+  const statusIcon = item.status ? STATUS_ICON_MAP[item.status] : null;
+  const statusLabel = status ?? "";
   const bookingButton = (
     <ItineraryBookingButton
       item={item}
@@ -79,17 +93,16 @@ export function ActivityCellMeta({
       </div>
       <div className={activityMetaClassName}>
         <div className={activityMetaStatusClassName}>
-          {status ? <span className={activityPillClassName}>{status}</span> : null}
+          {statusIcon ? (
+            <span title={statusLabel}>
+              <Icon name={statusIcon.icon} className={statusIcon.color} />
+            </span>
+          ) : null}
           {bookingButton}
           {item.durationMinutes ? (
             <span className={activityPillClassName}>
               <Icon name="clock" className="size-3.5" />
               {formatDuration(item.durationMinutes, locale)}
-            </span>
-          ) : null}
-          {item.transportation ? (
-            <span className="min-w-0 truncate">
-              {item.transportation}
             </span>
           ) : null}
         </div>

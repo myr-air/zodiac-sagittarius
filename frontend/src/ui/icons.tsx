@@ -2,14 +2,17 @@ import type { SVGProps } from "react";
 
 export type IconName =
   | "alertCircle"
+  | "badgeCheck"
   | "block"
   | "bus"
   | "calendar"
   | "car"
   | "check"
+  | "checkCircle2"
   | "chevronDown"
   | "chevronLeft"
   | "chevronRight"
+  | "circleDot"
   | "clock"
   | "cloud"
   | "copy"
@@ -30,6 +33,7 @@ export type IconName =
   | "location"
   | "map"
   | "menu"
+  | "minusCircle"
   | "note"
   | "panel"
   | "plane"
@@ -54,7 +58,7 @@ export type IconName =
   | "warning"
   | "x";
 
-export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName }) {
+export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName; title?: string }) {
   const common = {
     className: ["icon size-[18px] shrink-0", className].filter(Boolean).join(" "),
     fill: "none",
@@ -68,6 +72,7 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   };
 
   if (name === "alertCircle") return <svg {...common}><circle cx="12" cy="12" r="10" /><path d="M12 8v5M12 16h.01" /></svg>;
+  if (name === "badgeCheck") return <svg {...common}><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /><path d="m9 12 2 2 4-4" /></svg>;
   if (name === "block") return <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>;
   if (name === "calendar") {
     return <svg {...common}><path d="M8 2v4M16 2v4M3 10h18" /><rect x="3" y="4" width="18" height="18" rx="2" /></svg>;
@@ -75,9 +80,11 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "bus") return <svg {...common}><path d="M7 19v2M17 19v2" /><path d="M5 17h14" /><path d="M5 6h14l1 4v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7l1-4Z" /><path d="M8 6V3h8v3M4 11h16M8 15h.01M16 15h.01" /></svg>;
   if (name === "car") return <svg {...common}><path d="M7 17h10M6 17v2M18 17v2" /><path d="m5 12 2-5h10l2 5" /><path d="M4 12h16v5H4Z" /><path d="M8 15h.01M16 15h.01" /></svg>;
   if (name === "check") return <svg {...common}><path d="m20 6-11 11-5-5" /></svg>;
+  if (name === "checkCircle2") return <svg {...common}><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>;
   if (name === "chevronLeft") return <svg {...common}><path d="m15 18-6-6 6-6" /></svg>;
   if (name === "chevronRight") return <svg {...common}><path d="m9 18 6-6-6-6" /></svg>;
   if (name === "chevronDown") return <svg {...common}><path d="m6 9 6 6 6-6" /></svg>;
+  if (name === "circleDot") return <svg {...common}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /></svg>;
   if (name === "clock") return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
   if (name === "cloud") return <svg {...common}><path d="M17.5 19H7a4 4 0 0 1-.8-7.9 6 6 0 0 1 11.5-1.6A4.8 4.8 0 0 1 17.5 19Z" /><path d="m9 14 2 2 4-4" /></svg>;
   if (name === "copy") return <svg {...common}><rect x="9" y="9" width="13" height="13" rx="2" /><rect x="2" y="2" width="13" height="13" rx="2" /></svg>;
@@ -98,6 +105,7 @@ export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { 
   if (name === "location") return <svg {...common}><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>;
   if (name === "map") return <svg {...common}><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z" /><path d="M9 3v15M15 6v15" /></svg>;
   if (name === "menu") return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16" /></svg>;
+  if (name === "minusCircle") return <svg {...common}><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /></svg>;
   if (name === "note") return <svg {...common}><path d="M4 4h16v14H7l-3 3V4Z" /></svg>;
   if (name === "panel") return <svg {...common}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></svg>;
   if (name === "plane") return <svg {...common}><path d="M10.5 21 13 14l7-4a2 2 0 0 0-2-3.5l-7 4-6.5-3-1 2 5 4-3 5Z" /><path d="m14 11 4 8" /></svg>;

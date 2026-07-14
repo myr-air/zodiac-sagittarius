@@ -62,6 +62,7 @@ export function SmartItineraryTable({
     items,
     pathOptions,
     role,
+    selectedItemId,
     startDate,
   });
   const {

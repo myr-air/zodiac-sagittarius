@@ -19,7 +19,7 @@ describe("buildTimeEditModalModel", () => {
     expect(model.durationLabel).toBe("Duration: 1 h 45 m");
   });
 
-  it("requires a start time when an end time is entered", () => {
+  it("accepts a blank start time when an end time is entered", () => {
     const model = buildTimeEditModalModel({
       endOffsetDays: 0,
       endTime: "10:00",
@@ -28,11 +28,11 @@ describe("buildTimeEditModalModel", () => {
     });
 
     expect(model.startError).toBeNull();
-    expect(model.endError).toBe("ใส่เวลาเริ่มก่อนใส่เวลาจบ");
+    expect(model.endError).toBeNull();
     expect(model.closeLabel).toBe("ปิดตัวแก้ไขเวลา");
     expect(model.nextDayEndLabel).toBe("จบวันถัดไป");
     expect(model.previewLabel).toBe("ตัวอย่างที่จะแสดง");
-    expect(model.previewWindow).toBe("--:--");
+    expect(model.previewWindow).toBe("10:00");
     expect(model.durationLabel).toBe("ไม่แสดง duration");
   });
 

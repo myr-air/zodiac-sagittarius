@@ -47,7 +47,7 @@ describe("SmartItineraryTable", () => {
       itemRows[0]?.querySelector(".activity-cell"),
     ).toHaveClass(
       "min-h-[60px]",
-      "grid-cols-[80px_112px_minmax(0,1fr)]",
+      "grid-cols-[96px_minmax(0,1fr)]",
       "data-[selected=true]:border-l-(--color-primary)",
     );
     expect(
@@ -58,12 +58,8 @@ describe("SmartItineraryTable", () => {
     expect(
       within(itemRows[0]).getAllByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,
-      }).find((button) => button.className.includes("activity-type-picker ")),
-    ).toHaveClass(
-      "activity-type-picker",
-      "!min-h-[52px]",
-  "rounded-(--radius-sm)",
-    );
+      }).find((button) => button.className.includes("activity-type-picker")),
+    ).toHaveClass("activity-type-picker-compact");
     expect(
       within(itemRows[0]).getAllByRole("button", {
         name: /แก้ไขประเภท|Edit type/i,

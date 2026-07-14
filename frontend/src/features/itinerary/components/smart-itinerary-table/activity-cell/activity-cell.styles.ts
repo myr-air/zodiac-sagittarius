@@ -1,5 +1,5 @@
 export const activityCellClassName =
-  "activity-cell relative grid min-h-[60px] min-w-0 grid-cols-[80px_112px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 data-[selected=true]:border-l-[3px] data-[selected=true]:border-l-(--color-primary) data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
+  "activity-cell relative grid min-h-[60px] min-w-0 grid-cols-[96px_minmax(0,1fr)] items-stretch gap-1.5 px-2 py-1 transition-[background,box-shadow] duration-150 data-[selected=true]:border-l-[3px] data-[selected=true]:border-l-(--color-primary) data-[details-open=true]:shadow-[inset_2px_0_0_0_var(--color-route)] max-[520px]:w-full max-[520px]:grid-cols-[72px_minmax(0,1fr)] max-[520px]:items-start max-[520px]:gap-x-1.5 max-[520px]:gap-y-0 max-[520px]:px-2 max-[520px]:py-1.5";
 export const activityTimeRailClassName =
   "flex min-w-0 items-start text-[11px] font-medium leading-4 text-(--color-text-muted) max-[520px]:grid max-[520px]:justify-items-center max-[520px]:pt-0 max-[360px]:items-center";
 export const activityTimeButtonClassName =
@@ -15,11 +15,15 @@ export const activityTimeNextDayClassName =
   "block leading-4 font-extrabold text-(--color-accent)";
 export const activityTypeRailClassName =
   "flex min-w-0 items-start justify-start max-[520px]:absolute max-[520px]:right-0 max-[520px]:top-0 max-[520px]:z-10";
+export const activityRailColumnClassName =
+  "flex flex-col min-w-0 items-center gap-0.5 max-[520px]:contents";
+export const activityCompactTypePickerClassName =
+  "activity-type-picker-compact !min-h-7 !h-7 !w-7 shrink-0 justify-center rounded-(--radius-sm) border-transparent bg-transparent !px-0 !py-0 text-(--color-text-muted) hover:border-(--color-route-border) hover:bg-(--color-route-soft) hover:text-(--color-route) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) [&_.icon]:size-3.5 [&_.inline-option-picker-label]:hidden";
 export const activityBodyClassName =
   "min-w-0 space-y-1 max-[520px]:col-start-2 max-[520px]:w-full max-[520px]:max-w-full";
 export const activityMainLineClassName = "grid min-w-0 grid-cols-1 items-start";
 export const activitySentenceClassName =
-  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-nowrap text-sm font-normal leading-5 text-(--color-text) max-[520px]:block max-[520px]:whitespace-normal";
+  "flex min-w-0 items-baseline gap-1 overflow-hidden whitespace-normal break-words text-sm font-normal leading-5 text-(--color-text) max-[520px]:block";
 export const activityTitleInputClassName =
   "min-h-5 w-full min-w-[8ch] max-w-full shrink-0 border-0 border-b border-transparent bg-transparent px-0 py-0 text-sm font-normal leading-5 text-(--color-text) outline-none transition-colors duration-150 [field-sizing:content] placeholder:text-(--color-text-muted) hover:not-disabled:border-(--color-border) focus:border-(--color-route) focus:ring-0 disabled:cursor-default disabled:border-transparent max-[520px]:w-full max-[520px]:max-w-full";
 export const activityPlaceInputClassName =
@@ -32,6 +36,18 @@ export const activityTransportLineClassName =
   "flex min-h-5 min-w-0 items-center gap-1.5 text-xs leading-5 text-(--color-text-muted) [&_.icon]:size-3.5 [&_.icon]:text-(--color-route) max-[520px]:flex [&_span]:text-[11px] [&_span]:font-medium";
 export const activityPlaceLineClassName =
   "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-1.5 text-xs leading-5 text-(--color-text-muted)";
+export const activityIdentityClassName =
+  "flex min-w-0 items-baseline gap-1";
+export const activityIdentityActivityClassName =
+  "flex min-w-0 items-baseline";
+export const activityIdentityAtGlyphClassName =
+  "shrink-0 select-none text-xs font-normal leading-5 text-(--color-text-subtle)";
+export const activityIdentityPlaceClassName =
+  "flex min-w-0 items-baseline";
+export const activityDetailsToggleClassName =
+  "inline-flex size-5 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) [&_.icon]:size-3.5";
+export const activityDetailsSectionClassName =
+  "mt-1 min-w-0 space-y-1 pl-2 border-l border-(--color-border) text-xs leading-5 text-(--color-text-muted)";
 export const activityNoteLineClassName =
   "min-w-0 truncate text-xs leading-5 text-(--color-text-muted)";
 export const activityMobilePlaceInputClassName =
@@ -47,13 +63,13 @@ export const activityMetaClassName =
 export const activityMetaStatusClassName =
   "flex min-w-0 flex-wrap items-center justify-start gap-1";
 export const activityTabletActionsClassName =
-  "hidden size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[1023px]:inline-flex [&_.icon]:size-4";
+  "hidden size-7 shrink-0 items-center justify-center rounded-(--radius-sm) border border-transparent bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:border-(--color-border) hover:bg-(--color-surface) hover:text-(--color-text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) aria-[expanded=true]:border-(--color-route-border) aria-[expanded=true]:bg-(--color-route-soft) aria-[expanded=true]:text-(--color-route) max-[1279px]:inline-flex [&_.icon]:size-4";
 export const activityTabletActionLayerClassName =
-  "mt-1 hidden min-w-0 flex-wrap items-center justify-end gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-1 py-1 max-[1023px]:flex";
+  "mt-1 hidden min-w-0 flex-wrap items-center justify-end gap-0.5 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-1 py-1 max-[1279px]:flex";
 export const activityPillClassName =
-  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
+  "inline-flex min-h-5 max-w-[148px] items-center gap-1 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface-subtle) px-1.5 text-[11px] font-bold leading-4 text-(--color-text-muted)";
 export const activityBookingButtonClassName =
-  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-full border px-1.5 text-[11px] font-extrabold leading-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
+  "inline-flex min-h-5 max-w-[164px] items-center gap-1 rounded-(--radius-sm) border px-1.5 text-[11px] font-extrabold leading-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-focus) disabled:cursor-not-allowed disabled:opacity-50 [&_.icon]:size-3.5";
 export const activityBookingButtonEmptyClassName =
   "border-(--color-border) bg-(--color-surface-subtle) text-(--color-text-muted) hover:border-(--color-border-strong) hover:bg-(--color-surface) hover:text-(--color-text)";
 export const activityBookingButtonLinkedClassName =
