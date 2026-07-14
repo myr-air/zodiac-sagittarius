@@ -23,6 +23,7 @@ export function render(ui: ReactElement) {
 }
 
 export async function loginApiTrip(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole("tab", { name: /Temp access/i }));
   fireEvent.change(screen.getByLabelText(/Trip ID/i), {
     target: { value: "HK-SZ-2025" },
   });
