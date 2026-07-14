@@ -32,3 +32,10 @@ _No open issues from M07MN77ML (triage-only mission)._
 | [#112](https://github.com/myr-air/zodiac-sagittarius/issues/112) | Verify booking draft creation from itinerary row with cross-page visibility | #66 child: booking linkage |
 | [#113](https://github.com/myr-air/zodiac-sagittarius/issues/113) | Verify expense linking to itinerary items with cross-page totals consistency | #66 child: expense linkage |
 | [#114](https://github.com/myr-air/zodiac-sagittarius/issues/114) | Verify cross-page badge/count agreement for itinerary-linked objects | #66 child: cross-page counts |
+
+## M07PI9GOU — Phase 3b: Itinerary Polish
+
+| Issue | Title | Source problem |
+|-------|-------|---------------|
+| [#117](https://github.com/myr-air/zodiac-sagittarius/issues/117) | SagittariusApp.trip-plan-api tests need UI update for trip access page | Pre-existing: test selectors outdated after UI change |
+| [#118](https://github.com/myr-air/zodiac-sagittarius/issues/118) | FlexibleHunterPage skipped test: radio toggle deselection | Native radio limitation, needs custom implementation or test removal |

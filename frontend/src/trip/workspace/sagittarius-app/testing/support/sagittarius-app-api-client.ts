@@ -54,7 +54,7 @@ export function createApiClientForTrip(
       memberId: trip.members[0].id,
       sessionToken: "session-token",
       createdAt: "2026-05-29T00:00:00.000Z",
-      expiresAt: "2026-06-28T00:00:00.000Z",
+      expiresAt: "2027-06-28T00:00:00.000Z",
     }),
     loginMember: vi.fn(),
     logout: vi.fn(),
