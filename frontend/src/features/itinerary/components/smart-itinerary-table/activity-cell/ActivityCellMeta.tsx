@@ -22,11 +22,11 @@ const STATUS_ICON_MAP: Record<
   { icon: IconName; color: string }
 > = {
   idea: { icon: "lightbulb", color: "size-3.5 text-(--color-text-subtle)" },
-  planned: { icon: "calendar", color: "size-3.5 text-(--color-route)" },
+  planned: { icon: "circleDot", color: "size-3.5 text-(--color-route)" },
   booked: { icon: "ticket", color: "size-3.5 text-(--color-primary)" },
-  confirmed: { icon: "check", color: "size-3.5 text-(--color-primary)" },
-  done: { icon: "check", color: "size-3.5 text-(--color-success)" },
-  skipped: { icon: "x", color: "size-3.5 text-(--color-text-subtle)" },
+  confirmed: { icon: "badgeCheck", color: "size-3.5 text-(--color-primary)" },
+  done: { icon: "checkCircle2", color: "size-3.5 text-(--color-success)" },
+  skipped: { icon: "minusCircle", color: "size-3.5 text-(--color-text-subtle)" },
 };
 
 interface ActivityCellMetaProps {
