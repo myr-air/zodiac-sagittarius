@@ -42,7 +42,7 @@ export function BookingFileRow({ doc, copy, trip, selected, canEdit, onSelect, o
           </span>
         </span>
       </button>
-      <span className="truncate text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{bookingDateDisplay(doc.startsAt, copy)}</span>
+      <span className="text-xs font-bold tabular-nums text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-2 max-[1199px]:pl-[42px]">{bookingDateDisplay(doc.startsAt, copy)}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:col-start-1 max-[1199px]:row-start-3 max-[1199px]:pl-[42px]">{provider}</span>
       <span className="truncate text-xs font-bold text-(--color-text-muted) max-[1199px]:hidden">{linkedStop}</span>
       <BookingStatusBadge

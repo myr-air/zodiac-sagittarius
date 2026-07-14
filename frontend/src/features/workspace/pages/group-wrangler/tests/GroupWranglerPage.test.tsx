@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { GroupWranglerPage } from "../GroupWranglerPage";
 import type { Member } from "@/src/trip/members/member-types";
@@ -115,7 +115,12 @@ describe("GroupWranglerPage", () => {
       { locale: "en" },
     );
 
-    expect(screen.getByRole("button", { name: "Invite" })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "Group Wrangler" })).getByRole(
+        "button",
+        { name: "Invite" },
+      ),
+    ).toBeInTheDocument();
   });
 
   it("does not render invite button when canManagePeople is false", () => {
@@ -253,7 +258,12 @@ describe("GroupWranglerPage", () => {
       { locale: "en" },
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Invite" }));
+    fireEvent.click(
+      within(screen.getByRole("region", { name: "Group Wrangler" })).getByRole(
+        "button",
+        { name: "Invite" },
+      ),
+    );
     expect(screen.getByRole("dialog", { name: "Invite Members" })).toBeInTheDocument();
   });
 });

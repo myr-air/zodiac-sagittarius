@@ -17,6 +17,9 @@ import {
   pageHeaderClassName,
   pageHeaderCopyClassName,
   pageHeaderWithAsideClassName,
+  pageHeaderWithMotifClassName,
+  pageHeaderWithMotifAndAsideClassName,
+  pageHeaderWithMotifWithoutAsideClassName,
   pageHeaderWithoutAsideClassName,
   subtitleClassName,
   titleClassName,
@@ -58,6 +61,8 @@ export function PageHeader({
       className={cn(
         compact ? pageHeaderCompactClassName : pageHeaderClassName,
         !compact && (aside ? pageHeaderWithAsideClassName : pageHeaderWithoutAsideClassName),
+        !compact && motif ? pageHeaderWithMotifClassName : "",
+        !compact && motif ? (aside ? pageHeaderWithMotifAndAsideClassName : pageHeaderWithMotifWithoutAsideClassName) : "",
         allowOverflow ? "z-[40] overflow-visible" : "overflow-hidden",
         className,
       )}

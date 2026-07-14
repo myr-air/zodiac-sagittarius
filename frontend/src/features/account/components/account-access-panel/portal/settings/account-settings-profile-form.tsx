@@ -40,9 +40,16 @@ export function AccountSettingsProfileForm({
           <input
             value={form.avatarColor}
             onChange={(event) => setForm((current) => ({ ...current, avatarColor: event.target.value }))}
-            pattern="#[0-9a-fA-F]{6}"
+            className="sr-only"
+            id="portal-avatar-color"
             type="color"
             required
+          />
+          <label
+            htmlFor="portal-avatar-color"
+            className="inline-block size-[46px] cursor-pointer rounded-(--radius-md) border border-(--color-border-strong) shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.12)] transition-shadow duration-150 hover:shadow-[0_0_0_4px_rgb(15_118_110_/_0.25)] focus-within:shadow-[0_0_0_4px_rgb(15_118_110_/_0.25)]"
+            style={{ backgroundColor: form.avatarColor }}
+            title={form.avatarColor}
           />
         </label>
         <label>

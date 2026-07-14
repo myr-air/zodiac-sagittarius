@@ -1,3 +1,5 @@
+import type { Phase } from "./phase";
+
 export type PlanningView =
   | "overview"
   | "itinerary"
@@ -15,6 +17,19 @@ export type PlanningView =
   | "detail-planner"
   | "group-wrangler"
   | "on-trip-companion";
+
+const PHASE_VIEWS: Set<string> = new Set([
+  "dreamer",
+  "flexible-hunter",
+  "route-builder",
+  "detail-planner",
+  "group-wrangler",
+  "on-trip-companion",
+]);
+
+export function planningViewToPhase(view: PlanningView): Phase | null {
+  return PHASE_VIEWS.has(view) ? (view as Phase) : null;
+}
 
 export function workspaceViewSupportsContextRail(view: PlanningView): boolean {
   return view === "overview" || view === "itinerary" || view === "timeline" || view === "detail-planner";

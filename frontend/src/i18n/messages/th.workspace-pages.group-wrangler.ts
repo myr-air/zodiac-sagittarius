@@ -17,4 +17,7 @@ export const thGroupWranglerMessages = {
   settlementLabel: "ชำระ",
   emptyMembers: "ยังไม่มีสมาชิก",
   emptyPolls: "ยังไม่มีโพลล์",
+  noRsvpsTitle: "ยังไม่มีการตอบรับ",
+  noRsvpsDetail:
+    "เมื่อสมาชิกตอบคำเชิญกิจกรรม สถานะตอบรับจะแสดงที่นี่",
 } as const;

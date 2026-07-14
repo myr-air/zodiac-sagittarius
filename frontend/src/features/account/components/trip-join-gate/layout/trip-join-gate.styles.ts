@@ -6,15 +6,15 @@ export const joinEyebrowClassName = "join-eyebrow mb-0.5 mt-0 text-xs font-extra
 export const joinAlertClassName = "join-alert m-0 inline-flex items-center gap-2 rounded-(--radius-md) border border-(--color-danger-border) bg-(--color-danger-soft) px-3 py-2.5 text-[13px] font-bold text-(--color-danger)";
 export const joinAlertStackClassName =
   "join-alert-stack pointer-events-none fixed top-4 right-[clamp(18px,4vw,44px)] left-auto z-[60] grid w-[min(430px,calc(100vw-36px))] gap-2.5 max-[767px]:top-auto max-[767px]:right-0 max-[767px]:left-0 max-[767px]:bottom-5 max-[767px]:px-[18px] [&_.join-alert]:pointer-events-auto [&_.join-alert]:min-h-12 [&_.join-alert]:w-full [&_.join-alert]:justify-start [&_.join-alert]:rounded-(--radius-lg) [&_.join-alert]:shadow-[0_10px_22px_rgb(15_23_42_/_0.1)]";
-export const joinFormClassName = "join-form grid gap-3 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-(--color-text) [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
+export const joinFormClassName = "join-form grid gap-3 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-(--color-text) [&_input]:focus:border-(--color-primary-border) [&_input]:focus:shadow-[0_0_0_3px_var(--color-primary-soft)] [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 export const participantAuthClassName = "participant-auth col-span-full grid gap-3 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) p-3.5 [&_input]:min-h-[42px] [&_input]:w-full [&_input]:rounded-(--radius-md) [&_input]:border [&_input]:border-(--color-border-strong) [&_input]:bg-(--color-surface) [&_input]:px-3 [&_input]:text-(--color-text) [&_label]:grid [&_label]:gap-1.5 [&_label]:text-[13px] [&_label]:font-bold [&_label]:text-(--color-text-muted)";
 export const joinSubmitClassName = "join-submit min-h-[42px] justify-center";
 export const participantStepClassName = "participant-step grid gap-4";
 export const participantGridClassName = "participant-grid grid grid-cols-2 gap-2.5 max-[767px]:grid-cols-1";
 export const participantCardClassName = "participant-card grid min-h-[72px] grid-cols-[38px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) p-3 text-left text-(--color-text) transition-[border-color,box-shadow,background] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:shadow-[0_10px_22px_rgb(15_23_42_/_0.06)] data-[selected=true]:border-(--color-primary-border) data-[selected=true]:bg-(--color-primary-soft) data-[selected=true]:shadow-[0_10px_22px_rgb(15_23_42_/_0.06)] max-[767px]:grid-cols-[38px_minmax(0,1fr)] max-[767px]:[&_.badge]:col-start-2 max-[767px]:[&_.badge]:justify-self-start [&_small]:block [&_small]:text-xs [&_small]:leading-[18px] [&_small]:text-(--color-text-muted) [&_strong]:block [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-sm [&_strong]:leading-5 [&_strong]:text-(--color-text)";
 export const participantAvatarClassName = "person-avatar grid size-[30px] place-items-center rounded-full text-xs font-extrabold text-white";
-export const passwordInputRowClassName = "password-input-row grid grid-cols-[minmax(0,1fr)_42px] items-center gap-2";
-export const passwordVisibilityButtonClassName = "password-visibility-button inline-grid size-[42px] cursor-pointer place-items-center rounded-(--radius-md) border border-(--color-border-strong) bg-(--color-surface) text-(--color-text-muted) hover:border-(--color-primary) hover:text-(--color-primary-strong) focus-visible:border-(--color-primary) focus-visible:text-(--color-primary-strong)";
+export const passwordInputRowClassName = "password-input-row relative block";
+export const passwordVisibilityButtonClassName = "password-visibility-button absolute right-2 top-1/2 size-6 -translate-y-1/2 cursor-pointer place-items-center rounded-(--radius-sm) bg-transparent text-(--color-text-muted) hover:text-(--color-primary-strong) focus-visible:text-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border) focus-visible:ring-offset-1";
 export const participantAuthHelpClassName = "participant-auth-help m-0 text-xs leading-[18px] text-(--color-text-muted)";
 export const embeddedJoinPageClassName = "!block !min-h-auto !bg-transparent !p-0";
 export const embeddedJoinShellClassName = "!w-[min(100%,640px)] justify-self-center shadow-[var(--shadow-panel)]";
@@ -36,7 +36,7 @@ export const tripAccessVisualClassName =
   "trip-access-visual relative col-start-1 row-start-1 row-span-4 min-h-[620px] overflow-hidden border-r border-(--color-border) bg-(--color-surface-subtle) p-7 max-[767px]:col-start-1 max-[767px]:row-auto max-[767px]:min-h-0 max-[767px]:border-r-0 max-[767px]:border-b max-[767px]:p-4";
 export const tripAccessVisualWashClassName =
   "absolute inset-0 pointer-events-none bg-[url('/landing/auth/bg-map-watercolor.png')] bg-cover bg-center opacity-20";
-export const tripAccessPhotoStackClassName = "trip-access-photo-stack relative z-[1] min-h-[380px] max-[767px]:min-h-[172px]";
+export const tripAccessPhotoStackClassName = "trip-access-photo-stack relative z-[1] min-h-[380px] max-[767px]:min-h-[200px]";
 export const tripAccessPhotoClassName =
   "trip-access-photo absolute overflow-hidden rounded-(--radius-md) border border-(--color-border) bg-cover bg-center shadow-[0_10px_22px_rgb(15_23_42_/_0.1)]";
 export const tripAccessPhotoKrabiClassName =
@@ -44,7 +44,7 @@ export const tripAccessPhotoKrabiClassName =
 export const tripAccessPhotoKyotoClassName =
   "trip-access-photo--kyoto right-0 top-0 aspect-[3/4] w-[46%] bg-[url('/landing/auth/photo-kyoto.png')] max-[767px]:left-[37%] max-[767px]:right-auto max-[767px]:w-[34%] max-[767px]:aspect-square";
 export const tripAccessPhotoSantoriniClassName =
-  "trip-access-photo--santorini right-[6%] bottom-0 aspect-[4/3] w-[54%] bg-[url('/landing/auth/photo-santorini.png')] max-[767px]:right-0 max-[767px]:bottom-2.5 max-[767px]:w-[38%]";
+  "trip-access-photo--santorini right-[6%] bottom-0 aspect-[4/3] w-[54%] bg-[url('/landing/auth/photo-santorini.png')] max-[767px]:left-1/2 max-[767px]:right-auto max-[767px]:top-1/2 max-[767px]:bottom-auto max-[767px]:w-[90%] max-[767px]:-translate-x-1/2 max-[767px]:-translate-y-1/2";
 export const tripAccessRouteCardClassName =
   "trip-access-route-card relative z-[1] mt-[18px] grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface) px-3.5 py-[13px] shadow-[0_8px_18px_rgb(15_23_42_/_0.06)] max-[767px]:hidden";
 export const tripAccessRouteStopClassName = "trip-access-route-stop text-xs font-[850] text-(--color-text)";

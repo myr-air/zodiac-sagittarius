@@ -111,5 +111,5 @@ export const enDatesMessages = {
     planned: "planned",
     visibleStops: ({ visible, total }: { visible: number; total: number }) => `${visible}/${total} stops visible`,
     activeMembers: ({ count }: { count: number }) => `${count} active members`,
-    memberCount: ({ count }: { count: number }) => `${count} members`,
+    memberCount: ({ count }: { count: number }) => `${count} member${count === 1 ? "" : "s"}`,
   } as const;

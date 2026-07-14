@@ -22,7 +22,7 @@ describe("OfflineBanner", () => {
     vi.stubGlobal("navigator", { onLine: false });
     renderWithI18n(<OfflineBanner />, { locale: "en" });
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/Offline/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Offline/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("hides when dismissed", () => {

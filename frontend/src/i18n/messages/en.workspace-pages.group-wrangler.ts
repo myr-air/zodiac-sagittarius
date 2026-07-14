@@ -17,4 +17,7 @@ export const enGroupWranglerMessages = {
   settlementLabel: "Settlement",
   emptyMembers: "No members yet",
   emptyPolls: "No polls yet",
+  noRsvpsTitle: "No RSVPs yet",
+  noRsvpsDetail:
+    "When members respond to activity invitations, their RSVPs will appear here.",
 } as const;

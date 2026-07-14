@@ -1,5 +1,4 @@
-export const pageClass =
-  "grid h-full min-h-0 gap-4 grid-cols-[1fr_320px] max-[1199px]:grid-cols-1";
+export const pageClass = "grid h-full min-h-0 gap-4 grid-cols-1";
 
 export const mapColumnClass = "min-h-0 overflow-hidden";
 
@@ -45,7 +44,7 @@ export const emptyStateClassName =
 export const suggestionListClassName = "flex flex-col gap-1.5 overflow-y-auto pr-1";
 
 export const suggestionItemClassName =
-  "flex w-full items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-(--color-route-soft) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-route)";
+  "flex w-full items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-(--color-route-soft) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
 
 export const suggestionItemSelectedClassName = "bg-(--color-route-soft) border-(--color-route-border)";
 

@@ -1,6 +1,9 @@
 # Changelog
 
-## [0.8.2] — 2026-07-14
+## [0.8.3] — 2026-07-14
+
+### Fixed
+- #93-#104: UX audit batch — compact identity banners on mobile, correct phase wizard highlighting, primary-teal focus rings everywhere, flattened portal nested cards, overview/stats/checklist responsive fixes, Route Builder right rail suppression, Group Wrangler RSVP empty state, timeline debug grid removal, bookings column/scroll fixes, member/photo/settings/join responsive layout cleanup
 
 ### Fixed
 - #117: Updated trip-plan-api test selectors to match current trip access UI; fixed mock session expiration date

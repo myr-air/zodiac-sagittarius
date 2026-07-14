@@ -26,9 +26,10 @@ describe("TripMembersPage management", () => {
     );
     expect(screen.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass(
       "member-stat-grid",
-      "grid",
-      "gap-2",
-      "max-[767px]:flex",
+      "flex",
+      "flex-wrap",
+      "gap-3",
+      "max-[767px]:flex-nowrap",
       "max-[767px]:overflow-x-auto",
     );
     expect(screen.getAllByText(/สมาชิกทั้งหมด/i)[0].closest(".member-stat")).toHaveClass(
@@ -43,7 +44,8 @@ describe("TripMembersPage management", () => {
     ).not.toContain("0_10px_24px");
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass(
       "member-command-bar",
-      "grid",
+      "flex",
+      "flex-wrap",
       "gap-2",
     );
     expect(screen.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass(

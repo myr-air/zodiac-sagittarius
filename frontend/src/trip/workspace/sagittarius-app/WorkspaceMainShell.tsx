@@ -3,6 +3,7 @@ import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell
 import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar";
 import { PHASE_ORDER, type Phase } from "@/src/trip/workspace/phase";
+import { planningViewToPhase } from "@/src/trip/workspace/planning-view";
 import { useDerivePhase } from "@/src/trip/workspace/use-derive-phase";
 import type { DerivePhaseInput } from "@/src/trip/workspace/derive-phase";
 import type { Trip } from "@/src/trip/types";
@@ -93,8 +94,9 @@ export function WorkspaceMainShell({
   );
   const { currentPhase: derivedPhase, availablePhases, setPhase } = useDerivePhase(deriveInput);
 
-  // Use external phase if provided, otherwise use derived phase.
-  const currentPhase = externalPhase ?? derivedPhase;
+  // Use external phase if provided, then view-derived phase, then data-derived phase.
+  const viewPhase = planningViewToPhase(appShellProps.activeView);
+  const currentPhase = externalPhase ?? viewPhase ?? derivedPhase;
   const onPhaseChange = externalOnPhaseChange ?? setPhase;
 
   // PhaseBar is always rendered when we have a trip (phase is always derivable).

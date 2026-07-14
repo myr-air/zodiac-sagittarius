@@ -16,7 +16,7 @@ describe("account portal nav styles", () => {
     expect(portalNavLinksClassName).toContain("portal-nav-links");
     expect(portalNavLinksClassName).toContain("overflow-x-auto");
     expect(portalNavLinkClassName).toContain("portal-nav-link");
-    expect(portalNavLinkClassName).toContain("focus-visible:border-(--color-route-border)");
+    expect(portalNavLinkClassName).toContain("focus-visible:border-(--color-primary-border)");
     expect(portalNavLinkActiveClassName).toContain("portal-nav-link--active");
     expect(portalNavLinkActiveClassName).toContain("bg-(--color-primary-soft)");
   });

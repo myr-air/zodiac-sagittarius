@@ -23,6 +23,7 @@ export function MemberFilterControls({
       <FieldLabel>
         <span>{labels.members.fields.search}</span>
         <TextInput
+          className={memberStyles.memberFilterInputClassName}
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder={labels.members.fields.searchPlaceholder}
@@ -31,6 +32,7 @@ export function MemberFilterControls({
       <FieldLabel>
         <span>{labels.members.fields.role}</span>
         <Select
+          className={memberStyles.memberFilterInputClassName}
           value={roleFilter}
           onChange={(event) => onRoleFilterChange(event.target.value as MemberRoleFilter)}
         >
@@ -40,6 +42,7 @@ export function MemberFilterControls({
       <FieldLabel>
         <span>{labels.members.fields.status}</span>
         <Select
+          className={memberStyles.memberFilterInputClassName}
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as MemberStatusFilter)}
         >
