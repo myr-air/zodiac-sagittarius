@@ -50,7 +50,7 @@ function TripSettingsPageContent({ canEdit, currentMember, trip, onSave }: TripS
           subtitle={trip.name}
           description={t.tripSettings.detail}
           locale={locale}
-          memberCountLabel={t.dates.memberCount({ count: trip.members.length })}
+          memberCountLabel={t.dates.memberCount({ count: form.partySize })}
           roleLabel={t.tripSettings.currentRole({ role: currentMember.role })}
           tripEndDate={trip.endDate}
           tripStartDate={trip.startDate}

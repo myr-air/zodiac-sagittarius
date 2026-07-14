@@ -55,6 +55,7 @@ export function TripJoinRoomForm({
         <span>{copy.tripPassword}</span>
         <span className={passwordInputRowClassName}>
           <input
+            className="pr-10"
             value={tripPassword}
             onChange={(event) => onPasswordChange(event.target.value)}
             type={showTripPassword ? "text" : "password"}

@@ -30,8 +30,8 @@ export function TripJoinGateVisual({ label, notes }: TripJoinGateVisualProps) {
     <div className={tripAccessVisualClassName} role="group" aria-label={label}>
       <span className={tripAccessVisualWashClassName} />
       <div className={tripAccessPhotoStackClassName} aria-hidden="true">
-        <span className={cn(tripAccessPhotoClassName, tripAccessPhotoKrabiClassName)} />
-        <span className={cn(tripAccessPhotoClassName, tripAccessPhotoKyotoClassName)} />
+        <span className={cn(tripAccessPhotoClassName, tripAccessPhotoKrabiClassName, "max-[767px]:hidden")} />
+        <span className={cn(tripAccessPhotoClassName, tripAccessPhotoKyotoClassName, "max-[767px]:hidden")} />
         <span className={cn(tripAccessPhotoClassName, tripAccessPhotoSantoriniClassName)} />
       </div>
       <div className={tripAccessRouteCardClassName} aria-hidden="true">
