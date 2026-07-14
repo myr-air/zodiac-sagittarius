@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.2] — 2026-07-14
+
+### Fixed
+- #117: Updated trip-plan-api test selectors to match current trip access UI; fixed mock session expiration date
+
 ## [0.8.1] — 2026-07-14
 
 ### Changed
