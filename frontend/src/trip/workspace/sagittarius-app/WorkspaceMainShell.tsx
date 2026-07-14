@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/src/features/workspace/components/app-shell/AppShell";
 import type { AppShellProps } from "@/src/features/workspace/components/app-shell/app-shell.types";
 import { PhaseBar } from "@/src/features/workspace/components/phase-bar/PhaseBar";
@@ -19,6 +19,7 @@ import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs
 import { WorkspaceRolePreview, type WorkspaceRolePreviewProps } from "./WorkspaceRolePreview";
 import { OfflineBanner } from "@/src/features/workspace/components/offline";
 import { workspaceShellClassName } from "./sagittarius-app.styles";
+import { usePrefersReducedMotion } from "@/src/shared/hooks/use-prefers-reduced-motion";
 
 export interface WorkspaceMainShellProps {
   appShellProps: Omit<AppShellProps, "children">;
@@ -188,7 +189,7 @@ export function WorkspaceMainShell({
 
       return {
         members: trip.members ?? [],
-        currentMember: currentMember ?? { id: "", name: "", color: "#0d9488" } as any,
+        currentMember: currentMember ?? { id: "", displayName: "", role: "viewer", presence: "offline", color: "#0d9488" },
         activities: trip.itineraryItems ?? [],
         polls,
         rsvps,
@@ -271,26 +272,13 @@ export function WorkspaceMainShell({
   // Phase transition animation: 200ms opacity cross-fade.
   const [animPhase, setAnimPhase] = useState(currentPhase);
   const [opacity, setOpacity] = useState(1);
-  const reducedMotionRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      reducedMotionRef.current = false;
-      return;
-    }
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotionRef.current = mql.matches;
-    const handler = (e: MediaQueryListEvent) => {
-      reducedMotionRef.current = e.matches;
-    };
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (currentPhase !== animPhase) {
-      if (reducedMotionRef.current) {
+      if (reducedMotion) {
         // Instant switch — no animation
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- controlled animation state machine
         setAnimPhase(currentPhase);
         return;
       }
@@ -308,9 +296,9 @@ export function WorkspaceMainShell({
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [currentPhase, animPhase]);
+  }, [currentPhase, animPhase, reducedMotion]);
 
-  const transitionStyle = reducedMotionRef.current
+  const transitionStyle = reducedMotion
     ? undefined
     : { transition: "opacity 200ms ease" } as React.CSSProperties;
 

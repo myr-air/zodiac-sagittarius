@@ -13,7 +13,7 @@ const mockTrip: Trip = {
   endDate: "2026-03-22",
   activePlanVariantId: "pv-1",
   planVariants: [],
-  members: [{ id: "m1", tripId: "trip-1", name: "Owner", role: "owner" } as any],
+  members: [{ id: "m1", displayName: "Owner", role: "owner", presence: "online", color: "#4a90e2" }],
   itineraryItems: [],
   expenses: [],
 };

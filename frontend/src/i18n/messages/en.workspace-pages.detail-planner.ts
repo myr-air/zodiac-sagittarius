@@ -7,6 +7,6 @@ export const enDetailPlannerMessages = {
   waypointConversionBanner: "Convert {count} waypoints into day structure?",
   conversionAccept: "Convert",
   conversionDismiss: "Not now",
-  planVariantDropdownLabel: "Plan variant",
+  planVariantDropdownLabel: "Trip Plan",
   planVariantOverflow: "variants",
 } as const;
