@@ -64,6 +64,7 @@ interface UseSmartItineraryTableStateParams {
   dailyBriefings?: TripDailyBriefing[];
   itineraryView?: ItineraryView;
   canRestructure?: boolean;
+  selectedItemId?: string;
   selectedCountLabel: ({ count }: { count: number }) => string;
   selectedNamesLabel: ({ names }: { names: string }) => string;
 }
@@ -76,7 +77,7 @@ export function useSmartItineraryTableState({
   startDate,
   endDate,
   dailyBriefings = [],
-  itineraryView,
+  selectedItemId,
   canRestructure = true,
   selectedCountLabel,
   selectedNamesLabel,
@@ -112,9 +113,20 @@ export function useSmartItineraryTableState({
   );
 
   const graphItemsByDay = groupGraphItemsByDay(displayItems);
-  const warningCount =
-    itineraryView?.warningCount ??
-    displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
+
+  const selectedItem = selectedItemId
+    ? allDisplayItems.find((item) => item.id === selectedItemId)
+    : undefined;
+  const selectedDay = selectedItem?.day;
+
+  const warningCount = selectedDay
+    ? displayDayGroups
+        .filter((group) => group.day === selectedDay)
+        .reduce((total, group) => total + group.warningCount, 0)
+    : displayDayGroups.reduce(
+        (total, group) => total + group.warningCount,
+        0,
+      );
   const {
     subActivitiesCount,
     flexibleItemsCount,

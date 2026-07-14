@@ -126,8 +126,21 @@ describe("itinerary import/export hierarchy", () => {
     expect(() => parseItineraryImport(JSON.stringify(crossDayPayload))).toThrow(
       /unsupported itinerary import/i,
     );
-    expect(() => parseItineraryImport(JSON.stringify(missingParentPayload))).toThrow(
-      /unsupported itinerary import/i,
+
+    const missingParentResult = parseItineraryImport(
+      JSON.stringify(missingParentPayload),
     );
+    expect(missingParentResult).toHaveLength(2);
+    expect(missingParentResult[0]).toMatchObject({
+      id: "missing-block",
+      isPlanBlock: true,
+      parentItemId: null,
+      day: "2026-06-19",
+    });
+    expect(missingParentResult[1]).toMatchObject({
+      id: "child-1",
+      parentItemId: "missing-block",
+      isPlanBlock: false,
+    });
   });
 });
