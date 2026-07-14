@@ -3,6 +3,7 @@ import { useI18n } from "@/src/i18n/I18nProvider";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
 import { PersonAvatar } from "@/src/shared/components/person-avatar";
+import { WorkspaceEmptyState } from "@/src/shared/components/workspace-empty-state/WorkspaceEmptyState";
 import { InviteDialog } from "./InviteDialog";
 import { PollCard } from "./PollCard";
 import { ActivityRsvpSection } from "./ActivityRsvpSection";
@@ -106,34 +107,54 @@ export function GroupWranglerPage({
       {/* RSVP Section */}
       <section aria-label={gw.rsvpSectionTitle}>
         <h2 className={styles.sectionTitleClassName}>{gw.rsvpSectionTitle}</h2>
-        <div className="flex flex-col gap-3">
-          {activities
-            .filter((a) => rsvps.some((r) => r.activityId === a.id))
-            .map((activity) => {
-              const activityRsvps = rsvps.filter((r) => r.activityId === activity.id);
-              return (
-                <ActivityRsvpSection
-                  key={activity.id}
-                  activityName={activity.activity}
-                  rsvps={activityRsvps}
-                  members={members}
-                  currentMemberId={currentMember.id}
-                  headcountLabel={(going, total) =>
-                    gw.headcountLabel
-                      .replace("{going}", String(going))
-                      .replace("{total}", String(total))
-                  }
-                  goingLabel={gw.goingLabel}
-                  notGoingLabel={gw.notGoingLabel}
-                  onToggleRsvp={
-                    onToggleRsvp
-                      ? (status) => onToggleRsvp(activity.id, status)
-                      : undefined
-                  }
-                />
-              );
-            })}
-        </div>
+        {rsvps.length === 0 ? (
+          <WorkspaceEmptyState
+            icon={<Icon name="calendar" />}
+            title={gw.noRsvpsTitle}
+            detail={gw.noRsvpsDetail}
+            action={
+              canManagePeople ? (
+                <Button
+                  className={styles.inviteButtonClassName}
+                  variant="primary"
+                  onClick={() => setInviteOpen(true)}
+                >
+                  <Icon name="users" />
+                  {gw.inviteButton}
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {activities
+              .filter((a) => rsvps.some((r) => r.activityId === a.id))
+              .map((activity) => {
+                const activityRsvps = rsvps.filter((r) => r.activityId === activity.id);
+                return (
+                  <ActivityRsvpSection
+                    key={activity.id}
+                    activityName={activity.activity}
+                    rsvps={activityRsvps}
+                    members={members}
+                    currentMemberId={currentMember.id}
+                    headcountLabel={(going, total) =>
+                      gw.headcountLabel
+                        .replace("{going}", String(going))
+                        .replace("{total}", String(total))
+                    }
+                    goingLabel={gw.goingLabel}
+                    notGoingLabel={gw.notGoingLabel}
+                    onToggleRsvp={
+                      onToggleRsvp
+                        ? (status) => onToggleRsvp(activity.id, status)
+                        : undefined
+                    }
+                  />
+                );
+              })}
+          </div>
+        )}
       </section>
 
       {/* Expense Settlement Section */}

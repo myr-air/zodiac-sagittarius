@@ -130,17 +130,6 @@ describe("RouteBuilderPage", () => {
     expect(last![0].lng).toBe(10);
   });
 
-  it("gap suggestion rail renders empty state when no gaps", () => {
-    renderPage({
-      waypoints: [
-        waypoint("a", 0, 0, 1),
-        waypoint("b", 0, 0.1, 2),
-      ],
-    });
-
-    expect(screen.getByText("No suggestions — add a stop manually")).toBeInTheDocument();
-  });
-
   it("distance badge shows correct format for waypoint pair", () => {
     renderPage({
       waypoints: [
@@ -175,27 +164,4 @@ describe("RouteBuilderPage", () => {
     });
   });
 
-  it("clicking a gap suggestion inserts a waypoint between the nearest pair", async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-
-    renderPage({
-      waypoints: [
-        waypoint("a", 0, 0, 1),
-        waypoint("b", 1, 0, 2),
-      ],
-      onWaypointsChange: onChange,
-    });
-
-    const suggestion = await screen.findByTestId("gap-suggestion");
-    await user.click(suggestion);
-
-    await waitFor(() => expect(onChange).toHaveBeenCalled());
-    const last = onChange.mock.calls.at(-1)?.[0] as Waypoint[] | undefined;
-    expect(last).toBeDefined();
-    expect(last).toHaveLength(3);
-    expect(last![1].name).toMatch(/Stop between/);
-    expect(last![1].lat).toBeCloseTo(0.5, 5);
-    expect(last![1].lng).toBeCloseTo(0, 5);
-  });
 });

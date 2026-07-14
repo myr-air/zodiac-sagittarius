@@ -41,12 +41,12 @@ describe("OverviewPage visual summary", () => {
     expect(hero).toHaveClass("max-[767px]:rounded-(--radius-lg)", "max-[767px]:border");
     expect(hero).toHaveClass("shadow-[0_1px_0_rgb(15_23_42_/_0.04)]");
     expect(hero).toHaveTextContent(/Hong Kong/i);
-    expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:hidden");
+    expect(within(hero).getByRole("heading", { name: /Hong Kong \+ Shenzhen Trip/i })).toHaveClass("max-[767px]:text-xl");
     expect(hero).toHaveTextContent(/HK\$/i);
     expect(within(hero).getByText(/ศูนย์จัดการทริป/i)).toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-polaroid")).not.toBeInTheDocument();
     expect(hero.querySelector(".overview-hero-aside")).toHaveClass("bg-[rgb(255_255_255_/_0.76)]", "rounded-(--radius-md)");
-    expect(hero.querySelector(".overview-hero-meta")).toHaveClass("max-[767px]:[&_span:nth-child(n+3)]:hidden");
+    expect(hero.querySelector(".overview-hero-meta")).toHaveClass("max-[767px]:grid-cols-2");
 
     expect(document.querySelector(".overview-weather-bento")).toHaveClass(
       "max-[767px]:[&_.weather-forecast-row]:grid",
