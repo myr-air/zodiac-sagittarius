@@ -68,6 +68,41 @@ describe("activity-path-graph.layout", () => {
     expect(elements[0]?.tagName.toLowerCase()).toBe("div");
   });
 
+  it("aligns nodes to row vertical centers using DOM geometry", () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>day</td>
+            <td><div data-graph></div></td>
+          </tr>
+          <tr data-item-id="item-a">
+            <td>
+              <div data-activity-title-line>title</div>
+            </td>
+          </tr>
+          <tr data-day-drop="2026-06-19"><td>add</td></tr>
+        </tbody>
+      </table>
+    `;
+    const graphElement = document.querySelector("[data-graph]") as HTMLDivElement;
+    const fallbackLayout = buildFallbackGraphLayout([item]);
+    const graphRow = graphElement.closest("tr") as HTMLTableRowElement;
+    const itemRow = document.querySelector('[data-item-id="item-a"]') as HTMLTableRowElement;
+    const addStopRow = document.querySelector('[data-day-drop="2026-06-19"]') as HTMLTableRowElement;
+
+    mockRect(graphElement, makeRect(0, 0));
+    mockRect(graphRow, makeRect(0, 120, 200, 60));
+    mockRect(itemRow, makeRect(0, 300, 200, 80));
+    const titleLine = itemRow.querySelector("[data-activity-title-line]") as HTMLElement;
+    mockRect(titleLine, makeRect(0, 310, 200, 24));
+    mockRect(addStopRow, makeRect(0, 420, 200, 30));
+
+    const layout = measureRenderedGraphLayout(graphElement, "2026-06-19", [item], fallbackLayout);
+
+    expect(layout?.itemYById.get(item.id)).toBe(340);
+  });
+
   it("measures rendered layout from DOM geometry", () => {
     document.body.innerHTML = `
       <table>

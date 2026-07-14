@@ -85,7 +85,7 @@ export function measureRenderedGraphLayout(
     if (!itemRow) return null;
     const itemRect = itemRow.getBoundingClientRect();
     if (!isUsableRect(itemRect)) return null;
-    itemYById.set(item.id, itemRowY(itemRow, graphRect) ?? rowCenterY(itemRect, graphRect));
+    itemYById.set(item.id, rowCenterY(itemRect, graphRect));
     measuredBottom = Math.max(measuredBottom, itemRect.bottom);
   }
 
@@ -122,14 +122,6 @@ function findItemRow(tbody: Element | null, itemId: string): HTMLElement | null 
 
 function rowCenterY(rowRect: DOMRect, graphRect: DOMRect): number {
   return roundPathNumber(rowRect.top - graphRect.top + rowRect.height / 2);
-}
-
-function itemRowY(itemRow: HTMLElement, graphRect: DOMRect): number | null {
-  const titleLine = itemRow.querySelector<HTMLElement>("[data-activity-title-line]");
-  if (!titleLine) return null;
-  const titleRect = titleLine.getBoundingClientRect();
-  if (!isUsableRect(titleRect)) return null;
-  return roundPathNumber(titleRect.bottom - graphRect.top);
 }
 
 function areGraphLayoutsEqual(left: GraphLayout | null, right: GraphLayout | null): boolean {
