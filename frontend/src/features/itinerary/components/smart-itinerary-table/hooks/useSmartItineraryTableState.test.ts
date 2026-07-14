@@ -8,6 +8,7 @@ describe("computeItinerarySummaryCounts", () => {
     expect(computeItinerarySummaryCounts([])).toEqual({
       subActivitiesCount: 0,
       flexibleItemsCount: 0,
+      totalMinutes: 0,
     });
   });
 
@@ -21,6 +22,7 @@ describe("computeItinerarySummaryCounts", () => {
     expect(computeItinerarySummaryCounts(items)).toEqual({
       subActivitiesCount: 2,
       flexibleItemsCount: 0,
+      totalMinutes: 135,
     });
   });
 
@@ -34,6 +36,7 @@ describe("computeItinerarySummaryCounts", () => {
     expect(computeItinerarySummaryCounts(items)).toEqual({
       subActivitiesCount: 1,
       flexibleItemsCount: 2,
+      totalMinutes: 135,
     });
   });
 
@@ -51,10 +54,50 @@ describe("computeItinerarySummaryCounts", () => {
     expect(computeItinerarySummaryCounts(base)).toEqual({
       subActivitiesCount: 0,
       flexibleItemsCount: 1,
+      totalMinutes: 90,
     });
     expect(computeItinerarySummaryCounts(added)).toEqual({
       subActivitiesCount: 1,
       flexibleItemsCount: 2,
+      totalMinutes: 180,
+    });
+  });
+
+  it("excludes journey block durations from total minutes", () => {
+    const items: ItineraryItem[] = [
+      buildItineraryItem({
+        id: "block",
+        durationMinutes: 60,
+        isPlanBlock: true,
+      }),
+      buildItineraryItem({
+        id: "activity",
+        durationMinutes: 45,
+        isPlanBlock: false,
+      }),
+      buildItineraryItem({ id: "plain", durationMinutes: 30 }),
+    ];
+
+    expect(computeItinerarySummaryCounts(items)).toEqual({
+      subActivitiesCount: 0,
+      flexibleItemsCount: 0,
+      totalMinutes: 75,
+    });
+  });
+
+  it("counts a 60-minute plan block as zero total minutes", () => {
+    const items: ItineraryItem[] = [
+      buildItineraryItem({
+        id: "block",
+        durationMinutes: 60,
+        isPlanBlock: true,
+      }),
+    ];
+
+    expect(computeItinerarySummaryCounts(items)).toEqual({
+      subActivitiesCount: 0,
+      flexibleItemsCount: 0,
+      totalMinutes: 0,
     });
   });
 });

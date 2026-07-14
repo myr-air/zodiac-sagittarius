@@ -54,7 +54,7 @@ export type IconName =
   | "warning"
   | "x";
 
-export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName }) {
+export function Icon({ name, className, ...props }: SVGProps<SVGSVGElement> & { name: IconName; title?: string }) {
   const common = {
     className: ["icon size-[18px] shrink-0", className].filter(Boolean).join(" "),
     fill: "none",

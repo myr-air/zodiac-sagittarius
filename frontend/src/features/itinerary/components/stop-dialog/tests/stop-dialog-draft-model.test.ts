@@ -39,7 +39,7 @@ describe("stop dialog draft state", () => {
         day: "2026-06-20",
         parentItemId: "parent-1",
         pathId: "main",
-        timeMode: "scheduled",
+        timeMode: "flexible",
       },
     });
   });

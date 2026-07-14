@@ -3,12 +3,12 @@ import {
   activityTimeButtonClassName,
   activityTimeDurationClassName,
   activityTimeEndClassName,
-  activityTimeFlexibleClassName,
   activityTimeNextDayClassName,
   activityTimeStartClassName,
 } from "../smart-itinerary-table.styles";
 import { formatTimeTooltip } from "@/src/features/itinerary/domain/itinerary-item-editing";
 import { formatDuration, formatInlineTimeLabels } from "@/src/features/itinerary/domain/itinerary-time-display";
+import { Icon } from "@/src/ui/icons";
 import { TimeEditModal } from "./TimeEditModal";
 import type { ActivityTimeButtonProps } from "./time-components.types";
 
@@ -25,6 +25,8 @@ export function ActivityTimeButton({
   const duration = item.durationMinutes != null ? formatDuration(item.durationMinutes, locale) : null;
   const hasEndTime = item.endTime?.trim();
   const hasNextDay = (item.endOffsetDays ?? 0) > 0;
+  const isFullyEmpty = !item.startTime?.trim() && !item.endTime?.trim();
+  const isFlexible = item.timeMode === "flexible";
 
   return (
     <>
@@ -39,12 +41,19 @@ export function ActivityTimeButton({
           setTimeEditOpen(true);
         }}
       >
-        <span className={activityTimeStartClassName}>{startLabel}</span>
-        {duration && <span className={activityTimeDurationClassName}>{duration}</span>}
-        {hasEndTime ? (
-          <span className={activityTimeEndClassName}>{endLabel}</span>
+        {isFlexible && isFullyEmpty ? (
+          <Icon name="clock" title={itineraryLabels.row.flexibleTimeBadge} className="size-3.5" />
         ) : (
-          <span className={activityTimeFlexibleClassName}>{itineraryLabels.row.flexibleTimeBadge}</span>
+          <>
+            <span className={activityTimeStartClassName}>{startLabel}</span>
+            {duration && <span className={activityTimeDurationClassName}>{duration}</span>}
+            {hasEndTime ? (
+              <span className={activityTimeEndClassName}>{endLabel}</span>
+            ) : null}
+            {isFlexible && (
+              <Icon name="clock" title={itineraryLabels.row.flexibleTimeBadge} className="size-3.5" />
+            )}
+          </>
         )}
         {hasNextDay && (
           <span className={activityTimeNextDayClassName}>+{item.endOffsetDays}</span>

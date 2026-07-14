@@ -34,9 +34,10 @@ export interface ItinerarySummaryCounts {
 
 export function computeItinerarySummaryCounts(
   items: ItineraryItem[],
-): ItinerarySummaryCounts {
+): ItinerarySummaryCounts & { totalMinutes: number } {
   let subActivitiesCount = 0;
   let flexibleItemsCount = 0;
+  let totalMinutes = 0;
 
   for (const item of items) {
     if (item.parentItemId) {
@@ -45,9 +46,12 @@ export function computeItinerarySummaryCounts(
     if (item.timeMode === "flexible") {
       flexibleItemsCount += 1;
     }
+    if (!item.isPlanBlock && item.durationMinutes != null) {
+      totalMinutes += item.durationMinutes;
+    }
   }
 
-  return { subActivitiesCount, flexibleItemsCount };
+  return { subActivitiesCount, flexibleItemsCount, totalMinutes };
 }
 
 interface UseSmartItineraryTableStateParams {
@@ -111,13 +115,10 @@ export function useSmartItineraryTableState({
   const warningCount =
     itineraryView?.warningCount ??
     displayDayGroups.reduce((total, group) => total + group.warningCount, 0);
-  const totalMinutes = displayItems.reduce(
-    (total, item) => total + (item.durationMinutes ?? 0),
-    0,
-  );
   const {
     subActivitiesCount,
     flexibleItemsCount,
+    totalMinutes,
   } = computeItinerarySummaryCounts(displayItems);
 
   const graphColumnWidth = buildGraphColumnWidth(

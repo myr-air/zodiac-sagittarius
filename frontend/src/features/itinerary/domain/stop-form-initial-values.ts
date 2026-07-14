@@ -25,11 +25,11 @@ export function buildInitialStopFormValues({
     pathId: initialItem?.pathRole === "alternative" ? initialItem.pathId : "main",
     parentItemId: initialItem?.parentItemId ?? initialParentItemId,
     itemKind: initialItem?.itemKind ?? "activity",
-    timeMode: initialItem?.timeMode ?? "scheduled",
+    timeMode: initialItem?.timeMode ?? "flexible",
     isPlanBlock: initialItem?.isPlanBlock ?? false,
     status: initialItem?.status ?? "idea",
     priority: initialItem?.priority ?? "normal",
-    startTime: initialItem?.startTime ?? "16:30",
+    startTime: initialItem?.startTime ?? "",
     endTime: initialItem
       ? (initialItem.endTime ??
         addMinutesToTime(

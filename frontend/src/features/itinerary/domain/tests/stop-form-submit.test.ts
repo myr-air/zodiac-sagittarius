@@ -39,6 +39,7 @@ describe("stop dialog form submit values", () => {
           note: " group ticket ",
           place: "",
           startTime: "23:00",
+          timeMode: "scheduled",
           transportation: " plane ",
         },
       }),

@@ -40,22 +40,22 @@ export function buildTimeEditModalModel({
   const endMinutes = endTime ? parseTimeToMinutes(endTime) : null;
   const startError =
     startTime.trim() && startMinutes === null ? copy.invalidStartTime : null;
-  const needsStartForEnd = Boolean(endTime && !startTime.trim());
-  const endError = endTime.trim()
-    ? endMinutes === null
-      ? copy.invalidEndTime
-      : needsStartForEnd
-        ? copy.needsStartForEnd
-        : null
-    : null;
+  const endError = endTime.trim() && endMinutes === null ? copy.invalidEndTime : null;
   const derivedDuration =
     startMinutes !== null && endMinutes !== null
       ? durationBetweenTimes(startTime, endTime, endOffsetDays)
       : null;
-  const previewWindow =
-    startTime && endTime && derivedDuration
-      ? formatTimeRangeLabel(startTime, endTime, endOffsetDays)
-      : startTime || "--:--";
+  const previewWindow = (() => {
+    const trimmedStart = startTime.trim();
+    const trimmedEnd = endTime.trim();
+    if (trimmedStart && trimmedEnd && derivedDuration !== null) {
+      return formatTimeRangeLabel(trimmedStart, trimmedEnd, endOffsetDays);
+    }
+    if (trimmedEnd) {
+      return `${trimmedStart ? `${trimmedStart} - ` : ""}${trimmedEnd}${endOffsetDays > 0 ? ` +${endOffsetDays}` : ""}`;
+    }
+    return trimmedStart || "--:--";
+  })();
   const durationLabel = derivedDuration
     ? `${copy.durationPrefix}: ${formatDuration(derivedDuration, locale)}`
     : copy.durationHidden;

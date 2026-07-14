@@ -53,6 +53,6 @@ describe("StopDialog create mode", () => {
     await user.click(screen.getByRole("button", { name: "Save activity" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not save activity");
-    expect(screen.getByRole("dialog", { name: "Add activity" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Create parent block" })).toBeInTheDocument();
   });
 });
