@@ -7,6 +7,6 @@ export const thDetailPlannerMessages = {
   waypointConversionBanner: "แปลง {count} จุดแวะเป็นโครงสร้างวัน?",
   conversionAccept: "แปลง",
   conversionDismiss: "ไม่ใช่ตอนนี้",
-  planVariantDropdownLabel: "แผนย่อย",
+  planVariantDropdownLabel: "Trip Plan",
   planVariantOverflow: "แผน",
 } as const;
