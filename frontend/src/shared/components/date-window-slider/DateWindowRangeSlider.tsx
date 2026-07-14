@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DateWindowRangeSliderProps } from "./DateWindowRangeSlider.types";
+import { usePrefersReducedMotion } from "@/src/shared/hooks/use-prefers-reduced-motion";
 
 /** Month names for formatting. */
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -59,16 +60,7 @@ export function DateWindowRangeSlider({
   const leftPct = Math.min(startPct, endPct) * 100;
   const widthPct = Math.abs(endPct - startPct) * 100;
 
-  const reducedMotionRef = useRef(false);
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotionRef.current = mql.matches;
-    const handler = (e: MediaQueryListEvent) => {
-      reducedMotionRef.current = e.matches;
-    };
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
+  const reducedMotion = usePrefersReducedMotion();
 
   /** Derive a date from a pixel position in the track. */
   const positionToDate = useCallback(
@@ -166,7 +158,7 @@ export function DateWindowRangeSlider({
     };
   }, [activeHandle, start, end, minDate, maxDate, positionToDate, onChange]);
 
-  const motionClass = reducedMotionRef.current ? "" : "transition-[left] duration-200 ease-out";
+  const motionClass = reducedMotion ? "" : "transition-[left] duration-200 ease-out";
 
   return (
     <div ref={trackRef} role="presentation" className="relative w-full h-[56px]">
