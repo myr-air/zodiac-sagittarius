@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.4] — 2026-07-14
+
+### Removed
+- Orphaned GapSuggestionsRail component and related types, styles, utils, and tests (242 lines dead code)
+
 ## [0.8.3] — 2026-07-14
 
 ### Fixed

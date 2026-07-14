@@ -1,5 +1,4 @@
 import type { Waypoint } from "@/src/trip/waypoints/waypoint-types";
-import type { GapSuggestion, GapSuggestionCategory } from "./RouteBuilderPage.types";
 
 export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -52,29 +51,6 @@ export function computeDistanceBadges(waypoints: Waypoint[]): DistanceBadge[] {
     });
   }
   return badges;
-}
-
-const GAP_SUGGESTION_CATEGORIES: GapSuggestionCategory[] = ["food", "attraction", "rest"];
-
-export function computeGapSuggestions(waypoints: Waypoint[]): GapSuggestion[] {
-  const sorted = sortWaypoints(waypoints);
-  const suggestions: GapSuggestion[] = [];
-  for (let i = 0; i < sorted.length - 1; i += 1) {
-    const from = sorted[i];
-    const to = sorted[i + 1];
-    const distanceKm = haversineDistance(from.lat, from.lng, to.lat, to.lng);
-    if (distanceKm > 50) {
-      const category = GAP_SUGGESTION_CATEGORIES[i % GAP_SUGGESTION_CATEGORIES.length];
-      suggestions.push({
-        id: `gap-${from.id}-${to.id}`,
-        category,
-        name: `Stop between ${from.name} and ${to.name}`,
-        detourMinutes: Math.max(5, Math.round((distanceKm / 70) * 60 * 0.2)),
-        gapIndex: i,
-      });
-    }
-  }
-  return suggestions;
 }
 
 export function insertWaypoint(
