@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  planningViewToPhase,
   type PlanningView,
   workspaceViewShouldSyncBackendExpenseSummary,
   workspaceViewSupportsContextRail,
@@ -62,5 +63,29 @@ describe("planning-view helpers", () => {
     expect(workspaceViewShouldSyncBackendExpenseSummary("detail-planner")).toBe(true);
     expect(workspaceViewShouldSyncBackendExpenseSummary("group-wrangler")).toBe(false);
     expect(workspaceViewShouldSyncBackendExpenseSummary("on-trip-companion")).toBe(false);
+  });
+});
+
+describe("planningViewToPhase", () => {
+  it("maps phase-name views directly to Phase", () => {
+    expect(planningViewToPhase("dreamer")).toBe("dreamer");
+    expect(planningViewToPhase("flexible-hunter")).toBe("flexible-hunter");
+    expect(planningViewToPhase("route-builder")).toBe("route-builder");
+    expect(planningViewToPhase("detail-planner")).toBe("detail-planner");
+    expect(planningViewToPhase("group-wrangler")).toBe("group-wrangler");
+    expect(planningViewToPhase("on-trip-companion")).toBe("on-trip-companion");
+  });
+
+  it("returns null for sub-view PlanningViews", () => {
+    expect(planningViewToPhase("overview")).toBeNull();
+    expect(planningViewToPhase("itinerary")).toBeNull();
+    expect(planningViewToPhase("map")).toBeNull();
+    expect(planningViewToPhase("timeline")).toBeNull();
+    expect(planningViewToPhase("bookings")).toBeNull();
+    expect(planningViewToPhase("photos")).toBeNull();
+    expect(planningViewToPhase("members")).toBeNull();
+    expect(planningViewToPhase("expenses")).toBeNull();
+    expect(planningViewToPhase("settings")).toBeNull();
+    expect(planningViewToPhase("budget")).toBeNull();
   });
 });
