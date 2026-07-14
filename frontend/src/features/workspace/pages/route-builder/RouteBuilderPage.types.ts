@@ -14,20 +14,3 @@ export interface WaypointMapSurfaceProps {
   liveMapEnabled?: boolean;
   className?: string;
 }
-
-export type GapSuggestionCategory = "food" | "attraction" | "rest";
-
-export interface GapSuggestion {
-  id: string;
-  category: GapSuggestionCategory;
-  name: string;
-  detourMinutes: number;
-  gapIndex: number;
-}
-
-export interface GapSuggestionsRailProps {
-  waypoints: Waypoint[];
-  selectedSuggestionId?: string;
-  onSelect: (suggestion: GapSuggestion) => void;
-  className?: string;
-}

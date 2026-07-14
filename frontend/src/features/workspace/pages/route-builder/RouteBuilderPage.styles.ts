@@ -33,29 +33,7 @@ export const formActionsClassName = "flex items-center gap-2 pt-1";
 export const waypointMarkerClassName =
   "waypoint-marker flex size-6 items-center justify-center rounded-full bg-(--color-primary) text-[11px] font-extrabold text-white shadow-[0_3px_6px_rgb(15_23_42_/_0.18)] opacity-0 transition-opacity duration-150";
 
-export const railClassName =
-  "flex h-full min-h-0 flex-col gap-3 overflow-hidden rounded-(--radius-lg) border border-(--color-border) bg-(--color-surface) p-4 shadow-[0_1px_0_rgb(15_23_42_/_0.04)]";
-
-export const railTitleClassName = "text-sm font-extrabold text-(--color-text)";
-
-export const emptyStateClassName =
-  "flex flex-col items-center justify-center gap-2 py-8 text-center text-sm text-(--color-text-muted)";
-
-export const suggestionListClassName = "flex flex-col gap-1.5 overflow-y-auto pr-1";
-
-export const suggestionItemClassName =
-  "flex w-full items-center gap-2 rounded-(--radius-md) border border-(--color-border) bg-(--color-surface-subtle) px-3 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-(--color-route-soft) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)";
-
-export const suggestionItemSelectedClassName = "bg-(--color-route-soft) border-(--color-route-border)";
-
-export const suggestionNameClassName = "flex-1 truncate font-semibold text-(--color-text)";
-
-export const suggestionDetourClassName =
-  "text-[11px] font-extrabold tabular-nums text-(--color-text-muted)";
-
-export const ROUTE_LINE_COLOR = "#2563eb";
-
 export const routeSourceId = "route-line-source";
 export const routeLineLayerId = "route-line-layer";
-export const routeLineColor = ROUTE_LINE_COLOR;
+export const routeLineColor = "#2563eb";
 export const routeLineWidth = 3;
