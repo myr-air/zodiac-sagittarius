@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.8.1] — 2026-07-14
+
+### Changed
+- Context rail width adjusted from 380px to 320px per DESIGN.md §3 spec
+- Note action button hit area increased from 32px to 44px (WCAG SC 2.5.5)
+- Thai i18n updated: 'แผนย่อย' → 'Trip Plan' for consistency with English
+- Extracted shared usePrefersReducedMotion hook to eliminate code duplication
+
+### Fixed
+- Ref-during-render lint errors in DateWindowRangeSlider and WorkspaceMainShell
+- Explicit-any type errors in storybook and test files
+- FlexibleHunterPage tests wrapped in I18nProvider
+- Contract test contain:layout_style → contain:paint
+- Restored relative positioning for mobile layout in activity-cell
+- Updated api-data-spec.md to match actual database migrations
+- Removed user-local absolute path from COMMANDS.md
+
+### Docs
+- Consolidated D1-D10 design decisions into design/decisions.md
+- Added MAP.md and COMMANDS.md for contract tests
+- Added frontend-core-freeze.md documentation
+
 ## [0.8.0] — 2026-07-13
 
 ### Changed
