@@ -14,7 +14,7 @@ export function persistTrustedAccountSession(
 export function persistAccountSession(
   storage: Pick<Storage, "setItem">,
   {
-    createdAt = "2026-05-30T10:00:00.000Z",
+    createdAt = "2026-07-01T10:00:00.000Z",
     expiresAt = "2030-01-01T10:00:00.000Z",
     kind = "trusted",
     sessionToken = "playwright-account-session",
@@ -45,8 +45,8 @@ export function persistAccountSession(
 export function persistTripParticipantSession(
   storage: Pick<Storage, "setItem">,
   {
-    createdAt = "2026-05-29T00:00:00.000Z",
-    expiresAt = "2026-06-28T00:00:00.000Z",
+    createdAt = "2026-07-01T00:00:00.000Z",
+    expiresAt = "2027-07-01T00:00:00.000Z",
     memberId = seedTrip.members[0].id,
     sessionToken = "persisted-trip-session",
     tripId = seedTrip.id,
