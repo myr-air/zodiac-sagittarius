@@ -29,6 +29,17 @@ export async function expectReadOnlyItineraryWorkspace({
   await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeNull();
 }
 
+export async function expectTravelerItineraryWorkspace({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) {
+  await expect(canvasElement.querySelector(".workspace-shell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".smart-table")).toBeInTheDocument();
+  await expect(canvasElement.querySelector(".item-placeholder-cell")).toBeInTheDocument();
+  await expect(canvasElement.querySelector('button[aria-label^="Add stop"]')).toBeInTheDocument();
+}
+
 export async function expectDesktopOverviewWorkspace({
   canvasElement,
 }: {

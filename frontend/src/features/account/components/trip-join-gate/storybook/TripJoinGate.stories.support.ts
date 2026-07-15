@@ -57,5 +57,13 @@ export const selectIdentityStoryArgs = {
 
 export async function expectJoinResponsiveContract(canvasElement: HTMLElement) {
   await expectStoryElementClasses(canvasElement, ".participant-grid", "participant-grid", "max-[767px]:grid-cols-1");
-  await expectStoryElementClasses(canvasElement, ".trip-access-photo-stack", "trip-access-photo-stack", "max-[767px]:min-h-[172px]");
+  await expectStoryElementClasses(
+    canvasElement,
+    ".trip-access-photo-stack",
+    "trip-access-photo-stack",
+    "relative",
+    "z-[1]",
+    "min-h-[380px]",
+    "max-[767px]:min-h-[200px]",
+  );
 }
