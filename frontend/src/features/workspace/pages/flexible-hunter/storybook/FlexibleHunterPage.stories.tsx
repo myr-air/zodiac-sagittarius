@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+ 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { FlexibleHunterPage } from "../FlexibleHunterPage";
 import type { Trip } from "@/src/trip/types";
