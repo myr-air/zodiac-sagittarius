@@ -38,7 +38,7 @@ export const Edges: Story = {
 export const NarrowViewport: Story = {
   args: { ...defaultArgs, onChange: () => {} },
   parameters: {
-    viewport: { defaultViewport: "mobile1" },
+    viewport: { defaultViewport: "mobile320" },
   },
 };
 

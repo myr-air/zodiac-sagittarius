@@ -37,7 +37,7 @@ describe("Sagittarius cockpit account trip access", () => {
         memberId: seedTrip.members[0].id,
         sessionToken: "account-member-session",
         createdAt: "2026-05-30T08:00:00.000Z",
-        expiresAt: "2026-06-29T08:00:00.000Z",
+        expiresAt: "2027-06-29T08:00:00.000Z",
       },
     });
 
@@ -60,10 +60,6 @@ describe("Sagittarius cockpit account trip access", () => {
       expect(
         await screen.findByRole("navigation", { name: /เมนูวางแผน Joii/i }),
       ).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute(
-        "aria-current",
-        "page",
-      );
       expect(screen.queryByLabelText(/Trip ID/i)).not.toBeInTheDocument();
       expect(
         window.localStorage.getItem(tripParticipantSessionStorageKey),

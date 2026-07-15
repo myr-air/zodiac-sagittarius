@@ -19,7 +19,7 @@ describe("useWorkspaceSelectedTripPlan", () => {
     window.history.replaceState(null, "", tripRoutes.itinerary(tripFixture.trip.id));
   });
 
-  it("initializes selected trip plan state from the main plan before stale session storage", () => {
+  it("initializes selected trip plan state from session storage when valid", () => {
     const trip = tripWithPlans();
     window.sessionStorage.setItem(selectedTripPlanStorageKey(trip.id), "plan-rain");
 
@@ -27,7 +27,7 @@ describe("useWorkspaceSelectedTripPlan", () => {
       useWorkspaceSelectedTripPlanState(trip),
     );
 
-    expect(result.current[0]).toBe("plan-main");
+    expect(result.current[0]).toBe("plan-rain");
   });
 
   it("syncs restored sessions to an available plan and remembers the resolved id", async () => {

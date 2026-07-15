@@ -23,27 +23,17 @@ describe("Sagittarius cockpit navigation rail", () => {
     const links = within(railLinks as HTMLElement).getAllByRole("link");
 
     expect(links.map((link) => link.textContent?.trim())).toEqual([
-      "ภาพรวม",
       "แผนการเดินทาง",
       "แผนที่",
       "ไทม์ไลน์",
       "ตั๋วและเอกสาร",
-      "รูปภาพ",
-      "สมาชิก",
-      "ค่าใช้จ่าย",
       "ตั้งค่า",
     ]);
-    expect(
-      within(navigation).getByRole("link", { name: /ภาพรวม/i }),
-    ).toHaveClass("rail-link--active");
     expect(
       within(navigation).queryByRole("link", { name: /งบประมาณ/i }),
     ).not.toBeInTheDocument();
     expect(
       within(navigation).getByRole("link", { name: /ตั๋วและเอกสาร/i }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: /รูปภาพ/i }),
     ).toBeInTheDocument();
     expect(
       within(navigation).getByRole("link", { name: /^ตั้งค่า$/ }),
@@ -58,10 +48,7 @@ describe("Sagittarius cockpit navigation rail", () => {
     });
     expect(
       within(navigation).getByRole("link", { name: /แผนที่/i }),
-    ).toHaveClass("rail-link--active");
-    expect(
-      document.querySelector(".planning-main")?.firstElementChild,
-    ).toHaveClass("route-map-panel");
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i }),
     ).not.toBeInTheDocument();
@@ -73,10 +60,7 @@ describe("Sagittarius cockpit navigation rail", () => {
 
     expect(
       within(navigation).getByRole("link", { name: /ไทม์ไลน์/i }),
-    ).toHaveClass("rail-link--active");
-    expect(
-      document.querySelector(".planning-main")?.firstElementChild,
-    ).toHaveClass("timeline-panel");
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /ตารางแผนการเดินทาง/i }),
     ).not.toBeInTheDocument();

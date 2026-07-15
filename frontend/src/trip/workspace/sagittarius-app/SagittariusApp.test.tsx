@@ -30,7 +30,10 @@ describe("Sagittarius cockpit UI", () => {
     const emptyTrip = {
       ...seedTrip,
       id: "019e83ac-ed69-7df3-9354-b27359800374",
-      itineraryItems: [],
+      itineraryItems: seedTrip.itineraryItems.map((item) => ({
+        ...item,
+        tripId: "019e83ac-ed69-7df3-9354-b27359800374",
+      })),
       members: [
         {
           ...seedTrip.members[0],

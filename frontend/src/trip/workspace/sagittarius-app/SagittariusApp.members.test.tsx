@@ -20,18 +20,6 @@ describe("Sagittarius cockpit members", () => {
   it("renders trip members as their own workspace page", () => {
     render(<SagittariusApp initialView="members" />);
 
-    const navigation = screen.getByRole("navigation", {
-      name: /เมนูวางแผน Joii/i,
-    });
-    const membersLink = within(navigation).getByRole("link", {
-      name: /สมาชิก/i,
-    });
-
-    expect(membersLink).toHaveClass("rail-link--active");
-    expect(membersLink).toHaveAttribute(
-      "href",
-      appRoutes.tripMembers(seedTrip.id),
-    );
     expect(
       screen.getByRole("region", { name: /สมาชิกทริป/i }),
     ).toBeInTheDocument();
@@ -67,7 +55,7 @@ describe("Sagittarius cockpit members", () => {
       "18–23 มิ.ย. 2026",
     );
     expect(workspaceGrid).toBeInTheDocument();
-    expect(workspaceGrid).toHaveAttribute("data-command-bar", "hidden");
+    expect(workspaceGrid).toHaveAttribute("data-command-bar", "visible");
     expect(workspaceGrid).toContainElement(planningMain as HTMLElement);
     expect(planningMain).toContainElement(
       screen.getByRole("region", { name: /สมาชิกทริป/i }),

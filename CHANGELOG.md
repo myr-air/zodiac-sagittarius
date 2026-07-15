@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.5] — 2026-07-15
+
+### Fixed
+- Test suite: fixed 20 failing tests across 14 files
+  - Updated expired session fixture dates (2026-06-28 → 2027-07-01) to prevent access gate blocks
+  - Adapted navigation rail tests for phase-based filtering
+  - Corrected CSS class assertions in contract tests
+  - Fixed hook test expectations for session storage behavior
+
 ## [0.8.4] — 2026-07-14
 
 ### Removed

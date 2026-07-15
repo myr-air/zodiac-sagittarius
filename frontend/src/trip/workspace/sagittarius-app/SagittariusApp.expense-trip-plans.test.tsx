@@ -30,7 +30,9 @@ describe("Sagittarius cockpit expense Trip Plan assignment", () => {
     await user.selectOptions(screen.getAllByLabelText(/Trip Plan|แผนทริป/i)[0], [
       "plan-variant-backup",
     ]);
-    await user.click(screen.getByRole("link", { name: /ค่าใช้จ่าย/i }));
+    window.history.pushState(null, "", `/trips/${encodeURIComponent(draftTrip.id)}/expenses`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await screen.findByRole("region", { name: /เงินทริป/i });
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(
       await screen.findByRole("button", { name: /เพิ่มรายการ/i }),
