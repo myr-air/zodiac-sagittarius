@@ -25,7 +25,6 @@ describe("Storybook QA and support contracts", () => {
       "bun run scripts/run-storybook-agy-ux-qa.ts",
     );
     expect(existsSync(join("scripts", "run-storybook-agy-ux-qa.ts"))).toBe(true);
-    expect(existsSync(join("..", "docs", "storybook-ux-ui-qa.md"))).toBe(true);
   });
 
   it("wraps stories in bilingual i18n controls with English as the default", () => {

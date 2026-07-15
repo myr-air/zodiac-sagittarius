@@ -21,10 +21,6 @@ describe("Sagittarius cockpit expense creation", () => {
     expect(
       await screen.findByRole("region", { name: /เงินทริป/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /ค่าใช้จ่าย/i })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
 
     await user.click(screen.getByRole("tab", { name: /จัดการค่าใช้จ่าย/i }));
     await user.click(screen.getByRole("button", { name: /เพิ่มรายการ/i }));

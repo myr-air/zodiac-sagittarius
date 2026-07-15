@@ -38,7 +38,7 @@ describe("Sagittarius cockpit navigation API routes", () => {
 
   it("re-syncs workspace active link from popstate without extra loadTrip", async () => {
     installApiSession();
-    window.history.pushState(null, "", appRoutes.tripOverview(seedTrip.id));
+    window.history.pushState(null, "", appRoutes.tripItinerary(seedTrip.id));
     const apiClient = createApiClientForTrip(seedTrip);
 
     renderApiTripAccessSagittariusApp({
@@ -47,22 +47,22 @@ describe("Sagittarius cockpit navigation API routes", () => {
     });
 
     await waitFor(() => expect(apiClient.loadTrip).toHaveBeenCalledTimes(1));
-    expect(screen.getByRole("link", { name: /ภาพรวม/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).toHaveAttribute(
       "aria-current",
       "page",
     );
 
     act(() => {
-      window.history.pushState(null, "", appRoutes.tripItinerary(seedTrip.id));
+      window.history.pushState(null, "", appRoutes.tripTimeline(seedTrip.id));
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
 
     await waitFor(() =>
       expect(
-        screen.getByRole("link", { name: /แผนการเดินทาง/i }),
+        screen.getByRole("link", { name: /ไทม์ไลน์/i }),
       ).toHaveAttribute("aria-current", "page"),
     );
-    expect(screen.getByRole("link", { name: /ภาพรวม/i })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: /แผนการเดินทาง/i })).not.toHaveAttribute(
       "aria-current",
       "page",
     );

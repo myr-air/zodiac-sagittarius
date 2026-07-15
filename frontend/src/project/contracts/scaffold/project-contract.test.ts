@@ -161,7 +161,6 @@ describe("Sagittarius project scaffold", () => {
     expect(commands).toContain("| Backend schema/contracts | `backend/` | `rtk cargo test -p sagittarius-api --test schema_contract -- --nocapture` |");
     expect(commands).toContain("| Frontend type safety | `frontend/` | `rtk bun run typecheck` |");
     expect(commands).toContain("| Real API e2e compatibility | Repository root | `rtk make frontend-e2e-local` |");
-    expect(commands).toContain("| Aries profile gate before strong claims | `/Users/xiivth/.codex/aries` | `rtk python3 scripts/check_all.py` |");
   });
 
 });

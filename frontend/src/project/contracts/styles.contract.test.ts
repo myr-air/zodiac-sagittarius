@@ -76,7 +76,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(workspaceToastSource).toContain("workspaceToastDismissClassName");
     expect(workspaceToastSource).toContain("grid size-9 shrink-0");
     expect(contextRailSource).toContain("noteActionButtonClassName");
-    expect(contextRailSource).toContain("inline-grid size-8");
+    expect(contextRailSource).toContain("inline-grid size-11");
     expect(contextRailSource).toContain("inspectorCloseButtonClassName");
     expect(contextRailSource).toContain("grid size-9");
     expect(contextRailSource).toContain("suggestionActionButtonClassName");
@@ -145,7 +145,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(tripWorkspaceFrameSource).toContain("workspace-grid relative grid h-screen");
     expect(tripWorkspaceFrameSource).toContain("grid-cols-[minmax(0,1fr)]");
     expect(contextRailSource).toContain("context-rail absolute right-0 top-0");
-    expect(contextRailSource).toContain("w-[380px]");
+    expect(contextRailSource).toContain("w-[320px]");
   });
 
   it("overlays the right context rail instead of shrinking the table", () => {
@@ -171,7 +171,7 @@ describe("Calm Travel Ops CSS contract", () => {
     expect(contextRailSource).toContain("shadow-[-28px_0_54px_rgb(15_23_42_/_0.18)]");
     expect(smartTableSource).toContain("item-placeholder-row activity-row");
     expect(smartTableSource).toContain("item-placeholder-cell min-w-0 bg-(--color-surface)");
-    expect(smartTableSource).toContain("activity-cell grid min-h-[60px]");
+    expect(smartTableSource).toContain("activity-cell relative grid min-h-[60px]");
     expect(smartTableSource).toContain("activityHeaderGridClassName");
     expect(smartTableSource).toContain("sub-activity-line relative grid");
   });
