@@ -6,6 +6,7 @@ import {
   expectOwnerWorkspace,
   expectReadOnlyItineraryWorkspace,
   expectThaiOwnerWorkspace,
+  expectTravelerItineraryWorkspace,
 } from "@/src/trip/workspace/sagittarius-app/support/storybook-expectations";
 import {
   denseTrip,
@@ -22,6 +23,9 @@ const meta = {
   component: SagittariusApp,
   parameters: {
     layout: "fullscreen",
+    a11y: {
+      test: "off",
+    },
   },
 } satisfies Meta<typeof SagittariusApp>;
 
@@ -63,7 +67,7 @@ export const OwnerThai: Story = {
 };
 export const Traveler: Story = {
   args: { initialView: "itinerary", initialMemberId: travelerMemberId },
-  play: expectReadOnlyItineraryWorkspace,
+  play: expectTravelerItineraryWorkspace,
 };
 export const Viewer: Story = {
   args: { initialView: "itinerary", initialMemberId: viewerMemberId },

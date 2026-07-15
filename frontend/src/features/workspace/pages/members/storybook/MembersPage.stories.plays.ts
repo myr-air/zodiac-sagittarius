@@ -24,9 +24,20 @@ export const ownerThaiPlay: MembersPagePlay = async ({ canvas }) => {
 
 export const templateOwnerThaiPlay: MembersPagePlay = async ({ canvas }) => {
   await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toBeVisible();
-  await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page", "grid");
-  await expect(canvas.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass("member-stat-grid", "grid");
-  await expect(canvas.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "grid");
+  await expect(canvas.getByRole("region", { name: /สมาชิกทริป/i })).toHaveClass("members-page");
+  await expect(canvas.getByRole("region", { name: /สรุปสมาชิก/i })).toHaveClass(
+    "member-stat-grid",
+    "flex",
+    "flex-wrap",
+    "gap-3",
+    "max-[767px]:flex-nowrap",
+    "max-[767px]:snap-x",
+    "max-[767px]:overflow-x-auto",
+    "max-[767px]:pb-1",
+    "max-[767px]:[scrollbar-width:none]",
+    "max-[767px]:[&::-webkit-scrollbar]:hidden",
+  );
+  await expect(canvas.getByRole("region", { name: /แถบคำสั่งสมาชิก/i })).toHaveClass("member-command-bar", "flex");
 };
 
 export const readOnlyPlay: MembersPagePlay = async ({ canvas }) => {

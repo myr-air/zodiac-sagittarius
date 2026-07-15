@@ -50,6 +50,17 @@ export const membersEmptyStoryArgs = {
 export async function expectMembersResponsiveContract(canvasElement: HTMLElement) {
   const canvas = within(canvasElement);
   await expect(canvas.getByRole("region", { name: /Trip members|สมาชิกทริป/i })).toHaveClass("members-page");
-  await expect(canvas.getByRole("region", { name: /Member summary|สรุปสมาชิก/i })).toHaveClass("member-stat-grid", "max-[767px]:flex", "max-[767px]:overflow-x-auto");
+  await expect(canvas.getByRole("region", { name: /Member summary|สรุปสมาชิก/i })).toHaveClass(
+    "member-stat-grid",
+    "flex",
+    "flex-wrap",
+    "gap-3",
+    "max-[767px]:flex-nowrap",
+    "max-[767px]:snap-x",
+    "max-[767px]:overflow-x-auto",
+    "max-[767px]:pb-1",
+    "max-[767px]:[scrollbar-width:none]",
+    "max-[767px]:[&::-webkit-scrollbar]:hidden",
+  );
   await expect(canvasElement.querySelector(".member-command-meta")).toHaveClass("max-[767px]:p-2");
 }

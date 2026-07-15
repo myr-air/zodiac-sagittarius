@@ -5,7 +5,7 @@ import type { StoryPlay } from "./support/story-play-types";
 type StopDialogPlay = StoryPlay<typeof StopDialog>;
 
 export const createPlay: StopDialogPlay = async ({ canvas }) => {
-  await expect(canvas.getByRole("dialog", { name: /Add activity/i })).toHaveClass("stop-dialog");
+  await expect(canvas.getByRole("dialog", { name: /Create parent block/i })).toHaveClass("stop-dialog");
   await expect(canvas.getByRole("textbox", { name: /^Activity$/i })).toBeVisible();
 };
 
