@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import type { SmartItineraryTableProps } from "@/src/features/itinerary/components/smart-itinerary-table/SmartItineraryTable.types";
 import type { ItineraryItem } from "@/src/trip/types";

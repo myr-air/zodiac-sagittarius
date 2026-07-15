@@ -11,7 +11,6 @@ function getColor(ratio: number): string {
 export function BudgetProgressBar({ spent, max, label, heightClass = "h-3" }: BudgetProgressBarProps) {
   const safeMax = max <= 0 ? 1 : max;
   const clampedSpent = Math.max(0, spent);
-  const ratio = Math.min(clampedSpent / safeMax, 1);
   const displayRatio = Math.max(0, Math.min(clampedSpent / safeMax, 1.5)); // Allow visual overflow up to 150%
 
   const [reducedMotion, setReducedMotion] = useState(false);

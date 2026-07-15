@@ -47,7 +47,6 @@ export function SmartItineraryTablePageHeader({
   endDate,
   filterOptions,
   groupsCount,
-  hideTablePlanControls,
   isTripPlanBusy,
   itemsCount,
   mainTripPlanId,

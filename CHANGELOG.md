@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.6] — 2026-07-15
+
+### Fixed
+- Removed 23 pre-existing ESLint warnings (unused imports/variables) blocking `make frontend-verify`
+- Lint now passes with 0 problems; typecheck and 2226 tests remain clean
+
 ## [0.8.5] — 2026-07-15
 
 ### Fixed

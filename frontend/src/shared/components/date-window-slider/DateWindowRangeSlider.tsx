@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { DateWindowRangeSliderProps } from "./DateWindowRangeSlider.types";
 import { usePrefersReducedMotion } from "@/src/shared/hooks/use-prefers-reduced-motion";
 

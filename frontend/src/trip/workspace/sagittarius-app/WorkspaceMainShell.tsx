@@ -10,7 +10,6 @@ import type { Trip } from "@/src/trip/types";
 import { TripWorkspaceFrame, type TripWorkspaceFrameProps } from "@/src/trip/workspace/TripWorkspaceFrame";
 import { TripWorkspaceRail, type TripWorkspaceRailProps } from "@/src/trip/workspace/TripWorkspaceRail";
 import { TripWorkspaceViews, type TripWorkspaceViewsProps } from "@/src/trip/workspace/TripWorkspaceViews";
-import type { RouteBuilderPageProps } from "@/src/features/workspace/pages/route-builder/RouteBuilderPage.types";
 import type { GroupWranglerPageProps } from "@/src/features/workspace/pages/group-wrangler/GroupWranglerPage.types";
 import type { OnTripCompanionPageProps } from "@/src/features/workspace/pages/on-trip-companion/OnTripCompanionPage.types";
 import type { NowNextState } from "@/src/trip/itinerary-core/itinerary-types";
@@ -18,7 +17,6 @@ import { buildSettlementSuggestions } from "@/src/trip/expenses/expense-settleme
 import { WorkspaceToast, type WorkspaceToastProps } from "@/src/trip/workspace/WorkspaceToast";
 import { WorkspaceDialogs, type WorkspaceDialogsProps } from "./WorkspaceDialogs";
 import { WorkspaceRolePreview, type WorkspaceRolePreviewProps } from "./WorkspaceRolePreview";
-import { OfflineBanner } from "@/src/features/workspace/components/offline";
 import { workspaceShellClassName } from "./sagittarius-app.styles";
 import { usePrefersReducedMotion } from "@/src/shared/hooks/use-prefers-reduced-motion";
 
@@ -141,10 +139,10 @@ export function WorkspaceMainShell({
     },
     flexibleHunterProps: viewsProps.flexibleHunterProps ?? {
       trip: appShellProps.trip,
-      onDateWindowChange: (_start: string, _end: string) => {
+      onDateWindowChange: () => {
         // Phase 2 UX is display-first — optimistic update deferred to API integration
       },
-      onBudgetEdit: (_id: string, _updates: { estimated: number }) => {
+      onBudgetEdit: () => {
         // Phase 2 UX is display-first — optimistic update deferred to API integration
       },
     },
@@ -157,7 +155,7 @@ export function WorkspaceMainShell({
             label: appShellProps.trip.destinationLabel,
           }
         : undefined,
-      onWaypointsChange: (_waypoints) => {
+      onWaypointsChange: () => {
         // Phase 3 UX is display-first — optimistic update deferred to API integration
       },
     },

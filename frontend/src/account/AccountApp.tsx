@@ -93,12 +93,12 @@ export function AccountApp({
 
   useEffect(() => {
     if (!accountSessionLoaded) return;
-    persistAccountSession(accountSession);
-  }, [accountSession, accountSessionLoaded]);
+    persistAccountSession();
+  }, [accountSessionLoaded]);
 
   const changeAccountSession = useCallback((session: AccountSession | null) => {
     setAccountSession(session);
-    persistAccountSession(session);
+    persistAccountSession();
   }, []);
 
   const openTripWorkspace = useCallback((session: TripParticipantSession) => {

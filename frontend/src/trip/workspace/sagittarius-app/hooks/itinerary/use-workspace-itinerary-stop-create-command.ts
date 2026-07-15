@@ -29,7 +29,6 @@ export function useWorkspaceItineraryStopCreateCommand({
   selectedTripPlanId,
   setContextRailVisibility,
   setDialogState,
-  setSelectedItemId,
   setStopPlaceResolution,
   trip,
   updateApiTrip,

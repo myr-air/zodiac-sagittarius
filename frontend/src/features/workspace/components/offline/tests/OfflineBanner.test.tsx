@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { OfflineBanner } from "../OfflineBanner";
 
