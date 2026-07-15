@@ -8,6 +8,6 @@ export function loadPersistedAccountSession(): AccountSession | null {
   return null;
 }
 
-export function persistAccountSession(_session: AccountSession | null) {
+export function persistAccountSession() {
   clearBrowserSessionStorageValue(accountSessionStorageKey);
 }

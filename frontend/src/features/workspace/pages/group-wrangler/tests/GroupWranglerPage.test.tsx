@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { GroupWranglerPage } from "../GroupWranglerPage";

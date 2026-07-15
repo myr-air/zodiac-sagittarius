@@ -32,7 +32,7 @@ describe("account session storage", () => {
   it("does not persist trusted account session tokens in browser storage", () => {
     window.localStorage.setItem(accountSessionStorageKey, "legacy");
 
-    persistAccountSession(trustedSession);
+    persistAccountSession();
 
     expect(window.sessionStorage.getItem(accountSessionStorageKey)).toBeNull();
     expect(window.localStorage.getItem(accountSessionStorageKey)).toBeNull();

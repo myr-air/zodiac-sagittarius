@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { WorkspacePage } from "@/src/ui";
 import type { DreamerPageProps } from "./DreamerPage.types";
@@ -49,11 +50,14 @@ export function DreamerPage({ trip, onStartPlanning }: DreamerPageProps) {
       {/* Destination photo */}
       <div className={photoContainerClass} style={{ maxHeight: 280 }}>
         {hasImage ? (
-          <img
+          <Image
             className={photoClass}
             style={{ aspectRatio: "16/9", maxHeight: 280 }}
             alt={trip.destinationLabel}
             src=""
+            width={1280}
+            height={720}
+            sizes="(max-width: 768px) 100vw, 1280px"
           />
         ) : (
           <div

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { screen, fireEvent, cleanup } from "@testing-library/react";
 import { renderWithI18n } from "@/src/i18n/test-utils";
 import { OnTripCompanionPage } from "../OnTripCompanionPage";
 import type { ItineraryItem, NowNextState } from "@/src/trip/itinerary-core/itinerary-types";

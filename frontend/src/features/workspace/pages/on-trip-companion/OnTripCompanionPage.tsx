@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { useI18n } from "@/src/i18n/I18nProvider";
 import { Button } from "@/src/ui";
 import { Icon } from "@/src/ui/icons";
@@ -62,17 +62,17 @@ export function OnTripCompanionPage({
   // Check-off state for current activity
   const [checkedOffId, setCheckedOffId] = useState<string | null>(null);
 
-  const handleCheckOff = useCallback(() => {
+  const handleCheckOff = () => {
     if (!nowNextState.current) return;
     setCheckedOffId(nowNextState.current.id);
     onCheckOff(nowNextState.current.id);
-  }, [nowNextState.current, onCheckOff]);
+  };
 
-  const handleUndoCheckOff = useCallback(() => {
+  const handleUndoCheckOff = () => {
     if (!checkedOffId) return;
     onUndoCheckOff(checkedOffId);
     setCheckedOffId(null);
-  }, [checkedOffId, onUndoCheckOff]);
+  };
 
   const isCurrentCheckedOff = checkedOffId === nowNextState.current?.id;
 

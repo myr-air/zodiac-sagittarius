@@ -14,7 +14,6 @@ export interface LocationSharingToggleProps {
 
 export function LocationSharingToggle({
   isTripActive,
-  tripEndDate,
   onToggle,
   enabled,
 }: LocationSharingToggleProps) {

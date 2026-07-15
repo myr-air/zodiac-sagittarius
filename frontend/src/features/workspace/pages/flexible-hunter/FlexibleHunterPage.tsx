@@ -110,7 +110,7 @@ export function FlexibleHunterPage({ trip, onDateWindowChange, onBudgetEdit }: F
     return { start: shiftedStart, end: shiftedEnd };
   }, [whatIf, sliderStart, sliderEnd]);
 
-  const budgetCategories = trip.budgetCategories ?? [];
+  const budgetCategories = useMemo(() => trip.budgetCategories ?? [], [trip.budgetCategories]);
 
   /** Aggregate budget totals. */
   const totalEstimated = useMemo(

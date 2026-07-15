@@ -5,8 +5,6 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SagittariusApp } from "@/src/app/SagittariusApp";
-import { seedTrip } from "@/src/trip/seed";
-import { appRoutes } from "@/src/routes/app-routes";
 import {
   render,
   resetSagittariusAppTestEnvironment,
