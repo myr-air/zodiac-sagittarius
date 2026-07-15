@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.7] — 2026-07-15
+
+### Fixed
+- Fixed 58 pre-existing storybook test failures across 5 test files (#121)
+  - Aligned test expectations with current component output (responsive classes, a11y roles)
+  - Test-only changes — no component code modified
+  - All 462 storybook tests now pass (75 files)
+
 ## [0.8.6] — 2026-07-15
 
 ### Fixed
