@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0] — 2026-07-19
+
+### Added
+- Typed OpenAPI request/response schemas (`ToSchema` on domain/app wire types and API DTOs); named `components.schemas` in `/api/v1/openapi.json` (#171)
+- Optional `openapi` Cargo features on `sagittarius-domain` and `sagittarius-app`
+- Landing header EN/TH locale switch shared with auth via `joii.auth.locale` (#173)
+- Auth draft-v3 polish: desktop thumbnail rail, trip tip callout, kicker spacing, `radius-sm` trip inputs (#174)
+
+### Notes
+- Nested expense/itinerary JSON bags remain OpenAPI `Object` until typed later
+- Closes #171, #173, #174
+
 ## [0.12.0] — 2026-07-19
 
 ### Added
@@ -13,7 +25,7 @@
 - Hero parallax and Switzerland destination media; primary CTA text on teal fills
 
 ### Notes
-- Draft-parity polish (thumbnail rail, tip callout, kicker) deferred to #174
+- Draft-parity polish delivered in 0.13.0 (#174)
 - Mission M7X4UTQL
 
 ## [0.11.0] — 2026-07-19
@@ -35,7 +47,7 @@
 - Unit tests for parallax offset, plan-query enablement, and recent-search persistence
 
 ### Notes
-- Guest/public trip create API delivered in 0.11.0 (#172); EN/TH landing switch deferred (#173)
+- Guest/public trip create API delivered in 0.11.0 (#172); EN/TH landing switch delivered in 0.13.0 (#173)
 
 ## [0.9.0] — 2026-07-19
 
@@ -53,4 +65,4 @@
 
 ### Notes
 - WebSocket `/trips/{trip_id}/events/stream` is out of OpenAPI path coverage
-- Request/response OpenAPI schemas still use `serde_json::Value` placeholders (#171)
+- Typed request/response OpenAPI schemas delivered in 0.13.0 (#171)
