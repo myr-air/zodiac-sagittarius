@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0] — 2026-07-19
+
+### Added
+- Joii Postcard Atlas public landing (`/`): parallax hero, single destination query, Start Planning → `#create` stub (no auth wall)
+- Landing modules: trip ideas, popular destinations, trip access band, recent searches (localStorage), planning tips, footer
+- Unit tests for parallax offset, plan-query enablement, and recent-search persistence
+
+### Notes
+- Guest/public trip create API deferred (#172); EN/TH landing switch deferred (#173)
+- Phase 2 plan remains: `POST /api/v1/public/trips` bootstrap without account session
+
 ## [0.9.0] — 2026-07-19
 
 ### Added
