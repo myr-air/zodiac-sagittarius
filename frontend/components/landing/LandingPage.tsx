@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { CreateEntryStub } from "./CreateEntryStub";
 import { DestinationCards } from "./DestinationCards";
@@ -11,6 +12,10 @@ import { PlanningTips } from "./PlanningTips";
 import { RecentSearches } from "./RecentSearches";
 import { TripAccessBand } from "./TripAccessBand";
 import { TripIdeas } from "./TripIdeas";
+import {
+  createTripFromQuery,
+  defaultApiBaseUrl,
+} from "@/src/landing/create-trip";
 import {
   appendRecent,
   loadRecent,
@@ -82,18 +87,22 @@ function useSectionReveals() {
 }
 
 export function LandingPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recent = useSyncExternalStore(
     subscribeRecent,
     getRecentSnapshot,
     getRecentServerSnapshot,
   );
-  const showCreate = useSyncExternalStore(
+  const showCreateHash = useSyncExternalStore(
     subscribeHash,
     getCreateHashSnapshot,
     getCreateHashServerSnapshot,
   );
+  const showCreate = showCreateHash || createBusy || Boolean(createError);
 
   useSectionReveals();
 
@@ -105,15 +114,31 @@ export function LandingPage() {
     });
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const trimmed = query.trim();
-    if (!trimmed) return;
+    if (!trimmed || createBusy) return;
 
     const next = appendRecent(recent, trimmed);
     saveRecent(window.localStorage, next);
     window.dispatchEvent(new Event(RECENT_EVENT));
     window.location.hash = "create";
-  }, [query, recent]);
+    setCreateError(null);
+    setCreateBusy(true);
+
+    const outcome = await createTripFromQuery(trimmed, {
+      fetch: globalThis.fetch.bind(globalThis),
+      apiBaseUrl: defaultApiBaseUrl(),
+      storage: window.sessionStorage,
+      navigate: (route) => {
+        router.push(route);
+      },
+    });
+
+    setCreateBusy(false);
+    if (!outcome.ok) {
+      setCreateError(outcome.error);
+    }
+  }, [createBusy, query, recent, router]);
 
   const handleSeed = useCallback(
     (seed: string) => {
@@ -221,7 +246,12 @@ export function LandingPage() {
         </p>
       </HeroParallax>
 
-      <CreateEntryStub query={query} visible={showCreate} />
+      <CreateEntryStub
+        query={query}
+        visible={showCreate}
+        busy={createBusy}
+        error={createError}
+      />
 
       <main>
         <TripIdeas />
