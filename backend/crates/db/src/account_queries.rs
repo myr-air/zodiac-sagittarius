@@ -1219,3 +1219,143 @@ pub async fn update_trip_owner_member(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::macros::datetime;
+
+    #[sqlx::test(migrations = "../../migrations")]
+    async fn insert_account_owner_member_allows_null_user_id(pool: sqlx::PgPool) {
+        let trip_id = Uuid::now_v7();
+        let owner_member_id = Uuid::now_v7();
+        let plan_id = Uuid::now_v7();
+
+        let mut tx = pool.begin().await.unwrap();
+        defer_constraints(&mut tx).await.unwrap();
+
+        sqlx::query(
+            "insert into trips (
+               id, name, destination_label, countries, start_date, end_date,
+               join_id, join_password_hash, main_trip_plan_id, owner_member_id
+             )
+             values (
+               $1, 'Guest Trip', 'Chiang Mai', $2, '2026-07-01', '2026-07-07',
+               'guest-join', 'hash', $3, $4
+             )",
+        )
+        .bind(trip_id)
+        .bind(vec!["TH".to_string()])
+        .bind(plan_id)
+        .bind(owner_member_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+        insert_account_owner_member(
+            &mut tx,
+            NewAccountTripOwnerMember {
+                id: owner_member_id,
+                trip_id,
+                user_id: None,
+                display_name: "Guest",
+                color: "#0f766e",
+                claimed_at: datetime!(2026-07-01 12:00:00 UTC),
+            },
+        )
+        .await
+        .expect("guest owner member with NULL user_id should insert");
+
+        sqlx::query(
+            "insert into trip_plans (id, trip_id, name, status, description)
+             values ($1, $2, 'Main', 'main', 'Primary plan')",
+        )
+        .bind(plan_id)
+        .bind(trip_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+        let stored_user_id: Option<Uuid> =
+            sqlx::query_scalar("select user_id from trip_members where id = $1")
+                .bind(owner_member_id)
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        assert_eq!(stored_user_id, None);
+
+        tx.commit().await.unwrap();
+    }
+
+    #[sqlx::test(migrations = "../../migrations")]
+    async fn insert_account_owner_member_persists_claimed_user_id(pool: sqlx::PgPool) {
+        let user_id = Uuid::now_v7();
+        let trip_id = Uuid::now_v7();
+        let owner_member_id = Uuid::now_v7();
+        let plan_id = Uuid::now_v7();
+
+        let mut tx = pool.begin().await.unwrap();
+        defer_constraints(&mut tx).await.unwrap();
+
+        sqlx::query(
+            "insert into users (id, display_name, avatar_color)
+             values ($1, 'Claimed Owner', '#0f766e')",
+        )
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "insert into trips (
+               id, name, destination_label, countries, start_date, end_date,
+               join_id, join_password_hash, main_trip_plan_id, owner_member_id
+             )
+             values (
+               $1, 'Claimed Trip', 'Chiang Mai', $2, '2026-07-01', '2026-07-07',
+               'claimed-join', 'hash', $3, $4
+             )",
+        )
+        .bind(trip_id)
+        .bind(vec!["TH".to_string()])
+        .bind(plan_id)
+        .bind(owner_member_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+        insert_account_owner_member(
+            &mut tx,
+            NewAccountTripOwnerMember {
+                id: owner_member_id,
+                trip_id,
+                user_id: Some(user_id),
+                display_name: "Claimed Owner",
+                color: "#0f766e",
+                claimed_at: datetime!(2026-07-01 12:00:00 UTC),
+            },
+        )
+        .await
+        .expect("claimed owner member with Some(user_id) should insert");
+
+        sqlx::query(
+            "insert into trip_plans (id, trip_id, name, status, description)
+             values ($1, $2, 'Main', 'main', 'Primary plan')",
+        )
+        .bind(plan_id)
+        .bind(trip_id)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+
+        let stored_user_id: Option<Uuid> =
+            sqlx::query_scalar("select user_id from trip_members where id = $1")
+                .bind(owner_member_id)
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        assert_eq!(stored_user_id, Some(user_id));
+
+        tx.commit().await.unwrap();
+    }
+}

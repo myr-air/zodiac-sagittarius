@@ -329,7 +329,7 @@ fn hash_secret_with_salt_string(secret: &str, salt: &SaltString) -> Result<Strin
         .map_err(|_| ServiceError::InvalidRequest("secret could not be hashed"))
 }
 
-fn generate_session_token() -> String {
+pub(crate) fn generate_session_token() -> String {
     let mut bytes = [0u8; 32];
     rand::rng().fill_bytes(&mut bytes);
     URL_SAFE_NO_PAD.encode(bytes)
@@ -401,7 +401,7 @@ fn end_of_day_utc(date: Date) -> Result<OffsetDateTime, ServiceError> {
     Ok(PrimitiveDateTime::new(next_day, Time::MIDNIGHT).assume_utc() - Duration::seconds(1))
 }
 
-async fn create_session(
+pub(crate) async fn create_session(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     member_id: Uuid,

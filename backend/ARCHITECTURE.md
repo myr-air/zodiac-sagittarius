@@ -39,6 +39,19 @@ Prefer the same feature names across layers (`account`, `trip`, `itinerary`,
 HTTP routes are composed per feature via `api::<feature>::routes()` merged in
 `api::api_v1()`.
 
+## Trip create: guest bootstrap vs account
+
+- `POST /api/v1/public/trips` — **unauthenticated** guest bootstrap from a
+  destination seed. Creates a trip + owner member with `NULL user_id`, returns
+  a **member session** only (never an account/user session). Account audit
+  events are skipped (no user id).
+- `POST /api/v1/account/trips` — **account-session required**. Creates a claimed
+  owner member with `user_id` set and returns the same trip + member-session
+  shape after auth.
+
+Do not weaken account-create auth for landing convenience; wire public Start
+Planning to the guest bootstrap path instead.
+
 ## OpenAPI
 
 - `GET /api/v1/openapi.json` — machine-readable OpenAPI 3 document

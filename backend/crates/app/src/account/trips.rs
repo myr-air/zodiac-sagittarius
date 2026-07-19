@@ -117,7 +117,7 @@ pub async fn create_trip(
         NewAccountTripOwnerMember {
             id: owner_member_id,
             trip_id,
-            user_id,
+            user_id: Some(user_id),
             display_name: &owner_display_name,
             color: DEFAULT_OWNER_COLOR,
             claimed_at: now,
