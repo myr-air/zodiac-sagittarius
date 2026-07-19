@@ -1,9 +1,0 @@
-export const panelClassName = "detail-section suggestion-module grid gap-1.5 border-b border-(--color-border) px-4 py-2.5";
-export const titleRowClassName = "module-title-row flex items-center justify-between gap-2.5";
-export const titleClassName = "m-0 text-[13px] font-extrabold leading-[18px] text-(--color-text)";
-export const titleButtonClassName = "min-h-8 rounded-(--radius-sm) border border-(--color-border) bg-(--color-surface) px-2.5 text-xs font-bold text-(--color-text-muted) transition-[border-color,background,color] duration-150 hover:border-(--color-primary-border) hover:bg-(--color-primary-soft) hover:text-(--color-primary-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary-border)";
-export const listClassName = "suggestion-list grid gap-1.5";
-export const itemBaseClassName = "suggestion-item grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-xs leading-4 text-(--color-text-muted)";
-export const copyClassName = "grid gap-0.5";
-export const itemTitleClassName = "font-semibold";
-export const itemMetaClassName = "text-(--color-text-muted)";

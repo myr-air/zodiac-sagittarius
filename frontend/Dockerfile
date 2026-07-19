@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.5-debian AS deps
+FROM oven/bun:1.3.14-debian AS deps
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/bun.lock ./
@@ -13,7 +13,7 @@ WORKDIR /app/frontend
 COPY frontend ./
 RUN bun run build
 
-FROM oven/bun:1.3.5-debian AS runtime
+FROM oven/bun:1.3.14-debian AS runtime
 
 ARG NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL=""
 ARG SAGITTARIUS_INTERNAL_API_BASE_URL=""
