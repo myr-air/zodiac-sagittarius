@@ -37,6 +37,11 @@
 
   --color-on-primary: #ffffff;
 
+  /* Account home (draft v3) */
+  --color-account-home-page: #f5f6f8;
+  --color-account-home-navy: #1e2433;
+  --color-account-home-orange: #ff7a1a;
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -57,6 +62,9 @@
   --color-primary-strong: var(--color-primary-strong);
   --color-primary-soft: var(--color-primary-soft);
   --color-on-primary: var(--color-on-primary);
+  --color-account-home-page: var(--color-account-home-page);
+  --color-account-home-navy: var(--color-account-home-navy);
+  --color-account-home-orange: var(--color-account-home-orange);
   --color-route: var(--color-route);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -93,6 +101,623 @@
   button {
     font: inherit;
     cursor: pointer;
+  }
+}
+
+/* —— Account Home (draft v3 composition) —— */
+.account-home {
+  --ah-page: #f5f6f8;
+  --ah-surface: #ffffff;
+  --ah-text: #1a1d26;
+  --ah-muted: #9aa3b5;
+  --ah-muted-2: #6b7280;
+  --ah-line: #eef0f4;
+  --ah-navy: #1e2433;
+  --ah-orange: #ff7a1a;
+  --ah-orange-soft: #fff0e4;
+  --ah-orange-mid: #ffc895;
+  --ah-teal: #0f766e;
+  --ah-lavender: #eceef5;
+  --ah-purple: #7c3aed;
+  --ah-radius: 24px;
+  --ah-shadow: 0 12px 32px rgba(26, 29, 38, 0.07);
+  --ah-shadow-sm: 0 6px 18px rgba(26, 29, 38, 0.06);
+}
+
+.account-home .ah-shell {
+  width: min(1200px, calc(100% - 56px));
+  margin: 0 auto;
+  padding: 26px 0 64px;
+}
+
+.account-home .ah-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.account-home .ah-hero h1 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.account-home .ah-hero p {
+  margin: 8px 0 0;
+  color: var(--ah-muted);
+  font-size: 15px;
+}
+
+.account-home .ah-hero-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-home .ah-tool {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--ah-surface);
+  box-shadow: var(--ah-shadow-sm);
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: #5b6478;
+  border: 0;
+  cursor: pointer;
+}
+
+.account-home .ah-tool svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.account-home .ah-tool--dot::after {
+  content: "";
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #fff;
+}
+
+.account-home .ah-get-apps {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--ah-surface);
+  box-shadow: var(--ah-shadow-sm);
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 13px;
+  border: 0;
+  cursor: pointer;
+}
+
+.account-home .ah-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
+  grid-template-areas:
+    "stories friends"
+    "trips   friends"
+    "places  itinerary";
+  gap: 18px 20px;
+  align-items: start;
+}
+
+.account-home .area-stories {
+  grid-area: stories;
+}
+.account-home .area-friends {
+  grid-area: friends;
+}
+.account-home .area-trips {
+  grid-area: trips;
+}
+.account-home .area-places {
+  grid-area: places;
+}
+.account-home .area-itinerary {
+  grid-area: itinerary;
+}
+
+.account-home .ah-stories {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.account-home .ah-story {
+  position: relative;
+  aspect-ratio: 3 / 4.15;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--ah-shadow-sm);
+  background: #d7dbe3;
+}
+
+.account-home .ah-story--active {
+  box-shadow: 0 0 0 3px #22c55e, var(--ah-shadow-sm);
+}
+
+.account-home .ah-story-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.account-home .ah-story-face {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.account-home .ah-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.account-home .ah-section-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.account-home .ah-section-head p {
+  margin: 4px 0 0;
+  color: var(--ah-muted);
+  font-size: 13px;
+}
+
+.account-home .ah-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--ah-orange-soft);
+  color: var(--ah-orange);
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.account-home .ah-chip--gray {
+  background: #eef1f6;
+  color: #6b7280;
+}
+
+.account-home .ah-trip-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.account-home .ah-trip {
+  position: relative;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 112px;
+  padding: 14px 58px 14px 14px;
+  background: var(--ah-surface);
+  border-radius: var(--ah-radius);
+  box-shadow: var(--ah-shadow);
+}
+
+.account-home .ah-trip-thumb {
+  width: 84px;
+  height: 84px;
+  border-radius: 16px;
+}
+
+.account-home .ah-trip h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.account-home .ah-trip-country {
+  margin-top: 3px;
+  color: var(--ah-muted);
+  font-size: 12px;
+}
+
+.account-home .ah-trip-meta {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ah-muted-2);
+}
+
+.account-home .ah-trip-meta b {
+  color: var(--ah-text);
+}
+
+.account-home .ah-date-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 50px;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.15;
+  box-shadow: 0 6px 14px rgba(255, 122, 26, 0.28);
+}
+
+.account-home .ah-date-badge__top {
+  background: var(--ah-orange);
+  color: #fff;
+  padding: 8px 4px 5px;
+}
+
+.account-home .ah-date-badge__bot {
+  background: var(--ah-orange-mid);
+  color: #9a3412;
+  padding: 5px 4px 7px;
+}
+
+.account-home .ah-date-badge--muted {
+  box-shadow: none;
+}
+
+.account-home .ah-date-badge--muted .ah-date-badge__top {
+  background: #c5cad6;
+}
+
+.account-home .ah-date-badge--muted .ah-date-badge__bot {
+  background: #e6e8ee;
+  color: #4b5563;
+}
+
+.account-home .ah-empty {
+  margin: 0;
+  color: var(--ah-muted);
+  font-size: 14px;
+}
+
+.account-home .ah-friends {
+  background: var(--ah-surface);
+  border-radius: var(--ah-radius);
+  box-shadow: var(--ah-shadow);
+  padding: 16px 16px 18px;
+  height: 100%;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-home .ah-friends .ah-section-head {
+  margin-bottom: 6px;
+}
+
+.account-home .ah-friends .ah-section-head h2 {
+  font-size: 20px;
+}
+
+.account-home .ah-map {
+  position: relative;
+  flex: 1;
+  margin-top: 8px;
+  min-height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, #cfd7e6 1.4px, transparent 1.6px) 0 0 / 14px 14px,
+    linear-gradient(180deg, #f8f9fc, #eef2f7);
+}
+
+.account-home .ah-map-land {
+  position: absolute;
+  inset: 12% 8% 18% 8%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 480'%3E%3Cpath fill='%23d2dae8' d='M70 210c55-95 140-130 230-110 55 12 95 55 150 48 70-8 95-70 165-78 85-10 150 55 205 42 35-8 70-40 110-28v210H40z'/%3E%3Cpath fill='%23c4cedf' d='M180 280c40-35 90-40 130-18 35 18 70 10 100-12 45-32 110-20 150 8 30 20 70 18 105-5v95H160z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.account-home .ah-pin {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(26, 29, 38, 0.14);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.account-home .ah-pin-face {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.account-home .ah-pin-where {
+  color: var(--ah-muted);
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.account-home .ah-pin--1 {
+  top: 22%;
+  left: 54%;
+}
+.account-home .ah-pin--2 {
+  top: 48%;
+  left: 14%;
+}
+.account-home .ah-pin--3 {
+  top: 58%;
+  left: 42%;
+}
+
+.account-home .ah-places {
+  background: var(--ah-surface);
+  border-radius: var(--ah-radius);
+  box-shadow: var(--ah-shadow);
+  padding: 18px 18px 8px;
+}
+
+.account-home .ah-places-accent {
+  color: var(--ah-purple);
+}
+
+.account-home .ah-place {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--ah-line);
+}
+
+.account-home .ah-place:first-of-type {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.account-home .ah-place-shot {
+  width: 150px;
+  height: 112px;
+  border-radius: 16px;
+}
+
+.account-home .ah-place h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.account-home .ah-place-desc {
+  margin: 6px 0 0;
+  color: var(--ah-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 46ch;
+}
+
+.account-home .ah-place-meta {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ah-muted-2);
+}
+
+.account-home .ah-stars {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.account-home .ah-reviews {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.account-home .ah-guide strong {
+  color: var(--ah-text);
+}
+
+.account-home .ah-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.account-home .ah-tag {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+.account-home .ah-tag--g {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.account-home .ah-tag--p {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.account-home .ah-place-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.account-home .ah-sq {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.account-home .ah-sq--accent {
+  background: var(--ah-orange);
+  color: #fff;
+}
+
+.account-home .ah-itinerary {
+  background: var(--ah-surface);
+  border-radius: var(--ah-radius);
+  box-shadow: var(--ah-shadow);
+  padding: 18px;
+  height: 100%;
+}
+
+.account-home .ah-itinerary h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.account-home .ah-traveller {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ah-muted);
+  font-size: 13px;
+}
+
+.account-home .ah-traveller strong {
+  color: var(--ah-text);
+}
+
+.account-home .ah-hero-shot {
+  margin-top: 14px;
+  width: 100%;
+  height: 190px;
+  border-radius: 18px;
+  box-shadow: var(--ah-shadow-sm);
+}
+
+.account-home .ah-details-label {
+  margin: 16px 0 8px;
+  color: var(--ah-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-home .ah-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.account-home .ah-details > div {
+  background: var(--ah-lavender);
+  border-radius: 14px;
+  padding: 12px 8px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.account-home .ah-details strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ah-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 1020px) {
+  .account-home .ah-compose {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "stories"
+      "friends"
+      "trips"
+      "places"
+      "itinerary";
+  }
+
+  .account-home .ah-friends {
+    min-height: 0;
+  }
+
+  .account-home .ah-map {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-home .ah-shell {
+    width: calc(100% - 28px);
+    padding-top: 18px;
+  }
+
+  .account-home .ah-hero {
+    flex-direction: column;
+  }
+
+  .account-home .ah-hero h1 {
+    font-size: 28px;
+  }
+
+  .account-home .ah-stories {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .account-home .ah-trip-row {
+    grid-template-columns: 1fr;
+  }
+
+  .account-home .ah-place {
+    grid-template-columns: 1fr;
+  }
+
+  .account-home .ah-place-shot {
+    width: 100%;
+    height: 140px;
+  }
+
+  .account-home .ah-place-actions {
+    flex-direction: row;
   }
 }
 
