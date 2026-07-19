@@ -63,7 +63,7 @@ export function PlanQueryBar({
       <button
         type="submit"
         disabled={!enabled}
-        className="landing-control shrink-0 rounded-full bg-(--color-primary) px-[22px] py-0 text-sm font-bold text-white transition-colors duration-[180ms] hover:bg-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-45 min-h-11 w-full sm:w-auto"
+        className="landing-control shrink-0 rounded-full bg-(--color-primary) px-[22px] py-0 text-sm font-bold text-(--color-on-primary) transition-colors duration-[180ms] hover:bg-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-45 min-h-11 w-full sm:w-auto"
       >
         Start Planning
       </button>

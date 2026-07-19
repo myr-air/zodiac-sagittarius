@@ -15,8 +15,8 @@ export function TripAccessBand() {
           </p>
         </div>
         <a
-          href="#trip-access"
-          className="landing-control inline-flex min-h-11 items-center justify-center rounded-(--radius-md) bg-(--color-primary) px-5 text-[13px] font-bold text-white transition-colors duration-[180ms] hover:bg-(--color-primary-strong)"
+          href="/trip-access"
+          className="landing-control inline-flex min-h-11 items-center justify-center rounded-(--radius-md) bg-(--color-primary) px-5 text-[13px] font-bold text-(--color-on-primary) transition-colors duration-[180ms] hover:bg-(--color-primary-strong)"
         >
           Trip access
         </a>

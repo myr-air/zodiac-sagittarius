@@ -27,7 +27,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     name: "Switzerland",
     seed: "Switzerland",
     imageUrl:
-      "https://images.unsplash.com/photo-1531366936337-7c912a45b87e?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80",
   },
 ];
 

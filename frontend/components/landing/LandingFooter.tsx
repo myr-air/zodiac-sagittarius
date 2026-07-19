@@ -24,7 +24,7 @@ export function LandingFooter() {
             </li>
             <li className="mb-2">
               <a
-                href="#trip-access"
+                href="/trip-access"
                 className="text-[13px] text-[rgba(248,250,252,0.65)] transition-colors duration-[180ms] hover:text-white"
               >
                 Trip access
@@ -32,7 +32,7 @@ export function LandingFooter() {
             </li>
             <li className="mb-2">
               <a
-                href="#login"
+                href="/login"
                 className="text-[13px] text-[rgba(248,250,252,0.65)] transition-colors duration-[180ms] hover:text-white"
               >
                 Log in
