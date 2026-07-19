@@ -26,9 +26,10 @@ import {
 } from "@/src/landing/recent-searches";
 
 const RECENT_EVENT = "joii-recent-change";
-const EMPTY_RECENT: string[] = [];
+/** Stable empty list for useSyncExternalStore server + empty-client snapshots. */
+const EMPTY_RECENT: readonly string[] = Object.freeze([]);
 
-let cachedRecentSnapshot: string[] = EMPTY_RECENT;
+let cachedRecentSnapshot: readonly string[] = EMPTY_RECENT;
 
 function subscribeRecent(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -39,14 +40,18 @@ function subscribeRecent(onStoreChange: () => void) {
   };
 }
 
-function sameRecentList(a: string[], b: string[]): boolean {
+function sameRecentList(a: readonly string[], b: readonly string[]): boolean {
   if (a === b) return true;
   if (a.length !== b.length) return false;
   return a.every((item, index) => item === b[index]);
 }
 
-function getRecentSnapshot(): string[] {
+function getRecentSnapshot(): readonly string[] {
   const next = loadRecent(window.localStorage);
+  if (next.length === 0) {
+    cachedRecentSnapshot = EMPTY_RECENT;
+    return EMPTY_RECENT;
+  }
   if (sameRecentList(cachedRecentSnapshot, next)) {
     return cachedRecentSnapshot;
   }
@@ -54,7 +59,7 @@ function getRecentSnapshot(): string[] {
   return cachedRecentSnapshot;
 }
 
-function getRecentServerSnapshot(): string[] {
+function getRecentServerSnapshot(): readonly string[] {
   return EMPTY_RECENT;
 }
 

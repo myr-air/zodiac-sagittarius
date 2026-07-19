@@ -1,7 +1,7 @@
 "use client";
 
 type RecentSearchesProps = {
-  items: string[];
+  items: readonly string[];
   onSelect: (query: string) => void;
 };
 
