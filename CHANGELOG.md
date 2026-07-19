@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.0] — 2026-07-20
+
+### Added
+- Portal shell: signed-in account home at `/portal` with primary nav Home · Explore · Trips · Friends · Settings
+- `/portal/trips` passport booklet list loaded from `GET /account/trips`, with client Upcoming/Planning/Past/All filters and search
+- Explore / Friends / Settings stub pages sharing portal nav chrome
+
+### Changed
+- Account auth success (password / email / passkey) navigates to `/portal`; bare `/trips` redirects to `/portal`
+- Trip cockpit remains `/trips/{id}`; guest create-trip and trip-access unchanged
+
+### Notes
+- Mission M7XKCPVU; Create trip / Import on the portal list deferred
+- Approved UI: H passport booklet (atlas-token materials)
+
 ## [0.14.1] — 2026-07-20
 
 ### Fixed

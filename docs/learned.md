@@ -19,6 +19,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M7XKCPVU | 2026-07-20 | Keep playful document metaphors, but paint them with the same borders, shadows, and brand marks as the surrounding shell | Skeuomorphic cards otherwise read as a second product inside the page |
 | M7XJVDUV | 2026-07-20 | Server and empty-client `useSyncExternalStore` snapshots must return the same cached empty reference every call | Fresh `[]` identities trigger React max update depth and Fast Refresh reload loops |
 | M7X8ZO5N | 2026-07-19 | Lock reference layout via draft HTML first; keep live-data honesty as labeled Preview panels when APIs are missing | Prevents ops-stub drafts that users reject for not looking like the mock |
 | M7WZPF5E | 2026-07-19 | After GREEN, re-capture evidence with an explicit mission id and confirm a new exitCode 0 JSONL row for each plan label — console success alone is not enough | Evidence-gated closeouts fail when only RED-phase rows remain for a label |
