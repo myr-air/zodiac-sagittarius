@@ -10,6 +10,8 @@ Project knowledge migrated from spacecraft missions.
 | M7X446EU | 2026-07-19 | Landing could not create a real trip without account session (#172) | `POST /api/v1/public/trips` guest bootstrap (nullable owner, member session) + Start Planning wire; account create stays auth-gated | public_trip_create_contract; create-trip tests; validate --strict |
 | M7X4UTQL | 2026-07-19 | Landing `getServerSnapshot` returned a fresh `[]` each call | Cache empty/client recent-search snapshots with stable identity | visual + typecheck |
 | M7X4UTQL | 2026-07-19 | Hero / destination media and primary CTA text regressed after Tailwind/CSS layering | Inline hero image; `<img>` destinations; drop `a { color: inherit }`; use on-primary token | visual check on `/` |
+| — | 2026-07-19 | OpenAPI handlers annotated with `JsonValue` placeholders (#171) | Optional `openapi` feature + `ToSchema` on wire types; typed path bodies; contract asserts named schemas | `cargo test -p sagittarius-api --test openapi_contract` |
+| — | 2026-07-19 | Landing lacked EN/TH; auth draft-parity polish open (#173/#174) | Shared `LocaleSwitch` + draft-v3 thumbnail/tip/radius | bun verify:frontend |
 
 ## Lessons
 

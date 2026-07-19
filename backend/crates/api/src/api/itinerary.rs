@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -36,9 +35,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateItineraryItemRequest,
     responses(
-        (status = 200, description = "Itinerary item created", body = JsonValue)
+        (status = 200, description = "Itinerary item created", body = ItineraryItemSummary)
     ),
     tag = "itinerary"
 )]
@@ -67,9 +66,9 @@ pub async fn create_itinerary_item(
         ("trip_id" = String, Path, description = "Trip id"),
         ("item_id" = String, Path, description = "Itinerary item id")
     ),
-    request_body = JsonValue,
+    request_body = PatchItineraryItemRequest,
     responses(
-        (status = 200, description = "Itinerary item updated", body = JsonValue)
+        (status = 200, description = "Itinerary item updated", body = ItineraryItemSummary)
     ),
     tag = "itinerary"
 )]
@@ -100,7 +99,7 @@ pub async fn patch_itinerary_item(
         ("item_id" = String, Path, description = "Itinerary item id")
     ),
     responses(
-        (status = 200, description = "Itinerary item deleted", body = JsonValue)
+        (status = 200, description = "Itinerary item deleted", body = ItineraryItemSummary)
     ),
     tag = "itinerary"
 )]
@@ -127,9 +126,9 @@ pub async fn delete_itinerary_item(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = ReorderItineraryItemsRequest,
     responses(
-        (status = 200, description = "Itinerary items reordered", body = JsonValue)
+        (status = 200, description = "Itinerary items reordered", body = Vec<ItineraryItemSummary>)
     ),
     tag = "itinerary"
 )]

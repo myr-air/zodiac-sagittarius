@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use super::plans::{PlanVariantSummary, TripPlanSummary};
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryCoordinates {
@@ -12,6 +13,7 @@ pub struct ItineraryCoordinates {
     pub lng: f64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryItemSummary {
@@ -43,7 +45,9 @@ pub struct ItineraryItemSummary {
     pub address: Option<String>,
     pub duration_minutes: Option<i32>,
     pub transportation: String,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub details: Value,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub advisories: Value,
     pub note: String,
     pub created_by: Uuid,
@@ -51,6 +55,7 @@ pub struct ItineraryItemSummary {
     pub version: i64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryImportTrip {
@@ -69,6 +74,7 @@ pub struct ItineraryImportTrip {
     pub trip_plans: Vec<TripPlanSummary>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryImportItem {
@@ -109,8 +115,10 @@ pub struct ItineraryImportItem {
     pub duration_minutes: Option<i32>,
     pub transportation: String,
     #[serde(default = "empty_object")]
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub details: Value,
     #[serde(default = "empty_advisories")]
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub advisories: Value,
     pub note: String,
 }
@@ -139,6 +147,7 @@ fn default_import_priority() -> String {
     "normal".to_string()
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryImportDocument {
@@ -150,6 +159,7 @@ pub struct ItineraryImportDocument {
     pub trip: ItineraryImportTrip,
     pub items: Vec<ItineraryImportItem>,
     #[serde(default = "default_import_records")]
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub records: Value,
 }
 
@@ -162,6 +172,7 @@ fn default_import_records() -> Value {
     })
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StopNoteSummary {

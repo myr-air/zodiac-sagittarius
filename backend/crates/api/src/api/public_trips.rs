@@ -3,7 +3,7 @@ use axum::extract::rejection::JsonRejection;
 use axum::routing::post;
 use axum::{Json, Router};
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
+use utoipa::ToSchema;
 
 use crate::api::error::ApiError;
 use crate::app;
@@ -11,7 +11,7 @@ use crate::app::AppState;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{AccountTripCreateResponse, PublicTripCreateInput};
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicTripCreateRequest {
     pub destination: String,
@@ -24,9 +24,9 @@ pub fn routes() -> Router<AppState> {
 #[utoipa::path(
     post,
     path = "/public/trips",
-    request_body = JsonValue,
+    request_body = PublicTripCreateRequest,
     responses(
-        (status = 200, description = "Guest trip created", body = JsonValue)
+        (status = 200, description = "Guest trip created", body = AccountTripCreateResponse)
     ),
     tag = "public"
 )]

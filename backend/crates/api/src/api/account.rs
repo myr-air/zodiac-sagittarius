@@ -8,8 +8,7 @@ use axum::routing::{delete, get, post};
 use serde::Deserialize;
 use time::Date;
 use uuid::Uuid;
-
-use serde_json::Value as JsonValue;
+use utoipa::ToSchema;
 
 use crate::api::{
     CorsOriginPolicy,
@@ -26,13 +25,13 @@ use crate::domain::types::{
     PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary, TripCity,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EmailLoginStartRequest {
     pub email: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EmailLoginFinishRequest {
     pub challenge_id: Uuid,
@@ -41,7 +40,7 @@ pub struct EmailLoginFinishRequest {
     pub device_label: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PasswordLoginRequest {
     pub flow: String,
@@ -51,7 +50,7 @@ pub struct PasswordLoginRequest {
     pub device_label: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripCreateRequest {
     pub name: String,
@@ -71,19 +70,19 @@ pub struct AccountTripCreateRequest {
     pub join_password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountMemberClaimRequest {
     pub member_session_token: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OwnerTransferRequest {
     pub target_member_id: Uuid,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountSettingsUpdateRequest {
     pub display_name: String,
@@ -94,7 +93,7 @@ pub struct AccountSettingsUpdateRequest {
     pub home_country: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountVaultItemCreateRequest {
     pub trip_id: Option<Uuid>,
@@ -104,7 +103,7 @@ pub struct AccountVaultItemCreateRequest {
     pub external_url: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PasskeyRegistrationFinishRequest {
     pub challenge_id: Uuid,
@@ -114,13 +113,13 @@ pub struct PasskeyRegistrationFinishRequest {
     pub nickname: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PasskeyLoginStartRequest {
     pub email: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PasskeyLoginFinishRequest {
     pub challenge_id: Uuid,
@@ -175,9 +174,9 @@ pub fn routes() -> Router<AppState> {
 #[utoipa::path(
     post,
     path = "/auth/email/challenges",
-    request_body = JsonValue,
+    request_body = EmailLoginStartRequest,
     responses(
-        (status = 200, description = "Email login challenge started", body = JsonValue)
+        (status = 200, description = "Email login challenge started", body = EmailLoginStartResponse)
     ),
     tag = "account"
 )]
@@ -196,9 +195,9 @@ pub async fn start_email_login(
 #[utoipa::path(
     post,
     path = "/auth/email/sessions",
-    request_body = JsonValue,
+    request_body = EmailLoginFinishRequest,
     responses(
-        (status = 200, description = "Email login finished", body = JsonValue)
+        (status = 200, description = "Email login finished", body = AccountSession)
     ),
     tag = "account"
 )]
@@ -225,9 +224,9 @@ pub async fn finish_email_login(
 #[utoipa::path(
     post,
     path = "/auth/password/sessions",
-    request_body = JsonValue,
+    request_body = PasswordLoginRequest,
     responses(
-        (status = 200, description = "Password login finished", body = JsonValue)
+        (status = 200, description = "Password login finished", body = AccountSession)
     ),
     tag = "account"
 )]
@@ -267,7 +266,7 @@ pub async fn finish_password_login(
     get,
     path = "/account",
     responses(
-        (status = 200, description = "Current account settings", body = JsonValue)
+        (status = 200, description = "Current account settings", body = AccountSettings)
     ),
     tag = "account"
 )]
@@ -284,7 +283,7 @@ pub async fn get_me(
     get,
     path = "/account",
     responses(
-        (status = 200, description = "Account settings", body = JsonValue)
+        (status = 200, description = "Account settings", body = AccountSettings)
     ),
     tag = "account"
 )]
@@ -300,9 +299,9 @@ pub async fn get_settings(
 #[utoipa::path(
     patch,
     path = "/account",
-    request_body = JsonValue,
+    request_body = AccountSettingsUpdateRequest,
     responses(
-        (status = 200, description = "Account settings updated", body = JsonValue)
+        (status = 200, description = "Account settings updated", body = AccountSettings)
     ),
     tag = "account"
 )]
@@ -333,9 +332,9 @@ pub async fn update_settings(
 #[utoipa::path(
     post,
     path = "/account/trips",
-    request_body = JsonValue,
+    request_body = AccountTripCreateRequest,
     responses(
-        (status = 200, description = "Trip created", body = JsonValue)
+        (status = 200, description = "Trip created", body = AccountTripCreateResponse)
     ),
     tag = "account"
 )]
@@ -376,7 +375,7 @@ pub async fn create_trip(
     get,
     path = "/account/trips",
     responses(
-        (status = 200, description = "Account trips", body = JsonValue)
+        (status = 200, description = "Account trips", body = Vec<AccountTripSummary>)
     ),
     tag = "account"
 )]
@@ -396,7 +395,7 @@ pub async fn list_trips(
         ("trip_id" = String, Path, description = "Trip id")
     ),
     responses(
-        (status = 200, description = "Member session created", body = JsonValue)
+        (status = 200, description = "Member session created", body = MemberSession)
     ),
     tag = "account"
 )]
@@ -416,7 +415,7 @@ pub async fn create_trip_member_session(
     get,
     path = "/account/trip-stats",
     responses(
-        (status = 200, description = "Account trip stats", body = JsonValue)
+        (status = 200, description = "Account trip stats", body = AccountTripStats)
     ),
     tag = "account"
 )]
@@ -433,7 +432,7 @@ pub async fn get_stats(
     get,
     path = "/account/explorer",
     responses(
-        (status = 200, description = "Account explorer summary", body = JsonValue)
+        (status = 200, description = "Account explorer summary", body = AccountExplorerSummary)
     ),
     tag = "account"
 )]
@@ -450,7 +449,7 @@ pub async fn get_explorer(
     get,
     path = "/account/to-dos",
     responses(
-        (status = 200, description = "Account to-dos", body = JsonValue)
+        (status = 200, description = "Account to-dos", body = Vec<AccountTodoSummary>)
     ),
     tag = "account"
 )]
@@ -467,7 +466,7 @@ pub async fn list_todos(
     get,
     path = "/account/vault",
     responses(
-        (status = 200, description = "Account vault items", body = JsonValue)
+        (status = 200, description = "Account vault items", body = Vec<AccountVaultItemSummary>)
     ),
     tag = "account"
 )]
@@ -483,9 +482,9 @@ pub async fn list_vault_items(
 #[utoipa::path(
     post,
     path = "/account/vault",
-    request_body = JsonValue,
+    request_body = AccountVaultItemCreateRequest,
     responses(
-        (status = 201, description = "Vault item created", body = JsonValue)
+        (status = 201, description = "Vault item created", body = AccountVaultItemSummary)
     ),
     tag = "account"
 )]
@@ -519,9 +518,9 @@ pub async fn create_vault_item(
         ("trip_id" = String, Path, description = "Trip id"),
         ("member_id" = String, Path, description = "Member id")
     ),
-    request_body = JsonValue,
+    request_body = AccountMemberClaimRequest,
     responses(
-        (status = 200, description = "Member linked to account", body = JsonValue)
+        (status = 200, description = "Member linked to account", body = AccountMemberClaimResponse)
     ),
     tag = "account"
 )]
@@ -551,9 +550,9 @@ pub async fn claim_member(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = OwnerTransferRequest,
     responses(
-        (status = 200, description = "Ownership transferred", body = JsonValue)
+        (status = 200, description = "Ownership transferred", body = OwnerTransferResponse)
     ),
     tag = "account"
 )]
@@ -580,7 +579,7 @@ pub async fn transfer_owner(
     post,
     path = "/account/passkeys/options",
     responses(
-        (status = 200, description = "Passkey registration options", body = JsonValue)
+        (status = 200, description = "Passkey registration options", body = PasskeyChallengeResponse)
     ),
     tag = "account"
 )]
@@ -597,9 +596,9 @@ pub async fn start_passkey_registration(
 #[utoipa::path(
     post,
     path = "/account/passkeys",
-    request_body = JsonValue,
+    request_body = PasskeyRegistrationFinishRequest,
     responses(
-        (status = 200, description = "Passkey registered", body = JsonValue)
+        (status = 200, description = "Passkey registered", body = PasskeySummary)
     ),
     tag = "account"
 )]
@@ -629,9 +628,9 @@ pub async fn finish_passkey_registration(
 #[utoipa::path(
     post,
     path = "/auth/passkeys/options",
-    request_body = JsonValue,
+    request_body = PasskeyLoginStartRequest,
     responses(
-        (status = 200, description = "Passkey login options", body = JsonValue)
+        (status = 200, description = "Passkey login options", body = PasskeyLoginStartResponse)
     ),
     tag = "account"
 )]
@@ -649,9 +648,9 @@ pub async fn start_passkey_login(
 #[utoipa::path(
     post,
     path = "/auth/passkeys/sessions",
-    request_body = JsonValue,
+    request_body = PasskeyLoginFinishRequest,
     responses(
-        (status = 200, description = "Passkey login finished", body = JsonValue)
+        (status = 200, description = "Passkey login finished", body = AccountSession)
     ),
     tag = "account"
 )]

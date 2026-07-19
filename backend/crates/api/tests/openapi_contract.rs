@@ -340,6 +340,8 @@ const REMAINING_HTTP_MODULE_ROUTES: &[(&str, &str)] = &[
     ("patch", "/trips/{trip_id}/daily-briefings/{date}"),
     // place_resolution::routes()
     ("post", "/trips/{trip_id}/places/resolve"),
+    // public_trips::routes()
+    ("post", "/public/trips"),
 ];
 
 #[tokio::test]
@@ -633,4 +635,185 @@ fn find_path_operation<'a>(
         }
     }
     None
+}
+
+/// #171 — named component schemas replace free-form JsonValue placeholders.
+#[tokio::test]
+async fn openapi_typed_component_schemas_present() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/openapi.json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let doc: Value = serde_json::from_slice(&body).unwrap();
+
+    let schemas = doc
+        .pointer("/components/schemas")
+        .and_then(|s| s.as_object())
+        .expect("components.schemas must be present");
+    assert!(
+        !schemas.is_empty(),
+        "components.schemas must be non-empty after typed OpenAPI (#171)"
+    );
+
+    for required in [
+        "VersionResponse",
+        "HealthResponse",
+        "ErrorBody",
+        "TripCockpit",
+        "TripSummary",
+        "EmailLoginStartRequest",
+        "JoinTripResponse",
+    ] {
+        assert!(
+            schemas.contains_key(required),
+            "expected named schema {required} in components.schemas; have {:?}",
+            schemas.keys().collect::<Vec<_>>()
+        );
+        let schema = &schemas[required];
+        assert!(
+            !is_freeform_empty_object(schema),
+            "{required} must not be a free-form empty object"
+        );
+    }
+
+    // Spot-check core routes resolve to named $ref schemas (not bare empty objects).
+    let paths = doc["paths"].as_object().expect("paths");
+    let spot_checks: &[(&str, &str, SchemaSpot)] = &[
+        (
+            "get",
+            "/version",
+            SchemaSpot::ResponseRef("VersionResponse"),
+        ),
+        (
+            "get",
+            "/trips/{trip_id}",
+            SchemaSpot::ResponseRef("TripCockpit"),
+        ),
+        (
+            "post",
+            "/auth/email/challenges",
+            SchemaSpot::RequestRef("EmailLoginStartRequest"),
+        ),
+        (
+            "get",
+            "/trip-join-invite-tokens/current",
+            SchemaSpot::ResponseRef("JoinTripResponse"),
+        ),
+    ];
+
+    for &(method, route_path, spot) in spot_checks {
+        let (resolved, operation) =
+            find_path_operation(paths, route_path, method).unwrap_or_else(|| {
+                panic!("missing OpenAPI operation {method} {route_path}")
+            });
+        match spot {
+            SchemaSpot::ResponseRef(name) => {
+                let schema = first_success_response_schema(operation).unwrap_or_else(|| {
+                    panic!("{method} {resolved} missing success response schema")
+                });
+                assert_schema_refs_name(schema, name, schemas, &format!("{method} {resolved}"));
+            }
+            SchemaSpot::RequestRef(name) => {
+                let schema = first_request_schema(operation).unwrap_or_else(|| {
+                    panic!("{method} {resolved} missing request schema")
+                });
+                assert_schema_refs_name(schema, name, schemas, &format!("{method} {resolved}"));
+            }
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum SchemaSpot {
+    ResponseRef(&'static str),
+    RequestRef(&'static str),
+}
+
+fn is_freeform_empty_object(schema: &Value) -> bool {
+    schema.get("type").and_then(|t| t.as_str()) == Some("object")
+        && schema
+            .get("properties")
+            .map(|p| p.as_object().is_none_or(|o| o.is_empty()))
+            .unwrap_or(true)
+        && schema.get("$ref").is_none()
+        && schema.get("allOf").is_none()
+        && schema.get("oneOf").is_none()
+        && schema.get("anyOf").is_none()
+}
+
+fn first_success_response_schema(operation: &Value) -> Option<&Value> {
+    let responses = operation.get("responses")?.as_object()?;
+    for code in ["200", "201"] {
+        if let Some(resp) = responses.get(code) {
+            if let Some(schema) = first_media_schema(resp) {
+                return Some(schema);
+            }
+        }
+    }
+    None
+}
+
+fn first_request_schema(operation: &Value) -> Option<&Value> {
+    first_media_schema(operation.get("requestBody")?)
+}
+
+fn first_media_schema(node: &Value) -> Option<&Value> {
+    let content = node.pointer("/content")?.as_object()?;
+    if let Some(schema) = content
+        .get("application/json")
+        .and_then(|m| m.get("schema"))
+    {
+        return Some(schema);
+    }
+    for media in content.values() {
+        if let Some(schema) = media.get("schema") {
+            return Some(schema);
+        }
+    }
+    None
+}
+
+fn assert_schema_refs_name(
+    schema: &Value,
+    expected: &str,
+    components: &serde_json::Map<String, Value>,
+    context: &str,
+) {
+    if let Some(ref_path) = schema.get("$ref").and_then(|r| r.as_str()) {
+        let name = ref_path
+            .rsplit('/')
+            .next()
+            .expect("$ref must have a name segment");
+        assert_eq!(
+            name, expected,
+            "{context}: expected $ref to {expected}, got {ref_path}"
+        );
+        assert!(
+            components.contains_key(expected),
+            "{context}: components.schemas missing {expected}"
+        );
+        return;
+    }
+    // Inline schema with title or properties is acceptable if it isn't empty object.
+    assert!(
+        !is_freeform_empty_object(schema),
+        "{context}: expected $ref to {expected} or a non-empty schema, got {schema}"
+    );
+    if let Some(title) = schema.get("title").and_then(|t| t.as_str()) {
+        assert_eq!(
+            title, expected,
+            "{context}: inline schema title {title} != {expected}"
+        );
+    }
 }

@@ -2,8 +2,8 @@ use axum::extract::{Path, State};
 use axum::routing::{patch, post};
 use axum::{Json, Router, http::StatusCode};
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
+use utoipa::ToSchema;
 
 use crate::api::extractors::BearerToken;
 use crate::app;
@@ -12,13 +12,13 @@ use crate::api::error::ApiError;
 use crate::domain::patches::CreateSuggestionRequest;
 use crate::domain::types::SuggestionSummary;
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchSuggestionRequest {
     pub status: SuggestionResolutionStatus,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SuggestionResolutionStatus {
     Approved,
@@ -40,9 +40,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateSuggestionRequest,
     responses(
-        (status = 201, description = "Suggestion created", body = JsonValue)
+        (status = 201, description = "Suggestion created", body = SuggestionSummary)
     ),
     tag = "suggestions"
 )]
@@ -105,9 +105,9 @@ pub async fn reject_suggestion(
         ("trip_id" = String, Path, description = "Trip id"),
         ("suggestion_id" = String, Path, description = "Suggestion id")
     ),
-    request_body = JsonValue,
+    request_body = PatchSuggestionRequest,
     responses(
-        (status = 200, description = "Suggestion resolved", body = JsonValue)
+        (status = 200, description = "Suggestion resolved", body = SuggestionSummary)
     ),
     tag = "suggestions"
 )]

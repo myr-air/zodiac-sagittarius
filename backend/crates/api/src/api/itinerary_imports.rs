@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::post;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -25,9 +24,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = ImportItineraryRequest,
     responses(
-        (status = 200, description = "Itinerary imported", body = JsonValue)
+        (status = 200, description = "Itinerary imported", body = ItineraryImportDocument)
     ),
     tag = "itinerary_imports"
 )]

@@ -7,7 +7,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 use utoipa::{Modify, OpenApi};
 
 use crate::api::{
-    account, bookings, daily_briefings, exchange_rates, expenses,
+    account, bookings, daily_briefings, error, exchange_rates, expenses,
     extractors::ACCOUNT_SESSION_COOKIE_NAME, health, itinerary, itinerary_imports, join, members,
     photo_albums, place_resolution, plan_checks, plan_variants, public_trips, stop_notes,
     suggestions, tasks, trips,
@@ -98,6 +98,11 @@ use crate::app::AppState;
         place_resolution::resolve_place,
         openapi_json,
     ),
+    components(schemas(
+        health::HealthResponse,
+        health::VersionResponse,
+        error::ErrorBody,
+    )),
     modifiers(&SecuritySchemes)
 )]
 pub struct ApiDoc;
@@ -158,7 +163,7 @@ pub fn docs_routes() -> Router<AppState> {
     get,
     path = "/openapi.json",
     responses(
-        (status = 200, description = "OpenAPI 3 document", body = serde_json::Value)
+        (status = 200, description = "OpenAPI 3 document", body = Object)
     ),
     tag = "openapi"
 )]

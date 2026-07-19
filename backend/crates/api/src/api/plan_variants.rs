@@ -4,7 +4,6 @@ use axum::extract::rejection::JsonRejection;
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
 use http::StatusCode;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -48,9 +47,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreatePlanVariantRequest,
     responses(
-        (status = 201, description = "Plan variant created", body = JsonValue)
+        (status = 201, description = "Plan variant created", body = PlanVariantSummary)
     ),
     tag = "plan_variants"
 )]
@@ -80,9 +79,9 @@ pub async fn create_plan_variant(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreatePlanVariantRequest,
     responses(
-        (status = 201, description = "Trip plan created", body = JsonValue)
+        (status = 201, description = "Trip plan created", body = TripPlanSummary)
     ),
     tag = "plan_variants"
 )]
@@ -113,9 +112,9 @@ pub async fn create_trip_plan(
         ("trip_id" = String, Path, description = "Trip id"),
         ("plan_variant_id" = String, Path, description = "Plan variant id")
     ),
-    request_body = JsonValue,
+    request_body = PatchPlanVariantRequest,
     responses(
-        (status = 200, description = "Plan variant updated", body = JsonValue)
+        (status = 200, description = "Plan variant updated", body = PlanVariantSummary)
     ),
     tag = "plan_variants"
 )]
@@ -147,9 +146,9 @@ pub async fn patch_plan_variant(
         ("trip_id" = String, Path, description = "Trip id"),
         ("trip_plan_id" = String, Path, description = "Trip plan id")
     ),
-    request_body = JsonValue,
+    request_body = PatchPlanVariantRequest,
     responses(
-        (status = 200, description = "Trip plan updated", body = JsonValue)
+        (status = 200, description = "Trip plan updated", body = TripPlanSummary)
     ),
     tag = "plan_variants"
 )]
@@ -181,9 +180,9 @@ pub async fn patch_trip_plan(
         ("trip_id" = String, Path, description = "Trip id"),
         ("plan_variant_id" = String, Path, description = "Plan variant id")
     ),
-    request_body = JsonValue,
+    request_body = PublishPlanVariantRequest,
     responses(
-        (status = 200, description = "Plan variant published", body = JsonValue)
+        (status = 200, description = "Plan variant published", body = TripSummary)
     ),
     tag = "plan_variants"
 )]
@@ -215,9 +214,9 @@ pub async fn publish_plan_variant(
         ("trip_id" = String, Path, description = "Trip id"),
         ("trip_plan_id" = String, Path, description = "Trip plan id")
     ),
-    request_body = JsonValue,
+    request_body = PublishPlanVariantRequest,
     responses(
-        (status = 200, description = "Main trip plan set", body = JsonValue)
+        (status = 200, description = "Main trip plan set", body = TripSummary)
     ),
     tag = "plan_variants"
 )]

@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::get;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -23,7 +22,7 @@ pub fn routes() -> Router<AppState> {
         ("trip_id" = String, Path, description = "Trip id")
     ),
     responses(
-        (status = 200, description = "Trip cockpit loaded", body = JsonValue)
+        (status = 200, description = "Trip cockpit loaded", body = TripCockpit)
     ),
     tag = "trips"
 )]
@@ -43,9 +42,9 @@ pub async fn load_trip(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = PatchTripRequest,
     responses(
-        (status = 200, description = "Trip updated", body = JsonValue)
+        (status = 200, description = "Trip updated", body = TripSummary)
     ),
     tag = "trips"
 )]

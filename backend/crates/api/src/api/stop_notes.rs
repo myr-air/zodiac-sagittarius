@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -27,9 +26,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateStopNoteRequest,
     responses(
-        (status = 200, description = "Stop note created", body = JsonValue)
+        (status = 200, description = "Stop note created", body = StopNoteSummary)
     ),
     tag = "stop_notes"
 )]
@@ -58,9 +57,9 @@ pub async fn create_stop_note(
         ("trip_id" = String, Path, description = "Trip id"),
         ("note_id" = String, Path, description = "Stop note id")
     ),
-    request_body = JsonValue,
+    request_body = PatchStopNoteRequest,
     responses(
-        (status = 200, description = "Stop note updated", body = JsonValue)
+        (status = 200, description = "Stop note updated", body = StopNoteSummary)
     ),
     tag = "stop_notes"
 )]
@@ -91,7 +90,7 @@ pub async fn patch_stop_note(
         ("note_id" = String, Path, description = "Stop note id")
     ),
     responses(
-        (status = 200, description = "Stop note deleted", body = JsonValue)
+        (status = 200, description = "Stop note deleted", body = StopNoteSummary)
     ),
     tag = "stop_notes"
 )]

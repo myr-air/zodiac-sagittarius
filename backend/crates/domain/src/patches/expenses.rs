@@ -14,6 +14,7 @@ use crate::patch_serde::{
 };
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateExpenseRequest {
@@ -34,10 +35,12 @@ pub struct CreateExpenseRequest {
     pub settlement_allocations: Option<Value>,
     pub paid_by: Uuid,
     pub category: String,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub splits: Value,
     pub itinerary_item_id: Option<Uuid>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchExpenseRequest {
@@ -67,6 +70,7 @@ pub struct PatchExpenseRequest {
     pub itinerary_item_id: Option<Option<Uuid>>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecordExpenseReminderRequest {

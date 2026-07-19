@@ -4,7 +4,7 @@ use axum::{
     routing::get,
 };
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
+use utoipa::ToSchema;
 
 use crate::app::AppState;
 use crate::api::error::ApiError;
@@ -13,7 +13,7 @@ pub fn routes() -> Router<AppState> {
     Router::new().route("/exchange-rates", get(get_exchange_rate))
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 pub struct ExchangeRateQuery {
     base: String,
     quote: String,
@@ -27,7 +27,7 @@ pub struct ExchangeRateQuery {
         ("quote" = String, Query, description = "Quote currency code")
     ),
     responses(
-        (status = 200, description = "Exchange rate", body = JsonValue)
+        (status = 200, description = "Exchange rate", body = crate::app::exchange_rates::ExchangeRateResponse)
     ),
     tag = "exchange_rates"
 )]

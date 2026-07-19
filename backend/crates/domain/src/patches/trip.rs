@@ -10,6 +10,7 @@ use crate::plan_status::{
 };
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchTripRequest {
@@ -26,6 +27,7 @@ pub struct PatchTripRequest {
     pub main_trip_plan_id: Option<Uuid>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePlanVariantRequest {
@@ -42,6 +44,7 @@ pub struct CreatePlanVariantRequest {
     pub creation_mode: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchPlanVariantRequest {
@@ -50,6 +53,7 @@ pub struct PatchPlanVariantRequest {
     pub patch: PlanVariantPatch,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlanVariantPatch {
@@ -61,6 +65,7 @@ pub struct PlanVariantPatch {
     pub description: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublishPlanVariantRequest {

@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use super::auth::{TripMemberAccessStatus, TripRole};
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripMemberSummary {

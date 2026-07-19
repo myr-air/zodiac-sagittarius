@@ -40,7 +40,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio-tungstenite = "0.27"
 url = "2"
-utoipa = { version = "5", features = ["axum_extras"] }
+utoipa = { version = "5", features = ["axum_extras", "uuid", "time"] }
 uuid = { version = "1", features = ["v7", "serde"] }
 
 sagittarius-domain = { path = "crates/domain" }

@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{get, patch};
-use serde_json::Value as JsonValue;
 use time::Date;
 use uuid::Uuid;
 
@@ -32,7 +31,7 @@ pub fn routes() -> Router<AppState> {
         ("trip_id" = String, Path, description = "Trip id")
     ),
     responses(
-        (status = 200, description = "Daily briefings listed", body = JsonValue)
+        (status = 200, description = "Daily briefings listed", body = Vec<TripDailyBriefing>)
     ),
     tag = "daily_briefings"
 )]
@@ -59,9 +58,9 @@ pub async fn list_daily_briefings(
         ("trip_id" = String, Path, description = "Trip id"),
         ("date" = String, Path, description = "Briefing date (YYYY-MM-DD)")
     ),
-    request_body = JsonValue,
+    request_body = PatchDailyBriefingRequest,
     responses(
-        (status = 200, description = "Daily briefing updated", body = JsonValue)
+        (status = 200, description = "Daily briefing updated", body = TripDailyBriefing)
     ),
     tag = "daily_briefings"
 )]

@@ -7,6 +7,7 @@ use crate::patch_serde::{
 };
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePhotoAlbumLinkRequest {
@@ -23,6 +24,7 @@ pub struct CreatePhotoAlbumLinkRequest {
     pub cover_url: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchPhotoAlbumLinkRequest {
@@ -31,6 +33,7 @@ pub struct PatchPhotoAlbumLinkRequest {
     pub patch: PhotoAlbumLinkPatch,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoAlbumLinkPatch {

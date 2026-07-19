@@ -7,6 +7,7 @@ import {
 } from "@/src/auth/account-entry-shell";
 import { authChrome } from "@/src/auth/auth-chrome";
 import { AuthLocaleProvider, useAuthLocale } from "./AuthLocaleProvider";
+import { LocaleSwitch } from "./LocaleSwitch";
 
 const GALLERY_SRC = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1800&q=80",
@@ -29,7 +30,7 @@ function AccountEntryShellInner({
 }) {
   const shell = accountEntryShellForRoute(route);
   const chrome = authChrome();
-  const { locale, setLocale, copy } = useAuthLocale();
+  const { locale, copy } = useAuthLocale();
   const [slide, setSlide] = useState(0);
   const activeHref = route === "/login" ? "/login" : "/register";
   const motionClass = chrome.motion.transitionClassName;
@@ -90,27 +91,7 @@ function AccountEntryShellInner({
                 {shell.brand}
               </p>
             </div>
-            <div
-              className="inline-flex rounded-[13px] border border-(--color-border) bg-(--color-surface-muted) p-[3px]"
-              role="group"
-              aria-label={copy.languageGroup}
-            >
-              {shell.locales.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={locale === option}
-                  onClick={() => setLocale(option)}
-                  className={`min-h-[30px] min-w-10 rounded-lg border-0 text-xs font-bold ${motionClass} ${
-                    locale === option
-                      ? "bg-(--color-surface) text-(--color-primary-strong) shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
-                      : "bg-transparent text-(--color-text-muted)"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+            <LocaleSwitch />
           </header>
 
           <nav
@@ -169,6 +150,29 @@ function AccountEntryShellInner({
           />
         ))}
         <div className="absolute inset-0 z-1 bg-[linear-gradient(180deg,rgba(15,23,42,0.12)_0%,rgba(15,23,42,0.42)_61.8%,rgba(15,23,42,0.78)_100%),linear-gradient(90deg,rgba(15,23,42,0.22),transparent_38.2%)]" />
+        <div
+          className="absolute top-[38.2%] right-[34px] z-2 grid w-[89px] -translate-y-1/2 gap-[13px]"
+          role="group"
+          aria-label="Image thumbnails"
+        >
+          {GALLERY_SRC.map((src, index) => (
+            <button
+              key={src}
+              type="button"
+              aria-current={index === slide}
+              aria-label={`Slide ${index + 1}`}
+              onClick={() => setSlide(index)}
+              className={`h-[55px] w-[89px] overflow-hidden rounded-(--radius-md) border-2 p-0 shadow-[0_13px_34px_rgba(15,23,42,0.1)] ${motionClass} ${
+                index === slide
+                  ? "-translate-x-2 border-white opacity-100"
+                  : "border-transparent opacity-[0.82]"
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="block size-full object-cover" />
+            </button>
+          ))}
+        </div>
         <div className="absolute bottom-[55px] left-[34px] right-[123px] z-2 max-w-[min(34ch,calc(100%*0.382+12ch))] text-white">
           <h2 className="m-0 mb-3 text-[clamp(1.618rem,2.6vw,2.618rem)] font-bold leading-[1.1]">
             {copy.gallery[slide]?.title}

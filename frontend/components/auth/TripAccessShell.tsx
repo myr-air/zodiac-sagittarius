@@ -3,6 +3,7 @@
 import { authChrome } from "@/src/auth/auth-chrome";
 import { tripAccessShell } from "@/src/auth/trip-access";
 import { AuthLocaleProvider, useAuthLocale } from "./AuthLocaleProvider";
+import { LocaleSwitch } from "./LocaleSwitch";
 
 const MOSAIC_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80",
@@ -17,7 +18,7 @@ const MOBILE_HERO =
 function TripAccessShellInner({ children }: { children: React.ReactNode }) {
   const shell = tripAccessShell();
   const chrome = authChrome();
-  const { locale, setLocale, copy } = useAuthLocale();
+  const { locale, copy } = useAuthLocale();
   const colTemplate = shell.media.columns.map((n) => `${n}fr`).join(" ");
   const rowTemplate = shell.media.rows.map((n) => `${n}fr`).join(" ");
   const motionClass = chrome.motion.transitionClassName;
@@ -65,27 +66,7 @@ function TripAccessShellInner({ children }: { children: React.ReactNode }) {
                 {shell.brand}
               </p>
             </div>
-            <div
-              className="inline-flex rounded-[13px] border border-(--color-border) bg-(--color-surface-muted) p-[3px]"
-              role="group"
-              aria-label={copy.languageGroup}
-            >
-              {shell.locales.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={locale === option}
-                  onClick={() => setLocale(option)}
-                  className={`min-h-[30px] min-w-10 rounded-lg border-0 text-xs font-bold ${motionClass} ${
-                    locale === option
-                      ? "bg-(--color-surface) text-(--color-primary-strong) shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
-                      : "bg-transparent text-(--color-text-muted)"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+            <LocaleSwitch />
           </header>
 
           <div className="mt-8 w-full">{children}</div>

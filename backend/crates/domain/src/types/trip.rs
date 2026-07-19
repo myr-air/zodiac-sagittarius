@@ -11,6 +11,7 @@ use super::photos::PhotoAlbumLinkSummary;
 use super::plans::{PlanCheckSummary, PlanVariantSummary, SuggestionSummary, TripPlanSummary};
 use super::tasks::TripTaskSummary;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TripCity {
@@ -22,6 +23,7 @@ pub struct TripCity {
     pub longitude: f64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripSummary {
@@ -45,6 +47,7 @@ pub struct TripSummary {
     pub version: i64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClaimableMember {
@@ -57,6 +60,7 @@ pub struct ClaimableMember {
     pub claimed_at: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JoinTripResponse {
@@ -66,6 +70,7 @@ pub struct JoinTripResponse {
     pub expires_at: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JoinInviteTokenResponse {
@@ -73,6 +78,7 @@ pub struct JoinInviteTokenResponse {
     pub expires_at: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripCockpit {

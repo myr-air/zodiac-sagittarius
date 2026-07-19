@@ -10,6 +10,7 @@ use crate::patch_serde::{
 };
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateBookingDocRequest {
@@ -36,6 +37,7 @@ pub struct CreateBookingDocRequest {
     pub notes: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateBookingDocExternalLinkRequest {
@@ -46,6 +48,7 @@ pub struct CreateBookingDocExternalLinkRequest {
     pub access_note: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchBookingDocRequest {
@@ -54,6 +57,7 @@ pub struct PatchBookingDocRequest {
     pub patch: BookingDocPatch,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BookingDocPatch {

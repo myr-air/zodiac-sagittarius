@@ -5,8 +5,8 @@ use axum::{
     routing::get,
 };
 use serde::Serialize;
-use serde_json::Value as JsonValue;
 use tokio::time::{Duration, timeout};
+use utoipa::ToSchema;
 
 use crate::app::AppState;
 
@@ -17,12 +17,12 @@ pub fn routes() -> Router<AppState> {
         .route("/version", get(version))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct HealthResponse {
     status: &'static str,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct VersionResponse {
     #[serde(rename = "buildSha")]
     build_sha: &'static str,
@@ -51,7 +51,7 @@ pub async fn liveness() -> &'static str {
     get,
     path = "/version",
     responses(
-        (status = 200, description = "Service version", body = JsonValue)
+        (status = 200, description = "Service version", body = VersionResponse)
     ),
     tag = "health"
 )]
@@ -93,8 +93,8 @@ fn non_empty(value: &str) -> Option<&str> {
     get,
     path = "/readiness",
     responses(
-        (status = 200, description = "Ready", body = JsonValue),
-        (status = 503, description = "Not ready", body = JsonValue)
+        (status = 200, description = "Ready", body = HealthResponse),
+        (status = 503, description = "Not ready", body = HealthResponse)
     ),
     tag = "health"
 )]

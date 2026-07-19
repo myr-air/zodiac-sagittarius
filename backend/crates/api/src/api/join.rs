@@ -3,8 +3,8 @@ use axum::http::StatusCode;
 use axum::routing::{delete, get, post};
 use axum::{Json, Router, response::IntoResponse};
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
+use utoipa::ToSchema;
 
 use crate::api::extractors::BearerToken;
 use crate::app;
@@ -13,21 +13,21 @@ use crate::api::error::ApiError;
 use crate::domain::errors::ServiceError;
 use crate::domain::types::{JoinInviteTokenResponse, JoinTripResponse, MemberSession};
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JoinRequest {
     pub join_code: String,
     pub trip_password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipantPasswordRequest {
     pub participant_password: String,
     pub join_session_token: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LoginMemberRequest {
     pub member_id: Uuid,
@@ -35,7 +35,7 @@ pub struct LoginMemberRequest {
     pub join_session_token: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 pub struct ResolveInviteTokenQuery {
     pub token: String,
 }
@@ -65,9 +65,9 @@ pub fn routes() -> Router<AppState> {
 #[utoipa::path(
     post,
     path = "/trip-join-sessions",
-    request_body = JsonValue,
+    request_body = JoinRequest,
     responses(
-        (status = 200, description = "Joined trip", body = JsonValue)
+        (status = 200, description = "Joined trip", body = JoinTripResponse)
     ),
     tag = "join"
 )]
@@ -88,7 +88,7 @@ pub async fn join_trip(
         ("token" = String, Query, description = "Invite token")
     ),
     responses(
-        (status = 200, description = "Invite token resolved", body = JsonValue)
+        (status = 200, description = "Invite token resolved", body = JoinTripResponse)
     ),
     tag = "join"
 )]
@@ -108,7 +108,7 @@ pub async fn resolve_invite_token(
         ("trip_id" = String, Path, description = "Trip id")
     ),
     responses(
-        (status = 200, description = "Invite token rotated", body = JsonValue)
+        (status = 200, description = "Invite token rotated", body = JoinInviteTokenResponse)
     ),
     tag = "join"
 )]
@@ -130,9 +130,9 @@ pub async fn rotate_invite_token(
         ("trip_id" = String, Path, description = "Trip id"),
         ("member_id" = String, Path, description = "Member id")
     ),
-    request_body = JsonValue,
+    request_body = ParticipantPasswordRequest,
     responses(
-        (status = 200, description = "Member claimed", body = JsonValue)
+        (status = 200, description = "Member claimed", body = MemberSession)
     ),
     tag = "join"
 )]
@@ -165,9 +165,9 @@ pub async fn claim_member(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = LoginMemberRequest,
     responses(
-        (status = 200, description = "Member session created", body = JsonValue)
+        (status = 200, description = "Member session created", body = MemberSession)
     ),
     tag = "join"
 )]
