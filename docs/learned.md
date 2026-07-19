@@ -6,10 +6,12 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
-| — | — | — | — | — |
+| M7X2O2BC | 2026-07-19 | Public `/` was a landing stub; need Postcard Atlas home with low-friction trip entry | Journeasy-inspired Joii landing: parallax hero, single query → `#create` stub (no auth), destinations, local recent, editorial bands, motion | bun verify; draft v4 approved; validate --strict |
 
 ## Lessons
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
 | M7WZPF5E | 2026-07-19 | After GREEN, re-capture evidence with an explicit mission id and confirm a new exitCode 0 JSONL row for each plan label — console success alone is not enough | Evidence-gated closeouts fail when only RED-phase rows remain for a label |
+| M7X2O2BC | 2026-07-19 | On a public entry surface, seed only what unlocks the next step (destination query); defer From/Dates/Party to create/cockpit | Multi-field Flights forms raise friction and fight no-auth-first create |
+| M7X2O2BC | 2026-07-19 | `spacecraft validate --strict` requires evidence labels that exactly match each plan task `evidence[]` entry | Aggregate verify labels do not satisfy per-task gates |
