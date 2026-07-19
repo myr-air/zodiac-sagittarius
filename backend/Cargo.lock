@@ -1735,6 +1735,7 @@ dependencies = [
  "time",
  "tokio",
  "tracing",
+ "utoipa",
  "uuid",
 ]
 
@@ -1760,6 +1761,7 @@ dependencies = [
  "sqlx",
  "thiserror",
  "time",
+ "utoipa",
  "uuid",
 ]
 
@@ -2637,6 +2639,7 @@ dependencies = [
  "quote",
  "regex",
  "syn 2.0.117",
+ "uuid",
 ]
 
 [[package]]

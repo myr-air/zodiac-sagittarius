@@ -30,6 +30,7 @@ struct GeoBounds {
     min_lng: f64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResolvePlaceRequest {
@@ -41,6 +42,7 @@ pub struct ResolvePlaceRequest {
     pub day: Date,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaceCandidate {
@@ -53,6 +55,7 @@ pub struct PlaceCandidate {
     pub evidence: Vec<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaceCoordinates {
@@ -60,6 +63,7 @@ pub struct PlaceCoordinates {
     pub lng: f64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResolvePlaceResponse {

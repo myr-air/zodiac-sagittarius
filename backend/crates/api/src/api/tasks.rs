@@ -1,7 +1,6 @@
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
 use axum::{Json, Router, http::StatusCode};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -23,9 +22,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateTaskRequest,
     responses(
-        (status = 201, description = "Task created", body = JsonValue)
+        (status = 201, description = "Task created", body = TripTaskSummary)
     ),
     tag = "tasks"
 )]
@@ -54,9 +53,9 @@ pub async fn create_task(
         ("trip_id" = String, Path, description = "Trip id"),
         ("task_id" = String, Path, description = "Task id")
     ),
-    request_body = JsonValue,
+    request_body = PatchTaskRequest,
     responses(
-        (status = 200, description = "Task updated", body = JsonValue)
+        (status = 200, description = "Task updated", body = TripTaskSummary)
     ),
     tag = "tasks"
 )]

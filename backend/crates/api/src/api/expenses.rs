@@ -4,8 +4,8 @@ use axum::{
     routing::{get, patch, post},
 };
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
+use utoipa::ToSchema;
 
 use crate::api::extractors::BearerToken;
 use crate::app;
@@ -16,7 +16,7 @@ use crate::domain::patches::{
 };
 use crate::domain::types::{ExpenseItemSummary, ExpenseSummary};
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpenseSummaryQuery {
     pub trip_plan_id: Option<Uuid>,
@@ -47,7 +47,7 @@ pub fn routes() -> Router<AppState> {
         ("trip_plan_id" = Option<String>, Query, description = "Optional trip plan id")
     ),
     responses(
-        (status = 200, description = "Expense summary", body = JsonValue)
+        (status = 200, description = "Expense summary", body = ExpenseSummary)
     ),
     tag = "expenses"
 )]
@@ -74,9 +74,9 @@ pub async fn get_expense_summary(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateExpenseRequest,
     responses(
-        (status = 200, description = "Expense created", body = JsonValue)
+        (status = 200, description = "Expense created", body = ExpenseItemSummary)
     ),
     tag = "expenses"
 )]
@@ -105,9 +105,9 @@ pub async fn create_expense(
         ("trip_id" = String, Path, description = "Trip id"),
         ("trip_plan_id" = Option<String>, Query, description = "Optional trip plan id")
     ),
-    request_body = JsonValue,
+    request_body = RecordExpenseReminderRequest,
     responses(
-        (status = 200, description = "Expense reminder recorded", body = JsonValue)
+        (status = 200, description = "Expense reminder recorded", body = ExpenseSummary)
     ),
     tag = "expenses"
 )]
@@ -138,9 +138,9 @@ pub async fn record_expense_reminder(
         ("trip_id" = String, Path, description = "Trip id"),
         ("expense_id" = String, Path, description = "Expense id")
     ),
-    request_body = JsonValue,
+    request_body = PatchExpenseRequest,
     responses(
-        (status = 200, description = "Expense updated", body = JsonValue)
+        (status = 200, description = "Expense updated", body = ExpenseItemSummary)
     ),
     tag = "expenses"
 )]
@@ -171,7 +171,7 @@ pub async fn patch_expense(
         ("expense_id" = String, Path, description = "Expense id")
     ),
     responses(
-        (status = 200, description = "Expense deleted", body = JsonValue)
+        (status = 200, description = "Expense deleted", body = ExpenseItemSummary)
     ),
     tag = "expenses"
 )]

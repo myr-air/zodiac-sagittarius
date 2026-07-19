@@ -5,6 +5,7 @@ use crate::errors::ServiceError;
 use crate::patch_serde::deserialize_nullable_uuid_patch;
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateTaskRequest {
@@ -17,6 +18,7 @@ pub struct CreateTaskRequest {
     pub related_item_id: Option<Uuid>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchTaskRequest {
@@ -25,6 +27,7 @@ pub struct PatchTaskRequest {
     pub patch: TaskPatch,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskPatch {

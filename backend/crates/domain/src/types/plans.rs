@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlanVariantSummary {
@@ -16,6 +17,7 @@ pub struct PlanVariantSummary {
 
 pub type TripPlanSummary = PlanVariantSummary;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LocalizedText {
@@ -23,6 +25,7 @@ pub struct LocalizedText {
     pub th: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlanSuggestionSummary {
@@ -35,6 +38,7 @@ pub struct PlanSuggestionSummary {
     pub explanation: LocalizedText,
     pub recommended_action: LocalizedText,
     pub action_kind: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub action_payload: Value,
     pub status: String,
     pub snoozed_until: Option<String>,
@@ -43,6 +47,7 @@ pub struct PlanSuggestionSummary {
     pub version: i64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlanCheckSummary {
@@ -53,6 +58,7 @@ pub struct PlanCheckSummary {
     pub itinerary_fingerprint: String,
     pub stale: bool,
     pub status: String,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub language_metadata: Value,
     pub created_at: String,
     pub completed_at: Option<String>,
@@ -60,6 +66,7 @@ pub struct PlanCheckSummary {
     pub suggestions: Vec<PlanSuggestionSummary>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SuggestionSummary {
@@ -69,6 +76,7 @@ pub struct SuggestionSummary {
     pub proposer_id: Uuid,
     pub r#type: String,
     pub target_item_id: Option<Uuid>,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub proposed_patch: Value,
     pub source_version: Option<i64>,
     pub status: String,

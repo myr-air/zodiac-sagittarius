@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use time::Date;
 use uuid::Uuid;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BriefingCoordinates {
@@ -9,6 +10,7 @@ pub struct BriefingCoordinates {
     pub lng: f64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BriefingSourceMeta {
@@ -20,6 +22,7 @@ pub struct BriefingSourceMeta {
     pub unavailable_reason: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WeatherBriefingBlock {
@@ -50,6 +53,7 @@ pub struct WeatherBriefingBlock {
     pub meta: BriefingSourceMeta,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TextBriefingBlock {
@@ -58,6 +62,7 @@ pub struct TextBriefingBlock {
     pub meta: BriefingSourceMeta,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DailyBriefingOverrides {
@@ -67,6 +72,7 @@ pub struct DailyBriefingOverrides {
     pub facts_note: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TripDailyBriefing {

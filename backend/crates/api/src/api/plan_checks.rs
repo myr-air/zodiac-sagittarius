@@ -4,15 +4,15 @@ use axum::{
     routing::{get, patch, post},
 };
 use serde::Deserialize;
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
+use utoipa::ToSchema;
 
 use crate::api::extractors::BearerToken;
 use crate::app::{self, AppState};
 use crate::api::error::ApiError;
 use crate::domain::types::{PlanCheckSummary, PlanSuggestionSummary};
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchPlanSuggestionRequest {
     pub expected_version: i64,
@@ -20,7 +20,7 @@ pub struct PatchPlanSuggestionRequest {
     pub snoozed_until: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlanCheckQuery {
     pub trip_plan_id: Option<Uuid>,
@@ -47,7 +47,7 @@ pub fn routes() -> Router<AppState> {
         ("trip_plan_id" = Option<String>, Query, description = "Optional trip plan id")
     ),
     responses(
-        (status = 200, description = "Plan check run", body = JsonValue)
+        (status = 200, description = "Plan check run", body = PlanCheckSummary)
     ),
     tag = "plan_checks"
 )]
@@ -71,7 +71,7 @@ pub async fn run_plan_check(
         ("trip_plan_id" = Option<String>, Query, description = "Optional trip plan id")
     ),
     responses(
-        (status = 200, description = "Latest plan check", body = JsonValue)
+        (status = 200, description = "Latest plan check", body = Option<PlanCheckSummary>)
     ),
     tag = "plan_checks"
 )]
@@ -99,9 +99,9 @@ pub async fn latest_plan_check(
         ("trip_id" = String, Path, description = "Trip id"),
         ("suggestion_id" = String, Path, description = "Plan suggestion id")
     ),
-    request_body = JsonValue,
+    request_body = PatchPlanSuggestionRequest,
     responses(
-        (status = 200, description = "Plan suggestion updated", body = JsonValue)
+        (status = 200, description = "Plan suggestion updated", body = PlanSuggestionSummary)
     ),
     tag = "plan_checks"
 )]

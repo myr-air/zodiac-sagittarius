@@ -5,6 +5,7 @@ use uuid::Uuid;
 use super::auth::{MemberSession, TripRole};
 use super::trip::{TripCity, TripSummary};
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountProfile {
@@ -18,6 +19,7 @@ pub struct AccountProfile {
     pub primary_email: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrustedDeviceSummary {
@@ -28,6 +30,7 @@ pub struct TrustedDeviceSummary {
     pub last_seen_at: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PasskeySummary {
@@ -37,6 +40,7 @@ pub struct PasskeySummary {
     pub last_used_at: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountSettings {
@@ -45,6 +49,7 @@ pub struct AccountSettings {
     pub trusted_devices: Vec<TrustedDeviceSummary>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripCreateResponse {
@@ -53,12 +58,14 @@ pub struct AccountTripCreateResponse {
     pub member_session: MemberSession,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicTripCreateInput {
     pub destination: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripSummary {
@@ -82,6 +89,7 @@ pub struct AccountTripSummary {
     pub is_owner: bool,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripStats {
@@ -91,6 +99,7 @@ pub struct AccountTripStats {
     pub temp_claims_completed: i64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountExplorerSummary {
@@ -100,6 +109,7 @@ pub struct AccountExplorerSummary {
     pub next_trip: Option<AccountTripSummary>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTodoSummary {
@@ -115,6 +125,7 @@ pub struct AccountTodoSummary {
     pub version: i64,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountVaultItemSummary {
@@ -129,6 +140,7 @@ pub struct AccountVaultItemSummary {
     pub created_at: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountMemberClaimResponse {
@@ -138,6 +150,7 @@ pub struct AccountMemberClaimResponse {
     pub role: TripRole,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OwnerTransferResponse {

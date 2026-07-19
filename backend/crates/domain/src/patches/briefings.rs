@@ -3,6 +3,7 @@ use serde::Deserialize;
 use crate::errors::ServiceError;
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchDailyBriefingRequest {

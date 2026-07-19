@@ -10,6 +10,7 @@ use crate::patch_serde::{
 };
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchItineraryItemRequest {
@@ -18,6 +19,7 @@ pub struct PatchItineraryItemRequest {
     pub patch: ItineraryItemPatch,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateItineraryItemRequest {
@@ -51,6 +53,7 @@ pub struct CreateItineraryItemRequest {
     pub note: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReorderItineraryItemsRequest {
@@ -60,6 +63,7 @@ pub struct ReorderItineraryItemsRequest {
     pub item_ids: Vec<Uuid>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImportItineraryRequest {
@@ -69,6 +73,7 @@ pub struct ImportItineraryRequest {
     pub content: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateStopNoteRequest {
@@ -78,6 +83,7 @@ pub struct CreateStopNoteRequest {
     pub body: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchStopNoteRequest {
@@ -86,6 +92,7 @@ pub struct PatchStopNoteRequest {
     pub body: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ItineraryItemPatch {

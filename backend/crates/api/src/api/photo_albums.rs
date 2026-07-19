@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -30,9 +29,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreatePhotoAlbumLinkRequest,
     responses(
-        (status = 200, description = "Photo album link created", body = JsonValue)
+        (status = 200, description = "Photo album link created", body = PhotoAlbumLinkSummary)
     ),
     tag = "photo_albums"
 )]
@@ -61,9 +60,9 @@ pub async fn create_photo_album_link(
         ("trip_id" = String, Path, description = "Trip id"),
         ("album_id" = String, Path, description = "Photo album id")
     ),
-    request_body = JsonValue,
+    request_body = PatchPhotoAlbumLinkRequest,
     responses(
-        (status = 200, description = "Photo album link updated", body = JsonValue)
+        (status = 200, description = "Photo album link updated", body = PhotoAlbumLinkSummary)
     ),
     tag = "photo_albums"
 )]
@@ -94,7 +93,7 @@ pub async fn patch_photo_album_link(
         ("album_id" = String, Path, description = "Photo album id")
     ),
     responses(
-        (status = 200, description = "Photo album link deleted", body = JsonValue)
+        (status = 200, description = "Photo album link deleted", body = PhotoAlbumLinkSummary)
     ),
     tag = "photo_albums"
 )]

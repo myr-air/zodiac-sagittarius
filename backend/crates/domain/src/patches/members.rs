@@ -4,6 +4,7 @@ use crate::errors::ServiceError;
 use crate::types::{TripMemberAccessStatus, TripRole};
 use super::shared::*;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateMemberRequest {
@@ -13,6 +14,7 @@ pub struct CreateMemberRequest {
     pub participant_password: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMemberRequest {
@@ -22,6 +24,7 @@ pub struct PatchMemberRequest {
     pub participant_password: Option<String>,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePresenceRequest {

@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{get, patch, post};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -36,7 +35,7 @@ pub fn routes() -> Router<AppState> {
         ("trip_id" = String, Path, description = "Trip id")
     ),
     responses(
-        (status = 200, description = "Members listed", body = JsonValue)
+        (status = 200, description = "Members listed", body = Vec<TripMemberSummary>)
     ),
     tag = "members"
 )]
@@ -56,9 +55,9 @@ pub async fn list_members(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateMemberRequest,
     responses(
-        (status = 200, description = "Member created", body = JsonValue)
+        (status = 200, description = "Member created", body = TripMemberSummary)
     ),
     tag = "members"
 )]
@@ -87,9 +86,9 @@ pub async fn create_member(
         ("trip_id" = String, Path, description = "Trip id"),
         ("member_id" = String, Path, description = "Member id")
     ),
-    request_body = JsonValue,
+    request_body = PatchMemberRequest,
     responses(
-        (status = 200, description = "Member updated", body = JsonValue)
+        (status = 200, description = "Member updated", body = TripMemberSummary)
     ),
     tag = "members"
 )]
@@ -120,7 +119,7 @@ pub async fn patch_member(
         ("member_id" = String, Path, description = "Member id")
     ),
     responses(
-        (status = 200, description = "Member claim reset", body = JsonValue)
+        (status = 200, description = "Member claim reset", body = TripMemberSummary)
     ),
     tag = "members"
 )]
@@ -147,9 +146,9 @@ pub async fn reset_member_claim(
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = UpdatePresenceRequest,
     responses(
-        (status = 200, description = "Presence updated", body = JsonValue)
+        (status = 200, description = "Presence updated", body = TripMemberSummary)
     ),
     tag = "members"
 )]

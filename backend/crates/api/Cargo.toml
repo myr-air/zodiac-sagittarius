@@ -11,9 +11,9 @@ name = "sagittarius-migrate"
 path = "src/bin/sagittarius_migrate.rs"
 
 [dependencies]
-sagittarius-app = { workspace = true }
+sagittarius-app = { workspace = true, features = ["openapi"] }
 sagittarius-db = { workspace = true }
-sagittarius-domain = { workspace = true }
+sagittarius-domain = { workspace = true, features = ["openapi"] }
 sagittarius-realtime = { workspace = true }
 axum = { workspace = true }
 dotenvy = { workspace = true }

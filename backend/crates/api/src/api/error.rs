@@ -1,15 +1,17 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use serde::Serialize;
 use serde_json::Value;
+use utoipa::ToSchema;
 
 use sagittarius_domain::errors::ServiceError;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorBody {
     pub code: &'static str,
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = Option<Object>)]
     pub latest: Option<Value>,
 }
 

@@ -2,7 +2,6 @@ use axum::Json;
 use axum::Router;
 use axum::extract::{Path, State};
 use axum::routing::{patch, post};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use crate::api::extractors::BearerToken;
@@ -27,9 +26,9 @@ pub fn routes() -> Router<AppState> {
     params(
         ("trip_id" = String, Path, description = "Trip id")
     ),
-    request_body = JsonValue,
+    request_body = CreateBookingDocRequest,
     responses(
-        (status = 200, description = "Booking created", body = JsonValue)
+        (status = 200, description = "Booking created", body = BookingDocSummary)
     ),
     tag = "bookings"
 )]
@@ -58,9 +57,9 @@ pub async fn create_booking_doc(
         ("trip_id" = String, Path, description = "Trip id"),
         ("booking_id" = String, Path, description = "Booking id")
     ),
-    request_body = JsonValue,
+    request_body = PatchBookingDocRequest,
     responses(
-        (status = 200, description = "Booking updated", body = JsonValue)
+        (status = 200, description = "Booking updated", body = BookingDocSummary)
     ),
     tag = "bookings"
 )]
@@ -91,7 +90,7 @@ pub async fn patch_booking_doc(
         ("booking_id" = String, Path, description = "Booking id")
     ),
     responses(
-        (status = 200, description = "Booking deleted", body = JsonValue)
+        (status = 200, description = "Booking deleted", body = BookingDocSummary)
     ),
     tag = "bookings"
 )]

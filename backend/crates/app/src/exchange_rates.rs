@@ -27,6 +27,7 @@ pub struct ExchangeRateService {
     stale_ttl: Duration,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExchangeRateResponse {

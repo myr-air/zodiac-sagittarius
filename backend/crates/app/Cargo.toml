@@ -6,6 +6,10 @@ license.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
+[features]
+default = []
+openapi = ["dep:utoipa", "sagittarius-domain/openapi"]
+
 [dependencies]
 sagittarius-domain = { workspace = true }
 sagittarius-db = { workspace = true }
@@ -26,4 +30,5 @@ thiserror = { workspace = true }
 time = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+utoipa = { workspace = true, optional = true }
 uuid = { workspace = true }
