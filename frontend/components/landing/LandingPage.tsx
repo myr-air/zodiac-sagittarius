@@ -23,6 +23,9 @@ import {
 } from "@/src/landing/recent-searches";
 
 const RECENT_EVENT = "joii-recent-change";
+const EMPTY_RECENT: string[] = [];
+
+let cachedRecentSnapshot: string[] = EMPTY_RECENT;
 
 function subscribeRecent(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -33,12 +36,23 @@ function subscribeRecent(onStoreChange: () => void) {
   };
 }
 
+function sameRecentList(a: string[], b: string[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  return a.every((item, index) => item === b[index]);
+}
+
 function getRecentSnapshot(): string[] {
-  return loadRecent(window.localStorage);
+  const next = loadRecent(window.localStorage);
+  if (sameRecentList(cachedRecentSnapshot, next)) {
+    return cachedRecentSnapshot;
+  }
+  cachedRecentSnapshot = next;
+  return cachedRecentSnapshot;
 }
 
 function getRecentServerSnapshot(): string[] {
-  return [];
+  return EMPTY_RECENT;
 }
 
 function subscribeHash(onStoreChange: () => void) {
@@ -193,7 +207,7 @@ export function LandingPage() {
           >
             <Link
               href="/"
-              className="inline-flex min-h-10 items-center rounded-full bg-(--color-text) px-3.5 text-[13px] font-semibold text-white"
+              className="inline-flex min-h-10 items-center rounded-full bg-(--color-primary) px-3.5 text-[13px] font-semibold text-(--color-on-primary)"
             >
               Home
             </Link>
@@ -212,14 +226,13 @@ export function LandingPage() {
           </nav>
           <div className="ml-auto flex items-center gap-2 md:ml-0">
             <a
-              id="login"
-              href="#login"
+              href="/login"
               className="inline-flex min-h-10 items-center rounded-(--radius-md) px-3 text-[13px] font-bold text-(--color-text) transition-colors duration-[180ms] hover:bg-(--color-surface-muted)"
             >
               Log in
             </a>
             <a
-              href="#trip-access"
+              href="/trip-access"
               className="inline-flex min-h-10 items-center rounded-(--radius-md) border border-(--color-border) px-3 text-[13px] font-bold text-(--color-text) transition-colors duration-[180ms] hover:bg-(--color-surface-muted)"
             >
               Trip access

@@ -54,15 +54,15 @@ export function HeroParallax({ children }: HeroParallaxProps) {
 
   return (
     <section
-      className="landing-hero relative flex min-h-[360px] items-center justify-center overflow-hidden px-4 py-14 text-center text-white isolation-isolate sm:min-h-[420px] sm:py-[72px] sm:pb-[88px]"
+      className="landing-hero relative flex min-h-[360px] items-center justify-center overflow-hidden px-4 py-14 text-center text-white sm:min-h-[420px] sm:py-[72px] sm:pb-[88px]"
       aria-label="Start planning"
     >
       <div
         ref={mediaRef}
-        className="landing-hero__media absolute inset-x-0 -top-[12%] -bottom-[12%] -z-20 h-[124%] bg-[linear-gradient(180deg,rgba(15,23,42,0.25),rgba(15,23,42,0.45)),var(--hero-image)] bg-cover bg-center bg-no-repeat will-change-transform"
+        className="landing-hero__media pointer-events-none absolute inset-x-0 -top-[12%] -bottom-[12%] z-0 h-[124%] bg-cover bg-center bg-no-repeat will-change-transform"
         style={
           {
-            "--hero-image": `url("${HERO_IMAGE_URL}")`,
+            backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.45)), url("${HERO_IMAGE_URL}")`,
             "--parallax-y": "0px",
           } as React.CSSProperties
         }

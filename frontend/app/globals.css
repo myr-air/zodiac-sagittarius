@@ -35,6 +35,8 @@
   --color-success-soft: #f0fdf4;
   --color-success-border: #bbf7d0;
 
+  --color-on-primary: #ffffff;
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -54,6 +56,7 @@
   --color-primary: var(--color-primary);
   --color-primary-strong: var(--color-primary-strong);
   --color-primary-soft: var(--color-primary-soft);
+  --color-on-primary: var(--color-on-primary);
   --color-route: var(--color-route);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -61,35 +64,36 @@
   --font-sans: var(--font-sans);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  color: var(--color-text);
-  background: var(--color-page);
-  font-family: var(--font-sans);
-  letter-spacing: 0;
-}
+  html {
+    color: var(--color-text);
+    background: var(--color-page);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+  }
 
-body {
-  margin: 0;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  background: var(--color-page);
-  color: var(--color-text);
-}
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background: var(--color-page);
+    color: var(--color-text);
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    text-decoration: none;
+  }
 
-button {
-  font: inherit;
-  cursor: pointer;
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
 }
 
 /* —— Landing: Postcard Atlas motion —— */
@@ -150,6 +154,14 @@ button {
 
   .landing-scroller {
     scroll-behavior: auto;
+  }
+
+  .auth-slide,
+  .auth-shell button,
+  .auth-shell a,
+  .auth-shell input,
+  .auth-shell select {
+    transition: none !important;
   }
 
   html {

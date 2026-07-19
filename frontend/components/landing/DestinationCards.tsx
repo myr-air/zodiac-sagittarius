@@ -26,14 +26,19 @@ export function DestinationCards({ onSeed }: DestinationCardsProps) {
               key={dest.seed}
               type="button"
               onClick={() => onSeed(dest.seed)}
-              className="landing-control relative min-h-[280px] overflow-hidden rounded-(--radius-lg) bg-cover bg-center bg-no-repeat text-left shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition-[transform,box-shadow] duration-[180ms] hover:shadow-[0_12px_28px_rgba(15,23,42,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-              style={{ backgroundImage: `url("${dest.imageUrl}")` }}
+              className="landing-control relative min-h-[280px] overflow-hidden rounded-(--radius-lg) bg-(--color-surface-muted) text-left shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition-[transform,box-shadow] duration-[180ms] hover:shadow-[0_12px_28px_rgba(15,23,42,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={dest.imageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
               <span
                 aria-hidden
-                className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(15,23,42,0.75))]"
+                className="absolute inset-0 z-1 bg-[linear-gradient(180deg,transparent_45%,rgba(15,23,42,0.75))]"
               />
-              <span className="absolute bottom-4 left-4 z-1 text-[1.25rem] font-bold text-white">
+              <span className="absolute bottom-4 left-4 z-2 text-[1.25rem] font-bold text-white">
                 {dest.name}
               </span>
             </button>

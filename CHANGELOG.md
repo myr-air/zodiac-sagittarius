@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0] — 2026-07-19
+
+### Added
+- Account auth pages: `/login`, `/register` with password, email code, and passkey flows against `/api/v1`
+- Trip access page `/trip-access` (invite resolve → claimable member → member session → `/trips/{id}`)
+- Account trips stub `/trips`; EN/TH auth copy with frozen locale (`joii.auth.locale`)
+- Landing Log in / Trip access links wired to the new routes
+
+### Fixed
+- Landing recent-searches `useSyncExternalStore` snapshot identity loop
+- Hero parallax and Switzerland destination media; primary CTA text on teal fills
+
+### Notes
+- Draft-parity polish (thumbnail rail, tip callout, kicker) deferred to #174
+- Mission M7X4UTQL
+
 ## [0.11.0] — 2026-07-19
 
 ### Added
