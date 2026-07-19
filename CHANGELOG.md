@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.0] — 2026-07-19
+
+### Added
+- Unauthenticated `POST /api/v1/public/trips` guest bootstrap from a destination seed (member session, no account login)
+- Landing Start Planning wired to public bootstrap; stores member session and opens `/trips/{id}` placeholder
+- Contract coverage for public bootstrap vs auth-gated `POST /api/v1/account/trips`
+
+### Notes
+- Guest owner members use `NULL user_id`; claiming into an account remains later work
+- Closes #172 (Phase 2 guest create)
+
 ## [0.10.0] — 2026-07-19
 
 ### Added
@@ -8,8 +19,7 @@
 - Unit tests for parallax offset, plan-query enablement, and recent-search persistence
 
 ### Notes
-- Guest/public trip create API deferred (#172); EN/TH landing switch deferred (#173)
-- Phase 2 plan remains: `POST /api/v1/public/trips` bootstrap without account session
+- Guest/public trip create API delivered in 0.11.0 (#172); EN/TH landing switch deferred (#173)
 
 ## [0.9.0] — 2026-07-19
 

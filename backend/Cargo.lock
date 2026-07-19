@@ -1682,7 +1682,7 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "sagittarius-api"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "axum",
  "base64",
@@ -1714,7 +1714,7 @@ dependencies = [
 
 [[package]]
 name = "sagittarius-app"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "argon2",
  "async-trait",
@@ -1740,7 +1740,7 @@ dependencies = [
 
 [[package]]
 name = "sagittarius-db"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "sagittarius-domain",
  "serde",
@@ -1752,7 +1752,7 @@ dependencies = [
 
 [[package]]
 name = "sagittarius-domain"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "http",
  "serde",
@@ -1765,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "sagittarius-realtime"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "sagittarius-db",
  "serde",
