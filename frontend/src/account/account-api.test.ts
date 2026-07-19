@@ -178,6 +178,39 @@ describe("fetchAccountTrips", () => {
       endDate: "2026-12-15",
     });
   });
+
+  it("includes role from the AccountTripSummary API body alongside id/name/dates/party/countries", async () => {
+    const ROLE = "traveler";
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse([
+        {
+          ...ACCOUNT_TRIPS_BODY[0],
+          role: ROLE,
+          isOwner: false,
+        },
+      ]),
+    );
+
+    const outcome = await fetchAccountTrips(
+      { sessionToken: SESSION_TOKEN },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    // Independent literal: role must be copied from the JSON body, not dropped.
+    expect(outcome.trips[0]).toEqual(
+      expect.objectContaining({
+        id: TRIP_ID,
+        name: "Bangkok - Chiang Mai",
+        countries: ["Thailand"],
+        partySize: 4,
+        startDate: "2026-12-12",
+        endDate: "2026-12-15",
+        role: ROLE,
+      }),
+    );
+  });
 });
 
 /** Independent fixture shaped like AccountExplorerSummary (camelCase API body). */

@@ -223,7 +223,7 @@ export async function startEmailChallenge(
 
 /**
  * POST challenge finish credentials to email sessions.
- * On success stores the account session and navigates to `/trips`.
+ * On success stores the account session and navigates to `/portal`.
  */
 export async function finishEmailChallenge(
   input: FinishEmailChallengeInput,
@@ -289,7 +289,7 @@ export async function finishEmailChallenge(
   };
 
   saveAccountSession(deps.storage, session);
-  deps.navigate("/trips");
+  deps.navigate("/portal");
 
   return { ok: true, session };
 }

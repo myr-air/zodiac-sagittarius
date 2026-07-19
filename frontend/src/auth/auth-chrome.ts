@@ -77,7 +77,7 @@ export const AUTH_CHROME = {
     transitionClassName: "duration-[180ms]",
   },
   destinations: {
-    accountAuthSuccess: "/trips",
+    accountAuthSuccess: "/portal",
     tripAccessSuccess: (tripId: string) => tripRouteFor(tripId),
   },
 } as const;

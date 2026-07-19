@@ -235,7 +235,7 @@ export async function signInWithPassword(
 
 /**
  * POST register credentials to password sessions.
- * On success stores the account session and navigates to `/trips`.
+ * On success stores the account session and navigates to `/portal`.
  */
 export async function registerWithPassword(
   input: RegisterWithPasswordInput,
@@ -243,6 +243,6 @@ export async function registerWithPassword(
 ): Promise<RegisterWithPasswordOutcome> {
   const outcome = await postPasswordSession("register", input, deps);
   if (!outcome.ok) return outcome;
-  deps.navigate("/trips");
+  deps.navigate("/portal");
   return outcome;
 }

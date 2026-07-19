@@ -97,7 +97,7 @@ describe("signInWithPassword", () => {
 });
 
 describe("registerWithPassword", () => {
-  it("posts register flow to password sessions, stores the account session, and navigates to /trips", async () => {
+  it("posts register flow to password sessions, stores the account session, and navigates to /portal", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse(ACCOUNT_SESSION_BODY),
     );
@@ -141,7 +141,7 @@ describe("registerWithPassword", () => {
     expect(loadAccountSession(storage)?.sessionToken).toBe(SESSION_TOKEN);
     expect(storage.data[ACCOUNT_SESSION_STORAGE_KEY]).toBeTruthy();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/trips");
+    expect(navigate).toHaveBeenCalledWith("/portal");
   });
 
   it("keeps register to email/password/confirm and surfaces duplicate/invalid errors inline", async () => {
