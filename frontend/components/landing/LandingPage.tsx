@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AuthLocaleProvider, useAuthLocale } from "@/components/auth/AuthLocaleProvider";
+import { LocaleSwitch } from "@/components/auth/LocaleSwitch";
 import { CreateEntryStub } from "./CreateEntryStub";
 import { DestinationCards } from "./DestinationCards";
 import { HeroParallax } from "./HeroParallax";
@@ -16,6 +18,7 @@ import {
   createTripFromQuery,
   defaultApiBaseUrl,
 } from "@/src/landing/create-trip";
+import { landingCopy } from "@/src/landing/landing-copy";
 import {
   appendRecent,
   loadRecent,
@@ -100,8 +103,10 @@ function useSectionReveals() {
   }, []);
 }
 
-export function LandingPage() {
+function LandingPageInner() {
   const router = useRouter();
+  const { locale } = useAuthLocale();
+  const copy = landingCopy(locale);
   const [query, setQuery] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -171,7 +176,7 @@ export function LandingPage() {
   );
 
   return (
-    <div className="overflow-x-hidden bg-(--color-page)">
+    <div className="overflow-x-hidden bg-(--color-page)" data-locale={locale}>
       <header className="border-b border-(--color-border) bg-(--color-surface)">
         <div className="mx-auto flex w-full max-w-[1120px] items-center gap-4 px-4 py-3.5">
           <p className="m-0 shrink-0 text-[1.35rem] font-bold tracking-tight text-(--color-primary)">
@@ -196,8 +201,8 @@ export function LandingPage() {
             </svg>
             <input
               type="search"
-              placeholder="Search"
-              aria-label="Search"
+              placeholder={copy.search}
+              aria-label={copy.search}
               className="w-full border-0 bg-transparent text-[13px] outline-none"
             />
           </label>
@@ -209,33 +214,34 @@ export function LandingPage() {
               href="/"
               className="inline-flex min-h-10 items-center rounded-full bg-(--color-primary) px-3.5 text-[13px] font-semibold text-(--color-on-primary)"
             >
-              Home
+              {copy.home}
             </Link>
             <a
               href="#destinations"
               className="inline-flex min-h-10 items-center rounded-full px-3.5 text-[13px] font-semibold text-(--color-text-muted) transition-colors duration-[180ms] hover:text-(--color-text)"
             >
-              Explore
+              {copy.explore}
             </a>
             <a
               href="#trips"
               className="inline-flex min-h-10 items-center rounded-full px-3.5 text-[13px] font-semibold text-(--color-text-muted) transition-colors duration-[180ms] hover:text-(--color-text)"
             >
-              Trip ideas
+              {copy.tripIdeas}
             </a>
           </nav>
           <div className="ml-auto flex items-center gap-2 md:ml-0">
+            <LocaleSwitch />
             <a
               href="/login"
               className="inline-flex min-h-10 items-center rounded-(--radius-md) px-3 text-[13px] font-bold text-(--color-text) transition-colors duration-[180ms] hover:bg-(--color-surface-muted)"
             >
-              Log in
+              {copy.logIn}
             </a>
             <a
               href="/trip-access"
               className="inline-flex min-h-10 items-center rounded-(--radius-md) border border-(--color-border) px-3 text-[13px] font-bold text-(--color-text) transition-colors duration-[180ms] hover:bg-(--color-surface-muted)"
             >
-              Trip access
+              {copy.tripAccess}
             </a>
           </div>
         </div>
@@ -276,5 +282,13 @@ export function LandingPage() {
 
       <LandingFooter />
     </div>
+  );
+}
+
+export function LandingPage() {
+  return (
+    <AuthLocaleProvider>
+      <LandingPageInner />
+    </AuthLocaleProvider>
   );
 }

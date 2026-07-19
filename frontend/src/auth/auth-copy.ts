@@ -60,6 +60,9 @@ export type AuthCopy = {
     logInLink: string;
     manageOwnership: string;
     selectMember: string;
+    tipLead: string;
+    tipBeforeLogin: string;
+    tipAfterLogin: string;
     mediaTitle: string;
     mediaCopy: string;
   };
@@ -126,6 +129,10 @@ const EN: AuthCopy = {
     logInLink: "log in",
     manageOwnership: "to manage ownership.",
     selectMember: "Select a trip member to continue.",
+    tipLead: "Tip:",
+    tipBeforeLogin:
+      "Invite links can fill this field automatically. Organizers still",
+    tipAfterLogin: "to manage ownership.",
     mediaTitle: "Enter the shared trip room",
     mediaCopy: "Itinerary, members, and plans — already waiting for your group.",
   },
@@ -209,6 +216,10 @@ const TH: AuthCopy = {
     logInLink: "เข้าสู่ระบบ",
     manageOwnership: "เพื่อจัดการความเป็นเจ้าของ",
     selectMember: "เลือกสมาชิกทริปเพื่อดำเนินการต่อ",
+    tipLead: "เคล็ดลับ:",
+    tipBeforeLogin:
+      "ลิงก์คำเชิญสามารถกรอกช่องนี้ให้อัตโนมัติ ผู้จัดยังต้อง",
+    tipAfterLogin: "เพื่อจัดการความเป็นเจ้าของ",
     mediaTitle: "เข้าห้องทริปที่แชร์กัน",
     mediaCopy: "แผนการเดินทาง สมาชิก และแผน — พร้อมรอกลุ่มของคุณแล้ว",
   },
