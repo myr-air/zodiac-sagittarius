@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.0] — 2026-07-19
+
+### Added
+- Authenticated account home on `/trips`: Navica-style top nav and draft-v3 compose grid (stories ∥ friends map; upcoming trips; places ∥ itinerary)
+- Live bind for greeting (`GET /account`), trip cards (`GET /account/trips`), and itinerary summary (`GET /account/explorer`)
+- Visual placeholders for stories, friends location, and place guides (no social/geo/POI APIs)
+
+### Notes
+- Mission M7X8ZO5N; orange Details/date accents match approved draft (exception vs primary teal ops tokens)
+- `/trips/[id]` remains the per-trip cockpit route
+
 ## [0.13.0] — 2026-07-19
 
 ### Added
