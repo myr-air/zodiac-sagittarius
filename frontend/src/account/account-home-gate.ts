@@ -15,7 +15,7 @@ export type AccountHomeShellCopy = {
 };
 
 /**
- * Session gate for Account Home (`/trips`).
+ * Session gate for Account Home (`/portal`).
  * Redirects to login when no account session is present.
  */
 export function accountHomeGate(

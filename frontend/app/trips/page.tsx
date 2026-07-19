@@ -1,5 +1,5 @@
-import { AccountHome } from "@/components/account/AccountHome";
+import { redirect } from "next/navigation";
 
 export default function TripsPage() {
-  return <AccountHome />;
+  redirect("/portal");
 }

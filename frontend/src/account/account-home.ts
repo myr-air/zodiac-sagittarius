@@ -1,13 +1,8 @@
 /**
- * Account home composition contract (draft v3).
+ * Account home composition contract (portal shell).
  */
 
 export type AccountHomeDataSource = "placeholder" | "live";
-
-export type AccountHomeNavItem = {
-  label: string;
-  current: boolean;
-};
 
 export type AccountHomeComposeArea = {
   id: string;
@@ -16,20 +11,12 @@ export type AccountHomeComposeArea = {
 
 export type AccountHomeComposition = {
   brand: string;
-  topNav: AccountHomeNavItem[];
   greeting: { dataSource: AccountHomeDataSource };
   composeAreas: AccountHomeComposeArea[];
 };
 
 export const accountHomeComposition: AccountHomeComposition = {
   brand: "Joii",
-  topNav: [
-    { label: "Home", current: true },
-    { label: "My Bookings", current: false },
-    { label: "Itinerary", current: false },
-    { label: "Community", current: false },
-    { label: "Money Changer", current: false },
-  ],
   greeting: { dataSource: "live" },
   composeAreas: [
     { id: "stories", dataSource: "placeholder" },

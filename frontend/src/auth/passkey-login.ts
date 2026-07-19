@@ -212,7 +212,7 @@ function resolveCredentials(
 
 /**
  * POST email to start passkey options, run WebAuthn assertion, finish sessions.
- * On success stores the account session and navigates to `/trips`.
+ * On success stores the account session and navigates to `/portal`.
  */
 export async function signInWithPasskey(
   input: SignInWithPasskeyInput,
@@ -375,7 +375,7 @@ export async function signInWithPasskey(
   };
 
   saveAccountSession(deps.storage, session);
-  deps.navigate("/trips");
+  deps.navigate("/portal");
 
   return { ok: true, session };
 }

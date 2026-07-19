@@ -72,11 +72,11 @@ describe("auth chrome — responsive layout and motion", () => {
 });
 
 describe("auth chrome — post-auth destinations", () => {
-  it("sends password/email/passkey success to /trips and trip access to /trips/{id}", () => {
+  it("sends password/email/passkey success to /portal and trip access to /trips/{id}", () => {
     const chrome = authChrome();
     const tripId = "11111111-1111-4111-8111-111111111111";
 
-    expect(chrome.destinations.accountAuthSuccess).toBe("/trips");
+    expect(chrome.destinations.accountAuthSuccess).toBe("/portal");
     expect(chrome.destinations.tripAccessSuccess(tripId)).toBe(
       `/trips/${tripId}`,
     );

@@ -11,6 +11,7 @@ const EXPLORER_NEXT_TRIP: AccountTripSummary = {
   partySize: 4,
   startDate: "2026-12-12",
   endDate: "2026-12-15",
+  role: "traveler",
 };
 
 const FALLBACK_CARD: UpcomingTripCard = {

@@ -96,7 +96,7 @@ describe("startEmailChallenge", () => {
 });
 
 describe("finishEmailChallenge", () => {
-  it("posts challenge finish body, stores account session, and navigates to /trips", async () => {
+  it("posts challenge finish body, stores account session, and navigates to /portal", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse(ACCOUNT_SESSION_BODY),
     );
@@ -139,7 +139,7 @@ describe("finishEmailChallenge", () => {
     expect(loadAccountSession(storage)?.sessionToken).toBe(SESSION_TOKEN);
     expect(storage.data[ACCOUNT_SESSION_STORAGE_KEY]).toBeTruthy();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/trips");
+    expect(navigate).toHaveBeenCalledWith("/portal");
   });
 
   it("surfaces a bad verification code as a visible inline danger error", async () => {

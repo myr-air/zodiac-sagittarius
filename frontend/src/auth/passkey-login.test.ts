@@ -100,7 +100,7 @@ describe("passkey action label", () => {
 });
 
 describe("signInWithPasskey", () => {
-  it("posts options, runs WebAuthn assertion, finishes sessions, stores account session, and navigates to /trips", async () => {
+  it("posts options, runs WebAuthn assertion, finishes sessions, stores account session, and navigates to /portal", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (input) => {
       const url = String(input);
       if (url.endsWith("/api/v1/auth/passkeys/options")) {
@@ -186,7 +186,7 @@ describe("signInWithPasskey", () => {
     expect(loadAccountSession(storage)?.sessionToken).toBe(SESSION_TOKEN);
     expect(storage.data[ACCOUNT_SESSION_STORAGE_KEY]).toBeTruthy();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/trips");
+    expect(navigate).toHaveBeenCalledWith("/portal");
 
     for (const [url] of fetchMock.mock.calls) {
       const path = new URL(String(url)).pathname;

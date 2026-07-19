@@ -11,6 +11,7 @@ const CHIANG_MAI_TRIP: AccountTripSummary = {
   partySize: 4,
   startDate: "2026-12-12",
   endDate: "2026-12-15",
+  role: "traveler",
 };
 
 describe("toUpcomingTripCard", () => {

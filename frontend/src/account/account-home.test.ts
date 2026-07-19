@@ -1,17 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { accountHomeComposition } from "./account-home";
+import { portalNavItems } from "../portal/portal-nav";
 
-/** Independent Navica top-nav literals from approved draft v3 (not from SUT). */
-const NAVICA_TOP_NAV_LABELS = [
-  "Home",
-  "My Bookings",
-  "Itinerary",
-  "Community",
-  "Money Changer",
-] as const;
-
-/** Draft v3 compose grid order: stories ∥ friends → trips → places ∥ itinerary. */
-const DRAFT_V3_COMPOSE_AREA_IDS = [
+/** Draft compose grid order: stories ∥ friends → trips → places ∥ itinerary. */
+const DRAFT_COMPOSE_AREA_IDS = [
   "stories",
   "friends",
   "trips",
@@ -20,37 +12,27 @@ const DRAFT_V3_COMPOSE_AREA_IDS = [
 ] as const;
 
 describe("accountHomeComposition", () => {
-  it("exposes Navica top-nav items with Home marked current and brand Joii (no Sagittarius)", () => {
+  it("exposes Joii brand (no Sagittarius); primary nav lives in portalNavItems", () => {
     expect(accountHomeComposition.brand).toBe("Joii");
+    expect(accountHomeComposition.brand).not.toMatch(/Sagittarius/i);
 
-    const labels = accountHomeComposition.topNav.map((item) => item.label);
-    expect(labels).toEqual([...NAVICA_TOP_NAV_LABELS]);
-
-    const home = accountHomeComposition.topNav.find(
-      (item) => item.label === "Home",
-    );
-    expect(home).toBeDefined();
-    expect(home?.current).toBe(true);
-
-    const otherCurrent = accountHomeComposition.topNav.filter(
-      (item) => item.label !== "Home" && item.current,
-    );
-    expect(otherCurrent).toEqual([]);
-
-    const publicSurface = [
-      accountHomeComposition.brand,
-      ...labels,
-    ].join("\n");
-    expect(publicSurface).toMatch(/Joii/);
-    expect(publicSurface).not.toMatch(/Sagittarius/i);
+    expect(
+      portalNavItems.map((item) => ({ label: item.label, href: item.href })),
+    ).toEqual([
+      { label: "Home", href: "/portal" },
+      { label: "Explore", href: "/portal/explore" },
+      { label: "Trips", href: "/portal/trips" },
+      { label: "Friends", href: "/portal/friends" },
+      { label: "Settings", href: "/portal/settings" },
+    ]);
   });
 
-  it("lists compose areas stories, friends, trips, places, itinerary in draft v3 order", () => {
+  it("lists compose areas stories, friends, trips, places, itinerary in draft order", () => {
     const ids = accountHomeComposition.composeAreas.map((area) => area.id);
-    expect(ids).toEqual([...DRAFT_V3_COMPOSE_AREA_IDS]);
+    expect(ids).toEqual([...DRAFT_COMPOSE_AREA_IDS]);
   });
 
-  it('flags stories, friends, places as placeholder; trips and greeting/itinerary as live', () => {
+  it("flags stories, friends, places as placeholder; trips and greeting/itinerary as live", () => {
     const byId = Object.fromEntries(
       accountHomeComposition.composeAreas.map((area) => [
         area.id,

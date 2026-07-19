@@ -16,6 +16,7 @@ export type AccountTripSummary = {
   partySize: number;
   startDate: string;
   endDate: string;
+  role: string;
 };
 
 export type FetchAccountTripsDeps = {
@@ -153,6 +154,7 @@ type AccountTripSummaryBody = {
   partySize?: unknown;
   startDate?: unknown;
   endDate?: unknown;
+  role?: unknown;
 };
 
 function parseAccountTripSummary(row: unknown): AccountTripSummary | null {
@@ -166,6 +168,7 @@ function parseAccountTripSummary(row: unknown): AccountTripSummary | null {
   if (typeof body.partySize !== "number") return null;
   if (typeof body.startDate !== "string") return null;
   if (typeof body.endDate !== "string") return null;
+  if (typeof body.role !== "string") return null;
   return {
     id: body.id,
     name: body.name,
@@ -174,6 +177,7 @@ function parseAccountTripSummary(row: unknown): AccountTripSummary | null {
     partySize: body.partySize,
     startDate: body.startDate,
     endDate: body.endDate,
+    role: body.role,
   };
 }
 

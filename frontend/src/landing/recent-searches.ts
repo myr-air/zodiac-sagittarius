@@ -5,7 +5,7 @@ export type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
 /** Prepend trimmed query, dedupe exact matches, cap list length. */
 export function appendRecent(
-  list: string[],
+  list: readonly string[],
   query: string,
   max: number = RECENT_MAX,
 ): string[] {
