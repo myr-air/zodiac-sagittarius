@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.0] — 2026-07-19
+## [0.9.0] — 2026-07-19
 
 ### Added
 - OpenAPI 3 document at `GET /api/v1/openapi.json` (utoipa)
