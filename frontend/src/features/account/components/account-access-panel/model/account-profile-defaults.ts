@@ -1,1 +1,0 @@
-export const ACCOUNT_PROFILE_DEFAULT_AVATAR_COLOR = "#c2410c";

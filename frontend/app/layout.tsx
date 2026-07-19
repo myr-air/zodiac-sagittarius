@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { I18nProvider } from "@/src/i18n/I18nProvider";
-import "maplibre-gl/dist/maplibre-gl.css";
+import { Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Joii Travel Planning",
-  description: "A friendly collaborative trip planner for decisions, routes, checklists, and shared plans.",
+  title: "Joii",
+  description: "Group trip planning for shared itineraries, people, and decisions.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body>
-        <I18nProvider>{children}</I18nProvider>
-      </body>
+      <body className={`${notoSansThai.className} antialiased`}>{children}</body>
     </html>
   );
 }

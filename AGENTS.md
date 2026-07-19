@@ -1,98 +1,111 @@
-# Sagittarius Project Instructions
+# Joii / Sagittarius — Agent Instructions
 
-This file contains repository-specific guidance only. Global Codex workflow,
-debugging, command, QA, and communication rules are defined outside this repo.
+Complementary guidance for coding agents. Human-facing product and architecture
+live in `PRODUCT.md`. Visual identity lives in `DESIGN.md`
+([getdesign.md](https://getdesign.md/) / [DESIGN.md format](https://github.com/google-labs-code/design.md)).
 
-## Product Context
+Public brand: **Joii**. Repo / zodiac codename: **Sagittarius**.
 
-Sagittarius is a travel planning cockpit for group trips. The core user
-experience is an operational workspace, not a marketing site. Prefer calm,
-scan-friendly, work-focused UI that helps organizers compare plans, edit
-itinerary details, track members, and resolve trip decisions quickly.
+## Project overview
 
-The itinerary domain supports activity-level path planning:
+Sagittarius is a group-trip planning system: organizers, travelers, and viewers
+collaborate on trip plans, itinerary, members, commitments, and shared costs.
 
-- `main` is the default path.
-- Overlapping activities can be assigned to generated day plans such as
-  `Plan A`, `Plan B`, etc.
-- Day-level filtering and trip-level filtering are separate concerns.
-- Import/export and automatic overlap resolution must preserve the itinerary
-  path model instead of flattening activities back into one list.
+Current state:
 
-## Frontend Conventions
+- **Backend:** layered Cargo workspace (`sagittarius-domain` → `db` →
+  `realtime` / `app` → `sagittarius-api`) with Axum + PostgreSQL, sessions,
+  passkeys, trip plans, itinerary, expenses, members, and WebSocket trip
+  event streams. See `backend/ARCHITECTURE.md`.
+- **Frontend:** Joii greenfield Next.js shell (landing stub). Rebuild the
+  cockpit against `DESIGN.md` and the live `/api/v1` backend; do not resurrect
+  the pre-reset SPA from git history without an explicit request.
 
-Use existing Tailwind utilities, component classes, design tokens, and Storybook
-patterns first. Add custom CSS only after checking that the current
-Tailwind/design-system vocabulary cannot express the behavior clearly.
+## Repository map
 
-For Tailwind utilities whose value is a simple CSS variable token, prefer the
-canonical shorthand form, such as `text-(--color-text-muted)`,
-`bg-(--color-surface)`, `border-(--color-border)`, and
-`rounded-(--radius-md)`. Keep bracketed arbitrary values for expressions that
-are not a single token, such as `rgb(...)`, `color-mix(...)`, gradients,
-fallback vars, shadows, and arbitrary properties.
+| Path | Role |
+|------|------|
+| `frontend/` | Joii Next.js app (Bun), port `5180` |
+| `backend/` | Cargo workspace (`sagittarius-*` crates), port `5181` |
+| `backend/ARCHITECTURE.md` | Backend crate map and dependency rules |
+| `docker-compose.yml` | Production-style web + API containers |
+| `Makefile` | Dev and verify entrypoints |
+| `PRODUCT.md` | System design, domain, architecture |
+| `DESIGN.md` | UI tokens and visual rules |
+| `.space/` | Local agent/mission/legacy archive — never commit |
 
-Keep cockpit surfaces dense but readable. Avoid landing-page patterns inside the
-workspace: oversized hero composition, decorative card stacks, gradient-only
-sections, or explanatory in-app marketing copy.
+## Dev environment
 
-When adding controls:
+```bash
+# API (Postgres required)
+make backend-dev          # http://127.0.0.1:5181
 
-- Use existing `Button`, `Icon`, i18n messages, and table/dialog patterns.
-- Keep table and toolbar controls stable across desktop and mobile.
-- Check that context rail, table scroll, and mobile viewport behavior do not
-  block itinerary toolbar actions.
+# Web
+make frontend-dev         # http://127.0.0.1:5180
 
-## API And State
+# Checks
+make verify               # frontend verify + backend tests
+make db-init              # create + migrate local DB
+```
 
-The app can run in local mode and API mode. Any itinerary mutation that changes
-activity paths should handle both:
+Env templates:
 
-- Local mode: update the trip draft through the local commit/history flow.
-- API mode: patch backend items with current `expectedVersion` values and handle
-  `version_conflict` by reloading the latest cockpit before retrying or
-  recomputing local placement.
+- `backend/.env.example` → `backend/.env` for local API
+- `.env.example` → optional root local defaults
+- `.env.production.example` → `.env.production` for Compose
 
-Do not assume generated path fields are cosmetic. `pathGroupId`, `pathId`,
-`pathName`, and `pathRole` are part of the data contract and must stay in sync
-between UI, import/export, API patches, and tests.
+Package manager for the web app is **Bun**. Backend is **Cargo**.
 
-## Tests And QA
+Prefer focused unit/API tests for backend domain changes. Add frontend tests
+when UI behavior exists beyond the landing stub.
 
-For itinerary/path changes, prefer focused coverage in:
+## Code conventions
 
-- `frontend/src/trip/itinerary-paths.test.ts`
-- `frontend/src/trip/itinerary.test.ts`
-- `frontend/src/features/itinerary/components/SmartItineraryTable.test.tsx`
-- `frontend/src/trip/workspace/sagittarius-app/SagittariusApp.test.tsx` when API/local app wiring is
-  involved
+- Follow `DESIGN.md` for all UI. Cockpit = dense Calm Travel Ops; landing =
+  Postcard Atlas. Prefer Tailwind + CSS variable tokens
+  (`text-(--color-text-muted)`, `bg-(--color-surface)`, etc.).
+- Keep public copy branded **Joii**. Sagittarius stays internal.
+- Domain language and contracts in `PRODUCT.md` are normative (Trip Plan, Main
+  Plan, plan-scoped records, Actual Expense vs Plan Estimate, itinerary
+  hierarchy). Do not invent alternate product names for the same concepts.
+- Backend mutations that use optimistic concurrency must send `expectedVersion`
+  and handle `version_conflict` by reloading before retry.
+- Path / plan fields (`pathGroupId`, `pathId`, `pathName`, `pathRole`, trip plan
+  ids) are data-contract fields — keep UI, import/export, and API patches in
+  sync when those features return.
+- Do not commit `.space/`, secrets, `.env*`, or generated QA artifacts.
 
-When a user-facing feature touches the itinerary table, verify at least one real
-browser flow for the visible control, context rail interaction, console/page
-errors, and mobile overflow.
+## Frontend rebuild guidance
 
-## Completion
+When extending Joii:
 
-When a task changes code, tests, docs, or tracked project files, commit the
-finished work before reporting completion. Only leave changes uncommitted when
-the user explicitly asks not to commit or when verification is blocked and the
-remaining risk needs user direction.
+1. Read `PRODUCT.md` for the capability and API boundary.
+2. Read `DESIGN.md` before inventing layout or color.
+3. Wire to existing `/api/v1` routes; do not invent a parallel API.
+4. Desktop-first cockpit: Smart Itinerary Table as source of truth; context
+   nearby in a right rail / inspector — not a marketing dashboard.
+
+## Security
+
+- Never log session tokens, passkey material, or password hashes.
+- Do not weaken CORS, auth, or version checks “for convenience” in production
+  paths.
+- Do not write exploits, malware, or attack scripts against any system.
+
+## Completion and git
+
+- Commit only when the user asks (or when they explicitly want the finished
+  task committed). Prefer Conventional Commits:
+  `feat(frontend): …`, `fix(api): …`, `docs: …`.
+- Do not push unless asked.
+- Do not use `--force` on `main` / `master`.
+- If you discover issues you are not fixing, open a GitHub issue with context,
+  impact, and verification criteria — do not recreate a local `issues.md`
+  index.
 
 ## Deployment
 
-Whenever changes are merged to `main`, production deployment is required to run
-automatically through the production deployment path (`make production-deploy-gate`
-followed by production publish steps in `docs/production-docker-cloudflare.md` and
-GitHub workflow expectations). Manual merge-to-production approval does not replace
-this automatic deploy requirement.
-
-For production route changes, teams should complete a browser smoke check immediately
-after deploy in this order: `/trips`, map route, and auth flow.
-
-## Issue Tracking
-
-If you find project issues that are not fixed in the current turn, create a
-GitHub issue with context, evidence, impact, suggested fix path, and verification
-criteria. Use `issues.md` only as a local index to GitHub Issues and archived
-audit records. When fixed, close the GitHub issue with the fix summary and
-verification evidence.
+Merges to `main` are expected to publish via Docker Compose
+(`.env.production` from `.env.production.example`) and the Cloudflare path for
+Joii hosts. After route changes, smoke `/trips`, map, and auth when those
+surfaces exist again.

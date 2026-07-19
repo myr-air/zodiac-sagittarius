@@ -1,0 +1,121 @@
+use axum::{Json, http::StatusCode, response::IntoResponse};
+use serde::Serialize;
+use serde_json::Value;
+
+use sagittarius_domain::errors::ServiceError;
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ErrorBody {
+    pub code: &'static str,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest: Option<Value>,
+}
+
+/// HTTP-layer wrapper so axum `IntoResponse` can be implemented without orphan-rule issues.
+#[derive(Debug)]
+pub struct ApiError(pub ServiceError);
+
+impl From<ServiceError> for ApiError {
+    fn from(value: ServiceError) -> Self {
+        Self(value)
+    }
+}
+
+pub async fn not_found() -> impl IntoResponse {
+    (
+        StatusCode::NOT_FOUND,
+        Json(ErrorBody {
+            code: "not_found",
+            message: "not found".to_string(),
+            latest: None,
+        }),
+    )
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> axum::response::Response {
+        let error = self.0;
+        let (status, code, message, latest) = match &error {
+            ServiceError::InvalidRequest(_) => (
+                StatusCode::BAD_REQUEST,
+                "invalid_request",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::Unauthenticated => (
+                StatusCode::UNAUTHORIZED,
+                "unauthenticated",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", error.to_string(), None),
+            ServiceError::TooManyRequests => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "too_many_requests",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::NotFound => (StatusCode::NOT_FOUND, "not_found", error.to_string(), None),
+            ServiceError::IdentityAlreadyLinked => (
+                StatusCode::CONFLICT,
+                "identity_already_linked",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::EmailDelivery(message) => (
+                StatusCode::BAD_GATEWAY,
+                "email_delivery_failed",
+                message.clone(),
+                None,
+            ),
+            ServiceError::ExchangeRateProvider(message) => (
+                StatusCode::BAD_GATEWAY,
+                "exchange_rate_provider_failed",
+                message.clone(),
+                None,
+            ),
+            ServiceError::TripJoinIdAlreadyExists => (
+                StatusCode::CONFLICT,
+                "trip_join_id_already_exists",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::OwnerTransferInvalid => (
+                StatusCode::CONFLICT,
+                "owner_transfer_invalid",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::VersionConflict => (
+                StatusCode::CONFLICT,
+                "version_conflict",
+                error.to_string(),
+                None,
+            ),
+            ServiceError::VersionConflictWithLatest(latest) => (
+                StatusCode::CONFLICT,
+                "version_conflict",
+                "version conflict".to_string(),
+                Some(latest.clone()),
+            ),
+            ServiceError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "database_error",
+                "database error".to_string(),
+                None,
+            ),
+        };
+
+        (
+            status,
+            Json(ErrorBody {
+                code,
+                message,
+                latest,
+            }),
+        )
+            .into_response()
+    }
+}

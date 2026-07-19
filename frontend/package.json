@@ -1,82 +1,40 @@
 {
-  "name": "sagittarius-travel-cockpit",
-  "version": "0.6.3",
+  "name": "joii",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.3.5",
+  "packageManager": "bun@1.3.14",
   "scripts": {
     "dev": "NODE_OPTIONS=--no-warnings next dev --hostname 127.0.0.1 --port 5180",
     "build": "NODE_OPTIONS=--no-warnings next build",
     "start": "NODE_OPTIONS=--no-warnings next start --hostname ${HOSTNAME:-127.0.0.1} --port ${PORT:-5180}",
     "lint": "eslint .",
-    "storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
-    "build-storybook": "NODE_OPTIONS=--no-warnings STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
-    "test": "NODE_OPTIONS=--no-warnings vitest --project unit run",
-    "test:e2e:real": "NODE_OPTIONS=--no-warnings SAGITTARIUS_E2E_REQUIRED=1 vitest --project unit run src/trip/real-api-e2e/real-api.e2e.test.ts src/account/real-api-e2e/real-portal.e2e.test.ts",
-    "test:e2e:local": "bun run scripts/run-local-real-api-e2e.ts",
-    "test:e2e:auth-browser": "bun run scripts/run-local-real-browser-auth-e2e.ts",
-    "test:expense-browser-smoke": "bun run scripts/run-expense-workspace-browser-smoke.ts",
-    "test:itinerary-import-browser-qa": "bun run scripts/run-itinerary-import-browser-qa.ts",
-    "test:itinerary-entry-browser-qa": "bun run scripts/run-itinerary-entry-browser-qa.ts",
-    "test:trip-plan-browser-qa": "bun run scripts/run-trip-plan-browser-qa.ts",
-    "test:production-browser-qa": "bun run scripts/run-local-production-browser-qa.ts",
-    "test:create-trip-ux-qa": "bun run scripts/run-create-trip-ux-qa.ts",
-    "test:api-trace-smoke": "bun run scripts/run-local-api-trace-smoke.ts",
-    "test:perf-smoke": "bun run scripts/run-local-perf-smoke.ts",
-    "test:production-env": "bun run scripts/check-production-env.ts",
-    "test:release-signoff": "bun run scripts/check-release-signoff.ts",
-    "test:staging-preflight": "bun run scripts/check-staging-preflight.ts",
-    "test:staging-signoff": "bun run scripts/check-staging-signoff.ts",
-    "test:storybook": "NODE_OPTIONS=--no-warnings vitest --project storybook run",
-    "test:storybook:agy": "bun run scripts/run-storybook-agy-ux-qa.ts",
-    "test:watch": "NODE_OPTIONS=--no-warnings vitest",
     "typecheck": "NODE_OPTIONS=--no-warnings next typegen && tsc --noEmit",
-    "verify:frontend": "bun run lint && bun run typecheck && bun run test && bun run test:storybook && bun run build && bun run build-storybook"
+    "test": "NODE_OPTIONS=--no-warnings vitest run",
+    "verify:frontend": "bun run lint && bun run typecheck && bun run test && bun run build"
   },
   "dependencies": {
-    "d3-geo": "^3.1.1",
-    "maplibre-gl": "^5.24.0",
-    "next": "16.2.6",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "topojson-client": "^3.1.0",
-    "typescript": "6.0.3",
-    "world-atlas": "^2.0.2"
-  },
-  "overrides": {
-    "postcss": "8.5.15"
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "10.4.1",
-    "@storybook/addon-docs": "10.4.1",
-    "@storybook/addon-vitest": "10.4.1",
-    "@storybook/nextjs-vite": "10.4.1",
-    "@tailwindcss/postcss": "4.2.4",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.2",
-    "@testing-library/user-event": "14.6.1",
-    "@types/d3-geo": "^3.1.0",
-    "@types/node": "25.9.1",
-    "@types/react": "19.2.15",
-    "@types/react-dom": "19.2.3",
-    "@types/topojson-client": "^3.1.5",
-    "@vitejs/plugin-react": "5.1.1",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/coverage-v8": "4.1.7",
-    "eslint": "9.39.4",
-    "eslint-config-next": "16.2.6",
-    "jsdom": "29.1.1",
-    "mockdate": "^3.0.5",
-    "msw": "^2.14.6",
-    "msw-storybook-addon": "^2.0.7",
-    "playwright": "^1.60.0",
-    "postcss": "8.5.15",
-    "tailwindcss": "4.2.4",
-    "vitest": "4.1.7"
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
-  }
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
 }

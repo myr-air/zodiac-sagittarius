@@ -1,0 +1,500 @@
+use sqlx::postgres::PgPoolOptions;
+use uuid::Uuid;
+
+const TRIP_ID: &str = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
+const OWNER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac561";
+const ORGANIZER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac562";
+const TRAVELER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac563";
+const VIEWER_ID: &str = "018f4e81-77a4-7b8f-b3bd-0d0f493ac564";
+const PLAN_ID: &str = "018f4e82-3000-7c00-b111-000000000001";
+const ITEM_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd1f";
+const STOP_NOTE_ID: &str = "018f4e83-5410-7d8b-8f25-fd52c5e7bd30";
+const TASK_ID: &str = "018f4e85-2222-7000-8000-000000000001";
+const EXPENSE_ID: &str = "018f4e86-1111-7000-8000-000000000001";
+const EXPENSE_PEAK_TRAM_ID: &str = "018f4e86-1111-7000-8000-000000000002";
+const EXPENSE_OCTOPUS_TOPUP_ID: &str = "018f4e86-1111-7000-8000-000000000003";
+const EXPENSE_HOTEL_DEPOSIT_ID: &str = "018f4e86-1111-7000-8000-000000000004";
+const EXPENSE_DINNER_ID: &str = "018f4e86-1111-7000-8000-000000000005";
+const EXPENSE_PERSONAL_ID: &str = "018f4e86-1111-7000-8000-000000000006";
+const EXPENSE_SETTLEMENT_ID: &str = "018f4e86-1111-7000-8000-000000000007";
+const BOOKING_FLIGHT_ID: &str = "018f4e87-1111-7000-8000-000000000001";
+const BOOKING_HOTEL_ID: &str = "018f4e87-1111-7000-8000-000000000002";
+const RESET_CONFIRMATION_ENV: &str = "SAGITTARIUS_ALLOW_E2E_DB_RESET";
+const TEST_DATABASE_NAME_ENV: &str = "SAGITTARIUS_E2E_DATABASE_NAME";
+const TEST_DATABASE_NAME: &str = "sagittarius_test";
+const MIGRATIONS: &[&str] = &[
+    include_str!("../../../../migrations/0001_baseline.sql"),
+];
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let database_url = std::env::var("DATABASE_URL").map_err(|_| {
+        std::io::Error::new(std::io::ErrorKind::NotFound, "DATABASE_URL must be set")
+    })?;
+    let test_database_name =
+        std::env::var(TEST_DATABASE_NAME_ENV).unwrap_or_else(|_| TEST_DATABASE_NAME.to_string());
+    guard_test_database(
+        &database_url,
+        std::env::var(RESET_CONFIRMATION_ENV).ok().as_deref(),
+        &test_database_name,
+    )?;
+
+    let pool = PgPoolOptions::new().connect(&database_url).await?;
+    sqlx::raw_sql(
+        "drop schema public cascade;
+         create schema public;
+         create extension if not exists pgcrypto;",
+    )
+    .execute(&pool)
+    .await?;
+    for migration in MIGRATIONS {
+        sqlx::raw_sql(migration).execute(&pool).await?;
+    }
+
+    seed_trip(&pool).await?;
+    seed_tasks(&pool).await?;
+    seed_stop_notes(&pool).await?;
+    seed_expenses(&pool).await?;
+    seed_booking_docs(&pool).await?;
+
+    println!("seeded local e2e trip HK-SZ-2025 in {test_database_name}");
+    Ok(())
+}
+
+async fn seed_stop_notes(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into stop_notes (id, trip_id, trip_plan_id, itinerary_item_id, author_id, body)
+         values ($1, $2, $3, $4, $5, 'Meet outside exit B after breakfast')",
+    )
+    .bind(Uuid::parse_str(STOP_NOTE_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(ITEM_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn seed_expenses(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
+    let organizer_id = Uuid::parse_str(ORGANIZER_ID).expect("static uuid");
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
+    let viewer_id = Uuid::parse_str(VIEWER_ID).expect("static uuid");
+    let trip_id = Uuid::parse_str(TRIP_ID).expect("static uuid");
+    let plan_id = Uuid::parse_str(PLAN_ID).expect("static uuid");
+    let item_id = Uuid::parse_str(ITEM_ID).expect("static uuid");
+    sqlx::query(
+        "insert into expenses (
+           id, trip_id, trip_plan_id, title, amount_minor, currency, exchange_rate_to_settlement_currency,
+           notes, receipt_url, spent_on, stored_value_card_id, stored_value_card_name,
+           stored_value_transaction_type, line_items, comments, settlement_allocations,
+           paid_by, category, splits, itinerary_item_id
+         )
+         values
+           (
+             $1, $8, $9, 'Dim sum breakfast', 24000, 'HKD', 1,
+             'Paid by Aom with Octopus after landing.', null, '2026-06-18',
+             'octopus-aom', 'Aom Octopus', 'spend',
+             $10, $11, '[]'::jsonb, $2, 'food', $12, $13
+           ),
+           (
+             $3, $8, $9, 'Peak Tram tickets', 88000, 'HKD', 1,
+             'Beam paid online for the group.', null, '2026-06-19',
+             null, null, null,
+             $14, '[]'::jsonb, '[]'::jsonb, $4, 'tickets', $15, null
+           ),
+           (
+             $5, $8, $9, 'Aom Octopus top-up', 80000, 'HKD', 1,
+             'Personal stored-value top-up before MTR transfer.', null, '2026-06-19',
+             'octopus-aom', 'Aom Octopus', 'topup',
+             '[]'::jsonb, '[]'::jsonb, '[]'::jsonb, $2, 'transport', $16, null
+           ),
+           (
+             $6, $8, $9, 'Tsim Sha Tsui hotel deposit', 240000, 'HKD', 1,
+             'Owner card hold was captured before check-in.', 'https://example.com/receipts/hotel-deposit', '2026-06-18',
+             null, null, null,
+             '[]'::jsonb, '[]'::jsonb, '[]'::jsonb, $2, 'stay', $17, null
+           ),
+           (
+             $23, $8, $9, 'Luk Yu dinner', 138000, 'HKD', 1,
+             'Itemized by table order so statement view can explain the total.', null, '2026-06-20',
+             null, null, null,
+             $18, '[]'::jsonb, '[]'::jsonb, $7, 'food', $19, null
+           ),
+           (
+             $24, $8, $9, 'Pacific Place personal shopping', 12800, 'HKD', 1,
+             'Personal item, no group payback.', null, '2026-06-21',
+             null, null, null,
+             '[]'::jsonb, '[]'::jsonb, '[]'::jsonb, $2, 'shopping', $20, null
+           ),
+           (
+             $25, $8, $9, 'Beam paid Aom back', 65000, 'HKD', 1,
+             'Settlement received after hotel and breakfast review.', null, '2026-06-22',
+             null, null, null,
+             '[]'::jsonb, '[]'::jsonb, $21, $4, 'settlement', $22, null
+           )",
+    )
+    .bind(Uuid::parse_str(EXPENSE_ID).expect("static uuid"))
+    .bind(owner_id)
+    .bind(Uuid::parse_str(EXPENSE_PEAK_TRAM_ID).expect("static uuid"))
+    .bind(organizer_id)
+    .bind(Uuid::parse_str(EXPENSE_OCTOPUS_TOPUP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(EXPENSE_HOTEL_DEPOSIT_ID).expect("static uuid"))
+    .bind(viewer_id)
+    .bind(trip_id)
+    .bind(plan_id)
+    .bind(serde_json::json!([
+        {"id": "line-dimsum", "title": "Breakfast set", "amount": 180, "participantIds": [owner_id, traveler_id]},
+        {"id": "line-mtr-snack", "title": "Tea and service", "amount": 60, "participantIds": [owner_id, traveler_id]}
+    ]))
+    .bind(serde_json::json!([
+        {"id": "comment-dimsum", "authorId": OWNER_ID, "body": "Receipt photo is in the hotel folder.", "createdAt": "2026-06-18T02:35:00.000Z"}
+    ]))
+    .bind(serde_json::json!({
+        owner_id.to_string(): 12000,
+        traveler_id.to_string(): 12000
+    }))
+    .bind(item_id)
+    .bind(serde_json::json!([
+        {"id": "line-peak-adult", "title": "Adult tickets", "amount": 660, "participantIds": [owner_id, organizer_id, traveler_id]},
+        {"id": "line-peak-family", "title": "Family add-on", "amount": 220, "participantIds": [viewer_id]}
+    ]))
+    .bind(serde_json::json!({
+        owner_id.to_string(): 22000,
+        organizer_id.to_string(): 22000,
+        traveler_id.to_string(): 22000,
+        viewer_id.to_string(): 22000
+    }))
+    .bind(serde_json::json!({ owner_id.to_string(): 80000 }))
+    .bind(serde_json::json!({
+        owner_id.to_string(): 60000,
+        organizer_id.to_string(): 60000,
+        traveler_id.to_string(): 60000,
+        viewer_id.to_string(): 60000
+    }))
+    .bind(serde_json::json!([
+        {"id": "line-dinner-dimsum", "title": "Dim sum set", "amount": 520, "participantIds": [owner_id, organizer_id, traveler_id, viewer_id]},
+        {"id": "line-dinner-seafood", "title": "Seafood dishes", "amount": 680, "participantIds": [owner_id, organizer_id, traveler_id]},
+        {"id": "line-dinner-tea", "title": "Tea and service", "amount": 180, "participantIds": [owner_id, organizer_id, traveler_id, viewer_id]}
+    ]))
+    .bind(serde_json::json!({
+        owner_id.to_string(): 42000,
+        organizer_id.to_string(): 38000,
+        traveler_id.to_string(): 32000,
+        viewer_id.to_string(): 26000
+    }))
+    .bind(serde_json::json!({ owner_id.to_string(): 12800 }))
+    .bind(serde_json::json!([
+        {"expenseId": EXPENSE_HOTEL_DEPOSIT_ID, "memberId": ORGANIZER_ID, "amount": 600},
+        {"expenseId": EXPENSE_ID, "memberId": ORGANIZER_ID, "amount": 50}
+    ]))
+    .bind(serde_json::json!({ owner_id.to_string(): 65000 }))
+    .bind(Uuid::parse_str(EXPENSE_DINNER_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(EXPENSE_PERSONAL_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(EXPENSE_SETTLEMENT_ID).expect("static uuid"))
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+fn guard_test_database(
+    database_url: &str,
+    reset_confirmation: Option<&str>,
+    test_database_name: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if reset_confirmation != Some("1") {
+        return Err(format!(
+            "{RESET_CONFIRMATION_ENV}=1 is required before resetting the e2e database"
+        )
+        .into());
+    }
+
+    if test_database_name.trim().is_empty() || !test_database_name.ends_with("_test") {
+        return Err(format!(
+            "{TEST_DATABASE_NAME_ENV} must end with _test before resetting the e2e database"
+        )
+        .into());
+    }
+
+    if database_name_from_url(database_url).as_deref() == Some(test_database_name) {
+        return Ok(());
+    }
+
+    Err(format!(
+        "refusing to reset database; DATABASE_URL database name must be {test_database_name}"
+    )
+    .into())
+}
+
+fn database_name_from_url(database_url: &str) -> Option<String> {
+    let without_query = database_url.split(['?', '#']).next()?;
+    let database_name = without_query.rsplit('/').next()?.trim();
+    if database_name.is_empty() {
+        return None;
+    }
+    Some(database_name.to_ascii_lowercase())
+}
+
+async fn seed_trip(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let trip_id = Uuid::parse_str(TRIP_ID).expect("static uuid");
+    let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
+    let organizer_id = Uuid::parse_str(ORGANIZER_ID).expect("static uuid");
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
+    let viewer_id = Uuid::parse_str(VIEWER_ID).expect("static uuid");
+    let plan_id = Uuid::parse_str(PLAN_ID).expect("static uuid");
+    let item_id = Uuid::parse_str(ITEM_ID).expect("static uuid");
+
+    let mut tx = pool.begin().await?;
+    sqlx::query("set constraints all deferred")
+        .execute(&mut *tx)
+        .await?;
+    sqlx::query(
+        "insert into trips (
+           id, name, destination_label, start_date, end_date, join_id, join_password_hash,
+           main_trip_plan_id, owner_member_id
+         )
+         values (
+           $1, 'Hong Kong + Shenzhen Trip', 'Hong Kong + Shenzhen', '2026-06-18',
+           '2026-06-23', 'HK-SZ-2025', $2, $3, $4
+         )",
+    )
+    .bind(trip_id)
+    .bind(sagittarius_api::app::auth::hash_secret_for_tests(
+        "seed-trip-pass",
+    ))
+    .bind(plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "insert into trip_members (id, trip_id, display_name, role, color)
+         values
+           ($1, $2, 'Aom', 'owner', '#0f766e'),
+           ($3, $2, 'Beam', 'organizer', '#2563eb'),
+           ($4, $2, 'Nam', 'traveler', '#f97316'),
+           ($5, $2, 'Family', 'viewer', '#64748b')",
+    )
+    .bind(owner_id)
+    .bind(trip_id)
+    .bind(organizer_id)
+    .bind(traveler_id)
+    .bind(viewer_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "insert into trip_plans (id, trip_id, name, status, description)
+         values ($1, $2, 'Main', 'main', 'Primary plan')",
+    )
+    .bind(plan_id)
+    .bind(trip_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "insert into itinerary_items (
+           id, trip_id, trip_plan_id, day, sort_order, start_time, activity, activity_type,
+           place, map_link, duration_minutes, transportation, note, created_by, version
+         )
+         values (
+           $1, $2, $3, '2026-06-19', 100, '08:30', 'Dim Dim Sum', 'food',
+           'The Elements', 'https://maps.google.com', 60, 'walk', 'breakfast', $4, 4
+         )",
+    )
+    .bind(item_id)
+    .bind(trip_id)
+    .bind(plan_id)
+    .bind(owner_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "update trip_members
+         set claim_password_hash = $1, claimed_at = now()
+         where id = $2",
+    )
+    .bind(sagittarius_api::app::auth::hash_secret_for_tests(
+        "beam-pass-2026",
+    ))
+    .bind(organizer_id)
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn e2e_seed_requires_explicit_reset_confirmation() {
+        let result = guard_test_database(
+            "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test",
+            None,
+            TEST_DATABASE_NAME,
+        );
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn e2e_seed_rejects_production_like_database_names() {
+        for database_url in [
+            "postgres://postgres:sagittarius_test@db.example.test:5432/sagittarius",
+            "postgres://postgres:postgres@db.example.test:5432/sagittarius_prod",
+            "postgres://postgres:postgres@db.example.test:5432/sagittarius_test_shadow",
+        ] {
+            let result = guard_test_database(database_url, Some("1"), TEST_DATABASE_NAME);
+
+            assert!(result.is_err(), "{database_url} should be rejected");
+        }
+    }
+
+    #[test]
+    fn e2e_seed_allows_only_the_named_test_database_with_confirmation() {
+        let result = guard_test_database(
+            "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_test?sslmode=disable",
+            Some("1"),
+            TEST_DATABASE_NAME,
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn e2e_seed_allows_disposable_named_test_database_with_confirmation() {
+        let result = guard_test_database(
+            "postgres://postgres:postgres@127.0.0.1:5432/sagittarius_expense_qa_test",
+            Some("1"),
+            "sagittarius_expense_qa_test",
+        );
+
+        assert!(result.is_ok());
+    }
+}
+
+async fn seed_tasks(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "insert into trip_tasks (
+           id, trip_id, trip_plan_id, title, status, visibility, kind, created_by, assignee_id
+         )
+         values
+           (gen_random_uuid(), $1, $5, 'Buy eSIM', 'open', 'private', 'prep', $2, $2),
+           ($4, $1, $5, 'Book Peak Tram', 'done', 'shared', 'booking', $3, $3)",
+    )
+    .bind(Uuid::parse_str(TRIP_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TRAVELER_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(ORGANIZER_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(TASK_ID).expect("static uuid"))
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn seed_booking_docs(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let trip_id = Uuid::parse_str(TRIP_ID).expect("static uuid");
+    let owner_id = Uuid::parse_str(OWNER_ID).expect("static uuid");
+    let organizer_id = Uuid::parse_str(ORGANIZER_ID).expect("static uuid");
+    let traveler_id = Uuid::parse_str(TRAVELER_ID).expect("static uuid");
+    let flight_id = Uuid::parse_str(BOOKING_FLIGHT_ID).expect("static uuid");
+    let hotel_id = Uuid::parse_str(BOOKING_HOTEL_ID).expect("static uuid");
+    let item_id = Uuid::parse_str(ITEM_ID).expect("static uuid");
+    let task_id = Uuid::parse_str(TASK_ID).expect("static uuid");
+    let expense_id = Uuid::parse_str(EXPENSE_ID).expect("static uuid");
+    let note_id = Uuid::parse_str(STOP_NOTE_ID).expect("static uuid");
+
+    let mut tx = pool.begin().await?;
+    sqlx::query(
+        "insert into booking_docs (
+           id, trip_id, trip_plan_id, type, title, status, visibility, owner_member_id, provider_name,
+           confirmation_code, starts_at, ends_at, timezone, price_minor, currency, notes, created_by
+         )
+         values
+           (
+             $1, $2, $6, 'flight', 'HK Express flight to Hong Kong', 'confirmed', 'sensitive',
+             $3, 'HK Express', 'UO-2026', '2026-06-18T03:45:00Z', '2026-06-18T06:30:00Z',
+             'Asia/Hong_Kong', 184500, 'HKD', 'Boarding pass is in Drive; check passport names.', $4
+           ),
+           (
+             $5, $2, $6, 'hotel', 'Tsim Sha Tsui hotel voucher', 'booked', 'shared',
+             $4, 'Harbour Stay', 'HS-1842', '2026-06-18T07:00:00Z', '2026-06-23T04:00:00Z',
+             'Asia/Hong_Kong', 520000, 'HKD', 'Pay at property; breakfast included.', $4
+           )",
+    )
+    .bind(flight_id)
+    .bind(trip_id)
+    .bind(owner_id)
+    .bind(organizer_id)
+    .bind(hotel_id)
+    .bind(Uuid::parse_str(PLAN_ID).expect("static uuid"))
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_external_links (
+           id, trip_id, booking_doc_id, label, url, provider, access_note, sort_order
+         )
+         values
+           (gen_random_uuid(), $1, $2, 'Airline booking', 'https://www.hkexpress.com', 'HK Express', 'Use confirmation code UO-2026', 0),
+           (gen_random_uuid(), $1, $3, 'Hotel voucher', 'https://drive.google.com', 'Google Drive', 'Shared trip folder', 0)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(hotel_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_travelers (trip_id, booking_doc_id, member_id)
+         values ($1, $2, $4), ($1, $2, $5), ($1, $3, $4), ($1, $3, $5)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(hotel_id)
+    .bind(owner_id)
+    .bind(traveler_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_itinerary_items (trip_id, booking_doc_id, itinerary_item_id)
+         values ($1, $2, $3), ($1, $4, $3)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(item_id)
+    .bind(hotel_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_tasks (trip_id, booking_doc_id, task_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(hotel_id)
+    .bind(task_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_expenses (trip_id, booking_doc_id, expense_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(hotel_id)
+    .bind(expense_id)
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "insert into booking_doc_stop_notes (trip_id, booking_doc_id, stop_note_id)
+         values ($1, $2, $3)",
+    )
+    .bind(trip_id)
+    .bind(flight_id)
+    .bind(note_id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await
+}
