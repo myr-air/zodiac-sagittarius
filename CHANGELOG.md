@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.1] — 2026-07-20
+
+### Fixed
+- Landing `/` infinite reload from unstable empty recent-search `useSyncExternalStore` snapshots
+
+### Notes
+- Mission M7XJVDUV; freeze shared empty list identity for server + empty client reads
+
 ## [0.14.0] — 2026-07-19
 
 ### Added
