@@ -9,8 +9,8 @@ use utoipa::{Modify, OpenApi};
 use crate::api::{
     account, bookings, daily_briefings, exchange_rates, expenses,
     extractors::ACCOUNT_SESSION_COOKIE_NAME, health, itinerary, itinerary_imports, join, members,
-    photo_albums, place_resolution, plan_checks, plan_variants, stop_notes, suggestions, tasks,
-    trips,
+    photo_albums, place_resolution, plan_checks, plan_variants, public_trips, stop_notes,
+    suggestions, tasks, trips,
 };
 use crate::app::AppState;
 
@@ -43,6 +43,7 @@ use crate::app::AppState;
         account::start_passkey_login,
         account::finish_passkey_login,
         account::logout_session,
+        public_trips::create_public_trip,
         join::join_trip,
         join::resolve_invite_token,
         join::rotate_invite_token,

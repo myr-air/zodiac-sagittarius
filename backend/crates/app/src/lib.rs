@@ -18,6 +18,7 @@ pub mod photo_albums;
 pub mod place_resolution;
 pub mod plan_checks;
 pub mod plan_variants;
+pub mod public_trips;
 pub mod stop_notes;
 pub mod suggestions;
 pub mod tasks;

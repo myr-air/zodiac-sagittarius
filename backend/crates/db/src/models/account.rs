@@ -98,7 +98,7 @@ pub struct NewAccountTrip<'a> {
 pub struct NewAccountTripOwnerMember<'a> {
     pub id: Uuid,
     pub trip_id: Uuid,
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
     pub display_name: &'a str,
     pub color: &'a str,
     pub claimed_at: OffsetDateTime,

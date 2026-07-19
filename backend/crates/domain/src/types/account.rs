@@ -55,6 +55,12 @@ pub struct AccountTripCreateResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct PublicTripCreateInput {
+    pub destination: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountTripSummary {
     pub id: Uuid,
     pub name: String,

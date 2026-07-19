@@ -15,6 +15,7 @@ pub mod photo_albums;
 pub mod place_resolution;
 pub mod plan_checks;
 pub mod plan_variants;
+pub mod public_trips;
 pub mod stop_notes;
 pub mod suggestions;
 pub mod tasks;
@@ -55,6 +56,7 @@ fn api_v1() -> Router<AppState> {
         .merge(health::routes())
         .merge(exchange_rates::routes())
         .merge(account::routes())
+        .merge(public_trips::routes())
         .merge(join::routes())
         .merge(trips::routes())
         .merge(daily_briefings::routes())
