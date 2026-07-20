@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M7YF0YYY | 2026-07-20 | FE dropped one-shot joinPassword; create geo hardcoded Thailand | JoinCredentialsPanel before navigate; destination_geo fill without TH invent | FE/BE contract suites; validate --strict |
 | M7XXVC84 | 2026-07-20 | Account create required client join credentials; portal lacked create-trip | Slim `POST /account/trips` + classify-trip-seed; landing/portal classify→review→create; uppercase `yymm-SLUG-suffix` join ids | account_trip_contract; create-trip FE tests; validate --strict |
 | M7XJVDUV | 2026-07-20 | Landing `/` infinite-reloaded from unstable empty recent-search snapshots | Freeze shared `EMPTY_RECENT` for server + empty client `useSyncExternalStore` paths | landing-recent-snapshot-green; landing-home-no-reload-loop |
 | M7X8ZO5N | 2026-07-19 | `/trips` was a stub; account home needed reference-matched layout with honest APIs | Draft-v3 HIL then AccountHome: live `/account`+trips+explorer; labeled placeholders for stories/friends/places | bun verify:frontend; validate --strict |
@@ -20,6 +21,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M7YF0YYY | 2026-07-20 | Full-viewport auth handoffs must replace page chrome, not nest under portal shells | Nested h-dvh Atlas under Trips nav fails draft acceptance |
+| M7YF0YYY | 2026-07-20 | plan.json evidence fields must be label string arrays for validate --strict | Command strings fail Go unmarshal and block ready |
 | M7XXVC84 | 2026-07-20 | Record an explicit scope cut when shipping a thinner slice of an approved UX draft | Acceptance stays honest; the full mock remains north-star without blocking ship |
 | M7XXVC84 | 2026-07-20 | Keep human-entered share codes entirely one case (or normalize store and lookup the same way) | Mixed-case display vs uppercased auth causes join failures and copy confusion |
 | M7XKCPVU | 2026-07-20 | Keep playful document metaphors, but paint them with the same borders, shadows, and brand marks as the surrounding shell | Skeuomorphic cards otherwise read as a second product inside the page |
