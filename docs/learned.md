@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M7XXVC84 | 2026-07-20 | Account create required client join credentials; portal lacked create-trip | Slim `POST /account/trips` + classify-trip-seed; landing/portal classify→review→create; uppercase `yymm-SLUG-suffix` join ids | account_trip_contract; create-trip FE tests; validate --strict |
 | M7XJVDUV | 2026-07-20 | Landing `/` infinite-reloaded from unstable empty recent-search snapshots | Freeze shared `EMPTY_RECENT` for server + empty client `useSyncExternalStore` paths | landing-recent-snapshot-green; landing-home-no-reload-loop |
 | M7X8ZO5N | 2026-07-19 | `/trips` was a stub; account home needed reference-matched layout with honest APIs | Draft-v3 HIL then AccountHome: live `/account`+trips+explorer; labeled placeholders for stories/friends/places | bun verify:frontend; validate --strict |
 | M7X2O2BC | 2026-07-19 | Public `/` was a landing stub; need Postcard Atlas home with low-friction trip entry | Journeasy-inspired Joii landing: parallax hero, single query → `#create` stub (no auth), destinations, local recent, editorial bands, motion | bun verify; draft v4 approved; validate --strict |
@@ -19,6 +20,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M7XXVC84 | 2026-07-20 | Record an explicit scope cut when shipping a thinner slice of an approved UX draft | Acceptance stays honest; the full mock remains north-star without blocking ship |
+| M7XXVC84 | 2026-07-20 | Keep human-entered share codes entirely one case (or normalize store and lookup the same way) | Mixed-case display vs uppercased auth causes join failures and copy confusion |
 | M7XKCPVU | 2026-07-20 | Keep playful document metaphors, but paint them with the same borders, shadows, and brand marks as the surrounding shell | Skeuomorphic cards otherwise read as a second product inside the page |
 | M7XJVDUV | 2026-07-20 | Server and empty-client `useSyncExternalStore` snapshots must return the same cached empty reference every call | Fresh `[]` identities trigger React max update depth and Fast Refresh reload loops |
 | M7X8ZO5N | 2026-07-19 | Lock reference layout via draft HTML first; keep live-data honesty as labeled Preview panels when APIs are missing | Prevents ops-stub drafts that users reject for not looking like the mock |
