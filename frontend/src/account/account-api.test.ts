@@ -5,6 +5,9 @@ import {
   fetchAccountExplorer,
   fetchAccountSettings,
   fetchAccountTrips,
+  logoutAccountSession,
+  patchAccountSettings,
+  revokeTrustedDevice,
 } from "./account-api";
 
 const SESSION_TOKEN = "account-session-token-xyz";
@@ -110,6 +113,84 @@ describe("fetchAccountSettings", () => {
     expect(outcome.profile.displayName).toBe(DISPLAY_NAME);
   });
 
+  it("on 200 parses full camelCase AccountSettings: profile fields, passkeys[], trustedDevices[]", async () => {
+    const PASSKEY_ID = "018f4e80-0000-7000-a000-000000000002";
+    const DEVICE_ID = "018f4e80-0000-7000-a000-000000000003";
+    const settingsBody = {
+      profile: {
+        id: "018f4e80-0000-7000-a000-000000000001",
+        displayName: DISPLAY_NAME,
+        avatarColor: "#0f766e",
+        locale: "th-TH",
+        timezone: "Asia/Bangkok",
+        homeCity: "Bangkok",
+        homeCountry: "Thailand",
+        primaryEmail: "aom@example.com",
+      },
+      passkeys: [
+        {
+          id: PASSKEY_ID,
+          nickname: "MacBook",
+          createdAt: "2026-05-30T00:00:00Z",
+          lastUsedAt: null,
+        },
+      ],
+      trustedDevices: [
+        {
+          id: DEVICE_ID,
+          label: "MacBook",
+          userAgent: "Safari",
+          createdAt: "2026-05-30T00:00:00Z",
+          lastSeenAt: "2026-05-30T01:00:00Z",
+        },
+      ],
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(settingsBody),
+    );
+
+    const outcome = await fetchAccountSettings(
+      { sessionToken: SESSION_TOKEN },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    // Existing displayName consumers must keep working.
+    expect(outcome.profile.displayName).toBe(DISPLAY_NAME);
+
+    // Independent literals from the AccountSettings body — not recomputed client-side.
+    expect(outcome.profile).toEqual(
+      expect.objectContaining({
+        displayName: DISPLAY_NAME,
+        avatarColor: "#0f766e",
+        locale: "th-TH",
+        timezone: "Asia/Bangkok",
+        homeCity: "Bangkok",
+        homeCountry: "Thailand",
+        primaryEmail: "aom@example.com",
+      }),
+    );
+    expect(outcome.passkeys).toEqual([
+      {
+        id: PASSKEY_ID,
+        nickname: "MacBook",
+        createdAt: "2026-05-30T00:00:00Z",
+        lastUsedAt: null,
+      },
+    ]);
+    expect(outcome.trustedDevices).toEqual([
+      {
+        id: DEVICE_ID,
+        label: "MacBook",
+        userAgent: "Safari",
+        createdAt: "2026-05-30T00:00:00Z",
+        lastSeenAt: "2026-05-30T01:00:00Z",
+      },
+    ]);
+  });
+
   it("on 401 or network failure returns typed failure with a user-safe error (does not throw Response)", async () => {
     const unauthorized = vi.fn<typeof fetch>(async () =>
       jsonResponse(
@@ -150,6 +231,111 @@ describe("fetchAccountSettings", () => {
     expect(networkOutcome.error).toBe(
       "Could not reach the server. Check your connection and try again.",
     );
+  });
+});
+
+describe("patchAccountSettings", () => {
+  it("PATCHes /api/v1/account with Bearer + camelCase body and returns reloaded AccountSettings on success", async () => {
+    const PATCHED_DISPLAY_NAME = "Aom Updated";
+    const PATCHED_AVATAR = "#abcdef";
+    const PATCHED_LOCALE = "en-US";
+    const PATCHED_TIMEZONE = "Asia/Tokyo";
+    const PATCHED_HOME_CITY = "Chiang Mai";
+    const PATCHED_HOME_COUNTRY = "Thailand";
+    const PASSKEY_ID = "018f4e80-0000-7000-a000-000000000002";
+    const DEVICE_ID = "018f4e80-0000-7000-a000-000000000003";
+
+    const reloadedBody = {
+      profile: {
+        id: "018f4e80-0000-7000-a000-000000000001",
+        displayName: PATCHED_DISPLAY_NAME,
+        avatarColor: PATCHED_AVATAR,
+        locale: PATCHED_LOCALE,
+        timezone: PATCHED_TIMEZONE,
+        homeCity: PATCHED_HOME_CITY,
+        homeCountry: PATCHED_HOME_COUNTRY,
+        primaryEmail: "aom@example.com",
+      },
+      passkeys: [
+        {
+          id: PASSKEY_ID,
+          nickname: "MacBook",
+          createdAt: "2026-05-30T00:00:00Z",
+          lastUsedAt: null,
+        },
+      ],
+      trustedDevices: [
+        {
+          id: DEVICE_ID,
+          label: "MacBook",
+          userAgent: "Safari",
+          createdAt: "2026-05-30T00:00:00Z",
+          lastSeenAt: "2026-05-30T01:00:00Z",
+        },
+      ],
+    };
+
+    const patchInput = {
+      displayName: PATCHED_DISPLAY_NAME,
+      avatarColor: PATCHED_AVATAR,
+      locale: PATCHED_LOCALE,
+      timezone: PATCHED_TIMEZONE,
+      homeCity: PATCHED_HOME_CITY,
+      homeCountry: PATCHED_HOME_COUNTRY,
+    };
+
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(reloadedBody),
+    );
+
+    const outcome = await patchAccountSettings(
+      { sessionToken: SESSION_TOKEN, ...patchInput },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account`);
+    expect(init?.method).toBe("PATCH");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+    expect(headers.get("Content-Type")).toMatch(/application\/json/i);
+
+    const posted = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(posted).toEqual(patchInput);
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    // Independent literals from the 200 AccountSettings body — not recomputed client-side.
+    expect(outcome.profile).toEqual(
+      expect.objectContaining({
+        displayName: PATCHED_DISPLAY_NAME,
+        avatarColor: PATCHED_AVATAR,
+        locale: PATCHED_LOCALE,
+        timezone: PATCHED_TIMEZONE,
+        homeCity: PATCHED_HOME_CITY,
+        homeCountry: PATCHED_HOME_COUNTRY,
+        primaryEmail: "aom@example.com",
+      }),
+    );
+    expect(outcome.passkeys).toEqual([
+      {
+        id: PASSKEY_ID,
+        nickname: "MacBook",
+        createdAt: "2026-05-30T00:00:00Z",
+        lastUsedAt: null,
+      },
+    ]);
+    expect(outcome.trustedDevices).toEqual([
+      {
+        id: DEVICE_ID,
+        label: "MacBook",
+        userAgent: "Safari",
+        createdAt: "2026-05-30T00:00:00Z",
+        lastSeenAt: "2026-05-30T01:00:00Z",
+      },
+    ]);
   });
 });
 
@@ -458,5 +644,49 @@ describe("classifyAccountTripSeed", () => {
     expect(outcome.seed.recommendations).toEqual(CLASSIFY_BODY.recommendations);
     expect(outcome.seed).not.toHaveProperty("joinId");
     expect(outcome.seed).not.toHaveProperty("joinPassword");
+  });
+});
+
+const DEVICE_ID = "018f4e80-0000-7000-a000-000000000003";
+
+describe("revokeTrustedDevice", () => {
+  it("DELETEs /api/v1/account/trusted-devices/{id} with Authorization Bearer {sessionToken}", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+
+    const outcome = await revokeTrustedDevice(
+      { sessionToken: SESSION_TOKEN, trustedDeviceId: DEVICE_ID },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account/trusted-devices/${DEVICE_ID}`);
+    expect(init?.method).toBe("DELETE");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+
+    expect(outcome.ok).toBe(true);
+  });
+});
+
+describe("logoutAccountSession", () => {
+  it("DELETEs /api/v1/account/session with Authorization Bearer {sessionToken}", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+
+    const outcome = await logoutAccountSession(
+      { sessionToken: SESSION_TOKEN },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account/session`);
+    expect(init?.method).toBe("DELETE");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+
+    expect(outcome.ok).toBe(true);
   });
 });

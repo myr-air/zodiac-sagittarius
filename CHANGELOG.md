@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.0] — 2026-07-20
+
+### Added
+- Account settings at `/portal/settings`: identity strip, profile/locale/hometown forms with dirty Save PATCH
+- Hometown city Open-Meteo typeahead (country derived); passkeys list + add; trusted devices list + revoke
+- Coming soon Connections (Google/social) and Security (email/password/TOTP/close) chrome — labeled, non-acting
+
+### Notes
+- Mission M7YH2KNV; passkey remove and logout chrome omitted (no DELETE passkey route; draft has no logout); live APIs only
+
+
 ## [0.17.0] — 2026-07-20
 
 ### Added
