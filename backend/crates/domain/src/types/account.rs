@@ -56,6 +56,10 @@ pub struct AccountTripCreateResponse {
     pub trip: TripSummary,
     pub owner_member_id: Uuid,
     pub member_session: MemberSession,
+    /// Plaintext join password returned once at create so the client can show/share access.
+    /// Omitted from later trip GETs (only the hash is stored).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub join_password: Option<String>,
 }
 
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
@@ -568,6 +572,8 @@ mod account_type_tests {
                 expires_at: "2026-06-06T02:00:00Z".to_string(),
 
             },
+
+            join_password: None,
 
         };
 

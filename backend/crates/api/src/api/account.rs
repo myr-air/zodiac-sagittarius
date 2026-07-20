@@ -21,8 +21,9 @@ use crate::domain::errors::ServiceError;
 use crate::domain::types::{
     AccountExplorerSummary, AccountMemberClaimResponse, AccountSession, AccountSettings,
     AccountTodoSummary, AccountTripCreateResponse, AccountTripStats, AccountTripSummary,
-    AccountVaultItemSummary, EmailLoginStartResponse, MemberSession, OwnerTransferResponse,
-    PasskeyChallengeResponse, PasskeyLoginStartResponse, PasskeySummary, TripCity,
+    AccountVaultItemSummary, ClassifyTripSeedRequest, ClassifyTripSeedResponse,
+    EmailLoginStartResponse, MemberSession, OwnerTransferResponse, PasskeyChallengeResponse,
+    PasskeyLoginStartResponse, PasskeySummary, TripCity,
 };
 
 #[derive(ToSchema, Debug, Deserialize)]
@@ -53,21 +54,21 @@ pub struct PasswordLoginRequest {
 #[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountTripCreateRequest {
-    pub name: String,
-    pub origin_label: String,
-    pub origin_city: String,
-    pub origin_country: String,
-    pub origin_country_code: String,
-    pub destination_label: String,
-    pub destination_cities: Vec<TripCity>,
-    pub countries: Vec<String>,
+    pub name: Option<String>,
+    pub origin_label: Option<String>,
+    pub origin_city: Option<String>,
+    pub origin_country: Option<String>,
+    pub origin_country_code: Option<String>,
+    pub destination_label: Option<String>,
+    pub destination_cities: Option<Vec<TripCity>>,
+    pub countries: Option<Vec<String>>,
     pub party_size: Option<i32>,
     pub default_timezone: Option<String>,
-    pub start_date: Date,
-    pub end_date: Date,
-    pub owner_display_name: String,
-    pub join_id: String,
-    pub join_password: String,
+    pub start_date: Option<Date>,
+    pub end_date: Option<Date>,
+    pub owner_display_name: Option<String>,
+    pub join_id: Option<String>,
+    pub join_password: Option<String>,
 }
 
 #[derive(ToSchema, Debug, Deserialize)]
@@ -142,6 +143,10 @@ pub fn routes() -> Router<AppState> {
             delete(revoke_trusted_device),
         )
         .route("/account/trips", post(create_trip).get(list_trips))
+        .route(
+            "/account/classify-trip-seed",
+            post(classify_trip_seed),
+        )
         .route(
             "/account/trips/{trip_id}/member-sessions",
             post(create_trip_member_session),
@@ -327,6 +332,27 @@ pub async fn update_settings(
     .await?;
 
     Ok(Json(settings))
+}
+
+#[utoipa::path(
+    post,
+    path = "/account/classify-trip-seed",
+    request_body = ClassifyTripSeedRequest,
+    responses(
+        (status = 200, description = "Structured trip seed + recommendations", body = ClassifyTripSeedResponse)
+    ),
+    tag = "account"
+)]
+pub async fn classify_trip_seed(
+    State(state): State<AppState>,
+    account_session: AccountSessionToken,
+    request: Result<Json<ClassifyTripSeedRequest>, JsonRejection>,
+) -> Result<Json<ClassifyTripSeedResponse>, ApiError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    let response =
+        app::create_trip::classify_trip_seed(&state.pool, &account_session.token, request).await?;
+    Ok(Json(response))
 }
 
 #[utoipa::path(

@@ -438,6 +438,369 @@ async fn account_user_can_create_trip_and_becomes_owner(pool: sqlx::PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_accepts_slim_seed_without_join_credentials(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "slim-seed@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let slim_seeds = [
+        json!({ "name": "Weekend Escape" }),
+        json!({ "destinationLabel": "Chiang Mai" }),
+    ];
+
+    for payload in slim_seeds {
+        let response = post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/trips",
+            Some(&auth),
+            payload.clone(),
+        )
+        .await;
+        let (status, body): (StatusCode, Value) = response_json(response).await;
+
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "slim seed {payload} must create without joinId/joinPassword; body={body}"
+        );
+
+        let trip = &body["trip"];
+        let trip_id = Uuid::parse_str(trip["id"].as_str().expect("trip.id")).unwrap();
+        let join_id = trip["joinId"]
+            .as_str()
+            .expect("server must generate trip.joinId");
+        assert!(
+            !join_id.trim().is_empty(),
+            "server-generated joinId must be non-empty"
+        );
+        let join_parts: Vec<&str> = join_id.split('-').collect();
+        assert_eq!(
+            join_parts.len(),
+            3,
+            "joinId must be yymm-SLUG-suffix; got {join_id}"
+        );
+        assert!(
+            join_parts[0].len() == 4 && join_parts[0].chars().all(|c| c.is_ascii_digit()),
+            "joinId yymm must be 4 digits; got {join_id}"
+        );
+        assert!(
+            join_parts[1].len() == 4
+                && join_parts[1]
+                    .chars()
+                    .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit()),
+            "joinId slug must be 4 capitals; got {join_id}"
+        );
+        assert!(
+            join_parts[2].len() == 4
+                && join_parts[2]
+                    .chars()
+                    .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit()),
+            "joinId suffix must be 4 chars 0-9A-Z; got {join_id}"
+        );
+        assert_eq!(
+            join_id,
+            join_id.to_ascii_uppercase(),
+            "joinId must be all uppercase; got {join_id}"
+        );
+        let join_password = body["joinPassword"]
+            .as_str()
+            .expect("create must return joinPassword once");
+        assert!(
+            join_password.len() >= 8,
+            "returned joinPassword must be usable"
+        );
+
+        if let Some(name) = payload["name"].as_str() {
+            assert_eq!(trip["name"], name);
+            assert_eq!(
+                trip["destinationLabel"], name,
+                "name-only slim seed must derive destinationLabel from name"
+            );
+        }
+        if let Some(destination_label) = payload["destinationLabel"].as_str() {
+            assert_eq!(trip["destinationLabel"], destination_label);
+            assert_eq!(
+                trip["name"], destination_label,
+                "destination-only slim seed must derive name from destinationLabel"
+            );
+        }
+
+        assert_eq!(
+            trip["mainTripPlanId"], trip["activePlanVariantId"],
+            "slim create must expose Main Plan pointers"
+        );
+        let main_plan_id =
+            Uuid::parse_str(trip["activePlanVariantId"].as_str().unwrap()).unwrap();
+
+        assert_eq!(body["memberSession"]["tripId"], trip["id"]);
+        assert_eq!(body["memberSession"]["memberId"], body["ownerMemberId"]);
+        assert!(
+            !body["memberSession"]["sessionToken"]
+                .as_str()
+                .unwrap()
+                .is_empty(),
+            "slim create must include memberSession.sessionToken"
+        );
+
+        let persisted: (String, String, Uuid) = sqlx::query_as(
+            "select join_id, join_password_hash, main_trip_plan_id
+             from trips
+             where id = $1",
+        )
+        .bind(trip_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(persisted.0, join_id);
+        assert!(
+            !persisted.1.trim().is_empty(),
+            "server must persist a join password hash"
+        );
+        assert_eq!(persisted.2, main_plan_id);
+
+        let plan: (String, String) = sqlx::query_as(
+            "select name, status
+             from trip_plans
+             where id = $1",
+        )
+        .bind(main_plan_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(plan.0, "Main");
+        assert_eq!(plan.1, "main");
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_rejects_empty_seed(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "empty-seed@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    for payload in [
+        json!({}),
+        json!({ "name": " ", "destinationLabel": "" }),
+    ] {
+        let response = post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/trips",
+            Some(&auth),
+            payload.clone(),
+        )
+        .await;
+        let (status, body): (StatusCode, Value) = response_json(response).await;
+        assert_eq!(
+            status,
+            StatusCode::BAD_REQUEST,
+            "empty seed {payload} must 400; body={body}"
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_slim_seed_accepts_optional_client_join_credentials(
+    pool: sqlx::PgPool,
+) {
+    let session = login_account(&pool, "slim-join@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let join_id = "JAPAN-AUTUMN-26-TEST";
+    let join_password = "shared-access-ok";
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({
+            "destinationLabel": "Japan",
+            "joinId": join_id,
+            "joinPassword": join_password,
+        }),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+    assert_eq!(status, StatusCode::OK, "body={body}");
+    assert_eq!(body["trip"]["joinId"], join_id);
+    assert_eq!(body["joinPassword"], join_password);
+
+    let trip_id = Uuid::parse_str(body["trip"]["id"].as_str().unwrap()).unwrap();
+    let (persisted_join_id,): (String,) =
+        sqlx::query_as("select join_id from trips where id = $1")
+            .bind(trip_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(persisted_join_id, join_id);
+
+    let (join_status, join_body): (StatusCode, Value) = post_json_response(
+        support::app(pool.clone()),
+        "/api/v1/trip-join-sessions",
+        json!({
+            "joinCode": join_id,
+            "tripPassword": join_password,
+        }),
+    )
+    .await;
+    assert_eq!(join_status, StatusCode::OK, "join body={join_body}");
+}
+
+/// T1 A2 — guest-style defaults when start/end/party/origin are omitted; provided
+/// values persist. Matches public/guest create: Bangkok origin, partySize 1,
+/// start = UTC today, end = start + 7 days.
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_applies_guest_defaults_and_persists_optional_fields(
+    pool: sqlx::PgPool,
+) {
+    let session = login_account(&pool, "guest-defaults@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let before = time::OffsetDateTime::now_utc().date();
+    let omitted_response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({ "name": "Flexible Escape" }),
+    )
+    .await;
+    let after = time::OffsetDateTime::now_utc().date();
+    let (omitted_status, omitted_body): (StatusCode, Value) =
+        response_json(omitted_response).await;
+
+    assert_eq!(
+        omitted_status,
+        StatusCode::OK,
+        "name-only create must succeed; body={omitted_body}"
+    );
+    let omitted_trip = &omitted_body["trip"];
+    assert_eq!(omitted_trip["originLabel"], "Bangkok, Thailand");
+    assert_eq!(omitted_trip["originCity"], "Bangkok");
+    assert_eq!(omitted_trip["originCountry"], "Thailand");
+    assert_eq!(omitted_trip["originCountryCode"], "TH");
+    assert_eq!(omitted_trip["partySize"], 1);
+
+    let start = Date::parse(
+        omitted_trip["startDate"].as_str().expect("startDate"),
+        &time::format_description::well_known::Iso8601::DATE,
+    )
+    .expect("startDate must be ISO date");
+    let end = Date::parse(
+        omitted_trip["endDate"].as_str().expect("endDate"),
+        &time::format_description::well_known::Iso8601::DATE,
+    )
+    .expect("endDate must be ISO date");
+    assert!(
+        start >= before && start <= after,
+        "omitted startDate must be UTC today; got {start}, window {before}..{after}"
+    );
+    assert_eq!(
+        end,
+        start + time::Duration::days(7),
+        "omitted endDate must be startDate + 7 days (public/guest window)"
+    );
+
+    let omitted_trip_id =
+        Uuid::parse_str(omitted_trip["id"].as_str().expect("trip.id")).unwrap();
+    let omitted_row: (
+        String,
+        String,
+        String,
+        String,
+        i32,
+        String,
+        String,
+    ) = sqlx::query_as(
+        "select
+           origin_label,
+           origin_city,
+           origin_country,
+           origin_country_code,
+           party_size,
+           start_date::text,
+           end_date::text
+         from trips
+         where id = $1",
+    )
+    .bind(omitted_trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(omitted_row.0, "Bangkok, Thailand");
+    assert_eq!(omitted_row.1, "Bangkok");
+    assert_eq!(omitted_row.2, "Thailand");
+    assert_eq!(omitted_row.3, "TH");
+    assert_eq!(omitted_row.4, 1);
+    assert_eq!(omitted_row.5, omitted_trip["startDate"]);
+    assert_eq!(omitted_row.6, omitted_trip["endDate"]);
+
+    let provided_start = date_value(2027, Month::March, 10);
+    let provided_end = date_value(2027, Month::March, 18);
+    let provided_response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({
+            "name": "Osaka Spring",
+            "originLabel": "Singapore",
+            "originCity": "Singapore",
+            "originCountry": "Singapore",
+            "originCountryCode": "SG",
+            "partySize": 4,
+            "startDate": provided_start,
+            "endDate": provided_end
+        }),
+    )
+    .await;
+    let (provided_status, provided_body): (StatusCode, Value) =
+        response_json(provided_response).await;
+
+    assert_eq!(
+        provided_status,
+        StatusCode::OK,
+        "slim create with optional fields must succeed; body={provided_body}"
+    );
+    let provided_trip = &provided_body["trip"];
+    assert_eq!(provided_trip["originLabel"], "Singapore");
+    assert_eq!(provided_trip["originCity"], "Singapore");
+    assert_eq!(provided_trip["originCountry"], "Singapore");
+    assert_eq!(provided_trip["originCountryCode"], "SG");
+    assert_eq!(provided_trip["partySize"], 4);
+    assert_eq!(provided_trip["startDate"], provided_start);
+    assert_eq!(provided_trip["endDate"], provided_end);
+
+    let provided_trip_id =
+        Uuid::parse_str(provided_trip["id"].as_str().expect("trip.id")).unwrap();
+    let provided_row: (
+        String,
+        String,
+        String,
+        String,
+        i32,
+        String,
+        String,
+    ) = sqlx::query_as(
+        "select
+           origin_label,
+           origin_city,
+           origin_country,
+           origin_country_code,
+           party_size,
+           start_date::text,
+           end_date::text
+         from trips
+         where id = $1",
+    )
+    .bind(provided_trip_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(provided_row.0, "Singapore");
+    assert_eq!(provided_row.1, "Singapore");
+    assert_eq!(provided_row.2, "Singapore");
+    assert_eq!(provided_row.3, "SG");
+    assert_eq!(provided_row.4, 4);
+    assert_eq!(provided_row.5, "2027-03-10");
+    assert_eq!(provided_row.6, "2027-03-18");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_contract_owner_member_session_uses_30_day_ttl(pool: sqlx::PgPool) {
     let account = login_account(&pool, "owner-session@example.com", true, "Owner laptop").await;
     let auth = format!("Bearer {}", account["sessionToken"].as_str().unwrap());
@@ -1452,6 +1815,78 @@ async fn owner_transfer_rejects_self_transfer(pool: sqlx::PgPool) {
     .await
     .unwrap();
     assert_eq!(audit_count, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn classify_trip_seed_structures_nl_and_returns_recommendations(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "classify-seed@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/classify-trip-seed",
+        Some(&auth),
+        json!({
+            "text": "Japan food trip in autumn - Kyoto primary, Osaka optional, October into November"
+        }),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["name"], "Kyoto");
+    assert_eq!(body["destinations"][0]["label"], "Kyoto");
+    assert_eq!(body["destinations"][0]["role"], "primary");
+    assert_eq!(body["destinations"][1]["label"], "Osaka");
+    assert_eq!(body["destinations"][1]["role"], "optional");
+    assert_eq!(body["when"]["mode"], "months");
+    assert_eq!(body["when"]["startM"], 9);
+    assert_eq!(body["when"]["endM"], 10);
+    assert_eq!(body["confidence"], "high");
+    assert!(
+        body["recommendations"]["styles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|s| s == "food")
+    );
+    assert_eq!(body["recommendations"]["seasonHint"], "autumn");
+    assert!(
+        body["recommendations"]["relatedPlaces"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|p| p == "Nara")
+    );
+    // Structure creator never invents join credentials
+    assert!(body.get("joinId").is_none());
+    assert!(body.get("joinPassword").is_none());
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn classify_trip_seed_requires_auth_and_nonempty_text(pool: sqlx::PgPool) {
+    let unauth = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/classify-trip-seed",
+        None,
+        json!({ "text": "Chiang Mai with friends" }),
+    )
+    .await;
+    assert_eq!(unauth.status(), StatusCode::UNAUTHORIZED);
+
+    let session = login_account(&pool, "classify-empty@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let empty = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/classify-trip-seed",
+        Some(&auth),
+        json!({ "text": "   " }),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(empty).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
 }
 
 #[sqlx::test(migrations = "../../migrations")]

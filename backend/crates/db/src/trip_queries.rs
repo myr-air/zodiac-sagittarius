@@ -14,10 +14,27 @@ pub async fn find_trip_by_join_id(
            start_date, end_date, join_id, join_password_hash,
            main_trip_plan_id, owner_member_id, version
          from trips
-         where join_id = $1 and deleted_at is null",
+         where upper(join_id) = upper($1) and deleted_at is null",
     )
     .bind(join_id)
     .fetch_optional(pool)
+    .await
+}
+
+/// Count trips whose join id starts with `{yymm}-` (month-scoped suffix counter).
+pub async fn count_trips_with_join_yymm(
+    pool: &PgPool,
+    yymm: &str,
+) -> Result<i64, sqlx::Error> {
+    let pattern = format!("{yymm}-%");
+    sqlx::query_scalar(
+        "select count(*)::bigint
+         from trips
+         where join_id like $1
+           and deleted_at is null",
+    )
+    .bind(pattern)
+    .fetch_one(pool)
     .await
 }
 
