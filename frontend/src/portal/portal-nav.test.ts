@@ -66,21 +66,39 @@ describe("iconOnlyMaxWidthPx", () => {
 });
 
 describe("portal stub routes", () => {
-  it("mounts Explore, Friends, and Settings stub pages with PortalStubPage titles", () => {
-    for (const segment of ["explore", "friends", "settings"] as const) {
+  it("mounts Explore and Friends stub pages with PortalStubPage titles", () => {
+    for (const segment of ["explore", "friends"] as const) {
       const source = readFileSync(
         join(FRONTEND_ROOT, `app/portal/${segment}/page.tsx`),
         "utf8",
       );
       expect(source).toMatch(/PortalStubPage/);
-      const title =
-        segment === "explore"
-          ? "Explore"
-          : segment === "friends"
-            ? "Friends"
-            : "Settings";
+      const title = segment === "explore" ? "Explore" : "Friends";
       expect(source).toMatch(new RegExp(`title=["']${title}["']`));
     }
+  });
+});
+
+describe("portal settings route", () => {
+  it("mounts AccountSettingsPage (not PortalStubPage) with PortalNav; Settings is current", () => {
+    const pageSource = readFileSync(
+      join(FRONTEND_ROOT, "app/portal/settings/page.tsx"),
+      "utf8",
+    );
+    expect(pageSource).toMatch(/AccountSettingsPage/);
+    expect(pageSource).not.toMatch(/PortalStubPage/);
+
+    const settingsPageSource = readFileSync(
+      join(FRONTEND_ROOT, "components/account/AccountSettingsPage.tsx"),
+      "utf8",
+    );
+    expect(settingsPageSource).toMatch(/PortalNav/);
+
+    const items = portalNavCurrent("/portal/settings");
+    const current = items.filter((item) => item.current);
+    expect(current).toHaveLength(1);
+    expect(current[0]?.label).toBe("Settings");
+    expect(current[0]?.href).toBe("/portal/settings");
   });
 });
 

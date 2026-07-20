@@ -1,5 +1,5 @@
 /**
- * Account API client — GET /api/v1/account settings, trips, and explorer;
+ * Account API client — GET/PATCH /api/v1/account settings, trips, and explorer;
  * POST /api/v1/account/trips to create a trip under the signed-in account;
  * POST /api/v1/account/classify-trip-seed for AI structure + recommendations.
  */
@@ -55,11 +55,39 @@ export type FetchAccountSettingsInput = {
   sessionToken: string;
 };
 
+/** CamelCase AccountProfile fields from GET /account. */
+export type AccountProfile = {
+  displayName: string;
+  avatarColor: string;
+  locale: string;
+  timezone: string;
+  homeCity: string | null;
+  homeCountry: string | null;
+  primaryEmail: string | null;
+};
+
+/** CamelCase PasskeySummary from AccountSettings. */
+export type PasskeySummary = {
+  id: string;
+  nickname: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+};
+
+/** CamelCase TrustedDeviceSummary from AccountSettings. */
+export type TrustedDeviceSummary = {
+  id: string;
+  label: string;
+  userAgent: string;
+  createdAt: string;
+  lastSeenAt: string | null;
+};
+
 export type FetchAccountSettingsSuccess = {
   ok: true;
-  profile: {
-    displayName: string;
-  };
+  profile: AccountProfile;
+  passkeys: PasskeySummary[];
+  trustedDevices: TrustedDeviceSummary[];
 };
 
 export type FetchAccountSettingsFailure = {
@@ -74,7 +102,15 @@ export type FetchAccountSettingsOutcome =
 type AccountSettingsBody = {
   profile?: {
     displayName?: unknown;
+    avatarColor?: unknown;
+    locale?: unknown;
+    timezone?: unknown;
+    homeCity?: unknown;
+    homeCountry?: unknown;
+    primaryEmail?: unknown;
   };
+  passkeys?: unknown;
+  trustedDevices?: unknown;
   error?: { code?: unknown; message?: unknown };
 };
 
@@ -103,9 +139,111 @@ function failureMessage(body: AccountSettingsBody | null, status: number): strin
   return "Could not load your account. Please try again.";
 }
 
+function optionalString(value: unknown): string | null | undefined {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  return undefined;
+}
+
+function parseAccountProfile(raw: unknown): AccountProfile | null {
+  if (!raw || typeof raw !== "object") return null;
+  const p = raw as NonNullable<AccountSettingsBody["profile"]>;
+  if (typeof p.displayName !== "string") return null;
+  if (typeof p.avatarColor !== "string") return null;
+  if (typeof p.locale !== "string") return null;
+  if (typeof p.timezone !== "string") return null;
+  const homeCity = optionalString(p.homeCity);
+  const homeCountry = optionalString(p.homeCountry);
+  const primaryEmail = optionalString(p.primaryEmail);
+  if (
+    homeCity === undefined ||
+    homeCountry === undefined ||
+    primaryEmail === undefined
+  ) {
+    return null;
+  }
+  return {
+    displayName: p.displayName,
+    avatarColor: p.avatarColor,
+    locale: p.locale,
+    timezone: p.timezone,
+    homeCity,
+    homeCountry,
+    primaryEmail,
+  };
+}
+
+function parsePasskeySummary(row: unknown): PasskeySummary | null {
+  if (!row || typeof row !== "object") return null;
+  const p = row as {
+    id?: unknown;
+    nickname?: unknown;
+    createdAt?: unknown;
+    lastUsedAt?: unknown;
+  };
+  if (typeof p.id !== "string") return null;
+  if (typeof p.nickname !== "string") return null;
+  if (typeof p.createdAt !== "string") return null;
+  const lastUsedAt = optionalString(p.lastUsedAt);
+  if (lastUsedAt === undefined) return null;
+  return {
+    id: p.id,
+    nickname: p.nickname,
+    createdAt: p.createdAt,
+    lastUsedAt,
+  };
+}
+
+function parseTrustedDeviceSummary(row: unknown): TrustedDeviceSummary | null {
+  if (!row || typeof row !== "object") return null;
+  const d = row as {
+    id?: unknown;
+    label?: unknown;
+    userAgent?: unknown;
+    createdAt?: unknown;
+    lastSeenAt?: unknown;
+  };
+  if (typeof d.id !== "string") return null;
+  if (typeof d.label !== "string") return null;
+  if (typeof d.userAgent !== "string") return null;
+  if (typeof d.createdAt !== "string") return null;
+  const lastSeenAt = optionalString(d.lastSeenAt);
+  if (lastSeenAt === undefined) return null;
+  return {
+    id: d.id,
+    label: d.label,
+    userAgent: d.userAgent,
+    createdAt: d.createdAt,
+    lastSeenAt,
+  };
+}
+
+function parseAccountSettings(
+  body: AccountSettingsBody | null,
+): FetchAccountSettingsSuccess | null {
+  const profile = parseAccountProfile(body?.profile);
+  if (!profile) return null;
+  if (!Array.isArray(body?.passkeys) || !Array.isArray(body?.trustedDevices)) {
+    return null;
+  }
+  const passkeys: PasskeySummary[] = [];
+  for (const row of body.passkeys) {
+    const passkey = parsePasskeySummary(row);
+    if (!passkey) return null;
+    passkeys.push(passkey);
+  }
+  const trustedDevices: TrustedDeviceSummary[] = [];
+  for (const row of body.trustedDevices) {
+    const device = parseTrustedDeviceSummary(row);
+    if (!device) return null;
+    trustedDevices.push(device);
+  }
+  return { ok: true, profile, passkeys, trustedDevices };
+}
+
 /**
  * GET account settings with Bearer session token.
- * On success returns profile.displayName from the AccountSettings body.
+ * On success returns camelCase AccountSettings (profile, passkeys, trustedDevices).
  */
 export async function fetchAccountSettings(
   input: FetchAccountSettingsInput,
@@ -137,22 +275,91 @@ export async function fetchAccountSettings(
     return { ok: false, error: failureMessage(body, response.status) };
   }
 
-  const displayName =
-    typeof body?.profile?.displayName === "string"
-      ? body.profile.displayName
-      : null;
-
-  if (!displayName) {
+  const settings = parseAccountSettings(body);
+  if (!settings) {
     return {
       ok: false,
       error: "Account loaded but the response was incomplete. Please try again.",
     };
   }
 
-  return {
-    ok: true,
-    profile: { displayName },
+  return settings;
+}
+
+export type PatchAccountSettingsDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+/** CamelCase patch body for PATCH /api/v1/account. */
+export type PatchAccountSettingsInput = {
+  sessionToken: string;
+  displayName: string;
+  avatarColor: string;
+  locale: string;
+  timezone: string;
+  homeCity: string;
+  homeCountry: string;
+};
+
+export type PatchAccountSettingsOutcome = FetchAccountSettingsOutcome;
+
+/**
+ * PATCH account settings with Bearer session token and camelCase profile fields.
+ * On success returns reloaded camelCase AccountSettings (profile, passkeys, trustedDevices).
+ */
+export async function patchAccountSettings(
+  input: PatchAccountSettingsInput,
+  deps: PatchAccountSettingsDeps,
+): Promise<PatchAccountSettingsOutcome> {
+  const { sessionToken, displayName, avatarColor, locale, timezone, homeCity, homeCountry } =
+    input;
+  const requestBody = {
+    displayName,
+    avatarColor,
+    locale,
+    timezone,
+    homeCity,
+    homeCountry,
   };
+
+  let response: Response;
+  try {
+    response = await deps.fetch(accountUrl(deps.apiBaseUrl), {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  let body: AccountSettingsBody | null = null;
+  try {
+    body = (await response.json()) as AccountSettingsBody;
+  } catch {
+    body = null;
+  }
+
+  if (!response.ok) {
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  const settings = parseAccountSettings(body);
+  if (!settings) {
+    return {
+      ok: false,
+      error: "Account loaded but the response was incomplete. Please try again.",
+    };
+  }
+
+  return settings;
 }
 
 type AccountTripSummaryBody = {
@@ -724,4 +931,135 @@ export async function classifyAccountTripSeed(
   }
 
   return { ok: true, seed };
+}
+
+function accountTrustedDeviceUrl(
+  apiBaseUrl: string,
+  trustedDeviceId: string,
+): string {
+  return `${accountUrl(apiBaseUrl)}/trusted-devices/${encodeURIComponent(trustedDeviceId)}`;
+}
+
+function accountSessionUrl(apiBaseUrl: string): string {
+  return `${accountUrl(apiBaseUrl)}/session`;
+}
+
+export type RevokeTrustedDeviceDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+export type RevokeTrustedDeviceInput = {
+  sessionToken: string;
+  trustedDeviceId: string;
+};
+
+export type RevokeTrustedDeviceSuccess = {
+  ok: true;
+};
+
+export type RevokeTrustedDeviceFailure = {
+  ok: false;
+  error: string;
+};
+
+export type RevokeTrustedDeviceOutcome =
+  | RevokeTrustedDeviceSuccess
+  | RevokeTrustedDeviceFailure;
+
+/**
+ * DELETE a trusted device with Bearer session token.
+ * On success (204) returns `{ ok: true }`.
+ */
+export async function revokeTrustedDevice(
+  input: RevokeTrustedDeviceInput,
+  deps: RevokeTrustedDeviceDeps,
+): Promise<RevokeTrustedDeviceOutcome> {
+  let response: Response;
+  try {
+    response = await deps.fetch(
+      accountTrustedDeviceUrl(deps.apiBaseUrl, input.trustedDeviceId),
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${input.sessionToken}`,
+        },
+      },
+    );
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  if (!response.ok) {
+    let body: AccountSettingsBody | null = null;
+    try {
+      body = (await response.json()) as AccountSettingsBody;
+    } catch {
+      body = null;
+    }
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  return { ok: true };
+}
+
+export type LogoutAccountSessionDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+export type LogoutAccountSessionInput = {
+  sessionToken: string;
+};
+
+export type LogoutAccountSessionSuccess = {
+  ok: true;
+};
+
+export type LogoutAccountSessionFailure = {
+  ok: false;
+  error: string;
+};
+
+export type LogoutAccountSessionOutcome =
+  | LogoutAccountSessionSuccess
+  | LogoutAccountSessionFailure;
+
+/**
+ * DELETE the current account session with Bearer session token.
+ * On success (204) returns `{ ok: true }`.
+ */
+export async function logoutAccountSession(
+  input: LogoutAccountSessionInput,
+  deps: LogoutAccountSessionDeps,
+): Promise<LogoutAccountSessionOutcome> {
+  let response: Response;
+  try {
+    response = await deps.fetch(accountSessionUrl(deps.apiBaseUrl), {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${input.sessionToken}`,
+      },
+    });
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  if (!response.ok) {
+    let body: AccountSettingsBody | null = null;
+    try {
+      body = (await response.json()) as AccountSettingsBody;
+    } catch {
+      body = null;
+    }
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  return { ok: true };
 }

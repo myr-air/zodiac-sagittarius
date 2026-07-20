@@ -1,5 +1,5 @@
-import { PortalStubPage } from "@/components/portal/PortalStubPage";
+import { AccountSettingsPage } from "@/components/account/AccountSettingsPage";
 
 export default function PortalSettingsPage() {
-  return <PortalStubPage title="Settings" />;
+  return <AccountSettingsPage />;
 }
