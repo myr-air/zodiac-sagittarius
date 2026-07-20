@@ -1,3 +1,5 @@
+import { classifyTripSeed, toCreatePayload } from "../create-trip/classify-seed";
+
 export type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
 export const MEMBER_SESSION_STORAGE_KEY = "joii.member.session";
@@ -119,7 +121,17 @@ export async function createTripFromQuery(
   query: string,
   deps: CreateTripDeps,
 ): Promise<CreateTripOutcome> {
-  const destination = query.trim();
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return {
+      ok: false,
+      error: "Enter a destination to start planning.",
+    };
+  }
+
+  const classified = classifyTripSeed(trimmed);
+  const payload = toCreatePayload(classified);
+  const destination = payload.destinationLabel.trim() || payload.name.trim();
   if (!destination) {
     return {
       ok: false,

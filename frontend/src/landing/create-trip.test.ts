@@ -45,7 +45,75 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+/** Free-text NL place seed — primary place is Chiang Mai (classify-seed draft literal). */
+const FREE_TEXT_PLACE_SEED = "Chiang Mai with friends, not sure when yet";
+const CLASSIFIED_PRIMARY = "Chiang Mai";
+/** Already-classified primary destination (e.g. destination card / review chip). */
+const PRIMARY_DESTINATION_SEED = "Vietnam";
+
 describe("createTripFromQuery", () => {
+  it("guest/signed-out landing create with a place seed (free-text or classified primary destination) POSTs /api/v1/public/trips (no Authorization), stores member session, and navigates to /trips/{id}", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(SUCCESS_BODY));
+    const navigate = vi.fn();
+    const storage = memoryStorage();
+    const deps = {
+      fetch: fetchMock,
+      apiBaseUrl: "http://127.0.0.1:5181",
+      storage,
+      navigate,
+    };
+
+    // Classified primary destination place seed
+    const fromPrimary = await createTripFromQuery(PRIMARY_DESTINATION_SEED, deps);
+    expect(fromPrimary.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [primaryUrl, primaryInit] = fetchMock.mock.calls[0]!;
+    expect(primaryUrl).toBe("http://127.0.0.1:5181/api/v1/public/trips");
+    expect(primaryInit?.method).toBe("POST");
+    expect(primaryInit?.body).toBe(
+      JSON.stringify({ destination: PRIMARY_DESTINATION_SEED }),
+    );
+    expect(new Headers(primaryInit?.headers).get("Authorization")).toBeNull();
+    expect(loadMemberSession(storage)).toEqual({
+      tripId: TRIP_ID,
+      memberId: OWNER_MEMBER_ID,
+      sessionToken: SESSION_TOKEN,
+      createdAt: "2026-07-19T00:00:00Z",
+      expiresAt: "2026-07-26T00:00:00Z",
+    });
+    expect(navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+
+    // Free-text NL → classified primary destination (not the raw sentence)
+    fetchMock.mockClear();
+    navigate.mockClear();
+    const freeStorage = memoryStorage();
+    const fromFreeText = await createTripFromQuery(FREE_TEXT_PLACE_SEED, {
+      ...deps,
+      storage: freeStorage,
+    });
+    expect(fromFreeText.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [freeUrl, freeInit] = fetchMock.mock.calls[0]!;
+    expect(freeUrl).toBe("http://127.0.0.1:5181/api/v1/public/trips");
+    expect(freeInit?.method).toBe("POST");
+    expect(freeInit?.body).toBe(
+      JSON.stringify({ destination: CLASSIFIED_PRIMARY }),
+    );
+    expect(freeInit?.body).not.toBe(
+      JSON.stringify({ destination: FREE_TEXT_PLACE_SEED }),
+    );
+    expect(new Headers(freeInit?.headers).get("Authorization")).toBeNull();
+    expect(loadMemberSession(freeStorage)).toEqual({
+      tripId: TRIP_ID,
+      memberId: OWNER_MEMBER_ID,
+      sessionToken: SESSION_TOKEN,
+      createdAt: "2026-07-19T00:00:00Z",
+      expiresAt: "2026-07-26T00:00:00Z",
+    });
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+  });
+
   it("posts the query seed to public bootstrap without account login redirect", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(SUCCESS_BODY));
     const navigate = vi.fn();
