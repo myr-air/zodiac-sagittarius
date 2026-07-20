@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M7YH2KNV | 2026-07-20 | Coming soon toast assert matched OAuth soon-note; designer must-fixes (typeahead, security order, header) | Tighten success asserts; Open-Meteo typeahead + draft order/copy | account settings FE suites; validate --strict |
 | M7YF0YYY | 2026-07-20 | FE dropped one-shot joinPassword; create geo hardcoded Thailand | JoinCredentialsPanel before navigate; destination_geo fill without TH invent | FE/BE contract suites; validate --strict |
 | M7XXVC84 | 2026-07-20 | Account create required client join credentials; portal lacked create-trip | Slim `POST /account/trips` + classify-trip-seed; landing/portal classify→review→create; uppercase `yymm-SLUG-suffix` join ids | account_trip_contract; create-trip FE tests; validate --strict |
 | M7XJVDUV | 2026-07-20 | Landing `/` infinite-reloaded from unstable empty recent-search snapshots | Freeze shared `EMPTY_RECENT` for server + empty client `useSyncExternalStore` paths | landing-recent-snapshot-green; landing-home-no-reload-loop |
@@ -21,6 +22,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M7YH2KNV | 2026-07-20 | Scope-lock Coming soon UI must never fake success | Keeps unsupported capabilities honest without inventing backends |
+| M7YH2KNV | 2026-07-20 | RED assertions must not contradict required copy | Avoid forbidding keywords that appear in deferred-capability notes |
 | M7YF0YYY | 2026-07-20 | Full-viewport auth handoffs must replace page chrome, not nest under portal shells | Nested h-dvh Atlas under Trips nav fails draft acceptance |
 | M7YF0YYY | 2026-07-20 | plan.json evidence fields must be label string arrays for validate --strict | Command strings fail Go unmarshal and block ready |
 | M7XXVC84 | 2026-07-20 | Record an explicit scope cut when shipping a thinner slice of an approved UX draft | Acceptance stays honest; the full mock remains north-star without blocking ship |
