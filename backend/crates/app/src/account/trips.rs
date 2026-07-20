@@ -5,6 +5,7 @@ use crate::account_mappers::{
     account_todo_from_record, account_trip_from_record, account_trip_stats_from_record,
     format_timestamp,
 };
+use crate::destination_geo::fill_destination_geo_from_label;
 use sagittarius_db::models::{
     NewAccountAuditEvent, NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember,
 };
@@ -93,20 +94,37 @@ pub async fn create_trip(
         Some(value) => validate_country_code(value, "origin country code")?,
         None => DEFAULT_ORIGIN_COUNTRY_CODE.to_string(),
     };
+    // Best-effort destination geo from label when cities/countries omitted — never invent Thailand.
+    // Explicit destination_cities / countries in the request still win. Origin Bangkok defaults
+    // and trip-level defaultTimezone may still fall back to Asia/Bangkok.
+    let needs_destination_geo = input
+        .destination_cities
+        .as_ref()
+        .map_or(true, |cities| cities.is_empty())
+        || input
+            .countries
+            .as_ref()
+            .map_or(true, |countries| countries.is_empty());
+    let geo = if needs_destination_geo {
+        Some(fill_destination_geo_from_label(&destination_label).await)
+    } else {
+        None
+    };
     let destination_cities = match input.destination_cities.as_ref() {
         Some(cities) if !cities.is_empty() => validate_trip_cities(cities)?,
-        _ => vec![TripCity {
-            city: destination_label.clone(),
-            country: DEFAULT_ORIGIN_COUNTRY.to_string(),
-            country_code: DEFAULT_ORIGIN_COUNTRY_CODE.to_string(),
-            timezone: DEFAULT_TIMEZONE.to_string(),
-            latitude: 0.0,
-            longitude: 0.0,
-        }],
+        _ => geo
+            .as_ref()
+            .expect("destination geo fill when cities omitted")
+            .cities
+            .clone(),
     };
     let countries = match input.countries.as_ref() {
         Some(countries) if !countries.is_empty() => validate_trip_countries(countries)?,
-        _ => vec![DEFAULT_ORIGIN_COUNTRY.to_string()],
+        _ => geo
+            .as_ref()
+            .expect("destination geo fill when countries omitted")
+            .countries
+            .clone(),
     };
     let party_size = validate_party_size(input.party_size.unwrap_or(1))?;
     let timezone_candidate = input
@@ -117,6 +135,7 @@ pub async fn create_trip(
             destination_cities
                 .first()
                 .map(|city| city.timezone.as_str())
+                .filter(|tz| !tz.trim().is_empty())
         })
         .or_else(|| {
             let tz = profile.timezone.trim();

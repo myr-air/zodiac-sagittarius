@@ -596,6 +596,196 @@ async fn account_trip_create_rejects_empty_seed(pool: sqlx::PgPool) {
     }
 }
 
+/// T7-A1: Slim seed with destinationLabel Tokyo (cities/countries omitted) must not
+/// invent Thailand / TH / Asia/Bangkok on destination geo.
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_tokyo_destination_geo_is_not_forced_thailand(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "tokyo-geo@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    let response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({ "destinationLabel": "Tokyo" }),
+    )
+    .await;
+    let (status, body): (StatusCode, Value) = response_json(response).await;
+    assert_eq!(
+        status,
+        StatusCode::OK,
+        "Tokyo slim seed must succeed; body={body}"
+    );
+
+    let trip = &body["trip"];
+    assert_eq!(trip["destinationLabel"], "Tokyo");
+
+    let cities = trip["destinationCities"]
+        .as_array()
+        .expect("destinationCities must be present");
+    assert!(
+        !cities.is_empty(),
+        "destinationCities must include at least one city for the seed label"
+    );
+    let city = &cities[0];
+    assert_eq!(city["city"], "Tokyo");
+
+    let country = city["country"].as_str().unwrap_or("");
+    let country_code = city["countryCode"].as_str().unwrap_or("");
+    let timezone = city["timezone"].as_str().unwrap_or("");
+    assert_ne!(
+        country, "Thailand",
+        "Tokyo destination country must not be invented as Thailand; got {country:?}"
+    );
+    assert_ne!(
+        country_code, "TH",
+        "Tokyo destination countryCode must not be invented as TH; got {country_code:?}"
+    );
+    assert_ne!(
+        timezone, "Asia/Bangkok",
+        "Tokyo destination timezone must not be invented as Asia/Bangkok; got {timezone:?}"
+    );
+
+    let countries = trip["countries"]
+        .as_array()
+        .expect("countries must be present");
+    assert!(
+        countries
+            .iter()
+            .filter_map(|value| value.as_str())
+            .all(|name| name != "Thailand"),
+        "trip.countries must not invent Thailand for Tokyo; got {countries:?}"
+    );
+}
+
+/// T7-A2: When destination_cities/countries are omitted, shared destination_geo fill
+/// is used; explicit destination_cities in the request still win.
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_omitted_geo_uses_fill_explicit_cities_win(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "geo-fill-win@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+
+    // Omitted cities/countries → shared destination_geo fill (never fake Thailand).
+    let omitted_response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({ "destinationLabel": "Tokyo" }),
+    )
+    .await;
+    let (omitted_status, omitted_body): (StatusCode, Value) =
+        response_json(omitted_response).await;
+    assert_eq!(
+        omitted_status,
+        StatusCode::OK,
+        "omitted geo slim seed must succeed; body={omitted_body}"
+    );
+    let omitted_trip = &omitted_body["trip"];
+    let omitted_city = &omitted_trip["destinationCities"]
+        .as_array()
+        .expect("destinationCities")[0];
+    assert_eq!(omitted_city["city"], "Tokyo");
+    assert_ne!(
+        omitted_city["country"].as_str().unwrap_or(""),
+        "Thailand",
+        "omitted destination_cities must use destination_geo fill, not invent Thailand"
+    );
+    assert_ne!(
+        omitted_city["countryCode"].as_str().unwrap_or(""),
+        "TH",
+        "omitted destination_cities must use destination_geo fill, not invent TH"
+    );
+    assert_ne!(
+        omitted_city["timezone"].as_str().unwrap_or(""),
+        "Asia/Bangkok",
+        "omitted destination_cities must use destination_geo fill, not invent Asia/Bangkok"
+    );
+    let omitted_countries = omitted_trip["countries"]
+        .as_array()
+        .expect("countries");
+    assert!(
+        omitted_countries
+            .iter()
+            .filter_map(|value| value.as_str())
+            .all(|name| name != "Thailand"),
+        "omitted countries must use destination_geo fill, not invent Thailand; got {omitted_countries:?}"
+    );
+
+    // Explicit destination_cities still win over fill for the same label.
+    let explicit_cities = json!([{
+        "city": "Client City",
+        "country": "Japan",
+        "countryCode": "JP",
+        "timezone": "Asia/Tokyo",
+        "latitude": 35.68,
+        "longitude": 139.76
+    }]);
+    let explicit_response = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        Some(&auth),
+        json!({
+            "destinationLabel": "Tokyo",
+            "destinationCities": explicit_cities,
+            "countries": ["Japan"]
+        }),
+    )
+    .await;
+    let (explicit_status, explicit_body): (StatusCode, Value) =
+        response_json(explicit_response).await;
+    assert_eq!(
+        explicit_status,
+        StatusCode::OK,
+        "explicit destinationCities must succeed; body={explicit_body}"
+    );
+    let explicit_trip = &explicit_body["trip"];
+    assert_eq!(
+        explicit_trip["destinationCities"], explicit_cities,
+        "explicit destinationCities in the request must win over geo fill"
+    );
+    assert_eq!(
+        explicit_trip["countries"],
+        json!(["Japan"]),
+        "explicit countries in the request must persist"
+    );
+}
+
+/// T7-A3: Auth gate on account create and empty name+destination rejection remain unchanged.
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_trip_create_keeps_auth_gate_and_rejects_empty_seed(pool: sqlx::PgPool) {
+    let unauth = post_json_with_auth(
+        support::app(pool.clone()),
+        "/api/v1/account/trips",
+        None,
+        json!({ "destinationLabel": "Tokyo" }),
+    )
+    .await;
+    let (unauth_status, unauth_body): (StatusCode, Value) = response_json(unauth).await;
+    assert_eq!(unauth_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(unauth_body["code"], "unauthenticated");
+
+    let session = login_account(&pool, "t7-empty-seed@example.com", false, "").await;
+    let auth = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    for payload in [
+        json!({}),
+        json!({ "name": " ", "destinationLabel": "" }),
+    ] {
+        let response = post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/trips",
+            Some(&auth),
+            payload.clone(),
+        )
+        .await;
+        let (status, body): (StatusCode, Value) = response_json(response).await;
+        assert_eq!(
+            status,
+            StatusCode::BAD_REQUEST,
+            "empty seed {payload} must remain 400; body={body}"
+        );
+    }
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_create_slim_seed_accepts_optional_client_join_credentials(
     pool: sqlx::PgPool,

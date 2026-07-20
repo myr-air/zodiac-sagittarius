@@ -24,6 +24,8 @@ export type CreateTripSuccess = {
   tripId: string;
   ownerMemberId: string;
   route: string;
+  trip: { joinId: string };
+  joinPassword: string;
 };
 
 export type CreateTripFailure = {
@@ -34,8 +36,9 @@ export type CreateTripFailure = {
 export type CreateTripOutcome = CreateTripSuccess | CreateTripFailure;
 
 type PublicTripCreateBody = {
-  trip?: { id?: unknown };
+  trip?: { id?: unknown; joinId?: unknown };
   ownerMemberId?: unknown;
+  joinPassword?: unknown;
   memberSession?: {
     tripId?: unknown;
     memberId?: unknown;
@@ -115,7 +118,7 @@ function failureMessage(body: PublicTripCreateBody | null, status: number): stri
 
 /**
  * POST destination seed to public trip bootstrap (no account Authorization).
- * On success stores member session and navigates to `/trips/{id}`.
+ * On success stores member session; caller navigates after showing credentials.
  */
 export async function createTripFromQuery(
   query: string,
@@ -168,8 +171,12 @@ export async function createTripFromQuery(
 
   const tripId =
     typeof body?.trip?.id === "string" ? body.trip.id : null;
+  const joinId =
+    typeof body?.trip?.joinId === "string" ? body.trip.joinId : "";
   const ownerMemberId =
     typeof body?.ownerMemberId === "string" ? body.ownerMemberId : null;
+  const joinPassword =
+    typeof body?.joinPassword === "string" ? body.joinPassword : "";
   const session = body?.memberSession;
 
   if (
@@ -199,12 +206,13 @@ export async function createTripFromQuery(
   saveMemberSession(deps.storage, memberSession);
 
   const route = tripRouteFor(tripId);
-  deps.navigate(route);
 
   return {
     ok: true,
     tripId,
     ownerMemberId,
     route,
+    trip: { joinId },
+    joinPassword,
   };
 }

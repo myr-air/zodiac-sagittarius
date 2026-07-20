@@ -23,10 +23,17 @@ import {
 import { CreateTripForm } from "./CreateTripForm";
 import { PortalNav } from "./PortalNav";
 import { PortalTripRows } from "./PortalTripRows";
+import { JoinCredentialsPanel } from "@/components/auth/JoinCredentialsPanel";
 
 const EMPTY: PortalTripsLoadedData = { rows: [], trips: [] };
 
 const FILTERS = ["Upcoming", "Planning", "Past", "All"] as const satisfies readonly PortalTripFilter[];
+
+type PortalJoinCredentials = {
+  tripId: string;
+  joinId: string;
+  joinPassword: string;
+};
 
 function readSessionToken(): string | null {
   const gate = accountHomeGate(
@@ -51,6 +58,8 @@ export function PortalTripsPage() {
   const [filter, setFilter] = useState<PortalTripFilter>("Upcoming");
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
+  const [joinCredentials, setJoinCredentials] =
+    useState<PortalJoinCredentials | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -93,6 +102,17 @@ export function PortalTripsPage() {
           {sessionToken === null ? "Redirecting to login…" : "Checking session…"}
         </span>
       </div>
+    );
+  }
+
+  // Full-viewport Postcard Atlas handoff (approved draft) — replace portal chrome.
+  if (joinCredentials) {
+    return (
+      <JoinCredentialsPanel
+        joinId={joinCredentials.joinId}
+        joinPassword={joinCredentials.joinPassword}
+        onContinue={() => router.push(`/trips/${joinCredentials.tripId}`)}
+      />
     );
   }
 
@@ -150,7 +170,10 @@ export function PortalTripsPage() {
                   session,
                 )
               }
-              navigate={(path) => router.push(path)}
+              onJoinCredentials={(credentials) => {
+                setCreating(false);
+                setJoinCredentials(credentials);
+              }}
               onCancel={() => setCreating(false)}
             />
           </div>

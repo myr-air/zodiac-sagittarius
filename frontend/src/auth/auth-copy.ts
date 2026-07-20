@@ -66,6 +66,19 @@ export type AuthCopy = {
     mediaTitle: string;
     mediaCopy: string;
   };
+  joinCredentials: {
+    steps: { create: string; invite: string };
+    heading: string;
+    lede: string;
+    joinId: string;
+    password: string;
+    copy: string;
+    copied: string;
+    warning: string;
+    continue: string;
+    skip: string;
+    gallery: ReadonlyArray<{ title: string; copy: string }>;
+  };
   gallery: ReadonlyArray<{ title: string; copy: string }>;
 };
 
@@ -135,6 +148,37 @@ const EN: AuthCopy = {
     tipAfterLogin: "to manage ownership.",
     mediaTitle: "Enter the shared trip room",
     mediaCopy: "Itinerary, members, and plans — already waiting for your group.",
+  },
+  joinCredentials: {
+    steps: { create: "Create", invite: "Invite" },
+    heading: "Trip created",
+    lede: "Copy the join ID and password so friends can enter the shared room. You’ll open the trip next.",
+    joinId: "Join ID",
+    password: "Password",
+    copy: "Copy",
+    copied: "Copied",
+    warning:
+      "Password is shown once. Copy it now — it won’t appear again in the trip.",
+    continue: "Continue to trip",
+    skip: "Skip for now",
+    gallery: [
+      {
+        title: "Invite the group once",
+        copy: "One join ID and password — friends enter the same planning room.",
+      },
+      {
+        title: "Keep the secret handy",
+        copy: "Password is shown once. Copy it before you continue into the trip.",
+      },
+      {
+        title: "Same desk as login",
+        copy: "Postcard Atlas chrome — calm split, travel media, teal focus.",
+      },
+      {
+        title: "Then open the cockpit",
+        copy: "Continue when you’re ready. Skip if you’ll share later from memory.",
+      },
+    ],
   },
   gallery: [
     {
@@ -222,6 +266,37 @@ const TH: AuthCopy = {
     tipAfterLogin: "เพื่อจัดการความเป็นเจ้าของ",
     mediaTitle: "เข้าห้องทริปที่แชร์กัน",
     mediaCopy: "แผนการเดินทาง สมาชิก และแผน — พร้อมรอกลุ่มของคุณแล้ว",
+  },
+  joinCredentials: {
+    steps: { create: "สร้าง", invite: "เชิญ" },
+    heading: "สร้างทริปแล้ว",
+    lede: "คัดลอกรหัสเข้าร่วมและรหัสผ่านเพื่อให้เพื่อนเข้าห้องที่แชร์กันได้ จากนั้นคุณจะเปิดทริป",
+    joinId: "รหัสเข้าร่วม",
+    password: "รหัสผ่าน",
+    copy: "คัดลอก",
+    copied: "คัดลอกแล้ว",
+    warning:
+      "รหัสผ่านแสดงครั้งเดียว คัดลอกตอนนี้ — จะไม่แสดงอีกในทริป",
+    continue: "ไปที่ทริป",
+    skip: "ข้ามไปก่อน",
+    gallery: [
+      {
+        title: "เชิญกลุ่มครั้งเดียว",
+        copy: "รหัสเข้าร่วมและรหัสผ่านชุดเดียว — เพื่อนเข้าห้องวางแผนเดียวกัน",
+      },
+      {
+        title: "เก็บความลับไว้ใกล้ตัว",
+        copy: "รหัสผ่านแสดงครั้งเดียว คัดลอกก่อนเข้าทริป",
+      },
+      {
+        title: "โต๊ะเดียวกับหน้าเข้าสู่ระบบ",
+        copy: "Postcard Atlas — แยกแผงสงบ มีภาพท่องเที่ยว โฟกัสสีเขียวน้ำทะเล",
+      },
+      {
+        title: "แล้วเปิดค็อกพิต",
+        copy: "กดไปต่อเมื่อพร้อม หรือข้ามถ้าจะแชร์จากความจำภายหลัง",
+      },
+    ],
   },
   gallery: [
     {

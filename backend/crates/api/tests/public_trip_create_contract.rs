@@ -384,6 +384,243 @@ async fn public_trip_create_rejects_empty_destination(pool: sqlx::PgPool) {
     }
 }
 
+/// T6-A1: Non-TH destination label must not be stored as fake Thailand destination geo.
+#[sqlx::test(migrations = "../../migrations")]
+async fn public_trip_create_tokyo_destination_geo_is_not_forced_thailand(pool: sqlx::PgPool) {
+    let app = support::app(pool);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/public/trips")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(json!({ "destination": "Tokyo" }).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let status = response.status();
+    let bytes = to_bytes(response.into_body(), 65536).await.unwrap();
+    assert!(
+        status.is_success(),
+        "public trip create with Tokyo must succeed; got {status}, body={}",
+        String::from_utf8_lossy(&bytes)
+    );
+
+    let body: Value = serde_json::from_slice(&bytes).expect("success body must be JSON");
+    let trip = &body["trip"];
+    assert_eq!(trip["destinationLabel"], "Tokyo");
+
+    let cities = trip["destinationCities"]
+        .as_array()
+        .expect("destinationCities must be present");
+    assert!(
+        !cities.is_empty(),
+        "destinationCities must include at least one city for the seed label"
+    );
+    let city = &cities[0];
+    assert_eq!(city["city"], "Tokyo");
+
+    let country = city["country"].as_str().unwrap_or("");
+    let country_code = city["countryCode"].as_str().unwrap_or("");
+    let timezone = city["timezone"].as_str().unwrap_or("");
+    assert_ne!(
+        country, "Thailand",
+        "Tokyo destination country must not be invented as Thailand; got {country:?}"
+    );
+    assert_ne!(
+        country_code, "TH",
+        "Tokyo destination countryCode must not be invented as TH; got {country_code:?}"
+    );
+    assert_ne!(
+        timezone, "Asia/Bangkok",
+        "Tokyo destination timezone must not be invented as Asia/Bangkok; got {timezone:?}"
+    );
+
+    let countries = trip["countries"]
+        .as_array()
+        .expect("countries must be present");
+    assert!(
+        countries
+            .iter()
+            .filter_map(|value| value.as_str())
+            .all(|name| name != "Thailand"),
+        "trip.countries must not invent Thailand for Tokyo; got {countries:?}"
+    );
+}
+
+/// T6-A2: When geo cannot resolve, keep the label and leave destination geo unknown/neutral.
+#[sqlx::test(migrations = "../../migrations")]
+async fn public_trip_create_geo_miss_keeps_label_with_neutral_destination_geo(
+    pool: sqlx::PgPool,
+) {
+    let app = support::app(pool);
+    // Label that will not resolve to a known place — must not invent Thailand geo.
+    let destination = "ZZZ_NO_GEO_RESOLVE_xyzzq_99999";
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/public/trips")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(json!({ "destination": destination }).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let status = response.status();
+    let bytes = to_bytes(response.into_body(), 65536).await.unwrap();
+    assert!(
+        status.is_success(),
+        "geo-miss create must still succeed with the seed label; got {status}, body={}",
+        String::from_utf8_lossy(&bytes)
+    );
+
+    let body: Value = serde_json::from_slice(&bytes).expect("success body must be JSON");
+    let trip = &body["trip"];
+    assert_eq!(
+        trip["destinationLabel"], destination,
+        "destination label must be kept on geo resolve miss"
+    );
+
+    let cities = trip["destinationCities"]
+        .as_array()
+        .expect("destinationCities must be present");
+    assert_eq!(cities.len(), 1, "geo miss should keep a single seed city entry");
+    let city = &cities[0];
+    assert_eq!(city["city"], destination);
+
+    // Unknown/neutral: empty strings (not invented Thailand / TH / Asia/Bangkok).
+    assert_eq!(
+        city["country"].as_str().unwrap_or("missing"),
+        "",
+        "geo miss must leave destination country unknown/neutral (empty), not invent Thailand"
+    );
+    assert_eq!(
+        city["countryCode"].as_str().unwrap_or("missing"),
+        "",
+        "geo miss must leave destination countryCode unknown/neutral (empty), not invent TH"
+    );
+    assert_eq!(
+        city["timezone"].as_str().unwrap_or("missing"),
+        "",
+        "geo miss must leave destination timezone unknown/neutral (empty), not invent Asia/Bangkok"
+    );
+
+    // Lat/lng may stay unresolved (0,0 is acceptable for unknown).
+    let latitude = city["latitude"].as_f64().expect("latitude");
+    let longitude = city["longitude"].as_f64().expect("longitude");
+    assert!(
+        latitude == 0.0 && longitude == 0.0,
+        "geo miss may leave lat/lng unresolved (0,0); got lat={latitude} lng={longitude}"
+    );
+
+    let countries = trip["countries"]
+        .as_array()
+        .expect("countries must be present");
+    assert!(
+        countries
+            .iter()
+            .filter_map(|value| value.as_str())
+            .all(|name| name != "Thailand"),
+        "geo miss must not invent Thailand in trip.countries; empty/neutral countries ok; got {countries:?}"
+    );
+}
+
+/// T6-A3: Origin Bangkok defaults when origin is omitted still apply; empty destination still rejected.
+/// Also locks that origin defaults must not leak into destination geo for a non-TH label.
+#[sqlx::test(migrations = "../../migrations")]
+async fn public_trip_create_keeps_bangkok_origin_defaults_and_rejects_empty_destination(
+    pool: sqlx::PgPool,
+) {
+    let app = support::app(pool);
+
+    let create_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/public/trips")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(json!({ "destination": "Tokyo" }).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let create_status = create_response.status();
+    let create_bytes = to_bytes(create_response.into_body(), 65536).await.unwrap();
+    assert!(
+        create_status.is_success(),
+        "Tokyo public create must succeed; got {create_status}, body={}",
+        String::from_utf8_lossy(&create_bytes)
+    );
+
+    let body: Value =
+        serde_json::from_slice(&create_bytes).expect("success body must be JSON");
+    let trip = &body["trip"];
+
+    // Origin omitted → Bangkok product defaults still apply (trip clock may stay Asia/Bangkok).
+    assert_eq!(trip["originLabel"], "Bangkok, Thailand");
+    assert_eq!(trip["originCity"], "Bangkok");
+    assert_eq!(trip["originCountry"], "Thailand");
+    assert_eq!(trip["originCountryCode"], "TH");
+    assert_eq!(trip["defaultTimezone"], "Asia/Bangkok");
+
+    // Origin defaults must not be copied onto destination geo for a non-TH label.
+    let city = &trip["destinationCities"]
+        .as_array()
+        .expect("destinationCities")[0];
+    assert_ne!(
+        city["country"].as_str().unwrap_or(""),
+        "Thailand",
+        "Bangkok origin defaults must not invent destination country Thailand for Tokyo"
+    );
+    assert_ne!(
+        city["countryCode"].as_str().unwrap_or(""),
+        "TH",
+        "Bangkok origin defaults must not invent destination countryCode TH for Tokyo"
+    );
+    assert_ne!(
+        city["timezone"].as_str().unwrap_or(""),
+        "Asia/Bangkok",
+        "trip defaultTimezone Asia/Bangkok must not be written into destination city timezone for Tokyo"
+    );
+
+    // Empty destination still rejected.
+    for destination in ["", "   "] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/v1/public/trips")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(json!({ "destination": destination }).to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        let status = response.status();
+        let bytes = to_bytes(response.into_body(), 65536).await.unwrap();
+        let err: Value = serde_json::from_slice(&bytes).expect("error body must be JSON");
+        assert!(
+            status.is_client_error(),
+            "empty destination must return 4xx; got {status} for destination={destination:?}, body={}",
+            String::from_utf8_lossy(&bytes)
+        );
+        assert_eq!(
+            err["code"], "invalid_request",
+            "empty destination must use invalid_request; got body={err}"
+        );
+    }
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn account_trip_create_without_session_fails_auth_while_public_bootstrap_allows_anonymous(
     pool: sqlx::PgPool,

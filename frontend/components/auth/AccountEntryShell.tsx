@@ -21,11 +21,15 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia(authChrome().motion.reducedMotionQuery).matches;
 }
 
+export type AccountEntryNav = "account" | "create-progress";
+
 function AccountEntryShellInner({
   route,
+  nav = "account",
   children,
 }: {
   route: AccountEntryRoute;
+  nav?: AccountEntryNav;
   children: React.ReactNode;
 }) {
   const shell = accountEntryShellForRoute(route);
@@ -35,6 +39,8 @@ function AccountEntryShellInner({
   const activeHref = route === "/login" ? "/login" : "/register";
   const motionClass = chrome.motion.transitionClassName;
   const railClass = "mx-auto flex w-full max-w-[377px] flex-col";
+  const gallery =
+    nav === "create-progress" ? copy.joinCredentials.gallery : copy.gallery;
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
@@ -70,7 +76,7 @@ function AccountEntryShellInner({
           ))}
         </div>
 
-        <div className={`${railClass} flex-1 px-5 py-8`}>
+        <div className={`${railClass} flex min-h-0 flex-1 flex-col px-5 py-8`}>
           <header className="flex w-full items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span
@@ -94,39 +100,58 @@ function AccountEntryShellInner({
             <LocaleSwitch />
           </header>
 
-          <nav
-            className="mt-8 mb-4 grid w-full grid-cols-2 border-b border-(--color-border)"
-            aria-label="Account access"
-          >
-            <a
-              href="/login"
-              aria-current={activeHref === "/login" ? "page" : undefined}
-              className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold ${motionClass} ${
-                activeHref === "/login"
-                  ? "border-(--color-primary) text-(--color-primary-strong)"
-                  : "border-transparent text-(--color-text-muted)"
-              }`}
+          {nav === "create-progress" ? (
+            <nav
+              className="mt-8 mb-4 grid w-full grid-cols-2 border-b border-(--color-border)"
+              aria-label="Create progress"
             >
-              {copy.tabs.signIn}
-            </a>
-            <a
-              href="/register"
-              aria-current={activeHref === "/register" ? "page" : undefined}
-              className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold ${motionClass} ${
-                activeHref === "/register"
-                  ? "border-(--color-primary) text-(--color-primary-strong)"
-                  : "border-transparent text-(--color-text-muted)"
-              }`}
+              <span
+                className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold border-transparent text-(--color-text-muted)`}
+              >
+                {copy.joinCredentials.steps.create}
+              </span>
+              <span
+                aria-current="step"
+                className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold border-(--color-primary) text-(--color-primary-strong)`}
+              >
+                {copy.joinCredentials.steps.invite}
+              </span>
+            </nav>
+          ) : (
+            <nav
+              className="mt-8 mb-4 grid w-full grid-cols-2 border-b border-(--color-border)"
+              aria-label="Account access"
             >
-              {copy.tabs.register}
-            </a>
-          </nav>
+              <a
+                href="/login"
+                aria-current={activeHref === "/login" ? "page" : undefined}
+                className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold ${motionClass} ${
+                  activeHref === "/login"
+                    ? "border-(--color-primary) text-(--color-primary-strong)"
+                    : "border-transparent text-(--color-text-muted)"
+                }`}
+              >
+                {copy.tabs.signIn}
+              </a>
+              <a
+                href="/register"
+                aria-current={activeHref === "/register" ? "page" : undefined}
+                className={`-mb-px grid min-h-14 place-items-center border-b-[3px] text-center text-sm font-bold ${motionClass} ${
+                  activeHref === "/register"
+                    ? "border-(--color-primary) text-(--color-primary-strong)"
+                    : "border-transparent text-(--color-text-muted)"
+                }`}
+              >
+                {copy.tabs.register}
+              </a>
+            </nav>
+          )}
 
           <div className="w-full">{children}</div>
 
           <a
             href={chrome.crossLinks.home.href}
-            className={`mt-8 inline-flex min-h-[34px] w-full items-center justify-center gap-2 text-[0.8125rem] font-bold text-(--color-text-muted) hover:text-(--color-primary-strong) ${motionClass}`}
+            className={`mt-auto inline-flex min-h-[34px] w-full items-center justify-center gap-2 pt-8 text-[0.8125rem] font-bold text-(--color-text-muted) hover:text-(--color-primary-strong) ${motionClass}`}
           >
             {copy.backHome}
           </a>
@@ -175,10 +200,10 @@ function AccountEntryShellInner({
         </div>
         <div className="absolute bottom-[55px] left-[34px] right-[123px] z-2 max-w-[min(34ch,calc(100%*0.382+12ch))] text-white">
           <h2 className="m-0 mb-3 text-[clamp(1.618rem,2.6vw,2.618rem)] font-bold leading-[1.1]">
-            {copy.gallery[slide]?.title}
+            {gallery[slide]?.title}
           </h2>
           <p className="m-0 max-w-[28ch] text-sm leading-[1.618] text-white/88">
-            {copy.gallery[slide]?.copy}
+            {gallery[slide]?.copy}
           </p>
         </div>
         <div
@@ -205,14 +230,18 @@ function AccountEntryShellInner({
 
 export function AccountEntryShell({
   route,
+  nav = "account",
   children,
 }: {
   route: AccountEntryRoute;
+  nav?: AccountEntryNav;
   children: React.ReactNode;
 }) {
   return (
     <AuthLocaleProvider>
-      <AccountEntryShellInner route={route}>{children}</AccountEntryShellInner>
+      <AccountEntryShellInner route={route} nav={nav}>
+        {children}
+      </AccountEntryShellInner>
     </AuthLocaleProvider>
   );
 }

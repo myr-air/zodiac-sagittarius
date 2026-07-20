@@ -6,6 +6,7 @@ pub mod auth;
 pub mod bookings;
 pub mod create_trip;
 pub mod daily_briefings;
+pub mod destination_geo;
 pub mod email;
 pub mod events;
 pub mod exchange_rates;

@@ -5,14 +5,17 @@ use uuid::Uuid;
 use sagittarius_db::models::{NewAccountPlanVariant, NewAccountTrip, NewAccountTripOwnerMember};
 use sagittarius_db::{self as db, PgPool};
 use sagittarius_domain::errors::ServiceError;
-use sagittarius_domain::types::{
-    AccountTripCreateResponse, PublicTripCreateInput, TripCity, TripSummary,
-};
+use sagittarius_domain::types::{AccountTripCreateResponse, PublicTripCreateInput, TripSummary};
 
 use crate::auth::{self, create_session};
+use crate::destination_geo::fill_destination_geo_from_label;
 
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
 const DEFAULT_OWNER_DISPLAY_NAME: &str = "Guest";
+const DEFAULT_ORIGIN_LABEL: &str = "Bangkok, Thailand";
+const DEFAULT_ORIGIN_CITY: &str = "Bangkok";
+const DEFAULT_ORIGIN_COUNTRY: &str = "Thailand";
+const DEFAULT_ORIGIN_COUNTRY_CODE: &str = "TH";
 const DEFAULT_TIMEZONE: &str = "Asia/Bangkok";
 const MAX_TRIP_TEXT_LENGTH: usize = 120;
 const JOIN_ID_SUFFIX_ALPHABET: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -29,15 +32,11 @@ pub async fn create_public_trip(
     let join_password = auth::generate_session_token();
     let join_password_hash = auth::hash_secret(&join_password)?;
 
-    let destination_cities = vec![TripCity {
-        city: destination.clone(),
-        country: "Thailand".to_string(),
-        country_code: "TH".to_string(),
-        timezone: DEFAULT_TIMEZONE.to_string(),
-        latitude: 0.0,
-        longitude: 0.0,
-    }];
-    let countries = vec!["Thailand".to_string()];
+    // Best-effort destination geo from label — never invent Thailand on destination fields.
+    // Trip-level defaultTimezone may still fall back to Asia/Bangkok (origin product default).
+    let geo = fill_destination_geo_from_label(&destination).await;
+    let destination_cities = geo.cities;
+    let countries = geo.countries;
 
     let trip_id = Uuid::now_v7();
     let owner_member_id = Uuid::now_v7();
@@ -50,10 +49,10 @@ pub async fn create_public_trip(
         NewAccountTrip {
             id: trip_id,
             name: &destination,
-            origin_label: "Bangkok, Thailand",
-            origin_city: "Bangkok",
-            origin_country: "Thailand",
-            origin_country_code: "TH",
+            origin_label: DEFAULT_ORIGIN_LABEL,
+            origin_city: DEFAULT_ORIGIN_CITY,
+            origin_country: DEFAULT_ORIGIN_COUNTRY,
+            origin_country_code: DEFAULT_ORIGIN_COUNTRY_CODE,
             destination_label: &destination,
             destination_cities: &destination_cities,
             countries: &countries,

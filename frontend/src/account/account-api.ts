@@ -392,7 +392,8 @@ export type AccountTripMemberSession = {
 
 export type CreateAccountTripSuccess = {
   ok: true;
-  trip: { id: string };
+  trip: { id: string; joinId: string };
+  joinPassword: string;
   ownerMemberId: string;
   memberSession: AccountTripMemberSession;
 };
@@ -407,8 +408,9 @@ export type CreateAccountTripOutcome =
   | CreateAccountTripFailure;
 
 type AccountTripCreateBody = {
-  trip?: { id?: unknown };
+  trip?: { id?: unknown; joinId?: unknown };
   ownerMemberId?: unknown;
+  joinPassword?: unknown;
   memberSession?: {
     tripId?: unknown;
     memberId?: unknown;
@@ -437,7 +439,7 @@ function createTripFailureMessage(
 /**
  * POST account trip create with Bearer session token and a slim seed body
  * (name + destinationLabel; optional startDate/endDate — no joinId / joinPassword / partySize).
- * On success returns trip.id, ownerMemberId, and memberSession.
+ * On success returns trip.id, trip.joinId, joinPassword, ownerMemberId, and memberSession.
  */
 export async function createAccountTrip(
   input: CreateAccountTripInput,
@@ -480,8 +482,12 @@ export async function createAccountTrip(
 
   const tripId =
     typeof body?.trip?.id === "string" ? body.trip.id : null;
+  const joinId =
+    typeof body?.trip?.joinId === "string" ? body.trip.joinId : null;
   const ownerMemberId =
     typeof body?.ownerMemberId === "string" ? body.ownerMemberId : null;
+  const joinPassword =
+    typeof body?.joinPassword === "string" ? body.joinPassword : null;
   const session = body?.memberSession;
 
   if (
@@ -500,9 +506,18 @@ export async function createAccountTrip(
     };
   }
 
+  // joinPassword is required whenever the body includes trip.joinId (partial credentials).
+  if (joinId !== null && joinPassword === null) {
+    return {
+      ok: false,
+      error: "Trip was created but the response was incomplete. Please try again.",
+    };
+  }
+
   return {
     ok: true,
-    trip: { id: tripId },
+    trip: { id: tripId, joinId: joinId ?? "" },
+    joinPassword: joinPassword ?? "",
     ownerMemberId,
     memberSession: {
       tripId: session.tripId,

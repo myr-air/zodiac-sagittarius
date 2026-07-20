@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.17.0] — 2026-07-20
+
+### Added
+- Post-create join credentials step: show one-shot `joinId` + `joinPassword` (landing + portal) before `/trips/{id}`; Continue/Skip allowed
+- Shared `destination_geo` fill from destination label for public and account slim create (Open-Meteo best-effort)
+
+### Changed
+- Destination geo no longer invents Thailand/TH/Asia/Bangkok for non-TH labels; on miss keep label with unknown/neutral country fields
+- Portal credentials handoff uses fullscreen Postcard Atlas shell (replaces trips chrome)
+
+### Notes
+- Mission M7YF0YYY; origin Bangkok defaults when origin omitted unchanged; password rotate/reset out of scope
+
 ## [0.16.0] — 2026-07-20
 
 ### Added

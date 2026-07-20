@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { JoinCredentialsPanel } from "@/components/auth/JoinCredentialsPanel";
 import {
   classifyTripSeed as defaultClassifyTripSeed,
   type ClassifiedTripSeed,
@@ -34,6 +35,15 @@ export type CreateTripFormProps = {
   saveMemberSession?: (session: AccountTripMemberSession) => void;
   /** Navigate after create (e.g. `/trips/{id}`). */
   navigate?: (path: string) => void;
+  /**
+   * When set, parent hosts the fullscreen JoinCredentialsPanel (portal).
+   * When omitted, the form renders the panel inline (tests / default).
+   */
+  onJoinCredentials?: (credentials: {
+    tripId: string;
+    joinId: string;
+    joinPassword: string;
+  }) => void;
 };
 
 type WhenMode = ClassifiedWhen["mode"];
@@ -103,6 +113,7 @@ export function CreateTripForm({
   createAccountTrip,
   saveMemberSession,
   navigate,
+  onJoinCredentials,
 }: CreateTripFormProps) {
   const [seed, setSeed] = useState("");
   const [reviewed, setReviewed] = useState(false);
@@ -123,6 +134,11 @@ export function CreateTripForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [recommendations, setRecommendations] =
     useState<TripSeedRecommendations | null>(null);
+  const [joinCredentials, setJoinCredentials] = useState<{
+    tripId: string;
+    joinId: string;
+    joinPassword: string;
+  } | null>(null);
 
   const canCreate = name.trim().length > 0 || destinations.length > 0;
 
@@ -262,11 +278,36 @@ export function CreateTripForm({
         setSubmitError(outcome.error);
         return;
       }
+      // Match landing: persist member session at create, show credentials before navigate.
       saveMemberSession?.(outcome.memberSession);
-      navigate?.(`/trips/${outcome.trip.id}`);
+      const credentials = {
+        tripId: outcome.trip.id,
+        joinId: outcome.trip.joinId,
+        joinPassword: outcome.joinPassword,
+      };
+      if (onJoinCredentials) {
+        onJoinCredentials(credentials);
+      } else {
+        setJoinCredentials(credentials);
+      }
     } finally {
       setBusy(false);
     }
+  }
+
+  function handleCredentialsContinue() {
+    if (!joinCredentials) return;
+    navigate?.(`/trips/${joinCredentials.tripId}`);
+  }
+
+  if (joinCredentials) {
+    return (
+      <JoinCredentialsPanel
+        joinId={joinCredentials.joinId}
+        joinPassword={joinCredentials.joinPassword}
+        onContinue={handleCredentialsContinue}
+      />
+    );
   }
 
   return (
