@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.16.0] — 2026-07-20
+
+### Added
+- Slim signed-in trip create: `POST /api/v1/account/trips` accepts name and/or destinationLabel; server fills join id/password, Main Plan, and owner session (`joinPassword` returned once)
+- `POST /api/v1/account/classify-trip-seed` — NL → structured seed + style/place/season recommendations (heuristic; LLM-ready)
+- Shared create-trip compose/classify helpers; landing guest create uses classify → public trip bootstrap
+- Portal Create trip: NL seed → Understand with AI → editable review (when modes) → account create → `/trips/{id}`
+
+### Changed
+- Auto join ids use all-uppercase `{yymm}-{SLUG4}-{suffix4}` (month-scoped count); join lookup is case-insensitive
+
+### Notes
+- Mission M7XXVC84; full v34 wizard deferred (compact portal slice + approved draft as north-star)
+
 ## [0.15.0] — 2026-07-20
 
 ### Added

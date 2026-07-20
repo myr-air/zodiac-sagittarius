@@ -4,6 +4,7 @@ pub mod account_mappers;
 pub mod account_passkeys;
 pub mod auth;
 pub mod bookings;
+pub mod create_trip;
 pub mod daily_briefings;
 pub mod email;
 pub mod events;

@@ -1,4 +1,4 @@
-use time::OffsetDateTime;
+use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::account_mappers::{
@@ -22,20 +22,92 @@ use super::{
     is_unique_violation_on_constraint,
 };
 
+const DEFAULT_ORIGIN_LABEL: &str = "Bangkok, Thailand";
+const DEFAULT_ORIGIN_CITY: &str = "Bangkok";
+const DEFAULT_ORIGIN_COUNTRY: &str = "Thailand";
+const DEFAULT_ORIGIN_COUNTRY_CODE: &str = "TH";
+const DEFAULT_TIMEZONE: &str = "Asia/Bangkok";
+const DEFAULT_OWNER_DISPLAY_NAME: &str = "Guest";
+const DEFAULT_TRIP_DURATION_DAYS: i64 = 7;
+
 pub async fn create_trip(
     pool: &PgPool,
     session_token: &str,
     input: AccountTripCreateInput,
 ) -> Result<AccountTripCreateResponse, ServiceError> {
     let user_id = authenticate_user_session(pool, session_token).await?;
-    let name = validate_trip_text(&input.name, "trip name")?;
-    let origin_label = validate_trip_text(&input.origin_label, "origin label")?;
-    let origin_city = validate_trip_text(&input.origin_city, "origin city")?;
-    let origin_country = validate_trip_text(&input.origin_country, "origin country")?;
-    let origin_country_code =
-        validate_country_code(&input.origin_country_code, "origin country code")?;
-    let destination_cities = validate_trip_cities(&input.destination_cities)?;
-    let countries = validate_trip_countries(&input.countries)?;
+    let profile = db::account_queries::get_user_profile(pool, user_id)
+        .await?
+        .ok_or(ServiceError::Unauthenticated)?;
+    let name = match input.name.as_deref() {
+        Some(name) => validate_trip_text(name, "trip name")?,
+        None => match input.destination_label.as_deref() {
+            Some(destination) => validate_trip_text(destination, "trip name")?,
+            None => {
+                return Err(ServiceError::InvalidRequest(
+                    "name or destination label is required",
+                ));
+            }
+        },
+    };
+    let destination_label = match input.destination_label.as_deref() {
+        Some(label) if !label.trim().is_empty() => {
+            validate_trip_text(label, "destination label")?
+        }
+        Some(_) | None => name.clone(),
+    };
+    let origin_label = match input.origin_label.as_deref() {
+        Some(value) => validate_trip_text(value, "origin label")?,
+        None => match (
+            profile.home_city.as_deref().filter(|v| !v.trim().is_empty()),
+            profile
+                .home_country
+                .as_deref()
+                .filter(|v| !v.trim().is_empty()),
+        ) {
+            (Some(city), Some(country)) => format!("{city}, {country}"),
+            (Some(city), None) => city.to_string(),
+            (None, Some(country)) => country.to_string(),
+            (None, None) => DEFAULT_ORIGIN_LABEL.to_string(),
+        },
+    };
+    let origin_city = match input.origin_city.as_deref() {
+        Some(value) => validate_trip_text(value, "origin city")?,
+        None => profile
+            .home_city
+            .as_deref()
+            .filter(|v| !v.trim().is_empty())
+            .unwrap_or(DEFAULT_ORIGIN_CITY)
+            .to_string(),
+    };
+    let origin_country = match input.origin_country.as_deref() {
+        Some(value) => validate_trip_text(value, "origin country")?,
+        None => profile
+            .home_country
+            .as_deref()
+            .filter(|v| !v.trim().is_empty())
+            .unwrap_or(DEFAULT_ORIGIN_COUNTRY)
+            .to_string(),
+    };
+    let origin_country_code = match input.origin_country_code.as_deref() {
+        Some(value) => validate_country_code(value, "origin country code")?,
+        None => DEFAULT_ORIGIN_COUNTRY_CODE.to_string(),
+    };
+    let destination_cities = match input.destination_cities.as_ref() {
+        Some(cities) if !cities.is_empty() => validate_trip_cities(cities)?,
+        _ => vec![TripCity {
+            city: destination_label.clone(),
+            country: DEFAULT_ORIGIN_COUNTRY.to_string(),
+            country_code: DEFAULT_ORIGIN_COUNTRY_CODE.to_string(),
+            timezone: DEFAULT_TIMEZONE.to_string(),
+            latitude: 0.0,
+            longitude: 0.0,
+        }],
+    };
+    let countries = match input.countries.as_ref() {
+        Some(countries) if !countries.is_empty() => validate_trip_countries(countries)?,
+        _ => vec![DEFAULT_ORIGIN_COUNTRY.to_string()],
+    };
     let party_size = validate_party_size(input.party_size.unwrap_or(1))?;
     let timezone_candidate = input
         .default_timezone
@@ -46,35 +118,46 @@ pub async fn create_trip(
                 .first()
                 .map(|city| city.timezone.as_str())
         })
-        .unwrap_or("Asia/Bangkok");
+        .or_else(|| {
+            let tz = profile.timezone.trim();
+            if tz.is_empty() {
+                None
+            } else {
+                Some(tz)
+            }
+        })
+        .unwrap_or(DEFAULT_TIMEZONE);
     let default_timezone = validate_trip_text_with_len(
         timezone_candidate,
         MAX_TRIP_TIMEZONE_LENGTH,
         "default timezone",
     )?;
-    let destination_cities_label = destination_cities
-        .iter()
-        .map(|city| city.city.as_str())
-        .collect::<Vec<_>>()
-        .join(", ");
-    let countries_label = countries.join(", ");
-    let destination_label = validate_trip_text(
-        if input.destination_label.trim().is_empty() {
-            if destination_cities_label.is_empty() {
-                &countries_label
+    let owner_display_name = match input.owner_display_name.as_deref() {
+        Some(value) => validate_trip_text(value, "owner display name")?,
+        None => {
+            let from_profile = profile.display_name.trim();
+            if from_profile.is_empty() {
+                DEFAULT_OWNER_DISPLAY_NAME.to_string()
             } else {
-                &destination_cities_label
+                validate_trip_text(from_profile, "owner display name")?
             }
-        } else {
-            &input.destination_label
-        },
-        "destination label",
-    )?;
-    let owner_display_name = validate_trip_text(&input.owner_display_name, "owner display name")?;
-    let join_id = validate_join_id(&input.join_id)?;
-    let join_password = validate_join_password(&input.join_password)?;
+        }
+    };
+    let join_id = match input.join_id.as_deref() {
+        Some(join_id) => validate_join_id(join_id)?,
+        None => crate::public_trips::allocate_join_id(pool, &name).await?,
+    };
+    let join_password = match input.join_password.as_deref() {
+        Some(join_password) => validate_join_password(join_password)?,
+        None => crate::auth::generate_session_token(),
+    };
 
-    if input.start_date > input.end_date {
+    let now = OffsetDateTime::now_utc();
+    let start_date = input.start_date.unwrap_or_else(|| now.date());
+    let end_date = input
+        .end_date
+        .unwrap_or_else(|| (now + Duration::days(DEFAULT_TRIP_DURATION_DAYS)).date());
+    if start_date > end_date {
         return Err(ServiceError::InvalidRequest(
             "start date must be on or before end date",
         ));
@@ -83,7 +166,6 @@ pub async fn create_trip(
     let trip_id = Uuid::now_v7();
     let owner_member_id = Uuid::now_v7();
     let active_plan_variant_id = Uuid::now_v7();
-    let now = OffsetDateTime::now_utc();
     let join_password_hash = crate::auth::hash_secret(&join_password)?;
     let mut tx = pool.begin().await?;
 
@@ -102,8 +184,8 @@ pub async fn create_trip(
             countries: &countries,
             party_size,
             default_timezone: &default_timezone,
-            start_date: input.start_date,
-            end_date: input.end_date,
+            start_date,
+            end_date,
             join_id: &join_id,
             join_password_hash: &join_password_hash,
             main_trip_plan_id: active_plan_variant_id,
@@ -155,6 +237,7 @@ pub async fn create_trip(
         trip: TripSummary::from(trip),
         owner_member_id,
         member_session,
+        join_password: Some(join_password),
     })
 }
 

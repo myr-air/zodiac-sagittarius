@@ -34,21 +34,21 @@ const MAX_JOIN_PASSWORD_LENGTH: usize = 256;
 const DEFAULT_OWNER_COLOR: &str = "#0f766e";
 
 pub struct AccountTripCreateInput {
-    pub name: String,
-    pub origin_label: String,
-    pub origin_city: String,
-    pub origin_country: String,
-    pub origin_country_code: String,
-    pub destination_label: String,
-    pub destination_cities: Vec<TripCity>,
-    pub countries: Vec<String>,
+    pub name: Option<String>,
+    pub origin_label: Option<String>,
+    pub origin_city: Option<String>,
+    pub origin_country: Option<String>,
+    pub origin_country_code: Option<String>,
+    pub destination_label: Option<String>,
+    pub destination_cities: Option<Vec<TripCity>>,
+    pub countries: Option<Vec<String>>,
     pub party_size: Option<i32>,
     pub default_timezone: Option<String>,
-    pub start_date: time::Date,
-    pub end_date: time::Date,
-    pub owner_display_name: String,
-    pub join_id: String,
-    pub join_password: String,
+    pub start_date: Option<time::Date>,
+    pub end_date: Option<time::Date>,
+    pub owner_display_name: Option<String>,
+    pub join_id: Option<String>,
+    pub join_password: Option<String>,
 }
 
 pub struct AccountSettingsUpdateInput {

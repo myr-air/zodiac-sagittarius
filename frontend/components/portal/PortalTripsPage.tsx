@@ -8,8 +8,10 @@ import {
   useDeferredValue,
 } from "react";
 import { useRouter } from "next/navigation";
+import { classifyAccountTripSeed, createAccountTrip } from "@/src/account/account-api";
 import { accountHomeGate } from "@/src/account/account-home-gate";
 import { defaultApiBaseUrl } from "@/src/auth/email-challenge";
+import { saveMemberSession } from "@/src/landing/create-trip";
 import {
   loadPortalTrips,
   type PortalTripsLoadedData,
@@ -18,6 +20,7 @@ import {
   filterPortalTripRows,
   type PortalTripFilter,
 } from "@/src/portal/trip-rows";
+import { CreateTripForm } from "./CreateTripForm";
 import { PortalNav } from "./PortalNav";
 import { PortalTripRows } from "./PortalTripRows";
 
@@ -47,6 +50,7 @@ export function PortalTripsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<PortalTripFilter>("Upcoming");
   const [query, setQuery] = useState("");
+  const [creating, setCreating] = useState(false);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -110,11 +114,47 @@ export function PortalTripsPage() {
             <button className="portal-btn portal-btn--ghost" type="button">
               Import
             </button>
-            <button className="portal-btn portal-btn--primary" type="button">
+            <button
+              className="portal-btn portal-btn--primary"
+              type="button"
+              onClick={() => setCreating(true)}
+            >
               Create trip
             </button>
           </div>
         </div>
+
+        {creating ? (
+          <div className="mb-6">
+            <CreateTripForm
+              sessionToken={sessionToken}
+              classifyTripSeed={async (text) => {
+                const outcome = await classifyAccountTripSeed(
+                  { sessionToken, text },
+                  { fetch, apiBaseUrl: defaultApiBaseUrl() },
+                );
+                if (!outcome.ok) {
+                  throw new Error(outcome.error);
+                }
+                return outcome.seed;
+              }}
+              createAccountTrip={(input) =>
+                createAccountTrip(input, {
+                  fetch,
+                  apiBaseUrl: defaultApiBaseUrl(),
+                })
+              }
+              saveMemberSession={(session) =>
+                saveMemberSession(
+                  typeof window !== "undefined" ? window.localStorage : null,
+                  session,
+                )
+              }
+              navigate={(path) => router.push(path)}
+              onCancel={() => setCreating(false)}
+            />
+          </div>
+        ) : null}
 
         <div className="portal-filters" role="toolbar" aria-label="Trip filters">
           {FILTERS.map((label) => (

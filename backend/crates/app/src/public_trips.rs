@@ -1,3 +1,4 @@
+use rand::RngCore;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
@@ -14,6 +15,7 @@ const DEFAULT_OWNER_COLOR: &str = "#0f766e";
 const DEFAULT_OWNER_DISPLAY_NAME: &str = "Guest";
 const DEFAULT_TIMEZONE: &str = "Asia/Bangkok";
 const MAX_TRIP_TEXT_LENGTH: usize = 120;
+const JOIN_ID_SUFFIX_ALPHABET: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 pub async fn create_public_trip(
     pool: &PgPool,
@@ -23,7 +25,7 @@ pub async fn create_public_trip(
     let now = OffsetDateTime::now_utc();
     let start_date = now.date();
     let end_date = (now + Duration::days(7)).date();
-    let join_id = generate_join_id();
+    let join_id = allocate_join_id(pool, &destination).await?;
     let join_password = auth::generate_session_token();
     let join_password_hash = auth::hash_secret(&join_password)?;
 
@@ -98,6 +100,7 @@ pub async fn create_public_trip(
         trip: TripSummary::from(trip),
         owner_member_id,
         member_session,
+        join_password: Some(join_password),
     })
 }
 
@@ -109,14 +112,91 @@ fn validate_destination(destination: &str) -> Result<String, ServiceError> {
     Ok(trimmed.to_string())
 }
 
-fn generate_join_id() -> String {
-    Uuid::now_v7()
-        .simple()
-        .to_string()
+#[allow(dead_code)] // thin wrapper kept for call sites that don't have a label
+pub(crate) fn generate_join_id() -> String {
+    generate_join_id_from_label("trip")
+}
+
+/// Trip join id: `{yymm}-{SLUG4}-{suffix4}`
+/// - `yymm` — UTC year/month of create
+/// - `SLUG4` — 4 uppercase alnum chars from trip name (padded with `X`)
+/// - `suffix4` — 4 chars from `0-9A-Z` (month-scoped count, else random)
+pub(crate) fn generate_join_id_from_label(label: &str) -> String {
+    let now = OffsetDateTime::now_utc();
+    generate_join_id_parts(label, now, None)
+}
+
+/// Allocate join id using the month-scoped trip count (falls back to random on error).
+pub(crate) async fn allocate_join_id(
+    pool: &PgPool,
+    trip_name: &str,
+) -> Result<String, ServiceError> {
+    let now = OffsetDateTime::now_utc();
+    let yymm = format!(
+        "{:02}{:02}",
+        now.year().rem_euclid(100),
+        u8::from(now.month())
+    );
+    let seq = match db::trip_queries::count_trips_with_join_yymm(pool, &yymm).await {
+        Ok(count) if count >= 0 => Some(count as u64),
+        _ => None,
+    };
+    Ok(generate_join_id_parts(trip_name, now, seq))
+}
+
+/// Test/helper: build join id with fixed clock and optional month-scoped sequence.
+pub(crate) fn generate_join_id_parts(
+    label: &str,
+    now: OffsetDateTime,
+    month_seq: Option<u64>,
+) -> String {
+    let yymm = format!(
+        "{:02}{:02}",
+        now.year().rem_euclid(100),
+        u8::from(now.month())
+    );
+    let slug = slug4_from_name(label);
+    let suffix = match month_seq {
+        Some(seq) => encode_base36_4(seq),
+        None => random_suffix4(),
+    };
+    format!("{yymm}-{slug}-{suffix}")
+}
+
+fn slug4_from_name(name: &str) -> String {
+    let letters: String = name
         .chars()
-        .take(12)
-        .collect::<String>()
-        .to_ascii_uppercase()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .map(|c| c.to_ascii_uppercase())
+        .collect();
+    let mut slug: String = letters.chars().take(4).collect();
+    while slug.len() < 4 {
+        slug.push('X');
+    }
+    if slug.chars().all(|c| c == 'X') {
+        "TRIP".to_string()
+    } else {
+        slug
+    }
+}
+
+fn encode_base36_4(value: u64) -> String {
+    let mut n = value % 36u64.pow(4);
+    let mut out = [b'0'; 4];
+    for i in (0..4).rev() {
+        out[i] = JOIN_ID_SUFFIX_ALPHABET[(n % 36) as usize];
+        n /= 36;
+    }
+    String::from_utf8(out.to_vec()).expect("base36 alphabet is ascii")
+}
+
+fn random_suffix4() -> String {
+    let mut bytes = [0u8; 4];
+    rand::rng().fill_bytes(&mut bytes);
+    bytes
+        .iter()
+        .map(|b| JOIN_ID_SUFFIX_ALPHABET[(*b as usize) % JOIN_ID_SUFFIX_ALPHABET.len()] as char)
+        .collect()
 }
 
 fn map_trip_insert_error(error: sqlx::Error) -> ServiceError {
@@ -130,5 +210,63 @@ fn map_trip_insert_error(error: sqlx::Error) -> ServiceError {
         ServiceError::TripJoinIdAlreadyExists
     } else {
         ServiceError::database(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::{Date, Month, PrimitiveDateTime, Time};
+
+    fn fixed_now() -> OffsetDateTime {
+        let date = Date::from_calendar_date(2026, Month::July, 20).unwrap();
+        PrimitiveDateTime::new(date, Time::MIDNIGHT).assume_utc()
+    }
+
+    #[test]
+    fn join_id_format_yymm_slug_suffix() {
+        let id = generate_join_id_parts("Japan Autumn Loop", fixed_now(), Some(10));
+        assert_eq!(id, "2607-JAPA-000A");
+    }
+
+    #[test]
+    fn join_id_slug_pads_short_names() {
+        let id = generate_join_id_parts("CM", fixed_now(), Some(0));
+        assert_eq!(id, "2607-CMXX-0000");
+    }
+
+    #[test]
+    fn join_id_slug_falls_back_when_empty() {
+        let id = generate_join_id_parts("!!!", fixed_now(), Some(1));
+        assert_eq!(id, "2607-TRIP-0001");
+    }
+
+    #[test]
+    fn join_id_random_suffix_matches_alphabet() {
+        let id = generate_join_id_from_label("Chiang Mai");
+        let re = regex_lite_join_id();
+        assert!(
+            re(&id),
+            "expected yymm-SLUG-xxxx, got {id}"
+        );
+    }
+
+    fn regex_lite_join_id() -> impl Fn(&str) -> bool {
+        |s: &str| {
+            let parts: Vec<&str> = s.split('-').collect();
+            if parts.len() != 3 {
+                return false;
+            }
+            let (yymm, slug, suffix) = (parts[0], parts[1], parts[2]);
+            yymm.len() == 4
+                && yymm.chars().all(|c| c.is_ascii_digit())
+                && slug.len() == 4
+                && slug.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+                && suffix.len() == 4
+                && suffix
+                    .bytes()
+                    .all(|b| JOIN_ID_SUFFIX_ALPHABET.contains(&b))
+                && s.chars().all(|c| !c.is_ascii_lowercase())
+        }
     }
 }
