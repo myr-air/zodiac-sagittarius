@@ -10,6 +10,8 @@ import {
 const TRIP_ID = "11111111-1111-4111-8111-111111111111";
 const OWNER_MEMBER_ID = "22222222-2222-4222-8222-222222222222";
 const SESSION_TOKEN = "member-session-token-abc";
+const JOIN_ID = "join-id-from-public-create";
+const JOIN_PASSWORD = "one-shot-join-password";
 
 const SUCCESS_BODY = {
   trip: { id: TRIP_ID },
@@ -52,7 +54,7 @@ const CLASSIFIED_PRIMARY = "Chiang Mai";
 const PRIMARY_DESTINATION_SEED = "Vietnam";
 
 describe("createTripFromQuery", () => {
-  it("guest/signed-out landing create with a place seed (free-text or classified primary destination) POSTs /api/v1/public/trips (no Authorization), stores member session, and navigates to /trips/{id}", async () => {
+  it("guest/signed-out landing create with a place seed (free-text or classified primary destination) POSTs /api/v1/public/trips (no Authorization) and stores member session without navigating", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(SUCCESS_BODY));
     const navigate = vi.fn();
     const storage = memoryStorage();
@@ -81,7 +83,7 @@ describe("createTripFromQuery", () => {
       createdAt: "2026-07-19T00:00:00Z",
       expiresAt: "2026-07-26T00:00:00Z",
     });
-    expect(navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+    expect(navigate).not.toHaveBeenCalled();
 
     // Free-text NL → classified primary destination (not the raw sentence)
     fetchMock.mockClear();
@@ -110,8 +112,7 @@ describe("createTripFromQuery", () => {
       createdAt: "2026-07-19T00:00:00Z",
       expiresAt: "2026-07-26T00:00:00Z",
     });
-    expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("posts the query seed to public bootstrap without account login redirect", async () => {
@@ -143,7 +144,7 @@ describe("createTripFromQuery", () => {
     );
   });
 
-  it("stores the member session and navigates to /trips/{id} on success", async () => {
+  it("stores the member session and returns route without navigating on success", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(SUCCESS_BODY));
     const navigate = vi.fn();
     const storage = memoryStorage();
@@ -172,11 +173,102 @@ describe("createTripFromQuery", () => {
     });
     expect(storage.data[MEMBER_SESSION_STORAGE_KEY]).toBeTruthy();
 
-    expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
-    expect(navigate).not.toHaveBeenCalledWith(
-      expect.stringMatching(/login|#login/i),
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("success outcome includes trip.joinId and top-level joinPassword from the create response body", async () => {
+    const createBody = {
+      ...SUCCESS_BODY,
+      trip: { id: TRIP_ID, joinId: JOIN_ID },
+      joinPassword: JOIN_PASSWORD,
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(createBody));
+    const navigate = vi.fn();
+    const storage = memoryStorage();
+
+    const outcome = await createTripFromQuery("Vietnam", {
+      fetch: fetchMock,
+      apiBaseUrl: "http://127.0.0.1:5181",
+      storage,
+      navigate,
+    });
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    expect(outcome.trip.joinId).toBe(JOIN_ID);
+    expect(outcome.joinPassword).toBe(JOIN_PASSWORD);
+  });
+
+  it("on success saves member session but does not call navigate (caller shows credentials first)", async () => {
+    const createBody = {
+      ...SUCCESS_BODY,
+      trip: { id: TRIP_ID, joinId: JOIN_ID },
+      joinPassword: JOIN_PASSWORD,
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(createBody));
+    const navigate = vi.fn();
+    const storage = memoryStorage();
+
+    const outcome = await createTripFromQuery("Vietnam", {
+      fetch: fetchMock,
+      apiBaseUrl: "http://127.0.0.1:5181",
+      storage,
+      navigate,
+    });
+
+    expect(outcome.ok).toBe(true);
+    expect(loadMemberSession(storage)).toEqual({
+      tripId: TRIP_ID,
+      memberId: OWNER_MEMBER_ID,
+      sessionToken: SESSION_TOKEN,
+      createdAt: "2026-07-19T00:00:00Z",
+      expiresAt: "2026-07-26T00:00:00Z",
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("rejects empty destination without calling fetch or navigate", async () => {
+    const fetchMock = vi.fn<typeof fetch>();
+    const navigate = vi.fn();
+    const storage = memoryStorage();
+
+    const outcome = await createTripFromQuery("   ", {
+      fetch: fetchMock,
+      apiBaseUrl: "http://127.0.0.1:5181",
+      storage,
+      navigate,
+    });
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error).toBe("Enter a destination to start planning.");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(loadMemberSession(storage)).toBeNull();
+  });
+
+  it("treats incomplete create response as failure without session or navigate", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({ trip: { id: TRIP_ID }, ownerMemberId: OWNER_MEMBER_ID }),
     );
+    const navigate = vi.fn();
+    const storage = memoryStorage();
+
+    const outcome = await createTripFromQuery("Tokyo", {
+      fetch: fetchMock,
+      apiBaseUrl: "http://127.0.0.1:5181",
+      storage,
+      navigate,
+    });
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error).toBe(
+      "Trip was created but the response was incomplete. Please try again.",
+    );
+    expect(loadMemberSession(storage)).toBeNull();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("on API failure keeps a user-visible error without storing session or fake login", async () => {

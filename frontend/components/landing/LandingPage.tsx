@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AuthLocaleProvider, useAuthLocale } from "@/components/auth/AuthLocaleProvider";
+import { JoinCredentialsPanel } from "@/components/auth/JoinCredentialsPanel";
 import { LocaleSwitch } from "@/components/auth/LocaleSwitch";
 import { CreateEntryStub } from "./CreateEntryStub";
 import { DestinationCards } from "./DestinationCards";
@@ -24,6 +25,12 @@ import {
   loadRecent,
   saveRecent,
 } from "@/src/landing/recent-searches";
+
+type PendingJoinCredentials = {
+  joinId: string;
+  joinPassword: string;
+  route: string;
+};
 
 const RECENT_EVENT = "joii-recent-change";
 /** Stable empty list for useSyncExternalStore server + empty-client snapshots. */
@@ -115,6 +122,9 @@ function LandingPageInner() {
   const [query, setQuery] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [pendingJoin, setPendingJoin] = useState<PendingJoinCredentials | null>(
+    null,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const recent = useSyncExternalStore(
     subscribeRecent,
@@ -153,16 +163,30 @@ function LandingPageInner() {
       fetch: globalThis.fetch.bind(globalThis),
       apiBaseUrl: defaultApiBaseUrl(),
       storage: window.sessionStorage,
-      navigate: (route) => {
-        router.push(route);
+      navigate: () => {
+        /* Caller shows credentials before navigating. */
       },
     });
 
     setCreateBusy(false);
     if (!outcome.ok) {
       setCreateError(outcome.error);
+      return;
     }
-  }, [createBusy, query, recent, router]);
+
+    setPendingJoin({
+      joinId: outcome.trip.joinId,
+      joinPassword: outcome.joinPassword,
+      route: outcome.route,
+    });
+  }, [createBusy, query, recent]);
+
+  const handleContinueToTrip = useCallback(() => {
+    if (!pendingJoin) return;
+    const { route } = pendingJoin;
+    setPendingJoin(null);
+    router.push(route);
+  }, [pendingJoin, router]);
 
   const handleSeed = useCallback(
     (seed: string) => {
@@ -179,6 +203,16 @@ function LandingPageInner() {
     },
     [focusHeroQuery],
   );
+
+  if (pendingJoin) {
+    return (
+      <JoinCredentialsPanel
+        joinId={pendingJoin.joinId}
+        joinPassword={pendingJoin.joinPassword}
+        onContinue={handleContinueToTrip}
+      />
+    );
+  }
 
   return (
     <div className="overflow-x-hidden bg-(--color-page)" data-locale={locale}>

@@ -32,6 +32,8 @@ const ACCOUNT_SETTINGS_BODY = {
 
 const TRIP_ID = "018f4e80-0000-7000-a000-0000000000aa";
 const MEMBER_ID = "018f4e80-0000-7000-a000-0000000000bb";
+const JOIN_ID = "join-id-from-account-create";
+const JOIN_PASSWORD = "one-shot-account-join-password";
 
 /** Independent fixture shaped like AccountTripSummary[] (camelCase API body). */
 const ACCOUNT_TRIPS_BODY = [
@@ -317,6 +319,93 @@ describe("createAccountTrip", () => {
       createdAt: CREATED_AT,
       expiresAt: EXPIRES_AT,
     });
+  });
+
+  it("success outcome includes trip.joinId and joinPassword parsed from the 200 body", async () => {
+    const createBody = {
+      ...ACCOUNT_TRIP_CREATE_BODY,
+      trip: { ...ACCOUNT_TRIP_CREATE_BODY.trip, joinId: JOIN_ID },
+      joinPassword: JOIN_PASSWORD,
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(createBody),
+    );
+
+    const outcome = await createAccountTrip(
+      {
+        sessionToken: SESSION_TOKEN,
+        seed: {
+          name: "Chiang Mai Loop",
+          destinationLabel: "Chiang Mai",
+        },
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    // Independent literals from the 200 body — not recomputed client-side.
+    expect(outcome.trip.joinId).toBe(JOIN_ID);
+    expect(outcome.joinPassword).toBe(JOIN_PASSWORD);
+  });
+
+  it("slim request body still omits joinId and joinPassword (server generates them)", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({
+        ...ACCOUNT_TRIP_CREATE_BODY,
+        trip: { ...ACCOUNT_TRIP_CREATE_BODY.trip, joinId: JOIN_ID },
+        joinPassword: JOIN_PASSWORD,
+      }),
+    );
+
+    await createAccountTrip(
+      {
+        sessionToken: SESSION_TOKEN,
+        seed: {
+          name: "Chiang Mai Loop",
+          destinationLabel: "Chiang Mai",
+        },
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    const posted = JSON.parse(
+      String(fetchMock.mock.calls[0]![1]?.body),
+    ) as Record<string, unknown>;
+    expect(posted).toEqual({
+      name: "Chiang Mai Loop",
+      destinationLabel: "Chiang Mai",
+    });
+    expect("joinId" in posted).toBe(false);
+    expect("joinPassword" in posted).toBe(false);
+  });
+
+  it("missing joinPassword on an otherwise-valid 200 is treated as incomplete response failure", async () => {
+    const createBody = {
+      ...ACCOUNT_TRIP_CREATE_BODY,
+      trip: { ...ACCOUNT_TRIP_CREATE_BODY.trip, joinId: JOIN_ID },
+      // joinPassword intentionally omitted
+    };
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(createBody),
+    );
+
+    const outcome = await createAccountTrip(
+      {
+        sessionToken: SESSION_TOKEN,
+        seed: {
+          name: "Chiang Mai Loop",
+          destinationLabel: "Chiang Mai",
+        },
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error).toBe(
+      "Trip was created but the response was incomplete. Please try again.",
+    );
   });
 });
 

@@ -3,8 +3,9 @@
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  */
 import type { ComponentProps } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -15,6 +16,10 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import type { ClassifiedTripSeed } from "@/src/create-trip/classify-seed";
 import { CreateTripForm } from "./CreateTripForm";
+
+afterEach(() => {
+  cleanup();
+});
 
 /** Independent literals from draft / classify examples — not recomputed. */
 const SEED_TEXT =
@@ -39,10 +44,16 @@ const OWNER_MEMBER_ID = "11111111-2222-4333-8444-555555555555";
 const MEMBER_SESSION_TOKEN = "member-session-token-after-create";
 const CREATED_AT = "2026-07-20T00:00:00Z";
 const EXPIRES_AT = "2026-07-27T00:00:00Z";
+/** Independent literals from join-credentials draft / JoinCredentialsPanel tests. */
+const JOIN_ID = "2607-OSAK-0002";
+const JOIN_PASSWORD = "6cS3gEFQbFviYAAWmw0uths4";
+const CONTINUE_LABEL = "Continue to trip";
+const SKIP_LABEL = "Skip for now";
 
 const CREATE_SUCCESS = {
   ok: true as const,
-  trip: { id: TRIP_ID },
+  trip: { id: TRIP_ID, joinId: JOIN_ID },
+  joinPassword: JOIN_PASSWORD,
   ownerMemberId: OWNER_MEMBER_ID,
   memberSession: {
     tripId: TRIP_ID,
@@ -73,11 +84,10 @@ function formProps(
   classifyTripSeed: (text: string) => ClassifiedTripSeed,
   submit?: SubmitSeamProps,
 ): ComponentProps<typeof CreateTripForm> {
-  // Submit seam props are not on CreateTripForm yet (T6 RED) — cast until wired.
   return {
     classifyTripSeed,
     ...submit,
-  } as ComponentProps<typeof CreateTripForm>;
+  };
 }
 
 function seedArgFromCreateCall(
@@ -412,7 +422,7 @@ describe("CreateTripForm", () => {
     expect(within(destinations).queryByRole("listitem")).toBeNull();
   });
 
-  it("signed-in submit with only a name seed or only a destination seed creates via account API, stores member session, and navigates to /trips/{id}", async () => {
+  it("signed-in submit with only a name seed or only a destination seed creates via account API, then Continue stores member session and navigates to /trips/{id}", async () => {
     // --- Name-only seed ---
     const nameSubmit = createSubmitMocks();
     const { user: nameUser, unmount: unmountName } = await classifyAndOpenReview(
@@ -437,6 +447,10 @@ describe("CreateTripForm", () => {
       name: CLASSIFIED_NAME,
       destinationLabel: TBD_LABEL,
     });
+    expect(nameSubmit.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText(JOIN_ID)).toBeInTheDocument();
+    // Session may already be saved at create (decisions); must be present by Continue.
+    await nameUser.click(screen.getByRole("button", { name: CONTINUE_LABEL }));
     expect(savedMemberSessionFromCall(nameSubmit.saveMemberSession)).toEqual(
       expect.objectContaining({
         tripId: TRIP_ID,
@@ -473,6 +487,9 @@ describe("CreateTripForm", () => {
       name: PRIMARY_PLACE,
       destinationLabel: PRIMARY_PLACE,
     });
+    expect(destSubmit.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText(JOIN_ID)).toBeInTheDocument();
+    await destUser.click(screen.getByRole("button", { name: CONTINUE_LABEL }));
     expect(savedMemberSessionFromCall(destSubmit.saveMemberSession)).toEqual(
       expect.objectContaining({
         tripId: TRIP_ID,
@@ -480,6 +497,84 @@ describe("CreateTripForm", () => {
       }),
     );
     expect(destSubmit.navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+  });
+
+  it("after successful account create, credentials panel is shown before navigate(/trips/{id})", async () => {
+    const submit = createSubmitMocks();
+    const { user } = await classifyAndOpenReview(
+      NAME_ONLY_SEED,
+      SEED_TEXT,
+      submit,
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Create( trip)?$/i }));
+
+    await waitFor(() => expect(submit.createAccountTrip).toHaveBeenCalled());
+
+    expect(screen.getByText(JOIN_ID)).toBeInTheDocument();
+    expect(screen.getByText(JOIN_PASSWORD)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: CONTINUE_LABEL })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: SKIP_LABEL })).toBeInTheDocument();
+    expect(submit.navigate).not.toHaveBeenCalled();
+  });
+
+  it("Continue or Skip navigates to /trips/{id} with member session saved", async () => {
+    // --- Continue ---
+    const continueSubmit = createSubmitMocks();
+    const { user: continueUser, unmount: unmountContinue } =
+      await classifyAndOpenReview(NAME_ONLY_SEED, SEED_TEXT, continueSubmit);
+
+    await continueUser.click(
+      screen.getByRole("button", { name: /^Create( trip)?$/i }),
+    );
+    await waitFor(() =>
+      expect(continueSubmit.createAccountTrip).toHaveBeenCalled(),
+    );
+    expect(continueSubmit.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText(JOIN_ID)).toBeInTheDocument();
+
+    await continueUser.click(
+      screen.getByRole("button", { name: CONTINUE_LABEL }),
+    );
+    expect(savedMemberSessionFromCall(continueSubmit.saveMemberSession)).toEqual(
+      expect.objectContaining({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: MEMBER_SESSION_TOKEN,
+        createdAt: CREATED_AT,
+        expiresAt: EXPIRES_AT,
+      }),
+    );
+    expect(continueSubmit.navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+    expect(continueSubmit.navigate).toHaveBeenCalledTimes(1);
+    unmountContinue();
+
+    // --- Skip ---
+    const skipSubmit = createSubmitMocks();
+    const { user: skipUser } = await classifyAndOpenReview(
+      NAME_ONLY_SEED,
+      SEED_TEXT,
+      skipSubmit,
+    );
+
+    await skipUser.click(
+      screen.getByRole("button", { name: /^Create( trip)?$/i }),
+    );
+    await waitFor(() =>
+      expect(skipSubmit.createAccountTrip).toHaveBeenCalled(),
+    );
+    expect(skipSubmit.navigate).not.toHaveBeenCalled();
+    expect(screen.getByText(JOIN_ID)).toBeInTheDocument();
+
+    await skipUser.click(screen.getByRole("button", { name: SKIP_LABEL }));
+    expect(savedMemberSessionFromCall(skipSubmit.saveMemberSession)).toEqual(
+      expect.objectContaining({
+        tripId: TRIP_ID,
+        sessionToken: MEMBER_SESSION_TOKEN,
+      }),
+    );
+    expect(skipSubmit.navigate).toHaveBeenCalledWith(`/trips/${TRIP_ID}`);
+    expect(skipSubmit.navigate).toHaveBeenCalledTimes(1);
   });
 
   it("optional timing fields for the selected mode are sent on create; omitted timing (not-decided/flexible) is left out; party size is never sent", async () => {
