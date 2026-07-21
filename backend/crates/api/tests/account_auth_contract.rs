@@ -610,6 +610,365 @@ async fn password_auth_registers_and_logs_in_without_email_code(pool: sqlx::PgPo
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn account_change_password_unauthenticated_returns_stable_envelope(pool: sqlx::PgPool) {
+    let (status, body) = response_json(
+        post_json_with_auth(
+            support::app(pool),
+            "/api/v1/account/password",
+            None,
+            json!({
+                "currentPassword": "correct-horse-battery",
+                "newPassword": "new-correct-horse"
+            }),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
+    assert_eq!(body["message"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_change_password_rejects_wrong_current_password(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let (register_status, session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "change-password-wrong@example.com",
+            "password": "correct-horse-battery",
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::OK);
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    let hash_before: String = sqlx::query_scalar(
+        "select password_hash
+         from users
+         where id = $1",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    let (status, body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/password",
+            Some(&authorization),
+            json!({
+                "currentPassword": "wrong-password",
+                "newPassword": "new-correct-horse"
+            }),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["code"], "invalid_request");
+
+    let hash_after: String = sqlx::query_scalar(
+        "select password_hash
+         from users
+         where id = $1",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(hash_after, hash_before);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_change_password_updates_hash_and_allows_new_login(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let email = "change-password-success@example.com";
+    let old_password = "correct-horse-battery";
+    let new_password = "new-correct-horse";
+
+    let (register_status, session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": email,
+            "password": old_password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::OK);
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+
+    let (change_status, change_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/password",
+            Some(&authorization),
+            json!({
+                "currentPassword": old_password,
+                "newPassword": new_password
+            }),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(change_status, StatusCode::NO_CONTENT);
+    assert_eq!(change_body, Value::Null);
+
+    let (old_login_status, old_login_body): (StatusCode, Value) = post_json_response(
+        support::app(pool.clone()),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": email,
+            "password": old_password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(old_login_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(old_login_body["code"], "unauthenticated");
+
+    let (new_login_status, new_login_session): (StatusCode, Value) = post_json_response(
+        support::app(pool),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": email,
+            "password": new_password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(new_login_status, StatusCode::OK);
+    assert_eq!(new_login_session["kind"], "temporary");
+    assert_eq!(new_login_session["userId"], session["userId"]);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_close_account_rejects_wrong_password_or_missing_close_confirmation(
+    pool: sqlx::PgPool,
+) {
+    let app = support::app(pool.clone());
+    let password = "correct-horse-battery";
+    let (register_status, session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": "close-account-reject@example.com",
+            "password": password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::OK);
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    let reject_cases = [
+        json!({
+            "password": "wrong-password",
+            "confirmation": "CLOSE"
+        }),
+        json!({
+            "password": password,
+            "confirmation": ""
+        }),
+        json!({
+            "password": password,
+            "confirmation": "close"
+        }),
+    ];
+
+    for body in reject_cases {
+        let (status, response_body) = response_json(
+            post_json_with_auth(
+                support::app(pool.clone()),
+                "/api/v1/account/close",
+                Some(&authorization),
+                body,
+            )
+            .await,
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(response_body["code"], "invalid_request");
+
+        let is_disabled: bool = sqlx::query_scalar(
+            "select disabled_at is not null
+             from users
+             where id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!is_disabled);
+
+        let active_sessions: i64 = sqlx::query_scalar(
+            "select count(*)
+             from user_sessions
+             where user_id = $1
+               and revoked_at is null",
+        )
+        .bind(user_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(active_sessions, 1);
+
+        let (me_status, me_body) = response_json(
+            get_with_auth(
+                support::app(pool.clone()),
+                "/api/v1/account",
+                Some(&authorization),
+            )
+            .await,
+        )
+        .await;
+        assert_eq!(me_status, StatusCode::OK);
+        assert_eq!(
+            me_body["profile"]["primaryEmail"],
+            "close-account-reject@example.com"
+        );
+    }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_close_account_soft_disables_and_revokes_sessions(pool: sqlx::PgPool) {
+    let app = support::app(pool.clone());
+    let email = "close-account-success@example.com";
+    let password = "correct-horse-battery";
+
+    let (register_status, session): (StatusCode, Value) = post_json_response(
+        app.clone(),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "register",
+            "email": email,
+            "password": password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(register_status, StatusCode::OK);
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+    let user_id = Uuid::parse_str(session["userId"].as_str().unwrap()).unwrap();
+
+    let (second_login_status, second_session): (StatusCode, Value) = post_json_response(
+        support::app(pool.clone()),
+        "/api/v1/auth/password/sessions",
+        json!({
+            "flow": "login",
+            "email": email,
+            "password": password,
+            "trustDevice": false,
+            "deviceLabel": ""
+        }),
+    )
+    .await;
+    assert_eq!(second_login_status, StatusCode::OK);
+    assert_eq!(second_session["userId"], session["userId"]);
+
+    let active_before: i64 = sqlx::query_scalar(
+        "select count(*)
+         from user_sessions
+         where user_id = $1
+           and revoked_at is null",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(active_before, 2);
+
+    let (close_status, close_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/close",
+            Some(&authorization),
+            json!({
+                "password": password,
+                "confirmation": "CLOSE"
+            }),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(close_status, StatusCode::NO_CONTENT);
+    assert_eq!(close_body, Value::Null);
+
+    let is_disabled: bool = sqlx::query_scalar(
+        "select disabled_at is not null
+         from users
+         where id = $1",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(is_disabled);
+
+    let active_after: i64 = sqlx::query_scalar(
+        "select count(*)
+         from user_sessions
+         where user_id = $1
+           and revoked_at is null",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(active_after, 0);
+
+    let user_still_exists: bool = sqlx::query_scalar(
+        "select exists(
+             select 1
+             from users
+             where id = $1
+         )",
+    )
+    .bind(user_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(user_still_exists);
+
+    let (me_status, me_body) = response_json(
+        get_with_auth(
+            support::app(pool),
+            "/api/v1/account",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(me_status, StatusCode::UNAUTHORIZED);
+    assert_eq!(me_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn password_auth_locks_after_repeated_wrong_passwords(pool: sqlx::PgPool) {
     let app = support::app(pool.clone());
     let (register_status, _session): (StatusCode, Value) = post_json_response(
@@ -1770,6 +2129,212 @@ async fn account_can_revoke_trusted_device_from_settings(pool: sqlx::PgPool) {
     .await;
     assert_eq!(revoked_status, StatusCode::UNAUTHORIZED);
     assert_eq!(revoked_body["code"], "unauthenticated");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_delete_passkey_removes_owned_credential(pool: sqlx::PgPool) {
+    let session = login_account(&pool, "delete-passkey@example.com", false, "").await;
+    let token = session["sessionToken"].as_str().unwrap();
+    let authorization = format!("Bearer {token}");
+    let signing_key = SigningKey::from_slice(&[11; 32]).unwrap();
+    let credential_id_bytes = b"credential-delete-passkey";
+    let (start_status, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys/options",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(start_status, StatusCode::OK);
+    let registration = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Delete Target",
+    );
+    let (finish_status, finish_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys",
+            Some(&authorization),
+            registration,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(finish_status, StatusCode::OK);
+    let passkey_id = finish_body["id"].as_str().unwrap();
+
+    let (status, body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/api/v1/account/passkeys/{passkey_id}"),
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    assert_eq!(body, Value::Null);
+
+    let (settings_status, settings_body) = response_json(
+        get_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(settings_status, StatusCode::OK);
+    assert_eq!(settings_body["passkeys"], json!([]));
+
+    let remaining: i64 = sqlx::query_scalar(
+        "select count(*) from webauthn_credentials where id = $1",
+    )
+    .bind(Uuid::parse_str(passkey_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(remaining, 0);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_delete_passkey_rejects_other_users_credential(pool: sqlx::PgPool) {
+    let owner_session = login_account(&pool, "delete-passkey-owner@example.com", false, "").await;
+    let owner_auth = format!(
+        "Bearer {}",
+        owner_session["sessionToken"].as_str().unwrap()
+    );
+    let signing_key = SigningKey::from_slice(&[12; 32]).unwrap();
+    let credential_id_bytes = b"credential-delete-passkey-other";
+    let (start_status, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys/options",
+            Some(&owner_auth),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(start_status, StatusCode::OK);
+    let registration = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Owner Passkey",
+    );
+    let (finish_status, finish_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys",
+            Some(&owner_auth),
+            registration,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(finish_status, StatusCode::OK);
+    let passkey_id = finish_body["id"].as_str().unwrap();
+
+    let other_session = login_account(&pool, "delete-passkey-other@example.com", false, "").await;
+    let other_auth = format!(
+        "Bearer {}",
+        other_session["sessionToken"].as_str().unwrap()
+    );
+
+    let (foreign_status, foreign_body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/api/v1/account/passkeys/{passkey_id}"),
+            Some(&other_auth),
+        )
+        .await,
+    )
+    .await;
+    assert!(
+        foreign_status == StatusCode::NOT_FOUND || foreign_status == StatusCode::FORBIDDEN,
+        "expected 404 or 403, got {foreign_status}"
+    );
+    assert!(
+        foreign_body["code"] == "not_found" || foreign_body["code"] == "forbidden",
+        "expected not_found or forbidden, got {}",
+        foreign_body["code"]
+    );
+
+    let remaining: i64 = sqlx::query_scalar(
+        "select count(*) from webauthn_credentials where id = $1",
+    )
+    .bind(Uuid::parse_str(passkey_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(remaining, 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn account_delete_passkey_unauthenticated_returns_stable_envelope(pool: sqlx::PgPool) {
+    let session =
+        login_account(&pool, "delete-passkey-unauth@example.com", false, "").await;
+    let authorization = format!("Bearer {}", session["sessionToken"].as_str().unwrap());
+    let signing_key = SigningKey::from_slice(&[13; 32]).unwrap();
+    let credential_id_bytes = b"credential-delete-passkey-unauth";
+    let (start_status, start) = response_json(
+        post_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys/options",
+            Some(&authorization),
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(start_status, StatusCode::OK);
+    let registration = registration_finish_payload(
+        start["challengeId"].as_str().unwrap(),
+        start["challenge"].as_str().unwrap(),
+        &signing_key,
+        credential_id_bytes,
+        "Unauth Target",
+    );
+    let (finish_status, finish_body) = response_json(
+        post_json_with_auth(
+            support::app(pool.clone()),
+            "/api/v1/account/passkeys",
+            Some(&authorization),
+            registration,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(finish_status, StatusCode::OK);
+    let passkey_id = finish_body["id"].as_str().unwrap();
+
+    let (status, body) = response_json(
+        delete_with_auth(
+            support::app(pool.clone()),
+            &format!("/api/v1/account/passkeys/{passkey_id}"),
+            None,
+        )
+        .await,
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(body["code"], "unauthenticated");
+    assert_eq!(body["message"], "unauthenticated");
+
+    let remaining: i64 = sqlx::query_scalar(
+        "select count(*) from webauthn_credentials where id = $1",
+    )
+    .bind(Uuid::parse_str(passkey_id).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(remaining, 1);
 }
 
 #[sqlx::test(migrations = "../../migrations")]

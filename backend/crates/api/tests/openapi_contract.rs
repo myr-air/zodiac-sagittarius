@@ -84,6 +84,8 @@ const ACCOUNT_AND_JOIN_ROUTES: &[(&str, &str)] = &[
     ("post", "/auth/password/sessions"),
     ("get", "/account"),
     ("patch", "/account"),
+    ("post", "/account/password"),
+    ("post", "/account/close"),
     ("delete", "/account/trusted-devices/{trusted_device_id}"),
     ("post", "/account/trips"),
     ("get", "/account/trips"),
@@ -97,6 +99,7 @@ const ACCOUNT_AND_JOIN_ROUTES: &[(&str, &str)] = &[
     ("post", "/trips/{trip_id}/members/{member_id}/account-links"),
     ("post", "/account/passkeys/options"),
     ("post", "/account/passkeys"),
+    ("delete", "/account/passkeys/{passkey_id}"),
     ("post", "/auth/passkeys/options"),
     ("post", "/auth/passkeys/sessions"),
     ("delete", "/account/session"),
@@ -195,6 +198,116 @@ async fn openapi_account_join_and_security_schemes_present() {
             );
         }
     }
+}
+
+#[tokio::test]
+async fn openapi_lists_change_password_route() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/openapi.json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let doc: Value = serde_json::from_slice(&body).unwrap();
+    let paths = doc["paths"]
+        .as_object()
+        .expect("openapi paths must be an object");
+
+    let (resolved_path, operation) = find_path_operation(paths, "/account/password", "post")
+        .unwrap_or_else(|| {
+            panic!("missing OpenAPI operation post /account/password");
+        });
+
+    assert!(
+        operation
+            .get("responses")
+            .and_then(|r| r.as_object())
+            .is_some_and(|r| !r.is_empty()),
+        "post {resolved_path} must declare non-empty responses"
+    );
+}
+
+#[tokio::test]
+async fn openapi_lists_close_account_route() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/openapi.json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let doc: Value = serde_json::from_slice(&body).unwrap();
+    let paths = doc["paths"]
+        .as_object()
+        .expect("openapi paths must be an object");
+
+    let (resolved_path, operation) = find_path_operation(paths, "/account/close", "post")
+        .unwrap_or_else(|| {
+            panic!("missing OpenAPI operation post /account/close");
+        });
+
+    assert!(
+        operation
+            .get("responses")
+            .and_then(|r| r.as_object())
+            .is_some_and(|r| !r.is_empty()),
+        "post {resolved_path} must declare non-empty responses"
+    );
+}
+
+#[tokio::test]
+async fn openapi_lists_delete_passkey_route() {
+    let app = sagittarius_api::api::router(sagittarius_api::app::AppState::test());
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/openapi.json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let doc: Value = serde_json::from_slice(&body).unwrap();
+    let paths = doc["paths"]
+        .as_object()
+        .expect("openapi paths must be an object");
+
+    let (resolved_path, operation) =
+        find_path_operation(paths, "/account/passkeys/{passkey_id}", "delete").unwrap_or_else(
+            || {
+                panic!("missing OpenAPI operation delete /account/passkeys/{{passkey_id}}");
+            },
+        );
+
+    assert!(
+        operation
+            .get("responses")
+            .and_then(|r| r.as_object())
+            .is_some_and(|r| !r.is_empty()),
+        "delete {resolved_path} must declare non-empty responses"
+    );
 }
 
 /// Axum route paths from trips, plan_variants, itinerary, itinerary_imports, and

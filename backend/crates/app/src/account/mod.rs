@@ -94,18 +94,28 @@ pub struct PasswordLoginInput {
     pub device_label: String,
 }
 
+pub struct ChangePasswordInput {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+pub struct CloseAccountInput {
+    pub password: String,
+    pub confirmation: String,
+}
+
 pub enum PasswordLoginFlow {
     Login,
     Register,
 }
 
 pub use auth::{
-    authenticate_user_session, finish_email_login, finish_password_login, logout_user_session,
-    start_email_login,
+    authenticate_user_session, change_password, close_account, finish_email_login,
+    finish_password_login, logout_user_session, start_email_login,
 };
 pub use claims::{claim_member, transfer_trip_owner};
 pub use passkeys::{
-    finish_passkey_login, finish_passkey_registration, start_passkey_login,
+    delete_passkey, finish_passkey_login, finish_passkey_registration, start_passkey_login,
     start_passkey_registration,
 };
 pub use settings::{load_settings, revoke_trusted_device, update_settings};

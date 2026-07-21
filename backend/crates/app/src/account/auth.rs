@@ -14,11 +14,11 @@ use sagittarius_domain::errors::ServiceError;
 use sagittarius_domain::types::{AccountSession, AccountSessionKind, EmailLoginStartResponse};
 
 use super::{
-    CHALLENGE_TTL, DEFAULT_TRUSTED_DEVICE_LABEL, EMAIL_LOGIN_CODE_SALT, MAX_ACCOUNT_PASSWORD_LENGTH,
-    MAX_EMAIL_LOGIN_ATTEMPTS, MAX_TRUSTED_DEVICE_LABEL_LENGTH, MIN_ACCOUNT_PASSWORD_LENGTH,
-    PASSWORD_LOGIN_ATTEMPT_SCOPE, PASSWORD_LOGIN_LOCK_MINUTES, PASSWORD_LOGIN_MAX_ATTEMPTS,
-    PasswordLoginFlow, PasswordLoginInput, SESSION_TOKEN_SALT, TEMPORARY_SESSION_TTL,
-    TRUSTED_SESSION_TTL,
+    CHALLENGE_TTL, ChangePasswordInput, CloseAccountInput, DEFAULT_TRUSTED_DEVICE_LABEL,
+    EMAIL_LOGIN_CODE_SALT, MAX_ACCOUNT_PASSWORD_LENGTH, MAX_EMAIL_LOGIN_ATTEMPTS,
+    MAX_TRUSTED_DEVICE_LABEL_LENGTH, MIN_ACCOUNT_PASSWORD_LENGTH, PASSWORD_LOGIN_ATTEMPT_SCOPE,
+    PASSWORD_LOGIN_LOCK_MINUTES, PASSWORD_LOGIN_MAX_ATTEMPTS, PasswordLoginFlow,
+    PasswordLoginInput, SESSION_TOKEN_SALT, TEMPORARY_SESSION_TTL, TRUSTED_SESSION_TTL,
 };
 
 pub async fn start_email_login(
@@ -240,6 +240,59 @@ pub async fn finish_password_login(
     tx.commit().await?;
 
     Ok(session)
+}
+
+pub async fn change_password(
+    pool: &PgPool,
+    session_token: &str,
+    input: ChangePasswordInput,
+) -> Result<(), ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let current_password = validate_account_password(&input.current_password)?;
+    let new_password = validate_account_password(&input.new_password)?;
+
+    let stored_hash = db::account_queries::get_user_password_hash(pool, user_id)
+        .await?
+        .ok_or(ServiceError::InvalidRequest("current password is invalid"))?;
+
+    if !crate::auth::verify_secret(&current_password, &stored_hash) {
+        return Err(ServiceError::InvalidRequest("current password is invalid"));
+    }
+
+    let password_hash = crate::auth::hash_secret(&new_password)?;
+    let mut tx = pool.begin().await?;
+    db::account_queries::update_user_password_hash(&mut tx, user_id, &password_hash).await?;
+    tx.commit().await?;
+
+    Ok(())
+}
+
+pub async fn close_account(
+    pool: &PgPool,
+    session_token: &str,
+    input: CloseAccountInput,
+) -> Result<(), ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+
+    if input.confirmation != "CLOSE" {
+        return Err(ServiceError::InvalidRequest("confirmation is invalid"));
+    }
+
+    let password = validate_account_password(&input.password)?;
+    let stored_hash = db::account_queries::get_user_password_hash(pool, user_id)
+        .await?
+        .ok_or(ServiceError::InvalidRequest("password is invalid"))?;
+
+    if !crate::auth::verify_secret(&password, &stored_hash) {
+        return Err(ServiceError::InvalidRequest("password is invalid"));
+    }
+
+    let mut tx = pool.begin().await?;
+    db::account_queries::soft_disable_user(&mut tx, user_id).await?;
+    db::account_queries::revoke_all_user_sessions(&mut tx, user_id).await?;
+    tx.commit().await?;
+
+    Ok(())
 }
 
 pub async fn authenticate_user_session(

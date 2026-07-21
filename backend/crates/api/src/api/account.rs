@@ -96,6 +96,20 @@ pub struct AccountSettingsUpdateRequest {
 
 #[derive(ToSchema, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ChangePasswordRequest {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+#[derive(ToSchema, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CloseAccountRequest {
+    pub password: String,
+    pub confirmation: String,
+}
+
+#[derive(ToSchema, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountVaultItemCreateRequest {
     pub trip_id: Option<Uuid>,
     pub kind: String,
@@ -138,6 +152,8 @@ pub fn routes() -> Router<AppState> {
         .route("/auth/email/sessions", post(finish_email_login))
         .route("/auth/password/sessions", post(finish_password_login))
         .route("/account", get(get_settings).patch(update_settings))
+        .route("/account/password", post(change_password))
+        .route("/account/close", post(close_account))
         .route(
             "/account/trusted-devices/{trusted_device_id}",
             delete(revoke_trusted_device),
@@ -171,6 +187,10 @@ pub fn routes() -> Router<AppState> {
             post(start_passkey_registration),
         )
         .route("/account/passkeys", post(finish_passkey_registration))
+        .route(
+            "/account/passkeys/{passkey_id}",
+            delete(delete_passkey),
+        )
         .route("/auth/passkeys/options", post(start_passkey_login))
         .route("/auth/passkeys/sessions", post(finish_passkey_login))
         .route("/account/session", delete(logout_session))
@@ -299,6 +319,64 @@ pub async fn get_settings(
     let settings = app::account::load_settings(&state.pool, &account_session.token).await?;
 
     Ok(Json(settings))
+}
+
+#[utoipa::path(
+    post,
+    path = "/account/password",
+    request_body = ChangePasswordRequest,
+    responses(
+        (status = 204, description = "Password changed")
+    ),
+    tag = "account"
+)]
+pub async fn change_password(
+    State(state): State<AppState>,
+    account_session: AccountSessionToken,
+    request: Result<Json<ChangePasswordRequest>, JsonRejection>,
+) -> Result<StatusCode, ApiError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    app::account::change_password(
+        &state.pool,
+        &account_session.token,
+        app::account::ChangePasswordInput {
+            current_password: request.current_password,
+            new_password: request.new_password,
+        },
+    )
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[utoipa::path(
+    post,
+    path = "/account/close",
+    request_body = CloseAccountRequest,
+    responses(
+        (status = 204, description = "Account close accepted")
+    ),
+    tag = "account"
+)]
+pub async fn close_account(
+    State(state): State<AppState>,
+    account_session: AccountSessionToken,
+    request: Result<Json<CloseAccountRequest>, JsonRejection>,
+) -> Result<StatusCode, ApiError> {
+    let Json(request) =
+        request.map_err(|_| ServiceError::InvalidRequest("json payload is invalid"))?;
+    app::account::close_account(
+        &state.pool,
+        &account_session.token,
+        app::account::CloseAccountInput {
+            password: request.password,
+            confirmation: request.confirmation,
+        },
+    )
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[utoipa::path(
@@ -743,6 +821,27 @@ pub async fn revoke_trusted_device(
 ) -> Result<StatusCode, ApiError> {
     app::account::revoke_trusted_device(&state.pool, &account_session.token, trusted_device_id)
         .await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[utoipa::path(
+    delete,
+    path = "/account/passkeys/{passkey_id}",
+    params(
+        ("passkey_id" = String, Path, description = "Passkey id")
+    ),
+    responses(
+        (status = 204, description = "Passkey deleted")
+    ),
+    tag = "account"
+)]
+pub async fn delete_passkey(
+    State(state): State<AppState>,
+    account_session: AccountSessionToken,
+    Path(passkey_id): Path<Uuid>,
+) -> Result<StatusCode, ApiError> {
+    app::account::delete_passkey(&state.pool, &account_session.token, passkey_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
