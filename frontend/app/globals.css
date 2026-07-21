@@ -862,6 +862,7 @@
 }
 
 .portal-nav-links {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -874,28 +875,59 @@
   background: rgb(241 245 249 / 0.92);
   border: 1px solid rgb(226 232 240 / 0.9);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: hidden;
 }
 
-.portal-nav-links::-webkit-scrollbar {
-  display: none;
+/* Shared sliding pill — measured translate3d + width (hybrid bridge in T5). */
+.portal-nav-indicator {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  z-index: 0;
+  height: calc(100% - 10px);
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(160deg, #2a3348 0%, var(--portal-navy) 100%);
+  box-shadow: 0 6px 16px rgb(30 36 51 / 0.22);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scaleY(1);
+  transform-origin: center center;
+  will-change: transform, width, border-radius;
+  transition:
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 200ms ease;
 }
 
-.portal-nav-links a {
+.portal-nav-indicator.is-ready {
+  opacity: 1;
+}
+
+.portal-nav-indicator.is-flowing {
+  border-radius: 44% 44% 50% 50% / 58% 58% 42% 42%;
+}
+
+.portal-nav-link {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   padding: 10px;
   border-radius: 999px;
   color: var(--color-text-subtle);
   font-weight: 600;
   font-size: 13px;
   text-decoration: none;
+  background: transparent;
+  transition: color 220ms ease, padding 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.portal-nav-links a svg {
+.portal-nav-link svg {
+  position: relative;
+  z-index: 1;
   width: 16px;
   height: 16px;
   stroke: currentColor;
@@ -903,21 +935,21 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+  flex: 0 0 auto;
 }
 
-.portal-nav-links a[aria-current="page"] {
+.portal-nav-link--current {
   padding: 10px 16px;
-  background: linear-gradient(160deg, #2a3348 0%, var(--portal-navy) 100%);
+  /* White on navy for the whole transition — no muted→white bloom. */
   color: #fff;
-  box-shadow: 0 6px 16px rgb(30 36 51 / 0.22);
 }
 
-.portal-nav-links a:not([aria-current="page"]):hover {
+.portal-nav-link:not(.portal-nav-link--current):hover {
   color: var(--color-text);
   background: rgb(255 255 255 / 0.7);
 }
 
-.portal-nav-links a:focus-visible,
+.portal-nav-link:focus-visible,
 .portal-btn:focus-visible,
 .portal-filter:focus-visible,
 .portal-search:focus-visible,
@@ -927,13 +959,42 @@
   outline-offset: 2px;
 }
 
-/* Inactive: icon only. Active: icon + label. */
+/*
+ * Inactive: clipped icon-only. Active: expand/collapse ~360ms from the left
+ * via clip-path (not scaleX).
+ */
 .nav-label {
-  display: none;
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  max-width: 0;
+  margin-inline-start: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  clip-path: inset(0 100% 0 0);
+  transform-origin: left center;
+  transition:
+    max-width 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    margin-inline-start 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms ease,
+    clip-path 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.portal-nav-links a[aria-current="page"] .nav-label {
-  display: inline;
+.portal-nav-link--current .nav-label {
+  max-width: 5.5rem;
+  margin-inline-start: 8px;
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-nav-link,
+  .portal-nav-link .nav-label,
+  .portal-nav-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 .portal-nav-utils {
