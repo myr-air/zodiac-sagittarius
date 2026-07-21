@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.20.0] — 2026-07-21
+
+### Added
+- Authenticated change-password (`POST /account/password`) and Settings Password accordion
+- Passkey remove (`DELETE /account/passkeys/{id}`) with confirm dialog
+- Close account soft-disable (`POST /account/close`) with danger dialog; revokes all sessions
+- City and Timezone searchable picker dialogs; compact Connections Coming soon stub
+
+### Changed
+- Trusted device Revoke uses confirm dialog; Security dialogs share backdrop/scrim chrome
+- Email / TOTP remain summary-only Coming soon; Explore / Friends stay stubs
+
+### Notes
+- Mission M7ZG5WPD; OAuth Connections and TOTP/email-change deferred; passkey-only set-first-password edge case deferred
+
+
+
 ## [0.19.0] — 2026-07-21
 
 ### Added
