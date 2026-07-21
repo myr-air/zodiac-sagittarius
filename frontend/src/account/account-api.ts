@@ -1,7 +1,9 @@
 /**
  * Account API client — GET/PATCH /api/v1/account settings, trips, and explorer;
  * POST /api/v1/account/trips to create a trip under the signed-in account;
- * POST /api/v1/account/classify-trip-seed for AI structure + recommendations.
+ * POST /api/v1/account/classify-trip-seed for AI structure + recommendations;
+ * POST /api/v1/account/password to change the sign-in password;
+ * POST /api/v1/account/close to soft-disable the account.
  */
 
 import type {
@@ -940,8 +942,85 @@ function accountTrustedDeviceUrl(
   return `${accountUrl(apiBaseUrl)}/trusted-devices/${encodeURIComponent(trustedDeviceId)}`;
 }
 
+function accountPasskeyUrl(apiBaseUrl: string, passkeyId: string): string {
+  return `${accountUrl(apiBaseUrl)}/passkeys/${encodeURIComponent(passkeyId)}`;
+}
+
+function accountPasswordUrl(apiBaseUrl: string): string {
+  return `${accountUrl(apiBaseUrl)}/password`;
+}
+
 function accountSessionUrl(apiBaseUrl: string): string {
   return `${accountUrl(apiBaseUrl)}/session`;
+}
+
+function accountCloseUrl(apiBaseUrl: string): string {
+  return `${accountUrl(apiBaseUrl)}/close`;
+}
+
+export type ChangePasswordDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+export type ChangePasswordInput = {
+  sessionToken: string;
+  currentPassword: string;
+  newPassword: string;
+};
+
+export type ChangePasswordSuccess = {
+  ok: true;
+};
+
+export type ChangePasswordFailure = {
+  ok: false;
+  error: string;
+};
+
+export type ChangePasswordOutcome =
+  | ChangePasswordSuccess
+  | ChangePasswordFailure;
+
+/**
+ * POST /api/v1/account/password with Bearer session token and current/new password.
+ * On success (204) returns `{ ok: true }`.
+ */
+export async function changePassword(
+  input: ChangePasswordInput,
+  deps: ChangePasswordDeps,
+): Promise<ChangePasswordOutcome> {
+  let response: Response;
+  try {
+    response = await deps.fetch(accountPasswordUrl(deps.apiBaseUrl), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${input.sessionToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        currentPassword: input.currentPassword,
+        newPassword: input.newPassword,
+      }),
+    });
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  if (!response.ok) {
+    let body: AccountSettingsBody | null = null;
+    try {
+      body = (await response.json()) as AccountSettingsBody;
+    } catch {
+      body = null;
+    }
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  return { ok: true };
 }
 
 export type RevokeTrustedDeviceDeps = {
@@ -986,6 +1065,129 @@ export async function revokeTrustedDevice(
         },
       },
     );
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  if (!response.ok) {
+    let body: AccountSettingsBody | null = null;
+    try {
+      body = (await response.json()) as AccountSettingsBody;
+    } catch {
+      body = null;
+    }
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  return { ok: true };
+}
+
+export type DeletePasskeyDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+export type DeletePasskeyInput = {
+  sessionToken: string;
+  passkeyId: string;
+};
+
+export type DeletePasskeySuccess = {
+  ok: true;
+};
+
+export type DeletePasskeyFailure = {
+  ok: false;
+  error: string;
+};
+
+export type DeletePasskeyOutcome = DeletePasskeySuccess | DeletePasskeyFailure;
+
+/**
+ * DELETE a passkey with Bearer session token.
+ * On success (204) returns `{ ok: true }`.
+ */
+export async function deletePasskey(
+  input: DeletePasskeyInput,
+  deps: DeletePasskeyDeps,
+): Promise<DeletePasskeyOutcome> {
+  let response: Response;
+  try {
+    response = await deps.fetch(
+      accountPasskeyUrl(deps.apiBaseUrl, input.passkeyId),
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${input.sessionToken}`,
+        },
+      },
+    );
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  if (!response.ok) {
+    let body: AccountSettingsBody | null = null;
+    try {
+      body = (await response.json()) as AccountSettingsBody;
+    } catch {
+      body = null;
+    }
+    return { ok: false, error: failureMessage(body, response.status) };
+  }
+
+  return { ok: true };
+}
+
+export type CloseAccountDeps = {
+  fetch: typeof fetch;
+  apiBaseUrl: string;
+};
+
+export type CloseAccountInput = {
+  sessionToken: string;
+  password: string;
+  confirmation: string;
+};
+
+export type CloseAccountSuccess = {
+  ok: true;
+};
+
+export type CloseAccountFailure = {
+  ok: false;
+  error: string;
+};
+
+export type CloseAccountOutcome = CloseAccountSuccess | CloseAccountFailure;
+
+/**
+ * POST /api/v1/account/close with Bearer session token, password, and confirmation.
+ * On success (204) returns `{ ok: true }`.
+ */
+export async function closeAccount(
+  input: CloseAccountInput,
+  deps: CloseAccountDeps,
+): Promise<CloseAccountOutcome> {
+  let response: Response;
+  try {
+    response = await deps.fetch(accountCloseUrl(deps.apiBaseUrl), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${input.sessionToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password: input.password,
+        confirmation: input.confirmation,
+      }),
+    });
   } catch {
     return {
       ok: false,

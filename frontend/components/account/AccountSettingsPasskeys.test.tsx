@@ -1,14 +1,15 @@
 /**
- * Account settings Passkeys — list + Add (registerPasskey) + Remove Coming soon
- * (draft-v2). DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL.
+ * Account settings Passkeys — list + Add (registerPasskey) + Remove (draft-v4
+ * confirm). DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL.
  *
  * Public surface: AccountSettingsPage after GET /account. Add wires
  * registerPasskey (options → WebAuthn create → finish) then reloads settings.
+ * Remove opens a confirm dialog (Cancel-first, a11y trap/restore) then
+ * deletePasskey.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
-  fireEvent,
   render,
   screen,
   waitFor,
@@ -32,10 +33,12 @@ const LAST_USED_A = "Last used May 30, 2026";
 const LAST_USED_NEVER = "Never used";
 const EMPTY_PASSKEYS = "No passkeys yet.";
 const ADD_PASSKEY_LABEL = "Add passkey";
+const REMOVE_LABEL = "Remove";
 const NEW_PASSKEY_NICKNAME = "Travel laptop";
 const REGISTER_ERROR = "Could not start passkey registration. Please try again.";
+const REMOVE_ERROR = "Could not remove this passkey. Please try again.";
 const PASSKEYS_HINT =
-  "Add is live. Remove passkey is Coming soon (no DELETE route yet).";
+  "Remove asks for confirmation before deleting the passkey.";
 
 const SESSION_TOKEN = "account-session-token-passkeys";
 const CHALLENGE_ID = "018f4e80-0000-7000-a000-0000000000cc";
@@ -100,6 +103,19 @@ const ACCOUNT_SETTINGS_AFTER_ADD = {
       id: NEW_PASSKEY_ID,
       nickname: NEW_PASSKEY_NICKNAME,
       createdAt: "2026-07-20T12:00:00Z",
+      lastUsedAt: null,
+    },
+  ],
+  trustedDevices: [],
+};
+
+const ACCOUNT_SETTINGS_AFTER_REMOVE = {
+  profile: PROFILE,
+  passkeys: [
+    {
+      id: PASSKEY_ID_B,
+      nickname: PASSKEY_NICKNAME_B,
+      createdAt: "2026-01-02T00:00:00Z",
       lastUsedAt: null,
     },
   ],
@@ -420,34 +436,226 @@ describe("AccountSettingsPasskeys Add", () => {
   });
 });
 
-describe("AccountSettingsPasskeys Remove Coming soon", () => {
+describe("AccountSettingsPasskeys Remove", () => {
   afterEach(() => {
     cleanup();
     globalThis.fetch = originalFetch;
     window.localStorage.clear();
   });
 
-  it("Each passkey Remove control is disabled/labeled Coming soon and does not call any DELETE", async () => {
-    await renderLoadedSettings(ACCOUNT_SETTINGS_WITH_PASSKEYS);
+  /** T4 acceptance #2 — draft-v4 passkey dialog: enabled Remove, Cancel-first, trap/restore, no DELETE until confirm. */
+  it("Remove is enabled and opens confirm dialog (Cancel-first, focus trap/restore) without calling deletePasskey until confirmed", async () => {
+    const user = userEvent.setup();
+    const REMOVE_DIALOG_TITLE = "Remove passkey?";
+    const CANCEL_LABEL = "Cancel";
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const path = pathOf(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (path === "/api/v1/account" && method === "GET") {
+        return jsonResponse(ACCOUNT_SETTINGS_WITH_PASSKEYS);
+      }
+      if (
+        path === `/api/v1/account/passkeys/${PASSKEY_ID_A}` &&
+        method === "DELETE"
+      ) {
+        return new Response(null, { status: 204 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    await renderLoadedSettings(ACCOUNT_SETTINGS_WITH_PASSKEYS, fetchMock);
 
     const accordion = passkeysAccordion();
     const removeButtons = within(accordion).getAllByRole("button", {
-      name: /^Remove$/,
+      name: REMOVE_LABEL,
     });
     expect(removeButtons).toHaveLength(PASSKEYS_FIXTURE.length);
 
-    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
-    const callsBefore = fetchMock.mock.calls.length;
-
     for (const btn of removeButtons) {
-      expect(btn).toBeDisabled();
-      expect(btn).toHaveAttribute("title", "Coming soon");
-      fireEvent.click(btn);
+      // Prefer lightweight asserts — jest-dom toBeEnabled dumps the whole page on fail.
+      expect((btn as HTMLButtonElement).disabled).toBe(false);
+      expect(btn.getAttribute("title")).not.toBe("Coming soon");
     }
 
-    expect(passkeyDeleteCalls(fetchMock)).toHaveLength(0);
-    expect(fetchMock.mock.calls.length).toBe(callsBefore);
-    expect(screen.queryByText(/removed/i)).not.toBeInTheDocument();
+    const trigger = removeButtons[0]!;
+    trigger.focus();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+
+    const dialog = await screen.findByRole("dialog", {
+      name: REMOVE_DIALOG_TITLE,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    const cancel = within(dialog).getByRole("button", { name: CANCEL_LABEL });
+    const confirm = within(dialog).getByRole("button", { name: REMOVE_LABEL });
+    // Cancel-first: Cancel precedes destructive confirm in DOM order.
+    expect(
+      cancel.compareDocumentPosition(confirm) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // Initial focus lands on Cancel (draft-v4 openDialog(..., passkeyCancel)).
+    await waitFor(() => {
+      expect(cancel).toHaveFocus();
+    });
+
+    // Focus trap: Tab from last focusable wraps to first.
+    confirm.focus();
+    expect(confirm).toHaveFocus();
+    await user.tab();
+    expect(cancel).toHaveFocus();
+
+    function deleteCalls(): number {
+      return passkeyDeleteCalls(fetchMock).filter(
+        ({ path }) => path === `/api/v1/account/passkeys/${PASSKEY_ID_A}`,
+      ).length;
+    }
+
+    // deletePasskey must not run until the confirm action.
+    expect(deleteCalls()).toBe(0);
+
+    await user.click(cancel);
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: REMOVE_DIALOG_TITLE }),
+      ).not.toBeInTheDocument();
+    });
+    expect(trigger).toHaveFocus();
+    expect(deleteCalls()).toBe(0);
+  });
+
+  /** T4 acceptance #2 — confirm → DELETE /account/passkeys/{id}, reload list. */
+  it("Confirm calls DELETE /account/passkeys/{id}, reloads/removes that passkey; failure shows visible error without fake success toast", async () => {
+    const user = userEvent.setup();
+    const REMOVE_DIALOG_TITLE = "Remove passkey?";
+
+    function deleteCalls(
+      fetchMock: ReturnType<typeof vi.fn>,
+      passkeyId: string,
+    ): ReturnType<typeof vi.fn>["mock"]["calls"] {
+      return fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          pathOf(url!) === `/api/v1/account/passkeys/${passkeyId}` &&
+          String(init?.method ?? "GET").toUpperCase() === "DELETE",
+      );
+    }
+
+    async function openAndConfirmRemove(trigger: HTMLElement) {
+      await user.click(trigger);
+      const dialog = await screen.findByRole("dialog", {
+        name: REMOVE_DIALOG_TITLE,
+      });
+      await user.click(
+        within(dialog).getByRole("button", { name: REMOVE_LABEL }),
+      );
+    }
+
+    let accountGets = 0;
+    const fetchMock = vi.fn(async (input, init) => {
+      const path = pathOf(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+
+      if (path === "/api/v1/account" && method === "GET") {
+        accountGets += 1;
+        return jsonResponse(
+          accountGets === 1
+            ? ACCOUNT_SETTINGS_WITH_PASSKEYS
+            : ACCOUNT_SETTINGS_AFTER_REMOVE,
+        );
+      }
+      if (
+        path === `/api/v1/account/passkeys/${PASSKEY_ID_A}` &&
+        method === "DELETE"
+      ) {
+        return new Response(null, { status: 204 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    await renderLoadedSettings(ACCOUNT_SETTINGS_WITH_PASSKEYS, fetchMock);
+
+    const accordion = passkeysAccordion();
+    expect(within(accordion).getByText(PASSKEY_NICKNAME_A)).toBeInTheDocument();
+
+    const getsBeforeRemove = accountGetCalls(fetchMock);
+    const removeButtons = within(accordion).getAllByRole("button", {
+      name: REMOVE_LABEL,
+    });
+    expect(removeButtons).toHaveLength(PASSKEYS_FIXTURE.length);
+    // Fail fast while Remove is still Coming soon (userEvent.click waits on disabled).
+    expect((removeButtons[0] as HTMLButtonElement).disabled).toBe(false);
+
+    // Opening alone must not DELETE — confirm drives the call.
+    await user.click(removeButtons[0]!);
+    expect(deleteCalls(fetchMock, PASSKEY_ID_A)).toHaveLength(0);
+    const dialog = await screen.findByRole("dialog", {
+      name: REMOVE_DIALOG_TITLE,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: REMOVE_LABEL }),
+    );
+
+    await waitFor(() => {
+      expect(deleteCalls(fetchMock, PASSKEY_ID_A).length).toBe(1);
+    });
+    const deleteCall = deleteCalls(fetchMock, PASSKEY_ID_A)[0]!;
+    expect(new Headers(deleteCall[1]?.headers).get("Authorization")).toBe(
+      `Bearer ${SESSION_TOKEN}`,
+    );
+
+    await waitFor(() => {
+      expect(accountGetCalls(fetchMock)).toBeGreaterThan(getsBeforeRemove);
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(PASSKEY_NICKNAME_A)).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(PASSKEY_NICKNAME_B)).toBeInTheDocument();
+    expect(screen.queryByText(/passkey removed/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Saved$/)).not.toBeInTheDocument();
+
+    // Error path: confirm → DELETE failure → inline alert, no fake success, passkey stays.
+    cleanup();
+    const errorFetch = vi.fn(async (input, init) => {
+      const path = pathOf(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (path === "/api/v1/account" && method === "GET") {
+        return jsonResponse(ACCOUNT_SETTINGS_WITH_PASSKEYS);
+      }
+      if (
+        path === `/api/v1/account/passkeys/${PASSKEY_ID_A}` &&
+        method === "DELETE"
+      ) {
+        return jsonResponse({ error: { message: REMOVE_ERROR } }, 400);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    await renderLoadedSettings(ACCOUNT_SETTINGS_WITH_PASSKEYS, errorFetch);
+    const errAccordion = passkeysAccordion();
+    const errRemove = within(errAccordion).getAllByRole("button", {
+      name: REMOVE_LABEL,
+    })[0]!;
+    await openAndConfirmRemove(errRemove);
+
+    await waitFor(() => {
+      expect(deleteCalls(errorFetch, PASSKEY_ID_A).length).toBe(1);
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(REMOVE_ERROR);
+    });
+    expect(screen.getByText(PASSKEY_NICKNAME_A)).toBeInTheDocument();
+    expect(screen.queryByText(/passkey removed/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Saved$/)).not.toBeInTheDocument();
+    // Failed remove must not trigger a reload that would hide the passkey.
+    expect(
+      errorFetch.mock.calls.filter(
+        ([url, init]) =>
+          pathOf(url!) === "/api/v1/account" &&
+          String(init?.method ?? "GET").toUpperCase() === "GET",
+      ),
+    ).toHaveLength(1);
   });
 });

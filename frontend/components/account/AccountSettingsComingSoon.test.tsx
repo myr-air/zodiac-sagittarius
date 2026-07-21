@@ -1,9 +1,9 @@
 /**
- * Account settings Coming soon — Connections + Security chrome (draft-v2).
+ * Account settings Coming soon — Connections + Security chrome (draft-v4).
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  *
  * Public surface: AccountSettingsComingSoon (and AccountSettingsPage wiring).
- * Scope lock: labeled non-acting UI only — no OAuth fetch, no fake success.
+ * Scope lock: compact non-acting stubs only — no OAuth / email-change / TOTP API.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -23,36 +23,36 @@ import {
 import { AccountSettingsComingSoon } from "./AccountSettingsComingSoon";
 import { AccountSettingsPage } from "./AccountSettingsPage";
 
-/** Independent literals — Connections providers (draft-v2). */
-const CONNECTION_PROVIDERS = [
-  "Google Drive",
-  "Google Photos",
-  "Instagram",
-  "Facebook",
-  "LINE",
-] as const;
+/** Independent literals — Connections compact stub (draft-v4). */
+const CONNECTIONS_STUB_HEADING = "Google Drive, Photos, and social accounts";
+const CONNECTIONS_STUB_BODY =
+  "Connect libraries and social accounts later. Trip album links can still use Google providers as URLs today.";
 
-/** Independent literal — Connections section soon-note (draft-v2). */
-const CONNECTIONS_SOON_NOTE =
-  "Account OAuth is not available yet. Trip album links can still use Google providers as URLs.";
-
-/** Independent literals — Security accordion titles + Coming soon tag (draft-v2). */
-const SECURITY_ACCORDIONS = [
+/** Independent literals — Security Coming soon accordions (draft-v4; Password + Close are live). */
+const SECURITY_COMING_SOON_ACCORDIONS = [
   "Email",
-  "Password",
   "Two-factor (TOTP)",
-  "Close account",
 ] as const;
 
-/** Independent literals — Security soon-notes (draft-v2). */
-const EMAIL_SOON_NOTE =
-  "Change-email flow needs a new verified challenge API — not in this ship.";
-const PASSWORD_SOON_NOTE =
-  "Sign-in password exists; authenticated change-password endpoint does not yet.";
-const TOTP_SOON_NOTE =
-  "Authenticator 2FA needs new secret storage and login challenge — use passkeys today.";
-const CLOSE_SOON_NOTE =
-  "`users.disabled_at` exists for disable, but there is no self-serve close route yet.";
+/** Independent literals — Close account live danger dialog (draft-v4 / T4). */
+const CLOSE_ACCORDION_TITLE = "Close account";
+const CLOSE_OPEN_LABEL = "Close account…";
+const CLOSE_DIALOG_TITLE = "Close account?";
+const CLOSE_PASSWORD_LABEL = "Password";
+const CLOSE_CONFIRM_LABEL = "Confirmation";
+const CLOSE_CONFIRM_VALUE = "CLOSE";
+const CLOSE_CONFIRM_BUTTON = "Close account";
+const CANCEL_LABEL = "Cancel";
+const CLOSE_DANGER_CALLOUT =
+  "This disables your account and signs you out everywhere. Trip data is not hard-deleted — transfer ownership of trips you own first when needed.";
+
+/** Independent literals — Password live form (draft-v4). */
+const PASSWORD_ACCORDION_TITLE = "Password";
+const CURRENT_PASSWORD_LABEL = "Current password";
+const NEW_PASSWORD_LABEL = "New password";
+const CONFIRM_PASSWORD_LABEL = "Confirm new password";
+const UPDATE_PASSWORD_LABEL = "Update password";
+const PASSWORD_HINT = "Uses a separate Update action. Minimum 8 characters.";
 
 const SESSION_TOKEN = "account-session-token-coming-soon";
 
@@ -162,42 +162,35 @@ describe("AccountSettingsComingSoon Connections", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("Connections lists Google Drive, Google Photos, Instagram, Facebook, LINE with Soon tags and disabled Connect buttons; no OAuth fetch or success toast on interact", () => {
+  it("Connections is a compact Coming soon stub (draft-v4): section Coming soon tag + stub copy; no Connect rows / OAuth fetch", () => {
     render(<AccountSettingsComingSoon />);
 
-    const connections = screen.getByRole("region", { name: "Connections" });
-    expect(within(connections).getByText(CONNECTIONS_SOON_NOTE)).toBeInTheDocument();
+    const connections = screen.getByRole("region", { name: /Connections/i });
+    expect(within(connections).getByText(/^Coming soon$/)).toBeInTheDocument();
+    expect(
+      within(connections).getByText(CONNECTIONS_STUB_HEADING),
+    ).toBeInTheDocument();
+    expect(
+      within(connections).getByText(CONNECTIONS_STUB_BODY),
+    ).toBeInTheDocument();
 
-    for (const name of CONNECTION_PROVIDERS) {
-      expect(within(connections).getByText(name)).toBeInTheDocument();
-    }
-
-    const soonTags = within(connections).getAllByText(/^Soon$/);
-    expect(soonTags).toHaveLength(CONNECTION_PROVIDERS.length);
-
-    const connectButtons = within(connections).getAllByRole("button", {
-      name: /^Connect$/,
-    });
-    expect(connectButtons).toHaveLength(CONNECTION_PROVIDERS.length);
-    for (const btn of connectButtons) {
-      expect(btn).toBeDisabled();
-    }
+    // No fake per-provider Connect rows (draft-v4 compact stub).
+    expect(
+      within(connections).queryAllByRole("button", { name: /^Connect$/ }),
+    ).toHaveLength(0);
+    expect(within(connections).queryByText(/^Soon$/)).not.toBeInTheDocument();
+    expect(within(connections).queryByText("Libraries")).not.toBeInTheDocument();
+    expect(within(connections).queryByText("Instagram")).not.toBeInTheDocument();
+    expect(within(connections).queryByText("Facebook")).not.toBeInTheDocument();
+    expect(within(connections).queryByText("LINE")).not.toBeInTheDocument();
 
     const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
     const callsBefore = fetchMock.mock.calls.length;
-
-    // Force-click disabled Connect controls — must not invent OAuth or success chrome.
-    for (const btn of connectButtons) {
-      fireEvent.click(btn);
-    }
-
+    fireEvent.click(connections);
     const newCalls = fetchMock.mock.calls.slice(callsBefore);
     expect(newCalls.filter(([url]) => isOAuthishUrl(url!))).toHaveLength(0);
     expect(screen.queryByText(/^Connected$/)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Saved$/)).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(/connected successfully/i),
-    ).not.toBeInTheDocument();
   });
 });
 
@@ -213,53 +206,35 @@ describe("AccountSettingsComingSoon Security", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("Security accordions Email, Password, Two-factor (TOTP), Close account show Coming soon tags + soon-notes; controls inside are non-acting (disabled / no PATCH/POST)", async () => {
+  it("Security Email and Two-factor (TOTP) are summary-only Coming soon stubs (draft-v4); expand yields no fields/actions and no email/TOTP API", async () => {
     const user = userEvent.setup();
-    render(<AccountSettingsComingSoon />);
+    render(<AccountSettingsComingSoon primaryEmail="aom@joii.app" />);
 
     const security = screen.getByRole("region", { name: "Security" });
-
-    for (const title of SECURITY_ACCORDIONS) {
-      const summary = within(security).getByText(title, { exact: true });
-      const accordion = summary.closest("details");
-      expect(accordion).toBeTruthy();
-      expect(
-        within(accordion as HTMLElement).getByText(/^Coming soon$/),
-      ).toBeInTheDocument();
-    }
-
-    // Expand each coming-soon accordion and assert soon-notes + non-acting controls.
-    const notesByTitle: Record<(typeof SECURITY_ACCORDIONS)[number], string> = {
-      Email: EMAIL_SOON_NOTE,
-      Password: PASSWORD_SOON_NOTE,
-      "Two-factor (TOTP)": TOTP_SOON_NOTE,
-      "Close account": CLOSE_SOON_NOTE,
-    };
 
     const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
     const callsBefore = fetchMock.mock.calls.length;
 
-    for (const title of SECURITY_ACCORDIONS) {
+    for (const title of SECURITY_COMING_SOON_ACCORDIONS) {
       const summary = within(security).getByText(title, { exact: true });
       const accordion = summary.closest("details") as HTMLDetailsElement;
+      expect(accordion).toBeTruthy();
+      expect(
+        within(accordion).getByText(/^Coming soon$/),
+      ).toBeInTheDocument();
+
       const summaryEl = accordion.querySelector("summary");
       expect(summaryEl).toBeTruthy();
       await user.click(summaryEl!);
 
-      expect(within(accordion).getByText(notesByTitle[title])).toBeInTheDocument();
-
-      const actionable = within(accordion).queryAllByRole("button");
-      for (const btn of actionable) {
-        expect(btn).toBeDisabled();
-        fireEvent.click(btn);
-      }
-
-      const fields = within(accordion).queryAllByRole("textbox");
-      for (const field of fields) {
-        const input = field as HTMLInputElement;
-        // draft-v2: current email is read-only; other controls stay disabled.
-        expect(input.disabled || input.readOnly).toBe(true);
-      }
+      // Summary-only: no body fields, buttons, or API-jargon soon-notes.
+      expect(within(accordion).queryAllByRole("button")).toHaveLength(0);
+      expect(within(accordion).queryAllByRole("textbox")).toHaveLength(0);
+      expect(
+        within(accordion).queryByLabelText(/current/i),
+      ).not.toBeInTheDocument();
+      expect(accordion.textContent ?? "").not.toMatch(/\bAPI\b/);
+      expect(accordion.textContent ?? "").not.toMatch(/challenge/i);
     }
 
     const newCalls = fetchMock.mock.calls.slice(callsBefore);
@@ -274,6 +249,133 @@ describe("AccountSettingsComingSoon Security", () => {
     expect(mutatingAccountCalls(fetchMock)).toHaveLength(0);
     expect(screen.queryByText(/^Saved$/)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Connected$/)).not.toBeInTheDocument();
+  });
+
+  it("Close account accordion is live (not Coming soon): opens danger dialog requiring Password + typing CLOSE", async () => {
+    const user = userEvent.setup();
+    render(<AccountSettingsComingSoon sessionToken={SESSION_TOKEN} />);
+
+    const security = screen.getByRole("region", { name: "Security" });
+    const summary = within(security).getByText(CLOSE_ACCORDION_TITLE, {
+      exact: true,
+    });
+    const accordion = summary.closest("details") as HTMLDetailsElement;
+    expect(accordion).toBeTruthy();
+
+    // Live close: no Coming soon chrome (draft-v4 Close accordion).
+    expect(
+      Boolean(within(accordion).queryByText(/^Coming soon$/)),
+    ).toBe(false);
+    expect(
+      Boolean(
+        within(accordion).queryByText(/no self-serve close route yet/i),
+      ),
+    ).toBe(false);
+
+    const summaryEl = accordion.querySelector("summary");
+    expect(summaryEl).toBeTruthy();
+    await user.click(summaryEl!);
+
+    expect(within(accordion).getByText(CLOSE_DANGER_CALLOUT)).toBeInTheDocument();
+    const openBtn = within(accordion).getByRole("button", {
+      name: CLOSE_OPEN_LABEL,
+    });
+    expect((openBtn as HTMLButtonElement).disabled).toBe(false);
+
+    await user.click(openBtn);
+
+    const dialog = await screen.findByRole("dialog", {
+      name: CLOSE_DIALOG_TITLE,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    expect(
+      within(dialog).getByLabelText(CLOSE_PASSWORD_LABEL),
+    ).toBeInTheDocument();
+    const confirmField = within(dialog).getByLabelText(CLOSE_CONFIRM_LABEL);
+    expect(confirmField).toBeInTheDocument();
+    expect((confirmField as HTMLInputElement).placeholder).toBe(
+      CLOSE_CONFIRM_VALUE,
+    );
+
+    const cancel = within(dialog).getByRole("button", { name: CANCEL_LABEL });
+    const confirm = within(dialog).getByRole("button", {
+      name: CLOSE_CONFIRM_BUTTON,
+    });
+    // Cancel-first: Cancel precedes destructive confirm in DOM order.
+    expect(
+      cancel.compareDocumentPosition(confirm) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // Confirm stays disabled until password + exact CLOSE.
+    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    await user.type(
+      within(dialog).getByLabelText(CLOSE_PASSWORD_LABEL),
+      "any-password",
+    );
+    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    await user.type(confirmField, CLOSE_CONFIRM_VALUE);
+    expect((confirm as HTMLButtonElement).disabled).toBe(false);
+
+    // Opening alone must not POST /account/close.
+    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
+    expect(
+      fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          pathOf(url!) === "/api/v1/account/close" &&
+          String((init as RequestInit | undefined)?.method ?? "GET").toUpperCase() ===
+            "POST",
+      ),
+    ).toHaveLength(0);
+
+    // Email / TOTP remain Coming soon while Close is live.
+    for (const title of SECURITY_COMING_SOON_ACCORDIONS) {
+      const soonSummary = within(security).getByText(title, { exact: true });
+      const soonAccordion = soonSummary.closest("details") as HTMLElement;
+      expect(
+        Boolean(within(soonAccordion).queryByText(/^Coming soon$/)),
+      ).toBe(true);
+    }
+  });
+
+  it("Password accordion is live inline form (not Coming soon) with Current/New/Confirm fields and Update password", async () => {
+    const user = userEvent.setup();
+    render(<AccountSettingsComingSoon />);
+
+    const security = screen.getByRole("region", { name: "Security" });
+    const summary = within(security).getByText(PASSWORD_ACCORDION_TITLE, {
+      exact: true,
+    });
+    const accordion = summary.closest("details") as HTMLDetailsElement;
+    expect(accordion).toBeTruthy();
+
+    // Live form: no Coming soon chrome (draft-v4 Password accordion).
+    // Boolean asserts avoid happy-dom element serialization on failure.
+    expect(
+      Boolean(within(accordion).queryByText(/^Coming soon$/)),
+    ).toBe(false);
+    expect(
+      Boolean(
+        within(accordion).queryByText(/change-password endpoint does not yet/i),
+      ),
+    ).toBe(false);
+
+    const summaryEl = accordion.querySelector("summary");
+    expect(summaryEl).toBeTruthy();
+    await user.click(summaryEl!);
+
+    const bodyText = accordion.textContent ?? "";
+    expect(bodyText).toContain(CURRENT_PASSWORD_LABEL);
+    expect(bodyText).toContain(NEW_PASSWORD_LABEL);
+    expect(bodyText).toContain(CONFIRM_PASSWORD_LABEL);
+    expect(bodyText).toContain(UPDATE_PASSWORD_LABEL);
+    expect(bodyText).toContain(PASSWORD_HINT);
+
+    const update = within(accordion).getByRole("button", {
+      name: UPDATE_PASSWORD_LABEL,
+    });
+    expect(update).toBeEnabled();
   });
 
   it("securityAfterTotp renders after TOTP and before Close account (Email → Password → TOTP → live → Close)", () => {
@@ -336,18 +438,20 @@ describe("AccountSettingsPage wires Coming soon chrome", () => {
     window.localStorage.clear();
   });
 
-  it("after load, page renders Connections and Security Coming soon regions from AccountSettingsComingSoon", async () => {
+  it("after load, page renders Connections compact stub and Security Coming soon Email/TOTP from AccountSettingsComingSoon", async () => {
     render(<AccountSettingsPage />);
 
     await waitFor(() => screen.getByRole("region", { name: "Identity" }));
 
     const connections = await waitFor(() =>
-      screen.getByRole("region", { name: "Connections" }),
+      screen.getByRole("region", { name: /Connections/i }),
     );
-    expect(within(connections).getByText("Google Drive")).toBeInTheDocument();
     expect(
-      within(connections).getAllByRole("button", { name: /^Connect$/ }).length,
-    ).toBe(CONNECTION_PROVIDERS.length);
+      within(connections).getByText(CONNECTIONS_STUB_HEADING),
+    ).toBeInTheDocument();
+    expect(
+      within(connections).queryAllByRole("button", { name: /^Connect$/ }),
+    ).toHaveLength(0);
 
     const security = screen.getByRole("region", { name: "Security" });
     expect(within(security).getByText("Email", { exact: true })).toBeInTheDocument();
