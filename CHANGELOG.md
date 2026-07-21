@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.19.0] — 2026-07-21
+
+### Added
+- Portal primary nav sliding navy active indicator (measured translate3d + width) with hybrid mid-bridge stretch, soft corners, mild squash, and settle ≤220ms
+- Clip-path label expand/collapse (~360ms) on the current item; `prefers-reduced-motion` instant snap
+
+### Changed
+- Replaced per-link liquid ink-fill bloom with a shared `portal-nav-indicator` under `nav.portal-nav-links`
+
+### Notes
+- Mission M7ZDUD7N; PortalNav remains per-page chrome with module-scoped prev href for soft-nav remounts
+
+
 ## [0.18.0] — 2026-07-20
 
 ### Added
