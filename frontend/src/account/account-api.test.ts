@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  changePassword,
   classifyAccountTripSeed,
+  closeAccount,
   createAccountTrip,
+  deletePasskey,
   fetchAccountExplorer,
   fetchAccountSettings,
   fetchAccountTrips,
@@ -648,6 +651,7 @@ describe("classifyAccountTripSeed", () => {
 });
 
 const DEVICE_ID = "018f4e80-0000-7000-a000-000000000003";
+const PASSKEY_ID = "018f4e80-0000-7000-a000-0000000000aa";
 
 describe("revokeTrustedDevice", () => {
   it("DELETEs /api/v1/account/trusted-devices/{id} with Authorization Bearer {sessionToken}", async () => {
@@ -670,6 +674,93 @@ describe("revokeTrustedDevice", () => {
   });
 });
 
+describe("deletePasskey", () => {
+  it("DELETEs /api/v1/account/passkeys/{id} with Authorization Bearer {sessionToken}", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+
+    const outcome = await deletePasskey(
+      { sessionToken: SESSION_TOKEN, passkeyId: PASSKEY_ID },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account/passkeys/${PASSKEY_ID}`);
+    expect(init?.method).toBe("DELETE");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+
+    expect(outcome.ok).toBe(true);
+  });
+});
+
+/** Independent literals — POST /api/v1/account/password (T4). */
+const CURRENT_PASSWORD = "correct-horse-battery";
+const NEW_PASSWORD = "new-correct-horse";
+/** Independent user-safe failure copy from wrong-current API body. */
+const WRONG_CURRENT_PASSWORD_ERROR = "current password is invalid";
+
+describe("changePassword", () => {
+  it("POSTs /api/v1/account/password with Bearer + currentPassword/newPassword; 204 returns ok", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+
+    const outcome = await changePassword(
+      {
+        sessionToken: SESSION_TOKEN,
+        currentPassword: CURRENT_PASSWORD,
+        newPassword: NEW_PASSWORD,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account/password`);
+    expect(init?.method).toBe("POST");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+    expect(headers.get("Content-Type")).toMatch(/application\/json/i);
+
+    const posted = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(posted).toEqual({
+      currentPassword: CURRENT_PASSWORD,
+      newPassword: NEW_PASSWORD,
+    });
+
+    expect(outcome.ok).toBe(true);
+  });
+
+  it("on wrong currentPassword (400) returns typed failure with user-safe error (does not throw)", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(
+        {
+          error: {
+            code: "invalid_request",
+            message: WRONG_CURRENT_PASSWORD_ERROR,
+          },
+        },
+        400,
+      ),
+    );
+
+    const outcome = await changePassword(
+      {
+        sessionToken: SESSION_TOKEN,
+        currentPassword: "wrong-password",
+        newPassword: NEW_PASSWORD,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome).not.toBeInstanceOf(Response);
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error).toBe(WRONG_CURRENT_PASSWORD_ERROR);
+  });
+});
+
 describe("logoutAccountSession", () => {
   it("DELETEs /api/v1/account/session with Authorization Bearer {sessionToken}", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
@@ -688,5 +779,71 @@ describe("logoutAccountSession", () => {
     expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
 
     expect(outcome.ok).toBe(true);
+  });
+});
+
+/** Independent literals — POST /api/v1/account/close (T4 acceptance #3). */
+const CLOSE_PASSWORD = "correct-horse-battery";
+const CLOSE_CONFIRMATION = "CLOSE";
+/** Independent user-safe failure copy from wrong-password API body. */
+const CLOSE_WRONG_PASSWORD_ERROR = "password is invalid";
+
+describe("closeAccount", () => {
+  it("POSTs /api/v1/account/close with Bearer + password/confirmation CLOSE; 204 returns ok", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
+
+    const outcome = await closeAccount(
+      {
+        sessionToken: SESSION_TOKEN,
+        password: CLOSE_PASSWORD,
+        confirmation: CLOSE_CONFIRMATION,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${API_BASE}/api/v1/account/close`);
+    expect(init?.method).toBe("POST");
+
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+    expect(headers.get("Content-Type")).toMatch(/application\/json/i);
+
+    const posted = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(posted).toEqual({
+      password: CLOSE_PASSWORD,
+      confirmation: CLOSE_CONFIRMATION,
+    });
+
+    expect(outcome.ok).toBe(true);
+  });
+
+  it("on wrong password (400) returns typed failure with user-safe error (does not throw)", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(
+        {
+          error: {
+            code: "invalid_request",
+            message: CLOSE_WRONG_PASSWORD_ERROR,
+          },
+        },
+        400,
+      ),
+    );
+
+    const outcome = await closeAccount(
+      {
+        sessionToken: SESSION_TOKEN,
+        password: "wrong-password",
+        confirmation: CLOSE_CONFIRMATION,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome).not.toBeInstanceOf(Response);
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.error).toBe(CLOSE_WRONG_PASSWORD_ERROR);
   });
 });

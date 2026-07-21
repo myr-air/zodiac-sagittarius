@@ -224,6 +224,7 @@ export function AccountSettingsPage() {
             <AccountSettingsProfileForm form={form} onChange={setForm} />
             <AccountSettingsComingSoon
               primaryEmail={identity?.primaryEmail ?? ""}
+              sessionToken={sessionToken}
               securityAfterTotp={
                 sessionToken ? (
                   <>

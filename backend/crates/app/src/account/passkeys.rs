@@ -24,6 +24,20 @@ use super::{
     is_unique_violation_on_constraint,
 };
 
+pub async fn delete_passkey(
+    pool: &PgPool,
+    session_token: &str,
+    passkey_id: Uuid,
+) -> Result<(), ServiceError> {
+    let user_id = authenticate_user_session(pool, session_token).await?;
+    let rows = db::account_queries::delete_passkey_for_user(pool, user_id, passkey_id).await?;
+    if rows == 0 {
+        return Err(ServiceError::NotFound);
+    }
+
+    Ok(())
+}
+
 pub async fn start_passkey_registration(
     pool: &PgPool,
     session_token: &str,

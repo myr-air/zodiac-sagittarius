@@ -309,6 +309,40 @@ pub async fn update_user_password_hash(
     Ok(())
 }
 
+pub async fn soft_disable_user(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update users
+         set disabled_at = now(),
+             updated_at = now()
+         where id = $1
+           and disabled_at is null",
+    )
+    .bind(user_id)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
+pub async fn get_user_password_hash(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> Result<Option<String>, sqlx::Error> {
+    sqlx::query_scalar::<_, String>(
+        "select password_hash
+         from users
+         where id = $1
+           and disabled_at is null
+           and password_hash is not null",
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+}
+
 pub async fn delete_user(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     user_id: Uuid,
@@ -554,6 +588,24 @@ pub async fn list_passkeys(
     .bind(user_id)
     .fetch_all(pool)
     .await
+}
+
+pub async fn delete_passkey_for_user(
+    pool: &PgPool,
+    user_id: Uuid,
+    passkey_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "delete from webauthn_credentials
+         where id = $1
+           and user_id = $2",
+    )
+    .bind(passkey_id)
+    .bind(user_id)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
 }
 
 pub async fn list_account_trips(
@@ -950,6 +1002,23 @@ pub async fn revoke_user_session(
     )
     .bind(session_token_hash)
     .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
+pub async fn revoke_all_user_sessions(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "update user_sessions
+         set revoked_at = now()
+         where user_id = $1
+           and revoked_at is null",
+    )
+    .bind(user_id)
+    .execute(&mut **tx)
     .await?;
 
     Ok(result.rows_affected())

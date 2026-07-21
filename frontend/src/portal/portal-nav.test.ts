@@ -288,7 +288,15 @@ describe("PortalNav prefers-reduced-motion snap", () => {
 });
 
 describe("portal stub routes", () => {
-  it("mounts Explore and Friends stub pages with PortalStubPage titles", () => {
+  it("mounts Explore and Friends via PortalStubPage with Coming soon copy (no product surfaces)", () => {
+    const stubSource = readFileSync(
+      join(FRONTEND_ROOT, "components/portal/PortalStubPage.tsx"),
+      "utf8",
+    );
+    expect(stubSource).toMatch(/Coming soon\./);
+    // Stub chrome only — no live product lists / feeds / invite surfaces.
+    expect(stubSource).not.toMatch(/AccountHome|TripsList|Invite|FriendList|ExploreFeed/);
+
     for (const segment of ["explore", "friends"] as const) {
       const source = readFileSync(
         join(FRONTEND_ROOT, `app/portal/${segment}/page.tsx`),
@@ -297,6 +305,9 @@ describe("portal stub routes", () => {
       expect(source).toMatch(/PortalStubPage/);
       const title = segment === "explore" ? "Explore" : "Friends";
       expect(source).toMatch(new RegExp(`title=["']${title}["']`));
+      // Route files stay thin stubs — no alternate product page components.
+      expect(source).not.toMatch(/AccountHome|PortalTripsPage|FriendsList|ExploreFeed/);
+      expect(source.split("\n").filter((l) => l.trim() && !l.trim().startsWith("//")).length).toBeLessThanOrEqual(6);
     }
   });
 });

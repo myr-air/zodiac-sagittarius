@@ -1,9 +1,10 @@
 /**
- * Account settings Trusted devices — list + Revoke (draft-v2).
- * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL.
+ * Account settings Trusted devices — list + Revoke (draft-v2 list; draft-v4 confirm).
+ * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL (`bun test`).
  *
- * Public surface: AccountSettingsPage after GET /account. Revoke wires
- * revokeTrustedDevice then removes/reloads that device.
+ * Public surface: AccountSettingsPage after GET /account. Revoke opens a
+ * confirm dialog (Cancel-first, a11y trap/restore); confirm calls
+ * revokeTrustedDevice (DELETE) then reload/remove; API failure is surfaced.
  *
  * A3 / TDD triage (skip-TDD): draft-v2 has no Logout control (decisions.md).
  * Do not invent logout chrome. The omit test below documents that — it is
@@ -38,7 +39,7 @@ const LAST_SEEN_NEVER = "Never seen";
 const EMPTY_DEVICES = "No trusted devices.";
 const REVOKE_LABEL = "Revoke";
 const DEVICES_HINT =
-  "Revoke uses existing DELETE /account/trusted-devices/{id}.";
+  "Revoke asks for confirmation, same as removing a passkey.";
 const REVOKE_ERROR = "Could not revoke this device. Please try again.";
 
 const SESSION_TOKEN = "account-session-token-devices";
@@ -227,8 +228,110 @@ describe("AccountSettingsDevices Revoke", () => {
     window.localStorage.clear();
   });
 
-  it("Revoke calls revokeTrustedDevice then removes/reloads that device; failure shows visible error without fake success toast", async () => {
+  /** T5 acceptance #1 — draft-v4 device dialog: Cancel-first, trap/restore, no DELETE until confirm. */
+  it("Revoke opens confirm dialog (Cancel-first, focus trap/restore) without calling revokeTrustedDevice until confirmed", async () => {
     const user = userEvent.setup();
+    const REVOKE_DIALOG_TITLE = "Revoke device?";
+    const CANCEL_LABEL = "Cancel";
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const path = pathOf(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (path === "/api/v1/account" && method === "GET") {
+        return jsonResponse(ACCOUNT_SETTINGS_WITH_DEVICES);
+      }
+      if (
+        path === `/api/v1/account/trusted-devices/${DEVICE_ID_A}` &&
+        method === "DELETE"
+      ) {
+        return new Response(null, { status: 204 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    await renderLoadedSettings(ACCOUNT_SETTINGS_WITH_DEVICES, fetchMock);
+
+    const accordion = devicesAccordion();
+    const revokeButtons = within(accordion).getAllByRole("button", {
+      name: REVOKE_LABEL,
+    });
+    const trigger = revokeButtons[0]!;
+    trigger.focus();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+
+    const dialog = await screen.findByRole("dialog", {
+      name: REVOKE_DIALOG_TITLE,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    const cancel = within(dialog).getByRole("button", { name: CANCEL_LABEL });
+    const confirm = within(dialog).getByRole("button", { name: REVOKE_LABEL });
+    // Cancel-first: Cancel precedes destructive confirm in DOM order.
+    expect(
+      cancel.compareDocumentPosition(confirm) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // Initial focus lands on Cancel (draft-v4 openDialog(..., deviceCancel)).
+    await waitFor(() => {
+      expect(cancel).toHaveFocus();
+    });
+
+    // Focus trap: Tab from last focusable wraps to first.
+    confirm.focus();
+    expect(confirm).toHaveFocus();
+    await user.tab();
+    expect(cancel).toHaveFocus();
+
+    function deleteCalls(): number {
+      return fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          pathOf(url!) === `/api/v1/account/trusted-devices/${DEVICE_ID_A}` &&
+          String(init?.method ?? "GET").toUpperCase() === "DELETE",
+      ).length;
+    }
+
+    // revokeTrustedDevice must not run until the confirm action.
+    expect(deleteCalls()).toBe(0);
+
+    await user.click(cancel);
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: REVOKE_DIALOG_TITLE }),
+      ).not.toBeInTheDocument();
+    });
+    expect(trigger).toHaveFocus();
+    expect(deleteCalls()).toBe(0);
+  });
+
+  /** T5 acceptance #2 — confirm → DELETE /account/trusted-devices/{id}, reload/remove, API failure without fake success. */
+  it("Confirm calls DELETE /account/trusted-devices/{id}, reloads/removes the device, and surfaces API failure without fake success", async () => {
+    const user = userEvent.setup();
+    const REVOKE_DIALOG_TITLE = "Revoke device?";
+
+    function deleteCalls(
+      fetchMock: ReturnType<typeof vi.fn>,
+      deviceId: string,
+    ): ReturnType<typeof vi.fn>["mock"]["calls"] {
+      return fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          pathOf(url!) === `/api/v1/account/trusted-devices/${deviceId}` &&
+          String(init?.method ?? "GET").toUpperCase() === "DELETE",
+      );
+    }
+
+    async function openAndConfirmRevoke(trigger: HTMLElement) {
+      await user.click(trigger);
+      const dialog = await screen.findByRole("dialog", {
+        name: REVOKE_DIALOG_TITLE,
+      });
+      // Confirm is the destructive Revoke control inside the dialog (not the row trigger).
+      await user.click(
+        within(dialog).getByRole("button", { name: REVOKE_LABEL }),
+      );
+    }
 
     let accountGets = 0;
     const fetchMock = vi.fn(async (input, init) => {
@@ -263,16 +366,21 @@ describe("AccountSettingsDevices Revoke", () => {
     });
     expect(revokeButtons).toHaveLength(DEVICES_FIXTURE.length);
 
-    // Revoke first device (Studio Mac).
+    // Opening alone must not DELETE — confirm drives the call.
     await user.click(revokeButtons[0]!);
-
-    const deleteCall = fetchMock.mock.calls.find(
-      ([url, init]) =>
-        pathOf(url!) === `/api/v1/account/trusted-devices/${DEVICE_ID_A}` &&
-        String(init?.method ?? "GET").toUpperCase() === "DELETE",
+    expect(deleteCalls(fetchMock, DEVICE_ID_A)).toHaveLength(0);
+    const dialog = await screen.findByRole("dialog", {
+      name: REVOKE_DIALOG_TITLE,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: REVOKE_LABEL }),
     );
-    expect(deleteCall).toBeTruthy();
-    expect(new Headers(deleteCall![1]?.headers).get("Authorization")).toBe(
+
+    await waitFor(() => {
+      expect(deleteCalls(fetchMock, DEVICE_ID_A).length).toBe(1);
+    });
+    const deleteCall = deleteCalls(fetchMock, DEVICE_ID_A)[0]!;
+    expect(new Headers(deleteCall[1]?.headers).get("Authorization")).toBe(
       `Bearer ${SESSION_TOKEN}`,
     );
 
@@ -286,7 +394,7 @@ describe("AccountSettingsDevices Revoke", () => {
     expect(screen.queryByText(/device revoked/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Saved$/)).not.toBeInTheDocument();
 
-    // Error path: DELETE failure → inline alert, no fake success, device stays.
+    // Error path: confirm → DELETE failure → inline alert, no fake success, device stays.
     cleanup();
     const errorFetch = vi.fn(async (input, init) => {
       const path = pathOf(input);
@@ -308,8 +416,11 @@ describe("AccountSettingsDevices Revoke", () => {
     const errRevoke = within(errAccordion).getAllByRole("button", {
       name: REVOKE_LABEL,
     })[0]!;
-    await user.click(errRevoke);
+    await openAndConfirmRevoke(errRevoke);
 
+    await waitFor(() => {
+      expect(deleteCalls(errorFetch, DEVICE_ID_A).length).toBe(1);
+    });
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(REVOKE_ERROR);
     });

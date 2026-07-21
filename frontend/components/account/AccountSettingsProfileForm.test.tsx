@@ -304,11 +304,16 @@ describe("Account settings Save PATCH failure", () => {
   });
 });
 
-/** Independent literals — Open-Meteo geocode suggestion selection (draft-v2 hometown). */
+/**
+ * Independent literals — draft-v4 City searchable picker dialog (Open-Meteo
+ * search moves into the dialog; Country stays derived/read-only).
+ */
 const SUGGESTION_CITY = "Chiang Mai";
 const SUGGESTION_COUNTRY = "Thailand";
+const CITY_PICKER_DIALOG_TITLE = "Choose city";
+const CITY_SEARCH_LABEL = "Search cities";
 
-function HometownTypeaheadHarness({
+function CityPickerHarness({
   fetchImpl,
 }: {
   fetchImpl: typeof fetch;
@@ -331,12 +336,13 @@ function HometownTypeaheadHarness({
   );
 }
 
-describe("AccountSettingsProfileForm hometown typeahead", () => {
+describe("AccountSettingsProfileForm city picker", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("selecting a city suggestion fills city + country via applyHometownSuggestion", async () => {
+  /** T6 acceptance #1 — draft-v4 City picker dialog (replaces inline combobox). */
+  it("City opens searchable picker dialog; selecting sets homeCity and derived homeCountry; Country stays read-only", async () => {
     const user = userEvent.setup();
     const geocodeFetch = vi.fn(async (input: RequestInfo | URL) => {
       const raw = typeof input === "string" ? input : input.toString();
@@ -350,23 +356,320 @@ describe("AccountSettingsProfileForm hometown typeahead", () => {
       });
     });
 
-    render(<HometownTypeaheadHarness fetchImpl={geocodeFetch as typeof fetch} />);
+    render(<CityPickerHarness fetchImpl={geocodeFetch as typeof fetch} />);
 
-    const city = screen.getByLabelText(/^City$/);
     const country = screen.getByLabelText(/^Country$/);
     expect(country).toHaveAttribute("readOnly");
 
-    await user.type(city, "Chiang");
+    // draft-v4: City is a picker trigger (replaces inline Open-Meteo combobox).
+    const cityTrigger = screen.getByRole("button", { name: /^City$/ });
+    expect(cityTrigger).toHaveAttribute("aria-haspopup", "dialog");
+    await user.click(cityTrigger);
+
+    const dialog = await screen.findByRole("dialog", {
+      name: CITY_PICKER_DIALOG_TITLE,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    const search = within(dialog).getByRole("searchbox", {
+      name: CITY_SEARCH_LABEL,
+    });
+    await user.type(search, "Chiang");
 
     const option = await waitFor(() =>
-      screen.getByRole("option", { name: new RegExp(SUGGESTION_CITY) }),
+      within(dialog).getByRole("option", {
+        name: new RegExp(SUGGESTION_CITY),
+      }),
     );
     await user.click(within(option).getByRole("button"));
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/^City$/)).toHaveValue(SUGGESTION_CITY);
+      expect(screen.queryByRole("dialog", { name: CITY_PICKER_DIALOG_TITLE }))
+        .not.toBeInTheDocument();
+      expect(cityTrigger).toHaveTextContent(SUGGESTION_CITY);
       expect(screen.getByLabelText(/^Country$/)).toHaveValue(SUGGESTION_COUNTRY);
     });
+    expect(screen.getByLabelText(/^Country$/)).toHaveAttribute("readOnly");
     expect(geocodeFetch).toHaveBeenCalled();
+  });
+});
+
+/**
+ * Independent literals — draft-v4 Timezone searchable picker dialog
+ * (replaces plain <select>; Locale stays a select).
+ */
+const TIMEZONE_PICKER_DIALOG_TITLE = "Choose timezone";
+const TIMEZONE_SEARCH_LABEL = "Search timezones";
+const SELECTED_TIMEZONE = "Asia/Tokyo";
+
+function TimezonePickerHarness() {
+  const [form, setForm] = useState<AccountSettingsForm>({
+    displayName: DISPLAY_NAME,
+    avatarColor: AVATAR_COLOR,
+    locale: LOCALE,
+    timezone: TIMEZONE,
+    homeCity: HOME_CITY,
+    homeCountry: HOME_COUNTRY,
+  });
+  return (
+    <AccountSettingsProfileForm form={form} onChange={setForm} />
+  );
+}
+
+describe("AccountSettingsProfileForm timezone picker", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  /** T6 acceptance #2 — draft-v4 Timezone picker dialog (replaces plain select). */
+  it("Timezone opens searchable picker dialog; Locale remains a select", async () => {
+    const user = userEvent.setup();
+    render(<TimezonePickerHarness />);
+
+    // Locale stays a plain <select>.
+    expect(screen.getByLabelText(/^Locale$/).tagName).toBe("SELECT");
+
+    // draft-v4: Timezone is a picker trigger (replaces plain <select>).
+    const timezoneTrigger = screen.getByRole("button", { name: /^Timezone$/ });
+    expect(timezoneTrigger).toHaveAttribute("aria-haspopup", "dialog");
+    await user.click(timezoneTrigger);
+
+    const dialog = await screen.findByRole("dialog", {
+      name: TIMEZONE_PICKER_DIALOG_TITLE,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    const search = within(dialog).getByRole("searchbox", {
+      name: TIMEZONE_SEARCH_LABEL,
+    });
+    await user.type(search, "Tokyo");
+
+    const option = await waitFor(() =>
+      within(dialog).getByRole("option", {
+        name: new RegExp(SELECTED_TIMEZONE),
+      }),
+    );
+    await user.click(within(option).getByRole("button"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: TIMEZONE_PICKER_DIALOG_TITLE }),
+      ).not.toBeInTheDocument();
+      expect(timezoneTrigger).toHaveTextContent(SELECTED_TIMEZONE);
+    });
+
+    // Locale must remain a plain select after the timezone picker interaction.
+    expect(screen.getByLabelText(/^Locale$/).tagName).toBe("SELECT");
+  });
+});
+
+/**
+ * Independent literals — T6 acceptance #3 (draft-v4 picker a11y + PATCH fields).
+ * Values differ from baseline so Save is dirty and body asserts are independent.
+ */
+const CANCEL_LABEL = "Cancel";
+const PATCHED_LOCALE = "en-US";
+const PATCHED_TIMEZONE = "Asia/Tokyo";
+const PATCHED_HOME_CITY = "Chiang Mai";
+const PATCHED_HOME_COUNTRY = "Thailand";
+
+describe("AccountSettingsProfileForm picker a11y (draft-v4)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  /** T6 acceptance #3 — focus trap, restore, Cancel/close on City + Timezone. */
+  it("City and Timezone pickers trap focus, restore on Cancel and Escape, and leave values unchanged on close", async () => {
+    const user = userEvent.setup();
+    render(<TimezonePickerHarness />);
+
+    async function assertPickerA11y(args: {
+      triggerName: RegExp;
+      dialogTitle: string;
+      searchLabel: string;
+    }) {
+      const trigger = screen.getByRole("button", { name: args.triggerName });
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      await user.click(trigger);
+      const dialog = await screen.findByRole("dialog", {
+        name: args.dialogTitle,
+      });
+      expect(dialog).toHaveAttribute("aria-modal", "true");
+
+      const search = within(dialog).getByRole("searchbox", {
+        name: args.searchLabel,
+      });
+      const cancel = within(dialog).getByRole("button", {
+        name: CANCEL_LABEL,
+      });
+
+      // Initial focus lands in the search field (draft-v4 picker open).
+      await waitFor(() => {
+        expect(search).toHaveFocus();
+      });
+
+      // Focus trap: Tab from last focusable (Cancel) wraps to first (search).
+      cancel.focus();
+      expect(cancel).toHaveFocus();
+      await user.tab();
+      expect(search).toHaveFocus();
+
+      // Cancel closes and restores focus to the trigger.
+      await user.click(cancel);
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: args.dialogTitle }),
+        ).not.toBeInTheDocument();
+      });
+      expect(trigger).toHaveFocus();
+
+      // Escape also closes and restores focus.
+      await user.click(trigger);
+      await screen.findByRole("dialog", { name: args.dialogTitle });
+      await user.keyboard("{Escape}");
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("dialog", { name: args.dialogTitle }),
+        ).not.toBeInTheDocument();
+      });
+      expect(trigger).toHaveFocus();
+    }
+
+    await assertPickerA11y({
+      triggerName: /^Timezone$/,
+      dialogTitle: TIMEZONE_PICKER_DIALOG_TITLE,
+      searchLabel: TIMEZONE_SEARCH_LABEL,
+    });
+    expect(screen.getByRole("button", { name: /^Timezone$/ })).toHaveTextContent(
+      TIMEZONE,
+    );
+
+    await assertPickerA11y({
+      triggerName: /^City$/,
+      dialogTitle: CITY_PICKER_DIALOG_TITLE,
+      searchLabel: CITY_SEARCH_LABEL,
+    });
+    expect(screen.getByRole("button", { name: /^City$/ })).toHaveTextContent(
+      HOME_CITY,
+    );
+    expect(screen.getByLabelText(/^Country$/)).toHaveValue(HOME_COUNTRY);
+  });
+});
+
+describe("Account settings Save with picker-selected locale fields", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    saveAccountSession(window.localStorage, ACCOUNT_SESSION);
+    expect(window.localStorage.getItem(ACCOUNT_SESSION_STORAGE_KEY)).toBeTruthy();
+
+    globalThis.fetch = vi.fn(async (input, init) => {
+      if (pathOf(input) === "/api/v1/account") {
+        if (init?.method === "PATCH") {
+          return jsonResponse(PATCHED_SETTINGS_BODY);
+        }
+        return jsonResponse(ACCOUNT_SETTINGS_BODY);
+      }
+      const raw = typeof input === "string" ? input : input.toString();
+      if (raw.includes("geocoding-api.open-meteo.com/v1/search")) {
+        return jsonResponse({
+          results: [
+            { name: PATCHED_HOME_CITY, country: PATCHED_HOME_COUNTRY },
+          ],
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    }) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.localStorage.clear();
+  });
+
+  /** T6 acceptance #3 — profile save still PATCHes locale/timezone/homeCity/homeCountry. */
+  it("after Locale select + Timezone/City picker choices, Save PATCHes locale, timezone, homeCity, and homeCountry", async () => {
+    const user = userEvent.setup();
+    render(<AccountSettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/display name/i)).toBeInTheDocument();
+    });
+
+    const locale = screen.getByLabelText(/^Locale$/);
+    await user.selectOptions(locale, PATCHED_LOCALE);
+
+    const timezoneTrigger = screen.getByRole("button", { name: /^Timezone$/ });
+    await user.click(timezoneTrigger);
+    const tzDialog = await screen.findByRole("dialog", {
+      name: TIMEZONE_PICKER_DIALOG_TITLE,
+    });
+    await user.type(
+      within(tzDialog).getByRole("searchbox", { name: TIMEZONE_SEARCH_LABEL }),
+      "Tokyo",
+    );
+    const tzOption = await waitFor(() =>
+      within(tzDialog).getByRole("option", {
+        name: new RegExp(PATCHED_TIMEZONE),
+      }),
+    );
+    await user.click(within(tzOption).getByRole("button"));
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: TIMEZONE_PICKER_DIALOG_TITLE }),
+      ).not.toBeInTheDocument();
+    });
+
+    const cityTrigger = screen.getByRole("button", { name: /^City$/ });
+    await user.click(cityTrigger);
+    const cityDialog = await screen.findByRole("dialog", {
+      name: CITY_PICKER_DIALOG_TITLE,
+    });
+    await user.type(
+      within(cityDialog).getByRole("searchbox", { name: CITY_SEARCH_LABEL }),
+      "Chiang",
+    );
+    const cityOption = await waitFor(() =>
+      within(cityDialog).getByRole("option", {
+        name: new RegExp(PATCHED_HOME_CITY),
+      }),
+    );
+    await user.click(within(cityOption).getByRole("button"));
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: CITY_PICKER_DIALOG_TITLE }),
+      ).not.toBeInTheDocument();
+      expect(cityTrigger).toHaveTextContent(PATCHED_HOME_CITY);
+      expect(screen.getByLabelText(/^Country$/)).toHaveValue(
+        PATCHED_HOME_COUNTRY,
+      );
+    });
+
+    const [desktopSave] = await waitFor(() => {
+      const buttons = saveButtons();
+      expect(buttons.length).toBeGreaterThanOrEqual(1);
+      return buttons as [HTMLElement, ...HTMLElement[]];
+    });
+    await waitFor(() => {
+      expect(desktopSave).toBeEnabled();
+    });
+
+    await user.click(desktopSave);
+
+    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
+    await waitFor(() => {
+      expect(patchCalls(fetchMock).length).toBeGreaterThanOrEqual(1);
+    });
+    const patch = patchCalls(fetchMock)[0]!;
+    expect(patch.body).toEqual(
+      expect.objectContaining({
+        locale: PATCHED_LOCALE,
+        timezone: PATCHED_TIMEZONE,
+        homeCity: PATCHED_HOME_CITY,
+        homeCountry: PATCHED_HOME_COUNTRY,
+      }),
+    );
   });
 });
