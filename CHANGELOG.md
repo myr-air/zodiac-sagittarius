@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.24.1] — 2026-07-22
+
+### Fixed
+- Default OpenRouter model is the official Free Models Router (`openrouter/free`); only `OPENROUTER_API_KEY` is required
+
+### Notes
+- `OPENROUTER_MODEL` / `OPENROUTER_MODELS` remain optional server overrides until account settings own model preference
+
+
 ## [0.24.0] — 2026-07-22
 
 ### Added
