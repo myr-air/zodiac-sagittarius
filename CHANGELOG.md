@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.24.0] — 2026-07-22
+
+### Added
+- Shared OpenRouter helper with model rotation (`OPENROUTER_MODELS` or primary + free defaults)
+- Auto-switch on 408/429/502/503/529 for day-plan-assist, place resolve, and itinerary import
+
+### Notes
+- Free-tier account RPM/RPD is shared across `:free` models; rotation recovers from per-model/provider limits, not the account free ceiling
+
+
 ## [0.23.0] — 2026-07-22
 
 ### Added
