@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.25.0] — 2026-07-22
+
+### Added
+- Smart itinerary table M1 write-path: nested sub-activity CRUD, mutation round-trip, context-rail PATCH, planVariantId switch, honest chrome
+
+### Changed
+- PRODUCT.md §5 marks cockpit shell / Smart itinerary table / plan filter rows for shipped M1 behavior
+
+### Notes
+- Mission M81DDKSC (roadmap itinerary-band-c-complete M1)
+
+
 ## [0.24.2] — 2026-07-22
 
 ### Fixed
