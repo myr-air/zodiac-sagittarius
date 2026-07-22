@@ -105,6 +105,8 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
   const [itineraryItems, setItineraryItems] = useState<
     TripCockpitItineraryItem[]
   >([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadSettled, setLoadSettled] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [selectedStop, setSelectedStop] = useState<DayTimelineStop | null>(
     null,
@@ -122,19 +124,23 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
     void loadTripCockpit(
       { tripId },
       {
-        fetch,
+        fetch: globalThis.fetch.bind(globalThis),
         apiBaseUrl: defaultApiBaseUrl(),
         storage: window.sessionStorage,
       },
     ).then((outcome) => {
       if (cancelled) return;
       if (!outcome.ok) {
+        setLoadError(outcome.error);
         setTrip(null);
         setItineraryItems([]);
+        setLoadSettled(true);
         return;
       }
+      setLoadError(null);
       setTrip(outcome.trip);
       setItineraryItems(outcome.itineraryItems);
+      setLoadSettled(true);
     });
 
     return () => {
@@ -182,17 +188,26 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
       : undefined;
 
   function reloadCockpit() {
+    setLoadSettled(false);
     void loadTripCockpit(
       { tripId },
       {
-        fetch,
+        fetch: globalThis.fetch.bind(globalThis),
         apiBaseUrl: defaultApiBaseUrl(),
         storage: window.sessionStorage,
       },
     ).then((outcome) => {
-      if (!outcome.ok) return;
+      if (!outcome.ok) {
+        setLoadError(outcome.error);
+        setTrip(null);
+        setItineraryItems([]);
+        setLoadSettled(true);
+        return;
+      }
+      setLoadError(null);
       setTrip(outcome.trip);
       setItineraryItems(outcome.itineraryItems);
+      setLoadSettled(true);
     });
   }
 
@@ -212,7 +227,7 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
           endDate: nextDay,
         },
         {
-          fetch,
+          fetch: globalThis.fetch.bind(globalThis),
           apiBaseUrl: defaultApiBaseUrl(),
         },
       );
@@ -300,7 +315,7 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
           },
         },
         {
-          fetch,
+          fetch: globalThis.fetch.bind(globalThis),
           apiBaseUrl: defaultApiBaseUrl(),
         },
       );
@@ -351,6 +366,9 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
               className="btn btn-ai inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#99f6e4] bg-(--color-primary-soft) px-3 text-[13px] font-semibold text-(--color-primary-strong) disabled:cursor-not-allowed disabled:opacity-50"
               title="Suggest stops, times, and fixes for this day"
               disabled={assistPending || !activeDay || !planVariantId}
+              aria-describedby={
+                !activeDay ? "ai-suggest-disabled-reason" : undefined
+              }
               onClick={() => {
                 void runDayPlanAssist("suggest");
               }}
@@ -387,7 +405,31 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
               </a>
             </nav>
           </div>
+          {!activeDay ? (
+            <p
+              id="ai-suggest-disabled-reason"
+              className="m-0 mt-1.5 text-[12px] text-(--color-text-muted)"
+            >
+              Available when a day is active
+            </p>
+          ) : null}
         </header>
+
+        {loadError ? (
+          <div
+            role="alert"
+            className="flex items-center gap-3 border-b border-(--color-border) px-6 py-3 text-sm text-(--color-text)"
+          >
+            <span>{loadError}</span>
+            <button
+              type="button"
+              className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-[13px] font-medium"
+              onClick={reloadCockpit}
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
 
         {spineDays.length > 0 ? (
           <DayFolderTabs
@@ -445,11 +487,46 @@ export function DayWorkspacePage({ tripId }: DayWorkspacePageProps) {
                     );
                   }}
                 />
-              ) : (
-                <p className="m-0 text-sm text-(--color-text-muted)">
-                  Plan one day at a time — pick Days here, or switch to Table for
-                  the full itinerary.
-                </p>
+              ) : loadError ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={tableHref}
+                    className="inline-flex h-9 items-center rounded-lg border border-(--color-primary) bg-(--color-primary) px-3 text-[13px] font-semibold text-(--color-on-primary) no-underline"
+                  >
+                    Open Table
+                  </a>
+                </div>
+              ) : !loadSettled ? null : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="m-0 w-full text-[13px] text-(--color-text-muted)">
+                    No Plan Day spine yet — recover from here.
+                  </p>
+                  <a
+                    href={tableHref}
+                    className="inline-flex h-9 items-center rounded-lg border border-(--color-primary) bg-(--color-primary) px-3 text-[13px] font-semibold text-(--color-on-primary) no-underline"
+                  >
+                    Open Table
+                  </a>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center rounded-lg border border-(--color-border) bg-(--color-surface) px-3 text-[13px] font-medium"
+                    onClick={reloadCockpit}
+                  >
+                    Retry
+                  </button>
+                  {trip ? (
+                    <button
+                      type="button"
+                      className="inline-flex h-9 items-center rounded-lg border border-(--color-border) bg-(--color-surface) px-3 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={addingDay}
+                      onClick={() => {
+                        void handleAddDay();
+                      }}
+                    >
+                      Add first day
+                    </button>
+                  ) : null}
+                </div>
               )}
             </section>
 

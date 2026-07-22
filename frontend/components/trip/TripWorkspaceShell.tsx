@@ -65,7 +65,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
     void loadTripCockpit(
       { tripId },
       {
-        fetch,
+        fetch: globalThis.fetch.bind(globalThis),
         apiBaseUrl: defaultApiBaseUrl(),
         storage: window.sessionStorage,
       },
@@ -148,8 +148,18 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
         }
       >
         {loadError ? (
-          <div role="alert" className="px-3 py-2 text-sm text-(--color-text)">
-            {loadError}
+          <div
+            role="alert"
+            className="flex items-center gap-3 border-b border-(--color-border) px-3 py-2 text-sm text-(--color-text)"
+          >
+            <span>{loadError}</span>
+            <button
+              type="button"
+              className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-[13px] font-medium"
+              onClick={() => setReloadToken((n) => n + 1)}
+            >
+              Retry
+            </button>
           </div>
         ) : null}
         <header className="command" style={commandStyle}>

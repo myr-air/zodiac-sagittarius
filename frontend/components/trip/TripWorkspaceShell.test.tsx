@@ -691,6 +691,12 @@ describe("TripWorkspaceShell Reorder drag grips", () => {
   });
 });
 
+/** Production deploy host — must not be hardcoded as a client API fallback. */
+const PRODUCTION_API_HOST = "joii.13thx.com";
+/** Independent calm copy from loadTripCockpit network/parse failure path. */
+const REACH_SERVER_ERROR =
+  /Could not (reach the server|load this trip)|incomplete|try again/i;
+
 describe("TripWorkspaceShell load failure", () => {
   afterEach(() => {
     cleanup();
@@ -753,6 +759,84 @@ describe("TripWorkspaceShell load failure", () => {
     ).toBeTruthy();
     // Seed identity must not appear from a failed load.
     expect(screen.queryByText(SEED_TRIP_NAME)).not.toBeInTheDocument();
+  });
+
+  /**
+   * T4 #3: loadError path includes Retry that reloads cockpit (parity with
+   * Days); empty/misconfigured API base surfaces as this failure UX — no
+   * production API host hardcoding.
+   */
+  it("loadError path includes Retry that reloads cockpit; empty/misconfigured API base surfaces failure UX without production host hardcoding", async () => {
+    const prevApiBase = process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL;
+    // Empty env → same-origin relative /api/v1 (Next 404 HTML risk locally).
+    process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL = "";
+
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+
+    let cockpitLoads = 0;
+    globalThis.fetch = vi.fn(async (input) => {
+      const url = String(input);
+      // Misconfigured/empty base must not fall back to a production host.
+      expect(url).not.toContain(PRODUCTION_API_HOST);
+      expect(url).toMatch(
+        new RegExp(`/api/v1/trips/${TRIP_ID.replace(/-/g, "\\-")}`),
+      );
+
+      if (
+        url.includes(`/api/v1/trips/${TRIP_ID}`) &&
+        !url.includes("/itinerary-items")
+      ) {
+        cockpitLoads += 1;
+        if (cockpitLoads === 1) {
+          // Empty/misconfigured base → Next same-origin 404 HTML, not JSON.
+          return new Response("<!DOCTYPE html><title>404</title>", {
+            status: 404,
+            headers: { "Content-Type": "text/html" },
+          });
+        }
+        return jsonResponse(SEED_TRIP_COCKPIT_BODY);
+      }
+      return jsonResponse(SEED_TRIP_COCKPIT_BODY);
+    }) as typeof fetch;
+
+    try {
+      const user = userEvent.setup();
+      render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+      const alert = await waitFor(() => screen.getByRole("alert"));
+      expect(alert.textContent ?? "").toMatch(REACH_SERVER_ERROR);
+      expect(screen.queryByText(SEED_TRIP_NAME)).not.toBeInTheDocument();
+
+      // Parity with Days: Retry control must reload cockpit.
+      const retry = screen.getByRole("button", { name: /^Retry$/i });
+      expect(cockpitLoads).toBe(1);
+
+      await user.click(retry);
+
+      await waitFor(() => {
+        expect(cockpitLoads).toBeGreaterThan(1);
+      });
+      await waitFor(() => {
+        expect(screen.getByText(SEED_TRIP_NAME)).toBeInTheDocument();
+      });
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    } finally {
+      if (prevApiBase === undefined) {
+        delete process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL;
+      } else {
+        process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL = prevApiBase;
+      }
+    }
   });
 });
 

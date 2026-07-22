@@ -3,6 +3,7 @@ import { classifyTripSeed, toCreatePayload } from "../create-trip/classify-seed"
 export type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
 export const MEMBER_SESSION_STORAGE_KEY = "joii.member.session";
+export const PENDING_JOIN_STORAGE_KEY = "joii.pending.join";
 
 export type MemberSessionRecord = {
   tripId: string;
@@ -10,6 +11,12 @@ export type MemberSessionRecord = {
   sessionToken: string;
   createdAt: string;
   expiresAt: string;
+};
+
+export type PendingJoinRecord = {
+  joinId: string;
+  joinPassword: string;
+  route: string;
 };
 
 export type CreateTripDeps = {
@@ -49,10 +56,7 @@ type PublicTripCreateBody = {
   error?: { code?: unknown; message?: unknown };
 };
 
-/** Default API origin from Next public env (empty = same-origin relative `/api/v1`). */
-export function defaultApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL?.trim() ?? "";
-}
+export { defaultApiBaseUrl } from "../api-base-url";
 
 export function tripRouteFor(tripId: string): string {
   return `/trips/${tripId}`;
@@ -85,6 +89,44 @@ export function saveMemberSession(
   }
 }
 
+export function loadPendingJoin(
+  storage: StorageLike | null | undefined,
+): PendingJoinRecord | null {
+  if (!storage) return null;
+  try {
+    const raw = storage.getItem(PENDING_JOIN_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isPendingJoinRecord(parsed)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function savePendingJoin(
+  storage: StorageLike | null | undefined,
+  pending: PendingJoinRecord,
+): void {
+  if (!storage) return;
+  try {
+    storage.setItem(PENDING_JOIN_STORAGE_KEY, JSON.stringify(pending));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+export function clearPendingJoin(
+  storage: Pick<Storage, "removeItem"> | null | undefined,
+): void {
+  if (!storage) return;
+  try {
+    storage.removeItem(PENDING_JOIN_STORAGE_KEY);
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
 function isMemberSessionRecord(value: unknown): value is MemberSessionRecord {
   if (!value || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
@@ -94,6 +136,16 @@ function isMemberSessionRecord(value: unknown): value is MemberSessionRecord {
     typeof record.sessionToken === "string" &&
     typeof record.createdAt === "string" &&
     typeof record.expiresAt === "string"
+  );
+}
+
+function isPendingJoinRecord(value: unknown): value is PendingJoinRecord {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.joinId === "string" &&
+    typeof record.joinPassword === "string" &&
+    typeof record.route === "string"
   );
 }
 
