@@ -57,12 +57,12 @@ describe("iconOnlyMaxWidthPx", () => {
     expect(globals).toMatch(
       new RegExp(`@media\\s*\\(max-width:\\s*${iconOnlyMaxWidthPx}px\\)`),
     );
-    expect(globals).toMatch(/\.nav-label\s*\{[^}]*max-width:\s*0/s);
+    expect(globals).toMatch(/\.nav-label\s*\{[^}]*max-width:\s*0/);
     expect(globals).toMatch(
-      /\.portal-nav-link--current\s+\.nav-label\s*\{[^}]*max-width:\s*5\.5rem/s,
+      /\.portal-nav-link--current\s+\.nav-label\s*\{[^}]*max-width:\s*5\.5rem/,
     );
     expect(globals).toMatch(/prefers-reduced-motion:\s*reduce/);
-    expect(globals).toMatch(/\.portal-nav-links\s*\{[^}]*justify-content:\s*center/s);
+    expect(globals).toMatch(/\.portal-nav-links\s*\{[^}]*justify-content:\s*center/);
   });
 });
 
@@ -89,7 +89,7 @@ describe("PortalNav sliding indicator", () => {
 
     // Shared indicator must slide via translate/width (or translate3d + width).
     expect(globals).toMatch(
-      /\.portal-nav-indicator\s*\{[^}]*(?:translate(?:3d)?|transform:\s*translate3d)[^}]*width/s,
+      /\.portal-nav-indicator\s*\{[^}]*(?:translate(?:3d)?|transform:\s*translate3d)[^}]*width/,
     );
   });
 });
@@ -203,7 +203,7 @@ describe("PortalNav v2 hybrid mid→settle flight", () => {
     // Soft flowing border-radius while mid-flight.
     expect(source).toMatch(/is-flowing|isFlowing:\s*true/);
     expect(globals).toMatch(
-      /\.portal-nav-indicator\.is-flowing\s*\{[^}]*border-radius:\s*44%\s+44%\s+50%\s+50%/s,
+      /\.portal-nav-indicator\.is-flowing\s*\{[^}]*border-radius:\s*44%\s+44%\s+50%\s+50%/,
     );
     // Settle restores full height.
     expect(source).toMatch(/scaleY(?:\s*[:(]\s*|\s*=\s*)1\b|scaleY:\s*1\b/);
@@ -268,10 +268,10 @@ describe("PortalNav prefers-reduced-motion snap", () => {
 
     // Reduced-motion block must zero indicator + label motion (duration 0 / none).
     expect(globals).toMatch(
-      /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{[^}]*\.portal-nav-indicator[^}]*\}/s,
+      /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{[^}]*\.portal-nav-indicator[^}]*\}/,
     );
     expect(globals).toMatch(
-      /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{[^}]*\.nav-label[^}]*\}/s,
+      /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{[^}]*\.nav-label[^}]*\}/,
     );
     expect(globals).toMatch(
       /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{[\s\S]*?(?:transition:\s*none|animation:\s*none|transition-duration:\s*0)/,
@@ -279,10 +279,10 @@ describe("PortalNav prefers-reduced-motion snap", () => {
 
     // Settled look remains: solid navy indicator + white current link.
     expect(globals).toMatch(
-      /\.portal-nav-indicator\s*\{[^}]*(?:--portal-navy|#2a3348)[^}]*\}/s,
+      /\.portal-nav-indicator\s*\{[^}]*(?:--portal-navy|#2a3348)[^}]*\}/,
     );
     expect(globals).toMatch(
-      /\.portal-nav-link--current\s*\{[^}]*color:\s*#fff/s,
+      /\.portal-nav-link--current\s*\{[^}]*color:\s*#fff/,
     );
   });
 });

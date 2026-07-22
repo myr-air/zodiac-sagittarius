@@ -12,6 +12,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import { TripWorkspaceShell } from "./TripWorkspaceShell";
 
@@ -242,6 +243,33 @@ describe("TripWorkspaceShell layout", () => {
       /var\(--color-primary\)/.test(bgInline);
     expect(usesPrimaryToken).toBe(true);
   });
+
+  /**
+   * T4 #2: draft command chrome includes Share (btn-primary in draft-v1).
+   * Calm non-navigating stub is OK — no parallel share backend.
+   */
+  it("command bar exposes a Share control as draft chrome (non-navigating stub)", () => {
+    render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+    const command =
+      document.querySelector("header.command") ??
+      screen.getByRole("banner");
+    expect(command).toBeTruthy();
+    const commandEl = command as HTMLElement;
+
+    // Draft: <button type="button" class="btn btn-primary">Share</button>
+    // inside .header-actions — stub OK; must not invent a share API route.
+    const share =
+      within(commandEl).queryByRole("button", { name: /^Share$/i }) ??
+      within(commandEl).queryByRole("link", { name: /^Share$/i });
+    expect(share).toBeTruthy();
+    const href = share!.getAttribute("href");
+    if (href !== null) {
+      expect(href).toBe("#");
+    } else {
+      expect(share!.tagName).toBe("BUTTON");
+    }
+  });
 });
 
 describe("TripWorkspaceShell command bar trip seed", () => {
@@ -338,6 +366,124 @@ const EMPTY_SEED_DAY_HEADERS = [
 const SETUP_WIZARD_COPY =
   /set up your trip|trip setup wizard|welcome wizard|get started with your itinerary/i;
 
+/**
+ * T2 #1: Main Plan filter must use the trip’s real planVariantId
+ * (activePlanVariantId) when it diverges from mainTripPlanId — Phase 1
+ * `mainTripPlanId ?? activePlanVariantId` wrongly treats the plan row id
+ * as the itinerary variant scope.
+ */
+const ACTIVE_PLAN_VARIANT_ID = "dddddddd-eeee-4fff-8000-111111111111";
+/** Seeded Main Plan stop tagged with the real variant id, not mainTripPlanId. */
+const MAIN_VARIANT_STOP_ID = "item-main-variant-doi-suthep";
+const MAIN_VARIANT_STOP_ACTIVITY = "Wat Phra That Doi Suthep";
+/** Attraction primary input is Place (activity title may be hidden). */
+const MAIN_VARIANT_STOP_PLACE = "Doi Suthep";
+/** Decoy tagged with mainTripPlanId — must not stand in for the real variant. */
+const MAIN_PLAN_ID_DECOY_ID = "item-main-plan-id-decoy";
+const MAIN_PLAN_ID_DECOY_ACTIVITY = "Decoy stop on mainTripPlanId";
+const MAIN_PLAN_ID_DECOY_PLACE = "Should not appear under Main Plan";
+
+const DIVERGE_MAIN_PLAN_COCKPIT_BODY = {
+  ...SEED_TRIP_COCKPIT_BODY,
+  trip: {
+    ...SEED_TRIP_COCKPIT_BODY.trip,
+    mainTripPlanId: PLAN_ID,
+    activePlanVariantId: ACTIVE_PLAN_VARIANT_ID,
+  },
+  itineraryItems: [
+    {
+      id: MAIN_VARIANT_STOP_ID,
+      tripId: TRIP_ID,
+      planVariantId: ACTIVE_PLAN_VARIANT_ID,
+      day: SEED_START_DATE,
+      activity: MAIN_VARIANT_STOP_ACTIVITY,
+      activityType: "attraction",
+      place: MAIN_VARIANT_STOP_PLACE,
+      startTime: "09:00",
+      status: "idea",
+      version: 1,
+    },
+    {
+      id: MAIN_PLAN_ID_DECOY_ID,
+      tripId: TRIP_ID,
+      planVariantId: PLAN_ID,
+      day: SEED_START_DATE,
+      activity: MAIN_PLAN_ID_DECOY_ACTIVITY,
+      activityType: "food",
+      place: MAIN_PLAN_ID_DECOY_PLACE,
+      startTime: "12:00",
+      status: "idea",
+      version: 1,
+    },
+  ],
+};
+
+describe("TripWorkspaceShell Main Plan variant filter", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+    // Precondition: Main Plan row id and active variant id must diverge.
+    expect(PLAN_ID).not.toBe(ACTIVE_PLAN_VARIANT_ID);
+    expect(DIVERGE_MAIN_PLAN_COCKPIT_BODY.trip.mainTripPlanId).toBe(PLAN_ID);
+    expect(DIVERGE_MAIN_PLAN_COCKPIT_BODY.trip.activePlanVariantId).toBe(
+      ACTIVE_PLAN_VARIANT_ID,
+    );
+
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(DIVERGE_MAIN_PLAN_COCKPIT_BODY),
+    ) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("when Main Plan is selected and mainTripPlanId ≠ activePlanVariantId, itinerary stops are filtered by the real activePlanVariantId", async () => {
+    render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+    const planList = await waitFor(() =>
+      screen.getByRole("listbox", { name: /trip plans/i }),
+    );
+    expect(
+      within(planList).getByRole("option", { name: "Main Plan" }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    const table = await waitFor(() =>
+      screen.getByRole("table", { name: TABLE_ARIA_LABEL }),
+    );
+    const realStop = await waitFor(() => {
+      const row = table.querySelector(
+        `tr.stop-row[data-id="${MAIN_VARIANT_STOP_ID}"]`,
+      );
+      expect(row).toBeTruthy();
+      return row as HTMLElement;
+    });
+    // Attraction field bag: primary visible input is Place, not activity title.
+    expect(
+      within(realStop).getByDisplayValue(MAIN_VARIANT_STOP_PLACE),
+    ).toBeInTheDocument();
+
+    // Filtering by mainTripPlanId would surface this decoy instead.
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${MAIN_PLAN_ID_DECOY_ID}"]`),
+    ).toBeNull();
+    expect(
+      screen.queryByDisplayValue(MAIN_PLAN_ID_DECOY_PLACE),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("TripWorkspaceShell empty-day seed spine", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -423,6 +569,125 @@ describe("TripWorkspaceShell empty-day seed spine", () => {
         within(terminal as HTMLElement).getByText("Add activity"),
       ).toBeInTheDocument();
     }
+  });
+});
+
+/**
+ * T5 #1 — Reorder (#dnd-toggle) reveals draft drag grips on day headers
+ * (.day-drag) and stop rows (.stop-drag); default off hides them.
+ * Independent landmarks from itinerary-plan-draft-v1.html.
+ */
+const REORDER_STOP_ID = "item-reorder-grip-seed";
+const REORDER_STOP_ACTIVITY = "Grip seed stop";
+const REORDER_GRIP_COCKPIT_BODY = {
+  ...SEED_TRIP_COCKPIT_BODY,
+  itineraryItems: [
+    {
+      id: REORDER_STOP_ID,
+      tripId: TRIP_ID,
+      planVariantId: PLAN_ID,
+      day: SEED_START_DATE,
+      activity: REORDER_STOP_ACTIVITY,
+      activityType: "attraction",
+      place: "Old City",
+      startTime: "10:00",
+      status: "idea",
+      version: 1,
+    },
+  ],
+};
+
+/** Draft grip is shown when present and not HTML-hidden. */
+function isGripShown(el: Element | null): boolean {
+  if (!el) return false;
+  if ((el as HTMLElement).hidden) return false;
+  if (el.hasAttribute("hidden")) return false;
+  return true;
+}
+
+describe("TripWorkspaceShell Reorder drag grips", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(REORDER_GRIP_COCKPIT_BODY),
+    ) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("checking command-bar Reorder (#dnd-toggle) reveals drag grips on day headers and stop rows; unchecked hides grips (default off)", async () => {
+    const user = userEvent.setup();
+    render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+    const table = await waitFor(() =>
+      screen.getByRole("table", { name: TABLE_ARIA_LABEL }),
+    );
+    const stopRow = await waitFor(() => {
+      const row = table.querySelector(
+        `tr.stop-row[data-id="${REORDER_STOP_ID}"]`,
+      );
+      expect(row).toBeTruthy();
+      return row as HTMLElement;
+    });
+    const dayRows = [...table.querySelectorAll("tr.day-row")];
+    expect(dayRows.length).toBeGreaterThan(0);
+
+    const command =
+      document.querySelector("header.command") ??
+      screen.getByRole("banner");
+    const reorder = within(command as HTMLElement).getByRole("checkbox", {
+      name: /reorder/i,
+    });
+    expect(reorder).toHaveAttribute("id", "dnd-toggle");
+    // Default off — grips hidden on day headers and stop rows.
+    expect(reorder).not.toBeChecked();
+    for (const dayRow of dayRows) {
+      expect(isGripShown(dayRow.querySelector(".day-drag"))).toBe(false);
+    }
+    expect(isGripShown(stopRow.querySelector(".stop-drag"))).toBe(false);
+
+    await user.click(reorder);
+    expect(reorder).toBeChecked();
+
+    // Checked — draft grips revealed on every day header and stop row.
+    const dayRowsOn = [...table.querySelectorAll("tr.day-row")];
+    expect(dayRowsOn.length).toBeGreaterThan(0);
+    for (const dayRow of dayRowsOn) {
+      expect(isGripShown(dayRow.querySelector(".day-drag"))).toBe(true);
+    }
+    const stopRowOn = table.querySelector(
+      `tr.stop-row[data-id="${REORDER_STOP_ID}"]`,
+    );
+    expect(isGripShown(stopRowOn?.querySelector(".stop-drag") ?? null)).toBe(
+      true,
+    );
+
+    await user.click(reorder);
+    expect(reorder).not.toBeChecked();
+    const dayRowsOff = [...table.querySelectorAll("tr.day-row")];
+    for (const dayRow of dayRowsOff) {
+      expect(isGripShown(dayRow.querySelector(".day-drag"))).toBe(false);
+    }
+    const stopRowOff = table.querySelector(
+      `tr.stop-row[data-id="${REORDER_STOP_ID}"]`,
+    );
+    expect(isGripShown(stopRowOff?.querySelector(".stop-drag") ?? null)).toBe(
+      false,
+    );
   });
 });
 

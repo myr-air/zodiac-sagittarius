@@ -16,9 +16,16 @@ export type WebAuthnAttestationCredential = {
   };
 };
 
+/** Injectable create options — only challenge is required for our registration flow. */
+export type WebAuthnCreateOptions = {
+  publicKey?: {
+    challenge: BufferSource;
+  };
+};
+
 export type WebAuthnCredentialsCreateLike = {
   create: (
-    options?: CredentialCreationOptions,
+    options?: WebAuthnCreateOptions,
   ) => Promise<WebAuthnAttestationCredential | null>;
 };
 

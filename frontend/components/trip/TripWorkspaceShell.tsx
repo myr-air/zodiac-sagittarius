@@ -56,6 +56,8 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   >([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  /** Command-bar Reorder (#dnd-toggle) — default off; reveals draft drag grips. */
+  const [reorderEnabled, setReorderEnabled] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,7 +90,8 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   }, [tripId, reloadToken]);
 
   const mainTripPlanId = trip?.mainTripPlanId ?? null;
-  const planVariantId = mainTripPlanId ?? trip?.activePlanVariantId ?? null;
+  const planVariantId =
+    trip?.activePlanVariantId ?? mainTripPlanId ?? null;
   const itineraryModel =
     trip && planVariantId
       ? buildItineraryTableModel({
@@ -109,6 +112,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
       className="shell"
       data-trip-id={tripId}
       data-rail="expanded"
+      data-dnd={reorderEnabled ? "on" : "off"}
       style={shellStyle}
     >
       <aside
@@ -161,7 +165,12 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
           </div>
           <div className="header-actions flex items-center gap-2">
             <label className="dnd-toggle" htmlFor="dnd-toggle" title="Show drag handles to reorder days and activities">
-              <input type="checkbox" id="dnd-toggle" />
+              <input
+                type="checkbox"
+                id="dnd-toggle"
+                checked={reorderEnabled}
+                onChange={(e) => setReorderEnabled(e.target.checked)}
+              />
               <span className="dnd-label">Reorder</span>
             </label>
             <button type="button" id="plan-toggle" aria-expanded="false">
@@ -189,6 +198,10 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
                 </div>
               )}
             </div>
+            {/* Draft-v1 Share chrome — calm stub; no share API. */}
+            <button type="button" className="btn btn-primary">
+              Share
+            </button>
           </div>
         </header>
         {itineraryModel ? (
@@ -199,6 +212,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
             apiBaseUrl={apiBaseUrl}
             fetch={fetch}
             onCockpitReload={() => setReloadToken((n) => n + 1)}
+            reorderEnabled={reorderEnabled}
           />
         ) : null}
       </div>

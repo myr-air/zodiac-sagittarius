@@ -1,5 +1,5 @@
 /**
- * Itinerary mutations — POST create + PATCH inline edit + DELETE remove.
+ * Itinerary mutations — POST create + PATCH inline edit / order + DELETE remove.
  */
 
 import type { TripCockpitItineraryItem } from "./trip-cockpit-load";
@@ -63,6 +63,10 @@ function itineraryItemUrl(
   itemId: string,
 ): string {
   return `${itineraryItemsUrl(apiBaseUrl, tripId)}/${encodeURIComponent(itemId)}`;
+}
+
+function itineraryItemsOrderUrl(apiBaseUrl: string, tripId: string): string {
+  return `${itineraryItemsUrl(apiBaseUrl, tripId)}/order`;
 }
 
 function nextClientMutationId(prefix = "itinerary"): string {
@@ -175,7 +179,15 @@ export type ItineraryItemPatchFields = {
   activity?: string;
   place?: string;
   activityType?: string;
+  /** Travel mode (flight/train/…) — draft By chip. */
+  activitySubtype?: string | null;
+  /** Type-shaped extras (e.g. `{ meal: "Dinner" }` for food). */
+  details?: Record<string, unknown>;
   status?: string;
+  /** Stop memo — openStopDialog(note) Save. */
+  note?: string;
+  /** Map / booking URL — openStopDialog(link) Save. */
+  mapLink?: string;
 };
 
 export type PatchItineraryItemInput = {
@@ -271,6 +283,116 @@ export async function patchItineraryItem(
   }
 
   return { ok: true, item };
+}
+
+export type ReorderItineraryItemsInput = {
+  tripId: string;
+  sessionToken: string;
+  planVariantId: string;
+  day: string;
+  /** Full Plan Day scope in the new order (camelCase itemIds on the wire). */
+  itemIds: string[];
+  /** Optional; generated when omitted. */
+  clientMutationId?: string;
+};
+
+export type ReorderItineraryItemsSuccess = {
+  ok: true;
+  items: TripCockpitItineraryItem[];
+};
+
+export type ReorderItineraryItemsFailure = {
+  ok: false;
+  error: string;
+};
+
+export type ReorderItineraryItemsOutcome =
+  | ReorderItineraryItemsSuccess
+  | ReorderItineraryItemsFailure;
+
+/**
+ * PATCH ReorderItineraryItemsRequest (camelCase) with Bearer member session.
+ * Body: { clientMutationId, planVariantId, day, itemIds }.
+ */
+export async function reorderItineraryItems(
+  input: ReorderItineraryItemsInput,
+  deps: ItineraryApiDeps,
+): Promise<ReorderItineraryItemsOutcome> {
+  const clientMutationId =
+    input.clientMutationId?.trim() || nextClientMutationId("itinerary-reorder");
+
+  let response: Response;
+  try {
+    response = await deps.fetch(
+      itineraryItemsOrderUrl(deps.apiBaseUrl, input.tripId),
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${input.sessionToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientMutationId,
+          planVariantId: input.planVariantId,
+          day: input.day,
+          itemIds: input.itemIds,
+        }),
+      },
+    );
+  } catch {
+    return {
+      ok: false,
+      error: "Could not reach the server. Check your connection and try again.",
+    };
+  }
+
+  let body: unknown = null;
+  try {
+    body = await response.json();
+  } catch {
+    body = null;
+  }
+
+  if (!response.ok) {
+    const errorBody =
+      body && typeof body === "object"
+        ? (body as CreateItineraryItemBody)
+        : null;
+    const fromApi =
+      errorBody && typeof errorBody.error?.message === "string"
+        ? errorBody.error.message.trim()
+        : "";
+    return {
+      ok: false,
+      error: fromApi || "Could not reorder stops. Please try again.",
+    };
+  }
+
+  if (!Array.isArray(body)) {
+    return {
+      ok: false,
+      error: "Stops reordered but the response was incomplete. Please try again.",
+    };
+  }
+
+  const items: TripCockpitItineraryItem[] = [];
+  for (const entry of body) {
+    const item = parseCreatedItem(
+      entry && typeof entry === "object"
+        ? (entry as CreateItineraryItemBody)
+        : null,
+    );
+    if (!item) {
+      return {
+        ok: false,
+        error:
+          "Stops reordered but the response was incomplete. Please try again.",
+      };
+    }
+    items.push(item);
+  }
+
+  return { ok: true, items };
 }
 
 export type DeleteItineraryItemInput = {

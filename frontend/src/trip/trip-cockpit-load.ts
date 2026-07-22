@@ -46,11 +46,15 @@ export type TripCockpitItineraryItem = {
   id: string;
   tripId: string;
   planVariantId: string;
+  /** Null for roots; set for children nested under a parent stop (one level). */
+  parentItemId?: string | null;
   day: string;
   activity: string;
   activityType: string;
   place: string;
   startTime: string;
+  /** HH:MM or null when unset (API Option). Used by time-rail duration. */
+  endTime?: string | null;
   status: string;
   version: number;
 };
@@ -149,17 +153,22 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
   if (typeof item.activityType !== "string") return null;
   if (typeof item.place !== "string") return null;
   if (typeof item.startTime !== "string") return null;
+  if (item.endTime != null && typeof item.endTime !== "string") return null;
   if (typeof item.status !== "string") return null;
   if (typeof item.version !== "number") return null;
+  const parentItemId = optionalNullableString(item.parentItemId);
+  if (parentItemId === undefined) return null;
   return {
     id: item.id,
     tripId: item.tripId,
     planVariantId: item.planVariantId,
+    parentItemId,
     day: item.day,
     activity: item.activity,
     activityType: item.activityType,
     place: item.place,
     startTime: item.startTime,
+    endTime: typeof item.endTime === "string" ? item.endTime : null,
     status: item.status,
     version: item.version,
   };

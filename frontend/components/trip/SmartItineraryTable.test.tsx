@@ -4,7 +4,8 @@
  * SmartItineraryTable — draft landmarks vs itinerary-plan-draft-v1.html.
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  *
- * T3 #2: time rail | body; no path-graph / alt-path columns.
+ * T3 #1: stroke SVG icons inside .type-ico (not empty-dot ::before) for picker types.
+ * T3 #2: time rail start–end + overnight duration via cockpit endTime (09:40–05:50 → 20h 10m).
  * T3 #3: activity types + default fallback; zebra; Day N / pretty date headers.
  * T4 #1: collapsed + Add activity per day → inline draft (Quick only).
  * T4 #2: Enter POSTs create body; Esc/✕ cancels without POST.
@@ -13,6 +14,11 @@
  * T5 #2: version_conflict → TripCockpit reload before next edit (no silent overwrite).
  * T5 #3: incomplete idea rows stay valid; type picker excludes default (picker set only).
  * T7 #2: static/demo weather chrome on day headers; no live weather network calls.
+ * M80P3JXX T4 #1: day-chip (.day-id) collapse/expand + activity-count chip persists by tripId.
+ * M80P3JXX T5 #3: order PATCH failure → calm alert; no silent local-only reorder.
+ * M80P3JXX T6 #2: parent chevron expands/collapses nested .subplan rows (Stay / attraction draft).
+ * M80P3JXX T7 #2: Food Meal + Travel By .choice-chip on .title-with-meta (far right) → PATCH expectedVersion.
+ * M80P3JXX T7 #3: Note / link / time-setup dialogs from stop actions + Set time; Save/Cancel → existing PATCH only.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -25,9 +31,42 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
-import type { TripCockpitItineraryItem } from "../../src/trip/trip-cockpit-load";
+import {
+  MEMBER_SESSION_STORAGE_KEY,
+  type StorageLike,
+} from "../../src/landing/create-trip";
+import {
+  loadTripCockpit,
+  type TripCockpitItineraryItem,
+} from "../../src/trip/trip-cockpit-load";
 import { buildItineraryTableModel } from "../../src/trip/itinerary-table-model";
 import { SmartItineraryTable } from "./SmartItineraryTable";
+
+const API_BASE = "http://127.0.0.1:5181";
+const OWNER_MEMBER_ID = "018f4e81-1000-7000-a000-000000000001";
+const OVERNIGHT_SESSION_TOKEN = "member-session-token-overnight-duration";
+
+function memoryStorage(initial: Record<string, string> = {}): StorageLike & {
+  data: Record<string, string>;
+} {
+  const data = { ...initial };
+  return {
+    data,
+    getItem(key: string) {
+      return key in data ? data[key]! : null;
+    },
+    setItem(key: string, value: string) {
+      data[key] = value;
+    },
+  };
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 /** Independent literals from approved itinerary-plan-draft-v1.html (travel stop t1). */
 const TRIP_ID = "018f4e80-5788-7de0-a45c-8a555d17fc2d";
@@ -192,6 +231,87 @@ describe("SmartItineraryTable stop row composition", () => {
   });
 });
 
+describe("SmartItineraryTable overnight duration from cockpit endTime", () => {
+  it("time rail shows start–end plus derived overnight duration (09:40–05:50 → 20h 10m) using cockpit endTime", async () => {
+    const storage = memoryStorage({
+      [MEMBER_SESSION_STORAGE_KEY]: JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: OVERNIGHT_SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    });
+
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({
+        trip: {
+          id: TRIP_ID,
+          name: "Overnight rail trip",
+          destinationLabel: "Tokyo",
+          startDate: DAY,
+          endDate: DAY_2,
+          mainTripPlanId: PLAN_ID,
+          activePlanVariantId: PLAN_ID,
+          ownerMemberId: OWNER_MEMBER_ID,
+          version: 1,
+        },
+        tripPlans: [
+          {
+            id: PLAN_ID,
+            tripId: TRIP_ID,
+            name: "Main",
+            kind: "main",
+            status: "main",
+            description: "Primary plan",
+            version: 1,
+          },
+        ],
+        itineraryItems: [
+          {
+            id: TRAVEL_STOP.id,
+            tripId: TRIP_ID,
+            planVariantId: PLAN_ID,
+            day: DAY,
+            activity: PRIMARY_TITLE,
+            activityType: "travel",
+            place: SECONDARY_DETAIL,
+            startTime: START_TIME,
+            endTime: END_TIME,
+            status: "booked",
+            version: 1,
+          },
+        ],
+      }),
+    );
+
+    const outcome = await loadTripCockpit(
+      { tripId: TRIP_ID },
+      { fetch: fetchMock, apiBaseUrl: API_BASE, storage },
+    );
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: outcome.itineraryItems,
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopRow = table.querySelector("tr.stop-row");
+    expect(stopRow).toBeTruthy();
+    const when = within(stopRow!.querySelector(".stop-when") as HTMLElement);
+
+    expect(when.getByLabelText("Start time")).toHaveValue(START_TIME);
+    expect(when.getByLabelText("End time")).toHaveValue(END_TIME);
+    expect(when.getByLabelText("Duration")).toHaveTextContent(DURATION_TEXT);
+  });
+});
+
 describe("SmartItineraryTable activity types, zebra, and day headers", () => {
   beforeEach(() => {
     // DESIGN tokens used by draft zebra odd/even backgrounds.
@@ -351,6 +471,59 @@ describe("SmartItineraryTable activity types, zebra, and day headers", () => {
   });
 });
 
+/**
+ * T3 #1 — Draft TYPE_ICON fills `.type-ico` with stroke SVGs (CSS stroke:currentColor;
+ * fill:none). Reject the empty-dot stand-in (`.type-ico:empty::before` color pill).
+ */
+describe("SmartItineraryTable stroke type icons", () => {
+  it("each activity type trigger renders a stroke SVG icon inside .type-ico (not the empty-dot ::before stand-in) for travel/food/shopping/attraction/experience/stay", () => {
+    const items: StopItem[] = PICKER_TYPES.map(({ activityType }, index) =>
+      stop({
+        id: `item-stroke-${activityType}`,
+        day: DAY,
+        activity: `${activityType} stop`,
+        activityType,
+        startTime: `${String(9 + index).padStart(2, "0")}:00`,
+        endTime: `${String(10 + index).padStart(2, "0")}:00`,
+      }),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: items,
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const tbody = table.querySelector("tbody");
+    expect(tbody).toBeTruthy();
+
+    for (const { activityType, ariaLabel } of PICKER_TYPES) {
+      const trigger = tbody!.querySelector(
+        `button.type-trigger.${activityType}[data-type-trigger]`,
+      );
+      expect(trigger).toBeTruthy();
+      expect(trigger).toHaveAttribute("aria-label", ariaLabel);
+
+      const ico = trigger!.querySelector(".type-ico");
+      expect(ico).toBeTruthy();
+      // Empty .type-ico activates the color-dot ::before stand-in — icons must fill it.
+      expect(ico!.matches(":empty")).toBe(false);
+
+      const svg = ico!.querySelector("svg");
+      expect(svg).toBeTruthy();
+      // Draft TYPE_ICON landmark: 24×24 stroke geometry (CSS: stroke currentColor, fill none).
+      expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
+      expect(svg!.querySelector("path, circle, rect")).toBeTruthy();
+      // Reject solid fill-disk icons — stroke contract is fill none (attr or CSS default).
+      expect((svg!.getAttribute("fill") ?? "none").toLowerCase()).toBe("none");
+    }
+  });
+});
+
 describe("SmartItineraryTable Quick-only add row", () => {
   it("each day ends with collapsed + Add activity; click opens an inline draft row (no Smart/AI paste chrome)", async () => {
     const user = userEvent.setup();
@@ -453,7 +626,6 @@ describe("SmartItineraryTable Quick-only add row", () => {
 });
 
 /** Independent create literals — CreateItineraryItemRequest + T4 soft assumptions. */
-const API_BASE = "http://127.0.0.1:5181";
 const SESSION_TOKEN = "member-session-token-quick-add";
 const ACTIVITY_TITLE = "Morning coffee";
 /** Unset type picker → API activityType `default` (decisions.md). */
@@ -491,13 +663,6 @@ function itineraryCreateCalls(fetchMock: ReturnType<typeof vi.fn>): FetchCall[] 
       return { url, init: init ?? {}, body };
     })
     .filter((call): call is FetchCall => call !== null);
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 describe("SmartItineraryTable Quick-add POST", () => {
@@ -733,7 +898,7 @@ function itineraryPatchCalls(fetchMock: ReturnType<typeof vi.fn>): FetchCall[] {
 }
 
 describe("SmartItineraryTable inline edit PATCH", () => {
-  it("Inline blur/commit on startTime, endTime, activity/title, place, activityType, or status PATCHes /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId + expectedVersion + patch", async () => {
+  it("Inline blur/commit on startTime, endTime, activity/title, activityType, place (place-shaped type), or status PATCHes /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId + expectedVersion + patch", async () => {
     const user = userEvent.setup();
     const editableStop: StopItem = {
       ...TRAVEL_STOP,
@@ -808,7 +973,7 @@ describe("SmartItineraryTable inline edit PATCH", () => {
       fireEvent.blur(el);
     }, { endTime: PATCH_END_TIME });
 
-    // --- activity / title blur ---
+    // --- activity / title blur (travel keeps a secondary Title for activity PATCH) ---
     await expectBlurPatch(async () => {
       const el = within(row).getByRole("textbox", { name: /title|activity/i });
       await user.clear(el);
@@ -816,21 +981,21 @@ describe("SmartItineraryTable inline edit PATCH", () => {
       await user.tab();
     }, { activity: PATCH_ACTIVITY });
 
-    // --- place blur ---
-    await expectBlurPatch(async () => {
-      const el = within(row).getByRole("textbox", { name: /^place$/i });
-      await user.clear(el);
-      await user.type(el, PATCH_PLACE);
-      await user.tab();
-    }, { place: PATCH_PLACE });
-
-    // --- activityType commit (type picker) ---
+    // --- activityType commit (type picker) — travel has no Place; switch to food ---
     await expectBlurPatch(async () => {
       await user.click(within(row).getByRole("button", { name: TYPE_ARIA_LABEL }));
       await user.click(
         await screen.findByRole("menuitem", { name: /^food$/i }),
       );
     }, { activityType: PATCH_ACTIVITY_TYPE });
+
+    // --- place blur on place-shaped type (food/stay/… still expose Place) ---
+    await expectBlurPatch(async () => {
+      const el = within(row).getByRole("textbox", { name: /^place$/i });
+      await user.clear(el);
+      await user.type(el, PATCH_PLACE);
+      await user.tab();
+    }, { place: PATCH_PLACE });
 
     // --- status commit ---
     await expectBlurPatch(async () => {
@@ -1145,5 +1310,813 @@ describe("SmartItineraryTable demo weather chrome", () => {
     } finally {
       globalThis.fetch = previousFetch;
     }
+  });
+});
+
+/** Independent literals: Day 1 has two stops → draft count chip "2 activities". */
+const DAY1_ACTIVITY_COUNT = "2 activities";
+
+describe("SmartItineraryTable day-chip expand/collapse", () => {
+  beforeEach(() => {
+    // happy-dom under Node 25 leaves window.localStorage undefined; provide Storage.
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      enumerable: true,
+      value: memoryStorage(),
+    });
+  });
+
+  it("day-chip (.day-id) toggles that day’s activities collapsed/expanded; collapsed state shows an activity-count chip and persists across remount for the same tripId", async () => {
+    const user = userEvent.setup();
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [
+        stop({
+          id: "item-d1-a",
+          day: DAY,
+          activity: "Ramen",
+          activityType: "food",
+        }),
+        stop({
+          id: "item-d1-b",
+          day: DAY,
+          activity: "Senso-ji",
+          activityType: "attraction",
+        }),
+        stop({
+          id: "item-d2-a",
+          day: DAY_2,
+          activity: "TeamLab",
+          activityType: "experience",
+        }),
+      ],
+    });
+
+    const { unmount } = render(
+      <SmartItineraryTable model={model} tripId={TRIP_ID} />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const day1Row = [...table.querySelectorAll("tr.day-row")].find((row) => {
+      const dateEl = row.querySelector("time.day-date");
+      return dateEl?.getAttribute("datetime") === DAY;
+    });
+    expect(day1Row).toBeTruthy();
+
+    const dayChip = day1Row!.querySelector("button.day-id");
+    expect(dayChip).toBeTruthy();
+    await user.click(dayChip!);
+
+    // Draft setDayCollapsed / syncDayCollapse landmarks.
+    expect(day1Row).toHaveAttribute("data-collapsed", "true");
+    expect(dayChip).toHaveAttribute("aria-expanded", "false");
+
+    const countChip = day1Row!.querySelector(".day-count, [data-day-count]");
+    expect(countChip).toBeTruthy();
+    expect(countChip).toHaveTextContent(DAY1_ACTIVITY_COUNT);
+
+    for (const id of ["item-d1-a", "item-d1-b"]) {
+      const stopRow = table.querySelector(`tr.stop-row[data-id="${id}"]`);
+      expect(stopRow).toBeTruthy();
+      expect(stopRow).toHaveClass("day-body-hidden");
+    }
+    // Sibling day stays expanded.
+    expect(
+      table.querySelector('tr.stop-row[data-id="item-d2-a"]'),
+    ).not.toHaveClass("day-body-hidden");
+
+    unmount();
+
+    // Remount same tripId — collapsed state persists (localStorage keyed by tripId OK).
+    render(<SmartItineraryTable model={model} tripId={TRIP_ID} />);
+    const tableRemount = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const day1Remount = [...tableRemount.querySelectorAll("tr.day-row")].find(
+      (row) => {
+        const dateEl = row.querySelector("time.day-date");
+        return dateEl?.getAttribute("datetime") === DAY;
+      },
+    );
+    expect(day1Remount).toHaveAttribute("data-collapsed", "true");
+    expect(
+      day1Remount!.querySelector(".day-count, [data-day-count]"),
+    ).toHaveTextContent(DAY1_ACTIVITY_COUNT);
+    expect(
+      tableRemount.querySelector('tr.stop-row[data-id="item-d1-a"]'),
+    ).toHaveClass("day-body-hidden");
+  });
+});
+
+/**
+ * M80P3JXX T5 #2 — within-Plan-Day reorder PATCHes .../itinerary-items/order.
+ *
+ * Test seam (happy-dom HTML5 DnD is unreliable): dispatch CustomEvent
+ * `joii:plan-day-reorder` on the table with detail `{ day, itemIds }` (full
+ * Plan Day scope in the new order). Production drop handler should share the
+ * same commit path (`reorderItineraryItems` → PATCH body camelCase).
+ */
+const REORDER_SESSION_TOKEN = "member-session-token-plan-day-reorder";
+const REORDER_STOP_A_ID = "item-reorder-a";
+const REORDER_STOP_B_ID = "item-reorder-b";
+/** Seeded day order A then B; drop commits B then A (full day scope). */
+const REORDERED_DAY_ITEM_IDS = [REORDER_STOP_B_ID, REORDER_STOP_A_ID] as const;
+const PLAN_DAY_REORDER_EVENT = "joii:plan-day-reorder";
+
+type OrderFetchCall = {
+  url: string;
+  init: RequestInit;
+  body: Record<string, unknown>;
+};
+
+function itineraryOrderCalls(
+  fetchMock: ReturnType<typeof vi.fn>,
+): OrderFetchCall[] {
+  return fetchMock.mock.calls
+    .map(([input, init]) => {
+      const url = String(input);
+      const method = (init?.method ?? "GET").toUpperCase();
+      if (method !== "PATCH" || !url.includes("/itinerary-items/order")) {
+        return null;
+      }
+      let body: Record<string, unknown> = {};
+      try {
+        body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      } catch {
+        body = {};
+      }
+      return { url, init: init ?? {}, body };
+    })
+    .filter((call): call is OrderFetchCall => call !== null);
+}
+
+describe("SmartItineraryTable Plan Day reorder PATCH", () => {
+  it("dropping a reordered stop within a Plan Day PATCHes /api/v1/trips/{tripId}/itinerary-items/order with clientMutationId, planVariantId, day, and the full itemIds scope for that day", async () => {
+    const stopA = stop({
+      id: REORDER_STOP_A_ID,
+      day: DAY,
+      activity: "First stop",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    const stopB = stop({
+      id: REORDER_STOP_B_ID,
+      day: DAY,
+      activity: "Second stop",
+      activityType: "food",
+      startTime: "11:00",
+      endTime: "12:00",
+    });
+
+    const fetchMock = vi.fn(async () =>
+      jsonResponse([
+        { ...stopB, version: 2 },
+        { ...stopA, version: 2 },
+      ]),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [stopA, stopB],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={REORDER_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${REORDER_STOP_A_ID}"]`),
+    ).toBeTruthy();
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${REORDER_STOP_B_ID}"]`),
+    ).toBeTruthy();
+
+    // Simulate within-day drop commit via documented test seam.
+    table.dispatchEvent(
+      new CustomEvent(PLAN_DAY_REORDER_EVENT, {
+        bubbles: true,
+        detail: { day: DAY, itemIds: [...REORDERED_DAY_ITEM_IDS] },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(1);
+    });
+
+    const call = itineraryOrderCalls(fetchMock)[0]!;
+    expect(call.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/order`,
+    );
+    expect((call.init.method ?? "").toUpperCase()).toBe("PATCH");
+    const headers = new Headers(call.init.headers);
+    expect(headers.get("Authorization")).toBe(
+      `Bearer ${REORDER_SESSION_TOKEN}`,
+    );
+    expect(headers.get("Content-Type")).toMatch(/application\/json/i);
+    expect(typeof call.body.clientMutationId).toBe("string");
+    expect(String(call.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(call.body.planVariantId).toBe(PLAN_ID);
+    expect(call.body.day).toBe(DAY);
+    expect(call.body.itemIds).toEqual([...REORDERED_DAY_ITEM_IDS]);
+  });
+});
+
+/**
+ * M80P3JXX T5 #3 — order PATCH failure stays calm: no silent local-only reorder.
+ * Independent fail copy matches reorderItineraryItems 5xx fallback (no API message).
+ */
+const REORDER_FAIL_MESSAGE =
+  "Could not reorder stops. Please try again.";
+/** Seeded Plan Day order (server/model) — must remain after failed PATCH. */
+const SEEDED_DAY_ORDER = [REORDER_STOP_A_ID, REORDER_STOP_B_ID] as const;
+
+describe("SmartItineraryTable Plan Day reorder failure calm", () => {
+  it("order PATCH failure (version conflict or 500) keeps server/model stop order and surfaces a calm alert — no silent local-only reorder", async () => {
+    const stopA = stop({
+      id: REORDER_STOP_A_ID,
+      day: DAY,
+      activity: "First stop",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    const stopB = stop({
+      id: REORDER_STOP_B_ID,
+      day: DAY,
+      activity: "Second stop",
+      activityType: "food",
+      startTime: "11:00",
+      endTime: "12:00",
+    });
+
+    // Force order PATCH failure (500 — same calm path as version_conflict).
+    const fetchMock = vi.fn(async () => jsonResponse({}, 500));
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [stopA, stopB],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={REORDER_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopOrder = () =>
+      [...table.querySelectorAll("tr.stop-row")].map((row) =>
+        row.getAttribute("data-id"),
+      );
+
+    expect(stopOrder()).toEqual([...SEEDED_DAY_ORDER]);
+
+    table.dispatchEvent(
+      new CustomEvent(PLAN_DAY_REORDER_EVENT, {
+        bubbles: true,
+        detail: { day: DAY, itemIds: [...REORDERED_DAY_ITEM_IDS] },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(1);
+    });
+
+    const alert = await waitFor(() => {
+      const el = within(table).getByRole("alert");
+      expect(el).toHaveTextContent(REORDER_FAIL_MESSAGE);
+      return el;
+    });
+    expect(alert).toBeVisible();
+
+    // Failure must not leave a silent local-only reordered DOM (B then A).
+    expect(stopOrder()).toEqual([...SEEDED_DAY_ORDER]);
+    expect(stopOrder()).not.toEqual([...REORDERED_DAY_ITEM_IDS]);
+  });
+});
+
+/**
+ * M80P3JXX T6 #2 — sub-activity chevron tree (draft itinerary-plan-draft-v1.html).
+ *
+ * Landmarks: `.activity-action.subplan-toggle` / `[data-subplan-toggle]` chevron;
+ * `tr.stop-row[data-subs-open]`; nested `.subplan` → `.subplan-list` →
+ * `.subplan-row[data-subplan-row]` with place fields from seeded Stay (s1) and
+ * attraction (a1) `data-subs`.
+ */
+const STAY_PARENT_ID = "item-stay-s1";
+const STAY_PARENT_ACTIVITY = "Hotel Gracery Shinjuku";
+/** Draft s1 data-subs place literals (independent of production). */
+const STAY_SUB_PLACES = ["Lobby cafe", "FamilyMart"] as const;
+const STAY_SUB_COUNT = STAY_SUB_PLACES.length;
+
+const ATTRACTION_PARENT_ID = "item-attraction-a1";
+const ATTRACTION_PARENT_ACTIVITY = "Senso-ji";
+/** Draft a1 data-subs place literals. */
+const ATTRACTION_SUB_PLACES = [
+  "Main hall",
+  "Nakamise street",
+  "Matcha soft serve",
+] as const;
+const ATTRACTION_SUB_COUNT = ATTRACTION_SUB_PLACES.length;
+
+describe("SmartItineraryTable sub-activity chevron tree", () => {
+  it("Parent stops with children show a chevron that expands/collapses the sub-activity tree; seeded Stay / attraction parents with children render nested subplan rows matching draft landmarks", async () => {
+    const user = userEvent.setup();
+
+    const stayParent = stop({
+      id: STAY_PARENT_ID,
+      day: DAY,
+      activity: STAY_PARENT_ACTIVITY,
+      activityType: "stay",
+      place: STAY_PARENT_ACTIVITY,
+      startTime: "15:30",
+      endTime: "",
+      parentItemId: null,
+    });
+    const stayChildren = STAY_SUB_PLACES.map((place, index) =>
+      stop({
+        id: `item-stay-sub-${index + 1}`,
+        day: DAY,
+        activity: place,
+        activityType: index === 0 ? "food" : "shopping",
+        place,
+        startTime: "15:30",
+        endTime: "",
+        parentItemId: STAY_PARENT_ID,
+      }),
+    );
+
+    const attractionParent = stop({
+      id: ATTRACTION_PARENT_ID,
+      day: DAY_2,
+      activity: ATTRACTION_PARENT_ACTIVITY,
+      activityType: "attraction",
+      place: ATTRACTION_PARENT_ACTIVITY,
+      startTime: "10:00",
+      endTime: "11:30",
+      parentItemId: null,
+    });
+    const attractionChildren = ATTRACTION_SUB_PLACES.map((place, index) =>
+      stop({
+        id: `item-attraction-sub-${index + 1}`,
+        day: DAY_2,
+        activity: place,
+        activityType:
+          index === 0 ? "attraction" : index === 1 ? "shopping" : "food",
+        place,
+        startTime: "10:00",
+        endTime: "",
+        parentItemId: ATTRACTION_PARENT_ID,
+      }),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [
+        stayParent,
+        ...stayChildren,
+        attractionParent,
+        ...attractionChildren,
+      ],
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    async function expectParentSubplanTree(
+      parentId: string,
+      subPlaces: readonly string[],
+      subCount: number,
+    ) {
+      const parentRow = table.querySelector(
+        `tr.stop-row[data-id="${parentId}"]`,
+      ) as HTMLElement | null;
+      expect(parentRow).toBeTruthy();
+
+      // Draft chevron: .activity-action.subplan-toggle / [data-subplan-toggle].
+      const toggle = parentRow!.querySelector(
+        "button.activity-action.subplan-toggle[data-subplan-toggle], button[data-subplan-toggle]",
+      ) as HTMLElement | null;
+      expect(toggle).toBeTruthy();
+      expect(toggle!.querySelector("svg")).toBeTruthy();
+      expect(toggle).toHaveAttribute("data-count", String(subCount));
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+      // Collapsed: subplan panel absent or hidden (draft panel.hidden until open).
+      const panelBefore = parentRow!.querySelector(
+        ".subplan[data-subplan], [data-subplan]",
+      ) as HTMLElement | null;
+      if (panelBefore) {
+        expect(
+          panelBefore.hidden || panelBefore.getAttribute("hidden") !== null,
+        ).toBe(true);
+      }
+
+      await user.click(toggle!);
+
+      expect(parentRow).toHaveAttribute("data-subs-open", "true");
+      expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+      const panel = parentRow!.querySelector(
+        ".subplan[data-subplan], [data-subplan]",
+      ) as HTMLElement;
+      expect(panel).toBeTruthy();
+      expect(panel.hidden).toBe(false);
+      expect(panel.querySelector(".subplan-list, [data-subplan-list]")).toBeTruthy();
+
+      const subRows = [
+        ...panel.querySelectorAll(".subplan-row[data-subplan-row], [data-subplan-row]"),
+      ];
+      expect(subRows.length).toBe(subCount);
+      for (const place of subPlaces) {
+        expect(
+          subRows.some((row) => row.textContent?.includes(place)),
+        ).toBe(true);
+      }
+
+      // Collapse again.
+      await user.click(toggle!);
+      expect(parentRow).toHaveAttribute("data-subs-open", "false");
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+      const panelAfter = parentRow!.querySelector(
+        ".subplan[data-subplan], [data-subplan]",
+      ) as HTMLElement | null;
+      expect(panelAfter).toBeTruthy();
+      expect(
+        panelAfter!.hidden || panelAfter!.getAttribute("hidden") !== null,
+      ).toBe(true);
+    }
+
+    await expectParentSubplanTree(
+      STAY_PARENT_ID,
+      STAY_SUB_PLACES,
+      STAY_SUB_COUNT,
+    );
+    await expectParentSubplanTree(
+      ATTRACTION_PARENT_ID,
+      ATTRACTION_SUB_PLACES,
+      ATTRACTION_SUB_COUNT,
+    );
+  });
+});
+
+/**
+ * M80P3JXX T7 #2 — draft choiceChipHtml on .title-with-meta (far right):
+ * Travel By (`data-by-trigger`) + Food Meal (`data-meal-trigger.meal`) commit
+ * via PATCH itinerary-items/{id} with clientMutationId + expectedVersion.
+ * Independent literals: draft BY_OPTS/MEAL_OPTS + API activitySubtype / details.meal.
+ */
+const CHIP_SESSION_TOKEN = "member-session-token-meal-by-chips";
+const CHIP_TRAVEL_ID = "item-travel-by-chip";
+const CHIP_FOOD_ID = "item-food-meal-chip";
+const CHIP_EXPECTED_VERSION = 7;
+/** Draft BY_OPTS / validate_activity_subtype. */
+const CHIP_BY_VALUE = "flight";
+/** Draft MEAL_OPTS; create/patch details.meal. */
+const CHIP_MEAL_VALUE = "Dinner";
+
+describe("SmartItineraryTable meal/By choice-chips", () => {
+  it("Food Meal and Travel By choice-chips sit on the title line (far right) per draft and commit via existing PATCH expectedVersion path", async () => {
+    const user = userEvent.setup();
+    const travelStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: CHIP_TRAVEL_ID,
+      version: CHIP_EXPECTED_VERSION,
+    };
+    const foodStop: StopItem = stop({
+      id: CHIP_FOOD_ID,
+      day: DAY,
+      activity: "Ichiran Shinjuku",
+      activityType: "food",
+      place: "Ichiran Shinjuku",
+      version: CHIP_EXPECTED_VERSION,
+    });
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.includes("/itinerary-items/")) {
+        const id = url.split("/").pop()!;
+        const base = id === CHIP_FOOD_ID ? foodStop : travelStop;
+        return jsonResponse({
+          ...base,
+          version: CHIP_EXPECTED_VERSION + 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [travelStop, foodStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={CHIP_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const travelRow = table.querySelector(
+      `tr.stop-row[data-id="${CHIP_TRAVEL_ID}"]`,
+    ) as HTMLElement;
+    const foodRow = table.querySelector(
+      `tr.stop-row[data-id="${CHIP_FOOD_ID}"]`,
+    ) as HTMLElement;
+    expect(travelRow).toBeTruthy();
+    expect(foodRow).toBeTruthy();
+
+    // Draft: By chip is last child of .title-with-meta on the travel title line.
+    const travelTitle = travelRow.querySelector(
+      ".fields-host .line-primary .title-with-meta",
+    ) as HTMLElement;
+    expect(travelTitle).toBeTruthy();
+    const byChip = travelTitle.querySelector(
+      "button.choice-chip[data-by-trigger]",
+    ) as HTMLElement;
+    expect(byChip).toBeTruthy();
+    expect(byChip).toHaveAttribute("aria-haspopup", "listbox");
+    expect(travelTitle.lastElementChild).toBe(byChip);
+    expect(byChip.querySelector(".choice-chip-label")).toHaveTextContent(/^By$/i);
+
+    // Draft: Meal chip (class meal) is last child of food .title-with-meta.
+    const foodTitle = foodRow.querySelector(
+      ".fields-host .line-primary .title-with-meta",
+    ) as HTMLElement;
+    expect(foodTitle).toBeTruthy();
+    const mealChip = foodTitle.querySelector(
+      "button.choice-chip.meal[data-meal-trigger]",
+    ) as HTMLElement;
+    expect(mealChip).toBeTruthy();
+    expect(mealChip).toHaveAttribute("aria-haspopup", "listbox");
+    expect(foodTitle.lastElementChild).toBe(mealChip);
+    expect(mealChip.querySelector(".choice-chip-label")).toHaveTextContent(
+      /^Meal$/i,
+    );
+
+    const travelPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${CHIP_TRAVEL_ID}`;
+    const foodPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${CHIP_FOOD_ID}`;
+
+    // By choice → PATCH activitySubtype via expectedVersion path.
+    fetchMock.mockClear();
+    await user.click(byChip);
+    await user.click(
+      await screen.findByRole("option", { name: new RegExp(`^${CHIP_BY_VALUE}$`, "i") }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const byCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(byCall.url).toBe(travelPatchUrl);
+    expect((byCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    const byHeaders = new Headers(byCall.init.headers);
+    expect(byHeaders.get("Authorization")).toBe(`Bearer ${CHIP_SESSION_TOKEN}`);
+    expect(typeof byCall.body.clientMutationId).toBe("string");
+    expect(String(byCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(byCall.body.expectedVersion).toBe(CHIP_EXPECTED_VERSION);
+    expect(byCall.body.patch).toEqual(
+      expect.objectContaining({ activitySubtype: CHIP_BY_VALUE }),
+    );
+
+    // Meal choice → PATCH details.meal via expectedVersion path.
+    fetchMock.mockClear();
+    await user.click(mealChip);
+    await user.click(
+      await screen.findByRole("option", {
+        name: new RegExp(`^${CHIP_MEAL_VALUE}$`, "i"),
+      }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const mealCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(mealCall.url).toBe(foodPatchUrl);
+    expect((mealCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    const mealHeaders = new Headers(mealCall.init.headers);
+    expect(mealHeaders.get("Authorization")).toBe(
+      `Bearer ${CHIP_SESSION_TOKEN}`,
+    );
+    expect(typeof mealCall.body.clientMutationId).toBe("string");
+    expect(String(mealCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(mealCall.body.expectedVersion).toBe(CHIP_EXPECTED_VERSION);
+    expect(mealCall.body.patch).toEqual(
+      expect.objectContaining({
+        details: expect.objectContaining({ meal: CHIP_MEAL_VALUE }),
+      }),
+    );
+  });
+});
+
+/**
+ * M80P3JXX T7 #3 — draft openStopDialog(note|link) + openTimeSetupDialog:
+ * Note / Link from stop action controls; Time setup from [data-time-setup].
+ * Remove confirm already ships (rail). Save/Cancel must reuse PATCH
+ * /api/v1/trips/{tripId}/itinerary-items/{itemId} (note / mapLink / times) —
+ * no parallel note/link/time backends.
+ * Independent literals: draft dlg titles + API note/mapLink/startTime/endTime.
+ */
+const DLG_SESSION_TOKEN = "member-session-token-note-link-time";
+const DLG_ITEM_ID = "item-travel-note-link-time";
+const DLG_EXPECTED_VERSION = 9;
+/** Draft openStopDialog / openTimeSetupDialog titles. */
+const NOTE_DIALOG_TITLE = "Note";
+const LINK_DIALOG_TITLE = "Link";
+const TIME_DIALOG_TITLE = "Time setup";
+const NOTE_BODY = "Gate closes 40m early";
+const LINK_URL = "https://example.com/tg640-booking";
+const DLG_START_TIME = "10:05";
+const DLG_END_TIME = "18:20";
+
+describe("SmartItineraryTable note/link/time-setup dialogs", () => {
+  it("Note, link, and time-setup dialogs open from stop action / time-setup controls (Remove confirm already ships); Save/Cancel do not invent parallel backends", async () => {
+    const user = userEvent.setup();
+    const travelStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: DLG_ITEM_ID,
+      version: DLG_EXPECTED_VERSION,
+    };
+    const patchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${DLG_ITEM_ID}`;
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url === patchUrl) {
+        return jsonResponse({
+          ...travelStop,
+          version: DLG_EXPECTED_VERSION + 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [travelStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={DLG_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${DLG_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(stopRow).toBeTruthy();
+
+    async function openStopAction(label: RegExp) {
+      const more = within(stopRow).queryByRole("button", {
+        name: /more actions/i,
+      });
+      if (more) await user.click(more);
+      await user.click(within(stopRow).getByRole("button", { name: label }));
+    }
+
+    // --- Note: open from stop action; Cancel invents no backend ---
+    fetchMock.mockClear();
+    await openStopAction(/edit note/i);
+    const noteDialog = await screen.findByRole("dialog", {
+      name: NOTE_DIALOG_TITLE,
+    });
+    expect(
+      within(noteDialog).getByRole("button", { name: /^cancel$/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(noteDialog).getByRole("button", { name: /^save$/i }),
+    ).toBeInTheDocument();
+    await user.click(
+      within(noteDialog).getByRole("button", { name: /^cancel$/i }),
+    );
+    expect(screen.queryByRole("dialog", { name: NOTE_DIALOG_TITLE })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // Note Save → existing item PATCH with note (not a parallel /notes route).
+    await openStopAction(/edit note/i);
+    const noteDialogSave = await screen.findByRole("dialog", {
+      name: NOTE_DIALOG_TITLE,
+    });
+    const noteField =
+      within(noteDialogSave).queryByRole("textbox", { name: /^note$/i }) ??
+      within(noteDialogSave).getByPlaceholderText(/add a note/i);
+    await user.clear(noteField);
+    await user.type(noteField, NOTE_BODY);
+    fetchMock.mockClear();
+    await user.click(
+      within(noteDialogSave).getByRole("button", { name: /^save$/i }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const noteCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(noteCall.url).toBe(patchUrl);
+    expect((noteCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    expect(new Headers(noteCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${DLG_SESSION_TOKEN}`,
+    );
+    expect(typeof noteCall.body.clientMutationId).toBe("string");
+    expect(String(noteCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(noteCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION);
+    expect(noteCall.body.patch).toEqual(
+      expect.objectContaining({ note: NOTE_BODY }),
+    );
+    expect(
+      fetchMock.mock.calls.every(([input]) => String(input) === patchUrl),
+    ).toBe(true);
+
+    // --- Link: open from stop action; Save → mapLink on same PATCH path ---
+    await openStopAction(/edit link/i);
+    const linkDialog = await screen.findByRole("dialog", {
+      name: LINK_DIALOG_TITLE,
+    });
+    const linkField =
+      within(linkDialog).queryByRole("textbox", { name: /^url$/i }) ??
+      within(linkDialog).getByPlaceholderText(/^https:\/\//i);
+    await user.clear(linkField);
+    await user.type(linkField, LINK_URL);
+    fetchMock.mockClear();
+    await user.click(
+      within(linkDialog).getByRole("button", { name: /^save$/i }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const linkCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(linkCall.url).toBe(patchUrl);
+    expect(linkCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION);
+    expect(linkCall.body.patch).toEqual(
+      expect.objectContaining({ mapLink: LINK_URL }),
+    );
+    expect(
+      fetchMock.mock.calls.every(([input]) => String(input) === patchUrl),
+    ).toBe(true);
+
+    // --- Time setup: open from Set time control; Save → start/end PATCH ---
+    await user.click(
+      within(stopRow).getByRole("button", { name: /^set time$/i }),
+    );
+    const timeDialog = await screen.findByRole("dialog", {
+      name: TIME_DIALOG_TITLE,
+    });
+    const startField = within(timeDialog).getByLabelText(/^start$/i);
+    const endField = within(timeDialog).getByLabelText(/^end$/i);
+    await user.clear(startField);
+    await user.type(startField, DLG_START_TIME);
+    await user.clear(endField);
+    await user.type(endField, DLG_END_TIME);
+    fetchMock.mockClear();
+    await user.click(
+      within(timeDialog).getByRole("button", { name: /^save$/i }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const timeCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(timeCall.url).toBe(patchUrl);
+    expect(timeCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION);
+    expect(timeCall.body.patch).toEqual(
+      expect.objectContaining({
+        startTime: DLG_START_TIME,
+        endTime: DLG_END_TIME,
+      }),
+    );
+    expect(
+      fetchMock.mock.calls.every(([input]) => String(input) === patchUrl),
+    ).toBe(true);
   });
 });
