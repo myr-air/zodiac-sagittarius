@@ -17,7 +17,6 @@ const HIGH_CONFIDENCE_THRESHOLD: f64 = 0.85;
 const NOMINATIM_DEFAULT_BASE_URL: &str = "https://nominatim.openstreetmap.org";
 const NOMINATIM_MIN_INTERVAL: Duration = Duration::from_secs(1);
 const OPEN_METEO_GEOCODE_BASE_URL: &str = "https://geocoding-api.open-meteo.com/v1";
-const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
 static NOMINATIM_LAST_REQUEST: LazyLock<Mutex<Option<Instant>>> =
     LazyLock::new(|| Mutex::new(None));
@@ -69,41 +68,6 @@ pub struct PlaceCoordinates {
 pub struct ResolvePlaceResponse {
     pub status: &'static str,
     pub candidates: Vec<PlaceCandidate>,
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterPlaceQueryRequest<'a> {
-    model: &'a str,
-    messages: Vec<OpenRouterPlaceQueryMessage<'a>>,
-    temperature: f64,
-    response_format: OpenRouterPlaceQueryResponseFormat,
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterPlaceQueryMessage<'a> {
-    role: &'a str,
-    content: String,
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterPlaceQueryResponseFormat {
-    #[serde(rename = "type")]
-    response_type: &'static str,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterPlaceQueryResponse {
-    choices: Vec<OpenRouterPlaceQueryChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterPlaceQueryChoice {
-    message: OpenRouterPlaceQueryResponseMessage,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterPlaceQueryResponseMessage {
-    content: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -729,47 +693,25 @@ fn merge_place_queries(primary: Vec<String>, fallback: Vec<String>) -> Vec<Strin
 }
 
 async fn openrouter_place_queries(request: &ResolvePlaceRequest) -> Option<Vec<String>> {
-    let api_key = std::env::var("OPENROUTER_API_KEY")
-        .or_else(|_| std::env::var("SAGITTARIUS_OPENROUTER_API_KEY"))
-        .ok()?;
-    let model = std::env::var("OPENROUTER_MODEL")
-        .or_else(|_| std::env::var("SAGITTARIUS_AI_MODEL"))
-        .unwrap_or_else(|_| "openai/gpt-5.2".to_string());
-    let client = reqwest::Client::new();
-    let mut builder = client
-        .post(OPENROUTER_CHAT_COMPLETIONS_URL)
-        .bearer_auth(api_key)
-        .header(reqwest::header::USER_AGENT, place_resolution_user_agent())
-        .json(&OpenRouterPlaceQueryRequest {
-            model: &model,
-            temperature: 0.0,
-            response_format: OpenRouterPlaceQueryResponseFormat {
-                response_type: "json_object",
+    let completed = crate::openrouter::chat_completion_json(crate::openrouter::ChatCompletionRequest {
+        messages: vec![
+            crate::openrouter::ChatMessage {
+                role: "system",
+                content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Prefer airport, train station, transit station, landmark, and highlighted place names when they match the input. Stay inside the provided destination and country context, include transit from/to endpoints, place, and location hints when present, and do not invent coordinates.".to_string(),
             },
-            messages: vec![
-                OpenRouterPlaceQueryMessage {
-                    role: "system",
-                    content: "Return strict JSON with a queries array. Build one to three geocoder search queries for the exact travel place. Prefer airport, train station, transit station, landmark, and highlighted place names when they match the input. Stay inside the provided destination and country context, include transit from/to endpoints, place, and location hints when present, and do not invent coordinates.".to_string(),
-                },
-                OpenRouterPlaceQueryMessage {
-                    role: "user",
-                    content: openrouter_place_query_prompt(request),
-                },
-            ],
-        });
-    if let Ok(site_url) = std::env::var("OPENROUTER_SITE_URL") {
-        builder = builder.header("HTTP-Referer", site_url);
-    }
-    if let Ok(site_name) = std::env::var("OPENROUTER_SITE_NAME") {
-        builder = builder.header("X-Title", site_name);
-    }
-    let response = builder.send().await.ok()?;
-    if !response.status().is_success() {
-        return None;
-    }
-    let raw = response.json::<OpenRouterPlaceQueryResponse>().await.ok()?;
-    let content = raw.choices.first()?.message.content.as_str();
-    parse_openrouter_place_queries(content)
+            crate::openrouter::ChatMessage {
+                role: "user",
+                content: openrouter_place_query_prompt(request),
+            },
+        ],
+        temperature: 0.0,
+        json_object: true,
+        response_format: None,
+        user_agent: Some(place_resolution_user_agent()),
+    })
+    .await
+    .ok()?;
+    parse_openrouter_place_queries(&completed.content)
 }
 
 fn openrouter_place_query_prompt(request: &ResolvePlaceRequest) -> String {
