@@ -172,10 +172,7 @@ type MemberSessionBody = {
   error?: { code?: unknown; message?: unknown };
 };
 
-/** Default API origin from Next public env (empty = same-origin relative `/api/v1`). */
-export function defaultApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL?.trim() ?? "";
-}
+export { defaultApiBaseUrl } from "../api-base-url";
 
 /**
  * Extract invite token from a pasted invite URL (`?token=…`) or return a bare code.

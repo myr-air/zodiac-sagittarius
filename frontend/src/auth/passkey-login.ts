@@ -116,10 +116,7 @@ type PasskeyLoginOptions = {
   allowCredentials: PasskeyCredentialDescriptor[];
 };
 
-/** Default API origin from Next public env (empty = same-origin relative `/api/v1`). */
-export function defaultApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL?.trim() ?? "";
-}
+export { defaultApiBaseUrl } from "../api-base-url";
 
 function passkeyOptionsUrl(apiBaseUrl: string): string {
   const base = apiBaseUrl.replace(/\/+$/, "");

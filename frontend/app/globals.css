@@ -740,15 +740,23 @@
   transform: translate3d(0, var(--parallax-y, 0px), 0);
 }
 
+/*
+ * Reveal animations are opt-in after client mount (`html[data-landing-reveal=on]`).
+ * SSR + first hydrate stay fully visible so DestinationCards / Trip ideas markup
+ * matches (no opacity:0 className/style divergence; no blank below-fold flash).
+ */
 .landing-reveal {
-  opacity: 0;
-  transform: translateY(16px);
   transition:
     opacity 320ms ease,
     transform 320ms ease;
 }
 
-.landing-reveal.is-in {
+html[data-landing-reveal="on"] .landing-reveal:not(.is-in) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+html[data-landing-reveal="on"] .landing-reveal.is-in {
   opacity: 1;
   transform: translateY(0);
 }
@@ -780,7 +788,7 @@
   }
 
   .landing-hero__content,
-  .landing-reveal {
+  html[data-landing-reveal="on"] .landing-reveal {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
