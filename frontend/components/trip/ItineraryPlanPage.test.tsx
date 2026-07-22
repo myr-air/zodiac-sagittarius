@@ -397,3 +397,668 @@ describe("ItineraryPlanPage type-shaped field bag restore", () => {
     ).toBeNull();
   });
 });
+
+/**
+ * M81DDKSC T4 #1 — rail mappable type fields must PATCH via the same
+ * itinerary-items write path as the table (not calm local-only bag merges).
+ * Independent literals: table mapping place → place, By → activitySubtype,
+ * Meal → details.meal + required clientMutationId / expectedVersion.
+ */
+const RAIL_PATCH_SESSION = "member-session-token-rail-patch";
+const RAIL_TRAVEL_ID = "item-rail-travel-by";
+const RAIL_FOOD_ID = "item-rail-food-place-meal";
+const RAIL_EXPECTED_VERSION = 11;
+const RAIL_BY_VALUE = "flight";
+const RAIL_PLACE_VALUE = "Ichiran Shinjuku";
+const RAIL_MEAL_VALUE = "Dinner";
+
+type PatchCall = {
+  url: string;
+  init: RequestInit;
+  body: Record<string, unknown>;
+};
+
+function itineraryPatchCalls(
+  fetchMock: ReturnType<typeof vi.fn>,
+): PatchCall[] {
+  return fetchMock.mock.calls
+    .map(([input, init]) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method !== "PATCH" || !url.includes("/itinerary-items/")) return null;
+      let body: Record<string, unknown> = {};
+      try {
+        body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      } catch {
+        body = {};
+      }
+      return { url, init: (init ?? {}) as RequestInit, body };
+    })
+    .filter((call): call is PatchCall => call !== null);
+}
+
+describe("ItineraryPlanPage rail type-field PATCH", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Rail commits for mappable type fields (place, travel By→activitySubtype, food Meal→details) PATCH /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId + expectedVersion using the same mapping as the table", async () => {
+    const user = userEvent.setup();
+    const travelStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: RAIL_TRAVEL_ID,
+      version: RAIL_EXPECTED_VERSION,
+    };
+    const foodStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: RAIL_FOOD_ID,
+      activity: "Ichiran",
+      activityType: "food",
+      place: "",
+      status: "idea",
+      version: RAIL_EXPECTED_VERSION,
+    };
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.includes("/itinerary-items/")) {
+        const id = url.split("/").pop()!;
+        const base = id === RAIL_FOOD_ID ? foodStop : travelStop;
+        return jsonResponse({
+          ...base,
+          version: RAIL_EXPECTED_VERSION + 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [travelStop, foodStop],
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={RAIL_PATCH_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const travelRow = table.querySelector(
+      `tr.stop-row[data-id="${RAIL_TRAVEL_ID}"]`,
+    ) as HTMLElement;
+    const foodRow = table.querySelector(
+      `tr.stop-row[data-id="${RAIL_FOOD_ID}"]`,
+    ) as HTMLElement;
+    expect(travelRow).toBeTruthy();
+    expect(foodRow).toBeTruthy();
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    const travelPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${RAIL_TRAVEL_ID}`;
+    const foodPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${RAIL_FOOD_ID}`;
+
+    // Travel By in the rail → same activitySubtype mapping as table choice-chip.
+    fireEvent.click(travelRow);
+    fetchMock.mockClear();
+    await user.selectOptions(
+      within(context).getByLabelText(/^by$/i),
+      RAIL_BY_VALUE,
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const byCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(byCall.url).toBe(travelPatchUrl);
+    expect((byCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    expect(new Headers(byCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${RAIL_PATCH_SESSION}`,
+    );
+    expect(typeof byCall.body.clientMutationId).toBe("string");
+    expect(String(byCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(byCall.body.expectedVersion).toBe(RAIL_EXPECTED_VERSION);
+    expect(byCall.body.patch).toEqual(
+      expect.objectContaining({ activitySubtype: RAIL_BY_VALUE }),
+    );
+
+    // Food Place + Meal in the rail → place + details.meal (table mapping).
+    fireEvent.click(foodRow);
+    fetchMock.mockClear();
+    const placeInput = within(context).getByLabelText(/^place$/i);
+    await user.clear(placeInput);
+    await user.type(placeInput, RAIL_PLACE_VALUE);
+    fireEvent.blur(placeInput);
+    await waitFor(() => {
+      expect(
+        itineraryPatchCalls(fetchMock).some((call) => {
+          const patch = call.body.patch as Record<string, unknown> | undefined;
+          return patch?.place === RAIL_PLACE_VALUE;
+        }),
+      ).toBe(true);
+    });
+    const placeCall = itineraryPatchCalls(fetchMock).find((call) => {
+      const patch = call.body.patch as Record<string, unknown> | undefined;
+      return patch?.place === RAIL_PLACE_VALUE;
+    })!;
+    expect(placeCall.url).toBe(foodPatchUrl);
+    expect(typeof placeCall.body.clientMutationId).toBe("string");
+    expect(String(placeCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(placeCall.body.expectedVersion).toBe(RAIL_EXPECTED_VERSION);
+
+    // Allow success handler to apply returned summary before the next rail edit.
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    fetchMock.mockClear();
+    await user.selectOptions(
+      within(context).getByLabelText(/^meal$/i),
+      RAIL_MEAL_VALUE,
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const mealCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(mealCall.url).toBe(foodPatchUrl);
+    expect((mealCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    expect(typeof mealCall.body.clientMutationId).toBe("string");
+    expect(String(mealCall.body.clientMutationId).length).toBeGreaterThan(0);
+    // Place PATCH returned version+1 — meal must not reuse the stale seed.
+    expect(mealCall.body.expectedVersion).toBe(RAIL_EXPECTED_VERSION + 1);
+    expect(mealCall.body.patch).toEqual(
+      expect.objectContaining({
+        details: expect.objectContaining({ meal: RAIL_MEAL_VALUE }),
+      }),
+    );
+  });
+});
+
+/**
+ * Must-fix: rail PATCH applies returned summary version; version_conflict
+ * reloads TripCockpit like the table (no stale expectedVersion / silent overwrite).
+ */
+const RAIL_VERSION_APPLY_SESSION = "member-session-token-rail-version-apply";
+const RAIL_VERSION_ITEM_ID = "item-rail-version-apply";
+const RAIL_VERSION_SEED = 21;
+const RAIL_VERSION_RETURNED = RAIL_VERSION_SEED + 1;
+const RAIL_VERSION_FIRST_PLACE = "First place rail";
+const RAIL_VERSION_SECOND_PLACE = "Second place rail";
+const RAIL_CONFLICT_CODE = "version_conflict";
+const RAIL_CONFLICT_EDIT = "Stale rail place";
+
+describe("ItineraryPlanPage rail PATCH applies returned version", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("after a successful rail PATCH, the next rail edit sends the returned version as expectedVersion; version_conflict reloads cockpit", async () => {
+    const user = userEvent.setup();
+    const onCockpitReload = vi.fn();
+    const foodStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: RAIL_VERSION_ITEM_ID,
+      activity: "Ichiran",
+      activityType: "food",
+      place: "",
+      status: "idea",
+      version: RAIL_VERSION_SEED,
+    };
+
+    let serverVersion = RAIL_VERSION_SEED;
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.includes(`/${RAIL_VERSION_ITEM_ID}`)) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          expectedVersion?: number;
+          patch?: Record<string, unknown>;
+        };
+        if (body.patch && "place" in body.patch) {
+          const place = String(body.patch.place ?? "");
+          if (place === RAIL_CONFLICT_EDIT) {
+            return jsonResponse(
+              {
+                code: RAIL_CONFLICT_CODE,
+                latest: {
+                  ...foodStop,
+                  version: RAIL_VERSION_RETURNED + 1,
+                  place: "Authoritative place",
+                },
+              },
+              409,
+            );
+          }
+        }
+        serverVersion = (body.expectedVersion ?? serverVersion) + 1;
+        return jsonResponse({
+          ...foodStop,
+          ...body.patch,
+          version: serverVersion,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [foodStop],
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={RAIL_VERSION_APPLY_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        onCockpitReload={onCockpitReload}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const foodRow = table.querySelector(
+      `tr.stop-row[data-id="${RAIL_VERSION_ITEM_ID}"]`,
+    ) as HTMLElement;
+    fireEvent.click(foodRow);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    const placeInput = () => within(context).getByLabelText(/^place$/i);
+
+    // First rail edit → seed expectedVersion.
+    await user.clear(placeInput());
+    await user.type(placeInput(), RAIL_VERSION_FIRST_PLACE);
+    fireEvent.blur(placeInput());
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.expectedVersion).toBe(
+      RAIL_VERSION_SEED,
+    );
+
+    await Promise.resolve();
+    await Promise.resolve();
+    fetchMock.mockClear();
+
+    // Second rail edit must send returned version.
+    await user.clear(placeInput());
+    await user.type(placeInput(), RAIL_VERSION_SECOND_PLACE);
+    fireEvent.blur(placeInput());
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.expectedVersion).toBe(
+      RAIL_VERSION_RETURNED,
+    );
+
+    // Conflict path — reload like the table; no stale retry with seed version.
+    await Promise.resolve();
+    await Promise.resolve();
+    fetchMock.mockClear();
+    onCockpitReload.mockClear();
+    await user.clear(placeInput());
+    await user.type(placeInput(), RAIL_CONFLICT_EDIT);
+    fireEvent.blur(placeInput());
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(onCockpitReload).toHaveBeenCalledTimes(1);
+    });
+
+    fetchMock.mockClear();
+    await user.clear(placeInput());
+    await user.type(placeInput(), "Retry before reload");
+    fireEvent.blur(placeInput());
+    let sawStaleRetry = false;
+    try {
+      await waitFor(
+        () => {
+          expect(
+            itineraryPatchCalls(fetchMock).some(
+              (call) =>
+                call.body.expectedVersion === RAIL_VERSION_RETURNED ||
+                call.body.expectedVersion === RAIL_VERSION_SEED,
+            ),
+          ).toBe(true);
+        },
+        { timeout: 200 },
+      );
+      sawStaleRetry = true;
+    } catch {
+      sawStaleRetry = false;
+    }
+    expect(sawStaleRetry).toBe(false);
+  });
+});
+
+/**
+ * M81DDKSC T3 #1 — nested sub-activity write-path: inline edit PATCHes and
+ * rail Remove DELETEs via existing itinerary-api helpers; tree updates.
+ * Backend: PATCH/DELETE /api/v1/trips/{tripId}/itinerary-items/{itemId}.
+ */
+const NESTED_SESSION = "member-session-token-nested-edit-remove";
+const NESTED_PARENT_ID = "item-stay-parent-t3";
+const NESTED_CHILD_ID = "item-stay-child-t3";
+const NESTED_PARENT_ACTIVITY = "Hotel Gracery Shinjuku";
+const NESTED_CHILD_PLACE = "Lobby cafe";
+const NESTED_CHILD_VERSION = 2;
+const NESTED_EDITED_PLACE = "Rooftop lounge";
+/** Returned summary place — distinct from typed value to prove tree uses response. */
+const NESTED_RETURNED_PLACE = "Rooftop lounge tasting";
+
+describe("ItineraryPlanPage nested sub-activity edit and Remove", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Inline edit and Remove on a nested sub-activity PATCH/DELETE via existing itinerary-api helpers and update the tree", async () => {
+    const user = userEvent.setup();
+    const parentStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: NESTED_PARENT_ID,
+      activity: NESTED_PARENT_ACTIVITY,
+      activityType: "stay",
+      place: NESTED_PARENT_ACTIVITY,
+      startTime: "15:30",
+      endTime: "",
+      status: "planned",
+      version: 3,
+      parentItemId: null,
+      isPlanBlock: true,
+    };
+    const childStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: NESTED_CHILD_ID,
+      activity: NESTED_CHILD_PLACE,
+      activityType: "food",
+      place: NESTED_CHILD_PLACE,
+      startTime: "16:00",
+      endTime: "",
+      status: "idea",
+      version: NESTED_CHILD_VERSION,
+      parentItemId: NESTED_PARENT_ID,
+      isPlanBlock: false,
+    };
+
+    const patchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${NESTED_CHILD_ID}`;
+    const deleteUrl = patchUrl;
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url === patchUrl) {
+        return jsonResponse({
+          ...childStop,
+          place: NESTED_RETURNED_PLACE,
+          activity: NESTED_RETURNED_PLACE,
+          version: NESTED_CHILD_VERSION + 1,
+        });
+      }
+      if (method === "DELETE" && url === deleteUrl) {
+        return jsonResponse({
+          ...childStop,
+          version: NESTED_CHILD_VERSION + 2,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parentStop, childStop],
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={NESTED_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const parentRow = table.querySelector(
+      `tr.stop-row[data-id="${NESTED_PARENT_ID}"]`,
+    ) as HTMLElement;
+    expect(parentRow).toBeTruthy();
+
+    const toggle = within(parentRow).getByRole("button", {
+      name: /show .* sub-activit|add sub-activit|hide sub-activit/i,
+    });
+    await user.click(toggle);
+
+    const panel = parentRow.querySelector(
+      ".subplan[data-subplan], [data-subplan]",
+    ) as HTMLElement;
+    expect(panel).toBeTruthy();
+    expect(panel.hidden).toBe(false);
+
+    const placeField = within(panel).getByRole("textbox", { name: /^place$/i });
+    expect(placeField).toHaveValue(NESTED_CHILD_PLACE);
+    // Nested place must be editable (not a read-only display stub).
+    expect(placeField).not.toHaveAttribute("readonly");
+
+    // --- Inline edit nested sub-activity → PATCH child item ---
+    fetchMock.mockClear();
+    fireEvent.change(placeField, { target: { value: NESTED_EDITED_PLACE } });
+    fireEvent.blur(placeField);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const patchCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(patchCall.url).toBe(patchUrl);
+    expect((patchCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    expect(new Headers(patchCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${NESTED_SESSION}`,
+    );
+    expect(typeof patchCall.body.clientMutationId).toBe("string");
+    expect(String(patchCall.body.clientMutationId).length).toBeGreaterThan(0);
+    expect(patchCall.body.expectedVersion).toBe(NESTED_CHILD_VERSION);
+    expect(patchCall.body.patch).toEqual(
+      expect.objectContaining({ place: NESTED_EDITED_PLACE }),
+    );
+
+    await waitFor(() => {
+      expect(
+        within(panel).getByRole("textbox", { name: /^place$/i }),
+      ).toHaveValue(NESTED_RETURNED_PLACE);
+    });
+
+    // --- Remove nested sub-activity via rail → DELETE child; tree drops it ---
+    const nestedRow =
+      panel.querySelector(
+        `.subplan-row[data-id="${NESTED_CHILD_ID}"], [data-subplan-row][data-id="${NESTED_CHILD_ID}"]`,
+      ) ?? panel.querySelector(".subplan-row[data-subplan-row], [data-subplan-row]");
+    expect(nestedRow).toBeTruthy();
+    await user.click(nestedRow as HTMLElement);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    expect(within(context).getByRole("heading", { level: 2 })).toHaveTextContent(
+      NESTED_RETURNED_PLACE,
+    );
+
+    fetchMock.mockClear();
+    await user.click(within(context).getByRole("button", { name: REMOVE_LABEL }));
+    const dialog = await screen.findByRole("dialog", {
+      name: DELETE_DIALOG_TITLE,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: DELETE_CONFIRM_ACTION }),
+    );
+
+    await waitFor(() => {
+      expect(itineraryDeleteCalls(fetchMock)).toHaveLength(1);
+    });
+    const deleteCall = itineraryDeleteCalls(fetchMock)[0]!;
+    expect(deleteCall.url).toBe(deleteUrl);
+    expect((deleteCall.init.method ?? "").toUpperCase()).toBe("DELETE");
+    expect(new Headers(deleteCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${NESTED_SESSION}`,
+    );
+    expect(deleteCall.init.body).toBeUndefined();
+
+    await waitFor(() => {
+      const stillNested = parentRow.querySelectorAll(
+        ".subplan-row[data-subplan-row], [data-subplan-row]",
+      );
+      expect(
+        [...stillNested].some((row) =>
+          row.textContent?.includes(NESTED_RETURNED_PLACE),
+        ),
+      ).toBe(false);
+    });
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${NESTED_PARENT_ID}"]`),
+    ).toBeTruthy();
+  });
+});
+
+/**
+ * M81DDKSC T3 #2 — API rejects deleting an activity block that still has
+ * children (invalid_request). Surface calm copy; keep parent in the tree.
+ * Backend: ServiceError::InvalidRequest
+ * "activity block with sub-activities cannot be deleted".
+ */
+const BLOCK_DELETE_SESSION = "member-session-token-block-delete";
+const BLOCK_PARENT_ID = "item-attraction-block-parent";
+const BLOCK_CHILD_ID = "item-attraction-block-child";
+const BLOCK_PARENT_ACTIVITY = "Senso-ji";
+const BLOCK_CHILD_PLACE = "Main hall";
+/** Independent literal — backend itinerary delete guard message. */
+const BLOCK_DELETE_API_MESSAGE =
+  "activity block with sub-activities cannot be deleted";
+
+describe("ItineraryPlanPage parent block-delete guard", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Deleting a parent that still has children surfaces the API invalid_request (activity block with sub-activities cannot be deleted) as calm user-visible copy and does not remove the parent locally", async () => {
+    const user = userEvent.setup();
+    const parentStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: BLOCK_PARENT_ID,
+      activity: BLOCK_PARENT_ACTIVITY,
+      activityType: "attraction",
+      place: BLOCK_PARENT_ACTIVITY,
+      startTime: "10:00",
+      endTime: "11:30",
+      status: "planned",
+      version: 4,
+      parentItemId: null,
+      isPlanBlock: true,
+    };
+    const childStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: BLOCK_CHILD_ID,
+      activity: BLOCK_CHILD_PLACE,
+      activityType: "attraction",
+      place: BLOCK_CHILD_PLACE,
+      startTime: "10:00",
+      endTime: "",
+      status: "idea",
+      version: 1,
+      parentItemId: BLOCK_PARENT_ID,
+      isPlanBlock: false,
+    };
+
+    const deleteUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${BLOCK_PARENT_ID}`;
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "DELETE" && url === deleteUrl) {
+        return jsonResponse(
+          {
+            code: "invalid_request",
+            error: { message: BLOCK_DELETE_API_MESSAGE },
+            message: BLOCK_DELETE_API_MESSAGE,
+          },
+          400,
+        );
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parentStop, childStop],
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={BLOCK_DELETE_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const parentRow = table.querySelector(
+      `tr.stop-row[data-id="${BLOCK_PARENT_ID}"]`,
+    ) as HTMLElement;
+    expect(parentRow).toBeTruthy();
+    fireEvent.click(parentRow);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    expect(within(context).getByRole("heading", { level: 2 })).toHaveTextContent(
+      BLOCK_PARENT_ACTIVITY,
+    );
+
+    await user.click(within(context).getByRole("button", { name: REMOVE_LABEL }));
+    const dialog = await screen.findByRole("dialog", {
+      name: DELETE_DIALOG_TITLE,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: DELETE_CONFIRM_ACTION }),
+    );
+
+    await waitFor(() => {
+      expect(itineraryDeleteCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(itineraryDeleteCalls(fetchMock)[0]!.url).toBe(deleteUrl);
+
+    const alert = await waitFor(() => {
+      const el =
+        within(context).queryByRole("alert") ?? screen.getByRole("alert");
+      expect(el).toHaveTextContent(BLOCK_DELETE_API_MESSAGE);
+      return el;
+    });
+    expect(alert).toBeVisible();
+
+    // Parent stays in the Smart itinerary tree (no local optimistic remove).
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${BLOCK_PARENT_ID}"]`),
+    ).toBeTruthy();
+    expect(within(context).getByRole("heading", { level: 2 })).toHaveTextContent(
+      BLOCK_PARENT_ACTIVITY,
+    );
+  });
+});

@@ -46,7 +46,7 @@ const ITEM_SUMMARY = {
 
 describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
   it("createItineraryItem POSTs /api/v1/trips/{tripId}/itinerary-items with clientMutationId, planVariantId, day, activity, activityType, place", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse({ ...ITEM_SUMMARY, version: 1 }),
     );
 
@@ -83,7 +83,7 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
   });
 
   it("patchItineraryItem PATCHes /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId, expectedVersion, and patch", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse({ ...ITEM_SUMMARY, version: EXPECTED_VERSION + 1 }),
     );
 
@@ -116,7 +116,7 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
   });
 
   it("reorderItineraryItems PATCHes /api/v1/trips/{tripId}/itinerary-items/order with clientMutationId, planVariantId, day, and itemIds", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse([
         { ...ITEM_SUMMARY, id: REORDERED_IDS[0], version: EXPECTED_VERSION + 1 },
         { ...ITEM_SUMMARY, id: REORDERED_IDS[1], version: EXPECTED_VERSION + 1 },
@@ -153,7 +153,7 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
   });
 
   it("deleteItineraryItem DELETEs /api/v1/trips/{tripId}/itinerary-items/{itemId} with Bearer auth and no body", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse({ ...ITEM_SUMMARY, version: EXPECTED_VERSION + 1 }),
     );
 
@@ -176,5 +176,195 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
     const headers = new Headers(init?.headers);
     expect(headers.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
     expect(init?.body).toBeUndefined();
+  });
+
+  /**
+   * M81DDKSC T1 #1: create/patch must retain M1 write-path summary fields
+   * (version, note, mapLink, endTime, activitySubtype, details, parentItemId,
+   * isPlanBlock) on TripCockpitItineraryItem — parseCreatedItem currently drops them.
+   */
+  it("createItineraryItem and patchItineraryItem retain M1 write-path summary fields on the returned item", async () => {
+    const PARENT_ID = "item-parent-stay";
+    const writePathSummary = {
+      ...ITEM_SUMMARY,
+      version: 7,
+      note: "ask for courtyard table",
+      mapLink: "https://maps.example/wat-chedi",
+      endTime: "10:30",
+      activitySubtype: "temple",
+      details: { ticket: "adult" },
+      parentItemId: PARENT_ID,
+      isPlanBlock: false,
+    };
+
+    const createFetch = vi.fn<typeof fetch>(async () => jsonResponse(writePathSummary));
+    const createOutcome = await createItineraryItem(
+      {
+        tripId: TRIP_ID,
+        sessionToken: SESSION_TOKEN,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY,
+        activityType: ACTIVITY_TYPE,
+        place: PLACE,
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: createFetch, apiBaseUrl: API_BASE },
+    );
+
+    expect(createOutcome.ok).toBe(true);
+    if (!createOutcome.ok) return;
+    expect(createOutcome.item).toMatchObject({
+      version: 7,
+      note: "ask for courtyard table",
+      mapLink: "https://maps.example/wat-chedi",
+      endTime: "10:30",
+      activitySubtype: "temple",
+      details: { ticket: "adult" },
+      parentItemId: PARENT_ID,
+      isPlanBlock: false,
+    });
+
+    const patchedSummary = {
+      ...writePathSummary,
+      version: 8,
+      note: "moved to evening",
+      endTime: "18:00",
+    };
+    const patchFetch = vi.fn<typeof fetch>(async () => jsonResponse(patchedSummary));
+    const patchOutcome = await patchItineraryItem(
+      {
+        tripId: TRIP_ID,
+        itemId: ITEM_ID,
+        sessionToken: SESSION_TOKEN,
+        expectedVersion: 7,
+        patch: { note: "moved to evening", endTime: "18:00" },
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: patchFetch, apiBaseUrl: API_BASE },
+    );
+
+    expect(patchOutcome.ok).toBe(true);
+    if (!patchOutcome.ok) return;
+    expect(patchOutcome.item).toMatchObject({
+      version: 8,
+      note: "moved to evening",
+      mapLink: "https://maps.example/wat-chedi",
+      endTime: "18:00",
+      activitySubtype: "temple",
+      details: { ticket: "adult" },
+      parentItemId: PARENT_ID,
+      isPlanBlock: false,
+    });
+  });
+
+  /**
+   * M81DDKSC T2 #1: createItineraryItem must accept optional parentItemId on
+   * the POST body. When the parent is not yet a plan block, the create path
+   * promotes it (PATCH isPlanBlock: true) before POSTing the child — API
+   * rejects children under non-block parents (decisions.md).
+   */
+  it("createItineraryItem accepts optional parentItemId, promotes non-block parent to isPlanBlock when required, and POSTs child on /api/v1/trips/{tripId}/itinerary-items", async () => {
+    const PARENT_ID = "item-parent-plain-stay";
+    const PARENT_VERSION = 2;
+    const CHILD_ID = "item-child-lobby";
+    const CHILD_ACTIVITY = "Lobby check-in";
+    const CHILD_PLACE = "Harbour Hotel";
+
+    const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method === "PATCH" &&
+        url ===
+          `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${PARENT_ID}`
+      ) {
+        return jsonResponse({
+          ...ITEM_SUMMARY,
+          id: PARENT_ID,
+          activity: "Harbour Hotel stay",
+          activityType: "stay",
+          place: CHILD_PLACE,
+          isPlanBlock: true,
+          version: PARENT_VERSION + 1,
+        });
+      }
+      if (
+        method === "POST" &&
+        url === `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items`
+      ) {
+        return jsonResponse({
+          ...ITEM_SUMMARY,
+          id: CHILD_ID,
+          activity: CHILD_ACTIVITY,
+          activityType: "stay",
+          place: CHILD_PLACE,
+          parentItemId: PARENT_ID,
+          isPlanBlock: false,
+          version: 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const outcome = await createItineraryItem(
+      {
+        tripId: TRIP_ID,
+        sessionToken: SESSION_TOKEN,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: CHILD_ACTIVITY,
+        activityType: "stay",
+        place: CHILD_PLACE,
+        clientMutationId: CLIENT_MUTATION_ID,
+        parentItemId: PARENT_ID,
+        // Parent is not yet a plan block — promote before create.
+        promoteParent: { expectedVersion: PARENT_VERSION },
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    // 1) Promote parent → PATCH isPlanBlock: true (required by API).
+    const [promoteUrl, promoteInit] = fetchMock.mock.calls[0]!;
+    expect(promoteUrl).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${PARENT_ID}`,
+    );
+    expect(String(promoteInit?.method ?? "").toUpperCase()).toBe("PATCH");
+    const promoteHeaders = new Headers(promoteInit?.headers);
+    expect(promoteHeaders.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+    expect(JSON.parse(String(promoteInit?.body))).toEqual(
+      expect.objectContaining({
+        expectedVersion: PARENT_VERSION,
+        patch: expect.objectContaining({ isPlanBlock: true }),
+      }),
+    );
+
+    // 2) Create child → POST with parentItemId on the existing create route.
+    const [createUrl, createInit] = fetchMock.mock.calls[1]!;
+    expect(createUrl).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items`,
+    );
+    expect(String(createInit?.method ?? "").toUpperCase()).toBe("POST");
+    const createHeaders = new Headers(createInit?.headers);
+    expect(createHeaders.get("Authorization")).toBe(`Bearer ${SESSION_TOKEN}`);
+    expect(JSON.parse(String(createInit?.body))).toEqual({
+      clientMutationId: CLIENT_MUTATION_ID,
+      planVariantId: PLAN_ID,
+      day: DAY,
+      activity: CHILD_ACTIVITY,
+      activityType: "stay",
+      place: CHILD_PLACE,
+      parentItemId: PARENT_ID,
+    });
+
+    if (!outcome.ok) return;
+    expect(outcome.item).toMatchObject({
+      id: CHILD_ID,
+      parentItemId: PARENT_ID,
+      activity: CHILD_ACTIVITY,
+    });
   });
 });

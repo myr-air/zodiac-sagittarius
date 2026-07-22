@@ -301,3 +301,98 @@ export function activitySummaryFromBag(
   }
   return bag.place || bag.title || "";
 }
+
+/**
+ * Whether a draft bag key maps onto an existing /api/v1 itinerary-item PATCH
+ * field (same soft-map as the Smart Itinerary Table). Non-mappable keys must
+ * stay read-only in the rail — not silent local-only writes.
+ */
+export function isBagKeyPersistable(
+  activityType: string,
+  key: string,
+): boolean {
+  if (key === "place" || key === "title" || key === "by" || key === "meal") {
+    return true;
+  }
+  if (
+    activityType === "travel" &&
+    (key === "carrier" || key === "ref" || key === "from" || key === "to")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** Soft-map result aligned with ItineraryItemPatchFields (table write path). */
+export type SoftMappedItemPatch = {
+  place?: string;
+  activity?: string;
+  activitySubtype?: string | null;
+  details?: Record<string, unknown>;
+};
+
+/**
+ * Map a draft bag key/value to documented top-level PATCH fields.
+ * Mirrors SmartItineraryTable commitBagKey soft-map (place, By→activitySubtype,
+ * Meal→details.meal, travel route→activity, carrier/ref→place).
+ * Returns null when the key has no persistence target or the value is unchanged.
+ */
+export function softMapBagKeyToPatch(input: {
+  activityType: string;
+  key: string;
+  value: string;
+  bag: StopFieldBag;
+  /** Current API place — skip place/carrier patches when unchanged. */
+  currentPlace?: string;
+  /** Current API activity — skip title/route patches when unchanged. */
+  currentActivity?: string;
+}): SoftMappedItemPatch | null {
+  const { activityType, key, value, bag } = input;
+
+  if (key === "place") {
+    if (input.currentPlace !== undefined && value === input.currentPlace) {
+      return null;
+    }
+    return { place: value };
+  }
+  if (key === "title") {
+    if (
+      input.currentActivity !== undefined &&
+      value === input.currentActivity
+    ) {
+      return null;
+    }
+    return { activity: value };
+  }
+  if (
+    (key === "carrier" || key === "ref") &&
+    activityType === "travel"
+  ) {
+    const combined = [bag.carrier, bag.ref].filter(Boolean).join(" · ");
+    if (
+      input.currentPlace !== undefined &&
+      combined === input.currentPlace
+    ) {
+      return null;
+    }
+    return { place: combined };
+  }
+  if ((key === "from" || key === "to") && activityType === "travel") {
+    const summary = activitySummaryFromBag(activityType, bag);
+    if (!summary) return null;
+    if (
+      input.currentActivity !== undefined &&
+      summary === input.currentActivity
+    ) {
+      return null;
+    }
+    return { activity: summary };
+  }
+  if (key === "by") {
+    return { activitySubtype: value || null };
+  }
+  if (key === "meal") {
+    return { details: { meal: value } };
+  }
+  return null;
+}

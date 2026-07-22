@@ -2589,9 +2589,9 @@ a.portal-pass:hover {
   border-color: rgb(255 255 255 / 0.5);
 }
 
-/* Phase 1: listbox stays visible (no .open gate) for a11y + tests. */
+/* Draft: .plan-panel hidden until #plan-toggle expands (.open). */
 .plan-panel {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 2px;
   min-width: 140px;
@@ -2604,6 +2604,14 @@ a.portal-pass:hover {
   color: var(--color-text);
 }
 
+.plan-panel.open {
+  display: flex;
+}
+
+.plan-panel[hidden] {
+  display: none !important;
+}
+
 .plan-panel [role="option"] {
   display: flex;
   align-items: center;
@@ -2612,7 +2620,11 @@ a.portal-pass:hover {
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
-  cursor: default;
+  cursor: pointer;
+}
+
+.plan-panel [role="option"]:hover {
+  background: var(--color-surface-muted);
 }
 
 .plan-panel [role="option"][aria-selected="true"] {
@@ -2739,6 +2751,15 @@ a.portal-pass:hover {
   color: var(--color-text);
   font-size: 13px;
   font-weight: 600;
+}
+
+/* Non-persistable rail fields — calm muted view-only (DESIGN.md tokens). */
+.field-grid input[readonly],
+.field-grid select:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 1;
 }
 
 .btn-quiet-danger {
@@ -2888,13 +2909,10 @@ tr.day-row[data-collapsed="true"] .day-id {
   box-sizing: border-box;
 }
 
-/* Draft: day reorder uses .day-id as grab handle; hide injected grips. */
-#shell[data-dnd="on"] .day-id {
-  cursor: grab;
-}
-
+/* Day reorder is not available (no day-order API) — never imply grab. */
+#shell[data-dnd="on"] .day-id,
 #shell[data-dnd="on"] .day-id:active {
-  cursor: grabbing;
+  cursor: pointer;
 }
 
 .day-drag {

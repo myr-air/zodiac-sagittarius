@@ -221,9 +221,9 @@ Joii is a greenfield Next App Router app (`package` name `joii`):
 | Public landing | — | Stub | Postcard Atlas landing |
 | Auth (email / password / passkey) | Yes | No | Full |
 | Account portal / my trips | Yes | No | Full |
-| Trip cockpit shell | Yes (data) | No | Desktop cockpit |
-| Trip plans (main/draft/…) | Yes | No | First-class |
-| Smart itinerary table | Yes (API) | No | Source of truth |
+| Trip cockpit shell | Yes (data) | Yes (desktop shell; plan filter; honest chrome stubs) | Desktop cockpit |
+| Trip plans (main/draft/…) | Yes | Partial (visible-plan filter by planVariantId; set-main deferred) | First-class |
+| Smart itinerary table | Yes (API) | Yes (M1 write-path: nested CRUD, mutation round-trip, rail→PATCH) | Source of truth |
 | Map / timeline | Partial/API | No | Context + routes |
 | Members / join / presence | Yes | No | Full |
 | Expenses / estimates | Yes | No | Plan-scoped |

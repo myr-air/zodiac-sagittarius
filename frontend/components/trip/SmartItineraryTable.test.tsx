@@ -12,6 +12,7 @@
  * T4 #3: success appends returned summary; failure keeps draft + calm error.
  * T5 #1: inline blur/commit PATCHes itinerary-items/{itemId} with expectedVersion.
  * T5 #2: version_conflict → TripCockpit reload before next edit (no silent overwrite).
+ * M81DDKSC T1 #2: successful PATCH applies returned summary so next edit uses new expectedVersion.
  * T5 #3: incomplete idea rows stay valid; type picker excludes default (picker set only).
  * T7 #2: static/demo weather chrome on day headers; no live weather network calls.
  * M80P3JXX T4 #1: day-chip (.day-id) collapse/expand + activity-count chip persists by tripId.
@@ -19,6 +20,8 @@
  * M80P3JXX T6 #2: parent chevron expands/collapses nested .subplan rows (Stay / attraction draft).
  * M80P3JXX T7 #2: Food Meal + Travel By .choice-chip on .title-with-meta (far right) → PATCH expectedVersion.
  * M80P3JXX T7 #3: Note / link / time-setup dialogs from stop actions + Set time; Save/Cancel → existing PATCH only.
+ * M81DDKSC T1 #3: openStopDialog(note|link) seeds dlg fields from loaded stop note/mapLink.
+ * M81DDKSC T2 #2: add child under parent stop; successful create nests via returned parentItemId.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -906,12 +909,19 @@ describe("SmartItineraryTable inline edit PATCH", () => {
       version: PATCH_EXPECTED_VERSION,
     };
 
-    const fetchMock = vi.fn(async () =>
-      jsonResponse({
+    const fetchMock = vi.fn(async (input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        expectedVersion?: number;
+      };
+      const from =
+        typeof body.expectedVersion === "number"
+          ? body.expectedVersion
+          : PATCH_EXPECTED_VERSION;
+      return jsonResponse({
         ...editableStop,
-        version: PATCH_EXPECTED_VERSION + 1,
-      }),
-    );
+        version: from + 1,
+      });
+    });
 
     const model = buildItineraryTableModel({
       startDate: DAY,
@@ -937,6 +947,8 @@ describe("SmartItineraryTable inline edit PATCH", () => {
     expect(row).toBeTruthy();
 
     const patchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${PATCH_ITEM_ID}`;
+    /** Tracks local apply of returned summary after each successful PATCH. */
+    let expectedVersion = PATCH_EXPECTED_VERSION;
 
     async function expectBlurPatch(
       commit: () => void | Promise<void>,
@@ -955,8 +967,9 @@ describe("SmartItineraryTable inline edit PATCH", () => {
       expect(headers.get("Content-Type")).toMatch(/application\/json/i);
       expect(typeof call.body.clientMutationId).toBe("string");
       expect(String(call.body.clientMutationId).length).toBeGreaterThan(0);
-      expect(call.body.expectedVersion).toBe(PATCH_EXPECTED_VERSION);
+      expect(call.body.expectedVersion).toBe(expectedVersion);
       expect(call.body.patch).toEqual(expect.objectContaining(patch));
+      expectedVersion += 1;
     }
 
     // --- startTime blur ---
@@ -1113,6 +1126,104 @@ describe("SmartItineraryTable version_conflict reload", () => {
       sawStaleRetry = false;
     }
     expect(sawStaleRetry).toBe(false);
+  });
+});
+
+/**
+ * M81DDKSC T1 #2 — After a successful table PATCH, local stop state must apply
+ * the returned summary so the next edit sends the new expectedVersion (not the
+ * stale pre-PATCH version). Independent returned version is a literal (+1), not
+ * recomputed from production merge logic. version_conflict reload stays covered
+ * by the suite above.
+ */
+const POST_PATCH_RETURNED_VERSION = PATCH_EXPECTED_VERSION + 1;
+const POST_PATCH_FIRST_START = "10:15";
+const POST_PATCH_SECOND_END = "12:30";
+
+describe("SmartItineraryTable applies returned version after successful PATCH", () => {
+  it("after a successful PATCH, the next edit sends the returned version as expectedVersion (no stale version)", async () => {
+    const user = userEvent.setup();
+    const editableStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: PATCH_ITEM_ID,
+      version: PATCH_EXPECTED_VERSION,
+    };
+
+    let serverVersion = PATCH_EXPECTED_VERSION;
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        expectedVersion?: number;
+        patch?: Record<string, unknown>;
+      };
+      serverVersion = (body.expectedVersion ?? serverVersion) + 1;
+      return jsonResponse({
+        ...editableStop,
+        ...body.patch,
+        version: serverVersion,
+      });
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [editableStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={PATCH_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const row = table.querySelector(
+      `tr.stop-row[data-id="${PATCH_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(row).toBeTruthy();
+
+    // First edit → seed expectedVersion (stale until success applies returned summary).
+    const startEl = within(row).getByLabelText("Start time");
+    fireEvent.change(startEl, { target: { value: POST_PATCH_FIRST_START } });
+    fireEvent.blur(startEl);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.expectedVersion).toBe(
+      PATCH_EXPECTED_VERSION,
+    );
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.patch).toEqual(
+      expect.objectContaining({ startTime: POST_PATCH_FIRST_START }),
+    );
+
+    // Allow the success handler to apply the returned summary (version bump).
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+    // Microtask flush: patchItineraryItem .then must have run.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    fetchMock.mockClear();
+
+    // Second edit must send the returned version — not the original seed.
+    const endEl = within(row).getByLabelText("End time");
+    fireEvent.change(endEl, { target: { value: POST_PATCH_SECOND_END } });
+    fireEvent.blur(endEl);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const second = itineraryPatchCalls(fetchMock)[0]!;
+    expect(second.body.expectedVersion).toBe(POST_PATCH_RETURNED_VERSION);
+    expect(second.body.patch).toEqual(
+      expect.objectContaining({ endTime: POST_PATCH_SECOND_END }),
+    );
   });
 });
 
@@ -1368,6 +1479,11 @@ describe("SmartItineraryTable day-chip expand/collapse", () => {
 
     const dayChip = day1Row!.querySelector("button.day-id");
     expect(dayChip).toBeTruthy();
+    // Day reorder is unavailable — chip is collapse/expand only (no grab / reorder-days copy).
+    expect(getComputedStyle(dayChip as HTMLElement).cursor).not.toBe("grab");
+    expect((dayChip as HTMLElement).getAttribute("title") ?? "").not.toMatch(
+      /reorder days/i,
+    );
     await user.click(dayChip!);
 
     // Draft setDayCollapsed / syncDayCollapse landmarks.
@@ -1783,6 +1899,138 @@ describe("SmartItineraryTable sub-activity chevron tree", () => {
 });
 
 /**
+ * M81DDKSC T2 #2 — Table write-path for sub-activities: add a child under a
+ * parent stop; successful create nests the new row in the chevron tree using
+ * the returned parentItemId (not a flat top-level append).
+ */
+const ADD_CHILD_SESSION = "member-session-token-add-child";
+const ADD_CHILD_PARENT_ID = "item-stay-parent-write";
+const ADD_CHILD_PARENT_ACTIVITY = "Hotel Gracery Shinjuku";
+const ADD_CHILD_DRAFT_TITLE = "Lobby cafe";
+/** Returned summary activity — distinct from typed draft to prove nest uses response. */
+const ADD_CHILD_RETURNED_ACTIVITY = "Lobby cafe tasting";
+const ADD_CHILD_CREATED_ID = "018f4e83-6600-7d8b-8f25-aaaaaaaa0001";
+
+describe("SmartItineraryTable add child under parent", () => {
+  it("can add a child under a parent stop; successful create nests the new row under that parent in the chevron tree using returned parentItemId", async () => {
+    const user = userEvent.setup();
+    const parentStop: StopItem = stop({
+      id: ADD_CHILD_PARENT_ID,
+      day: DAY,
+      activity: ADD_CHILD_PARENT_ACTIVITY,
+      activityType: "stay",
+      place: ADD_CHILD_PARENT_ACTIVITY,
+      startTime: "15:30",
+      endTime: "",
+      parentItemId: null,
+      isPlanBlock: true,
+      version: 3,
+    });
+
+    const createdChildSummary = {
+      id: ADD_CHILD_CREATED_ID,
+      tripId: TRIP_ID,
+      planVariantId: PLAN_ID,
+      day: DAY,
+      activity: ADD_CHILD_RETURNED_ACTIVITY,
+      activityType: "food",
+      place: ADD_CHILD_RETURNED_ACTIVITY,
+      startTime: "",
+      status: "idea",
+      version: 1,
+      parentItemId: ADD_CHILD_PARENT_ID,
+      isPlanBlock: false,
+    };
+
+    const fetchMock = vi.fn(async () => jsonResponse(createdChildSummary));
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parentStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={ADD_CHILD_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const parentRow = table.querySelector(
+      `tr.stop-row[data-id="${ADD_CHILD_PARENT_ID}"]`,
+    ) as HTMLElement;
+    expect(parentRow).toBeTruthy();
+
+    // Draft landmark: add-child control under the parent (chevron / action).
+    const addChildControl = within(parentRow).getByRole("button", {
+      name: /add sub-activit/i,
+    });
+    await user.click(addChildControl);
+
+    // Inline draft for the child (title field under the parent tree).
+    const childDraft =
+      within(parentRow).queryByRole("textbox", { name: /title/i }) ??
+      within(table).getByRole("textbox", { name: /title/i });
+    await user.type(childDraft, ADD_CHILD_DRAFT_TITLE);
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(itineraryCreateCalls(fetchMock)).toHaveLength(1);
+    });
+
+    const createCall = itineraryCreateCalls(fetchMock)[0]!;
+    expect(createCall.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items`,
+    );
+    expect(new Headers(createCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${ADD_CHILD_SESSION}`,
+    );
+    expect(createCall.body).toEqual(
+      expect.objectContaining({
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ADD_CHILD_DRAFT_TITLE,
+        parentItemId: ADD_CHILD_PARENT_ID,
+      }),
+    );
+
+    // Nested under parent chevron tree — not a flat top-level stop-row.
+    const nested = await waitFor(() => {
+      const panel = parentRow.querySelector(
+        ".subplan[data-subplan], [data-subplan]",
+      ) as HTMLElement | null;
+      expect(panel).toBeTruthy();
+      expect(panel!.hidden).toBe(false);
+      const subRows = [
+        ...panel!.querySelectorAll(
+          ".subplan-row[data-subplan-row], [data-subplan-row]",
+        ),
+      ];
+      expect(
+        subRows.some((row) =>
+          row.textContent?.includes(ADD_CHILD_RETURNED_ACTIVITY),
+        ),
+      ).toBe(true);
+      return subRows;
+    });
+    expect(nested.length).toBeGreaterThanOrEqual(1);
+
+    // Must not append the child as a sibling top-level stop-row.
+    expect(
+      table.querySelector(
+        `tr.stop-row[data-id="${ADD_CHILD_CREATED_ID}"]`,
+      ),
+    ).toBeNull();
+  });
+});
+
+/**
  * M80P3JXX T7 #2 — draft choiceChipHtml on .title-with-meta (far right):
  * Travel By (`data-by-trigger`) + Food Meal (`data-meal-trigger.meal`) commit
  * via PATCH itinerary-items/{id} with clientMutationId + expectedVersion.
@@ -1955,8 +2203,77 @@ const NOTE_BODY = "Gate closes 40m early";
 const LINK_URL = "https://example.com/tg640-booking";
 const DLG_START_TIME = "10:05";
 const DLG_END_TIME = "18:20";
+/** Independent literals — loaded stop note/mapLink that openStopDialog must seed. */
+const LOADED_STOP_NOTE = "Ask for aisle near exit row 42";
+const LOADED_STOP_MAP_LINK = "https://maps.example.com/bkk-nrt-tg640";
 
 describe("SmartItineraryTable note/link/time-setup dialogs", () => {
+  /**
+   * M81DDKSC T1 #3 — openStopDialog(note|link) must seed dlg fields from the
+   * loaded stop's note / mapLink (not always clear to empty).
+   */
+  it("openStopDialog(note|link) seeds dlg fields from the loaded stop note/mapLink", async () => {
+    const user = userEvent.setup();
+    const seededStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: DLG_ITEM_ID,
+      version: DLG_EXPECTED_VERSION,
+      note: LOADED_STOP_NOTE,
+      mapLink: LOADED_STOP_MAP_LINK,
+    };
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [seededStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={DLG_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${DLG_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(stopRow).toBeTruthy();
+
+    async function openStopAction(label: RegExp) {
+      const more = within(stopRow).queryByRole("button", {
+        name: /more actions/i,
+      });
+      if (more) await user.click(more);
+      await user.click(within(stopRow).getByRole("button", { name: label }));
+    }
+
+    await openStopAction(/edit note/i);
+    const noteDialog = await screen.findByRole("dialog", {
+      name: NOTE_DIALOG_TITLE,
+    });
+    const noteField =
+      within(noteDialog).queryByRole("textbox", { name: /^note$/i }) ??
+      within(noteDialog).getByPlaceholderText(/add a note/i);
+    expect(noteField).toHaveValue(LOADED_STOP_NOTE);
+    await user.click(
+      within(noteDialog).getByRole("button", { name: /^cancel$/i }),
+    );
+
+    await openStopAction(/edit link/i);
+    const linkDialog = await screen.findByRole("dialog", {
+      name: LINK_DIALOG_TITLE,
+    });
+    const linkField =
+      within(linkDialog).queryByRole("textbox", { name: /^url$/i }) ??
+      within(linkDialog).getByPlaceholderText(/^https:\/\//i);
+    expect(linkField).toHaveValue(LOADED_STOP_MAP_LINK);
+  });
+
   it("Note, link, and time-setup dialogs open from stop action / time-setup controls (Remove confirm already ships); Save/Cancel do not invent parallel backends", async () => {
     const user = userEvent.setup();
     const travelStop: StopItem = {
@@ -1970,9 +2287,15 @@ describe("SmartItineraryTable note/link/time-setup dialogs", () => {
       const url = String(input);
       const method = String(init?.method ?? "GET").toUpperCase();
       if (method === "PATCH" && url === patchUrl) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          expectedVersion?: number;
+        };
+        const from = typeof body.expectedVersion === "number"
+          ? body.expectedVersion
+          : DLG_EXPECTED_VERSION;
         return jsonResponse({
           ...travelStop,
-          version: DLG_EXPECTED_VERSION + 1,
+          version: from + 1,
         });
       }
       return jsonResponse({ error: { message: "unexpected" } }, 404);
@@ -2079,7 +2402,7 @@ describe("SmartItineraryTable note/link/time-setup dialogs", () => {
     });
     const linkCall = itineraryPatchCalls(fetchMock)[0]!;
     expect(linkCall.url).toBe(patchUrl);
-    expect(linkCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION);
+    expect(linkCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION + 1);
     expect(linkCall.body.patch).toEqual(
       expect.objectContaining({ mapLink: LINK_URL }),
     );
@@ -2109,7 +2432,7 @@ describe("SmartItineraryTable note/link/time-setup dialogs", () => {
     });
     const timeCall = itineraryPatchCalls(fetchMock)[0]!;
     expect(timeCall.url).toBe(patchUrl);
-    expect(timeCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION);
+    expect(timeCall.body.expectedVersion).toBe(DLG_EXPECTED_VERSION + 2);
     expect(timeCall.body.patch).toEqual(
       expect.objectContaining({
         startTime: DLG_START_TIME,

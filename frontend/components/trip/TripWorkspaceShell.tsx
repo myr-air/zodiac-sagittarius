@@ -58,6 +58,22 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   const [reloadToken, setReloadToken] = useState(0);
   /** Command-bar Reorder (#dnd-toggle) — default off; reveals draft drag grips. */
   const [reorderEnabled, setReorderEnabled] = useState(false);
+  /**
+   * Trip Plan panel — collapsed by default (draft `#plan-toggle` / `.plan-panel.open`).
+   * Toggle only expands/collapses the local filter list — no set-main / navigation.
+   */
+  const [planPanelOpen, setPlanPanelOpen] = useState(false);
+  /**
+   * Client-side plan switcher selection (tripPlans row id).
+   * null = Main Plan. Filter-only — no set-main / promote-main mutation.
+   */
+  const [selectedPlanOptionId, setSelectedPlanOptionId] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    setSelectedPlanOptionId(null);
+  }, [tripId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,8 +106,13 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   }, [tripId, reloadToken]);
 
   const mainTripPlanId = trip?.mainTripPlanId ?? null;
-  const planVariantId =
-    trip?.activePlanVariantId ?? mainTripPlanId ?? null;
+  const selectedOptionId = selectedPlanOptionId ?? mainTripPlanId;
+  const isMainPlanSelected =
+    selectedOptionId == null || selectedOptionId === mainTripPlanId;
+  /** Visible itinerary filter: Main → active variant; other options → that plan’s id. */
+  const planVariantId = isMainPlanSelected
+    ? (trip?.activePlanVariantId ?? mainTripPlanId ?? null)
+    : selectedOptionId;
   const itineraryModel =
     trip && planVariantId
       ? buildItineraryTableModel({
@@ -192,7 +213,11 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
                 Days
               </a>
             </nav>
-            <label className="dnd-toggle" htmlFor="dnd-toggle" title="Show drag handles to reorder days and activities">
+            <label
+              className="dnd-toggle"
+              htmlFor="dnd-toggle"
+              title="Show drag handles to reorder activities"
+            >
               <input
                 type="checkbox"
                 id="dnd-toggle"
@@ -201,21 +226,36 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
               />
               <span className="dnd-label">Reorder</span>
             </label>
-            <button type="button" id="plan-toggle" aria-expanded="false">
+            <button
+              type="button"
+              id="plan-toggle"
+              aria-expanded={planPanelOpen}
+              aria-controls="plan-panel"
+              onClick={() => setPlanPanelOpen((open) => !open)}
+            >
               Trip Plan
             </button>
             <div
-              className="plan-panel"
+              className={`plan-panel${planPanelOpen ? " open" : ""}`}
               id="plan-panel"
               role="listbox"
               aria-label="Trip plans"
+              hidden={!planPanelOpen}
             >
               {tripPlans.length > 0 ? (
                 tripPlans.map((plan) => (
                   <div
                     key={plan.id}
                     role="option"
-                    aria-selected={plan.id === mainTripPlanId}
+                    aria-selected={plan.id === selectedOptionId}
+                    tabIndex={0}
+                    onClick={() => setSelectedPlanOptionId(plan.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedPlanOptionId(plan.id);
+                      }
+                    }}
                   >
                     {planOptionLabel(plan, mainTripPlanId)}
                   </div>

@@ -48,7 +48,7 @@ function eachCalendarDateInclusive(startDate: string, endDate: string): string[]
  * Grandchildren (parent is itself a child) stay top-level.
  * When nothing nests, returns the flat list unchanged (no children key).
  */
-function nestOneLevel(items: TripCockpitItineraryItem[]): ItineraryTableStop[] {
+export function nestOneLevel(items: TripCockpitItineraryItem[]): ItineraryTableStop[] {
   const byId = new Map(items.map((item) => [item.id, item]));
   const childrenByParent = new Map<string, TripCockpitItineraryItem[]>();
   const nestedChildIds = new Set<string>();
