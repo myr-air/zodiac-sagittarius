@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
+import { UnregisterLegacyServiceWorker } from "@/components/pwa/UnregisterLegacyServiceWorker";
 import "./globals.css";
 
 const notoSansThai = Noto_Sans_Thai({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${notoSansThai.className} antialiased`}>{children}</body>
+      <body className={`${notoSansThai.className} antialiased`}>
+        <UnregisterLegacyServiceWorker />
+        {children}
+      </body>
     </html>
   );
 }

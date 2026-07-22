@@ -787,3 +787,256 @@ describe("DayWorkspacePage Auto route & fill pin gate (T11 #2)", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+/** Independent calm copy from GET /trips/{id} 401 body (loadTripCockpit). */
+const SESSION_401_ERROR = "Session is missing or invalid.";
+/** Muted empty-day canvas copy — must not be the sole failure surface. */
+const EMPTY_DAY_MUTED_COPY =
+  /Plan one day at a time — pick Days here, or switch to Table for the full itinerary/i;
+
+/**
+ * T4 #1: loadTripCockpit failure surfaces explicit error (role=alert) + Retry;
+ * must not present only the muted empty-day copy as if no days exist.
+ */
+describe("DayWorkspacePage load failure", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("when loadTripCockpit fails, shows role=alert error plus Retry and does not present only muted empty-day copy", async () => {
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(
+        {
+          error: {
+            code: "unauthorized",
+            message: SESSION_401_ERROR,
+          },
+        },
+        401,
+      ),
+    ) as typeof fetch;
+
+    render(<DayWorkspacePage tripId={TRIP_ID} />);
+
+    const alert = await waitFor(() => screen.getByRole("alert"));
+    expect(alert).toHaveTextContent(SESSION_401_ERROR);
+    expect(
+      screen.getByRole("button", { name: /^Retry$/i }),
+    ).toBeInTheDocument();
+
+    // Failure must not masquerade as an empty Plan Day spine.
+    expect(screen.queryByText(EMPTY_DAY_MUTED_COPY)).not.toBeInTheDocument();
+  });
+
+  /**
+   * T4 #2: Retry re-invokes loadTripCockpit; successful load with
+   * startDate/endDate renders the Plan Day spine (tabs / + day).
+   */
+  it("Retry re-invokes loadTripCockpit; successful dated load renders Plan Day spine tabs and + day", async () => {
+    let cockpitLoads = 0;
+    globalThis.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method === "GET" &&
+        url.includes(`/api/v1/trips/${TRIP_ID}`) &&
+        !url.includes("/itinerary-items")
+      ) {
+        cockpitLoads += 1;
+        if (cockpitLoads === 1) {
+          return jsonResponse(
+            {
+              error: {
+                code: "unauthorized",
+                message: SESSION_401_ERROR,
+              },
+            },
+            401,
+          );
+        }
+        return jsonResponse(TRIP_COCKPIT_BODY);
+      }
+      return jsonResponse(TRIP_COCKPIT_BODY);
+    }) as typeof fetch;
+
+    const user = userEvent.setup();
+    render(<DayWorkspacePage tripId={TRIP_ID} />);
+
+    await waitFor(() => screen.getByRole("alert"));
+    expect(cockpitLoads).toBe(1);
+    expect(
+      screen.queryByRole("tablist", { name: TABLIST_LABEL }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^Retry$/i }));
+
+    await waitFor(() => {
+      expect(cockpitLoads).toBeGreaterThan(1);
+    });
+
+    const tablist = await waitFor(() =>
+      screen.getByRole("tablist", { name: TABLIST_LABEL }),
+    );
+    expect(within(tablist).getAllByRole("tab")).toHaveLength(3);
+    expect(
+      screen.getByRole("button", { name: ADD_DAY_LABEL }),
+    ).toBeInTheDocument();
+  });
+});
+
+/**
+ * Cockpit trip with dates + session but no plan variant — itinerary model /
+ * Plan Day spine cannot materialize; patchTrip/+day can still seed an endDate.
+ */
+const TRIP_COCKPIT_NO_SPINE = {
+  trip: {
+    ...TRIP_COCKPIT_BODY.trip,
+    mainTripPlanId: null,
+    activePlanVariantId: null,
+  },
+  tripPlans: [],
+  itineraryItems: [],
+};
+
+/** Empty-spine recovery CTAs — independent of production copy helpers. */
+const OPEN_TABLE_LABEL = /^Open Table$/i;
+const ADD_FIRST_DAY_LABEL = /^Add first day$/i;
+/**
+ * Visible disabled reason when no Plan Day is active (T5 #2 / #182).
+ * Must be on-screen copy — not only a title tooltip.
+ */
+const AI_SUGGEST_DISABLED_REASON =
+  /select a (plan )?day|no (active )?day|day (must be|is) (selected|active)|available when a day|until a day (is )?active/i;
+
+/**
+ * T5 #1: no visible Plan Day spine → day canvas is not a dead end; primary
+ * recovery actions include Open Table + Retry, and Add first day when the trip
+ * is loaded and patchTrip/+day can seed.
+ */
+describe("DayWorkspacePage empty Plan Day spine recovery (T5 #1)", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(TRIP_COCKPIT_NO_SPINE),
+    ) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("when trip is loaded but Plan Day spine is missing, day canvas offers Open Table, Retry, and Add first day", async () => {
+    render(<DayWorkspacePage tripId={TRIP_ID} />);
+
+    // Trip loaded (fetch resolved) but no folder tabs — spine not visible.
+    await waitFor(() => {
+      expect(
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length,
+      ).toBeGreaterThanOrEqual(1);
+    });
+    expect(
+      screen.queryByRole("tablist", { name: TABLIST_LABEL }),
+    ).not.toBeInTheDocument();
+
+    const canvas = await waitFor(() =>
+      screen.getByRole("region", { name: DAY_CANVAS_LABEL }),
+    );
+
+    // Not a muted-copy dead end — primary recovery CTAs in the day canvas.
+    expect(
+      within(canvas).getByRole("link", { name: OPEN_TABLE_LABEL }),
+    ).toHaveAttribute("href", TABLE_HREF);
+    expect(
+      within(canvas).getByRole("button", { name: /^Retry$/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(canvas).getByRole("button", { name: ADD_FIRST_DAY_LABEL }),
+    ).toBeInTheDocument();
+  });
+});
+
+/**
+ * T5 #2: AI suggest stays disabled until a day is active, with a visible
+ * reason in the UI (empty spine / no day selected).
+ */
+describe("DayWorkspacePage AI suggest disabled without active day (T5 #2)", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(TRIP_COCKPIT_NO_SPINE),
+    ) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("AI suggest stays disabled with a visible reason when no Plan Day is active", async () => {
+    render(<DayWorkspacePage tripId={TRIP_ID} />);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("tablist", { name: TABLIST_LABEL }),
+      ).not.toBeInTheDocument();
+    });
+
+    const topbar =
+      document.querySelector("header.topbar") ??
+      (await waitFor(() => screen.getByRole("banner")));
+    const aiSuggest = await waitFor(() =>
+      within(topbar as HTMLElement).getByRole("button", {
+        name: AI_SUGGEST_LABEL,
+      }),
+    );
+
+    expect(aiSuggest).toBeDisabled();
+
+    // Visible on-screen reason — title-only tooltips do not satisfy #182.
+    const reason = await waitFor(() =>
+      screen.getByText(AI_SUGGEST_DISABLED_REASON),
+    );
+    expect(reason).toBeVisible();
+  });
+});

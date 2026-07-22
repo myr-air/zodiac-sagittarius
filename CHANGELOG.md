@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.24.2] — 2026-07-22
+
+### Fixed
+- Guest create Continue/Skip leave `#create` and open `/trips/{id}` with durable pending-join resume and Open your trip
+- Days/Table cockpit load failures show alert + Retry; empty Days spine offers recovery after load settles
+- Local API base fallback, bound fetch for cockpit load, landing-reveal hydrate, and kill-switch for legacy `joii-v2` service worker
+
+### Notes
+- Closes #180–#183; mission M81AHX9V
+
+
 ## [0.24.1] — 2026-07-22
 
 ### Fixed

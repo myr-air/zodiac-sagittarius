@@ -16,8 +16,17 @@ import { RecentSearches } from "./RecentSearches";
 import { TripAccessBand } from "./TripAccessBand";
 import { TripIdeas } from "./TripIdeas";
 import {
+  clearPendingJoin,
   createTripFromQuery,
   defaultApiBaseUrl,
+  loadMemberSession,
+  loadPendingJoin,
+  MEMBER_SESSION_STORAGE_KEY,
+  PENDING_JOIN_STORAGE_KEY,
+  savePendingJoin,
+  tripRouteFor,
+  type MemberSessionRecord,
+  type PendingJoinRecord,
 } from "@/src/landing/create-trip";
 import { landingCopy } from "@/src/landing/landing-copy";
 import {
@@ -26,17 +35,17 @@ import {
   saveRecent,
 } from "@/src/landing/recent-searches";
 
-type PendingJoinCredentials = {
-  joinId: string;
-  joinPassword: string;
-  route: string;
-};
-
 const RECENT_EVENT = "joii-recent-change";
+const PENDING_JOIN_EVENT = "joii-pending-join-change";
+const MEMBER_SESSION_EVENT = "joii-member-session-change";
 /** Stable empty list for useSyncExternalStore server + empty-client snapshots. */
 const EMPTY_RECENT: readonly string[] = Object.freeze([]);
 
 let cachedRecentSnapshot: readonly string[] = EMPTY_RECENT;
+let cachedPendingJoin: PendingJoinRecord | null = null;
+let cachedPendingJoinRaw: string | null | undefined = undefined;
+let cachedMemberSession: MemberSessionRecord | null = null;
+let cachedMemberSessionRaw: string | null | undefined = undefined;
 
 function subscribeRecent(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -83,6 +92,48 @@ function getCreateHashServerSnapshot(): boolean {
   return false;
 }
 
+function subscribePendingJoin(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(PENDING_JOIN_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(PENDING_JOIN_EVENT, onStoreChange);
+  };
+}
+
+function getPendingJoinSnapshot(): PendingJoinRecord | null {
+  const raw = window.sessionStorage.getItem(PENDING_JOIN_STORAGE_KEY);
+  if (raw === cachedPendingJoinRaw) return cachedPendingJoin;
+  cachedPendingJoinRaw = raw;
+  cachedPendingJoin = loadPendingJoin(window.sessionStorage);
+  return cachedPendingJoin;
+}
+
+function getPendingJoinServerSnapshot(): null {
+  return null;
+}
+
+function subscribeMemberSession(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(MEMBER_SESSION_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(MEMBER_SESSION_EVENT, onStoreChange);
+  };
+}
+
+function getMemberSessionSnapshot(): MemberSessionRecord | null {
+  const raw = window.sessionStorage.getItem(MEMBER_SESSION_STORAGE_KEY);
+  if (raw === cachedMemberSessionRaw) return cachedMemberSession;
+  cachedMemberSessionRaw = raw;
+  cachedMemberSession = loadMemberSession(window.sessionStorage);
+  return cachedMemberSession;
+}
+
+function getMemberSessionServerSnapshot(): null {
+  return null;
+}
+
 function prefersReducedMotion(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -93,10 +144,16 @@ function prefersReducedMotion(): boolean {
 function useSectionReveals() {
   useEffect(() => {
     const nodes = document.querySelectorAll<HTMLElement>(".landing-reveal");
+    const root = document.documentElement;
+
     if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
       nodes.forEach((el) => el.classList.add("is-in"));
+      root.removeAttribute("data-landing-reveal");
       return;
     }
+
+    // Enable CSS hide/reveal only after hydrate so SSR markup matches client.
+    root.setAttribute("data-landing-reveal", "on");
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -111,7 +168,10 @@ function useSectionReveals() {
     );
 
     nodes.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      root.removeAttribute("data-landing-reveal");
+    };
   }, []);
 }
 
@@ -122,9 +182,6 @@ function LandingPageInner() {
   const [query, setQuery] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-  const [pendingJoin, setPendingJoin] = useState<PendingJoinCredentials | null>(
-    null,
-  );
   const inputRef = useRef<HTMLInputElement>(null);
   const recent = useSyncExternalStore(
     subscribeRecent,
@@ -135,6 +192,16 @@ function LandingPageInner() {
     subscribeHash,
     getCreateHashSnapshot,
     getCreateHashServerSnapshot,
+  );
+  const pendingJoin = useSyncExternalStore(
+    subscribePendingJoin,
+    getPendingJoinSnapshot,
+    getPendingJoinServerSnapshot,
+  );
+  const memberSession = useSyncExternalStore(
+    subscribeMemberSession,
+    getMemberSessionSnapshot,
+    getMemberSessionServerSnapshot,
   );
   const showCreate = showCreateHash || createBusy || Boolean(createError);
 
@@ -174,19 +241,32 @@ function LandingPageInner() {
       return;
     }
 
-    setPendingJoin({
+    const pending: PendingJoinRecord = {
       joinId: outcome.trip.joinId,
       joinPassword: outcome.joinPassword,
       route: outcome.route,
-    });
+    };
+    savePendingJoin(window.sessionStorage, pending);
+    window.dispatchEvent(new Event(PENDING_JOIN_EVENT));
   }, [createBusy, query, recent]);
 
   const handleContinueToTrip = useCallback(() => {
     if (!pendingJoin) return;
     const { route } = pendingJoin;
-    setPendingJoin(null);
+    // Drop #create before clearing credentials so we do not fall back to the
+    // create stub while still on the landing route.
+    if (window.location.hash === "#create") {
+      window.location.hash = "";
+    }
+    clearPendingJoin(window.sessionStorage);
+    window.dispatchEvent(new Event(PENDING_JOIN_EVENT));
     router.push(route);
   }, [pendingJoin, router]);
+
+  const handleOpenYourTrip = useCallback(() => {
+    if (!memberSession) return;
+    router.push(tripRouteFor(memberSession.tripId));
+  }, [memberSession, router]);
 
   const handleSeed = useCallback(
     (seed: string) => {
@@ -285,6 +365,23 @@ function LandingPageInner() {
           </div>
         </div>
       </header>
+
+      {memberSession && !pendingJoin ? (
+        <div className="border-b border-(--color-border) bg-(--color-surface-muted)">
+          <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-3 px-4 py-2">
+            <p className="m-0 text-[13px] text-(--color-text-muted)">
+              Resume the trip open on this device.
+            </p>
+            <button
+              type="button"
+              onClick={handleOpenYourTrip}
+              className="landing-control inline-flex min-h-9 shrink-0 items-center justify-center rounded-(--radius-md) bg-(--color-primary) px-3.5 text-[13px] font-bold text-(--color-on-primary) transition-colors duration-[180ms] hover:bg-(--color-primary-strong)"
+            >
+              Open your trip
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <HeroParallax>
         <p className="landing-hero__brand m-0 mb-2 text-[clamp(2.75rem,8vw,4.5rem)] font-bold leading-none tracking-tight [text-shadow:0_2px_24px_rgba(0,0,0,0.4)]">

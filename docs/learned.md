@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M81AHX9V | 2026-07-22 | Guest create Continue left `#create`; Days silently empty on load fail; legacy `joii-v2` SW broke API | Clear hash + pending join storage + Open your trip; Days/Table loadError+Retry; bind fetch; SW kill-switch; post-hydrate landing reveal | Landing/Days/Table RTL; browser smoke; validate --strict |
 | M80VKAX5 | 2026-07-22 | Day workspace needed distinct route + MapLibre + multi-plan AI without table parity | Dedicated `/trips/{id}/days`; MapLibre Positron; day-plan-assist Suggest/Accept with stub+OpenRouter; inline chips+dialog | FE trip 69; day_plan_assist 8; openapi; validate --strict |
 | M80P3JXX | 2026-07-22 | Pre-existing frontend typecheck/build failures blocked verify | Scoped fixes (passkey-register, CreateTripForm mocks, portal-nav regex, Vitest projects + @ alias) | typecheck/build; vitest 201/201 |
 | M80P3JXX | 2026-07-22 | Main Plan filter treated mainTripPlanId as planVariantId | Prefer activePlanVariantId ?? mainTripPlanId | diverge Vitest shell + table model |
@@ -29,6 +30,9 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M81AHX9V | 2026-07-22 | Injected `fetch` must be `.call(globalThis, …)` or `bind(globalThis)` — unbound extraction throws Illegal invocation in some browsers | Prevents false “Could not reach the server” on healthy APIs |
+| M81AHX9V | 2026-07-22 | After removing a PWA, ship a kill-switch at the old `/sw.js` URL plus mount-time unregister/cache clear | Stale workers survive greenfield resets and break API traffic |
+| M81AHX9V | 2026-07-22 | Keep SSR/first paint visible; enable IntersectionObserver reveal hide only after client mount | Avoids blank below-fold content and hydrate noise on landing |
 | M80VKAX5 | 2026-07-22 | plan.json evidence must be bare labels; OpenAPI coverage list must include every new Axum route | Prevents false ready/strict failures after API adds |
 | M80P3JXX | 2026-07-22 | When splitting Vitest into projects, duplicate resolve.alias (and DOM setup) into each project — root aliases may not inherit | Prevents silent `@/` resolution breaks after environment config migrations |
 | M80P3JXX | 2026-07-22 | Landmark fixture screenshots are not layout proof — prefer live product or draft-faithful stop-block markup for visual ship gates | Avoids shipping unstyled composition under green landmark smoke |

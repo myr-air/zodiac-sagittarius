@@ -211,6 +211,16 @@ function failureMessage(body: TripCockpitBody | null, status: number): string {
   return "Could not load this trip. Please try again.";
 }
 
+function isNonApiResponse(response: Response, body: TripCockpitBody | null): boolean {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("text/html")) return true;
+  // Empty/misconfigured API base often yields same-origin Next 404 with no JSON body.
+  return response.status === 404 && body === null;
+}
+
+const MISCONFIGURED_API_BASE_ERROR =
+  "API base URL looks misconfigured (got a non-API response). Check NEXT_PUBLIC_SAGITTARIUS_API_BASE_URL and try again.";
+
 /**
  * With joii.member.session present, GET /api/v1/trips/{id} with Bearer and map
  * trip + tripPlans + itineraryItems from the TripCockpit body.
@@ -229,12 +239,18 @@ export async function loadTripCockpit(
 
   let response: Response;
   try {
-    response = await deps.fetch(tripCockpitUrl(deps.apiBaseUrl, input.tripId), {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session.sessionToken}`,
+    // Call through globalThis so an unbound `fetch` dep does not throw
+    // "Illegal invocation" in stricter browser environments.
+    response = await deps.fetch.call(
+      globalThis,
+      tripCockpitUrl(deps.apiBaseUrl, input.tripId),
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.sessionToken}`,
+        },
       },
-    });
+    );
   } catch {
     return {
       ok: false,
@@ -250,11 +266,17 @@ export async function loadTripCockpit(
   }
 
   if (!response.ok) {
+    if (isNonApiResponse(response, body)) {
+      return { ok: false, error: MISCONFIGURED_API_BASE_ERROR };
+    }
     return { ok: false, error: failureMessage(body, response.status) };
   }
 
   const trip = parseTrip(body?.trip);
   if (!trip || !Array.isArray(body?.tripPlans) || !Array.isArray(body?.itineraryItems)) {
+    if (isNonApiResponse(response, body)) {
+      return { ok: false, error: MISCONFIGURED_API_BASE_ERROR };
+    }
     return {
       ok: false,
       error: "Trip loaded but the response was incomplete. Please try again.",
