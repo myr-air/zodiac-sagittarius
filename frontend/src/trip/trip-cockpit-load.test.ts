@@ -203,4 +203,73 @@ describe("loadTripCockpit", () => {
       }),
     ]);
   });
+
+  /**
+   * T6 #1: Phase-1 cockpit parse omitted parentItemId. Load must retain it
+   * (null roots + child → parent id) so the table model can nest one level.
+   */
+  it("retains parentItemId on itineraryItems from TripCockpit (null root and child → parent id)", async () => {
+    const PARENT_ID = "018f4e83-5410-7d8b-8f25-fd52c5e7bd10";
+    const CHILD_ID = "018f4e83-5410-7d8b-8f25-fd52c5e7bd11";
+    const baseItem = TRIP_COCKPIT_BODY.itineraryItems[0]!;
+
+    const storage = memoryStorage({
+      [MEMBER_SESSION_STORAGE_KEY]: JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    });
+
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({
+        ...TRIP_COCKPIT_BODY,
+        itineraryItems: [
+          {
+            ...baseItem,
+            id: PARENT_ID,
+            parentItemId: null,
+            activity: "Hotel stay block",
+            activityType: "stay",
+            place: "Harbour Hotel",
+            startTime: "15:00",
+            endTime: "11:00",
+          },
+          {
+            ...baseItem,
+            id: CHILD_ID,
+            parentItemId: PARENT_ID,
+            activity: "Lobby check-in",
+            activityType: "stay",
+            place: "Harbour Hotel",
+            startTime: "15:00",
+            endTime: "15:30",
+          },
+        ],
+      }),
+    );
+
+    const outcome = await loadTripCockpit(
+      { tripId: TRIP_ID },
+      { fetch: fetchMock, apiBaseUrl: API_BASE, storage },
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    expect(outcome.itineraryItems).toEqual([
+      expect.objectContaining({
+        id: PARENT_ID,
+        activity: "Hotel stay block",
+        parentItemId: null,
+      }),
+      expect.objectContaining({
+        id: CHILD_ID,
+        activity: "Lobby check-in",
+        parentItemId: PARENT_ID,
+      }),
+    ]);
+  });
 });

@@ -3,7 +3,7 @@
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  */
 import type { ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import {
   cleanup,
   fireEvent,
@@ -15,7 +15,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import type { ClassifiedTripSeed } from "@/src/create-trip/classify-seed";
-import { CreateTripForm } from "./CreateTripForm";
+import { CreateTripForm, type CreateTripFormProps } from "./CreateTripForm";
 
 afterEach(() => {
   cleanup();
@@ -64,19 +64,23 @@ const CREATE_SUCCESS = {
   },
 };
 
+type CreateAccountTripFn = NonNullable<CreateTripFormProps["createAccountTrip"]>;
+type SaveMemberSessionFn = NonNullable<CreateTripFormProps["saveMemberSession"]>;
+type NavigateFn = NonNullable<CreateTripFormProps["navigate"]>;
+
 type SubmitSeamProps = {
   sessionToken: string;
-  createAccountTrip: ReturnType<typeof vi.fn>;
-  saveMemberSession: ReturnType<typeof vi.fn>;
-  navigate: ReturnType<typeof vi.fn>;
+  createAccountTrip: Mock<CreateAccountTripFn>;
+  saveMemberSession: Mock<SaveMemberSessionFn>;
+  navigate: Mock<NavigateFn>;
 };
 
 function createSubmitMocks(): SubmitSeamProps {
   return {
     sessionToken: ACCOUNT_SESSION_TOKEN,
-    createAccountTrip: vi.fn(async () => CREATE_SUCCESS),
-    saveMemberSession: vi.fn(),
-    navigate: vi.fn(),
+    createAccountTrip: vi.fn<CreateAccountTripFn>(async () => CREATE_SUCCESS),
+    saveMemberSession: vi.fn<SaveMemberSessionFn>(),
+    navigate: vi.fn<NavigateFn>(),
   };
 }
 
@@ -91,7 +95,7 @@ function formProps(
 }
 
 function seedArgFromCreateCall(
-  createAccountTrip: ReturnType<typeof vi.fn>,
+  createAccountTrip: Mock<CreateAccountTripFn>,
 ): Record<string, unknown> {
   const first = createAccountTrip.mock.calls[0]?.[0] as
     | { seed?: Record<string, unknown> }
@@ -101,7 +105,7 @@ function seedArgFromCreateCall(
 }
 
 function savedMemberSessionFromCall(
-  saveMemberSession: ReturnType<typeof vi.fn>,
+  saveMemberSession: Mock<SaveMemberSessionFn>,
 ): Record<string, unknown> {
   expect(saveMemberSession).toHaveBeenCalled();
   const args = saveMemberSession.mock.calls[0]!;

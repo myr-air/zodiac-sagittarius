@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.22.0] — 2026-07-22
+
+### Added
+- Itinerary Phase 2: stroke type icons, overnight duration rail, day collapse persistence, Share stub
+- Within-day Reorder with itinerary-items/order PATCH; sub-activity chevron tree
+- Type-shaped field bags, Meal/By title-line choice chips, note/link/time-setup dialogs
+
+### Fixed
+- Main Plan itinerary filter uses activePlanVariantId when it diverges from mainTripPlanId
+- Pre-existing frontend typecheck/build failures (passkey-register, CreateTripForm test, portal-nav, Vitest projects)
+- Draft Reorder stop-drag grid and Share command button styles
+
+### Notes
+- Mission M80P3JXX; closes #175 #176; follow-ups #177 #178 #179
+
+
 ## [0.21.0] — 2026-07-22
 
 ### Added

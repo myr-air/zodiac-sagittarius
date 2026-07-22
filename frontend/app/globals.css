@@ -2489,6 +2489,40 @@ a.portal-pass:hover {
   color: var(--color-on-primary);
 }
 
+.btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-strong);
+}
+
+/* White-on-teal inversion for Share on the primary command bar. */
+.command .btn-primary {
+  background: var(--color-on-primary);
+  color: var(--color-primary-strong);
+  border-color: transparent;
+}
+
+.command .btn-primary:hover {
+  background: #fff;
+  color: var(--color-primary-strong);
+}
+
 /* Keep native checkbox until draft .dnd-switch chrome ships. */
 .dnd-toggle:has(.dnd-switch) input {
   position: absolute;
@@ -2794,6 +2828,39 @@ tr.day-row:first-of-type td {
   overflow: hidden;
 }
 
+.day-aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+tr.day-body-hidden {
+  display: none !important;
+}
+
+.day-count {
+  display: none;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+tr.day-row[data-collapsed="true"] .day-count {
+  display: inline-flex;
+}
+
+tr.day-row[data-collapsed="true"] .day-id {
+  opacity: 0.72;
+}
+
 .day-id {
   display: inline-flex;
   align-items: center;
@@ -2811,6 +2878,27 @@ tr.day-row:first-of-type td {
   user-select: none;
   flex: 0 0 auto;
   box-sizing: border-box;
+}
+
+/* Draft: day reorder uses .day-id as grab handle; hide injected grips. */
+#shell[data-dnd="on"] .day-id {
+  cursor: grab;
+}
+
+#shell[data-dnd="on"] .day-id:active {
+  cursor: grabbing;
+}
+
+.day-drag {
+  display: none !important;
+}
+
+.day-drag i {
+  display: block;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
 }
 
 .day-id:hover {
@@ -3006,6 +3094,63 @@ tr.stop-row.enter {
   align-items: start;
   min-width: 0;
   width: 100%;
+}
+
+/* Reorder on: grip | when-rail | body — keeps duration rail aligned. */
+#shell[data-dnd="on"] .stop-block,
+tr.stop-row.dragging .stop-block {
+  grid-template-columns: var(--when-grip, 14px) var(--when-rail, 7rem) minmax(0, 1fr);
+}
+
+.stop-drag {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  width: var(--when-grip, 14px);
+  min-height: 28px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-subtle);
+  cursor: grab;
+  justify-self: center;
+  align-self: center;
+}
+
+.stop-drag i {
+  display: block;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+#shell[data-dnd="on"] .stop-drag {
+  display: inline-flex;
+}
+
+#shell[data-dnd="on"] .stop-drag:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted, #f1f5f9);
+}
+
+#shell[data-dnd="on"] .stop-drag:active {
+  cursor: grabbing;
+}
+
+#shell[data-dnd="on"] .stop-drag:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.stop-drag.dragging {
+  display: inline-flex !important;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
 
 .stop-when {
@@ -3299,12 +3444,198 @@ tr.stop-row.enter {
   box-sizing: border-box;
 }
 
+.time-setup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.time-setup svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+tr.stop-row:hover .time-setup,
+tr.stop-row.selected .time-setup,
+.time-setup:focus {
+  opacity: 1;
+}
+
+.time-setup:hover {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.time-setup:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
 .line-primary {
   min-width: 0;
   display: grid;
   align-items: center;
   min-height: 28px;
   height: 28px;
+}
+
+.title-with-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  position: relative;
+}
+
+.title-with-meta > .choice-chip {
+  justify-self: end;
+  flex: 0 0 auto;
+}
+
+.route-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  min-height: 28px;
+}
+
+.route-arrow {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-subtle);
+  padding: 0 2px;
+}
+
+/* Draft choiceChipHtml — Travel By / Food Meal on title line (far right). */
+.choice-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 22px;
+  min-height: 22px;
+  min-width: 56px;
+  max-width: 96px;
+  padding: 0 6px 0 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.choice-chip.is-empty {
+  background: transparent;
+  border-style: dashed;
+  color: var(--color-text-subtle);
+  font-weight: 600;
+}
+
+.choice-chip.meal {
+  border-color: var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+}
+
+.choice-chip.meal.is-empty {
+  background: transparent;
+  border-style: dashed;
+  color: var(--color-text-subtle);
+}
+
+.choice-chip .choice-chip-label {
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.choice-chip svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+.choice-chip:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.line-secondary .choice-chip {
+  flex: 0 0 auto;
+}
+
+/* Choice-chip listbox — mirror draft #choice-menu / .type-menu. */
+.choice-menu {
+  position: absolute;
+  z-index: 80;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 168px;
+  max-height: min(320px, 70vh);
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 12px 32px rgb(23 32 51 / 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choice-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.choice-menu button:hover {
+  background: var(--color-surface-muted);
+}
+
+.choice-menu button[aria-selected="true"] {
+  background: var(--color-primary-soft);
 }
 
 .line-secondary {
@@ -3416,6 +3747,137 @@ tr.stop-row.selected .activity-actions,
   border-color: var(--color-border);
   background: var(--color-surface);
   outline: none;
+}
+
+.activity-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+}
+
+.activity-action svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.activity-action:hover {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.activity-action:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.activity-action.subplan-toggle {
+  width: 26px;
+  gap: 2px;
+}
+
+.activity-action.subplan-toggle svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.16s ease;
+}
+
+tr.stop-row[data-subs-open="true"] .activity-action.subplan-toggle svg {
+  transform: rotate(180deg);
+}
+
+.subplan-toggle-count {
+  display: none;
+  font-size: 9px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.activity-action.subplan-toggle[data-count]:not([data-count="0"]) {
+  width: auto;
+  min-width: 26px;
+  padding: 0 6px;
+}
+
+.activity-action.subplan-toggle[data-count]:not([data-count="0"]) .subplan-toggle-count {
+  display: inline;
+}
+
+tr.stop-row[data-subs-open="true"] .activity-action.subplan-toggle {
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-border);
+}
+
+.stop-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.subplan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0 2px;
+  margin-left: calc(var(--when-rail, 7rem) + var(--rail-gap, 12px));
+  min-width: 0;
+}
+
+#shell[data-dnd="on"] .subplan {
+  margin-left: calc(
+    var(--when-grip, 14px) + var(--rail-gap, 12px) + var(--when-rail, 7rem) +
+      var(--rail-gap, 12px)
+  );
+}
+
+.subplan[hidden] {
+  display: none !important;
+}
+
+.subplan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.subplan-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--body-gap, 8px);
+  align-items: center;
+  min-height: 28px;
+  min-width: 0;
+}
+
+.sub-fields {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 tr.add-row td.add-collapsed-cell {
@@ -3543,6 +4005,47 @@ tr.add-draft-row td {
   line-height: 1.45;
 }
 
+.stop-dlg-body {
+  margin-top: 12px;
+}
+
+.stop-dlg-body label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stop-dlg-body textarea,
+.stop-dlg-body input[type="url"],
+.stop-dlg-body input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  resize: vertical;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+.stop-dlg-body textarea {
+  min-height: 96px;
+}
+
+.stop-dlg-body .time-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .stop-dlg-foot {
   display: flex;
   justify-content: flex-end;
@@ -3565,6 +4068,12 @@ tr.add-draft-row td {
 .stop-dlg-foot button:last-child {
   border-color: transparent;
   background: var(--color-danger);
+  color: var(--color-on-primary);
+}
+
+.stop-dlg-foot button.btn-primary {
+  border-color: transparent;
+  background: var(--color-primary);
   color: var(--color-on-primary);
 }
 
@@ -3654,6 +4163,11 @@ tr.add-draft-row td {
   .stop-block {
     grid-template-columns: 5.5ch minmax(0, 1fr);
     column-gap: 8px;
+  }
+
+  #shell[data-dnd="on"] .stop-block,
+  tr.stop-row.dragging .stop-block {
+    grid-template-columns: var(--when-grip, 14px) 5.5ch minmax(0, 1fr);
   }
 
   .stop-when {

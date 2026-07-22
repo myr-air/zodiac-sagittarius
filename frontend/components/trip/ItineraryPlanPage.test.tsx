@@ -252,3 +252,148 @@ describe("ItineraryPlanPage rail enrich cues and Remove DELETE", () => {
     expect(deleteCall.init.body).toBeUndefined();
   });
 });
+
+/**
+ * T7 #1 — draft renderTypeFields + syncFieldsFromType + syncContextFromRow:
+ * per-stop field bag keeps typed values across activity-type switches; table
+ * and context rail mirror the same type-shaped set + values.
+ */
+const FIELD_BAG_SESSION = "member-session-token-field-bag";
+/** Independent literals from draft travel / food field keys (enrichByType). */
+const BAG_FROM = "BKK";
+const BAG_TO = "NRT";
+const BAG_FOOD_PLACE = "Ichiran Shinjuku";
+const TRAVEL_FIELD_SET = ["From", "To", "By"] as const;
+const FOOD_FIELD_SET = ["Place", "Meal"] as const;
+
+describe("ItineraryPlanPage type-shaped field bag restore", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Switching activity type swaps the type-shaped field set and restores previously entered values for that type from a per-stop field bag (table + rail stay in sync)", async () => {
+    const user = userEvent.setup();
+    let current: StopItem = {
+      ...TRAVEL_STOP,
+      id: "item-field-bag-t1",
+      activity: "Field bag stop",
+      place: "",
+      activityType: "travel",
+      version: 1,
+    };
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method === "PATCH" &&
+        url ===
+          `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${current.id}`
+      ) {
+        let body: { patch?: Record<string, unknown> } = {};
+        try {
+          body = JSON.parse(String(init?.body ?? "{}")) as {
+            patch?: Record<string, unknown>;
+          };
+        } catch {
+          body = {};
+        }
+        current = {
+          ...current,
+          ...(body.patch as Partial<StopItem>),
+          version: current.version + 1,
+        };
+        return jsonResponse(current);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [current],
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={FIELD_BAG_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${current.id}"]`,
+    ) as HTMLElement;
+    expect(stopRow).toBeTruthy();
+    fireEvent.click(stopRow);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+
+    // Draft travel field set in the stop row and mirrored in the rail.
+    for (const label of TRAVEL_FIELD_SET) {
+      expect(within(stopRow).getByLabelText(new RegExp(`^${label}$`, "i"))).toBeInTheDocument();
+      expect(within(context).getByLabelText(new RegExp(`^${label}$`, "i"))).toBeInTheDocument();
+    }
+
+    const tableFrom = within(stopRow).getByRole("textbox", { name: /^from$/i });
+    const tableTo = within(stopRow).getByRole("textbox", { name: /^to$/i });
+    await user.clear(tableFrom);
+    await user.type(tableFrom, BAG_FROM);
+    fireEvent.blur(tableFrom);
+    await user.clear(tableTo);
+    await user.type(tableTo, BAG_TO);
+    fireEvent.blur(tableTo);
+
+    // Table → rail sync while still on travel.
+    expect(within(context).getByLabelText(/^from$/i)).toHaveValue(BAG_FROM);
+    expect(within(context).getByLabelText(/^to$/i)).toHaveValue(BAG_TO);
+
+    // Switch to food — type-shaped set swaps (travel keys leave; food keys appear).
+    await user.click(within(stopRow).getByRole("button", { name: /^travel$/i }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: /^food$/i }),
+    );
+
+    for (const label of FOOD_FIELD_SET) {
+      expect(within(stopRow).getByLabelText(new RegExp(`^${label}$`, "i"))).toBeInTheDocument();
+      expect(within(context).getByLabelText(new RegExp(`^${label}$`, "i"))).toBeInTheDocument();
+    }
+    expect(within(stopRow).queryByRole("textbox", { name: /^from$/i })).toBeNull();
+    expect(within(context).queryByLabelText(/^from$/i)).toBeNull();
+
+    const foodPlace = within(stopRow).getByRole("textbox", {
+      name: /^place$/i,
+    });
+    await user.clear(foodPlace);
+    await user.type(foodPlace, BAG_FOOD_PLACE);
+    fireEvent.blur(foodPlace);
+    expect(within(context).getByLabelText(/^place$/i)).toHaveValue(
+      BAG_FOOD_PLACE,
+    );
+
+    // Switch back to travel — bag restores prior travel values; rail stays aligned.
+    await user.click(within(stopRow).getByRole("button", { name: /^food$/i }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: /^travel$/i }),
+    );
+
+    expect(within(stopRow).getByRole("textbox", { name: /^from$/i })).toHaveValue(
+      BAG_FROM,
+    );
+    expect(within(stopRow).getByRole("textbox", { name: /^to$/i })).toHaveValue(
+      BAG_TO,
+    );
+    expect(within(context).getByLabelText(/^from$/i)).toHaveValue(BAG_FROM);
+    expect(within(context).getByLabelText(/^to$/i)).toHaveValue(BAG_TO);
+    expect(
+      within(stopRow).queryByRole("textbox", { name: /^place$/i }),
+    ).toBeNull();
+  });
+});

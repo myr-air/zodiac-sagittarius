@@ -1,12 +1,19 @@
 /**
  * Right context inspector — stop details when selected (T6).
  * Empty cue when nothing selected; type-shaped enrich cues + quiet Remove (T6 #3).
+ * T7 #1: type fields mirror the stop field bag (table + rail stay in sync).
  */
 
 "use client";
 
 import { useState } from "react";
 import { deleteItineraryItem } from "../../src/trip/itinerary-api";
+import {
+  BY_OPTIONS,
+  MEAL_OPTIONS,
+  fieldsToRail,
+  type StopFieldBag,
+} from "../../src/trip/itinerary-type-fields";
 
 const TYPE_LABEL: Record<string, string> = {
   travel: "Travel",
@@ -30,18 +37,6 @@ const CUE_BY_TYPE: Record<string, string> = {
   unset: "Choose a type when you care",
 };
 
-/** Draft fieldsToRail labels (empty values Phase 1 — cockpit has no typed field bag yet). */
-function fieldsToRail(type: string): string[] {
-  if (type === "travel") return ["From", "To", "By"];
-  if (type === "stay") return ["Place", "Check-in", "Check-out"];
-  if (type === "food") return ["Place", "Meal"];
-  if (type === "attraction") return ["Place", "Duration"];
-  if (type === "experience") return ["Title", "Meeting point"];
-  if (type === "shopping") return ["Place", "List"];
-  if (type === "note") return ["Note", "Place"];
-  return ["Title", "Place"];
-}
-
 const REMOVE_LABEL = "Remove";
 const DELETE_DIALOG_TITLE = "Delete activity";
 const DELETE_CONFIRM_ACTION = "Delete";
@@ -54,6 +49,8 @@ export type ItineraryContextSelectedItem = {
   activityType: string;
   status: string;
   dayLabel?: string;
+  /** Per-stop type field bag (T7 #1). */
+  fieldBag?: StopFieldBag;
 };
 
 type ItineraryContextRailProps = {
@@ -65,6 +62,8 @@ type ItineraryContextRailProps = {
   fetch?: typeof fetch;
   /** After successful DELETE — parent clears selection / reloads. */
   onRemoved?: (itemId: string) => void;
+  /** Rail edits update the shared bag (table stays aligned). */
+  onFieldBagChange?: (itemId: string, fieldBag: StopFieldBag) => void;
 };
 
 function typeLabel(activityType: string): string {
@@ -87,6 +86,7 @@ export function ItineraryContextRail({
   apiBaseUrl,
   fetch: fetchImpl,
   onRemoved,
+  onFieldBagChange,
 }: ItineraryContextRailProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -103,8 +103,14 @@ export function ItineraryContextRail({
         .filter(Boolean)
         .join(" · ");
 
-  const fieldLabels = empty ? [] : fieldsToRail(selectedItem.activityType);
+  const fieldDefs = empty ? [] : fieldsToRail(selectedItem.activityType);
+  const bag = selectedItem?.fieldBag ?? {};
   const cue = empty ? null : enrichCue(selectedItem.activityType);
+
+  function commitRailField(key: string, value: string) {
+    if (!selectedItem || !onFieldBagChange) return;
+    onFieldBagChange(selectedItem.id, { ...bag, [key]: value });
+  }
 
   function openConfirm() {
     setConfirmOpen(true);
@@ -178,30 +184,52 @@ export function ItineraryContextRail({
           <div className="panel ctx-fields">
             <h3>Type fields (rail)</h3>
             <div className="field-grid">
-              {fieldLabels.map((label) => (
-                <label key={label}>
-                  {label}
-                  {label === "By" ? (
-                    <select defaultValue="" aria-label={label}>
-                      <option value="">—</option>
-                      <option value="flight">flight</option>
-                      <option value="train">train</option>
-                      <option value="bus">bus</option>
-                      <option value="taxi">taxi</option>
-                      <option value="ferry">ferry</option>
-                      <option value="walk">walk</option>
-                      <option value="car">car</option>
-                      <option value="shuttle">shuttle</option>
-                    </select>
-                  ) : (
-                    <input
-                      defaultValue=""
-                      placeholder="optional"
-                      aria-label={label}
-                    />
-                  )}
-                </label>
-              ))}
+              {fieldDefs.map((field) => {
+                const value = bag[field.key] ?? "";
+                return (
+                  <label key={field.key}>
+                    {field.label}
+                    {field.kind === "by" ? (
+                      <select
+                        value={value}
+                        aria-label={field.label}
+                        onChange={(e) =>
+                          commitRailField(field.key, e.target.value)
+                        }
+                      >
+                        {BY_OPTIONS.map((opt) => (
+                          <option key={opt || "empty"} value={opt}>
+                            {opt || "—"}
+                          </option>
+                        ))}
+                      </select>
+                    ) : field.kind === "meal" ? (
+                      <select
+                        value={value}
+                        aria-label={field.label}
+                        onChange={(e) =>
+                          commitRailField(field.key, e.target.value)
+                        }
+                      >
+                        {MEAL_OPTIONS.map((opt) => (
+                          <option key={opt || "empty"} value={opt}>
+                            {opt || "—"}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        value={value}
+                        placeholder="optional"
+                        aria-label={field.label}
+                        onChange={(e) =>
+                          commitRailField(field.key, e.target.value)
+                        }
+                      />
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
         </>
