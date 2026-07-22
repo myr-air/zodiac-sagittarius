@@ -22,6 +22,8 @@ import {
 import {
   BY_OPTIONS,
   MEAL_OPTIONS,
+  STAY_ACTION_LABEL,
+  STAY_ACTION_OPTIONS,
   activitySummaryFromBag,
   seedFieldBag,
   typeFieldDefs,
@@ -557,7 +559,7 @@ function StopRow({
   );
   const [typeMenuOpen, setTypeMenuOpen] = useState(false);
   /** Draft choice-chip listbox: Travel By or Food Meal (T7 #2). */
-  const [choiceMenu, setChoiceMenu] = useState<"by" | "meal" | null>(null);
+  const [choiceMenu, setChoiceMenu] = useState<"by" | "meal" | "stayAction" | null>(null);
   const [subsOpen, setSubsOpen] = useState(false);
   /** Draft openStopDialog(note|link) / openTimeSetupDialog (T7 #3). */
   const [dialogMode, setDialogMode] = useState<StopDialogMode | null>(null);
@@ -627,9 +629,13 @@ function StopRow({
       if (value !== item.activity) onPatch({ activity: value });
       return;
     }
-    if (key === "note" && activityType === "travel") {
-      // Travel airline note stored in API place until details schema is wired.
-      if (value !== item.place) onPatch({ place: value });
+    if (
+      (key === "carrier" || key === "ref") &&
+      activityType === "travel"
+    ) {
+      // Travel carrier/ref stored in API place until details schema is wired.
+      const combined = [next.carrier, next.ref].filter(Boolean).join(" · ");
+      if (combined !== item.place) onPatch({ place: combined });
       return;
     }
     if ((key === "from" || key === "to") && activityType === "travel") {
@@ -725,11 +731,18 @@ function StopRow({
     );
   }
 
-  function renderChoiceChip(kind: "by" | "meal") {
-    const value = fieldBag[kind] ?? "";
+  function renderChoiceChip(kind: "by" | "meal" | "stayAction") {
+    const bagKey = kind === "stayAction" ? "action" : kind;
+    const value = fieldBag[bagKey] ?? "";
     const empty = !value;
-    const emptyLabel = kind === "by" ? "By" : "Meal";
-    const options = kind === "by" ? BY_OPTIONS : MEAL_OPTIONS;
+    const emptyLabel =
+      kind === "by" ? "By" : kind === "meal" ? "Meal" : "Action";
+    const options =
+      kind === "by"
+        ? BY_OPTIONS
+        : kind === "meal"
+          ? MEAL_OPTIONS
+          : STAY_ACTION_OPTIONS;
     const open = choiceMenu === kind;
     const className = [
       "choice-chip",
@@ -741,7 +754,15 @@ function StopRow({
     const triggerProps =
       kind === "by"
         ? ({ "data-by-trigger": "" } as const)
-        : ({ "data-meal-trigger": "" } as const);
+        : kind === "meal"
+          ? ({ "data-meal-trigger": "" } as const)
+          : ({ "data-stay-action-trigger": "" } as const);
+    const display =
+      empty
+        ? emptyLabel
+        : kind === "stayAction"
+          ? STAY_ACTION_LABEL[value] || value
+          : value;
 
     return (
       <>
@@ -759,16 +780,20 @@ function StopRow({
             setChoiceMenu((cur) => (cur === kind ? null : kind));
           }}
         >
-          <span className="choice-chip-label">
-            {empty ? emptyLabel : value}
-          </span>
+          <span className="choice-chip-label">{display}</span>
           {CHOICE_CHIP_CHEVRON}
         </button>
         {open ? (
           <ul
             className="choice-menu"
             role="listbox"
-            aria-label={kind === "by" ? "Travel by" : "Meal"}
+            aria-label={
+              kind === "by"
+                ? "Travel by"
+                : kind === "meal"
+                  ? "Meal"
+                  : "Stay action"
+            }
           >
             {options.map((opt) => (
               <li key={opt || "empty"} role="none">
@@ -779,11 +804,15 @@ function StopRow({
                   onClick={(e) => {
                     e.stopPropagation();
                     setChoiceMenu(null);
-                    updateBagKey(kind, opt);
-                    commitBagKey(kind, opt);
+                    updateBagKey(bagKey, opt);
+                    commitBagKey(bagKey, opt);
                   }}
                 >
-                  {opt || "Not set"}
+                  {opt
+                    ? kind === "stayAction"
+                      ? STAY_ACTION_LABEL[opt] || opt
+                      : opt
+                    : "Not set"}
                 </button>
               </li>
             ))}
@@ -1008,6 +1037,13 @@ function StopRow({
                         .filter((f) => f.key !== "meal")
                         .map((f) => renderFieldInput(f))}
                       {renderChoiceChip("meal")}
+                    </div>
+                  ) : activityType === "stay" ? (
+                    <div className="title-with-meta">
+                      {primaryFields
+                        .filter((f) => f.key !== "action")
+                        .map((f) => renderFieldInput(f))}
+                      {renderChoiceChip("stayAction")}
                     </div>
                   ) : (
                     primaryFields.map((f) => renderFieldInput(f))

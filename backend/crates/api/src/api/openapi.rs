@@ -7,7 +7,7 @@ use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder
 use utoipa::{Modify, OpenApi};
 
 use crate::api::{
-    account, bookings, daily_briefings, error, exchange_rates, expenses,
+    account, bookings, daily_briefings, day_plan_assist, error, exchange_rates, expenses,
     extractors::ACCOUNT_SESSION_COOKIE_NAME, health, itinerary, itinerary_imports, join, members,
     photo_albums, place_resolution, plan_checks, plan_variants, public_trips, stop_notes,
     suggestions, tasks, trips,
@@ -66,6 +66,9 @@ use crate::app::AppState;
         itinerary::patch_itinerary_item,
         itinerary::delete_itinerary_item,
         itinerary_imports::import_itinerary,
+        day_plan_assist::day_plan_assist,
+        day_plan_assist::accept_option,
+        day_plan_assist::reject_option,
         plan_checks::run_plan_check,
         plan_checks::latest_plan_check,
         plan_checks::patch_plan_suggestion,

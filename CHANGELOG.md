@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.23.0] — 2026-07-22
+
+### Added
+- Day workspace at `/trips/{id}/days`: Theme A Calm Travel Ops canvas with Table ↔ Days cross-links
+- Day folder tabs + `+ day`, collapsible type-correct timeline, inline Details, time-edit dialog
+- MapLibre day map (OpenFreeMap Positron) with auto-pins and ordered polyline when ≥2 pins
+- OpenRouter day-plan-assist Suggest / Auto-route & fill (≤3 options with Why); Accept applies itinerary mutations and auto-rejects siblings
+- Inline AI suggestion chips under related stops with Why / Accept·Reject dialog; topbar + map Auto route pin gate
+
+### Notes
+- Mission M80VKAX5; stub provider `SAGITTARIUS_DAY_PLAN_ASSIST_PROVIDER=stub` for contract tests; full indirect context packing and Theme A polish I1–I7 deferred
+
+
 ## [0.22.0] — 2026-07-22
 
 ### Added

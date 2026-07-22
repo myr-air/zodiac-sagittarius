@@ -334,6 +334,16 @@ const TRIP_PLAN_ITINERARY_ROUTES: &[(&str, &str)] = &[
     ("delete", "/trips/{trip_id}/itinerary-items/{item_id}"),
     // itinerary_imports::routes()
     ("post", "/trips/{trip_id}/itinerary-imports"),
+    // day_plan_assist::routes()
+    ("post", "/trips/{trip_id}/day-plan-assist"),
+    (
+        "post",
+        "/trips/{trip_id}/day-plan-assist/batches/{batch_id}/options/{option_id}/accept",
+    ),
+    (
+        "post",
+        "/trips/{trip_id}/day-plan-assist/batches/{batch_id}/options/{option_id}/reject",
+    ),
     // plan_checks::routes()
     ("post", "/trips/{trip_id}/plan-checks"),
     ("get", "/trips/{trip_id}/plan-checks/latest"),

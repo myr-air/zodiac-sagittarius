@@ -41,6 +41,12 @@ export type TripCockpitPlan = {
   version: number;
 };
 
+/** Itinerary coordinates from TripCockpit.itineraryItems (API { lat, lng }). */
+export type TripCockpitCoordinates = {
+  lat: number;
+  lng: number;
+};
+
 /** ItineraryItemSummary subset from TripCockpit.itineraryItems. */
 export type TripCockpitItineraryItem = {
   id: string;
@@ -57,6 +63,10 @@ export type TripCockpitItineraryItem = {
   endTime?: string | null;
   status: string;
   version: number;
+  /** Map / place URL when present on the cockpit item. */
+  mapLink?: string;
+  /** Geo pin when both lat/lng are present; null when unset. */
+  coordinates?: TripCockpitCoordinates | null;
 };
 
 export type LoadTripCockpitSuccess = {
@@ -142,6 +152,15 @@ function parsePlan(raw: unknown): TripCockpitPlan | null {
   };
 }
 
+function parseCoordinates(raw: unknown): TripCockpitCoordinates | null {
+  if (raw == null) return null;
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw as Record<string, unknown>;
+  if (typeof c.lat !== "number" || typeof c.lng !== "number") return null;
+  if (!Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return null;
+  return { lat: c.lat, lng: c.lng };
+}
+
 function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as Record<string, unknown>;
@@ -158,6 +177,10 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
   if (typeof item.version !== "number") return null;
   const parentItemId = optionalNullableString(item.parentItemId);
   if (parentItemId === undefined) return null;
+  const mapLink =
+    typeof item.mapLink === "string" ? item.mapLink : undefined;
+  const coordinates =
+    "coordinates" in item ? parseCoordinates(item.coordinates) : undefined;
   return {
     id: item.id,
     tripId: item.tripId,
@@ -171,6 +194,8 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
     endTime: typeof item.endTime === "string" ? item.endTime : null,
     status: item.status,
     version: item.version,
+    ...(mapLink !== undefined ? { mapLink } : {}),
+    ...(coordinates !== undefined ? { coordinates } : {}),
   };
 }
 

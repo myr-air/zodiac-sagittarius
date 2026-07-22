@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M80VKAX5 | 2026-07-22 | Day workspace needed distinct route + MapLibre + multi-plan AI without table parity | Dedicated `/trips/{id}/days`; MapLibre Positron; day-plan-assist Suggest/Accept with stub+OpenRouter; inline chips+dialog | FE trip 69; day_plan_assist 8; openapi; validate --strict |
 | M80P3JXX | 2026-07-22 | Pre-existing frontend typecheck/build failures blocked verify | Scoped fixes (passkey-register, CreateTripForm mocks, portal-nav regex, Vitest projects + @ alias) | typecheck/build; vitest 201/201 |
 | M80P3JXX | 2026-07-22 | Main Plan filter treated mainTripPlanId as planVariantId | Prefer activePlanVariantId ?? mainTripPlanId | diverge Vitest shell + table model |
 | M80P3JXX | 2026-07-22 | Reorder/Share CSS missing vs draft (grips broke duration rail) | Port draft stop-drag 3-col grid, hide day-drag, command btn-primary | designer PASS; trip Vitest |
@@ -28,6 +29,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M80VKAX5 | 2026-07-22 | plan.json evidence must be bare labels; OpenAPI coverage list must include every new Axum route | Prevents false ready/strict failures after API adds |
 | M80P3JXX | 2026-07-22 | When splitting Vitest into projects, duplicate resolve.alias (and DOM setup) into each project — root aliases may not inherit | Prevents silent `@/` resolution breaks after environment config migrations |
 | M80P3JXX | 2026-07-22 | Landmark fixture screenshots are not layout proof — prefer live product or draft-faithful stop-block markup for visual ship gates | Avoids shipping unstyled composition under green landmark smoke |
 | M7ZNU364 | 2026-07-22 | Guard the route entry page even when component suites are green | Prevents placeholder regress shipping under green Vitest |

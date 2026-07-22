@@ -11,6 +11,8 @@ import { deleteItineraryItem } from "../../src/trip/itinerary-api";
 import {
   BY_OPTIONS,
   MEAL_OPTIONS,
+  STAY_ACTION_LABEL,
+  STAY_ACTION_OPTIONS,
   fieldsToRail,
   type StopFieldBag,
 } from "../../src/trip/itinerary-type-fields";
@@ -28,11 +30,11 @@ const TYPE_LABEL: Record<string, string> = {
 /** Draft CUE_BY_TYPE — soft enrich hints by activity type. */
 const CUE_BY_TYPE: Record<string, string> = {
   travel: "Travel usually wants From · To · By — fill when ready",
-  stay: "Stay usually wants place · check-in / check-out",
-  food: "Food usually wants place · meal slot",
-  attraction: "Attraction usually wants place · duration",
-  experience: "Experience usually wants title · meeting point",
-  shopping: "Shopping usually wants place · list",
+  stay: "Stay = one hotel action per stop (check-in · drop item · rest · check-out)",
+  food: "Food usually wants place · meal — reservation optional",
+  attraction: "Attraction usually wants place · ticket — tip note optional",
+  experience: "Experience = do an activity (tour/class) — name · meet-at · booking",
+  shopping: "Shopping usually wants place · to-get list",
   note: "Note usually wants a short reminder · optional place",
   unset: "Choose a type when you care",
 };
@@ -214,6 +216,20 @@ export function ItineraryContextRail({
                         {MEAL_OPTIONS.map((opt) => (
                           <option key={opt || "empty"} value={opt}>
                             {opt || "—"}
+                          </option>
+                        ))}
+                      </select>
+                    ) : field.kind === "stayAction" ? (
+                      <select
+                        value={value}
+                        aria-label={field.label}
+                        onChange={(e) =>
+                          commitRailField(field.key, e.target.value)
+                        }
+                      >
+                        {STAY_ACTION_OPTIONS.map((opt) => (
+                          <option key={opt || "empty"} value={opt}>
+                            {opt ? STAY_ACTION_LABEL[opt] || opt : "—"}
                           </option>
                         ))}
                       </select>

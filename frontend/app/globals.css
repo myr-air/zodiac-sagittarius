@@ -4077,6 +4077,96 @@ tr.add-draft-row td {
   color: var(--color-on-primary);
 }
 
+/* Day timeline spine — Theme A draft .dotline / .type-node (M80VKAX5) */
+.day-timeline .dotline {
+  --card-mid: 30px;
+  width: 1rem;
+  justify-self: center;
+  align-self: stretch;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.day-timeline .dotline .spine {
+  width: 2px;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--color-border);
+}
+
+.day-timeline .dotline .spine.top {
+  flex: 0 0 auto;
+  height: max(0px, calc(var(--card-mid) - 9px));
+}
+
+.day-timeline .dotline .spine.bot {
+  flex: 1 1 auto;
+  min-height: 12px;
+}
+
+/* Bridge list-item gap so the spine reads continuous across rows */
+.day-timeline .timeline > li:not(:first-child) .dotline .spine.top {
+  margin-top: -10px;
+}
+
+.day-timeline .timeline > li:not(:last-child) .dotline .spine.bot {
+  margin-bottom: -10px;
+}
+
+.day-timeline .dotline .type-node {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
+  margin: 4px 0;
+  border-radius: 999px;
+  background: currentColor;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+  color: var(--color-primary);
+  display: block;
+}
+
+.day-timeline .dotline .type-node.travel {
+  color: var(--color-route);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.day-timeline .dotline .type-node.food {
+  color: #b45309;
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.12);
+}
+
+.day-timeline .dotline .type-node.shopping {
+  color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.day-timeline .dotline .type-node.attraction {
+  color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.day-timeline .dotline .type-node.experience {
+  color: #475569;
+  box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.12);
+}
+
+.day-timeline .dotline .type-node.stay {
+  color: #0e7490;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.12);
+}
+
+.day-timeline .dotline .type-node.note,
+.day-timeline .dotline .type-node.unset {
+  color: var(--color-text-muted);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
+}
+
 @media (prefers-reduced-motion: reduce) {
   tr.day-row td,
   tr.stop-row td,

@@ -164,6 +164,24 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
             ) : null}
           </div>
           <div className="header-actions flex items-center gap-2">
+            <nav
+              className="view-switch inline-flex overflow-hidden rounded-lg border border-(--color-primary-border) bg-(--color-primary-soft)"
+              aria-label="Itinerary view"
+            >
+              <a
+                href={`/trips/${tripId}`}
+                aria-current="page"
+                className="bg-(--color-surface) px-3.5 py-2 text-[13px] font-medium text-(--color-primary-strong) no-underline"
+              >
+                Table
+              </a>
+              <a
+                href={`/trips/${tripId}/days`}
+                className="px-3.5 py-2 text-[13px] font-medium text-(--color-on-primary) no-underline opacity-90"
+              >
+                Days
+              </a>
+            </nav>
             <label className="dnd-toggle" htmlFor="dnd-toggle" title="Show drag handles to reorder days and activities">
               <input
                 type="checkbox"
