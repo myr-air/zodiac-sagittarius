@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.21.0] — 2026-07-22
+
+### Added
+- Trip workspace on `/trips/{id}`: Calm Travel Ops shell, TripCockpit load, Main Plan switcher
+- Smart Itinerary Table (day spine, time-rail | body stops, Quick add, inline edit, selection rail)
+- Draft CSS port for cockpit chrome; focused Vitest for trip modules
+
+### Notes
+- Mission M7ZNU364; Phase 2 polish + verify typecheck fixes tracked in M80P3JXX (#175, #176)
+
+
+
 ## [0.20.0] — 2026-07-21
 
 ### Added
