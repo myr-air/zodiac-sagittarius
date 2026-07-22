@@ -1,17 +1,22 @@
 /**
  * Draft enrichByType / fieldsToRail / renderTypeFields keys
- * (itinerary-plan-draft-v1.html). Shared by table + context rail.
+ * (itinerary-plan-draft-v1.html / day-workspace-theme-a-draft-v9).
+ * Shared by table + context rail.
  *
  * Soft assumption (M80P3JXX T7 #1): per-stop field bag is calm local state
  * keyed by draft labels (from/to/by/place/meal/…). API `details` examples use
  * origin/destination/mode — ambiguous vs draft keys — so A1 keeps the bag
  * local and maps only clear top-level fields (place → place, travel route →
  * activity) on blur when patching.
+ *
+ * Day-editor field matrix (M80VKAX5): primary ≤3 scan fields; By/Action
+ * support for booking detail; no Duration in type setup; travel title is
+ * derived From → To (not a visible field).
  */
 
 export type StopFieldBag = Record<string, string>;
 
-export type TypeFieldKind = "text" | "by" | "meal";
+export type TypeFieldKind = "text" | "by" | "meal" | "stayAction";
 
 export type TypeFieldDef = {
   key: string;
@@ -37,7 +42,23 @@ const BY_OPTIONS = [
 
 const MEAL_OPTIONS = ["", "Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
-export { BY_OPTIONS, MEAL_OPTIONS };
+/** One hotel-visit action per Stay stop (not check-in + check-out together). */
+const STAY_ACTION_OPTIONS = [
+  "",
+  "checkin",
+  "drop",
+  "rest",
+  "checkout",
+] as const;
+
+const STAY_ACTION_LABEL: Record<string, string> = {
+  checkin: "Check-in",
+  drop: "Drop item",
+  rest: "Rest",
+  checkout: "Check-out",
+};
+
+export { BY_OPTIONS, MEAL_OPTIONS, STAY_ACTION_OPTIONS, STAY_ACTION_LABEL };
 
 /** Draft fieldsToRail / enrichByType field sets. */
 export function typeFieldDefs(activityType: string): TypeFieldDef[] {
@@ -48,19 +69,17 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
         { key: "to", label: "To", kind: "text", line: "primary" },
         { key: "by", label: "By", kind: "by", line: "primary" },
         {
-          // Activity summary control — keeps activity PATCH / conflict tests
-          // working while route From/To/By stay the draft primary set.
-          key: "title",
-          label: "Title",
+          key: "carrier",
+          label: "Carrier",
           kind: "text",
-          placeholder: "Title",
+          placeholder: "Airline / operator / app",
           line: "secondary",
         },
         {
-          key: "note",
-          label: "Airline · # (optional)",
+          key: "ref",
+          label: "Ref",
           kind: "text",
-          placeholder: "Airline · # (optional)",
+          placeholder: "Flight # · booking ref",
           line: "secondary",
         },
       ];
@@ -73,11 +92,17 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
           placeholder: "Hotel / place",
           line: "primary",
         },
-        { key: "checkin", label: "Check-in", kind: "text", line: "secondary" },
         {
-          key: "checkout",
-          label: "Check-out",
+          key: "action",
+          label: "Action",
+          kind: "stayAction",
+          line: "primary",
+        },
+        {
+          key: "note",
+          label: "Detail",
           kind: "text",
+          placeholder: "Room · bag drop · note (optional)",
           line: "secondary",
         },
       ];
@@ -91,6 +116,13 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
           line: "primary",
         },
         { key: "meal", label: "Meal", kind: "meal", line: "primary" },
+        {
+          key: "reservation",
+          label: "Reservation",
+          kind: "text",
+          placeholder: "Name · booking # (optional)",
+          line: "secondary",
+        },
       ];
     case "attraction":
       return [
@@ -98,14 +130,21 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
           key: "place",
           label: "Place",
           kind: "text",
-          placeholder: "Attraction / place",
+          placeholder: "Attraction name",
           line: "primary",
         },
         {
-          key: "duration",
-          label: "Duration",
+          key: "ticket",
+          label: "Ticket",
           kind: "text",
-          placeholder: "Duration (e.g. ~90 min)",
+          placeholder: "Ticket · booking # (optional)",
+          line: "secondary",
+        },
+        {
+          key: "note",
+          label: "Note",
+          kind: "text",
+          placeholder: "Entry tip (optional)",
           line: "secondary",
         },
       ];
@@ -113,16 +152,23 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
       return [
         {
           key: "title",
-          label: "Title",
+          label: "Activity",
           kind: "text",
-          placeholder: "Experience title",
+          placeholder: "e.g. Cooking class · night safari",
           line: "primary",
         },
         {
           key: "meeting",
-          label: "Meeting point",
+          label: "Meet at",
           kind: "text",
-          placeholder: "Meeting point",
+          placeholder: "Where the group meets (lobby, gate…)",
+          line: "secondary",
+        },
+        {
+          key: "ticket",
+          label: "Booking",
+          kind: "text",
+          placeholder: "Provider · booking # (optional)",
           line: "secondary",
         },
       ];
@@ -137,7 +183,7 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
         },
         {
           key: "list",
-          label: "List",
+          label: "To get",
           kind: "text",
           placeholder: "What to get",
           line: "secondary",
@@ -177,8 +223,11 @@ export function typeFieldDefs(activityType: string): TypeFieldDef[] {
 /** Rail-only labels (draft fieldsToRail) — same keys as typeFieldDefs. */
 export function fieldsToRail(activityType: string): TypeFieldDef[] {
   return typeFieldDefs(activityType).filter((f) => {
-    // Travel rail is From/To/By only (title/note are table-side).
-    if (activityType === "travel" && (f.key === "note" || f.key === "title")) {
+    // Travel rail is From/To/By only (carrier/ref are table-side / By-support).
+    if (
+      activityType === "travel" &&
+      (f.key === "carrier" || f.key === "ref" || f.key === "note" || f.key === "title")
+    ) {
       return false;
     }
     return true;
@@ -202,7 +251,7 @@ export function parseTravelRoute(activity: string): {
 
 /**
  * Seed bag from cockpit summary fields.
- * Travel: activity "A → B" → from/to; place seeds airline note.
+ * Travel: activity "A → B" → from/to; place seeds carrier until details exist.
  */
 export function seedFieldBag(item: {
   activity: string;
@@ -218,15 +267,19 @@ export function seedFieldBag(item: {
     note: "",
     by: "",
     meal: "",
+    action: "",
     checkin: "",
     checkout: "",
-    duration: "",
+    ticket: "",
     meeting: "",
     list: "",
+    carrier: "",
+    ref: "",
+    reservation: "",
   };
   if (item.activityType === "travel") {
-    // Until details exists, airline note lives in API `place`.
-    bag.note = item.place;
+    // Until details exists, carrier/booking lives in API `place`.
+    bag.carrier = item.place;
   }
   return bag;
 }
@@ -238,7 +291,7 @@ export function activitySummaryFromBag(
 ): string {
   if (activityType === "travel") {
     const route = [bag.from, bag.to].filter(Boolean).join(" → ");
-    return route || bag.note || bag.title || "Travel";
+    return route || bag.title || "Travel";
   }
   if (activityType === "note") {
     return bag.note || bag.title || "Note";

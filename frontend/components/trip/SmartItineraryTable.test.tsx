@@ -898,7 +898,7 @@ function itineraryPatchCalls(fetchMock: ReturnType<typeof vi.fn>): FetchCall[] {
 }
 
 describe("SmartItineraryTable inline edit PATCH", () => {
-  it("Inline blur/commit on startTime, endTime, activity/title, activityType, place (place-shaped type), or status PATCHes /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId + expectedVersion + patch", async () => {
+  it("Inline blur/commit on startTime, endTime, activity (via From/To), activityType, place (place-shaped type), or status PATCHes /api/v1/trips/{tripId}/itinerary-items/{itemId} with clientMutationId + expectedVersion + patch", async () => {
     const user = userEvent.setup();
     const editableStop: StopItem = {
       ...TRAVEL_STOP,
@@ -973,12 +973,13 @@ describe("SmartItineraryTable inline edit PATCH", () => {
       fireEvent.blur(el);
     }, { endTime: PATCH_END_TIME });
 
-    // --- activity / title blur (travel keeps a secondary Title for activity PATCH) ---
-    await expectBlurPatch(async () => {
-      const el = within(row).getByRole("textbox", { name: /title|activity/i });
-      await user.clear(el);
-      await user.type(el, PATCH_ACTIVITY);
-      await user.tab();
+    // --- activity via From/To blur (travel summary is derived From → To) ---
+    await expectBlurPatch(() => {
+      const from = within(row).getByRole("textbox", { name: /^from$/i });
+      const to = within(row).getByRole("textbox", { name: /^to$/i });
+      fireEvent.change(from, { target: { value: "BKK" } });
+      fireEvent.change(to, { target: { value: "HND" } });
+      fireEvent.blur(to);
     }, { activity: PATCH_ACTIVITY });
 
     // --- activityType commit (type picker) — travel has no Place; switch to food ---
@@ -1069,10 +1070,10 @@ describe("SmartItineraryTable version_conflict reload", () => {
     ) as HTMLElement;
     expect(row).toBeTruthy();
 
-    // Stale edit → API version_conflict.
-    const title = within(row).getByRole("textbox", { name: /title|activity/i });
-    await user.clear(title);
-    await user.type(title, CONFLICT_EDIT);
+    // Stale edit → API version_conflict (travel activity via To blur).
+    const toField = () => within(row).getByRole("textbox", { name: /^to$/i });
+    await user.clear(toField());
+    await user.type(toField(), CONFLICT_EDIT);
     await user.tab();
 
     await waitFor(() => {
@@ -1090,8 +1091,8 @@ describe("SmartItineraryTable version_conflict reload", () => {
     // Next edit attempt before authoritative reload must not silently overwrite
     // with the same stale expectedVersion.
     fetchMock.mockClear();
-    await user.clear(title);
-    await user.type(title, CONFLICT_RETRY_EDIT);
+    await user.clear(toField());
+    await user.type(toField(), CONFLICT_RETRY_EDIT);
     await user.tab();
 
     // Same async window as the conflict PATCH above — a stale retry would appear.

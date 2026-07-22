@@ -768,3 +768,36 @@ describe("TripPage route mount", () => {
     expect(src).not.toMatch(PLACEHOLDER_COPY);
   });
 });
+
+/**
+ * M80VKAX5 T1 #2 — Table itinerary surface ↔ Days cross-links.
+ * Draft view-switch: Table (this route) | Days → /trips/{id}/days.
+ * Joii public brand only — no Sagittarius chrome.
+ */
+const DAYS_HREF = `/trips/${TRIP_ID}/days`;
+const TABLE_HREF = `/trips/${TRIP_ID}`;
+
+describe("TripWorkspaceShell Table ↔ Days cross-links", () => {
+  it("Table itinerary surface links to /trips/{tripId}/days; Table stays on trip route; Joii brand only (no Sagittarius chrome)", () => {
+    render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+    // Draft: <nav class="view-switch" aria-label="Itinerary view">
+    const viewSwitch = screen.getByRole("navigation", {
+      name: /Itinerary view/i,
+    });
+    const tableLink = within(viewSwitch).getByRole("link", {
+      name: /^Table$/i,
+    });
+    const daysLink = within(viewSwitch).getByRole("link", {
+      name: /^Days$/i,
+    });
+
+    expect(daysLink).toHaveAttribute("href", DAYS_HREF);
+    expect(tableLink).toHaveAttribute("href", TABLE_HREF);
+    expect(tableLink).toHaveAttribute("aria-current", "page");
+
+    const chrome = document.body.textContent ?? "";
+    expect(chrome).not.toMatch(/Sagittarius/i);
+  });
+});
+
