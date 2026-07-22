@@ -1,4 +1,3 @@
-use serde::Deserialize;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 use std::process::Stdio;
@@ -120,47 +119,39 @@ async fn convert_with_openrouter(
     request: &ImportItineraryRequest,
     trip_context: &ItineraryImportTrip,
 ) -> Result<ItineraryImportDocument, ServiceError> {
-    let api_key = std::env::var("OPENROUTER_API_KEY")
-        .map_err(|_| ServiceError::InvalidRequest("OPENROUTER_API_KEY is required"))?;
-    let model = std::env::var("OPENROUTER_MODEL").unwrap_or_else(|_| "openai/gpt-5.2".to_string());
+    let completed = crate::openrouter::chat_completion_json(crate::openrouter::ChatCompletionRequest {
+        messages: vec![
+            crate::openrouter::ChatMessage {
+                role: "system",
+                content: "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default.".to_string(),
+            },
+            crate::openrouter::ChatMessage {
+                role: "user",
+                content: itinerary_conversion_prompt(request, trip_context),
+            },
+        ],
+        temperature: 0.2,
+        json_object: false,
+        response_format: Some(json!({
+            "type": "json_schema",
+            "json_schema": {
+                "name": "joii_itinerary_import",
+                "strict": true,
+                "schema": itinerary_json_schema()
+            }
+        })),
+        user_agent: None,
+    })
+    .await
+    .map_err(|err| match err {
+        ServiceError::InvalidRequest(msg) if msg.contains("openrouter") => {
+            ServiceError::InvalidRequest("openrouter import request failed")
+        }
+        other => other,
+    })?;
 
-    let client = reqwest::Client::new();
-    let mut builder = client
-        .post("https://openrouter.ai/api/v1/chat/completions")
-        .bearer_auth(api_key)
-        .json(&openrouter_request(&model, request, trip_context));
-
-    if let Ok(site_url) = std::env::var("OPENROUTER_SITE_URL") {
-        builder = builder.header("HTTP-Referer", site_url);
-    }
-    if let Ok(site_name) = std::env::var("OPENROUTER_SITE_NAME") {
-        builder = builder.header("X-Title", site_name);
-    }
-
-    let response = builder
-        .send()
-        .await
-        .map_err(|_| ServiceError::InvalidRequest("openrouter import request failed"))?;
-    if !response.status().is_success() {
-        return Err(ServiceError::InvalidRequest(
-            "openrouter import request failed",
-        ));
-    }
-
-    let response: OpenRouterResponse = response
-        .json()
-        .await
-        .map_err(|_| ServiceError::InvalidRequest("openrouter response was invalid"))?;
-    let content = response
-        .choices
-        .first()
-        .map(|choice| choice.message.content.trim())
-        .filter(|content| !content.is_empty())
-        .ok_or(ServiceError::InvalidRequest(
-            "openrouter response was empty",
-        ))?;
     parse_ai_import_document(
-        content,
+        &completed.content,
         trip_context,
         "openrouter response was not itinerary JSON",
     )
@@ -257,34 +248,6 @@ fn extract_json_object(content: &str) -> Option<&str> {
         return None;
     }
     Some(&trimmed[start..=end])
-}
-
-fn openrouter_request(
-    model: &str,
-    request: &ImportItineraryRequest,
-    trip_context: &ItineraryImportTrip,
-) -> Value {
-    json!({
-        "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": "Convert travel itinerary text into strict Joii itinerary JSON. Return JSON only. Do not invent dates outside the trip window. Use activityType only from travel, food, shopping, attraction, experience, stay, default."
-            },
-            {
-                "role": "user",
-                "content": itinerary_conversion_prompt(request, trip_context)
-            }
-        ],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "joii_itinerary_import",
-                "strict": true,
-                "schema": itinerary_json_schema()
-            }
-        }
-    })
 }
 
 fn itinerary_conversion_prompt(
@@ -741,21 +704,6 @@ fn validate_priority(value: &str) -> Result<(), ServiceError> {
     Err(ServiceError::InvalidRequest(
         "unsupported import item priority",
     ))
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterResponse {
-    choices: Vec<OpenRouterChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterChoice {
-    message: OpenRouterMessage,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterMessage {
-    content: String,
 }
 
 #[cfg(test)]

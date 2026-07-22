@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{Value, json};
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -23,7 +23,6 @@ use sagittarius_domain::types::{
 };
 use sagittarius_realtime::RealtimeHub;
 
-const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 const STUB_PROVIDER: &str = "stub";
 const PROVIDER_ENV: &str = "SAGITTARIUS_DAY_PLAN_ASSIST_PROVIDER";
 
@@ -557,66 +556,31 @@ async fn openrouter_options(
     request: &DayPlanAssistRequest,
     packed: &Value,
 ) -> Result<Vec<DayPlanAssistOption>, ServiceError> {
-    let api_key = std::env::var("OPENROUTER_API_KEY")
-        .or_else(|_| std::env::var("SAGITTARIUS_OPENROUTER_API_KEY"))
-        .map_err(|_| ServiceError::InvalidRequest("OPENROUTER_API_KEY is required"))?;
-    let model = std::env::var("OPENROUTER_MODEL")
-        .or_else(|_| std::env::var("SAGITTARIUS_AI_MODEL"))
-        .unwrap_or_else(|_| "openai/gpt-5.2".to_string());
-
-    let client = reqwest::Client::new();
-    let mut builder = client
-        .post(OPENROUTER_CHAT_COMPLETIONS_URL)
-        .bearer_auth(api_key)
-        .json(&OpenRouterRequest {
-            model: &model,
-            temperature: 0.2,
-            response_format: OpenRouterResponseFormat {
-                response_type: "json_object",
+    let completed = crate::openrouter::chat_completion_json(crate::openrouter::ChatCompletionRequest {
+        messages: vec![
+            crate::openrouter::ChatMessage {
+                role: "system",
+                content: openrouter_system_prompt(request.mode),
             },
-            messages: vec![
-                OpenRouterMessage {
-                    role: "system",
-                    content: openrouter_system_prompt(request.mode),
-                },
-                OpenRouterMessage {
-                    role: "user",
-                    content: packed.to_string(),
-                },
-            ],
-        });
+            crate::openrouter::ChatMessage {
+                role: "user",
+                content: packed.to_string(),
+            },
+        ],
+        temperature: 0.2,
+        json_object: true,
+        response_format: None,
+        user_agent: None,
+    })
+    .await
+    .map_err(|err| match err {
+        ServiceError::InvalidRequest(msg) if msg.contains("openrouter") => {
+            ServiceError::InvalidRequest("openrouter day plan assist request failed")
+        }
+        other => other,
+    })?;
 
-    if let Ok(site_url) = std::env::var("OPENROUTER_SITE_URL") {
-        builder = builder.header("HTTP-Referer", site_url);
-    }
-    if let Ok(site_name) = std::env::var("OPENROUTER_SITE_NAME") {
-        builder = builder.header("X-Title", site_name);
-    }
-
-    let response = builder
-        .send()
-        .await
-        .map_err(|_| ServiceError::InvalidRequest("openrouter day plan assist request failed"))?;
-    if !response.status().is_success() {
-        return Err(ServiceError::InvalidRequest(
-            "openrouter day plan assist request failed",
-        ));
-    }
-
-    let response: OpenRouterResponse = response
-        .json()
-        .await
-        .map_err(|_| ServiceError::InvalidRequest("openrouter response was invalid"))?;
-    let content = response
-        .choices
-        .first()
-        .map(|choice| choice.message.content.trim())
-        .filter(|content| !content.is_empty())
-        .ok_or(ServiceError::InvalidRequest(
-            "openrouter response was empty",
-        ))?;
-
-    parse_openrouter_options(content, request)
+    parse_openrouter_options(&completed.content, request)
 }
 
 fn openrouter_system_prompt(mode: DayPlanAssistMode) -> String {
@@ -681,41 +645,6 @@ fn normalize_options(options: Vec<DayPlanAssistOption>) -> Result<Vec<DayPlanAss
         ));
     }
     Ok(options)
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterRequest<'a> {
-    model: &'a str,
-    messages: Vec<OpenRouterMessage<'a>>,
-    temperature: f64,
-    response_format: OpenRouterResponseFormat,
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterMessage<'a> {
-    role: &'a str,
-    content: String,
-}
-
-#[derive(Debug, Serialize)]
-struct OpenRouterResponseFormat {
-    #[serde(rename = "type")]
-    response_type: &'static str,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterResponse {
-    choices: Vec<OpenRouterChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterChoice {
-    message: OpenRouterResponseMessage,
-}
-
-#[derive(Debug, Deserialize)]
-struct OpenRouterResponseMessage {
-    content: String,
 }
 
 #[derive(Debug, Deserialize)]

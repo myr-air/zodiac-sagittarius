@@ -17,6 +17,7 @@ pub mod itinerary_imports;
 pub mod kernel;
 pub mod members;
 pub mod mutation_guard;
+pub mod openrouter;
 pub mod photo_albums;
 pub mod place_resolution;
 pub mod plan_checks;
