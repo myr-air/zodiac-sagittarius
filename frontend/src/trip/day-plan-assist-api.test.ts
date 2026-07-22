@@ -130,7 +130,7 @@ function baseAssistInput(mode: "suggest" | "autoRoute") {
 
 describe("day-plan-assist-api Suggest / Auto-route & fill", () => {
   it("requestDayPlanAssist POSTs suggest mode to /api/v1/trips/{tripId}/day-plan-assist and parses ≤3 options each with Why", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse(assistOptionsBody("suggest", 3)),
     );
 
@@ -172,7 +172,7 @@ describe("day-plan-assist-api Suggest / Auto-route & fill", () => {
   });
 
   it("requestDayPlanAssist POSTs autoRoute mode (Auto-route & fill) and parses ≤3 options each with Why", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse(assistOptionsBody("autoRoute", 2)),
     );
 
@@ -201,7 +201,7 @@ describe("day-plan-assist-api Suggest / Auto-route & fill", () => {
 
 describe("day-plan-assist-api Accept / Reject", () => {
   it("acceptDayPlanAssistOption POSTs .../batches/{batchId}/options/{optionId}/accept with clientMutationId only (no itinerary write path)", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn<typeof fetch>(async () =>
       jsonResponse({
         batchId: BATCH_ID,
         tripId: TRIP_ID,
@@ -248,7 +248,7 @@ describe("day-plan-assist-api Accept / Reject", () => {
   it("rejectDayPlanAssistOption POSTs .../reject and surfaces API error.message without inventing an itinerary write", async () => {
     const API_ERROR =
       "Option is no longer open; refresh suggestions and try again.";
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = vi.fn<typeof fetch>(async (input: RequestInfo | URL) => {
       const url = String(input);
       expect(url).not.toContain("/itinerary-items");
       return jsonResponse(

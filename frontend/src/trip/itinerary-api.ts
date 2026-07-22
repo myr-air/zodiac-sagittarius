@@ -22,6 +22,13 @@ export type CreateItineraryItemInput = {
   place: string;
   /** Optional; generated when omitted. */
   clientMutationId?: string;
+  /** Nest under this parent stop (POST body parentItemId). */
+  parentItemId?: string;
+  /**
+   * When set, PATCH the parent to isPlanBlock: true before POSTing the child
+   * (API rejects children under non-block parents).
+   */
+  promoteParent?: { expectedVersion: number };
 };
 
 export type CreateItineraryItemSuccess = {
@@ -47,8 +54,15 @@ type CreateItineraryItemBody = {
   activityType?: unknown;
   place?: unknown;
   startTime?: unknown;
+  endTime?: unknown;
   status?: unknown;
   version?: unknown;
+  note?: unknown;
+  mapLink?: unknown;
+  activitySubtype?: unknown;
+  details?: unknown;
+  parentItemId?: unknown;
+  isPlanBlock?: unknown;
   error?: { code?: unknown; message?: unknown };
 };
 
@@ -100,6 +114,34 @@ function parseCreatedItem(body: CreateItineraryItemBody | null): TripCockpitItin
   if (typeof body.startTime !== "string") return null;
   if (typeof body.status !== "string") return null;
   if (typeof body.version !== "number") return null;
+  const note = typeof body.note === "string" ? body.note : undefined;
+  const mapLink = typeof body.mapLink === "string" ? body.mapLink : undefined;
+  const endTime =
+    typeof body.endTime === "string"
+      ? body.endTime
+      : body.endTime === null
+        ? null
+        : undefined;
+  const activitySubtype =
+    typeof body.activitySubtype === "string"
+      ? body.activitySubtype
+      : body.activitySubtype === null
+        ? null
+        : undefined;
+  const details =
+    body.details != null &&
+    typeof body.details === "object" &&
+    !Array.isArray(body.details)
+      ? (body.details as Record<string, unknown>)
+      : undefined;
+  const parentItemId =
+    typeof body.parentItemId === "string"
+      ? body.parentItemId
+      : body.parentItemId === null
+        ? null
+        : undefined;
+  const isPlanBlock =
+    typeof body.isPlanBlock === "boolean" ? body.isPlanBlock : undefined;
   return {
     id: body.id,
     tripId: body.tripId,
@@ -111,11 +153,20 @@ function parseCreatedItem(body: CreateItineraryItemBody | null): TripCockpitItin
     startTime: body.startTime,
     status: body.status,
     version: body.version,
+    ...(note !== undefined ? { note } : {}),
+    ...(mapLink !== undefined ? { mapLink } : {}),
+    ...(endTime !== undefined ? { endTime } : {}),
+    ...(activitySubtype !== undefined ? { activitySubtype } : {}),
+    ...(details !== undefined ? { details } : {}),
+    ...(parentItemId !== undefined ? { parentItemId } : {}),
+    ...(isPlanBlock !== undefined ? { isPlanBlock } : {}),
   };
 }
 
 /**
  * POST CreateItineraryItemRequest (camelCase) with Bearer member session.
+ * Optional parentItemId nests the new stop; promoteParent PATCHes isPlanBlock
+ * on the parent first when the API requires a plan block.
  */
 export async function createItineraryItem(
   input: CreateItineraryItemInput,
@@ -124,6 +175,23 @@ export async function createItineraryItem(
   const clientMutationId =
     input.clientMutationId?.trim() || nextClientMutationId();
   const activity = input.activity.trim() || "Untitled activity";
+  const parentItemId = input.parentItemId?.trim() || undefined;
+
+  if (parentItemId && input.promoteParent) {
+    const promote = await patchItineraryItem(
+      {
+        tripId: input.tripId,
+        itemId: parentItemId,
+        sessionToken: input.sessionToken,
+        expectedVersion: input.promoteParent.expectedVersion,
+        patch: { isPlanBlock: true },
+      },
+      deps,
+    );
+    if (!promote.ok) {
+      return { ok: false, error: promote.error };
+    }
+  }
 
   let response: Response;
   try {
@@ -140,6 +208,7 @@ export async function createItineraryItem(
         activity,
         activityType: input.activityType,
         place: input.place,
+        ...(parentItemId ? { parentItemId } : {}),
       }),
     });
   } catch {
@@ -188,6 +257,8 @@ export type ItineraryItemPatchFields = {
   note?: string;
   /** Map / booking URL — openStopDialog(link) Save. */
   mapLink?: string;
+  /** Promote a stop to an activity block so children can nest under it. */
+  isPlanBlock?: boolean;
 };
 
 export type PatchItineraryItemInput = {

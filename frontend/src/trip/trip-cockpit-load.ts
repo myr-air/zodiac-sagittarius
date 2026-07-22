@@ -57,6 +57,8 @@ export type TripCockpitItineraryItem = {
   day: string;
   activity: string;
   activityType: string;
+  /** Travel mode / subtype when present (API Option). */
+  activitySubtype?: string | null;
   place: string;
   startTime: string;
   /** HH:MM or null when unset (API Option). Used by time-rail duration. */
@@ -65,6 +67,12 @@ export type TripCockpitItineraryItem = {
   version: number;
   /** Map / place URL when present on the cockpit item. */
   mapLink?: string;
+  /** Stop memo when present. */
+  note?: string;
+  /** Type-shaped extras (e.g. meal) when present. */
+  details?: Record<string, unknown>;
+  /** True when the item is a plan block container. */
+  isPlanBlock?: boolean;
   /** Geo pin when both lat/lng are present; null when unset. */
   coordinates?: TripCockpitCoordinates | null;
 };
@@ -179,6 +187,21 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
   if (parentItemId === undefined) return null;
   const mapLink =
     typeof item.mapLink === "string" ? item.mapLink : undefined;
+  const note = typeof item.note === "string" ? item.note : undefined;
+  const activitySubtype =
+    typeof item.activitySubtype === "string"
+      ? item.activitySubtype
+      : item.activitySubtype === null
+        ? null
+        : undefined;
+  const details =
+    item.details != null &&
+    typeof item.details === "object" &&
+    !Array.isArray(item.details)
+      ? (item.details as Record<string, unknown>)
+      : undefined;
+  const isPlanBlock =
+    typeof item.isPlanBlock === "boolean" ? item.isPlanBlock : undefined;
   const coordinates =
     "coordinates" in item ? parseCoordinates(item.coordinates) : undefined;
   return {
@@ -195,6 +218,10 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
     status: item.status,
     version: item.version,
     ...(mapLink !== undefined ? { mapLink } : {}),
+    ...(note !== undefined ? { note } : {}),
+    ...(activitySubtype !== undefined ? { activitySubtype } : {}),
+    ...(details !== undefined ? { details } : {}),
+    ...(isPlanBlock !== undefined ? { isPlanBlock } : {}),
     ...(coordinates !== undefined ? { coordinates } : {}),
   };
 }

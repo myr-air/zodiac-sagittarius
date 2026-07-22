@@ -35,6 +35,7 @@ import type {
   ItineraryTableModel,
   ItineraryTableStop,
 } from "../../src/trip/itinerary-table-model";
+import { nestOneLevel } from "../../src/trip/itinerary-table-model";
 
 /** Draft SUBPLAN_CHEVRON — expands/collapses nested sub-activity tree. */
 const SUBPLAN_CHEVRON = (
@@ -116,8 +117,15 @@ export type SmartItineraryTableProps = {
   onInspectChange?: (item: SmartItinerarySelectPayload) => void;
   /** External bag write (rail → table) for the selected stop. */
   fieldBagById?: Record<string, StopFieldBag>;
-  /** Command-bar Reorder — when true, render draft `.day-drag` / `.stop-drag` grips. */
+  /** Command-bar Reorder — when true, render draft `.stop-drag` grips (day-drag stays off; no day-order API). */
   reorderEnabled?: boolean;
+  /** Ids removed via rail DELETE — drop locally without waiting for cockpit reload. */
+  removedItemIds?: ReadonlySet<string>;
+  /**
+   * Parent-applied PATCH summaries (e.g. rail write path) — merge so table
+   * edits use the same returned expectedVersion.
+   */
+  externalItemOverrides?: Record<string, TripCockpitItineraryItem>;
 };
 
 /** Cockpit summary may carry endTime for the time rail (not on typed load subset yet). */
@@ -521,10 +529,14 @@ function StopRow({
   selected,
   bodyHidden,
   canPatch,
+  canCreateChild,
   showDragGrip,
   externalBag,
   onPatch,
+  onChildPatch,
+  onCreateChild,
   onSelect,
+  onSelectChild,
   onInspectChange,
   onDropReorder,
 }: {
@@ -534,14 +546,24 @@ function StopRow({
   selected: boolean;
   bodyHidden: boolean;
   canPatch: boolean;
+  /** Member session can POST a nested child under this stop. */
+  canCreateChild: boolean;
   showDragGrip: boolean;
   externalBag?: StopFieldBag;
   onPatch: (patch: ItineraryItemPatchFields) => void;
+  /** Nested sub-activity place blur → PATCH child via itinerary-api. */
+  onChildPatch?: (
+    child: ItineraryTableChildStop,
+    patch: ItineraryItemPatchFields,
+  ) => void;
+  onCreateChild?: (activity: string) => void;
   onSelect?: (payload: {
     activity: string;
     activityType: string;
     fieldBag: StopFieldBag;
   }) => void;
+  /** Nested row click → select child for context rail Remove. */
+  onSelectChild?: (child: ItineraryTableChildStop) => void;
   onInspectChange?: (payload: {
     activity: string;
     activityType: string;
@@ -553,6 +575,7 @@ function StopRow({
   const endTime = readEndTime(item);
   const children: ItineraryTableChildStop[] = item.children ?? [];
   const hasSubplan = children.length > 0;
+  const showSubplanChrome = hasSubplan || canCreateChild;
   const [activityType, setActivityType] = useState(item.activityType);
   const [fieldBag, setFieldBag] = useState<StopFieldBag>(() =>
     seedFieldBag(item),
@@ -561,6 +584,9 @@ function StopRow({
   /** Draft choice-chip listbox: Travel By or Food Meal (T7 #2). */
   const [choiceMenu, setChoiceMenu] = useState<"by" | "meal" | "stayAction" | null>(null);
   const [subsOpen, setSubsOpen] = useState(false);
+  /** Inline title draft for a new nested sub-activity (M81DDKSC T2). */
+  const [childDrafting, setChildDrafting] = useState(false);
+  const [childDraftTitle, setChildDraftTitle] = useState("");
   /** Draft openStopDialog(note|link) / openTimeSetupDialog (T7 #3). */
   const [dialogMode, setDialogMode] = useState<StopDialogMode | null>(null);
   const [dlgNote, setDlgNote] = useState("");
@@ -669,9 +695,9 @@ function StopRow({
     setChoiceMenu(null);
     setTypeMenuOpen(false);
     if (mode === "note") {
-      setDlgNote("");
+      setDlgNote(item.note ?? "");
     } else {
-      setDlgLink("");
+      setDlgLink(item.mapLink ?? "");
     }
     setDialogMode(mode);
   }
@@ -837,12 +863,20 @@ function StopRow({
       ? `Show ${subCount} sub-activities`
       : "Add sub-activities";
 
+  const commitChildDraft = () => {
+    if (!canCreateChild || !onCreateChild) return;
+    const activity = childDraftTitle.trim() || "Untitled activity";
+    onCreateChild(activity);
+    setChildDraftTitle("");
+    setChildDrafting(false);
+  };
+
   return (
     <tr
       className={stopClass}
       data-id={item.id}
       data-day={dayLabel}
-      {...(hasSubplan
+      {...(showSubplanChrome
         ? { "data-subs-open": subsOpen ? "true" : "false" }
         : {})}
       onClick={() =>
@@ -1099,7 +1133,7 @@ function StopRow({
                 >
                   {LINK_ACTION_ICON}
                 </button>
-                {hasSubplan ? (
+                {showSubplanChrome ? (
                   <button
                     type="button"
                     className="activity-action subplan-toggle"
@@ -1110,7 +1144,16 @@ function StopRow({
                     aria-label={toggleTitle}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSubsOpen((open) => !open);
+                      setSubsOpen((open) => {
+                        const next = !open;
+                        if (next && canCreateChild) {
+                          setChildDrafting(true);
+                        } else if (!next) {
+                          setChildDrafting(false);
+                          setChildDraftTitle("");
+                        }
+                        return next;
+                      });
                     }}
                   >
                     {SUBPLAN_CHEVRON}
@@ -1122,7 +1165,7 @@ function StopRow({
               </div>
             </div>
           </div>
-          {hasSubplan ? (
+          {showSubplanChrome ? (
             <div className="subplan" data-subplan="" hidden={!subsOpen}>
               <div className="subplan-list" data-subplan-list="">
                 {children.map((child) => (
@@ -1130,9 +1173,15 @@ function StopRow({
                     key={child.id}
                     className="subplan-row"
                     data-subplan-row=""
+                    data-id={child.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectChild?.(child);
+                    }}
                   >
                     <div className="sub-fields" data-sub-fields="">
                       <input
+                        key={`${child.id}:${child.version}:${child.place}`}
                         className="sub-field"
                         data-sub-field="place"
                         type="text"
@@ -1140,13 +1189,61 @@ function StopRow({
                         placeholder="Place"
                         aria-label="Place"
                         autoComplete="off"
-                        readOnly
+                        onClick={(e) => e.stopPropagation()}
+                        onBlur={(e) => {
+                          if (!canPatch || !onChildPatch) return;
+                          const next = e.target.value;
+                          if (next === child.place) return;
+                          onChildPatch(child, { place: next });
+                        }}
                       />
                       <span hidden>{child.place}</span>
                     </div>
                   </div>
                 ))}
+                {canCreateChild && childDrafting ? (
+                  <div
+                    className="subplan-row"
+                    data-subplan-row=""
+                    data-subplan-draft=""
+                  >
+                    <div className="sub-fields" data-sub-fields="">
+                      <input
+                        className="sub-field"
+                        type="text"
+                        placeholder="Title"
+                        value={childDraftTitle}
+                        onChange={(e) => setChildDraftTitle(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            commitChildDraft();
+                          }
+                        }}
+                        aria-label="Title"
+                        autoComplete="off"
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
+              {canCreateChild && !childDrafting ? (
+                <button
+                  type="button"
+                  className="subplan-add"
+                  data-subplan-add=""
+                  aria-label="Add sub-activity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSubsOpen(true);
+                    setChildDrafting(true);
+                  }}
+                >
+                  + Add sub-activity
+                </button>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -1412,6 +1509,8 @@ export function SmartItineraryTable({
   onInspectChange,
   fieldBagById,
   reorderEnabled = false,
+  removedItemIds,
+  externalItemOverrides,
 }: SmartItineraryTableProps) {
   const surface = resolveToken("--color-surface", "#ffffff");
   const surfaceSubtle = resolveToken("--color-surface-subtle", "#f8fafc");
@@ -1425,6 +1524,13 @@ export function SmartItineraryTable({
   const [createdItems, setCreatedItems] = useState<TripCockpitItineraryItem[]>(
     [],
   );
+  /**
+   * Successful PATCH summaries keyed by id — merge so the next edit sends the
+   * returned version as expectedVersion (M81DDKSC T1 #2).
+   */
+  const [itemOverrides, setItemOverrides] = useState<
+    Record<string, TripCockpitItineraryItem>
+  >({});
   /** After version_conflict, block patches until parent reloads (T5 #2). */
   const [awaitingCockpitReload, setAwaitingCockpitReload] = useState(false);
   /** Collapsed Plan Days keyed by ISO day — persisted per tripId (T4 #1). */
@@ -1432,6 +1538,9 @@ export function SmartItineraryTable({
     readCollapsedDays(tripId),
   );
   let stopIndex = 0;
+
+  const resolveItem = (item: TripCockpitItineraryItem): TripCockpitItineraryItem =>
+    itemOverrides[item.id] ?? externalItemOverrides?.[item.id] ?? item;
 
   useEffect(() => {
     setCollapsedDays(readCollapsedDays(tripId));
@@ -1496,6 +1605,34 @@ export function SmartItineraryTable({
 
   const canPatch =
     Boolean(tripId && sessionToken) && !awaitingCockpitReload;
+  const canCreateChild = Boolean(tripId && sessionToken);
+
+  const commitChildCreate = (
+    parent: ItineraryTableStop,
+    activity: string,
+  ) => {
+    if (!tripId || !sessionToken) return;
+    const needsPromote = parent.isPlanBlock !== true;
+    void createItineraryItem(
+      {
+        tripId,
+        sessionToken,
+        planVariantId: model.planVariantId,
+        day: parent.day,
+        activity,
+        activityType: "default",
+        place: "",
+        parentItemId: parent.id,
+        ...(needsPromote
+          ? { promoteParent: { expectedVersion: parent.version } }
+          : {}),
+      },
+      { fetch: fetchImpl, apiBaseUrl },
+    ).then((outcome) => {
+      if (!outcome.ok) return;
+      setCreatedItems((prev) => [...prev, outcome.item]);
+    });
+  };
 
   const commitPatch = (
     item: TripCockpitItineraryItem,
@@ -1512,7 +1649,14 @@ export function SmartItineraryTable({
       },
       { fetch: fetchImpl, apiBaseUrl },
     ).then((outcome) => {
-      if (!outcome.ok && outcome.code === "version_conflict") {
+      if (outcome.ok) {
+        setItemOverrides((prev) => ({
+          ...prev,
+          [outcome.item.id]: outcome.item,
+        }));
+        return;
+      }
+      if (outcome.code === "version_conflict") {
         setAwaitingCockpitReload(true);
         onCockpitReload?.();
       }
@@ -1595,10 +1739,20 @@ export function SmartItineraryTable({
           const dayNum = dayIdx + 1;
           const dayLabel = `Day ${dayNum}`;
           const open = openDay === dayLabel;
-          const dayItems = [
-            ...day.items,
-            ...createdItems.filter((item) => item.day === day.day),
-          ];
+          const dayItems = nestOneLevel(
+            [
+              ...day.items.flatMap((item) => {
+                const { children: nested, ...parent } = item;
+                return [
+                  parent as TripCockpitItineraryItem,
+                  ...(nested ?? []),
+                ];
+              }),
+              ...createdItems.filter((item) => item.day === day.day),
+            ]
+              .map((item) => resolveItem(item))
+              .filter((item) => !removedItemIds?.has(item.id)),
+          );
           const dayItemIds = dayItems.map((item) => item.id);
           const collapsed = collapsedDays.has(day.day);
           const header = (
@@ -1609,7 +1763,7 @@ export function SmartItineraryTable({
               collapsed={collapsed}
               activityCount={dayItems.length}
               onToggle={() => toggleDayCollapsed(day.day)}
-              showDragGrip={reorderEnabled}
+              showDragGrip={false}
             />
           );
           const stops = dayItems.map((item) => {
@@ -1625,9 +1779,14 @@ export function SmartItineraryTable({
                 selected={selectedId === item.id}
                 bodyHidden={collapsed}
                 canPatch={canPatch}
+                canCreateChild={canCreateChild}
                 showDragGrip={reorderEnabled}
                 externalBag={fieldBagById?.[item.id]}
                 onPatch={(patch) => commitPatch(item, patch)}
+                onChildPatch={(child, patch) => commitPatch(child, patch)}
+                onCreateChild={(activity) =>
+                  commitChildCreate(item, activity)
+                }
                 onDropReorder={
                   reorderEnabled
                     ? (draggedId, beforeId) => {
@@ -1667,6 +1826,19 @@ export function SmartItineraryTable({
                           status: item.status,
                           dayLabel,
                           fieldBag: live.fieldBag,
+                        })
+                    : undefined
+                }
+                onSelectChild={
+                  onSelect
+                    ? (child) =>
+                        onSelect({
+                          id: child.id,
+                          activity: child.activity,
+                          activityType: child.activityType,
+                          status: child.status,
+                          dayLabel,
+                          fieldBag: seedFieldBag(child),
                         })
                     : undefined
                 }
