@@ -1,7 +1,12 @@
 //! Shared OpenRouter chat-completions helper with model rotation.
 //!
-//! Free-tier account limits (RPM/RPD) are shared across all `:free` models — rotation
-//! does not raise that ceiling. It does recover from per-model / provider 429/502/503.
+//! Prefer the official Free Models Router (`openrouter/free`), which randomly
+//! selects an available free model filtered for request capabilities
+//! (see https://openrouter.ai/docs/guides/routing/routers/free-router).
+//!
+//! Free-tier account limits (RPM/RPD) are shared across all `:free` models —
+//! client rotation does not raise that ceiling. It recovers from 408/429/502/503
+//! when a given model/router attempt fails.
 
 use sagittarius_domain::errors::ServiceError;
 use serde::{Deserialize, Serialize};
@@ -9,15 +14,13 @@ use tracing::{info, warn};
 
 pub const OPENROUTER_CHAT_COMPLETIONS_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
-/// Default free-model chain when `OPENROUTER_MODELS` is unset.
-/// Prefer durable, general-purpose free IDs; trailing `openrouter/free` lets OpenRouter pick.
-pub const DEFAULT_FREE_MODEL_CHAIN: &[&str] = &[
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "google/gemma-3-12b-it:free",
-    "mistralai/mistral-small-24b-instruct-2501:free",
-    "qwen/qwen-2.5-7b-instruct:free",
-    "openrouter/free",
-];
+/// Official Free Models Router slug (OpenRouter picks a capable free model).
+pub const FREE_MODELS_ROUTER: &str = "openrouter/free";
+
+/// Default chain when neither `OPENROUTER_MODELS` nor a primary model is set.
+/// Account settings will own model preference later; until then the server
+/// defaults to the official Free Models Router only.
+pub const DEFAULT_FREE_MODEL_CHAIN: &[&str] = &[FREE_MODELS_ROUTER];
 
 #[derive(Debug, Clone)]
 pub struct ChatMessage {
@@ -62,6 +65,9 @@ struct OpenRouterMessage<'a> {
 
 #[derive(Debug, Deserialize)]
 struct OpenRouterResponse {
+    /// Actual model used (Free Models Router reports the selected `:free` model).
+    #[serde(default)]
+    model: Option<String>,
     choices: Vec<OpenRouterChoice>,
 }
 
@@ -242,10 +248,18 @@ pub async fn chat_completion_json(
                 "openrouter response was empty",
             ))?;
 
-        info!(model = %model, "openrouter chat completion succeeded");
+        let resolved_model = parsed
+            .model
+            .filter(|m| !m.trim().is_empty())
+            .unwrap_or_else(|| model.clone());
+        info!(
+            requested_model = %model,
+            model = %resolved_model,
+            "openrouter chat completion succeeded"
+        );
         return Ok(ChatCompletionResult {
             content,
-            model: model.clone(),
+            model: resolved_model,
         });
     }
 
@@ -271,13 +285,19 @@ mod tests {
     #[test]
     fn model_chain_appends_free_defaults_after_primary() {
         let chain = model_chain(None, Some("openai/gpt-5.2".to_string()));
-        assert_eq!(chain.first().map(String::as_str), Some("openai/gpt-5.2"));
-        assert!(
-            chain
-                .iter()
-                .any(|m| m.ends_with(":free") || m == "openrouter/free")
+        assert_eq!(
+            chain,
+            vec![
+                "openai/gpt-5.2".to_string(),
+                FREE_MODELS_ROUTER.to_string()
+            ]
         );
-        assert!(chain.len() > 1);
+    }
+
+    #[test]
+    fn default_chain_is_official_free_router_only() {
+        let chain = model_chain(None, None);
+        assert_eq!(chain, vec![FREE_MODELS_ROUTER.to_string()]);
     }
 
     #[test]
