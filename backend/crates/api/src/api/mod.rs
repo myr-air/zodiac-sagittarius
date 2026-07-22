@@ -1,6 +1,7 @@
 pub mod account;
 pub mod bookings;
 pub mod daily_briefings;
+pub mod day_plan_assist;
 pub mod error;
 pub mod exchange_rates;
 pub mod expenses;
@@ -63,6 +64,7 @@ fn api_v1() -> Router<AppState> {
         .merge(plan_variants::routes())
         .merge(itinerary::routes())
         .merge(itinerary_imports::routes())
+        .merge(day_plan_assist::routes())
         .merge(plan_checks::routes())
         .merge(place_resolution::routes())
         .merge(suggestions::routes())

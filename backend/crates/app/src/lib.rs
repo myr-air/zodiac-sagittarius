@@ -6,6 +6,7 @@ pub mod auth;
 pub mod bookings;
 pub mod create_trip;
 pub mod daily_briefings;
+pub mod day_plan_assist;
 pub mod destination_geo;
 pub mod email;
 pub mod events;
@@ -38,6 +39,8 @@ pub struct AppState {
     pub email_delivery: email::EmailDelivery,
     pub exchange_rates: exchange_rates::ExchangeRateService,
     pub daily_briefing_weather_fetch: bool,
+    /// In-process suggestion batches for Accept/Reject (stub + live provider).
+    pub day_plan_assist_batches: day_plan_assist::DayPlanAssistBatchStore,
 }
 
 impl AppState {
@@ -48,6 +51,7 @@ impl AppState {
             email_delivery: email::EmailDelivery::from_env(),
             exchange_rates: exchange_rates::ExchangeRateService::new(),
             daily_briefing_weather_fetch: daily_briefings::weather_fetch_enabled_from_env(),
+            day_plan_assist_batches: day_plan_assist::DayPlanAssistBatchStore::default(),
         }
     }
 
