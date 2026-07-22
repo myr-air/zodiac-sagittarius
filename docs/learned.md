@@ -6,6 +6,9 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M80P3JXX | 2026-07-22 | Pre-existing frontend typecheck/build failures blocked verify | Scoped fixes (passkey-register, CreateTripForm mocks, portal-nav regex, Vitest projects + @ alias) | typecheck/build; vitest 201/201 |
+| M80P3JXX | 2026-07-22 | Main Plan filter treated mainTripPlanId as planVariantId | Prefer activePlanVariantId ?? mainTripPlanId | diverge Vitest shell + table model |
+| M80P3JXX | 2026-07-22 | Reorder/Share CSS missing vs draft (grips broke duration rail) | Port draft stop-drag 3-col grid, hide day-drag, command btn-primary | designer PASS; trip Vitest |
 | M7ZNU364 | 2026-07-22 | /trips/{id} placeholder regress + plan evidence label mismatch blocked ready | Remount TripWorkspaceShell + route source test; align plan evidence to *-green labels | TripPage route mount; validate --strict |
 | M7ZG5WPD | 2026-07-21 | Settings dialogs lacked backdrop; Close CTAs not danger; Passkeys copy said Coming soon | Shared dialog-root/scrim; portal-btn--danger; draft Passkeys/Devices hints | designer follow-up; settings FE suites |
 | M7ZDUD7N | 2026-07-21 | Soft-nav remount cleared prev href / settle timer; hybrid pill stuck mid-flight | Module `modulePrevHref`; defer prev until settle; cleanup force-settle + flight gen | portal-nav-hybrid-across-remount; portal-nav-hybrid-settle-fix; CDP soft-nav |
@@ -25,6 +28,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M80P3JXX | 2026-07-22 | When splitting Vitest into projects, duplicate resolve.alias (and DOM setup) into each project — root aliases may not inherit | Prevents silent `@/` resolution breaks after environment config migrations |
+| M80P3JXX | 2026-07-22 | Landmark fixture screenshots are not layout proof — prefer live product or draft-faithful stop-block markup for visual ship gates | Avoids shipping unstyled composition under green landmark smoke |
 | M7ZNU364 | 2026-07-22 | Guard the route entry page even when component suites are green | Prevents placeholder regress shipping under green Vitest |
 | M7ZNU364 | 2026-07-22 | Port draft CSS with draft classnames for cockpit chrome | Structure-only tests miss unstyled visual failure |
 | M7ZG5WPD | 2026-07-21 | plan.json evidence fields must be bare label strings for validate --strict | Full CLI strings fail the done-task evidence matcher and block ready |
