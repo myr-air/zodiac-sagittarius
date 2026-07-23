@@ -134,16 +134,36 @@ export function ItineraryContextRail({
   /** Field keys edited since last PATCH — avoids re-PATCH on incidental blur. */
   const dirtyKeysRef = useRef<Set<string>>(new Set());
 
+  /**
+   * dirtyKeysRef is a plain data ref (not render output), so its reset stays
+   * in an effect — refs must not be mutated during render
+   * (react-hooks/refs), only the setState calls below need to move out.
+   */
   useEffect(() => {
     dirtyKeysRef.current = new Set();
-    setDeleteError(null);
-    setAwaitingCockpitReload(false);
   }, [selectedItem?.id]);
 
-  /** Conflict lock clears when parent finishes TripCockpit reload. */
-  useEffect(() => {
+  /**
+   * Reset error/conflict state on selection change — adjusted during render
+   * (React "storing info from previous renders" pattern) instead of an
+   * effect, since these resets must land before this render commits and
+   * must not cascade an extra render (react-hooks/set-state-in-effect).
+   */
+  const [prevSelectedItemId, setPrevSelectedItemId] = useState(
+    selectedItem?.id,
+  );
+  if (selectedItem?.id !== prevSelectedItemId) {
+    setPrevSelectedItemId(selectedItem?.id);
+    setDeleteError(null);
     setAwaitingCockpitReload(false);
-  }, [reloadToken]);
+  }
+
+  /** Conflict lock clears when parent finishes TripCockpit reload. */
+  const [prevReloadToken, setPrevReloadToken] = useState(reloadToken);
+  if (reloadToken !== prevReloadToken) {
+    setPrevReloadToken(reloadToken);
+    setAwaitingCockpitReload(false);
+  }
 
   const empty = !selectedItem;
   /** Single empty cue title — do not also render competing "Start here" heading. */

@@ -493,6 +493,8 @@ function DayRow({
   onToggle,
   showDragGrip,
   onDropAppend,
+  dropActive = false,
+  onDropActiveChange,
 }: {
   isoDay: string;
   dayNum: number;
@@ -502,6 +504,9 @@ function DayRow({
   showDragGrip: boolean;
   /** Row/day-header drop target (M82GSOYG T5 #2) — appends dragged id to this day. */
   onDropAppend?: (draggedId: string) => void;
+  /** Drop-active chrome (M82K32B8 T5) — owned by SmartItineraryTable so dragend on the source can clear it. */
+  dropActive?: boolean;
+  onDropActiveChange?: (active: boolean) => void;
 }) {
   const { dow, dom, mon, dowLabel } = prettyDayParts(isoDay);
   const countLabel =
@@ -513,11 +518,20 @@ function DayRow({
       className="day-row"
       data-day-block=""
       data-collapsed={collapsed ? "true" : "false"}
+      data-drop-active={dropActive ? "true" : undefined}
       onDragOver={
         onDropAppend
           ? (e) => {
               e.preventDefault();
               e.dataTransfer.dropEffect = "move";
+              onDropActiveChange?.(true);
+            }
+          : undefined
+      }
+      onDragLeave={
+        onDropAppend
+          ? () => {
+              onDropActiveChange?.(false);
             }
           : undefined
       }
@@ -526,6 +540,7 @@ function DayRow({
           ? (e) => {
               e.preventDefault();
               e.stopPropagation();
+              onDropActiveChange?.(false);
               const draggedId = e.dataTransfer.getData("text/plain").trim();
               if (!draggedId) return;
               onDropAppend(draggedId);
@@ -724,6 +739,7 @@ function StopRow({
   onInspectChange,
   onDropReorder,
   onResolvePlace,
+  onDragEndClearDropActive,
 }: {
   item: ItineraryTableStop;
   dayLabel: string;
@@ -778,6 +794,8 @@ function StopRow({
   onDropReorder?: (draggedId: string, beforeId: string) => void;
   /** Place cell Resolve → open candidate picker (M81HY2YR T2). */
   onResolvePlace?: () => void;
+  /** Clears day-header drop-active chrome when the drag source ends (M82K32B8 T5). */
+  onDragEndClearDropActive?: () => void;
 }) {
   const endTime = readEndTime(item);
   const children: ItineraryTableChildStop[] = item.children ?? [];
@@ -807,21 +825,24 @@ function StopRow({
   const [dlgEnd, setDlgEnd] = useState("");
   const { className: typeClass, label: typeLabel } = typeTriggerMeta(activityType);
 
-  // Rail → table bag sync for the selected stop.
-  useEffect(() => {
-    if (!externalBag) return;
-    setFieldBag((prev) => {
-      const keys = new Set([...Object.keys(prev), ...Object.keys(externalBag)]);
+  // Rail → table bag sync for the selected stop — adjusted during render
+  // (React 19 "previous prop" idiom) rather than in an effect, since this is
+  // deriving state from a prop change, not synchronizing an external system.
+  const [prevExternalBag, setPrevExternalBag] = useState(externalBag);
+  if (externalBag !== prevExternalBag) {
+    setPrevExternalBag(externalBag);
+    if (externalBag) {
+      const keys = new Set([...Object.keys(fieldBag), ...Object.keys(externalBag)]);
       let same = true;
       for (const key of keys) {
-        if ((prev[key] ?? "") !== (externalBag[key] ?? "")) {
+        if ((fieldBag[key] ?? "") !== (externalBag[key] ?? "")) {
           same = false;
           break;
         }
       }
-      return same ? prev : { ...prev, ...externalBag };
-    });
-  }, [externalBag]);
+      if (!same) setFieldBag({ ...fieldBag, ...externalBag });
+    }
+  }
 
   const commitField =
     (field: keyof ItineraryItemPatchFields, previous: string) =>
@@ -1162,6 +1183,9 @@ function StopRow({
                   e.stopPropagation();
                   e.dataTransfer.setData("text/plain", item.id);
                   e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragEnd={() => {
+                  onDragEndClearDropActive?.();
                 }}
               >
                 <i />
@@ -1880,12 +1904,16 @@ function AddDraftRow({
   const [draftStart, setDraftStart] = useState("");
   const [draftEnd, setDraftEnd] = useState("");
 
-  useEffect(() => {
+  // Clear the draft times when the row closes — adjusted during render
+  // (previous-prop idiom) rather than in an effect.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (!open) {
       setDraftStart("");
       setDraftEnd("");
     }
-  }, [open]);
+  }
 
   const commit = () => {
     onCommit({ startTime: draftStart, endTime: draftEnd });
@@ -2041,6 +2069,8 @@ export function SmartItineraryTable({
   const [pathAddOpen, setPathAddOpen] = useState(false);
   const [pathAddName, setPathAddName] = useState("");
   const [pathAddError, setPathAddError] = useState<string | null>(null);
+  /** ISO day key for the Plan Day header showing drop-active chrome (M82K32B8 T5). */
+  const [dropActiveDay, setDropActiveDay] = useState<string | null>(null);
   /**
    * "Add option…" (fork subplan, designer-fix v6.1) selects the fork parent
    * and opens the strip editor in the same tick — holds that item's id so
@@ -2065,15 +2095,25 @@ export function SmartItineraryTable({
     return created ? resolveItem(created) : null;
   };
 
-  useEffect(() => {
+  // Reload collapsed-days from storage when the trip changes — adjusted
+  // during render (previous-prop idiom) rather than in an effect, since this
+  // derives state from a prop change rather than synchronizing externally.
+  const [prevTripId, setPrevTripId] = useState(tripId);
+  if (prevTripId !== tripId) {
+    setPrevTripId(tripId);
     setCollapsedDays(readCollapsedDays(tripId));
-  }, [tripId]);
+  }
 
-  /** Conflict lock clears when parent finishes TripCockpit reload. */
-  useEffect(() => {
+  /**
+   * Conflict lock clears when parent finishes TripCockpit reload — adjusted
+   * during render (previous-prop idiom) rather than in an effect.
+   */
+  const [prevReloadToken, setPrevReloadToken] = useState(reloadToken);
+  if (prevReloadToken !== reloadToken) {
+    setPrevReloadToken(reloadToken);
     setAwaitingCockpitReload(false);
     setPatchError(null);
-  }, [reloadToken]);
+  }
 
   /**
    * Path strip editor is per-selection — collapse it when selection moves,
@@ -2645,6 +2685,12 @@ export function SmartItineraryTable({
               activityCount={dayItems.length}
               onToggle={() => toggleDayCollapsed(day.day)}
               showDragGrip={false}
+              dropActive={dropActiveDay === day.day}
+              onDropActiveChange={(active) =>
+                setDropActiveDay((current) =>
+                  active ? day.day : current === day.day ? null : current,
+                )
+              }
               onDropAppend={
                 reorderEnabled
                   ? (draggedId) => {
@@ -2750,6 +2796,9 @@ export function SmartItineraryTable({
                 canPatch={canPatch}
                 canCreateChild={canCreateChild}
                 showDragGrip={reorderEnabled}
+                onDragEndClearDropActive={
+                  reorderEnabled ? () => setDropActiveDay(null) : undefined
+                }
                 externalBag={fieldBagById?.[item.id]}
                 pathFork={pathFork}
                 onPatch={(patch) => commitPatch(item, patch)}

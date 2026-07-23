@@ -5,7 +5,7 @@
  * Not a dialog; blur commits via itinerary-items PATCH (M80VKAX5 T5).
  */
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { patchItineraryItem } from "../../src/trip/itinerary-api";
 
 export type DayStopDetailsStop = {
@@ -45,11 +45,23 @@ export function DayStopDetails({
   const [status, setStatus] = useState(stop.status);
   const [awaitingCockpitReload, setAwaitingCockpitReload] = useState(false);
 
-  useEffect(() => {
+  // Derive local editable state from `stop` during render (React's
+  // documented "adjusting state when a prop changes" pattern) instead of an
+  // effect: whenever the incoming stop identity/version changes, resync the
+  // note/status buffers to the latest server values. This avoids the extra
+  // commit-then-effect-then-rerender cascade of a `useEffect` sync.
+  const [prevStop, setPrevStop] = useState(stop);
+  if (
+    prevStop.id !== stop.id ||
+    prevStop.note !== stop.note ||
+    prevStop.status !== stop.status ||
+    prevStop.version !== stop.version
+  ) {
+    setPrevStop(stop);
     setNote(stop.note ?? "");
     setStatus(stop.status);
     setAwaitingCockpitReload(false);
-  }, [stop.id, stop.note, stop.status, stop.version]);
+  }
 
   function commitPatch(patch: { note?: string; status?: string }) {
     if (awaitingCockpitReload) return;

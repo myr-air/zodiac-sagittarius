@@ -2523,6 +2523,125 @@ describe("SmartItineraryTable cross-day empty day header onDrop", () => {
 });
 
 /**
+ * M82K32B8 T6 — the Plan Day header (`tr.day-row` with an active
+ * `onDropAppend` target, i.e. `reorderEnabled`) must carry a durable
+ * drop-active marker while a drag hovers over it, so the user sees where a
+ * cross-day drop will land before releasing.
+ *
+ * Public contract (documented here, implemented in T5): `data-drop-active`
+ * is `"true"` on `tr.day-row` while an eligible drag is over it, and is
+ * cleared (removed) on dragleave / drop / dragend on the drag source.
+ */
+const DROP_ACTIVE_MOVE_ITEM_ID = "item-drop-active-move";
+
+describe("SmartItineraryTable day header drop-active chrome", () => {
+  it("dragOver on an onDropAppend Plan Day header sets data-drop-active=true, and dragLeave clears it", () => {
+    const movedStop = stop({
+      id: DROP_ACTIVE_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Drop-active source stop",
+      activityType: "attraction",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop],
+    });
+
+    render(<SmartItineraryTable model={model} reorderEnabled />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const day2Time = table.querySelector(`time[datetime="${DAY_2}"]`);
+    expect(day2Time).toBeTruthy();
+    const day2Header = day2Time!.closest("tr.day-row") as HTMLElement;
+    expect(day2Header).toBeTruthy();
+
+    // Idle: no drop-active marker before any drag interaction.
+    expect(day2Header).not.toHaveAttribute("data-drop-active", "true");
+
+    fireEvent.dragOver(day2Header, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).toHaveAttribute("data-drop-active", "true");
+
+    fireEvent.dragLeave(day2Header, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).not.toHaveAttribute("data-drop-active", "true");
+  });
+
+  it("drop on the Plan Day header clears the drop-active marker after commit", () => {
+    const movedStop = stop({
+      id: DROP_ACTIVE_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Drop-active source stop",
+      activityType: "attraction",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop],
+    });
+
+    render(<SmartItineraryTable model={model} reorderEnabled />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const day2Time = table.querySelector(`time[datetime="${DAY_2}"]`);
+    const day2Header = day2Time!.closest("tr.day-row") as HTMLElement;
+
+    fireEvent.dragOver(day2Header, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).toHaveAttribute("data-drop-active", "true");
+
+    fireEvent.drop(day2Header, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).not.toHaveAttribute("data-drop-active", "true");
+  });
+
+  it("dragEnd on the drag source clears the day-header drop-active marker", () => {
+    const movedStop = stop({
+      id: DROP_ACTIVE_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Drop-active source stop",
+      activityType: "attraction",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop],
+    });
+
+    render(<SmartItineraryTable model={model} reorderEnabled />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const day2Time = table.querySelector(`time[datetime="${DAY_2}"]`);
+    const day2Header = day2Time!.closest("tr.day-row") as HTMLElement;
+    const dragHandle = table.querySelector(
+      `[data-stop-drag]`,
+    ) as HTMLElement;
+    expect(dragHandle).toBeTruthy();
+
+    fireEvent.dragOver(day2Header, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).toHaveAttribute("data-drop-active", "true");
+
+    fireEvent.dragEnd(dragHandle, {
+      dataTransfer: dataTransferStub(DROP_ACTIVE_MOVE_ITEM_ID),
+    });
+    expect(day2Header).not.toHaveAttribute("data-drop-active", "true");
+  });
+});
+
+/**
  * M80P3JXX T6 #2 — sub-activity chevron tree (draft itinerary-plan-draft-v1.html).
  *
  * Landmarks: `.activity-action.subplan-toggle` / `[data-subplan-toggle]` chevron;
