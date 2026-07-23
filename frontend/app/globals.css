@@ -3978,6 +3978,220 @@ tr.stop-row[data-subs-open="true"] .activity-action.subplan-toggle {
   width: 100%;
 }
 
+/* Path fork alternatives (M827T84Q T2 #1) — draft v6.1 fork subplan rows. */
+.fork-current {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.subplan-row[data-path] .sub-fields {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.sub-when {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-subtle);
+}
+
+.sub-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.sub-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sub-place {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+}
+
+.path-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--color-route);
+  background: var(--color-surface);
+  border: 1px solid var(--color-route-border);
+}
+
+/* Active fork option (designer-fix v6.1) — all options, including the one
+   currently in use, render as .subplan-row siblings; the active row gets a
+   route-soft tint + inset accent and a filled "Using" chip beside its
+   .path-chip name tag (route tokens only — no purple). */
+.subplan-row.is-path-active {
+  background: var(--color-route-soft);
+  box-shadow: inset 3px 0 0 var(--color-route);
+  border-radius: 4px;
+}
+
+.using-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--color-surface);
+  background: var(--color-route);
+}
+
+/* "Add option…" inside the fork subplan (designer-fix v6.1) — opens the
+   same add-alternative flow as the Path strip. */
+.path-add-option {
+  align-self: flex-start;
+  padding: 2px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-route);
+}
+
+.path-add-option:hover {
+  text-decoration: underline;
+}
+
+/* Path strip — selection-scoped Edit path / Assign / Add alternative… row
+   (M827T84Q T4 #1, draft v6.1 `.path-strip`). */
+tr.path-strip td {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-primary-soft);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.path-strip-inner {
+  display: grid;
+  gap: 8px;
+  padding: 8px var(--cell-pad-x, 12px) 10px;
+}
+
+.path-strip-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.path-strip-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.path-strip-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  line-height: 1.4;
+}
+
+.path-strip-editor {
+  display: grid;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 28%, white);
+}
+
+.path-strip-controls {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.path-strip-controls .field,
+.add-inline .field {
+  display: grid;
+  gap: 4px;
+  min-width: min(220px, 100%);
+}
+
+.path-strip-controls label,
+.add-inline label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.path-strip-controls select,
+.add-inline input {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.add-inline {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.path-strip-error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-warning-strong);
+}
+
+/* Draft surface / primary-fill buttons (v6.1 Add alternative… / Save / Cancel). */
+.btn-surface {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-surface:hover {
+  background: var(--color-surface-muted);
+}
+
+.btn-surface:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary-fill {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary, #fff);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary-fill:hover {
+  background: var(--color-primary-strong);
+}
+
 tr.add-row td.add-collapsed-cell {
   padding: 8px var(--cell-pad-x, 12px);
   vertical-align: middle;

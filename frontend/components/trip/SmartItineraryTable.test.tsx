@@ -24,6 +24,13 @@
  * M81DDKSC T2 #2: add child under parent stop; successful create nests via returned parentItemId.
  * M81HY2YR T3 #2 / M81LW2UJ T6: sibling overlap cues tethered under day; draft duration; honest create errors.
  * M81HY2YR T2 #1: Explicit Resolve in place cell opens candidate picker; pick → PATCH + version apply.
+ * M827T84Q T2 #1: Same-day pathGroupId siblings collapse into one fork stop-row
+ * ("Currently using: <active path name>" + subplan-toggle chevron); alternative
+ * path options render as .subplan-row entries only while expanded (v6.1 draft chrome).
+ * M827T84Q T4 #1: selecting any stop shows a collapsed "Path · …" strip row
+ * with Edit path; expanding offers Assign to an existing pathGroupId already
+ * in the plan, or Add alternative… → createItineraryItem with pathGroupId
+ * (reused vs newly generated), pathId, pathName, pathRole:"alternative".
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -36,6 +43,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
+import { useState } from "react";
 import {
   MEMBER_SESSION_STORAGE_KEY,
   type StorageLike,
@@ -45,7 +53,10 @@ import {
   type TripCockpitItineraryItem,
 } from "../../src/trip/trip-cockpit-load";
 import { buildItineraryTableModel } from "../../src/trip/itinerary-table-model";
-import { SmartItineraryTable } from "./SmartItineraryTable";
+import {
+  SmartItineraryTable,
+  type SmartItineraryTableProps,
+} from "./SmartItineraryTable";
 
 const API_BASE = "http://127.0.0.1:5181";
 const OWNER_MEMBER_ID = "018f4e81-1000-7000-a000-000000000001";
@@ -3163,5 +3174,1104 @@ describe("SmartItineraryTable place Resolve → candidate PATCH + version apply"
     expect(itineraryPatchCalls(fetchMock)[0]!.body.patch).toEqual(
       expect.objectContaining({ place: RESOLVE_FOLLOWUP_PLACE }),
     );
+  });
+});
+
+/**
+ * M827T84Q T2 #1 — fork stop-row + expandable subplan of path options.
+ *
+ * Draft landmarks (paths-product-draft-v6.html, v6.1 "fork stop + subplan"):
+ * fork parent renders as a `tr.stop-row` whose `.line-secondary` carries
+ * "Currently using: <strong>Main</strong>" (`#fork-current`), with the
+ * existing `.activity-action.subplan-toggle[data-subplan-toggle]` chevron
+ * toggling `data-subs-open` on the row and a nested `.subplan[data-subplan]`
+ * → `.subplan-list[data-subplan-list]` → `.subplan-row[data-subplan-row]`
+ * per alternative path (`.path-chip` text = pathName), shown only while
+ * expanded (draft `syncSubplan` / `pathRows`).
+ */
+const PATH_DAY = "2026-04-16";
+const PATH_GROUP_ID = "pgroup-fuji-return";
+const PATH_MAIN_ITEM_ID = "item-path-main-return";
+const PATH_ALT_ITEM_ID = "item-path-alt-return";
+const PATH_MAIN_NAME = "Main";
+const PATH_ALT_NAME = "Evening ferry";
+
+const PATH_MAIN_ITEM: StopItem = stop({
+  id: PATH_MAIN_ITEM_ID,
+  day: PATH_DAY,
+  activity: "Return to Tokyo",
+  activityType: "travel",
+  place: "",
+  startTime: "17:40",
+  endTime: "21:10",
+  pathGroupId: PATH_GROUP_ID,
+  pathId: "path-main",
+  pathName: PATH_MAIN_NAME,
+  pathRole: "main",
+});
+
+const PATH_ALT_ITEM: StopItem = stop({
+  id: PATH_ALT_ITEM_ID,
+  day: PATH_DAY,
+  activity: "Take the evening ferry back",
+  activityType: "travel",
+  place: "",
+  startTime: "18:20",
+  endTime: "20:50",
+  pathGroupId: PATH_GROUP_ID,
+  pathId: "path-ferry",
+  pathName: PATH_ALT_NAME,
+  pathRole: "alternative",
+});
+
+describe("SmartItineraryTable path fork stop-row", () => {
+  it("A day with items sharing a pathGroupId renders one stop-row parent ('Currently using: <active path name>' + chevron subplan-toggle) with alternatives listed as .subplan-row entries only while expanded", async () => {
+    const user = userEvent.setup();
+
+    const model = buildItineraryTableModel({
+      startDate: PATH_DAY,
+      endDate: PATH_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [PATH_MAIN_ITEM, PATH_ALT_ITEM],
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    // Fork group collapses to a single stop-row parent — not one row per sibling.
+    expect(table.querySelectorAll("tr.stop-row").length).toBe(1);
+
+    const currentlyUsing = within(table).getByText(
+      new RegExp(`currently using:\\s*${PATH_MAIN_NAME}`, "i"),
+    );
+    const forkRow = currentlyUsing.closest("tr.stop-row") as HTMLElement | null;
+    expect(forkRow).toBeTruthy();
+
+    const toggle = forkRow!.querySelector(
+      "button.activity-action.subplan-toggle[data-subplan-toggle], button[data-subplan-toggle]",
+    ) as HTMLElement | null;
+    expect(toggle).toBeTruthy();
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    // Collapsed: the alternative's path option title is not visible yet.
+    const altBefore = within(forkRow!).queryByText(PATH_ALT_NAME);
+    if (altBefore) expect(altBefore).not.toBeVisible();
+    else expect(altBefore).toBeNull();
+
+    await user.click(toggle!);
+
+    expect(forkRow).toHaveAttribute("data-subs-open", "true");
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    // Expanded: ALL options render as .subplan-row siblings (designer-fix
+    // v6.1) — the active/main option row may be the first one, so target
+    // the alternative by data-id rather than assuming DOM order.
+    const altRow = forkRow!.querySelector(
+      `.subplan-row[data-id="${PATH_ALT_ITEM_ID}"]`,
+    ) as HTMLElement | null;
+    expect(altRow).toBeTruthy();
+    expect(within(altRow!).getByText(PATH_ALT_NAME)).toBeVisible();
+
+    await user.click(toggle!);
+
+    expect(forkRow).toHaveAttribute("data-subs-open", "false");
+    const altAfter = within(forkRow!).queryByText(PATH_ALT_NAME);
+    if (altAfter) expect(altAfter).not.toBeVisible();
+    else expect(altAfter).toBeNull();
+  });
+});
+
+/**
+ * M827T84Q T2 #2 — honest empty: a day with zero path-tagged items must not
+ * grow any fork chrome as a side effect of groupPathAlternatives. Every item
+ * here has no pathGroupId, so groupPathAlternatives(dayItems) returns only
+ * `{ kind: "single" }` entries, `pathFork` stays undefined per stop, and
+ * `showSubplanChrome` (`hasSubplan || canCreateChild || hasPathAlternatives`)
+ * is false with no tripId/sessionToken and no children — no `.subplan`, no
+ * `[data-subplan-toggle]`, no `data-subs-open`, no "Currently using:" text;
+ * each item renders as its own plain `tr.stop-row`.
+ */
+const NO_PATH_DAY = "2026-04-18";
+
+const NO_PATH_STOP_A: StopItem = stop({
+  id: "item-noplath-a",
+  day: NO_PATH_DAY,
+  activity: "Breakfast at the ryokan",
+  activityType: "food",
+  place: "Ryokan dining room",
+  startTime: "08:00",
+  endTime: "08:45",
+});
+
+const NO_PATH_STOP_B: StopItem = stop({
+  id: "item-noplath-b",
+  day: NO_PATH_DAY,
+  activity: "Walk to the station",
+  activityType: "travel",
+  place: "",
+  startTime: "09:00",
+  endTime: "09:20",
+});
+
+describe("SmartItineraryTable path fork honest empty", () => {
+  it("a day with zero path-tagged items renders no fork chrome at all (no .subplan, no fork parent); unpathed items keep rendering as plain stop-rows", () => {
+    const model = buildItineraryTableModel({
+      startDate: NO_PATH_DAY,
+      endDate: NO_PATH_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [NO_PATH_STOP_A, NO_PATH_STOP_B],
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    // No collapsing into a fork parent — one plain stop-row per item.
+    const stopRows = table.querySelectorAll("tr.stop-row");
+    expect(stopRows.length).toBe(2);
+
+    // No fork chrome anywhere in the table: no "Currently using:" text, no
+    // .subplan/[data-subplan] host, no subplan-toggle chevron, no
+    // data-subs-open marker on any row.
+    expect(within(table).queryByText(/currently using:/i)).toBeNull();
+    expect(table.querySelector(".subplan, [data-subplan]")).toBeNull();
+    expect(
+      table.querySelector(
+        "button.activity-action.subplan-toggle[data-subplan-toggle], button[data-subplan-toggle]",
+      ),
+    ).toBeNull();
+    stopRows.forEach((row) => {
+      expect(row).not.toHaveAttribute("data-subs-open");
+    });
+  });
+});
+
+/**
+ * M827T84Q T3 #1 — radio-only path activation via paired pathRole PATCH.
+ *
+ * Clicking a subplan option's radio (not the row) must issue exactly two
+ * PATCHes: pathRole:"main" + expectedVersion on the picked (radio-clicked)
+ * item, and pathRole:"alternative" + expectedVersion on the previously-main
+ * sibling. A plain click on the option row body (not the radio) must never
+ * send a path PATCH. RED: no radio exists yet inside `.subplan-row` for path
+ * alternatives (SmartItineraryTable only renders `.sub-title` / `.path-chip`
+ * / `.sub-place`, per T2), so `within(altRow).getByRole("radio")` fails.
+ */
+const RADIO_PICK_DAY = "2026-04-20";
+const RADIO_PICK_GROUP_ID = "pgroup-radio-pick";
+const RADIO_PICK_SESSION_TOKEN = "member-session-token-path-radio-pick";
+const RADIO_PICK_MAIN_ID = "item-radio-pick-main";
+const RADIO_PICK_ALT_ID = "item-radio-pick-alt";
+const RADIO_PICK_MAIN_NAME = "Direct route";
+const RADIO_PICK_ALT_NAME = "Scenic route";
+const RADIO_PICK_MAIN_VERSION = 7;
+const RADIO_PICK_ALT_VERSION = 2;
+
+const RADIO_PICK_MAIN_ITEM: StopItem = stop({
+  id: RADIO_PICK_MAIN_ID,
+  day: RADIO_PICK_DAY,
+  activity: "Fly direct",
+  activityType: "travel",
+  place: "",
+  startTime: "09:00",
+  endTime: "11:00",
+  version: RADIO_PICK_MAIN_VERSION,
+  pathGroupId: RADIO_PICK_GROUP_ID,
+  pathId: "path-direct",
+  pathName: RADIO_PICK_MAIN_NAME,
+  pathRole: "main",
+});
+
+const RADIO_PICK_ALT_ITEM: StopItem = stop({
+  id: RADIO_PICK_ALT_ID,
+  day: RADIO_PICK_DAY,
+  activity: "Take the scenic train",
+  activityType: "travel",
+  place: "",
+  startTime: "08:30",
+  endTime: "12:15",
+  version: RADIO_PICK_ALT_VERSION,
+  pathGroupId: RADIO_PICK_GROUP_ID,
+  pathId: "path-scenic",
+  pathName: RADIO_PICK_ALT_NAME,
+  pathRole: "alternative",
+});
+
+function radioPickPatchResponder(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Response {
+  const url = String(input);
+  const method = String(init?.method ?? "GET").toUpperCase();
+  const body = JSON.parse(String(init?.body ?? "{}")) as {
+    expectedVersion?: number;
+    patch?: Record<string, unknown>;
+  };
+  const base = url.includes(RADIO_PICK_MAIN_ID)
+    ? RADIO_PICK_MAIN_ITEM
+    : url.includes(RADIO_PICK_ALT_ID)
+      ? RADIO_PICK_ALT_ITEM
+      : null;
+  if (method !== "PATCH" || !base) {
+    return jsonResponse({ error: { message: "unexpected" } }, 404);
+  }
+  return jsonResponse({
+    ...base,
+    ...body.patch,
+    version: (body.expectedVersion ?? base.version) + 1,
+  });
+}
+
+describe("SmartItineraryTable radio-only path activation", () => {
+  it("clicking a subplan option's radio (not the row) PATCHes pathRole:'main' + expectedVersion on the picked item and pathRole:'alternative' + expectedVersion on the previously-main sibling; a plain row click sends no path PATCH", async () => {
+    const user = userEvent.setup();
+
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) =>
+        radioPickPatchResponder(input, init),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: RADIO_PICK_DAY,
+      endDate: RADIO_PICK_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [RADIO_PICK_MAIN_ITEM, RADIO_PICK_ALT_ITEM],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={RADIO_PICK_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    const currentlyUsing = within(table).getByText(
+      new RegExp(`currently using:\\s*${RADIO_PICK_MAIN_NAME}`, "i"),
+    );
+    const forkRow = currentlyUsing.closest("tr.stop-row") as HTMLElement | null;
+    expect(forkRow).toBeTruthy();
+
+    const toggle = forkRow!.querySelector(
+      "button.activity-action.subplan-toggle[data-subplan-toggle], button[data-subplan-toggle]",
+    ) as HTMLElement | null;
+    expect(toggle).toBeTruthy();
+    await user.click(toggle!);
+
+    const altRow = forkRow!.querySelector(
+      `.subplan-row[data-id="${RADIO_PICK_ALT_ID}"]`,
+    ) as HTMLElement | null;
+    expect(altRow).toBeTruthy();
+
+    // Designer-fix v6.1: the active/main option renders as a .subplan-row
+    // sibling too — marked is-path-active, radio checked, "Using" chip.
+    const mainRow = forkRow!.querySelector(
+      `.subplan-row[data-id="${RADIO_PICK_MAIN_ID}"]`,
+    ) as HTMLElement | null;
+    expect(mainRow).toBeTruthy();
+    expect(mainRow).toHaveClass("is-path-active");
+    expect(within(mainRow!).getByRole("radio")).toBeChecked();
+    expect(within(mainRow!).getByText(/using/i)).toBeInTheDocument();
+    expect(within(altRow!).getByRole("radio")).not.toBeChecked();
+
+    // Fork subplan offers an "Add option…" control (designer-fix v6.1) —
+    // same add-alternative flow as the Path strip.
+    expect(
+      within(forkRow!).getByRole("button", { name: /add option/i }),
+    ).toBeInTheDocument();
+
+    // --- Plain row click (not the radio) must never send a path PATCH. ---
+    fetchMock.mockClear();
+    fireEvent.click(within(altRow!).getByText(RADIO_PICK_ALT_NAME));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(itineraryPatchCalls(fetchMock)).toHaveLength(0);
+
+    // --- Radio click on the alternative activates it via paired PATCH. ---
+    fetchMock.mockClear();
+    const altRadio = within(altRow!).getByRole("radio");
+    await user.click(altRadio);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(2);
+    });
+    const calls = itineraryPatchCalls(fetchMock);
+
+    const pickedCall = calls.find((call) =>
+      call.url.includes(RADIO_PICK_ALT_ID),
+    );
+    const demotedCall = calls.find((call) =>
+      call.url.includes(RADIO_PICK_MAIN_ID),
+    );
+    expect(pickedCall).toBeTruthy();
+    expect(demotedCall).toBeTruthy();
+
+    expect(pickedCall!.body.expectedVersion).toBe(RADIO_PICK_ALT_VERSION);
+    expect(pickedCall!.body.patch).toEqual(
+      expect.objectContaining({ pathRole: "main" }),
+    );
+
+    expect(demotedCall!.body.expectedVersion).toBe(RADIO_PICK_MAIN_VERSION);
+    expect(demotedCall!.body.patch).toEqual(
+      expect.objectContaining({ pathRole: "alternative" }),
+    );
+  });
+
+  /**
+   * M827T84Q T3 #2 — version_conflict on either paired PATCH must route
+   * through the existing commitPatch reload path (onCockpitReload), not
+   * optimistically flip the active radio. Reuses the T3 #1 fixtures but the
+   * mocked PATCH responder returns 409 version_conflict for both paired
+   * requests (per itinerary_patch_contract, same shape as the T5 #2 conflict
+   * suite above: { code, latest }).
+   */
+  it("version_conflict on a radio-pick PATCH calls onCockpitReload instead of optimistically flipping the active radio (no stale pathRole persisted)", async () => {
+    const user = userEvent.setup();
+    const onCockpitReload = vi.fn();
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method !== "PATCH") {
+        return jsonResponse({ error: { message: "unexpected" } }, 404);
+      }
+      const base = url.includes(RADIO_PICK_MAIN_ID)
+        ? RADIO_PICK_MAIN_ITEM
+        : url.includes(RADIO_PICK_ALT_ID)
+          ? RADIO_PICK_ALT_ITEM
+          : null;
+      if (!base) {
+        return jsonResponse({ error: { message: "unexpected" } }, 404);
+      }
+      return jsonResponse(
+        {
+          code: CONFLICT_CODE,
+          latest: { ...base, version: base.version + 3 },
+        },
+        409,
+      );
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: RADIO_PICK_DAY,
+      endDate: RADIO_PICK_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [RADIO_PICK_MAIN_ITEM, RADIO_PICK_ALT_ITEM],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={RADIO_PICK_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        {...{ onCockpitReload }}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    const currentlyUsing = within(table).getByText(
+      new RegExp(`currently using:\\s*${RADIO_PICK_MAIN_NAME}`, "i"),
+    );
+    const forkRow = currentlyUsing.closest("tr.stop-row") as HTMLElement | null;
+    expect(forkRow).toBeTruthy();
+
+    const toggle = forkRow!.querySelector(
+      "button.activity-action.subplan-toggle[data-subplan-toggle], button[data-subplan-toggle]",
+    ) as HTMLElement | null;
+    expect(toggle).toBeTruthy();
+    await user.click(toggle!);
+
+    const altRow = forkRow!.querySelector(
+      `.subplan-row[data-id="${RADIO_PICK_ALT_ID}"]`,
+    ) as HTMLElement | null;
+    expect(altRow).toBeTruthy();
+
+    const altRadio = within(altRow!).getByRole("radio");
+    await user.click(altRadio);
+
+    // Both paired PATCHes come back version_conflict → reload, not a flip.
+    // (Each conflicting commitPatch call independently triggers the shared
+    // reload callback, so onCockpitReload firing at least once — not zero —
+    // is what "routes through the existing reload path" means here.)
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(2);
+    });
+    await waitFor(() => {
+      expect(onCockpitReload).toHaveBeenCalled();
+    });
+
+    // No stale pathRole persisted: the fork parent must still report the
+    // original main path as active — never optimistically flipped to the
+    // alternative that just conflicted.
+    expect(
+      within(table).getByText(
+        new RegExp(`currently using:\\s*${RADIO_PICK_MAIN_NAME}`, "i"),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(table).queryByText(
+        new RegExp(`currently using:\\s*${RADIO_PICK_ALT_NAME}`, "i"),
+      ),
+    ).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * M827T84Q T4 #1 — Path strip: selecting any stop shows a collapsed
+ * "Path · …" strip row with Edit path; expanding offers Assign to an
+ * existing pathGroupId already present in the plan, or Add alternative…
+ * which calls createItineraryItem with pathGroupId (reused if the selection
+ * already carries one, else newly generated), pathId, pathName,
+ * pathRole:"alternative".
+ *
+ * RED: SmartItineraryTable renders no `.path-strip` / "Edit path" chrome on
+ * selection yet (only the T2 fork stop-row + T3 radio pick exist), and
+ * CreateItineraryItemInput (itinerary-api.ts) has no path fields to thread
+ * into the POST body — so both the missing UI and the missing create-body
+ * plumbing fail this test today.
+ */
+const STRIP_SESSION_TOKEN = "member-session-token-path-strip";
+
+/** Existing fork group — its pathGroupId must be offered by Assign + reused by Add alternative. */
+const STRIP_FORK_DAY = "2026-04-22";
+const STRIP_EXISTING_GROUP_ID = "pgroup-strip-existing";
+const STRIP_FORK_MAIN_ID = "item-strip-fork-main";
+const STRIP_FORK_ALT_ID = "item-strip-fork-alt";
+const STRIP_FORK_MAIN_NAME = "Airport express";
+const STRIP_FORK_ALT_NAME = "Local bus";
+const STRIP_FORK_MAIN_VERSION = 4;
+
+const STRIP_FORK_MAIN_ITEM: StopItem = stop({
+  id: STRIP_FORK_MAIN_ID,
+  day: STRIP_FORK_DAY,
+  activity: "Ride to the airport",
+  activityType: "travel",
+  place: "",
+  startTime: "06:00",
+  endTime: "07:00",
+  version: STRIP_FORK_MAIN_VERSION,
+  pathGroupId: STRIP_EXISTING_GROUP_ID,
+  pathId: "path-strip-express",
+  pathName: STRIP_FORK_MAIN_NAME,
+  pathRole: "main",
+});
+
+const STRIP_FORK_ALT_ITEM: StopItem = stop({
+  id: STRIP_FORK_ALT_ID,
+  day: STRIP_FORK_DAY,
+  activity: "Take the local bus",
+  activityType: "travel",
+  place: "",
+  startTime: "05:30",
+  endTime: "07:15",
+  pathGroupId: STRIP_EXISTING_GROUP_ID,
+  pathId: "path-strip-bus",
+  pathName: STRIP_FORK_ALT_NAME,
+  pathRole: "alternative",
+});
+
+/** Plain stop, no pathGroupId — Add alternative must mint a fresh one. */
+const STRIP_PLAIN_DAY = "2026-04-23";
+const STRIP_PLAIN_ID = "item-strip-plain";
+const STRIP_PLAIN_TITLE = "Free morning";
+
+const STRIP_PLAIN_ITEM: StopItem = stop({
+  id: STRIP_PLAIN_ID,
+  day: STRIP_PLAIN_DAY,
+  activity: STRIP_PLAIN_TITLE,
+  activityType: "default",
+  place: "",
+  startTime: "09:00",
+  endTime: "10:00",
+});
+
+/** Typed Add-alternative names — independent per case so create bodies are distinguishable. */
+const STRIP_NEW_ALT_NAME_REUSE = "Night bus";
+const STRIP_NEW_ALT_NAME_FRESH = "Bike rental";
+
+/**
+ * SmartItineraryTable's `selectedId` is parent-controlled (rail sync); this
+ * harness supplies the minimal controlled state a real page would own so a
+ * plain row click can drive selection during the test.
+ */
+function SelectableSmartItineraryTable(
+  props: SmartItineraryTableProps & { initialSelectedId?: string | null },
+) {
+  const { initialSelectedId = null, ...rest } = props;
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSelectedId,
+  );
+  return (
+    <SmartItineraryTable
+      {...rest}
+      selectedId={selectedId}
+      onSelect={(payload) => setSelectedId(payload.id)}
+    />
+  );
+}
+
+describe("SmartItineraryTable path strip: assign / add alternative", () => {
+  it("selecting a stop shows a collapsed 'Path · …' strip with Edit path; expanding offers Assign to an existing pathGroupId already in the plan, and Add alternative… calls createItineraryItem with pathGroupId reused from the selection (or newly generated when absent), pathId, pathName, pathRole:'alternative'", async () => {
+    const user = userEvent.setup();
+    let nextCreatedId = 0;
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const method = String(init?.method ?? "GET").toUpperCase();
+        if (method !== "POST") {
+          return jsonResponse({ error: { message: "unexpected" } }, 404);
+        }
+        nextCreatedId += 1;
+        const body = JSON.parse(
+          String(init?.body ?? "{}"),
+        ) as Record<string, unknown>;
+        return jsonResponse({
+          id: `item-strip-created-${nextCreatedId}`,
+          tripId: TRIP_ID,
+          planVariantId: PLAN_ID,
+          day: body.day,
+          activity: body.activity,
+          activityType: body.activityType,
+          place: body.place ?? "",
+          startTime: body.startTime ?? "",
+          status: "idea",
+          version: 1,
+          pathGroupId: body.pathGroupId,
+          pathId: body.pathId,
+          pathName: body.pathName,
+          pathRole: body.pathRole,
+        });
+      },
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: STRIP_FORK_DAY,
+      endDate: STRIP_PLAIN_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [
+        STRIP_FORK_MAIN_ITEM,
+        STRIP_FORK_ALT_ITEM,
+        STRIP_PLAIN_ITEM,
+      ],
+    });
+
+    render(
+      <SelectableSmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={STRIP_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    /** Select `row`, open the Path strip editor, and Add alternative… `altName`. */
+    const addAlternativeOn = async (row: HTMLElement, altName: string) => {
+      await user.click(row);
+
+      const strip = within(table)
+        .getByText(/^Path\s*·/)
+        .closest("tr") as HTMLElement;
+      expect(strip).toBeTruthy();
+
+      const editBtn = within(strip).getByRole("button", {
+        name: /edit path/i,
+      });
+      await user.click(editBtn);
+
+      // Assign offers an existing pathGroupId already present in the plan.
+      const assignSelect = within(strip).getByRole("combobox", {
+        name: /assign/i,
+      }) as HTMLSelectElement;
+      const optionValues = Array.from(assignSelect.options).map(
+        (o) => o.value,
+      );
+      expect(optionValues).toContain(STRIP_EXISTING_GROUP_ID);
+
+      await user.click(
+        within(strip).getByRole("button", { name: /add alternative/i }),
+      );
+      const nameField = within(strip).getByRole("textbox", {
+        name: /name/i,
+      });
+      await user.type(nameField, altName);
+      await user.click(within(strip).getByRole("button", { name: /save/i }));
+    };
+
+    // --- Case A: selection already carries a pathGroupId → reused, not fresh. ---
+    const forkRow = within(table)
+      .getByText(
+        new RegExp(`currently using:\\s*${STRIP_FORK_MAIN_NAME}`, "i"),
+      )
+      .closest("tr.stop-row") as HTMLElement;
+    await addAlternativeOn(forkRow, STRIP_NEW_ALT_NAME_REUSE);
+
+    await waitFor(() => {
+      expect(itineraryCreateCalls(fetchMock)).toHaveLength(1);
+    });
+    const reuseCall = itineraryCreateCalls(fetchMock)[0]!;
+    expect(reuseCall.body).toEqual(
+      expect.objectContaining({
+        pathGroupId: STRIP_EXISTING_GROUP_ID,
+        pathName: STRIP_NEW_ALT_NAME_REUSE,
+        pathRole: "alternative",
+      }),
+    );
+    expect(typeof reuseCall.body.pathId).toBe("string");
+    expect(String(reuseCall.body.pathId).length).toBeGreaterThan(0);
+
+    // --- Case B: selection has no pathGroupId → a fresh one is generated. ---
+    const plainRow = table.querySelector(
+      `tr.stop-row[data-id="${STRIP_PLAIN_ID}"]`,
+    ) as HTMLElement;
+    expect(plainRow).toBeTruthy();
+    fetchMock.mockClear();
+    await addAlternativeOn(plainRow, STRIP_NEW_ALT_NAME_FRESH);
+
+    await waitFor(() => {
+      expect(itineraryCreateCalls(fetchMock)).toHaveLength(1);
+    });
+    const freshCall = itineraryCreateCalls(fetchMock)[0]!;
+    expect(freshCall.body).toEqual(
+      expect.objectContaining({
+        pathName: STRIP_NEW_ALT_NAME_FRESH,
+        pathRole: "alternative",
+      }),
+    );
+    expect(typeof freshCall.body.pathGroupId).toBe("string");
+    expect(String(freshCall.body.pathGroupId).length).toBeGreaterThan(0);
+    expect(freshCall.body.pathGroupId).not.toBe(STRIP_EXISTING_GROUP_ID);
+    expect(typeof freshCall.body.pathId).toBe("string");
+    expect(String(freshCall.body.pathId).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Combine-gate M827T84Q — Path strip: Assign to path is wired.
+ * PathStripRow's "Assign to path" <select> previously listed pathGroupIds
+ * but had no onChange, so picking an existing group never PATCHed. Selecting
+ * an existing pathGroupId now PATCHes pathGroupId + expectedVersion (plus
+ * pathRole:"alternative", a freshly generated pathId, and pathName carried
+ * over from the group's main sibling). Selecting the empty "Shared spine (no
+ * path)" option behaves exactly like Clear path (nulls all four fields), so
+ * the dropdown stays consistent with the dedicated Clear button.
+ */
+const ASSIGN_WIRE_SESSION_TOKEN = "member-session-token-path-strip-assign";
+
+// --- Case A fixtures: joining an existing group from a plain stop. ---
+const ASSIGN_WIRE_DAY = "2026-04-26";
+const ASSIGN_WIRE_GROUP_ID = "pgroup-strip-assign-wire";
+const ASSIGN_WIRE_MAIN_ID = "item-strip-assign-main";
+const ASSIGN_WIRE_MAIN_NAME = "Airport express";
+const ASSIGN_WIRE_MAIN_VERSION = 2;
+
+const ASSIGN_WIRE_MAIN_ITEM: StopItem = stop({
+  id: ASSIGN_WIRE_MAIN_ID,
+  day: ASSIGN_WIRE_DAY,
+  activity: "Ride to the airport",
+  activityType: "travel",
+  place: "",
+  startTime: "06:00",
+  endTime: "07:00",
+  version: ASSIGN_WIRE_MAIN_VERSION,
+  pathGroupId: ASSIGN_WIRE_GROUP_ID,
+  pathId: "path-strip-assign-express",
+  pathName: ASSIGN_WIRE_MAIN_NAME,
+  pathRole: "main",
+});
+
+const ASSIGN_WIRE_PLAIN_ID = "item-strip-assign-plain";
+const ASSIGN_WIRE_PLAIN_VERSION = 5;
+
+const ASSIGN_WIRE_PLAIN_ITEM: StopItem = stop({
+  id: ASSIGN_WIRE_PLAIN_ID,
+  day: ASSIGN_WIRE_DAY,
+  activity: "Free morning",
+  activityType: "default",
+  place: "",
+  startTime: "09:00",
+  endTime: "10:00",
+  version: ASSIGN_WIRE_PLAIN_VERSION,
+});
+
+// --- Case B fixtures: the empty "Shared spine (no path)" option clears. ---
+const ASSIGN_WIRE_UNASSIGN_DAY = "2026-04-27";
+const ASSIGN_WIRE_UNASSIGN_GROUP_ID = "pgroup-strip-assign-wire-unassign";
+const ASSIGN_WIRE_UNASSIGN_ID = "item-strip-assign-unassign";
+const ASSIGN_WIRE_UNASSIGN_NAME = "Direct ferry";
+const ASSIGN_WIRE_UNASSIGN_VERSION = 6;
+
+const ASSIGN_WIRE_UNASSIGN_ITEM: StopItem = stop({
+  id: ASSIGN_WIRE_UNASSIGN_ID,
+  day: ASSIGN_WIRE_UNASSIGN_DAY,
+  activity: "Take the ferry",
+  activityType: "travel",
+  place: "",
+  startTime: "08:00",
+  endTime: "09:00",
+  version: ASSIGN_WIRE_UNASSIGN_VERSION,
+  pathGroupId: ASSIGN_WIRE_UNASSIGN_GROUP_ID,
+  pathId: "path-strip-assign-ferry",
+  pathName: ASSIGN_WIRE_UNASSIGN_NAME,
+  pathRole: "main",
+});
+
+/** PATCH mock that merges `patch` onto `base` and bumps version — matches the Clear path test's fixture pattern. */
+function assignWirePatchMock(base: StopItem) {
+  return vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const method = String(init?.method ?? "GET").toUpperCase();
+    if (method !== "PATCH") {
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    }
+    const body = JSON.parse(String(init?.body ?? "{}")) as {
+      expectedVersion?: number;
+      patch?: Record<string, unknown>;
+    };
+    return jsonResponse({
+      ...base,
+      ...body.patch,
+      version: (body.expectedVersion ?? base.version) + 1,
+    });
+  });
+}
+
+describe("SmartItineraryTable path strip: assign to path wiring", () => {
+  it("selecting an existing pathGroupId from Assign PATCHes pathGroupId + expectedVersion (with pathRole:'alternative', a generated pathId, and the group's pathName)", async () => {
+    const user = userEvent.setup();
+    const fetchMock = assignWirePatchMock(ASSIGN_WIRE_PLAIN_ITEM);
+
+    const model = buildItineraryTableModel({
+      startDate: ASSIGN_WIRE_DAY,
+      endDate: ASSIGN_WIRE_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [ASSIGN_WIRE_MAIN_ITEM, ASSIGN_WIRE_PLAIN_ITEM],
+    });
+
+    render(
+      <SelectableSmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={ASSIGN_WIRE_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const plainRow = table.querySelector(
+      `tr.stop-row[data-id="${ASSIGN_WIRE_PLAIN_ID}"]`,
+    ) as HTMLElement;
+    expect(plainRow).toBeTruthy();
+
+    const strip = await openPathStripEditor(user, table, plainRow);
+    const assignSelect = within(strip).getByRole("combobox", {
+      name: /assign/i,
+    }) as HTMLSelectElement;
+    expect(
+      Array.from(assignSelect.options).map((o) => o.value),
+    ).toContain(ASSIGN_WIRE_GROUP_ID);
+
+    await user.selectOptions(assignSelect, ASSIGN_WIRE_GROUP_ID);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const assignCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(assignCall.url).toContain(ASSIGN_WIRE_PLAIN_ID);
+    expect(assignCall.body.expectedVersion).toBe(ASSIGN_WIRE_PLAIN_VERSION);
+    expect(assignCall.body.patch).toEqual(
+      expect.objectContaining({
+        pathGroupId: ASSIGN_WIRE_GROUP_ID,
+        pathRole: "alternative",
+        pathName: ASSIGN_WIRE_MAIN_NAME,
+      }),
+    );
+    const assignPatch = assignCall.body.patch as Record<string, unknown>;
+    expect(typeof assignPatch.pathId).toBe("string");
+    expect(String(assignPatch.pathId).length).toBeGreaterThan(0);
+  });
+
+  it("selecting the empty 'Shared spine (no path)' option clears the path exactly like Clear path", async () => {
+    const user = userEvent.setup();
+    const fetchMock = assignWirePatchMock(ASSIGN_WIRE_UNASSIGN_ITEM);
+
+    const model = buildItineraryTableModel({
+      startDate: ASSIGN_WIRE_UNASSIGN_DAY,
+      endDate: ASSIGN_WIRE_UNASSIGN_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [ASSIGN_WIRE_UNASSIGN_ITEM],
+    });
+
+    render(
+      <SelectableSmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={ASSIGN_WIRE_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const row = table.querySelector(
+      `tr.stop-row[data-id="${ASSIGN_WIRE_UNASSIGN_ID}"]`,
+    ) as HTMLElement;
+    expect(row).toBeTruthy();
+
+    const strip = await openPathStripEditor(user, table, row);
+    const assignSelect = within(strip).getByRole("combobox", {
+      name: /assign/i,
+    }) as HTMLSelectElement;
+    expect(assignSelect.value).toBe(ASSIGN_WIRE_UNASSIGN_GROUP_ID);
+
+    await user.selectOptions(assignSelect, "");
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const clearCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(clearCall.url).toContain(ASSIGN_WIRE_UNASSIGN_ID);
+    expect(clearCall.body.expectedVersion).toBe(ASSIGN_WIRE_UNASSIGN_VERSION);
+    expect(clearCall.body.patch).toEqual({
+      pathGroupId: null,
+      pathId: null,
+      pathName: null,
+      pathRole: null,
+    });
+  });
+});
+
+/**
+ * M827T84Q T4 #2 — Clear path sends a PATCH nulling
+ * pathGroupId/pathId/pathName/pathRole with expectedVersion, and a
+ * version_conflict response on that PATCH reuses the existing reload
+ * pattern (onCockpitReload) instead of persisting a stale/nulled path
+ * locally.
+ *
+ * RED: the Path strip editor (T4 #1) only renders "Assign to path" +
+ * "Add alternative…" — there is no Clear-path control yet, so
+ * `within(strip).getByRole("button", { name: /clear path/i })` fails.
+ * Do NOT implement Clear path in this change; this test must fail on the
+ * missing control.
+ */
+const CLEAR_PATH_SESSION_TOKEN = "member-session-token-path-clear";
+
+const CLEAR_PATH_DAY = "2026-04-24";
+const CLEAR_PATH_GROUP_ID = "pgroup-clear-path";
+const CLEAR_PATH_ITEM_ID = "item-clear-path-main";
+const CLEAR_PATH_NAME = "Direct ferry";
+const CLEAR_PATH_VERSION = 6;
+
+const CLEAR_PATH_ITEM: StopItem = stop({
+  id: CLEAR_PATH_ITEM_ID,
+  day: CLEAR_PATH_DAY,
+  activity: "Take the ferry",
+  activityType: "travel",
+  place: "",
+  startTime: "08:00",
+  endTime: "09:00",
+  version: CLEAR_PATH_VERSION,
+  pathGroupId: CLEAR_PATH_GROUP_ID,
+  pathId: "path-clear-ferry",
+  pathName: CLEAR_PATH_NAME,
+  pathRole: "main",
+});
+
+const CLEAR_PATH_CONFLICT_DAY = "2026-04-25";
+const CLEAR_PATH_CONFLICT_GROUP_ID = "pgroup-clear-path-conflict";
+const CLEAR_PATH_CONFLICT_ITEM_ID = "item-clear-path-conflict";
+const CLEAR_PATH_CONFLICT_NAME = "Night train";
+const CLEAR_PATH_CONFLICT_VERSION = 3;
+
+const CLEAR_PATH_CONFLICT_ITEM: StopItem = stop({
+  id: CLEAR_PATH_CONFLICT_ITEM_ID,
+  day: CLEAR_PATH_CONFLICT_DAY,
+  activity: "Board the night train",
+  activityType: "travel",
+  place: "",
+  startTime: "22:00",
+  endTime: "06:00",
+  version: CLEAR_PATH_CONFLICT_VERSION,
+  pathGroupId: CLEAR_PATH_CONFLICT_GROUP_ID,
+  pathId: "path-clear-train",
+  pathName: CLEAR_PATH_CONFLICT_NAME,
+  pathRole: "main",
+});
+
+/** Select `row`, open the Path strip editor, and return it. */
+async function openPathStripEditor(
+  user: ReturnType<typeof userEvent.setup>,
+  table: HTMLElement,
+  row: HTMLElement,
+): Promise<HTMLElement> {
+  await user.click(row);
+  const strip = within(table)
+    .getByText(/^Path\s*·/)
+    .closest("tr") as HTMLElement;
+  expect(strip).toBeTruthy();
+  const editBtn = within(strip).getByRole("button", { name: /edit path/i });
+  await user.click(editBtn);
+  return strip;
+}
+
+describe("SmartItineraryTable path strip: clear path", () => {
+  it("Clear path PATCHes pathGroupId/pathId/pathName/pathRole to null with expectedVersion, and version_conflict on that PATCH calls onCockpitReload instead of optimistically nulling the path locally", async () => {
+    const user = userEvent.setup();
+
+    // --- Case A: successful Clear path PATCHes all four fields to null. ---
+    const successFetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const method = String(init?.method ?? "GET").toUpperCase();
+        if (method !== "PATCH") {
+          return jsonResponse({ error: { message: "unexpected" } }, 404);
+        }
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          expectedVersion?: number;
+          patch?: Record<string, unknown>;
+        };
+        return jsonResponse({
+          ...CLEAR_PATH_ITEM,
+          ...body.patch,
+          version: (body.expectedVersion ?? CLEAR_PATH_VERSION) + 1,
+        });
+      },
+    );
+
+    const successModel = buildItineraryTableModel({
+      startDate: CLEAR_PATH_DAY,
+      endDate: CLEAR_PATH_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [CLEAR_PATH_ITEM],
+    });
+
+    const { unmount } = render(
+      <SelectableSmartItineraryTable
+        model={successModel}
+        tripId={TRIP_ID}
+        sessionToken={CLEAR_PATH_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={successFetchMock}
+      />,
+    );
+
+    const successTable = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const successRow = successTable.querySelector(
+      `tr.stop-row[data-id="${CLEAR_PATH_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(successRow).toBeTruthy();
+
+    const successStrip = await openPathStripEditor(
+      user,
+      successTable,
+      successRow,
+    );
+
+    // RED: no Clear-path control exists yet inside the strip editor.
+    const clearBtn = within(successStrip).getByRole("button", {
+      name: /clear path/i,
+    });
+    await user.click(clearBtn);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(successFetchMock)).toHaveLength(1);
+    });
+    const clearCall = itineraryPatchCalls(successFetchMock)[0]!;
+    expect(clearCall.url).toContain(CLEAR_PATH_ITEM_ID);
+    expect(clearCall.body.expectedVersion).toBe(CLEAR_PATH_VERSION);
+    expect(clearCall.body.patch).toEqual({
+      pathGroupId: null,
+      pathId: null,
+      pathName: null,
+      pathRole: null,
+    });
+
+    unmount();
+
+    // --- Case B: version_conflict routes through onCockpitReload, same
+    // pattern as T3 #2 / T5 #2, instead of optimistically nulling the path
+    // locally. ---
+    const onCockpitReload = vi.fn();
+    const conflictFetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const method = String(init?.method ?? "GET").toUpperCase();
+        if (method !== "PATCH") {
+          return jsonResponse({ error: { message: "unexpected" } }, 404);
+        }
+        return jsonResponse(
+          {
+            code: CONFLICT_CODE,
+            latest: {
+              ...CLEAR_PATH_CONFLICT_ITEM,
+              version: CLEAR_PATH_CONFLICT_VERSION + 3,
+            },
+          },
+          409,
+        );
+      },
+    );
+
+    const conflictModel = buildItineraryTableModel({
+      startDate: CLEAR_PATH_CONFLICT_DAY,
+      endDate: CLEAR_PATH_CONFLICT_DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [CLEAR_PATH_CONFLICT_ITEM],
+    });
+
+    render(
+      <SelectableSmartItineraryTable
+        model={conflictModel}
+        tripId={TRIP_ID}
+        sessionToken={CLEAR_PATH_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={conflictFetchMock}
+        {...{ onCockpitReload }}
+      />,
+    );
+
+    const conflictTable = screen.getByRole("table", {
+      name: TABLE_ARIA_LABEL,
+    });
+    const conflictRow = conflictTable.querySelector(
+      `tr.stop-row[data-id="${CLEAR_PATH_CONFLICT_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(conflictRow).toBeTruthy();
+
+    const conflictStrip = await openPathStripEditor(
+      user,
+      conflictTable,
+      conflictRow,
+    );
+
+    // RED: no Clear-path control exists yet inside the strip editor.
+    const conflictClearBtn = within(conflictStrip).getByRole("button", {
+      name: /clear path/i,
+    });
+    await user.click(conflictClearBtn);
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(conflictFetchMock)).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(onCockpitReload).toHaveBeenCalled();
+    });
+
+    // No stale/nulled path persisted locally: the collapsed strip summary
+    // must still report the original path name, never the "Shared spine"
+    // fallback that a locally-applied null would produce.
+    expect(
+      within(conflictTable).getByText(
+        new RegExp(`^Path\\s*·\\s*${CLEAR_PATH_CONFLICT_NAME}$`, "i"),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(conflictTable).queryByText(/^Path\s*·\s*Shared spine$/i),
+    ).not.toBeInTheDocument();
   });
 });

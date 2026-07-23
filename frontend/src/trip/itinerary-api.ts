@@ -33,6 +33,17 @@ export type CreateItineraryItemInput = {
    * (API rejects children under non-block parents).
    */
   promoteParent?: { expectedVersion: number };
+  /**
+   * Path linkage for a new alternative (M827T84Q T4 #1) — reuse the
+   * selection's pathGroupId when it has one, else a freshly generated one.
+   */
+  pathGroupId?: string;
+  /** Path linkage within the pathGroupId; generated per new alternative. */
+  pathId?: string;
+  /** Human label for the path — typed via Add alternative… Name. */
+  pathName?: string;
+  /** Role of this item within its path, e.g. "alternative". */
+  pathRole?: string;
 };
 
 export type CreateItineraryItemSuccess = {
@@ -67,6 +78,10 @@ type CreateItineraryItemBody = {
   details?: unknown;
   parentItemId?: unknown;
   isPlanBlock?: unknown;
+  pathGroupId?: unknown;
+  pathId?: unknown;
+  pathName?: unknown;
+  pathRole?: unknown;
   /** Backend ApiError / ErrorBody — top-level `{ code, message }`. */
   code?: unknown;
   message?: unknown;
@@ -95,6 +110,23 @@ function nextClientMutationId(prefix = "itinerary"): string {
     return crypto.randomUUID();
   }
   return `${prefix}-${Date.now()}`;
+}
+
+function nextRandomIdentifier(prefix: string): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Fresh pathGroupId when Add alternative… has no group to reuse (M827T84Q T4 #1). */
+export function generatePathGroupId(): string {
+  return nextRandomIdentifier("pgroup");
+}
+
+/** Fresh pathId for a new alternative within a pathGroupId. */
+export function generatePathId(): string {
+  return nextRandomIdentifier("path");
 }
 
 function failureMessage(body: CreateItineraryItemBody | null, status: number): string {
@@ -152,6 +184,30 @@ function parseCreatedItem(body: CreateItineraryItemBody | null): TripCockpitItin
         : undefined;
   const isPlanBlock =
     typeof body.isPlanBlock === "boolean" ? body.isPlanBlock : undefined;
+  const pathGroupId =
+    typeof body.pathGroupId === "string"
+      ? body.pathGroupId
+      : body.pathGroupId === null
+        ? null
+        : undefined;
+  const pathId =
+    typeof body.pathId === "string"
+      ? body.pathId
+      : body.pathId === null
+        ? null
+        : undefined;
+  const pathName =
+    typeof body.pathName === "string"
+      ? body.pathName
+      : body.pathName === null
+        ? null
+        : undefined;
+  const pathRole =
+    typeof body.pathRole === "string"
+      ? body.pathRole
+      : body.pathRole === null
+        ? null
+        : undefined;
   return {
     id: body.id,
     tripId: body.tripId,
@@ -170,6 +226,10 @@ function parseCreatedItem(body: CreateItineraryItemBody | null): TripCockpitItin
     ...(details !== undefined ? { details } : {}),
     ...(parentItemId !== undefined ? { parentItemId } : {}),
     ...(isPlanBlock !== undefined ? { isPlanBlock } : {}),
+    ...(pathGroupId !== undefined ? { pathGroupId } : {}),
+    ...(pathId !== undefined ? { pathId } : {}),
+    ...(pathName !== undefined ? { pathName } : {}),
+    ...(pathRole !== undefined ? { pathRole } : {}),
   };
 }
 
@@ -223,6 +283,10 @@ export async function createItineraryItem(
         ...(startTime ? { startTime } : {}),
         ...(endTime ? { endTime } : {}),
         ...(parentItemId ? { parentItemId } : {}),
+        ...(input.pathGroupId ? { pathGroupId: input.pathGroupId } : {}),
+        ...(input.pathId ? { pathId: input.pathId } : {}),
+        ...(input.pathName ? { pathName: input.pathName } : {}),
+        ...(input.pathRole ? { pathRole: input.pathRole } : {}),
       }),
     });
   } catch {
@@ -276,6 +340,12 @@ export type ItineraryItemPatchFields = {
   /** Place-resolve persist — null clears coords. */
   latitude?: number | null;
   longitude?: number | null;
+  /** Path fork activation — "main" (active) or "alternative" (M827T84Q T3 #1). */
+  pathRole?: string | null;
+  /** Clear path (M827T84Q T4 #2) — null detaches the stop from its path group. */
+  pathGroupId?: string | null;
+  pathId?: string | null;
+  pathName?: string | null;
 };
 
 export type PatchItineraryItemInput = {
