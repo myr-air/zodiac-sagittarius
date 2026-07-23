@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M827T84Q | 2026-07-23 | Path strip Assign listed groups but never PATCHed; active option omitted from fork subplan (no Using / Add option…) | Wire Assign → commitPatch; render all fork options with Using chip; Add option… opens path strip add | path-strip-assign-wire; designer-fix-using-add-option |
 | M81LW2UJ / M81HY2YR | 2026-07-22 | Unbound fetch Illegal invocation; Join ID misread as network fail; demo weather read as live | Bind globalThis.fetch; classify Join IDs before invite resolve; Demo weather badge + Escape/human dates/overlap tether | ship-post-squash-unit; browser-ux findings 0 High/Med |
 | M81DDKSC | 2026-07-22 | Stale expectedVersion after PATCH; Trip Plan always open; day-drag implied unwired API | Apply returned summary overrides; collapse plan panel until toggle; hide day grips / day-reorder copy | m1-mutation-round-trip; m1-rail-patch; m1-honest-chrome |
 | M81AHX9V | 2026-07-22 | Guest create Continue left `#create`; Days silently empty on load fail; legacy `joii-v2` SW broke API | Clear hash + pending join storage + Open your trip; Days/Table loadError+Retry; bind fetch; SW kill-switch; post-hydrate landing reveal | Landing/Days/Table RTL; browser smoke; validate --strict |
