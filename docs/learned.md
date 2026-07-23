@@ -6,6 +6,9 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M82GSOYG | 2026-07-23 | Plan-block day PATCH rejected while children exist (immediate parent_scope FK) | Single-statement `update_itinerary_item_with_day_cascade`; FE PATCHes parent day only | itinerary_patch_contract cascade; FE cross-day Vitest |
+| M82GSOYG | 2026-07-23 | Partial `details` PATCH wiped sibling JSON fields (coalesce replace) | softMap merges `currentDetails` for from/to/by/meal; table/rail pass item.details | itinerary-type-fields merge tests |
+| M82GSOYG | 2026-07-23 | Playwright Chromium missing for AFK visual-verify | skill-local npm install + playwright install chromium; SVG className guard | visual-verify-report |
 | M827T84Q | 2026-07-23 | Path strip Assign listed groups but never PATCHed; active option omitted from fork subplan (no Using / Add option…) | Wire Assign → commitPatch; render all fork options with Using chip; Add option… opens path strip add | path-strip-assign-wire; designer-fix-using-add-option |
 | M81LW2UJ / M81HY2YR | 2026-07-22 | Unbound fetch Illegal invocation; Join ID misread as network fail; demo weather read as live | Bind globalThis.fetch; classify Join IDs before invite resolve; Demo weather badge + Escape/human dates/overlap tether | ship-post-squash-unit; browser-ux findings 0 High/Med |
 | M81DDKSC | 2026-07-22 | Stale expectedVersion after PATCH; Trip Plan always open; day-drag implied unwired API | Apply returned summary overrides; collapse plan panel until toggle; hide day grips / day-reorder copy | m1-mutation-round-trip; m1-rail-patch; m1-honest-chrome |
@@ -33,6 +36,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M82GSOYG | 2026-07-23 | When an API replaces a whole JSON document on PATCH, clients must merge prior fields into the outbound payload | Sending only the edited key silently deletes siblings on coalesce-replace columns |
+| M82GSOYG | 2026-07-23 | Cascading related-row updates under an immediate (NOT DEFERRABLE) FK need a single SQL statement, not sequential UPDATEs | Hierarchy moves under scope FKs fail mid-transaction otherwise |
 | M81LW2UJ | 2026-07-22 | Injected `fetch` must be `globalThis.fetch.bind(globalThis)` — unbound method extraction throws Illegal invocation | Prevents false reachability errors and silent PATCH no-ops on healthy APIs |
 | M81DDKSC | 2026-07-22 | Run mission evidence capture from the repository root so labels append to evidence.jsonl | Prevents green local tests with empty/missing strict evidence |
 | M81DDKSC | 2026-07-22 | plan.json evidence must be bare labels, not full CLI command strings | Keeps validate --strict matched to evidence.jsonl |
