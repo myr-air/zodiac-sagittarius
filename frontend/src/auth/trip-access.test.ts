@@ -145,6 +145,17 @@ describe("extractInviteToken", () => {
   });
 });
 
+/** Reachability copy used when fetch throws (must stay for real network failures). */
+const REACHABILITY_COPY =
+  "Could not reach the server. Check your connection and try again.";
+
+/**
+ * Independent expected calm copy when the guest pastes a create-flow Join ID
+ * (not an invite token / URL). Implementation may live in auth-copy later.
+ */
+const JOIN_ID_GUIDANCE_COPY =
+  "That looks like a Join ID. Paste the invite link your host shared, or use the Join ID with the trip password.";
+
 describe("resolveTripInvite", () => {
   it("GETs trip-join-invite-tokens/current with the extracted token", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse(JOIN_BODY));
@@ -170,6 +181,64 @@ describe("resolveTripInvite", () => {
       `http://127.0.0.1:5181/api/v1/trip-join-invite-tokens/current?token=${encodeURIComponent(INVITE_TOKEN)}`,
     );
     expect(init?.method ?? "GET").toBe("GET");
+  });
+
+  it("returns calm Join ID guidance (not reachability) for create-flow Join IDs without calling fetch", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+
+    for (const joinId of ["2607-CHIA-000A", "HK-SZ-2025"] as const) {
+      fetchMock.mockClear();
+      const outcome = await resolveTripInvite(joinId, {
+        fetch: fetchMock,
+        apiBaseUrl: "http://127.0.0.1:5181",
+      });
+
+      expect(outcome.ok).toBe(false);
+      if (outcome.ok) throw new Error("expected failure");
+      expect(outcome.error).toBe(JOIN_ID_GUIDANCE_COPY);
+      expect(outcome.error).not.toBe(REACHABILITY_COPY);
+      expect(outcome.error).not.toMatch(/Could not reach the server/i);
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  });
+
+  it("keeps invite token/URL resolve path and still uses reachability copy on true network failure", async () => {
+    const okFetch = vi.fn<typeof fetch>(async () => jsonResponse(JOIN_BODY));
+    const okOutcome = await resolveTripInvite(INVITE_TOKEN, {
+      fetch: okFetch,
+      apiBaseUrl: "http://127.0.0.1:5181",
+    });
+    expect(okOutcome.ok).toBe(true);
+    expect(okFetch).toHaveBeenCalledTimes(1);
+    expect(okFetch.mock.calls[0]![0]).toBe(
+      `http://127.0.0.1:5181/api/v1/trip-join-invite-tokens/current?token=${encodeURIComponent(INVITE_TOKEN)}`,
+    );
+
+    const urlFetch = vi.fn<typeof fetch>(async () => jsonResponse(JOIN_BODY));
+    const urlOutcome = await resolveTripInvite(
+      `https://joii.app/trip-access?token=${INVITE_TOKEN}`,
+      {
+        fetch: urlFetch,
+        apiBaseUrl: "http://127.0.0.1:5181",
+      },
+    );
+    expect(urlOutcome.ok).toBe(true);
+    expect(urlFetch).toHaveBeenCalledTimes(1);
+
+    const failFetch = vi.fn<typeof fetch>(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+    const failOutcome = await resolveTripInvite(INVITE_TOKEN, {
+      fetch: failFetch,
+      apiBaseUrl: "http://127.0.0.1:5181",
+    });
+    expect(failOutcome).toEqual({
+      ok: false,
+      error: REACHABILITY_COPY,
+    });
+    expect(failFetch).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -2457,6 +2457,19 @@ a.portal-pass:hover {
   color: rgb(255 255 255 / 0.78);
 }
 
+/* Inactive view-switch link on teal command bar: soft pill bg is light —
+   use primary-strong (not on-primary white) so Days stays readable vs Table. */
+.command .view-switch .view-switch-inactive {
+  color: var(--color-primary-strong);
+  opacity: 0.92;
+}
+
+.command .view-switch .view-switch-inactive:hover {
+  color: var(--color-primary-strong);
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+}
+
 .header-actions {
   display: flex;
   gap: 8px;
@@ -3096,6 +3109,65 @@ tr.stop-row:hover td {
 
 tr.stop-row.selected td {
   background: var(--color-primary-soft);
+}
+
+/* M81HY2YR — sibling overlap warning cues (quiet advisory). */
+.smart-itinerary .day-cue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--color-warning-soft);
+  border-bottom: 1px solid var(--color-warning-border);
+  color: var(--color-warning-strong);
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity 0.18s ease;
+}
+
+.smart-itinerary .day-cue[hidden] {
+  display: none !important;
+}
+
+tr.stop-row.has-overlap td {
+  background: color-mix(in srgb, var(--color-warning-soft) 70%, white) !important;
+  transition: background-color 0.18s ease;
+}
+
+tr.stop-row.has-overlap.selected td {
+  background: color-mix(
+    in srgb,
+    var(--color-warning-soft) 55%,
+    var(--color-primary-soft)
+  ) !important;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.overlap-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-warning-strong);
+}
+
+/* Per-day cues: hide only notes marked hidden for that day's cue (not global). */
+.smart-itinerary .overlap-note[hidden] {
+  display: none !important;
+}
+
+.smart-itinerary .day-wx .demo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-right: 4px;
+}
+
+.smart-itinerary tr.day-cue-row td {
+  padding: 0;
 }
 
 tr.stop-row.enter {
@@ -4016,6 +4088,13 @@ tr.add-draft-row td {
   padding: 18px 18px 14px;
 }
 
+/* Import itinerary dialog — draft #dlg-import wider card (M81HY2YR T4). */
+.stop-dlg-card.import-dlg-card {
+  width: min(560px, 100%);
+  max-height: min(88vh, 720px);
+  overflow: auto;
+}
+
 .stop-dlg-card h3 {
   margin: 0;
   font-size: 16px;
@@ -4101,6 +4180,168 @@ tr.add-draft-row td {
   border-color: transparent;
   background: var(--color-primary);
   color: var(--color-on-primary);
+}
+
+/* Place resolve — draft place-cell + #dlg-resolve (M81HY2YR T2) */
+.place-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.place-cell .cell-title,
+.place-cell .cell-sub {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Draft quiet: teal text, transparent border, 44px hit (places-bulk-ingest-draft-v1). */
+.btn-quiet {
+  background: transparent;
+  color: var(--color-primary-strong, var(--color-primary));
+  border: 1px solid transparent;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.btn-quiet:hover {
+  background: var(--color-primary-soft);
+}
+
+.btn-quiet:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary-soft) 80%, transparent);
+}
+
+/* Shared calm failure box (Import + Resolve dialogs). */
+.error-box {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.error-box[hidden] {
+  display: none !important;
+}
+
+.place-resolve-card {
+  width: min(440px, 100%);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: min(88vh, 720px);
+  overflow: auto;
+}
+
+.place-resolve-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.place-resolve-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.place-resolve-head p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.place-resolve-body {
+  margin: 0;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.place-resolve-body .step-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+}
+
+.place-resolve-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.place-resolve-body .candidate {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.place-resolve-body .candidate:hover,
+.place-resolve-body .candidate[aria-pressed="true"] {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-soft);
+}
+
+.place-resolve-body .candidate strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.place-resolve-body .candidate span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.place-resolve-body .candidate .conf {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary-strong, var(--color-primary));
+}
+
+.place-resolve-dlg .stop-dlg-foot {
+  margin: 0;
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-quiet,
+  .place-resolve-body .candidate {
+    transition: none;
+  }
 }
 
 /* Day timeline spine — Theme A draft .dotline / .type-node (M80VKAX5) */

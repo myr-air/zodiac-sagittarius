@@ -14,7 +14,7 @@
  * T5 #2: version_conflict → TripCockpit reload before next edit (no silent overwrite).
  * M81DDKSC T1 #2: successful PATCH applies returned summary so next edit uses new expectedVersion.
  * T5 #3: incomplete idea rows stay valid; type picker excludes default (picker set only).
- * T7 #2: static/demo weather chrome on day headers; no live weather network calls.
+ * T7 #2 / M81LW2UJ T2: day-header weather absent or Demo/placeholder — never bare live temps.
  * M80P3JXX T4 #1: day-chip (.day-id) collapse/expand + activity-count chip persists by tripId.
  * M80P3JXX T5 #3: order PATCH failure → calm alert; no silent local-only reorder.
  * M80P3JXX T6 #2: parent chevron expands/collapses nested .subplan rows (Stay / attraction draft).
@@ -22,6 +22,8 @@
  * M80P3JXX T7 #3: Note / link / time-setup dialogs from stop actions + Set time; Save/Cancel → existing PATCH only.
  * M81DDKSC T1 #3: openStopDialog(note|link) seeds dlg fields from loaded stop note/mapLink.
  * M81DDKSC T2 #2: add child under parent stop; successful create nests via returned parentItemId.
+ * M81HY2YR T3 #2 / M81LW2UJ T6: sibling overlap cues tethered under day; draft duration; honest create errors.
+ * M81HY2YR T2 #1: Explicit Resolve in place cell opens candidate picker; pick → PATCH + version apply.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -1350,28 +1352,36 @@ describe("SmartItineraryTable idea status and type picker", () => {
 });
 
 /**
- * T7 #2 — Demo weather on day headers (draft `.day-wx`); no live weather fetch.
- * Independent CAL literals from approved itinerary-plan-draft-v1.html (Apr 12–13).
- * Soft: static/demo chrome OK; hard: never hit a live weather network.
+ * M81LW2UJ T2 — Day-header weather honesty (M7 owns real weather).
+ * Absent OR clearly Demo/placeholder — never bare live-looking temps/sunrise.
+ * Independent CAL days from approved itinerary-plan-draft-v1.html (Apr 12–13).
  */
-const DEMO_WX_DAY1 = {
-  datetime: DAY,
-  dataWx: "cloud",
-  temp: "16°",
-  ariaLabel: "Cloudy · 16° · ↑05:18 · ↓18:05",
-} as const;
-const DEMO_WX_DAY2 = {
-  datetime: DAY_2,
-  dataWx: "sun",
-  temp: "18°",
-  ariaLabel: "Sunny · 18° · ↑05:17 · ↓18:06",
-} as const;
-/** URL fragments that indicate a live weather service (spec Out: live weather API). */
+const WX_DAY_DATETIMES = [DAY, DAY_2] as const;
+/** Bare climate chrome that reads as a live forecast without a Demo badge. */
+const BARE_LIVE_WX = /\d+°|↑\d{1,2}:\d{2}|↓\d{1,2}:\d{2}|sunrise|sunset/i;
+const DEMO_OR_PLACEHOLDER = /demo|placeholder/i;
+/** URL fragments that indicate a live weather service. */
 const LIVE_WEATHER_URL =
   /weather|open-?meteo|openweathermap|forecast|wttr\.in|met\.no/i;
 
+function weatherIsHonest(wx: Element): boolean {
+  const label = `${wx.getAttribute("aria-label") ?? ""} ${wx.textContent ?? ""}`;
+  const hasDemoMark =
+    wx.getAttribute("data-demo") === "true" ||
+    wx.getAttribute("data-placeholder") === "true" ||
+    Boolean(
+      wx.querySelector(
+        "[data-demo], [data-placeholder], .wx-demo, .demo-badge, .wx-placeholder",
+      ),
+    ) ||
+    DEMO_OR_PLACEHOLDER.test(label);
+  if (hasDemoMark) return true;
+  // No Demo/placeholder mark → must not present bare live-looking climate.
+  return !BARE_LIVE_WX.test(label);
+}
+
 describe("SmartItineraryTable demo weather chrome", () => {
-  it("Static/demo weather chrome may render on day headers; no live weather network calls", () => {
+  it("day-header weather is absent or Demo/placeholder-labeled — never bare live-looking temps/sunrise; no live weather network calls", () => {
     const fetchMock = vi.fn(async () => jsonResponse({}));
     const previousFetch = globalThis.fetch;
     globalThis.fetch = fetchMock as typeof fetch;
@@ -1398,23 +1408,20 @@ describe("SmartItineraryTable demo weather chrome", () => {
       const dayRows = [...table.querySelectorAll("tr.day-row")];
       expect(dayRows.length).toBe(2);
 
-      // Draft landmark: each day header carries static `.day-wx` chrome.
-      for (const expected of [DEMO_WX_DAY1, DEMO_WX_DAY2]) {
+      for (const datetime of WX_DAY_DATETIMES) {
         const dayRow = dayRows.find((row) => {
           const dateEl = row.querySelector("time.day-date");
-          return dateEl?.getAttribute("datetime") === expected.datetime;
+          return dateEl?.getAttribute("datetime") === datetime;
         });
         expect(dayRow).toBeTruthy();
 
         const wx = dayRow!.querySelector(".day-wx");
-        expect(wx).toBeTruthy();
-        expect(wx).toHaveAttribute("data-wx", expected.dataWx);
-        expect(wx!.querySelector(".wx-icon")).toBeTruthy();
-        expect(wx!.querySelector(".wx-temp")).toHaveTextContent(expected.temp);
-        expect(wx).toHaveAttribute("aria-label", expected.ariaLabel);
+        // Honest: omit weather chrome, or label it Demo/placeholder.
+        if (wx) {
+          expect(weatherIsHonest(wx)).toBe(true);
+        }
       }
 
-      // Hard gate: no live weather network (injected + globalThis.fetch).
       const weatherCalls = (fetchMock.mock.calls as unknown as unknown[][]).filter(
         (call) => LIVE_WEATHER_URL.test(String(call[0])),
       );
@@ -2442,5 +2449,719 @@ describe("SmartItineraryTable note/link/time-setup dialogs", () => {
     expect(
       fetchMock.mock.calls.every(([input]) => String(input) === patchUrl),
     ).toBe(true);
+  });
+});
+
+/**
+ * M81HY2YR T3 #2 — sibling overlap warning cues (places-bulk-ingest-draft-v1.html).
+ *
+ * Quiet advisory: `.day-cue` + `tr.has-overlap` row tint; `.overlap-note` only
+ * when day cue is off. Warnings only — no alternate-path or plan-check UI.
+ * Independent literals from approved draft (Ichiran dinner ∩ Night walk).
+ */
+const OVERLAP_DINNER_ID = "item-overlap-dinner";
+const OVERLAP_WALK_ID = "item-overlap-walk";
+const OVERLAP_CLEAR_ID = "item-overlap-clear";
+const OVERLAP_DINNER_TITLE = "Ichiran dinner";
+const OVERLAP_WALK_TITLE = "Night walk";
+/** Draft `.day-cue` copy for the 18:30–20:00 ∩ 18:45–19:15 window. */
+const OVERLAP_DAY_CUE =
+  "2 stops overlap between 18:30–19:15 — review times.";
+
+describe("SmartItineraryTable sibling overlap warning cues", () => {
+  it("shows draft day-cue and/or has-overlap row tint for overlapping siblings; row notes only when day cue off; warnings only (no alternate-path or plan-check UI)", () => {
+    const clearStop = stop({
+      id: OVERLAP_CLEAR_ID,
+      day: DAY,
+      activity: "Hotel check-in",
+      activityType: "stay",
+      place: "Hotel Gracery Shinjuku",
+      startTime: "15:30",
+      endTime: "16:00",
+    });
+    const dinner = stop({
+      id: OVERLAP_DINNER_ID,
+      day: DAY,
+      activity: OVERLAP_DINNER_TITLE,
+      activityType: "food",
+      place: "Ichiran Shinjuku",
+      startTime: "18:30",
+      endTime: "20:00",
+    });
+    const walk = stop({
+      id: OVERLAP_WALK_ID,
+      day: DAY,
+      activity: OVERLAP_WALK_TITLE,
+      activityType: "experience",
+      place: "Kabukicho",
+      startTime: "18:45",
+      endTime: "19:15",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [clearStop, dinner, walk],
+    });
+
+    const { container } = render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    // Draft quiet cues: day-cue banner and/or has-overlap tint on intersecting siblings.
+    const cueHost =
+      container.querySelector("[data-day-cue]") ??
+      table.closest("[data-day-cue]");
+    const dayCue =
+      container.querySelector(".day-cue") ?? table.querySelector(".day-cue");
+    expect(dayCue).toBeTruthy();
+    expect(dayCue).toBeVisible();
+    expect(dayCue).toHaveTextContent(OVERLAP_DAY_CUE);
+    // Default quiet mode keeps day cue on (draft body[data-day-cue=on]).
+    expect(cueHost ?? dayCue).toBeTruthy();
+    if (cueHost) {
+      expect(cueHost).toHaveAttribute("data-day-cue", "on");
+    }
+
+    const dinnerRow = table.querySelector(
+      `tr.stop-row[data-id="${OVERLAP_DINNER_ID}"]`,
+    ) as HTMLElement;
+    const walkRow = table.querySelector(
+      `tr.stop-row[data-id="${OVERLAP_WALK_ID}"]`,
+    ) as HTMLElement;
+    const clearRow = table.querySelector(
+      `tr.stop-row[data-id="${OVERLAP_CLEAR_ID}"]`,
+    ) as HTMLElement;
+    expect(dinnerRow).toBeTruthy();
+    expect(walkRow).toBeTruthy();
+    expect(clearRow).toBeTruthy();
+
+    expect(dinnerRow).toHaveClass("has-overlap");
+    expect(walkRow).toHaveClass("has-overlap");
+    expect(dinnerRow).toHaveAttribute("data-overlap", "true");
+    expect(walkRow).toHaveAttribute("data-overlap", "true");
+    // Non-overlapping sibling stays clear of warning tint.
+    expect(clearRow).not.toHaveClass("has-overlap");
+    expect(clearRow).not.toHaveAttribute("data-overlap");
+
+    // Row notes only when day cue off: notes stay in DOM but hidden while cue on
+    // (draft: body[data-day-cue=on] .overlap-note { display: none } / hidden).
+    const overlapNotes = [
+      ...container.querySelectorAll(".overlap-note"),
+    ] as HTMLElement[];
+    expect(overlapNotes.length).toBeGreaterThanOrEqual(2);
+    expect(
+      overlapNotes.some((n) =>
+        n.textContent?.includes(`Overlaps with ${OVERLAP_WALK_TITLE}`),
+      ),
+    ).toBe(true);
+    expect(
+      overlapNotes.some((n) =>
+        n.textContent?.includes(`Overlaps with ${OVERLAP_DINNER_TITLE}`),
+      ),
+    ).toBe(true);
+    for (const note of overlapNotes) {
+      expect(
+        note.hidden ||
+          note.getAttribute("hidden") !== null ||
+          !note.checkVisibility(),
+      ).toBe(true);
+    }
+    // RTL: "Overlaps with …" must not be exposed as visible text while cue on.
+    expect(
+      within(dinnerRow).queryByText(/Overlaps with/i),
+    ).not.toBeInTheDocument();
+    expect(
+      within(walkRow).queryByText(/Overlaps with/i),
+    ).not.toBeInTheDocument();
+
+    // Warnings only — reject alternate-path / plan-check chrome (PRODUCT.md / decisions).
+    expect(
+      within(table).queryByRole("columnheader", {
+        name: /path|alt(?:ernative)?\s*path|plan\s*check/i,
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      table.querySelector(
+        ".path-graph, .col-path, .alt-path, .plan-check, [data-path-graph], [data-plan-check], [data-col='path']",
+      ),
+    ).toBeNull();
+    expect(
+      within(container as HTMLElement).queryByText(
+        /plan\s*[ab]\b|alternate\s*path|plan\s*check/i,
+      ),
+    ).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * M81LW2UJ T6 — Overlap day-cues tethered under the day they describe
+ * (not a global strip above the table). Days without that day's cue keep
+ * row notes available (not force-hidden by a global cue flag).
+ */
+const TETHER_DAY1_DINNER = "item-tether-d1-dinner";
+const TETHER_DAY1_WALK = "item-tether-d1-walk";
+const TETHER_DAY2_CLEAR = "item-tether-d2-clear";
+const TETHER_DAY2_MUSEUM = "item-tether-d2-museum";
+const TETHER_DAY2_CAFE = "item-tether-d2-cafe";
+const TETHER_DAY1_CUE =
+  "2 stops overlap between 18:30–19:15 — review times.";
+/** Day 2 overlaps (12:00–13:30 ∩ 12:15–12:45) — distinct cue copy. */
+const TETHER_DAY2_CUE =
+  "2 stops overlap between 12:00–12:45 — review times.";
+const TETHER_DAY2_MUSEUM_TITLE = "Morning museum";
+const TETHER_DAY2_CAFE_TITLE = "Cafe stop";
+
+describe("SmartItineraryTable overlap day-cue tether", () => {
+  it("tethers each overlap day-cue under its day (not a global strip); row notes stay available for days without that day's cue", () => {
+    const day1Dinner = stop({
+      id: TETHER_DAY1_DINNER,
+      day: DAY,
+      activity: OVERLAP_DINNER_TITLE,
+      activityType: "food",
+      place: "Ichiran Shinjuku",
+      startTime: "18:30",
+      endTime: "20:00",
+    });
+    const day1Walk = stop({
+      id: TETHER_DAY1_WALK,
+      day: DAY,
+      activity: OVERLAP_WALK_TITLE,
+      activityType: "experience",
+      place: "Kabukicho",
+      startTime: "18:45",
+      endTime: "19:15",
+    });
+    const day2Clear = stop({
+      id: TETHER_DAY2_CLEAR,
+      day: DAY_2,
+      activity: "Hotel breakfast",
+      activityType: "food",
+      place: "Hotel Gracery",
+      startTime: "08:00",
+      endTime: "09:00",
+    });
+    const day2Museum = stop({
+      id: TETHER_DAY2_MUSEUM,
+      day: DAY_2,
+      activity: TETHER_DAY2_MUSEUM_TITLE,
+      activityType: "attraction",
+      place: "teamLab",
+      startTime: "12:00",
+      endTime: "13:30",
+    });
+    const day2Cafe = stop({
+      id: TETHER_DAY2_CAFE,
+      day: DAY_2,
+      activity: TETHER_DAY2_CAFE_TITLE,
+      activityType: "food",
+      place: "Blue Bottle",
+      startTime: "12:15",
+      endTime: "12:45",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [
+        day1Dinner,
+        day1Walk,
+        day2Clear,
+        day2Museum,
+        day2Cafe,
+      ],
+    });
+
+    const { container } = render(<SmartItineraryTable model={model} />);
+    const root = container.querySelector(".smart-itinerary") as HTMLElement;
+    expect(root).toBeTruthy();
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const dayRows = [...table.querySelectorAll("tr.day-row")];
+    const day1Header = dayRows.find(
+      (row) =>
+        row.querySelector("time.day-date")?.getAttribute("datetime") === DAY,
+    );
+    const day2Header = dayRows.find(
+      (row) =>
+        row.querySelector("time.day-date")?.getAttribute("datetime") === DAY_2,
+    );
+    expect(day1Header).toBeTruthy();
+    expect(day2Header).toBeTruthy();
+
+    // Not a global strip above the table (direct children of .smart-itinerary).
+    const cuesBeforeTable = [...root.querySelectorAll(":scope > .day-cue")];
+    expect(cuesBeforeTable).toHaveLength(0);
+
+    const allCues = [...root.querySelectorAll(".day-cue")] as HTMLElement[];
+    const day1Cue = allCues.find((c) =>
+      c.textContent?.includes(TETHER_DAY1_CUE),
+    );
+    const day2Cue = allCues.find((c) =>
+      c.textContent?.includes(TETHER_DAY2_CUE),
+    );
+    expect(day1Cue).toBeTruthy();
+    expect(day2Cue).toBeTruthy();
+
+    // Each cue sits under the day it describes (after that day's header,
+    // before the next day's header / end of that day block).
+    expect(
+      day1Header!.compareDocumentPosition(day1Cue!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      day1Cue!.compareDocumentPosition(day2Header!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      day2Header!.compareDocumentPosition(day2Cue!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(table.contains(day1Cue!)).toBe(true);
+    expect(table.contains(day2Cue!)).toBe(true);
+
+    const day2MuseumRow = table.querySelector(
+      `tr.stop-row[data-id="${TETHER_DAY2_MUSEUM}"]`,
+    ) as HTMLElement;
+    const day2CafeRow = table.querySelector(
+      `tr.stop-row[data-id="${TETHER_DAY2_CAFE}"]`,
+    ) as HTMLElement;
+    expect(day2MuseumRow).toHaveClass("has-overlap");
+    expect(day2CafeRow).toHaveClass("has-overlap");
+
+    const clearRow = table.querySelector(
+      `tr.stop-row[data-id="${TETHER_DAY2_CLEAR}"]`,
+    ) as HTMLElement;
+    expect(clearRow).not.toHaveClass("has-overlap");
+    expect(
+      within(clearRow).queryByText(/Overlaps with/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps row notes available on a day that has no day-cue even when another day shows a cue", () => {
+    const day1Dinner = stop({
+      id: `${TETHER_DAY1_DINNER}-solo`,
+      day: DAY,
+      activity: OVERLAP_DINNER_TITLE,
+      activityType: "food",
+      place: "Ichiran Shinjuku",
+      startTime: "18:30",
+      endTime: "20:00",
+    });
+    const day1Walk = stop({
+      id: `${TETHER_DAY1_WALK}-solo`,
+      day: DAY,
+      activity: OVERLAP_WALK_TITLE,
+      activityType: "experience",
+      place: "Kabukicho",
+      startTime: "18:45",
+      endTime: "19:15",
+    });
+    const day2Only = stop({
+      id: `${TETHER_DAY2_CLEAR}-solo`,
+      day: DAY_2,
+      activity: "Park stroll",
+      activityType: "experience",
+      place: "Yoyogi Park",
+      startTime: "10:00",
+      endTime: "11:00",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [day1Dinner, day1Walk, day2Only],
+    });
+
+    const { container } = render(<SmartItineraryTable model={model} />);
+    const root = container.querySelector(".smart-itinerary") as HTMLElement;
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    const day1Cue = [...root.querySelectorAll(".day-cue")].find((c) =>
+      c.textContent?.includes(TETHER_DAY1_CUE),
+    );
+    expect(day1Cue).toBeTruthy();
+    // Only Day 1 has overlaps → exactly one day-cue.
+    expect(root.querySelectorAll(".day-cue")).toHaveLength(1);
+
+    // Cue tethered under Day 1 inside the table — not a strip above it.
+    expect(table.contains(day1Cue!)).toBe(true);
+    expect(root.querySelectorAll(":scope > .day-cue")).toHaveLength(0);
+
+    const day2Row = table.querySelector(
+      `tr.stop-row[data-id="${TETHER_DAY2_CLEAR}-solo"]`,
+    ) as HTMLElement;
+    expect(day2Row).toBeTruthy();
+    expect(day2Row).not.toHaveClass("has-overlap");
+
+    // Global notes host that blanks every day when any day has a cue is the
+    // defect — cue-less days must not be swept into a table-level host.
+    const globalNotesHost = root.querySelector(":scope > .overlap-notes-host");
+    expect(globalNotesHost).toBeNull();
+  });
+});
+
+/**
+ * M81LW2UJ T6 — Draft add-activity duration updates when start + end are set.
+ * Independent literal: 10:00–11:30 → 1h 30m (same formatDuration as stop rows).
+ */
+const DRAFT_START = "10:00";
+const DRAFT_END = "11:30";
+const DRAFT_DURATION = "1h 30m";
+
+describe("SmartItineraryTable draft add-activity duration", () => {
+  it("draft duration updates when start and end are set (not stuck on —)", async () => {
+    const user = userEvent.setup();
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [],
+    });
+
+    render(<SmartItineraryTable model={model} />);
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const tbody = table.querySelector("tbody")!;
+    const addRow = tbody.querySelector(
+      `tr.add-row[data-day="${DAY1_HEADER.dataDay}"]`,
+    ) as HTMLElement;
+
+    await user.click(
+      within(addRow).getByRole("button", { name: /add activity/i }),
+    );
+
+    const draft = tbody.querySelector(
+      `tr.add-draft-row[data-day="${DAY1_HEADER.dataDay}"]`,
+    ) as HTMLElement;
+    expect(draft).toBeVisible();
+
+    const duration = within(draft).getByLabelText("Duration");
+    expect(duration).toHaveTextContent("—");
+
+    await user.type(
+      within(draft).getByLabelText("Start time"),
+      DRAFT_START,
+    );
+    await user.type(within(draft).getByLabelText("End time"), DRAFT_END);
+
+    expect(duration).toHaveTextContent(DRAFT_DURATION);
+    expect(duration).not.toHaveTextContent(/^—$/);
+  });
+
+  it("commitDraft POSTs create body with draft startTime and endTime", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        id: CREATED_ITEM_ID,
+        tripId: TRIP_ID,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY_TITLE,
+        activityType: CREATE_ACTIVITY_TYPE,
+        place: CREATE_PLACE,
+        startTime: DRAFT_START,
+        endTime: DRAFT_END,
+        status: "idea",
+        version: 1,
+      }),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const tbody = table.querySelector("tbody")!;
+    const addRow = tbody.querySelector(
+      `tr.add-row[data-day="${DAY1_HEADER.dataDay}"]`,
+    ) as HTMLElement;
+
+    await user.click(
+      within(addRow).getByRole("button", { name: /add activity/i }),
+    );
+
+    const draft = tbody.querySelector(
+      `tr.add-draft-row[data-day="${DAY1_HEADER.dataDay}"]`,
+    ) as HTMLElement;
+    expect(draft).toBeVisible();
+
+    await user.type(within(draft).getByLabelText("Start time"), DRAFT_START);
+    await user.type(within(draft).getByLabelText("End time"), DRAFT_END);
+    await user.type(
+      within(draft).getByRole("textbox", { name: /title/i }),
+      ACTIVITY_TITLE,
+    );
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(itineraryCreateCalls(fetchMock)).toHaveLength(1);
+    });
+
+    expect(itineraryCreateCalls(fetchMock)[0]!.body).toEqual(
+      expect.objectContaining({
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY_TITLE,
+        activityType: CREATE_ACTIVITY_TYPE,
+        place: CREATE_PLACE,
+        startTime: DRAFT_START,
+        endTime: DRAFT_END,
+      }),
+    );
+  });
+});
+
+/**
+ * M81LW2UJ T6 — commitDraft surfaces honest API 4xx messages (backend ErrorBody
+ * is top-level `{ code, message }`), not false reachability when fetch returned.
+ */
+const CREATE_API_4XX_MESSAGE = "activity must not be blank";
+const REACHABILITY_COPY =
+  "Could not reach the server. Check your connection and try again.";
+
+describe("SmartItineraryTable Quick-add honest API errors", () => {
+  it("commitDraft surfaces HTTP 4xx API message — not false reachability when fetch returned a response", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () =>
+      // Backend ApiError / ErrorBody: top-level code + message (not nested .error).
+      jsonResponse(
+        { code: "invalid_request", message: CREATE_API_4XX_MESSAGE },
+        400,
+      ),
+    );
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const tbody = table.querySelector("tbody")!;
+    const addRow = tbody.querySelector(
+      `tr.add-row[data-day="${DAY1_HEADER.dataDay}"]`,
+    ) as HTMLElement;
+    const draftRow = () =>
+      tbody.querySelector(
+        `tr.add-draft-row[data-day="${DAY1_HEADER.dataDay}"]`,
+      ) as HTMLElement;
+
+    await user.click(
+      within(addRow).getByRole("button", { name: /add activity/i }),
+    );
+    await user.type(
+      within(draftRow()).getByRole("textbox", { name: /title/i }),
+      ACTIVITY_TITLE,
+    );
+    await user.keyboard("{Enter}");
+
+    const alert = await waitFor(() => {
+      const el = within(table).getByRole("alert");
+      expect(el).toHaveTextContent(CREATE_API_4XX_MESSAGE);
+      return el;
+    });
+    expect(alert).toBeVisible();
+    expect(alert).not.toHaveTextContent(REACHABILITY_COPY);
+    expect(draftRow()).toBeVisible();
+  });
+});
+
+/**
+ * M81HY2YR T2 #1 — Explicit Resolve from the place cell opens the draft
+ * candidate picker; picking a candidate PATCHes place/mapLink/lat/lng via the
+ * existing expectedVersion path and applies the returned version for the next
+ * edit. Independent literals from places-bulk-ingest-draft-v1.html.
+ */
+const RESOLVE_SESSION = "member-session-token-place-resolve-table";
+const RESOLVE_ITEM_ID = "item-food-resolve-table";
+const RESOLVE_ACTIVITY = "Ichiran dinner";
+const RESOLVE_PLACE_HINT = "Ichiran Shinjuku";
+const RESOLVE_EXPECTED_VERSION = 5;
+const RESOLVE_RETURNED_VERSION = RESOLVE_EXPECTED_VERSION + 1;
+const RESOLVE_DESTINATION = "Tokyo";
+const RESOLVE_CANDIDATE_NAME = "Ichiran Shinjuku Central Rd";
+const RESOLVE_CANDIDATE_MAP =
+  "https://www.openstreetmap.org/?mlat=35.694&mlon=139.7028#map=17/35.694/139.7028";
+const RESOLVE_CANDIDATE_LAT = 35.694;
+const RESOLVE_CANDIDATE_LNG = 139.7028;
+const RESOLVE_FOLLOWUP_PLACE = "Kabukicho";
+
+describe("SmartItineraryTable place Resolve → candidate PATCH + version apply", () => {
+  it("Explicit Resolve in the place cell opens the candidate picker; Apply PATCHes place, mapLink, latitude/longitude with expectedVersion and the next edit uses the returned version", async () => {
+    const user = userEvent.setup();
+    const foodStop: StopItem = {
+      id: RESOLVE_ITEM_ID,
+      tripId: TRIP_ID,
+      planVariantId: PLAN_ID,
+      day: DAY,
+      activity: RESOLVE_ACTIVITY,
+      activityType: "food",
+      place: RESOLVE_PLACE_HINT,
+      startTime: "19:00",
+      endTime: "20:30",
+      status: "idea",
+      version: RESOLVE_EXPECTED_VERSION,
+    };
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+
+      if (method === "POST" && url.includes("/places/resolve")) {
+        return jsonResponse({
+          status: "resolved",
+          candidates: [
+            {
+              name: RESOLVE_CANDIDATE_NAME,
+              address: "1-22-7 Kabukicho, Shinjuku City, Tokyo",
+              coordinates: {
+                lat: RESOLVE_CANDIDATE_LAT,
+                lng: RESOLVE_CANDIDATE_LNG,
+              },
+              mapLink: RESOLVE_CANDIDATE_MAP,
+              confidence: 0.94,
+              source: "nominatim",
+              evidence: ["brave: Ichiran Shinjuku"],
+            },
+          ],
+        });
+      }
+
+      if (method === "PATCH" && url.includes(`/itinerary-items/${RESOLVE_ITEM_ID}`)) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          expectedVersion?: number;
+          patch?: Record<string, unknown>;
+        };
+        return jsonResponse({
+          ...foodStop,
+          ...body.patch,
+          version: (body.expectedVersion ?? RESOLVE_EXPECTED_VERSION) + 1,
+          mapLink:
+            typeof body.patch?.mapLink === "string"
+              ? body.patch.mapLink
+              : foodStop.mapLink,
+          coordinates:
+            typeof body.patch?.latitude === "number" &&
+            typeof body.patch?.longitude === "number"
+              ? { lat: body.patch.latitude, lng: body.patch.longitude }
+              : undefined,
+        });
+      }
+
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [foodStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={RESOLVE_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        destinationLabel={RESOLVE_DESTINATION}
+        countries={["JP"]}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const row = table.querySelector(
+      `tr.stop-row[data-id="${RESOLVE_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(row).toBeTruthy();
+
+    // Draft place-cell: Place input + Resolve control.
+    const placeField = within(row).getByRole("textbox", { name: /^place$/i });
+    expect(placeField).toHaveValue(RESOLVE_PLACE_HINT);
+    await user.click(within(row).getByRole("button", { name: /^resolve$/i }));
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /^resolve place$/i,
+    });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+
+    const candidate = await within(dialog).findByRole("button", {
+      name: new RegExp(RESOLVE_CANDIDATE_NAME, "i"),
+    });
+    await user.click(candidate);
+    await user.click(
+      within(dialog).getByRole("button", { name: /^apply to stop$/i }),
+    );
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const resolvePatch = itineraryPatchCalls(fetchMock)[0]!;
+    expect(resolvePatch.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${RESOLVE_ITEM_ID}`,
+    );
+    expect(resolvePatch.body.expectedVersion).toBe(RESOLVE_EXPECTED_VERSION);
+    expect(resolvePatch.body.patch).toEqual(
+      expect.objectContaining({
+        place: RESOLVE_CANDIDATE_NAME,
+        mapLink: RESOLVE_CANDIDATE_MAP,
+        latitude: RESOLVE_CANDIDATE_LAT,
+        longitude: RESOLVE_CANDIDATE_LNG,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: /^resolve place$/i }),
+      ).not.toBeInTheDocument();
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    fetchMock.mockClear();
+
+    // Next edit must send the returned version — not the pre-resolve seed.
+    const placeAfter = within(row).getByRole("textbox", { name: /^place$/i });
+    await user.clear(placeAfter);
+    await user.type(placeAfter, RESOLVE_FOLLOWUP_PLACE);
+    await user.tab();
+
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.expectedVersion).toBe(
+      RESOLVE_RETURNED_VERSION,
+    );
+    expect(itineraryPatchCalls(fetchMock)[0]!.body.patch).toEqual(
+      expect.objectContaining({ place: RESOLVE_FOLLOWUP_PLACE }),
+    );
   });
 });

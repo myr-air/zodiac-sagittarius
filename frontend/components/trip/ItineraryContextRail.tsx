@@ -1,6 +1,8 @@
 /**
  * Right context inspector — stop details when selected (T6).
- * Empty cue when nothing selected; type-shaped enrich cues + quiet Remove (T6 #3).
+ * Single empty cue when nothing selected (M81LW2UJ T5); type-shaped enrich
+ * cues + quiet Remove (T6 #3). Draft Map link with Resolve-to-fill placeholder
+ * when selected (honest — no fake paste API; place-cell Resolve OK).
  * T7 #1: type fields mirror the stop field bag (table + rail stay in sync).
  * M81DDKSC T4: mappable bag keys PATCH via soft-map; non-mappable stay read-only.
  */
@@ -85,6 +87,11 @@ type ItineraryContextRailProps = {
   onPatched?: (item: TripCockpitItineraryItem) => void;
   /** Parent reloads TripCockpit after version_conflict (parity with table). */
   onCockpitReload?: () => void;
+  /**
+   * Parent bumps after TripCockpit reload completes — clears the conflict
+   * lock so rail PATCH can resume.
+   */
+  reloadToken?: number;
 };
 
 function typeLabel(activityType: string): string {
@@ -110,6 +117,7 @@ export function ItineraryContextRail({
   onFieldBagChange,
   onPatched,
   onCockpitReload,
+  reloadToken = 0,
 }: ItineraryContextRailProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -126,10 +134,16 @@ export function ItineraryContextRail({
     setAwaitingCockpitReload(false);
   }, [selectedItem?.id]);
 
+  /** Conflict lock clears when parent finishes TripCockpit reload. */
+  useEffect(() => {
+    setAwaitingCockpitReload(false);
+  }, [reloadToken]);
+
   const empty = !selectedItem;
+  /** Single empty cue title — do not also render competing "Start here" heading. */
   const title = empty ? "No activity selected" : selectedItem.activity;
   const meta = empty
-    ? "Select a stop to inspect"
+    ? "Add under a day. Fields appear as you enrich."
     : [
         typeLabel(selectedItem.activityType),
         selectedItem.dayLabel,
@@ -270,12 +284,7 @@ export function ItineraryContextRail({
           </button>
         ) : null}
       </div>
-      {empty ? (
-        <div className="ctx-empty-start">
-          <h3>Start here</h3>
-          <p>Add under a day. Fields appear as you enrich.</p>
-        </div>
-      ) : (
+      {empty ? null : (
         <>
           {deleteError ? (
             <p className="text-sm text-(--color-danger)" role="alert">
@@ -289,6 +298,18 @@ export function ItineraryContextRail({
           <div className="panel ctx-fields">
             <h3>Type fields (rail)</h3>
             <div className="field-grid">
+              {/* Draft #rail-link — Resolve fills; place-cell Resolve OK; no fake paste API. */}
+              <label>
+                Map link
+                <input
+                  id="rail-link"
+                  aria-label="Map link"
+                  placeholder="Resolve to fill"
+                  value=""
+                  readOnly
+                  className={FIELD_READONLY_CLASS}
+                />
+              </label>
               {fieldDefs.map((field) => {
                 const value = bag[field.key] ?? "";
                 const persistable = isBagKeyPersistable(

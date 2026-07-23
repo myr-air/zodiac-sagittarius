@@ -486,6 +486,7 @@ export function DayTimeline({
 
   useEffect(() => {
     setLocalStops(stops);
+    setAwaitingCockpitReload(false);
   }, [stops]);
 
   const canMutate = Boolean(tripId && sessionToken && planVariantId && day);

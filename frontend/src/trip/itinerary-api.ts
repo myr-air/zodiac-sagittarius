@@ -20,6 +20,10 @@ export type CreateItineraryItemInput = {
   activity: string;
   activityType: string;
   place: string;
+  /** Optional HH:MM — CreateItineraryItemRequest.startTime. */
+  startTime?: string;
+  /** Optional HH:MM — CreateItineraryItemRequest.endTime. */
+  endTime?: string;
   /** Optional; generated when omitted. */
   clientMutationId?: string;
   /** Nest under this parent stop (POST body parentItemId). */
@@ -63,6 +67,9 @@ type CreateItineraryItemBody = {
   details?: unknown;
   parentItemId?: unknown;
   isPlanBlock?: unknown;
+  /** Backend ApiError / ErrorBody — top-level `{ code, message }`. */
+  code?: unknown;
+  message?: unknown;
   error?: { code?: unknown; message?: unknown };
 };
 
@@ -91,10 +98,13 @@ function nextClientMutationId(prefix = "itinerary"): string {
 }
 
 function failureMessage(body: CreateItineraryItemBody | null, status: number): string {
-  const fromApi =
+  const nested =
     body && typeof body.error?.message === "string"
       ? body.error.message.trim()
       : "";
+  const topLevel =
+    body && typeof body.message === "string" ? body.message.trim() : "";
+  const fromApi = nested || topLevel;
   if (fromApi) return fromApi;
   if (status >= 500) {
     return "Something went wrong adding this stop. Please try again.";
@@ -176,6 +186,8 @@ export async function createItineraryItem(
     input.clientMutationId?.trim() || nextClientMutationId();
   const activity = input.activity.trim() || "Untitled activity";
   const parentItemId = input.parentItemId?.trim() || undefined;
+  const startTime = input.startTime?.trim() || undefined;
+  const endTime = input.endTime?.trim() || undefined;
 
   if (parentItemId && input.promoteParent) {
     const promote = await patchItineraryItem(
@@ -208,6 +220,8 @@ export async function createItineraryItem(
         activity,
         activityType: input.activityType,
         place: input.place,
+        ...(startTime ? { startTime } : {}),
+        ...(endTime ? { endTime } : {}),
         ...(parentItemId ? { parentItemId } : {}),
       }),
     });
@@ -259,6 +273,9 @@ export type ItineraryItemPatchFields = {
   mapLink?: string;
   /** Promote a stop to an activity block so children can nest under it. */
   isPlanBlock?: boolean;
+  /** Place-resolve persist — null clears coords. */
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export type PatchItineraryItemInput = {

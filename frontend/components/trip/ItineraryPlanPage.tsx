@@ -23,7 +23,16 @@ export type ItineraryPlanPageProps = {
   sessionToken?: string;
   apiBaseUrl?: string;
   fetch?: typeof fetch;
+  /**
+   * Bumps when parent finishes TripCockpit reload — clears conflict lock
+   * so inline PATCH can resume with authoritative versions.
+   */
+  reloadToken?: number;
   onCockpitReload?: () => void;
+  /** Trip destination label for place resolve context. */
+  destinationLabel?: string;
+  /** Trip countries for place resolve context. */
+  countries?: string[];
   /** Command-bar Reorder — when true, show draft day/stop drag grips. */
   reorderEnabled?: boolean;
 };
@@ -49,7 +58,10 @@ export function ItineraryPlanPage({
   sessionToken,
   apiBaseUrl,
   fetch: fetchImpl,
+  reloadToken = 0,
   onCockpitReload,
+  destinationLabel,
+  countries,
   reorderEnabled = false,
 }: ItineraryPlanPageProps) {
   const [selectedItem, setSelectedItem] =
@@ -109,7 +121,10 @@ export function ItineraryPlanPage({
           sessionToken={sessionToken}
           apiBaseUrl={apiBaseUrl}
           fetch={fetchImpl}
+          reloadToken={reloadToken}
           onCockpitReload={onCockpitReload}
+          destinationLabel={destinationLabel}
+          countries={countries}
           selectedId={selectedId}
           reorderEnabled={reorderEnabled}
           fieldBagById={fieldBagById}
@@ -145,6 +160,7 @@ export function ItineraryPlanPage({
         sessionToken={sessionToken}
         apiBaseUrl={apiBaseUrl}
         fetch={fetchImpl}
+        reloadToken={reloadToken}
         onCockpitReload={onCockpitReload}
         onFieldBagChange={(itemId, bag) => {
           mergeBag(itemId, bag);

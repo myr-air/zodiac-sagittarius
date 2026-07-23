@@ -174,6 +174,23 @@ type MemberSessionBody = {
 
 export { defaultApiBaseUrl } from "../api-base-url";
 
+/** Calm copy when guest pastes a create-flow Join ID into invite resolve. */
+export const JOIN_ID_GUIDANCE_COPY =
+  "That looks like a Join ID. Paste the invite link your host shared, or use the Join ID with the trip password.";
+
+/**
+ * Create-flow Join IDs (not invite tokens):
+ * - server-generated `{yymm}-{SLUG4}-{suffix4}` e.g. `2607-CHIA-000A`
+ * - destination-style uppercase codes ending in a year e.g. `HK-SZ-2025`
+ */
+export function looksLikeCreateFlowJoinId(token: string): boolean {
+  const t = token.trim();
+  if (!t) return false;
+  if (/^\d{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/.test(t)) return true;
+  if (/^[A-Z]{2,}(?:-[A-Z]{2,})+-\d{4}$/.test(t)) return true;
+  return false;
+}
+
 /**
  * Extract invite token from a pasted invite URL (`?token=…`) or return a bare code.
  */
@@ -277,6 +294,13 @@ export async function resolveTripInvite(
     return {
       ok: false,
       error: "Enter a trip access code or paste an invite link.",
+    };
+  }
+
+  if (looksLikeCreateFlowJoinId(token)) {
+    return {
+      ok: false,
+      error: JOIN_ID_GUIDANCE_COPY,
     };
   }
 

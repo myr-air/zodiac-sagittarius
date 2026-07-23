@@ -1,7 +1,9 @@
 /**
  * @vitest-environment happy-dom
  *
- * ItineraryContextRail — empty-start cue (T6 #2).
+ * ItineraryContextRail — unified empty cue + Resolve honesty (M81LW2UJ T5).
+ * Landmarks: places-bulk-ingest-draft-v1.html rail (Map link / Resolve) +
+ * empty selection must not compete as dual cards.
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -10,35 +12,104 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import { ItineraryContextRail } from "./ItineraryContextRail";
 
-/** Independent literals from approved itinerary-plan-draft-v1.html clearStopSelection + empty-only panel. */
+/** Competing dual-card titles from the pre-fix empty rail (must not both appear). */
 const CTX_EMPTY_TITLE = "No activity selected";
-const CTX_EMPTY_META = "Select a stop to inspect";
 const EMPTY_START_HEADING = "Start here";
+/** Clear empty guidance — kept as the single empty cue body. */
 const EMPTY_START_BODY = "Add under a day. Fields appear as you enrich.";
+
+/** Draft rail Map link (places-bulk-ingest-draft-v1.html #rail-link). */
+const MAP_LINK_LABEL = "Map link";
+const MAP_LINK_PLACEHOLDER = "Resolve to fill";
+/** Draft rail Resolve control — optional if Place-cell Resolve is the trigger. */
+const RAIL_RESOLVE_LABEL = "Resolve place";
+/** Dishonest fallback copy when no Map link field exists to paste into. */
+const PASTE_MAP_LINK_CLAIM = /paste a map link/i;
 
 describe("ItineraryContextRail empty-start cue", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("With no selection, rail shows the empty-start cue (not a marketing card grid)", () => {
+  it("With no selection, rail shows a single empty cue (not competing No activity selected + Start here dual cards)", () => {
     render(<ItineraryContextRail />);
 
     const context = screen.getByRole("complementary", {
       name: /context inspector/i,
     });
 
-    expect(within(context).getByRole("heading", { level: 2 })).toHaveTextContent(
-      CTX_EMPTY_TITLE,
-    );
-    expect(context.querySelector("#ctx-meta")).toHaveTextContent(CTX_EMPTY_META);
+    const emptyTitle = within(context).queryByRole("heading", {
+      name: new RegExp(`^${CTX_EMPTY_TITLE}$`, "i"),
+    });
+    const startHere = within(context).queryByRole("heading", {
+      name: new RegExp(`^${EMPTY_START_HEADING}$`, "i"),
+    });
 
-    // Draft empty-only panel (itinerary-plan-draft-v1.html) — not a marketing card grid.
-    expect(
-      within(context).getByRole("heading", { name: EMPTY_START_HEADING }),
-    ).toBeInTheDocument();
+    // Unified empty: exactly one of the former dual-card headings — not both.
+    const competingCueCount = [emptyTitle, startHere].filter(Boolean).length;
+    expect(competingCueCount).toBe(1);
+
+    // Still a clear empty cue with guidance (not a marketing card grid).
     expect(within(context).getByText(EMPTY_START_BODY)).toBeInTheDocument();
     expect(within(context).queryAllByRole("article")).toHaveLength(0);
+
+    // Empty state must not show competing CTAs (e.g. Resolve beside Start here).
+    expect(
+      within(context).queryByRole("button", { name: new RegExp(RAIL_RESOLVE_LABEL, "i") }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(context).queryByRole("button", { name: /^resolve$/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("ItineraryContextRail Resolve honesty", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Selected stop exposes Map link so paste-map-link is honest; rail does not claim paste without that field", () => {
+    render(
+      <ItineraryContextRail
+        selectedItem={{
+          id: "item-rail-resolve-honesty",
+          activity: "Ichiran dinner",
+          activityType: "food",
+          status: "idea",
+          dayLabel: "Day 1",
+          fieldBag: {
+            place: "Ichiran Shinjuku",
+            meal: "Dinner",
+            reservation: "",
+          },
+        }}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+
+    // Draft #rail-link — paste path / resolve fill target lives in the rail.
+    const mapLink = within(context).getByLabelText(
+      new RegExp(`^${MAP_LINK_LABEL}$`, "i"),
+    );
+    expect(mapLink).toHaveAttribute("placeholder", MAP_LINK_PLACEHOLDER);
+
+    // Honesty: never claim paste-map-link without the Map link field above.
+    const pasteClaim = within(context).queryByText(PASTE_MAP_LINK_CLAIM);
+    if (pasteClaim) {
+      expect(mapLink).toBeInTheDocument();
+    }
+
+    // If rail Resolve is present (draft #btn-resolve-rail), Map link must pair it.
+    // Place-cell Resolve alone is OK — no rail Resolve required.
+    const railResolve = within(context).queryByRole("button", {
+      name: new RegExp(RAIL_RESOLVE_LABEL, "i"),
+    });
+    if (railResolve) {
+      expect(mapLink).toBeInTheDocument();
+    }
   });
 });
 

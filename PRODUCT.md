@@ -223,12 +223,15 @@ Joii is a greenfield Next App Router app (`package` name `joii`):
 | Account portal / my trips | Yes | No | Full |
 | Trip cockpit shell | Yes (data) | Yes (desktop shell; plan filter; honest chrome stubs) | Desktop cockpit |
 | Trip plans (main/draft/…) | Yes | Partial (visible-plan filter by planVariantId; set-main deferred) | First-class |
-| Smart itinerary table | Yes (API) | Yes (M1 write-path: nested CRUD, mutation round-trip, rail→PATCH) | Source of truth |
+| Smart itinerary table | Yes (API) | Yes (M1 write-path + M2 place resolve / sibling overlap cues / itinerary import) | Source of truth |
+| Place resolve | Yes (`places/resolve`) | Yes (table place-cell Resolve → resolve → PATCH; not silent geocode) | Explicit resolve |
+| Itinerary import | Yes (`itinerary-imports` normalize) | Yes (preview → sequential CRUD append into visible plan; no bulk-write API) | Import into plan |
+| Sibling overlap warnings | — | Yes (Smart Itinerary Table warnings only; not alternate paths / not plan-check inspector) | Table cues |
 | Map / timeline | Partial/API | No | Context + routes |
 | Members / join / presence | Yes | No | Full |
 | Expenses / estimates | Yes | No | Plan-scoped |
 | Bookings / commitments | Yes | No | Plan-scoped |
-| Plan check suggestions | Yes | No | Inspector queue |
+| Plan check suggestions | Yes | No | Inspector queue (M4) |
 | Realtime trip events | Yes | No | Live sync |
 
 ---

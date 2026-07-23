@@ -42,8 +42,15 @@ const SEED_TRIP_NAME = "Chiang Mai Escape";
 const SEED_DESTINATION_LABEL = "Chiang Mai";
 const SEED_START_DATE = "2026-12-12";
 const SEED_END_DATE = "2026-12-18";
-/** Acceptance: startDate–endDate (en dash). */
-const SEED_DATE_RANGE = `${SEED_START_DATE}–${SEED_END_DATE}`;
+/**
+ * Acceptance (T4): command-bar trip identity shows a human date range — same
+ * compact shape as PortalTripRows formatDateRange ("12–18 Dec 2026"), not raw
+ * YYYY-MM-DD–YYYY-MM-DD. Independent literal for known start/end.
+ *
+ * Skip-TDD: Days view-switch contrast on teal command bar is pure CSS /
+ * token wiring — covered by browser gate T7, not asserted here.
+ */
+const SEED_DATE_RANGE = "12–18 Dec 2026";
 const PLAN_ID = "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff";
 /** Alternate plan — must appear in switcher once tripPlans are wired (T2 #3). */
 const ALT_PLAN_ID = "cccccccc-dddd-4eee-8fff-000000000000";
@@ -286,6 +293,66 @@ describe("TripWorkspaceShell layout", () => {
   });
 });
 
+/**
+ * M81HY2YR T4 #1 (shell half) — command-bar Import opens draft import dialog.
+ * Paste → normalize → preview lives in ItineraryImportDialog.test.tsx.
+ */
+describe("TripWorkspaceShell Import command", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
+      MEMBER_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    );
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse(SEED_TRIP_COCKPIT_BODY),
+    ) as typeof fetch;
+  });
+
+  afterEach(() => {
+    cleanup();
+    globalThis.fetch = originalFetch;
+    window.sessionStorage.clear();
+  });
+
+  it("command-bar Import opens the Import itinerary draft dialog for the loaded trip", async () => {
+    const user = userEvent.setup();
+    render(<TripWorkspaceShell tripId={TRIP_ID} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(SEED_TRIP_NAME)).toBeInTheDocument();
+    });
+
+    const command =
+      document.querySelector("header.command") ??
+      screen.getByRole("banner");
+    const commandEl = command as HTMLElement;
+
+    // Draft places-bulk-ingest-v1: #btn-import in command actions.
+    const importBtn = within(commandEl).getByRole("button", {
+      name: /^Import$/i,
+    });
+    expect(
+      screen.queryByRole("dialog", { name: /Import itinerary/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(importBtn);
+
+    const dialog = await waitFor(() =>
+      screen.getByRole("dialog", { name: /Import itinerary/i }),
+    );
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    // Visible plan context (Main) surfaces in dialog copy (draft subtitle).
+    expect(dialog.textContent ?? "").toMatch(/appends to Main/i);
+  });
+});
+
 describe("TripWorkspaceShell command bar trip seed", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -314,7 +381,7 @@ describe("TripWorkspaceShell command bar trip seed", () => {
     window.sessionStorage.clear();
   });
 
-  it("command bar shows trip name, destinationLabel, and startDate–endDate from the loaded trip", async () => {
+  it("command bar shows trip name, destinationLabel, and human date range from the loaded trip", async () => {
     render(<TripWorkspaceShell tripId={TRIP_ID} />);
 
     const command =
@@ -332,7 +399,11 @@ describe("TripWorkspaceShell command bar trip seed", () => {
     // Create-trip seed must remain visible on first open (draft .trip-id).
     expect(tripIdentity.textContent).toContain(SEED_TRIP_NAME);
     expect(tripIdentity.textContent).toContain(SEED_DESTINATION_LABEL);
+    // Human range (PortalTripRows shape); must not be raw ISO start–end.
     expect(tripIdentity.textContent).toContain(SEED_DATE_RANGE);
+    expect(tripIdentity.textContent).not.toContain(
+      `${SEED_START_DATE}–${SEED_END_DATE}`,
+    );
   });
 
   it("plan switcher lists tripPlans and marks Main Plan (mainTripPlanId) selected", async () => {
