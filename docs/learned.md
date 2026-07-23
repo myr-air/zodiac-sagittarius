@@ -6,6 +6,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M82K32B8 | 2026-07-23 | Twelve react-hooks lint errors blocked `bun run lint`; drop-active `onDragEnd` on drop target never cleared chrome | Render-time previous-prop adjust + effect ref sync; lift dropActiveDay and clear from drag-source dragend | lint 0 errors; drop-active Vitest incl. dragEnd |
 | M82GSOYG | 2026-07-23 | Plan-block day PATCH rejected while children exist (immediate parent_scope FK) | Single-statement `update_itinerary_item_with_day_cascade`; FE PATCHes parent day only | itinerary_patch_contract cascade; FE cross-day Vitest |
 | M82GSOYG | 2026-07-23 | Partial `details` PATCH wiped sibling JSON fields (coalesce replace) | softMap merges `currentDetails` for from/to/by/meal; table/rail pass item.details | itinerary-type-fields merge tests |
 | M82GSOYG | 2026-07-23 | Playwright Chromium missing for AFK visual-verify | skill-local npm install + playwright install chromium; SVG className guard | visual-verify-report |
@@ -36,6 +37,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M82K32B8 | 2026-07-23 | HTML5 DnD `dragend` fires on the drag source, not the drop target | Hover/active chrome driven by drag-over must clear from the source's dragend or shared parent state |
 | M82GSOYG | 2026-07-23 | When an API replaces a whole JSON document on PATCH, clients must merge prior fields into the outbound payload | Sending only the edited key silently deletes siblings on coalesce-replace columns |
 | M82GSOYG | 2026-07-23 | Cascading related-row updates under an immediate (NOT DEFERRABLE) FK need a single SQL statement, not sequential UPDATEs | Hierarchy moves under scope FKs fail mid-transaction otherwise |
 | M81LW2UJ | 2026-07-22 | Injected `fetch` must be `globalThis.fetch.bind(globalThis)` — unbound method extraction throws Illegal invocation | Prevents false reachability errors and silent PATCH no-ops on healthy APIs |

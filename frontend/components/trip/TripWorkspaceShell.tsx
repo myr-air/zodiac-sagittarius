@@ -83,9 +83,18 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   /** Bumps remount key so ItineraryImportDialog resets via fresh useState. */
   const [importDialogKey, setImportDialogKey] = useState(0);
 
-  useEffect(() => {
+  /**
+   * Reset the plan-switcher selection when the trip changes — adjusted
+   * during render (React "storing info from previous renders" pattern)
+   * rather than an effect, avoiding a synchronous setState-in-effect
+   * cascade (react-hooks/set-state-in-effect) while still landing before
+   * this render commits (shell sync behavior preserved).
+   */
+  const [prevTripId, setPrevTripId] = useState(tripId);
+  if (tripId !== prevTripId) {
+    setPrevTripId(tripId);
     setSelectedPlanOptionId(null);
-  }, [tripId]);
+  }
 
   useEffect(() => {
     let cancelled = false;

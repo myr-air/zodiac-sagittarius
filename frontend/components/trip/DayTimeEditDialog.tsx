@@ -5,7 +5,7 @@
  * Start / End / Duration (readonly) / Timezone; Save → itinerary PATCH.
  */
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { patchItineraryItem } from "../../src/trip/itinerary-api";
 
 export type DayTimeEditStop = {
@@ -73,12 +73,45 @@ export function DayTimeEditDialog({
   const [timezone, setTimezone] = useState(timezoneDisplay(stop));
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
+  // Derive the form fields from `stop` during render (React's documented
+  // "adjusting state when a prop changes" pattern) instead of an effect:
+  // resync the draft to the latest stop values whenever the dialog is open
+  // and either just opened or the underlying stop data changed (e.g. a
+  // cockpit reload while the dialog stays open). `synced` remembers the
+  // props last written to the draft so user edits in progress aren't
+  // clobbered on every render.
+  const [synced, setSynced] = useState<{
+    open: boolean;
+    stopId: string;
+    startTime: string;
+    endTime: string | null | undefined;
+    timezone: string | undefined;
+    timezoneLabel: string | undefined;
+  } | null>(null);
+  if (
+    open &&
+    (!synced ||
+      !synced.open ||
+      synced.stopId !== stop.id ||
+      synced.startTime !== stop.startTime ||
+      synced.endTime !== stop.endTime ||
+      synced.timezone !== stop.timezone ||
+      synced.timezoneLabel !== stop.timezoneLabel)
+  ) {
+    setSynced({
+      open: true,
+      stopId: stop.id,
+      startTime: stop.startTime,
+      endTime: stop.endTime,
+      timezone: stop.timezone,
+      timezoneLabel: stop.timezoneLabel,
+    });
     setStartTime(stop.startTime);
     setEndTime(stop.endTime ?? "");
     setTimezone(timezoneDisplay(stop));
-  }, [open, stop.id, stop.startTime, stop.endTime, stop.timezone, stop.timezoneLabel]);
+  } else if (!open && synced?.open) {
+    setSynced({ ...synced, open: false });
+  }
 
   if (!open) return null;
 

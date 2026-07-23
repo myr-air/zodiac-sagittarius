@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.28.1] — 2026-07-23
+
+### Fixed
+- Frontend `react-hooks/set-state-in-effect` and `react-hooks/refs` lint errors that blocked `bun run lint` / verify
+
+### Added
+- Calm Plan Day header drop-active chrome (`data-drop-active`) during reorder drag-over, cleared on leave/drop/dragend
+
+### Notes
+- Closed #185 #186
+
 ## [0.28.0] — 2026-07-23
 
 ### Added
@@ -9,7 +20,6 @@
 ### Notes
 - Closed #177 #178 #179 (M82GSOYG); Playwright visual-verify restored via skill-local `@playwright/test` install
 - Closed #184: live `/trips/{id}` Alternative Path chrome smoke verified (fork parent “Currently using…”, expanded options with Using chip, Path strip)
-- Follow-ups: #185 lint set-state-in-effect on main; #186 optional cross-day drop-zone active chrome
 
 
 ## [0.27.0] — 2026-07-23

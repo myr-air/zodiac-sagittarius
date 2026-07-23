@@ -2903,6 +2903,12 @@ tr.day-row[data-collapsed="true"] .day-id {
   opacity: 0.72;
 }
 
+/* M82K32B8 T5 — hover marker while an eligible drag is over this day header. */
+tr.day-row[data-drop-active="true"] td {
+  background: var(--color-primary-soft);
+  box-shadow: inset 0 0 0 1px var(--color-primary-border);
+}
+
 .day-id {
   display: inline-flex;
   align-items: center;

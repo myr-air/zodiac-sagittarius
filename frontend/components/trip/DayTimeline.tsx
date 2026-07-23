@@ -475,19 +475,26 @@ export function DayTimeline({
   );
   const [localAiSuggestions, setLocalAiSuggestions] = useState(aiSuggestions);
 
-  useEffect(() => {
+  // Re-sync local copies when the incoming props change identity, adjusting
+  // state during render (React's documented pattern) instead of an effect —
+  // avoids the extra commit a setState-in-effect would cause.
+  const [prevAiSuggestions, setPrevAiSuggestions] = useState(aiSuggestions);
+  if (aiSuggestions !== prevAiSuggestions) {
+    setPrevAiSuggestions(aiSuggestions);
     setLocalAiSuggestions(aiSuggestions);
-  }, [aiSuggestions]);
+  }
 
   const openSuggestion =
     localAiSuggestions.find(
       (s) => `${s.batchId}:${s.option.id}` === openSuggestionKey,
     ) ?? null;
 
-  useEffect(() => {
+  const [prevStops, setPrevStops] = useState(stops);
+  if (stops !== prevStops) {
+    setPrevStops(stops);
     setLocalStops(stops);
     setAwaitingCockpitReload(false);
-  }, [stops]);
+  }
 
   const canMutate = Boolean(tripId && sessionToken && planVariantId && day);
   const canPatch = canMutate && !awaitingCockpitReload;

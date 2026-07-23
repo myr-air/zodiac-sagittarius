@@ -224,7 +224,13 @@ export function DayMap({ stops = [], onAutoRoute }: DayMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const pinsRef = useRef(pins);
-  pinsRef.current = pins;
+
+  // Keep the ref in sync outside render so async map callbacks (e.g. the
+  // MapLibre "load" handler) can read the latest pins without retriggering
+  // the mount effect.
+  useEffect(() => {
+    pinsRef.current = pins;
+  }, [pins]);
 
   useEffect(() => {
     const container = containerRef.current;
