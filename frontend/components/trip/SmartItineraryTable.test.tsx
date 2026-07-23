@@ -1749,6 +1749,780 @@ describe("SmartItineraryTable Plan Day reorder failure calm", () => {
 });
 
 /**
+ * M82GSOYG T4 #1 — cross-day drop orchestration (decisions.md #177 sequence):
+ * PATCH the moved item's `day` to the target Plan Day, then PATCH order for
+ * BOTH the source and target Plan Day scopes with their full itemIds.
+ *
+ * Test seam (happy-dom HTML5 DnD is unreliable — same rationale as the
+ * within-day `joii:plan-day-reorder` seam above): dispatch CustomEvent
+ * `joii:plan-day-cross-day-move` on the table with detail
+ * `{ itemId, fromDay, toDay, sourceItemIds, targetItemIds }`. Production
+ * cross-day drop handling should share the same commit path
+ * (`patchItineraryItem` for the day change, then `reorderItineraryItems`
+ * for each of the two day scopes).
+ */
+const CROSS_DAY_SESSION_TOKEN = "member-session-token-cross-day-move";
+const CROSS_DAY_MOVE_ITEM_ID = "item-cross-day-move";
+const CROSS_DAY_STAY_ID = "item-cross-day-stay";
+const CROSS_DAY_TARGET_ID = "item-cross-day-target";
+const PLAN_DAY_CROSS_DAY_MOVE_EVENT = "joii:plan-day-cross-day-move";
+/** Full source-day scope after the moved stop leaves (decisions: full itemIds). */
+const CROSS_DAY_SOURCE_ITEM_IDS = [CROSS_DAY_STAY_ID] as const;
+/** Full target-day scope after the moved stop lands (decisions: full itemIds). */
+const CROSS_DAY_TARGET_ITEM_IDS = [
+  CROSS_DAY_TARGET_ID,
+  CROSS_DAY_MOVE_ITEM_ID,
+] as const;
+
+describe("SmartItineraryTable cross-day move orchestration", () => {
+  it("dropping a stop onto another Plan Day PATCHes item day then reorders both source and target day scopes with full itemIds via reorderItineraryItems", async () => {
+    const movedStop = stop({
+      id: CROSS_DAY_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Moved stop",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+      version: 3,
+    });
+    const stayStop = stop({
+      id: CROSS_DAY_STAY_ID,
+      day: DAY,
+      activity: "Stays on source day",
+      activityType: "food",
+      startTime: "11:00",
+      endTime: "12:00",
+    });
+    const targetStop = stop({
+      id: CROSS_DAY_TARGET_ID,
+      day: DAY_2,
+      activity: "Already on target day",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          day?: string;
+          itemIds?: string[];
+        };
+        const items = (body.itemIds ?? []).map((id) => {
+          if (id === CROSS_DAY_MOVE_ITEM_ID) return { ...movedStop, day: body.day, version: 4 };
+          if (id === CROSS_DAY_STAY_ID) return stayStop;
+          return targetStop;
+        });
+        return jsonResponse(items);
+      }
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${CROSS_DAY_MOVE_ITEM_ID}`)
+      ) {
+        return jsonResponse({ ...movedStop, day: DAY_2, version: 4 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop, stayStop, targetStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={CROSS_DAY_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${CROSS_DAY_MOVE_ITEM_ID}"]`),
+    ).toBeTruthy();
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${CROSS_DAY_TARGET_ID}"]`),
+    ).toBeTruthy();
+
+    // Simulate a cross-day drop commit via the documented test seam.
+    table.dispatchEvent(
+      new CustomEvent(PLAN_DAY_CROSS_DAY_MOVE_EVENT, {
+        bubbles: true,
+        detail: {
+          itemId: CROSS_DAY_MOVE_ITEM_ID,
+          fromDay: DAY,
+          toDay: DAY_2,
+          sourceItemIds: [...CROSS_DAY_SOURCE_ITEM_IDS],
+          targetItemIds: [...CROSS_DAY_TARGET_ITEM_IDS],
+        },
+      }),
+    );
+
+    // (1) Item day PATCH — moved item's day flips to the target Plan Day.
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const dayPatchCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(dayPatchCall.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${CROSS_DAY_MOVE_ITEM_ID}`,
+    );
+    expect((dayPatchCall.init.method ?? "").toUpperCase()).toBe("PATCH");
+    const dayPatchHeaders = new Headers(dayPatchCall.init.headers);
+    expect(dayPatchHeaders.get("Authorization")).toBe(
+      `Bearer ${CROSS_DAY_SESSION_TOKEN}`,
+    );
+    expect(typeof dayPatchCall.body.clientMutationId).toBe("string");
+    const dayPatch = dayPatchCall.body.patch as Record<string, unknown>;
+    expect(dayPatch.day).toBe(DAY_2);
+
+    // (2) Both Plan Day scopes reorder with full itemIds via reorderItineraryItems.
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(2);
+    });
+    const orderCalls = itineraryOrderCalls(fetchMock);
+
+    const sourceCall = orderCalls.find((call) => call.body.day === DAY);
+    expect(sourceCall).toBeTruthy();
+    expect(sourceCall!.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/order`,
+    );
+    expect(sourceCall!.body.planVariantId).toBe(PLAN_ID);
+    expect(sourceCall!.body.itemIds).toEqual([...CROSS_DAY_SOURCE_ITEM_IDS]);
+
+    const targetCall = orderCalls.find((call) => call.body.day === DAY_2);
+    expect(targetCall).toBeTruthy();
+    expect(targetCall!.body.planVariantId).toBe(PLAN_ID);
+    expect(targetCall!.body.itemIds).toEqual([...CROSS_DAY_TARGET_ITEM_IDS]);
+  });
+});
+
+/**
+ * M82GSOYG T4 #2 — plan-block parent + nested children move together
+ * (decisions.md #178): dropping a parent stop that has nested children onto
+ * another Plan Day must PATCH `day` for the parent ONLY — the backend now
+ * cascades the day change onto every nested child itself (GREEN details
+ * merge follow-up), so a redundant per-child day PATCH here would just be
+ * extra client traffic for the same result. Both day scopes still reorder
+ * with full itemIds, children included in the target scope, so the client
+ * order stays correct even though the child rows moved server-side via
+ * cascade rather than a client PATCH.
+ *
+ * Seam: same `joii:plan-day-cross-day-move` CustomEvent as A1, with detail
+ * extended by `childItemIds` — the nested child ids that travel with the
+ * parent block (used only for the reorder scopes now, not for per-child
+ * PATCHes). Production PATCHes day on the parent only (reusing the existing
+ * single-item day-PATCH commit path), then commits the existing dual
+ * `reorderItineraryItems` calls for source/target scopes.
+ */
+const PARENT_MOVE_SESSION_TOKEN =
+  "member-session-token-cross-day-parent-move";
+const PARENT_MOVE_ID = "item-cross-day-parent-move";
+const PARENT_MOVE_CHILD_1_ID = "item-cross-day-parent-child-1";
+const PARENT_MOVE_CHILD_2_ID = "item-cross-day-parent-child-2";
+const PARENT_MOVE_STAY_SIBLING_ID = "item-cross-day-parent-stay-sibling";
+const PARENT_MOVE_TARGET_ID = "item-cross-day-parent-target";
+/** Full source-day scope after the parent block leaves (sibling only). */
+const PARENT_MOVE_SOURCE_ITEM_IDS = [PARENT_MOVE_STAY_SIBLING_ID] as const;
+/** Full target-day scope after the parent block lands, children included. */
+const PARENT_MOVE_TARGET_ITEM_IDS = [
+  PARENT_MOVE_TARGET_ID,
+  PARENT_MOVE_ID,
+  PARENT_MOVE_CHILD_1_ID,
+  PARENT_MOVE_CHILD_2_ID,
+] as const;
+
+function buildParentMoveFixture() {
+  const parent = stop({
+    id: PARENT_MOVE_ID,
+    day: DAY,
+    activity: "Plan-block parent",
+    activityType: "stay",
+    place: "Plan-block parent",
+    startTime: "09:00",
+    endTime: "",
+    parentItemId: null,
+    version: 3,
+  });
+  const child1 = stop({
+    id: PARENT_MOVE_CHILD_1_ID,
+    day: DAY,
+    activity: "Nested child one",
+    activityType: "food",
+    startTime: "09:15",
+    endTime: "",
+    parentItemId: PARENT_MOVE_ID,
+    version: 2,
+  });
+  const child2 = stop({
+    id: PARENT_MOVE_CHILD_2_ID,
+    day: DAY,
+    activity: "Nested child two",
+    activityType: "shopping",
+    startTime: "09:30",
+    endTime: "",
+    parentItemId: PARENT_MOVE_ID,
+    version: 2,
+  });
+  const staySibling = stop({
+    id: PARENT_MOVE_STAY_SIBLING_ID,
+    day: DAY,
+    activity: "Stays on source day",
+    activityType: "food",
+    startTime: "11:00",
+    endTime: "12:00",
+  });
+  const target = stop({
+    id: PARENT_MOVE_TARGET_ID,
+    day: DAY_2,
+    activity: "Already on target day",
+    activityType: "attraction",
+    startTime: "09:00",
+    endTime: "10:00",
+  });
+  return { parent, child1, child2, staySibling, target };
+}
+
+/** PATCH calls to a specific itinerary item's day endpoint (excludes /order). */
+function dayPatchCallsFor(
+  fetchMock: ReturnType<typeof vi.fn>,
+  itemId: string,
+): FetchCall[] {
+  return itineraryPatchCalls(fetchMock).filter((call) =>
+    call.url.endsWith(`/itinerary-items/${itemId}`),
+  );
+}
+
+function dispatchParentMoveEvent(table: HTMLElement) {
+  table.dispatchEvent(
+    new CustomEvent(PLAN_DAY_CROSS_DAY_MOVE_EVENT, {
+      bubbles: true,
+      detail: {
+        itemId: PARENT_MOVE_ID,
+        fromDay: DAY,
+        toDay: DAY_2,
+        childItemIds: [PARENT_MOVE_CHILD_1_ID, PARENT_MOVE_CHILD_2_ID],
+        sourceItemIds: [...PARENT_MOVE_SOURCE_ITEM_IDS],
+        targetItemIds: [...PARENT_MOVE_TARGET_ITEM_IDS],
+      },
+    }),
+  );
+}
+
+describe("SmartItineraryTable cross-day parent + nested children move", () => {
+  it("dropping a plan-block parent with nested children onto another Plan Day PATCHes ONLY the parent's day to the target day (children come via backend day-cascade, not a client PATCH) before reordering both day scopes with the children included in the target itemIds", async () => {
+    const { parent, child1, child2, staySibling, target } =
+      buildParentMoveFixture();
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        return jsonResponse([]);
+      }
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${PARENT_MOVE_ID}`)
+      ) {
+        return jsonResponse({
+          ...parent,
+          day: DAY_2,
+          version: parent.version + 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parent, child1, child2, staySibling, target],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={PARENT_MOVE_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    expect(
+      table.querySelector(`tr.stop-row[data-id="${PARENT_MOVE_ID}"]`),
+    ).toBeTruthy();
+
+    dispatchParentMoveEvent(table);
+
+    // Parent's own day PATCH always fires under the existing single-item seam.
+    await waitFor(() => {
+      expect(dayPatchCallsFor(fetchMock, PARENT_MOVE_ID)).toHaveLength(1);
+    });
+    const parentPatch = dayPatchCallsFor(fetchMock, PARENT_MOVE_ID)[0]!.body
+      .patch as Record<string, unknown>;
+    expect(parentPatch.day).toBe(DAY_2);
+
+    // Children get NO day PATCH of their own — the backend cascades the
+    // parent's day change onto them server-side (GREEN details merge
+    // follow-up), so a client-side per-child PATCH would be redundant.
+    expect(dayPatchCallsFor(fetchMock, PARENT_MOVE_CHILD_1_ID)).toHaveLength(
+      0,
+    );
+    expect(dayPatchCallsFor(fetchMock, PARENT_MOVE_CHILD_2_ID)).toHaveLength(
+      0,
+    );
+
+    // Exactly 1 day PATCH total (parent only) — no per-child PATCH traffic.
+    const allDayPatches = itineraryPatchCalls(fetchMock).filter(
+      (call) => !call.url.endsWith("/order"),
+    );
+    expect(allDayPatches).toHaveLength(1);
+
+    // Both day scopes reorder with full itemIds, children included in target
+    // — children moved via backend cascade, but the client's own itemIds
+    // scope must still reflect them for order.
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(2);
+    });
+    const orderCalls = itineraryOrderCalls(fetchMock);
+    const sourceCall = orderCalls.find((call) => call.body.day === DAY);
+    expect(sourceCall).toBeTruthy();
+    expect(sourceCall!.body.itemIds).toEqual([...PARENT_MOVE_SOURCE_ITEM_IDS]);
+    const targetCall = orderCalls.find((call) => call.body.day === DAY_2);
+    expect(targetCall).toBeTruthy();
+    expect(targetCall!.body.itemIds).toEqual([...PARENT_MOVE_TARGET_ITEM_IDS]);
+  });
+});
+
+/**
+ * M82GSOYG T4 #3 — cross-day move failure calm (decisions.md #179): a PATCH
+ * day failure / version_conflict for the moved parent must surface a calm
+ * error / cockpit reload — never a silent local-only cross-day move that
+ * leaves the two day scopes reordered while the parent's day PATCH never
+ * actually succeeded.
+ *
+ * GREEN details merge follow-up: children no longer get their own day PATCH
+ * (the backend cascades the parent's day change to them), so the failure
+ * seam that used to exercise a *child's* day PATCH conflict/error is
+ * rewritten to exercise the *parent's* day PATCH conflict/error instead —
+ * that's the only day PATCH this commit path issues.
+ *
+ * Mirrors the existing within-day reorder-failure and version_conflict
+ * reload suites, using the parent+children cross-day seam above.
+ */
+describe("SmartItineraryTable cross-day parent + nested children move failure calm", () => {
+  it("version_conflict on the parent's day PATCH during a parent+children cross-day move triggers onCockpitReload and blocks both day-scope reorders — no silent local-only move", async () => {
+    const { parent, child1, child2, staySibling, target } =
+      buildParentMoveFixture();
+    const onCockpitReload = vi.fn();
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${PARENT_MOVE_ID}`)
+      ) {
+        return jsonResponse(
+          {
+            code: CONFLICT_CODE,
+            latest: { ...parent, version: parent.version + 5 },
+          },
+          409,
+        );
+      }
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        return jsonResponse([]);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parent, child1, child2, staySibling, target],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={PARENT_MOVE_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+        {...{ onCockpitReload }}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    dispatchParentMoveEvent(table);
+
+    // The parent's own day PATCH must be attempted before the conflict
+    // routes to reload.
+    await waitFor(
+      () => {
+        expect(dayPatchCallsFor(fetchMock, PARENT_MOVE_ID)).toHaveLength(1);
+      },
+      { timeout: 300 },
+    );
+
+    // version_conflict on the parent routes through the same calm reload
+    // path as the existing single-item / paired-PATCH conflict handling.
+    await waitFor(
+      () => {
+        expect(onCockpitReload).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 300 },
+    );
+
+    // No reorder for either day scope while the parent's day PATCH conflicted
+    // — a partial reorder here would be a silent local-only cross-day move.
+    expect(itineraryOrderCalls(fetchMock)).toHaveLength(0);
+  });
+
+  it("the parent's day PATCH failing (500, non-conflict) during a parent+children cross-day move surfaces a calm error and skips both day-scope reorders — no silent local-only cross-day move", async () => {
+    const { parent, child1, child2, staySibling, target } =
+      buildParentMoveFixture();
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${PARENT_MOVE_ID}`)
+      ) {
+        return jsonResponse({}, 500);
+      }
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        return jsonResponse([]);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [parent, child1, child2, staySibling, target],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={PARENT_MOVE_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    dispatchParentMoveEvent(table);
+
+    await waitFor(
+      () => {
+        expect(dayPatchCallsFor(fetchMock, PARENT_MOVE_ID)).toHaveLength(1);
+      },
+      { timeout: 300 },
+    );
+
+    const alert = await waitFor(
+      () => within(table).getByRole("alert"),
+      { timeout: 300 },
+    );
+    expect(alert).toBeVisible();
+
+    // No reorder for either day scope while the parent's day PATCH failed —
+    // a partial reorder here would be a silent local-only cross-day move.
+    expect(itineraryOrderCalls(fetchMock)).toHaveLength(0);
+  });
+});
+
+/**
+ * M82GSOYG T5 #1 — real row `onDrop` must detect a dragged stop from a
+ * different Plan Day and route to the cross-day move commit path, not the
+ * within-day `moveItemId` no-op. Today the row's onDrop unconditionally
+ * calls `onDropReorder(draggedId, item.id)`, which resolves via
+ * `moveItemId(dayItemIds, draggedId, beforeId)` against the TARGET day's own
+ * id list; a dragged id from a different day is never found there
+ * (`from < 0`), so `moveItemId` returns the array unchanged and the drop is
+ * silently swallowed — no PATCH at all.
+ *
+ * This exercises the actual DOM `drop` handler (fireEvent.drop with a
+ * dataTransfer stub carrying the dragged id via "text/plain", same contract
+ * as the existing `onDragStart` producer) rather than the
+ * `joii:plan-day-cross-day-move` CustomEvent test seam used by T4, per the
+ * smallest-public-seam guidance: prove the row wiring itself routes to the
+ * same PATCH day + dual reorderItineraryItems commit path, inserting the
+ * dragged stop immediately before the row it was dropped on (same "insert
+ * before target" semantics as the existing within-day onDrop).
+ */
+const ROW_DROP_SESSION_TOKEN = "member-session-token-cross-day-row-drop";
+const ROW_DROP_MOVE_ITEM_ID = "item-cross-day-row-drop-move";
+const ROW_DROP_STAY_ID = "item-cross-day-row-drop-stay";
+const ROW_DROP_TARGET_ID = "item-cross-day-row-drop-target";
+/** Full source-day scope after the moved stop leaves. */
+const ROW_DROP_SOURCE_ITEM_IDS = [ROW_DROP_STAY_ID] as const;
+/** Full target-day scope: dragged stop inserted before the row dropped on. */
+const ROW_DROP_TARGET_ITEM_IDS = [
+  ROW_DROP_MOVE_ITEM_ID,
+  ROW_DROP_TARGET_ID,
+] as const;
+
+function dataTransferStub(draggedId: string): DataTransfer {
+  return {
+    getData: (format: string) => (format === "text/plain" ? draggedId : ""),
+    setData: () => {},
+    dropEffect: "move",
+    effectAllowed: "move",
+  } as unknown as DataTransfer;
+}
+
+describe("SmartItineraryTable cross-day row onDrop routing", () => {
+  it("row onDrop detects a dragged stop from a different day and routes to the cross-day move instead of a within-day no-op (moveItemId)", async () => {
+    const movedStop = stop({
+      id: ROW_DROP_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Moved via row drop",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+      version: 3,
+    });
+    const stayStop = stop({
+      id: ROW_DROP_STAY_ID,
+      day: DAY,
+      activity: "Stays on source day",
+      activityType: "food",
+      startTime: "11:00",
+      endTime: "12:00",
+    });
+    const targetStop = stop({
+      id: ROW_DROP_TARGET_ID,
+      day: DAY_2,
+      activity: "Drop target on other day",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          day?: string;
+          itemIds?: string[];
+        };
+        const items = (body.itemIds ?? []).map((id) => {
+          if (id === ROW_DROP_MOVE_ITEM_ID) {
+            return { ...movedStop, day: body.day, version: 4 };
+          }
+          if (id === ROW_DROP_STAY_ID) return stayStop;
+          return targetStop;
+        });
+        return jsonResponse(items);
+      }
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${ROW_DROP_MOVE_ITEM_ID}`)
+      ) {
+        return jsonResponse({ ...movedStop, day: DAY_2, version: 4 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop, stayStop, targetStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={ROW_DROP_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const targetRow = table.querySelector(
+      `tr.stop-row[data-id="${ROW_DROP_TARGET_ID}"]`,
+    ) as HTMLElement;
+    expect(targetRow).toBeTruthy();
+
+    // Real DnD: drop a stop dragged from Day onto a row that lives on Day 2.
+    fireEvent.drop(targetRow, { dataTransfer: dataTransferStub(ROW_DROP_MOVE_ITEM_ID) });
+
+    // (1) Item day PATCH — moved item's day flips to the target Plan Day.
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const dayPatchCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(dayPatchCall.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${ROW_DROP_MOVE_ITEM_ID}`,
+    );
+    const dayPatch = dayPatchCall.body.patch as Record<string, unknown>;
+    expect(dayPatch.day).toBe(DAY_2);
+
+    // (2) Both Plan Day scopes reorder with full itemIds — not a within-day no-op.
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(2);
+    });
+    const orderCalls = itineraryOrderCalls(fetchMock);
+
+    const sourceCall = orderCalls.find((call) => call.body.day === DAY);
+    expect(sourceCall).toBeTruthy();
+    expect(sourceCall!.body.itemIds).toEqual([...ROW_DROP_SOURCE_ITEM_IDS]);
+
+    const targetCall = orderCalls.find((call) => call.body.day === DAY_2);
+    expect(targetCall).toBeTruthy();
+    expect(targetCall!.body.itemIds).toEqual([...ROW_DROP_TARGET_ITEM_IDS]);
+  });
+});
+
+/**
+ * M82GSOYG T5 #2 — an empty Plan Day / day header must accept a drop and
+ * append the dragged stop to that target day. Today `DayRow` (`tr.day-row`)
+ * renders no `onDrop`/`onDragOver` at all, so dropping on a day header —
+ * empty or not — is a pure no-op: no PATCH is ever issued.
+ *
+ * Fixture: Day 2 starts with zero items (the "empty Plan Day" case from the
+ * acceptance). Dropping the Day-1 stop on the Day-2 header must PATCH the
+ * item's day to Day 2, then reorder Day (now down to the remaining sibling)
+ * and Day 2 (now containing only the appended stop).
+ */
+const DAY_HEADER_DROP_SESSION_TOKEN =
+  "member-session-token-cross-day-day-header-drop";
+const DAY_HEADER_DROP_MOVE_ITEM_ID = "item-cross-day-day-header-move";
+const DAY_HEADER_DROP_STAY_ID = "item-cross-day-day-header-stay";
+
+describe("SmartItineraryTable cross-day empty day header onDrop", () => {
+  it("an empty Plan Day / day header accepts a drop and appends the stop to that target day", async () => {
+    const movedStop = stop({
+      id: DAY_HEADER_DROP_MOVE_ITEM_ID,
+      day: DAY,
+      activity: "Moved via day header drop",
+      activityType: "attraction",
+      startTime: "09:00",
+      endTime: "10:00",
+      version: 3,
+    });
+    const stayStop = stop({
+      id: DAY_HEADER_DROP_STAY_ID,
+      day: DAY,
+      activity: "Stays on source day",
+      activityType: "food",
+      startTime: "11:00",
+      endTime: "12:00",
+    });
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.endsWith("/itinerary-items/order")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          day?: string;
+          itemIds?: string[];
+        };
+        const items = (body.itemIds ?? []).map((id) =>
+          id === DAY_HEADER_DROP_MOVE_ITEM_ID
+            ? { ...movedStop, day: body.day, version: 4 }
+            : stayStop,
+        );
+        return jsonResponse(items);
+      }
+      if (
+        method === "PATCH" &&
+        url.endsWith(`/itinerary-items/${DAY_HEADER_DROP_MOVE_ITEM_ID}`)
+      ) {
+        return jsonResponse({ ...movedStop, day: DAY_2, version: 4 });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    // Day 2 is seeded with NO items — the "empty Plan Day" drop target.
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY_2,
+      planVariantId: PLAN_ID,
+      itineraryItems: [movedStop, stayStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={DAY_HEADER_DROP_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+        reorderEnabled
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    // Day 2 has no stop rows yet — locate its header via the ISO `dateTime`.
+    expect(
+      table.querySelector(`tr.stop-row[data-day="Day 2"]`),
+    ).toBeNull();
+    const day2Time = table.querySelector(`time[datetime="${DAY_2}"]`);
+    expect(day2Time).toBeTruthy();
+    const day2Header = day2Time!.closest("tr.day-row") as HTMLElement;
+    expect(day2Header).toBeTruthy();
+
+    // Real DnD: drop the Day-1 stop directly on the empty Day-2 header.
+    fireEvent.drop(day2Header, {
+      dataTransfer: dataTransferStub(DAY_HEADER_DROP_MOVE_ITEM_ID),
+    });
+
+    // (1) Item day PATCH — moved item's day flips to the target Plan Day.
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const dayPatchCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(dayPatchCall.url).toBe(
+      `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${DAY_HEADER_DROP_MOVE_ITEM_ID}`,
+    );
+    const dayPatch = dayPatchCall.body.patch as Record<string, unknown>;
+    expect(dayPatch.day).toBe(DAY_2);
+
+    // (2) Source day reorders to its remaining sibling; target day reorders
+    // to just the appended stop (it started empty).
+    await waitFor(() => {
+      expect(itineraryOrderCalls(fetchMock)).toHaveLength(2);
+    });
+    const orderCalls = itineraryOrderCalls(fetchMock);
+
+    const sourceCall = orderCalls.find((call) => call.body.day === DAY);
+    expect(sourceCall).toBeTruthy();
+    expect(sourceCall!.body.itemIds).toEqual([DAY_HEADER_DROP_STAY_ID]);
+
+    const targetCall = orderCalls.find((call) => call.body.day === DAY_2);
+    expect(targetCall).toBeTruthy();
+    expect(targetCall!.body.itemIds).toEqual([DAY_HEADER_DROP_MOVE_ITEM_ID]);
+  });
+});
+
+/**
  * M80P3JXX T6 #2 — sub-activity chevron tree (draft itinerary-plan-draft-v1.html).
  *
  * Landmarks: `.activity-action.subplan-toggle` / `[data-subplan-toggle]` chevron;
@@ -2198,6 +2972,180 @@ describe("SmartItineraryTable meal/By choice-chips", () => {
       expect.objectContaining({
         details: expect.objectContaining({ meal: CHIP_MEAL_VALUE }),
       }),
+    );
+  });
+});
+
+/**
+ * M82GSOYG T3 #1 — commitBagKey soft-map for travel From/To/By must persist
+ * into `details` (origin/destination/mode) — not only the derived top-level
+ * activity/activitySubtype fields — mirroring softMapBagKeyToPatch (T1,
+ * already done). A reload built strictly from what the API actually
+ * persisted (no client-only memory) must then rehydrate those values via
+ * seedFieldBag (T2, already done). By has no top-level PATCH fallback field
+ * in seedFieldBag, so its round-trip only survives when commitBagKey sends
+ * details.mode. Independent literals: a route/mode distinct from the draft
+ * chip fixtures above.
+ */
+const ROUTE_DETAILS_SESSION_TOKEN = "member-session-token-details-roundtrip";
+const ROUTE_DETAILS_ITEM_ID = "item-travel-details-roundtrip";
+const ROUTE_DETAILS_EXPECTED_VERSION = 3;
+const ROUTE_DETAILS_FROM = "Chiang Mai";
+const ROUTE_DETAILS_TO = "Osaka";
+const ROUTE_DETAILS_BY = "ferry";
+
+describe("SmartItineraryTable commitBagKey details persistence + reload round-trip (M82GSOYG T3)", () => {
+  it("From/To blur PATCHes details.origin/details.destination and By choice PATCHes details.mode; a fresh reload model built only from what the API actually persisted rehydrates From/To/By via seedFieldBag", async () => {
+    const user = userEvent.setup();
+    const baseStop: StopItem = {
+      ...TRAVEL_STOP,
+      id: ROUTE_DETAILS_ITEM_ID,
+      version: ROUTE_DETAILS_EXPECTED_VERSION,
+      activity: "BKK → NRT",
+    };
+
+    // Simulated backend: echoes back only what patch.details actually carried
+    // (no client-only memory of untyped fields) — proves real persistence.
+    let persistedDetails: Record<string, unknown> = {};
+    let persistedActivity = baseStop.activity;
+    let persistedActivitySubtype: string | null | undefined;
+    let persistedVersion = ROUTE_DETAILS_EXPECTED_VERSION;
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "PATCH" && url.includes("/itinerary-items/")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          patch?: {
+            activity?: string;
+            activitySubtype?: string | null;
+            details?: Record<string, unknown>;
+          };
+        };
+        if (body.patch?.activity !== undefined) {
+          persistedActivity = body.patch.activity;
+        }
+        if (body.patch?.activitySubtype !== undefined) {
+          persistedActivitySubtype = body.patch.activitySubtype;
+        }
+        if (body.patch?.details) {
+          persistedDetails = { ...persistedDetails, ...body.patch.details };
+        }
+        persistedVersion += 1;
+        return jsonResponse({
+          ...baseStop,
+          activity: persistedActivity,
+          activitySubtype: persistedActivitySubtype ?? undefined,
+          details: persistedDetails,
+          version: persistedVersion,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [baseStop],
+    });
+
+    render(
+      <SmartItineraryTable
+        model={model}
+        tripId={TRIP_ID}
+        sessionToken={ROUTE_DETAILS_SESSION_TOKEN}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const row = table.querySelector(
+      `tr.stop-row[data-id="${ROUTE_DETAILS_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(row).toBeTruthy();
+
+    const patchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${ROUTE_DETAILS_ITEM_ID}`;
+
+    // --- From/To blur → PATCH must carry details.origin/details.destination ---
+    fetchMock.mockClear();
+    const fromInput = within(row).getByRole("textbox", { name: /^from$/i });
+    const toInput = within(row).getByRole("textbox", { name: /^to$/i });
+    fireEvent.change(fromInput, { target: { value: ROUTE_DETAILS_FROM } });
+    fireEvent.change(toInput, { target: { value: ROUTE_DETAILS_TO } });
+    fireEvent.blur(toInput);
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const routeCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(routeCall.url).toBe(patchUrl);
+    expect(routeCall.body.patch).toEqual(
+      expect.objectContaining({
+        details: expect.objectContaining({
+          origin: ROUTE_DETAILS_FROM,
+          destination: ROUTE_DETAILS_TO,
+        }),
+      }),
+    );
+
+    // --- By choice → PATCH must carry details.mode alongside activitySubtype ---
+    fetchMock.mockClear();
+    const byChip = row.querySelector(
+      "button.choice-chip[data-by-trigger]",
+    ) as HTMLElement;
+    expect(byChip).toBeTruthy();
+    await user.click(byChip);
+    await user.click(
+      await screen.findByRole("option", {
+        name: new RegExp(`^${ROUTE_DETAILS_BY}$`, "i"),
+      }),
+    );
+    await waitFor(() => {
+      expect(itineraryPatchCalls(fetchMock)).toHaveLength(1);
+    });
+    const byCall = itineraryPatchCalls(fetchMock)[0]!;
+    expect(byCall.url).toBe(patchUrl);
+    expect(byCall.body.patch).toEqual(
+      expect.objectContaining({
+        activitySubtype: ROUTE_DETAILS_BY,
+        details: expect.objectContaining({ mode: ROUTE_DETAILS_BY }),
+      }),
+    );
+
+    // --- Reload round-trip: a fresh table mount from a model built strictly
+    // from what the mocked API actually persisted must rehydrate From/To/By.
+    cleanup();
+    const reloadedStop: StopItem = {
+      ...baseStop,
+      activity: persistedActivity,
+      activitySubtype: persistedActivitySubtype ?? undefined,
+      details: persistedDetails,
+      version: persistedVersion,
+    };
+    const reloadedModel = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [reloadedStop],
+    });
+    render(<SmartItineraryTable model={reloadedModel} />);
+    const reloadedTable = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const reloadedRow = reloadedTable.querySelector(
+      `tr.stop-row[data-id="${ROUTE_DETAILS_ITEM_ID}"]`,
+    ) as HTMLElement;
+    expect(reloadedRow).toBeTruthy();
+    expect(
+      within(reloadedRow).getByRole("textbox", { name: /^from$/i }),
+    ).toHaveValue(ROUTE_DETAILS_FROM);
+    expect(
+      within(reloadedRow).getByRole("textbox", { name: /^to$/i }),
+    ).toHaveValue(ROUTE_DETAILS_TO);
+    const reloadedByChipLabel = reloadedRow.querySelector(
+      "button.choice-chip[data-by-trigger] .choice-chip-label",
+    );
+    expect(reloadedByChipLabel).toHaveTextContent(
+      new RegExp(`^${ROUTE_DETAILS_BY}$`, "i"),
     );
   });
 });

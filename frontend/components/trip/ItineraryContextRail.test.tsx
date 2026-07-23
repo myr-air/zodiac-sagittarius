@@ -7,10 +7,22 @@
  * DOM: bunfig.toml preloads test/happy-dom-setup.ts for RTL under bun test.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
-import { ItineraryContextRail } from "./ItineraryContextRail";
+import { useState } from "react";
+import {
+  ItineraryContextRail,
+  type ItineraryContextSelectedItem,
+} from "./ItineraryContextRail";
+import { seedFieldBag } from "../../src/trip/itinerary-type-fields";
 
 /** Competing dual-card titles from the pre-fix empty rail (must not both appear). */
 const CTX_EMPTY_TITLE = "No activity selected";
@@ -167,5 +179,213 @@ describe("ItineraryContextRail non-persistent type fields", () => {
 
     expect(reservation).toHaveValue("");
     expect(onFieldBagChange).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * M82GSOYG T3 #2 — rail commitRailField already delegates to
+ * softMapBagKeyToPatch (T1, already done), so a From/To/By edit must PATCH
+ * details.origin/details.destination/details.mode (not just the derived
+ * activity/activitySubtype). After a simulated reload — the app re-seeding
+ * selectedItem.fieldBag via seedFieldBag(patchedItem), same as T2 — the rail
+ * must still show the typed From/To/By (hydrate accepts the API detail key
+ * set, not only the legacy bag). Independent literals distinct from the
+ * table's M82GSOYG T3 #1 fixtures above.
+ */
+const RAIL_ROUTE_ITEM_ID = "item-rail-travel-details-roundtrip";
+const RAIL_ROUTE_TRIP_ID = "trip-rail-details-roundtrip";
+const RAIL_ROUTE_SESSION_TOKEN = "member-session-token-rail-details-roundtrip";
+const RAIL_ROUTE_API_BASE = "http://127.0.0.1:5181";
+const RAIL_ROUTE_FROM = "Denpasar";
+const RAIL_ROUTE_TO = "Ubud";
+const RAIL_ROUTE_BY = "car";
+const RAIL_ROUTE_INITIAL_VERSION = 2;
+const RAIL_ROUTE_INITIAL_ACTIVITY = "Flight";
+
+/**
+ * Minimal controlled harness (mirrors ItineraryPlanPage's rail wiring): holds
+ * the selected item's fieldBag/version and, on a successful PATCH, re-seeds
+ * the bag from the persisted item via seedFieldBag — the same hydrate step a
+ * real reload performs.
+ */
+function RailHarness({
+  initialItem,
+  ...railProps
+}: {
+  initialItem: ItineraryContextSelectedItem;
+  tripId: string;
+  sessionToken: string;
+  apiBaseUrl: string;
+  fetch: typeof fetch;
+  onPatchedSpy: (item: Parameters<NonNullable<Parameters<typeof ItineraryContextRail>[0]["onPatched"]>>[0]) => void;
+}) {
+  const [item, setItem] = useState<ItineraryContextSelectedItem>(initialItem);
+  return (
+    <ItineraryContextRail
+      {...railProps}
+      selectedItem={item}
+      onFieldBagChange={(_, fieldBag) =>
+        setItem((prev) => ({ ...prev, fieldBag }))
+      }
+      onPatched={(patched) => {
+        railProps.onPatchedSpy(patched);
+        setItem((prev) => ({
+          ...prev,
+          version: patched.version,
+          activity: patched.activity,
+          fieldBag: seedFieldBag(patched),
+        }));
+      }}
+    />
+  );
+}
+
+describe("ItineraryContextRail softMapBagKeyToPatch details persistence + reload hydrate (M82GSOYG T3)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("rail From/To/By edits PATCH details.origin/details.destination/details.mode, and a simulated reload (seedFieldBag re-seed) still shows the typed From/To/By", async () => {
+    const user = userEvent.setup();
+
+    // Simulated backend: merges + echoes back only what patch.details/activitySubtype
+    // actually carried (no client-only memory) — proves real persistence.
+    let persistedDetails: Record<string, unknown> = {};
+    let persistedActivity = RAIL_ROUTE_INITIAL_ACTIVITY;
+    let persistedActivitySubtype: string | null | undefined;
+    let persistedVersion = RAIL_ROUTE_INITIAL_VERSION;
+
+    const fetchMock = vi.fn(async (_input: unknown, init?: RequestInit) => {
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method !== "PATCH") {
+        return new Response(
+          JSON.stringify({ error: { message: "unexpected" } }),
+          { status: 404 },
+        );
+      }
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        patch?: {
+          activity?: string;
+          activitySubtype?: string | null;
+          details?: Record<string, unknown>;
+        };
+      };
+      if (body.patch?.activity !== undefined) {
+        persistedActivity = body.patch.activity;
+      }
+      if (body.patch?.activitySubtype !== undefined) {
+        persistedActivitySubtype = body.patch.activitySubtype;
+      }
+      if (body.patch?.details) {
+        persistedDetails = { ...persistedDetails, ...body.patch.details };
+      }
+      persistedVersion += 1;
+      return new Response(
+        JSON.stringify({
+          id: RAIL_ROUTE_ITEM_ID,
+          tripId: RAIL_ROUTE_TRIP_ID,
+          planVariantId: "plan-rail-details-roundtrip",
+          day: "2026-04-12",
+          activity: persistedActivity,
+          activityType: "travel",
+          activitySubtype: persistedActivitySubtype ?? undefined,
+          place: "",
+          startTime: "09:00",
+          status: "idea",
+          version: persistedVersion,
+          details: persistedDetails,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+
+    const onPatchedSpy = vi.fn();
+
+    render(
+      <RailHarness
+        initialItem={{
+          id: RAIL_ROUTE_ITEM_ID,
+          activity: RAIL_ROUTE_INITIAL_ACTIVITY,
+          activityType: "travel",
+          status: "idea",
+          dayLabel: "Day 1",
+          version: RAIL_ROUTE_INITIAL_VERSION,
+          fieldBag: { from: "", to: "", by: "" },
+        }}
+        tripId={RAIL_ROUTE_TRIP_ID}
+        sessionToken={RAIL_ROUTE_SESSION_TOKEN}
+        apiBaseUrl={RAIL_ROUTE_API_BASE}
+        fetch={fetchMock as unknown as typeof fetch}
+        onPatchedSpy={onPatchedSpy}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+
+    // --- To blur → PATCH must carry details.origin/details.destination ---
+    // fireEvent.change (not user.type) avoids an incidental blur-on-focus-shift
+    // commit for "from" alone before "to" is filled in (matches the table's
+    // equivalent From/To PATCH test pattern).
+    const fromInput = within(context).getByLabelText(/^from$/i);
+    const toInput = within(context).getByLabelText(/^to$/i);
+    fireEvent.change(fromInput, { target: { value: RAIL_ROUTE_FROM } });
+    fireEvent.change(toInput, { target: { value: RAIL_ROUTE_TO } });
+    fireEvent.blur(toInput);
+
+    await waitFor(() => {
+      expect(onPatchedSpy).toHaveBeenCalledTimes(1);
+    });
+    const routeCall = fetchMock.mock.calls.find(
+      ([, init]) => String((init as RequestInit | undefined)?.method ?? "").toUpperCase() === "PATCH",
+    )!;
+    const routeBody = JSON.parse(
+      String((routeCall[1] as RequestInit | undefined)?.body ?? "{}"),
+    ) as { patch?: Record<string, unknown> };
+    expect(routeBody.patch).toEqual(
+      expect.objectContaining({
+        details: expect.objectContaining({
+          origin: RAIL_ROUTE_FROM,
+          destination: RAIL_ROUTE_TO,
+        }),
+      }),
+    );
+
+    // --- By select → PATCH must carry details.mode alongside activitySubtype ---
+    fetchMock.mockClear();
+    onPatchedSpy.mockClear();
+    const byField = within(context).getByLabelText(/^by$/i);
+    await user.selectOptions(byField, RAIL_ROUTE_BY);
+    await waitFor(() => {
+      expect(onPatchedSpy).toHaveBeenCalledTimes(1);
+    });
+    const byCall = fetchMock.mock.calls.find(
+      ([, init]) => String((init as RequestInit | undefined)?.method ?? "").toUpperCase() === "PATCH",
+    )!;
+    const byBody = JSON.parse(
+      String((byCall[1] as RequestInit | undefined)?.body ?? "{}"),
+    ) as { patch?: Record<string, unknown> };
+    expect(byBody.patch).toEqual(
+      expect.objectContaining({
+        activitySubtype: RAIL_ROUTE_BY,
+        details: expect.objectContaining({ mode: RAIL_ROUTE_BY }),
+      }),
+    );
+
+    // --- Reload hydrate: after the harness re-seeds fieldBag via
+    // seedFieldBag(patchedItem) (same as a real cockpit reload), the rail
+    // must still show From/To/By — not just the top-level fields.
+    await waitFor(() => {
+      expect(within(context).getByLabelText(/^from$/i)).toHaveValue(
+        RAIL_ROUTE_FROM,
+      );
+      expect(within(context).getByLabelText(/^to$/i)).toHaveValue(
+        RAIL_ROUTE_TO,
+      );
+      expect(within(context).getByLabelText(/^by$/i)).toHaveValue(
+        RAIL_ROUTE_BY,
+      );
+    });
   });
 });

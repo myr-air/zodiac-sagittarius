@@ -28,6 +28,7 @@ import {
   STAY_ACTION_OPTIONS,
   activitySummaryFromBag,
   seedFieldBag,
+  softMapBagKeyToPatch,
   typeFieldDefs,
   type StopFieldBag,
 } from "../../src/trip/itinerary-type-fields";
@@ -100,6 +101,24 @@ const PLAN_DAY_REORDER_EVENT = "joii:plan-day-reorder";
 type PlanDayReorderDetail = {
   day?: unknown;
   itemIds?: unknown;
+};
+
+/**
+ * Test + production seam: detail
+ * `{ itemId, fromDay, toDay, sourceItemIds, targetItemIds }` commits a
+ * cross-day drop — PATCH the moved item's day, then reorder both the
+ * source and target Plan Day scopes with their full itemIds (T4 #1).
+ */
+const PLAN_DAY_CROSS_DAY_MOVE_EVENT = "joii:plan-day-cross-day-move";
+
+type PlanDayCrossDayMoveDetail = {
+  itemId?: unknown;
+  fromDay?: unknown;
+  toDay?: unknown;
+  sourceItemIds?: unknown;
+  targetItemIds?: unknown;
+  /** Nested plan-block children that travel with the parent (T4 #2). */
+  childItemIds?: unknown;
 };
 
 /** Stop summary handed to the parent for context-rail selection (T6 #1). */
@@ -473,6 +492,7 @@ function DayRow({
   activityCount,
   onToggle,
   showDragGrip,
+  onDropAppend,
 }: {
   isoDay: string;
   dayNum: number;
@@ -480,6 +500,8 @@ function DayRow({
   activityCount: number;
   onToggle: () => void;
   showDragGrip: boolean;
+  /** Row/day-header drop target (M82GSOYG T5 #2) — appends dragged id to this day. */
+  onDropAppend?: (draggedId: string) => void;
 }) {
   const { dow, dom, mon, dowLabel } = prettyDayParts(isoDay);
   const countLabel =
@@ -491,6 +513,25 @@ function DayRow({
       className="day-row"
       data-day-block=""
       data-collapsed={collapsed ? "true" : "false"}
+      onDragOver={
+        onDropAppend
+          ? (e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            }
+          : undefined
+      }
+      onDrop={
+        onDropAppend
+          ? (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const draggedId = e.dataTransfer.getData("text/plain").trim();
+              if (!draggedId) return;
+              onDropAppend(draggedId);
+            }
+          : undefined
+      }
     >
       <td colSpan={1}>
         <div className="day-head">
@@ -550,6 +591,34 @@ function moveItemId(ids: string[], fromId: string, beforeId: string): string[] {
   const insertAt = next.indexOf(beforeId);
   next.splice(insertAt, 0, fromId);
   return next;
+}
+
+/**
+ * Insert `insertId` immediately before `beforeId` in `ids` (M82GSOYG T5 #1
+ * cross-day row drop — the target day's id list never already contains the
+ * dragged id, unlike `moveItemId`'s within-day reorder). Falls back to
+ * appending at the end when `beforeId` isn't present in `ids`.
+ */
+function insertItemIdBefore(
+  ids: string[],
+  insertId: string,
+  beforeId: string,
+): string[] {
+  const withoutInsert = ids.filter((id) => id !== insertId);
+  const at = withoutInsert.indexOf(beforeId);
+  if (at < 0) return [...withoutInsert, insertId];
+  const next = [...withoutInsert];
+  next.splice(at, 0, insertId);
+  return next;
+}
+
+/**
+ * Append `insertId` to the end of `ids` (M82GSOYG T5 #2 — dropping on a Plan
+ * Day / day header, empty or not, appends the dragged stop to that day).
+ */
+function appendItemId(ids: string[], insertId: string): string[] {
+  if (ids.includes(insertId)) return ids;
+  return [...ids, insertId];
 }
 
 type OverlapCueItem = {
@@ -787,26 +856,7 @@ function StopRow({
     let next = { ...fieldBag, [key]: value };
     setFieldBag(next);
     emitInspect(activityType, next);
-    if (!canPatch) return;
 
-    // Soft map to documented top-level PATCH fields (not ambiguous details).
-    if (key === "place") {
-      if (value !== item.place) onPatch({ place: value });
-      return;
-    }
-    if (key === "title") {
-      if (value !== item.activity) onPatch({ activity: value });
-      return;
-    }
-    if (
-      (key === "carrier" || key === "ref") &&
-      activityType === "travel"
-    ) {
-      // Travel carrier/ref stored in API place until details schema is wired.
-      const combined = [next.carrier, next.ref].filter(Boolean).join(" · ");
-      if (combined !== item.place) onPatch({ place: combined });
-      return;
-    }
     if ((key === "from" || key === "to") && activityType === "travel") {
       const summary = activitySummaryFromBag(activityType, next);
       if (summary) {
@@ -814,20 +864,25 @@ function StopRow({
         setFieldBag(next);
         emitInspect(activityType, next);
       }
-      if (summary && summary !== item.activity) {
-        onPatch({ activity: summary });
-      }
-      return;
     }
-    if (key === "by") {
-      // Travel By → API activitySubtype (validate_activity_subtype).
-      onPatch({ activitySubtype: value || null });
-      return;
-    }
-    if (key === "meal") {
-      // Food Meal → API details.meal.
-      onPatch({ details: { meal: value } });
-    }
+
+    if (!canPatch) return;
+
+    // Soft map to documented PATCH fields — mirrors the context rail
+    // (softMapBagKeyToPatch) so From/To/By also persist into
+    // details.origin/destination/mode, not only the derived top-level
+    // activity/activitySubtype fields.
+    const patch = softMapBagKeyToPatch({
+      activityType,
+      key,
+      value,
+      bag: next,
+      currentPlace: item.place,
+      currentActivity: item.activity,
+      currentDetails: item.details,
+    });
+    if (!patch) return;
+    onPatch(patch);
   }
 
   function closeStopDialog() {
@@ -1997,6 +2052,19 @@ export function SmartItineraryTable({
   const resolveItem = (item: TripCockpitItineraryItem): TripCockpitItineraryItem =>
     itemOverrides[item.id] ?? externalItemOverrides?.[item.id] ?? item;
 
+  /** Find a live (resolved) item by id across model days + this-session creates. */
+  const findItemById = (itemId: string): TripCockpitItineraryItem | null => {
+    for (const day of model.days) {
+      for (const item of day.items) {
+        if (item.id === itemId) return resolveItem(item);
+        const child = (item.children ?? []).find((c) => c.id === itemId);
+        if (child) return resolveItem(child);
+      }
+    }
+    const created = createdItems.find((item) => item.id === itemId);
+    return created ? resolveItem(created) : null;
+  };
+
   useEffect(() => {
     setCollapsedDays(readCollapsedDays(tripId));
   }, [tripId]);
@@ -2258,6 +2326,65 @@ export function SmartItineraryTable({
     });
   };
 
+  /**
+   * Cross-day drop (M82GSOYG T4 #1 decisions #177, T4 #2 decisions #178,
+   * T4 #3 decisions #179): PATCH only the moved parent's `day` to the target
+   * Plan Day — the backend now cascades the day change onto every nested
+   * plan-block child itself, so a per-child day PATCH here would be
+   * redundant (GREEN details merge follow-up). `childItemIds` still travel
+   * in the target/source `itemIds` scope so both Plan Day reorders keep the
+   * children in the right place — reusing `commitPatch`'s expectedVersion +
+   * version_conflict → onCockpitReload handling for the single parent PATCH.
+   * Only once the day PATCH succeeds do we reorder BOTH the source and
+   * target Plan Day scopes with their full itemIds via the same
+   * `commitPlanDayReorder` seam used by within-day DnD; the PATCH failing
+   * (conflict or otherwise) skips both reorders so we never leave a silent
+   * local-only cross-day move with an unresolved item.
+   */
+  const commitCrossDayMove = (
+    itemId: string,
+    fromDay: string,
+    toDay: string,
+    sourceItemIds: string[],
+    targetItemIds: string[],
+    childItemIds: string[] = [],
+  ) => {
+    if (!tripId || !sessionToken || awaitingCockpitReload) return;
+    // Children still travel via sourceItemIds/targetItemIds reorder scope —
+    // no per-child day PATCH; the backend cascades the day change to them.
+    void childItemIds;
+    const movedItem = findItemById(itemId);
+    if (!movedItem) return;
+    setPatchError(null);
+    void patchItineraryItem(
+      {
+        tripId,
+        itemId: movedItem.id,
+        sessionToken,
+        expectedVersion: movedItem.version,
+        patch: { day: toDay },
+      },
+      { fetch: fetchImpl, apiBaseUrl },
+    ).then((outcome) => {
+      if (!outcome.ok && outcome.code === "version_conflict") {
+        setAwaitingCockpitReload(true);
+        onCockpitReload?.();
+        return;
+      }
+      if (!outcome.ok) {
+        setPatchError(outcome.error);
+        return;
+      }
+      setItemOverrides((prev) => {
+        const next = { ...prev };
+        next[outcome.item.id] = outcome.item;
+        return next;
+      });
+      commitPlanDayReorder(fromDay, sourceItemIds);
+      commitPlanDayReorder(toDay, targetItemIds);
+    });
+  };
+
   useEffect(() => {
     const table = tableRef.current;
     if (!table) return;
@@ -2281,6 +2408,62 @@ export function SmartItineraryTable({
     tripId,
     sessionToken,
     model.planVariantId,
+    fetchImpl,
+    apiBaseUrl,
+  ]);
+
+  useEffect(() => {
+    const table = tableRef.current;
+    if (!table) return;
+    const onCrossDayMove = (event: Event) => {
+      const detail = (event as CustomEvent<PlanDayCrossDayMoveDetail>).detail;
+      const itemId =
+        detail && typeof detail.itemId === "string"
+          ? detail.itemId.trim()
+          : "";
+      const fromDay =
+        detail && typeof detail.fromDay === "string"
+          ? detail.fromDay.trim()
+          : "";
+      const toDay =
+        detail && typeof detail.toDay === "string" ? detail.toDay.trim() : "";
+      if (!itemId || !fromDay || !toDay) return;
+      const sourceItemIds = Array.isArray(detail?.sourceItemIds)
+        ? detail.sourceItemIds.filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          )
+        : [];
+      const targetItemIds = Array.isArray(detail?.targetItemIds)
+        ? detail.targetItemIds.filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          )
+        : [];
+      const childItemIds = Array.isArray(detail?.childItemIds)
+        ? detail.childItemIds.filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          )
+        : [];
+      commitCrossDayMove(
+        itemId,
+        fromDay,
+        toDay,
+        sourceItemIds,
+        targetItemIds,
+        childItemIds,
+      );
+    };
+    table.addEventListener(PLAN_DAY_CROSS_DAY_MOVE_EVENT, onCrossDayMove);
+    return () =>
+      table.removeEventListener(PLAN_DAY_CROSS_DAY_MOVE_EVENT, onCrossDayMove);
+    // commitCrossDayMove closes over trip/session/plan/model state; rebind when they change.
+  }, [
+    tripId,
+    sessionToken,
+    model,
+    createdItems,
+    itemOverrides,
+    externalItemOverrides,
+    awaitingCockpitReload,
     fetchImpl,
     apiBaseUrl,
   ]);
@@ -2358,6 +2541,29 @@ export function SmartItineraryTable({
     },
     [],
   );
+
+  /**
+   * Locate the Plan Day a top-level stop currently lives on (M82GSOYG T5 —
+   * real row/day-header `onDrop` routing): returns that day's ISO label,
+   * its full top-level itemIds (for the source-day reorder scope), and any
+   * nested plan-block child ids that travel with the parent on a cross-day
+   * move. `null` when the id isn't a top-level stop on any Plan Day (e.g. a
+   * removed item, or a child id — children don't move independently).
+   */
+  const findTopLevelDayForItemId = (
+    itemId: string,
+  ): { day: string; itemIds: string[]; childItemIds: string[] } | null => {
+    for (const { day, dayItems } of preparedDays) {
+      const match = dayItems.find((item) => item.id === itemId);
+      if (!match) continue;
+      return {
+        day: day.day,
+        itemIds: dayItems.map((item) => item.id),
+        childItemIds: (match.children ?? []).map((child) => child.id),
+      };
+    }
+    return null;
+  };
 
   // Distinct pathGroupIds already present anywhere in the plan (Assign to
   // path options — M827T84Q T4 #1 lists the whole plan, not just this day).
@@ -2439,6 +2645,28 @@ export function SmartItineraryTable({
               activityCount={dayItems.length}
               onToggle={() => toggleDayCollapsed(day.day)}
               showDragGrip={false}
+              onDropAppend={
+                reorderEnabled
+                  ? (draggedId) => {
+                      const source = findTopLevelDayForItemId(draggedId);
+                      if (!source) return;
+                      if (source.day === day.day) {
+                        const nextIds = appendItemId(dayItemIds, draggedId);
+                        if (nextIds === dayItemIds) return;
+                        commitPlanDayReorder(day.day, nextIds);
+                        return;
+                      }
+                      commitCrossDayMove(
+                        draggedId,
+                        source.day,
+                        day.day,
+                        source.itemIds.filter((id) => id !== draggedId),
+                        appendItemId(dayItemIds, draggedId),
+                        source.childItemIds,
+                      );
+                    }
+                  : undefined
+              }
             />
           );
           const dayCue = dayCueText ? (
@@ -2559,6 +2787,18 @@ export function SmartItineraryTable({
                 onDropReorder={
                   reorderEnabled
                     ? (draggedId, beforeId) => {
+                        const source = findTopLevelDayForItemId(draggedId);
+                        if (source && source.day !== day.day) {
+                          commitCrossDayMove(
+                            draggedId,
+                            source.day,
+                            day.day,
+                            source.itemIds.filter((id) => id !== draggedId),
+                            insertItemIdBefore(dayItemIds, draggedId, beforeId),
+                            source.childItemIds,
+                          );
+                          return;
+                        }
                         const nextIds = moveItemId(
                           dayItemIds,
                           draggedId,
