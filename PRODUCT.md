@@ -226,7 +226,8 @@ Joii is a greenfield Next App Router app (`package` name `joii`):
 | Smart itinerary table | Yes (API) | Yes (M1 write-path + M2 place resolve / sibling overlap cues / itinerary import) | Source of truth |
 | Place resolve | Yes (`places/resolve`) | Yes (table place-cell Resolve → resolve → PATCH; not silent geocode) | Explicit resolve |
 | Itinerary import | Yes (`itinerary-imports` normalize) | Yes (preview → sequential CRUD append into visible plan; no bulk-write API) | Import into plan |
-| Sibling overlap warnings | — | Yes (Smart Itinerary Table warnings only; not alternate paths / not plan-check inspector) | Table cues |
+| Sibling overlap warnings | — | Yes (Smart Itinerary Table warnings only; not plan-check inspector) | Table cues |
+| Alternative Path (fork / active-path pick) | Yes (`pathGroupId`/`pathId`/`pathName`/`pathRole`) | Yes (fork parent stop-row + expandable subplan options; radio active-path pick; Path strip assign / add alternative / clear on Smart Itinerary Table) | Full authoring surface |
 | Map / timeline | Partial/API | No | Context + routes |
 | Members / join / presence | Yes | No | Full |
 | Expenses / estimates | Yes | No | Plan-scoped |
