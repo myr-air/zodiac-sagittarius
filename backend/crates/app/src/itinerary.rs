@@ -71,15 +71,7 @@ pub async fn patch_itinerary_item(
     let target_is_plan_block = patch.is_plan_block.unwrap_or(existing.is_plan_block);
     validate_time_window_end_offset(target_end_time.as_deref(), target_end_offset_days)?;
     validate_sub_activity_not_plan_block(target_parent_item_id, target_is_plan_block)?;
-    validate_itinerary_block_patch(
-        &mut tx,
-        trip_id,
-        item_id,
-        existing.day,
-        target_day,
-        target_parent_item_id,
-    )
-    .await?;
+    validate_itinerary_block_patch(&mut tx, trip_id, item_id, target_parent_item_id).await?;
     validate_itinerary_parent(
         &mut tx,
         trip_id,
@@ -96,12 +88,47 @@ pub async fn patch_itinerary_item(
         apply_path_fields_to_patch(&mut patch, &parent_path_fields);
     }
 
-    let updated_record =
-        db::queries::update_itinerary_item(&mut tx, item_id, &patch, existing.version + 1)
-            .await?
-            .ok_or(ServiceError::NotFound)?;
-    let updated = ItineraryItemSummary::from(updated_record);
     let mut events_to_publish = Vec::new();
+    let updated = if target_day != existing.day {
+        // The parent's day and its children's day must move together in the
+        // same statement to satisfy the (parent_item_id, trip_id,
+        // trip_plan_id, day) foreign key (see
+        // `update_itinerary_item_with_day_cascade`).
+        let mut records = db::queries::update_itinerary_item_with_day_cascade(
+            &mut tx,
+            trip_id,
+            item_id,
+            &patch,
+            existing.version + 1,
+        )
+        .await?;
+        let parent_index = records
+            .iter()
+            .position(|record| record.id == item_id)
+            .ok_or(ServiceError::NotFound)?;
+        let parent_record = records.remove(parent_index);
+        let updated = ItineraryItemSummary::from(parent_record);
+        for child_record in records {
+            let child = ItineraryItemSummary::from(child_record);
+            events_to_publish.push(
+                insert_item_event(
+                    &mut tx,
+                    &child,
+                    "itinerary_item.updated",
+                    None,
+                    Some(session.member_id),
+                )
+                .await?,
+            );
+        }
+        updated
+    } else {
+        let updated_record =
+            db::queries::update_itinerary_item(&mut tx, item_id, &patch, existing.version + 1)
+                .await?
+                .ok_or(ServiceError::NotFound)?;
+        ItineraryItemSummary::from(updated_record)
+    };
     if existing.parent_item_id.is_none() && patch_has_path_fields(&patch) {
         let child_records = db::queries::update_itinerary_child_path_fields(
             &mut tx,
@@ -445,8 +472,6 @@ async fn validate_itinerary_block_patch(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,
     item_id: Uuid,
-    existing_day: time::Date,
-    target_day: time::Date,
     target_parent_item_id: Option<Uuid>,
 ) -> Result<(), ServiceError> {
     let has_children = db::queries::itinerary_item_has_children(tx, trip_id, item_id).await?;
@@ -459,11 +484,10 @@ async fn validate_itinerary_block_patch(
             "activity block with sub-activities cannot become a sub-activity",
         ));
     }
-    if target_day != existing_day {
-        return Err(ServiceError::InvalidRequest(
-            "activity block with sub-activities cannot move days without its children",
-        ));
-    }
+
+    // Day moves are allowed for an activity block with sub-activities: the
+    // children cascade to the same target day (see
+    // `update_itinerary_item_with_day_cascade`).
 
     Ok(())
 }

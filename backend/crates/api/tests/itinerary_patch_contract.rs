@@ -570,18 +570,22 @@ async fn itinerary_patch_contract_rejects_activity_block_becoming_sub_activity(p
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
+// Day moves on an activity block with sub-activities now cascade the target
+// day to its children instead of being rejected — see
+// `itinerary_patch_contract_activity_block_day_move_cascades_to_children`.
+
 #[sqlx::test(migrations = "../../migrations")]
-async fn itinerary_patch_contract_rejects_activity_block_day_move_without_children(
+async fn itinerary_patch_contract_activity_block_day_move_cascades_to_children(
     pool: sqlx::PgPool,
 ) {
     support::seed_trip(&pool).await;
     let token = support::create_session(&pool, support::ORGANIZER_ID).await;
-    let app = support::app(pool);
+    let app = support::app(pool.clone());
 
     let child = create_itinerary_item(
         &app,
         &token,
-        "web-create-child-for-day-move",
+        "web-create-child-for-day-move-cascade",
         json!({
             "parentItemId": support::ITEM_ID,
             "activity": "Queue for table",
@@ -591,6 +595,7 @@ async fn itinerary_patch_contract_rejects_activity_block_day_move_without_childr
     )
     .await;
     assert_eq!(child["parentItemId"], support::ITEM_ID);
+    let child_id = Uuid::parse_str(child["id"].as_str().unwrap()).unwrap();
 
     let response = app
         .oneshot(
@@ -605,7 +610,7 @@ async fn itinerary_patch_contract_rejects_activity_block_day_move_without_childr
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
                     json!({
-                        "clientMutationId": "web-patch-block-day-without-child",
+                        "clientMutationId": "web-patch-block-day-move-cascade",
                         "expectedVersion": 4,
                         "patch": {
                             "day": "2025-05-17"
@@ -618,7 +623,34 @@ async fn itinerary_patch_contract_rejects_activity_block_day_move_without_childr
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let stored_parent: (String, i64) = sqlx::query_as(
+        "select day::text, version
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(Uuid::parse_str(support::ITEM_ID).unwrap())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_parent.0, "2025-05-17");
+    assert_eq!(stored_parent.1, 5);
+
+    let stored_child: (String, Option<Uuid>) = sqlx::query_as(
+        "select day::text, parent_item_id
+         from itinerary_items
+         where id = $1",
+    )
+    .bind(child_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_child.0, "2025-05-17");
+    assert_eq!(
+        stored_child.1,
+        Some(Uuid::parse_str(support::ITEM_ID).unwrap())
+    );
 }
 
 #[sqlx::test(migrations = "../../migrations")]
