@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0] — 2026-07-23
+
+### Added
+- Place resolve picker, itinerary import (normalize → sequential create/PATCH append), and sibling overlap day-cues on the Smart Itinerary Table
+
+### Fixed
+- Cockpit UX honesty: Import Escape close, Demo weather badge, calm Join ID trip-access copy, human date range, Days toggle contrast, unified rail empty cue
+- Bound `globalThis.fetch` for itinerary mutations; draft start/end times persist on create; conflict lock clears after reload
+
+### Notes
+- Missions M81HY2YR (M2 places/bulk ingest) + M81LW2UJ (UX fix-pass); roadmap itinerary-band-c-complete
+
+
 ## [0.25.0] — 2026-07-22
 
 ### Added
