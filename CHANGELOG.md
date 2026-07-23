@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.26.1] — 2026-07-23
+
+### Changed
+- Ignore `.playwright-cli/` QA artifacts; document AFK browser verify matrix in AGENTS.md
+
 ## [0.26.0] — 2026-07-23
 
 ### Added

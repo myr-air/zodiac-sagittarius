@@ -59,6 +59,15 @@ Package manager for the web app is **Bun**. Backend is **Cargo**.
 Prefer focused unit/API tests for backend domain changes. Add frontend tests
 when UI behavior exists beyond the landing stub.
 
+Browser verify matrix (AFK / UI recheck):
+
+1. Vitest + happy-dom — behavior
+2. `playwright-cli` — primary real-browser visual / interact
+3. Cursor IDE browser — fallback when `playwright-cli` cannot run
+
+Do not use system Chrome headless or browser-use/CDP for visual gates.
+Optional: `visual-verify.mjs` (same Playwright family) for scripted viewport audits.
+
 ## Code conventions
 
 - Follow `DESIGN.md` for all UI. Cockpit = dense Calm Travel Ops; landing =
