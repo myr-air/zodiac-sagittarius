@@ -67,6 +67,12 @@ export type ItineraryContextSelectedItem = {
   version?: number;
   /** Per-stop type field bag (T7 #1). */
   fieldBag?: StopFieldBag;
+  /**
+   * Current API `details` — passed through to softMapBagKeyToPatch so
+   * from/to/by/meal patches merge instead of wiping sibling detail fields
+   * (M82GSOYG GREEN details merge).
+   */
+  details?: Record<string, unknown> | null;
 };
 
 type ItineraryContextRailProps = {
@@ -198,6 +204,7 @@ export function ItineraryContextRail({
       value,
       bag: nextBag,
       currentActivity: selectedItem.activity,
+      currentDetails: selectedItem.details,
     });
     if (!patch) return;
 

@@ -252,21 +252,38 @@ export function parseTravelRoute(activity: string): {
 /**
  * Seed bag from cockpit summary fields.
  * Travel: activity "A → B" → from/to; place seeds carrier until details exist.
+ *
+ * M82GSOYG T2: when `item.details` carries origin/destination/mode/meal
+ * (from an earlier T1-style PATCH), hydrate from/to/by/meal from there so a
+ * reload doesn't lose the typed extras. Older/local items with no details
+ * still fall back to the legacy activity-route + place seed.
  */
 export function seedFieldBag(item: {
   activity: string;
   activityType: string;
   place: string;
+  details?: Record<string, unknown> | null;
 }): StopFieldBag {
-  const { from, to } = parseTravelRoute(item.activity);
+  const details = item.details ?? undefined;
+  const routeFromDetails =
+    typeof details?.origin === "string" || typeof details?.destination === "string";
+  const { from: legacyFrom, to: legacyTo } = parseTravelRoute(item.activity);
+  const from = routeFromDetails
+    ? (details?.origin as string | undefined) ?? ""
+    : legacyFrom;
+  const to = routeFromDetails
+    ? (details?.destination as string | undefined) ?? ""
+    : legacyTo;
+  const by = typeof details?.mode === "string" ? details.mode : "";
+  const meal = typeof details?.meal === "string" ? details.meal : "";
   const bag: StopFieldBag = {
     title: item.activity,
     place: item.place,
     from,
     to,
     note: "",
-    by: "",
-    meal: "",
+    by,
+    meal,
     action: "",
     checkin: "",
     checkout: "",
@@ -277,7 +294,7 @@ export function seedFieldBag(item: {
     ref: "",
     reservation: "",
   };
-  if (item.activityType === "travel") {
+  if (item.activityType === "travel" && !routeFromDetails) {
     // Until details exists, carrier/booking lives in API `place`.
     bag.carrier = item.place;
   }
@@ -346,8 +363,19 @@ export function softMapBagKeyToPatch(input: {
   currentPlace?: string;
   /** Current API activity — skip title/route patches when unchanged. */
   currentActivity?: string;
+  /**
+   * Current API `details` (object only). `details` is coalesced (replaces the
+   * whole column) on PATCH, so from/to/by/meal patches must merge into a
+   * shallow copy of this instead of returning only the new field — otherwise
+   * sibling detail fields (origin/destination/bookingRef, …) get wiped.
+   */
+  currentDetails?: Record<string, unknown> | null;
 }): SoftMappedItemPatch | null {
   const { activityType, key, value, bag } = input;
+  const baseDetails: Record<string, unknown> =
+    input.currentDetails && typeof input.currentDetails === "object"
+      ? { ...input.currentDetails }
+      : {};
 
   if (key === "place") {
     if (input.currentPlace !== undefined && value === input.currentPlace) {
@@ -378,21 +406,29 @@ export function softMapBagKeyToPatch(input: {
     return { place: combined };
   }
   if ((key === "from" || key === "to") && activityType === "travel") {
+    const details: Record<string, unknown> = { ...baseDetails };
+    if (bag.from) details.origin = bag.from;
+    if (bag.to) details.destination = bag.to;
     const summary = activitySummaryFromBag(activityType, bag);
-    if (!summary) return null;
+    if (!summary) {
+      return Object.keys(details).length > 0 ? { details } : null;
+    }
     if (
       input.currentActivity !== undefined &&
       summary === input.currentActivity
     ) {
-      return null;
+      return Object.keys(details).length > 0 ? { details } : null;
     }
-    return { activity: summary };
+    return { activity: summary, details };
   }
   if (key === "by") {
-    return { activitySubtype: value || null };
+    return {
+      activitySubtype: value || null,
+      details: { ...baseDetails, mode: value },
+    };
   }
   if (key === "meal") {
-    return { details: { meal: value } };
+    return { details: { ...baseDetails, meal: value } };
   }
   return null;
 }

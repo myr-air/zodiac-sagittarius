@@ -148,6 +148,136 @@ pub async fn update_itinerary_item(
     .await
 }
 
+pub async fn update_itinerary_item_with_day_cascade(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    trip_id: Uuid,
+    item_id: Uuid,
+    patch: &sagittarius_domain::patches::ItineraryItemPatch,
+    next_version: i64,
+) -> Result<Vec<ItineraryItemRecord>, sqlx::Error> {
+    // The parent and its children must move day together in one statement:
+    // itinerary_items_parent_scope_fkey is NOT DEFERRABLE, so Postgres checks
+    // (parent_item_id, trip_id, trip_plan_id, day) referential integrity
+    // immediately after each statement. Two separate UPDATEs (parent, then
+    // children) would leave the parent's new day briefly unmatched by its
+    // children's old day and fail the FK check before the second statement
+    // ever runs. A single WITH clause updates both in one statement, so the
+    // FK sees only the final, consistent state.
+    sqlx::query_as::<_, ItineraryItemRecord>(
+        "with updated_parent as (
+           update itinerary_items
+           set path_group_id = coalesce($2, path_group_id),
+               path_id = coalesce($3, path_id),
+               path_name = coalesce($4, path_name),
+               path_role = coalesce($5, path_role),
+               parent_item_id = case when $6 then $7 else parent_item_id end,
+               item_kind = coalesce($8, item_kind),
+               time_mode = coalesce($9, time_mode),
+               is_plan_block = coalesce($10, is_plan_block),
+               status = coalesce($11, status),
+               priority = coalesce($12, priority),
+               day = coalesce($13, day),
+               start_time = case when $14 then $15::time else start_time end,
+               end_time = case when $16 then $17::time else end_time end,
+               end_offset_days = coalesce($18, end_offset_days),
+               duration_minutes = case when $19 then $20 else duration_minutes end,
+               activity = coalesce($21, activity),
+               activity_type = coalesce($22, activity_type),
+               activity_subtype = case when $23 then $24 else activity_subtype end,
+               place = coalesce($25, place),
+               map_link = coalesce($26, map_link),
+               address = case when $27 then $28 else address end,
+               latitude = case when $29 then $30 else latitude end,
+               longitude = case when $31 then $32 else longitude end,
+               transportation = coalesce($33, transportation),
+               details = coalesce($34, details),
+               note = coalesce($35, note),
+               version = $36,
+               updated_at = now()
+           where id = $1 and deleted_at is null
+           returning
+             id, trip_id, trip_plan_id, path_group_id, path_id, path_name, path_role,
+             parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+             day, sort_order,
+             coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+             to_char(end_time, 'HH24:MI') as end_time,
+             end_offset_days,
+             activity, activity_type, activity_subtype, place, map_link, address,
+             latitude::float8 as latitude, longitude::float8 as longitude,
+             duration_minutes, transportation, details, note, created_by,
+             updated_at::text as updated_at, version
+         ),
+         updated_children as (
+           update itinerary_items
+           set day = (select day from updated_parent),
+               version = version + 1,
+               updated_at = now()
+           where trip_id = $37
+             and parent_item_id = $1
+             and deleted_at is null
+             and exists (select 1 from updated_parent)
+           returning
+             id, trip_id, trip_plan_id, path_group_id, path_id, path_name, path_role,
+             parent_item_id, item_kind, time_mode, is_plan_block, status, priority,
+             day, sort_order,
+             coalesce(to_char(start_time, 'HH24:MI'), '') as start_time,
+             to_char(end_time, 'HH24:MI') as end_time,
+             end_offset_days,
+             activity, activity_type, activity_subtype, place, map_link, address,
+             latitude::float8 as latitude, longitude::float8 as longitude,
+             duration_minutes, transportation, details, note, created_by,
+             updated_at::text as updated_at, version
+         )
+         select * from updated_parent
+         union all
+         select * from updated_children",
+    )
+    .bind(item_id)
+    .bind(patch.path_group_id.as_deref())
+    .bind(patch.path_id.as_deref())
+    .bind(patch.path_name.as_deref())
+    .bind(patch.path_role.as_deref())
+    .bind(patch.parent_item_id.is_some())
+    .bind(patch.parent_item_id.unwrap_or(None))
+    .bind(patch.item_kind.as_deref())
+    .bind(patch.time_mode.as_deref())
+    .bind(patch.is_plan_block)
+    .bind(patch.status.as_deref())
+    .bind(patch.priority.as_deref())
+    .bind(patch.day)
+    .bind(patch.start_time.is_some())
+    .bind(patch.start_time.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.end_time.is_some())
+    .bind(patch.end_time.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.end_offset_days)
+    .bind(patch.duration_minutes.is_some())
+    .bind(patch.duration_minutes.flatten())
+    .bind(patch.activity.as_deref())
+    .bind(patch.activity_type.as_deref())
+    .bind(patch.activity_subtype.is_some())
+    .bind(
+        patch
+            .activity_subtype
+            .as_ref()
+            .and_then(|value| value.as_deref()),
+    )
+    .bind(patch.place.as_deref())
+    .bind(patch.map_link.as_deref())
+    .bind(patch.address.is_some())
+    .bind(patch.address.as_ref().and_then(|value| value.as_deref()))
+    .bind(patch.latitude.is_some())
+    .bind(patch.latitude.flatten())
+    .bind(patch.longitude.is_some())
+    .bind(patch.longitude.flatten())
+    .bind(patch.transportation.as_deref())
+    .bind(patch.details.as_ref())
+    .bind(patch.note.as_deref())
+    .bind(next_version)
+    .bind(trip_id)
+    .fetch_all(&mut **tx)
+    .await
+}
+
 pub async fn update_itinerary_child_path_fields(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     trip_id: Uuid,

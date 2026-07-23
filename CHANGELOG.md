@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.28.0] — 2026-07-23
+
+### Added
+- Cross-day Plan Day drag-and-drop: stop day PATCH plus dual-scope order persist; plan-block day moves cascade to nested children in one statement
+- Draft itinerary field-bag keys (`from`/`to`/`by`/`meal`) map and hydrate through API `details` (`origin`/`destination`/`mode`/`meal`) with merge so sibling extras survive PATCH
+
+### Notes
+- Closed #177 #178 #179 (M82GSOYG); Playwright visual-verify restored via skill-local `@playwright/test` install
+- Closed #184: live `/trips/{id}` Alternative Path chrome smoke verified (fork parent “Currently using…”, expanded options with Using chip, Path strip)
+- Follow-ups: #185 lint set-state-in-effect on main; #186 optional cross-day drop-zone active chrome
+
+
 ## [0.27.0] — 2026-07-23
 
 ### Added
@@ -9,7 +21,7 @@
 - PRODUCT.md §5 marks Alternative Path fork / active-path pick as shipped in the Joii UI
 
 ### Notes
-- Mission M827T84Q (roadmap itinerary-band-c-complete M3); live `/trips/{id}` path screenshot smoke still recommended when API is up
+- Mission M827T84Q (roadmap itinerary-band-c-complete M3); live `/trips/{id}` path screenshot smoke tracked as #184
 
 
 ## [0.26.1] — 2026-07-23

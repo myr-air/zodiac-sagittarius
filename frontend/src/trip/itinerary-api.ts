@@ -320,6 +320,8 @@ export async function createItineraryItem(
 
 /** Patch fields for PatchItineraryItemRequest.patch (camelCase). */
 export type ItineraryItemPatchFields = {
+  /** Cross-day drop (T4 #1) — moves the item to a different Plan Day. */
+  day?: string;
   /** Empty clear → null (not "") so API HH:MM validation is not tripped. */
   startTime?: string | null;
   endTime?: string | null;
