@@ -48,7 +48,8 @@ export function DayStopDetails({
   useEffect(() => {
     setNote(stop.note ?? "");
     setStatus(stop.status);
-  }, [stop.id, stop.note, stop.status]);
+    setAwaitingCockpitReload(false);
+  }, [stop.id, stop.note, stop.status, stop.version]);
 
   function commitPatch(patch: { note?: string; status?: string }) {
     if (awaitingCockpitReload) return;

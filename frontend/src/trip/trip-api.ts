@@ -37,6 +37,7 @@ type PatchTripBody = {
   id?: unknown;
   name?: unknown;
   destinationLabel?: unknown;
+  countries?: unknown;
   startDate?: unknown;
   endDate?: unknown;
   mainTripPlanId?: unknown;
@@ -79,10 +80,14 @@ function parseTripSummary(body: PatchTripBody | null): TripCockpitTrip | null {
   if (mainTripPlanId === undefined || activePlanVariantId === undefined) {
     return null;
   }
+  const countries = Array.isArray(body.countries)
+    ? body.countries.filter((c): c is string => typeof c === "string")
+    : [];
   return {
     id: body.id,
     name: body.name,
     destinationLabel: body.destinationLabel,
+    countries,
     startDate: body.startDate,
     endDate: body.endDate,
     mainTripPlanId,

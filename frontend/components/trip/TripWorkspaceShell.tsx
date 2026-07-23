@@ -3,6 +3,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { defaultApiBaseUrl } from "../../src/auth/email-challenge";
 import { loadMemberSession } from "../../src/landing/create-trip";
+import { formatDateRange } from "../../src/portal/format-date-range";
 import { buildItineraryTableModel } from "../../src/trip/itinerary-table-model";
 import {
   loadTripCockpit,
@@ -10,6 +11,7 @@ import {
   type TripCockpitPlan,
   type TripCockpitTrip,
 } from "../../src/trip/trip-cockpit-load";
+import { ItineraryImportDialog } from "./ItineraryImportDialog";
 import { ItineraryPlanPage } from "./ItineraryPlanPage";
 
 type TripWorkspaceShellProps = {
@@ -55,6 +57,12 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
     TripCockpitItineraryItem[]
   >([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  /** Bumps to request a TripCockpit reload (conflict / import). */
+  const [reloadNonce, setReloadNonce] = useState(0);
+  /**
+   * Bumps after a successful cockpit load — children clear version_conflict
+   * locks (awaitingCockpitReload) only when authoritative data is in.
+   */
   const [reloadToken, setReloadToken] = useState(0);
   /** Command-bar Reorder (#dnd-toggle) — default off; reveals draft drag grips. */
   const [reorderEnabled, setReorderEnabled] = useState(false);
@@ -70,6 +78,10 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
   const [selectedPlanOptionId, setSelectedPlanOptionId] = useState<
     string | null
   >(null);
+  /** Command-bar Import (#btn-import) — draft itinerary import dialog. */
+  const [importOpen, setImportOpen] = useState(false);
+  /** Bumps remount key so ItineraryImportDialog resets via fresh useState. */
+  const [importDialogKey, setImportDialogKey] = useState(0);
 
   useEffect(() => {
     setSelectedPlanOptionId(null);
@@ -98,12 +110,13 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
       setTrip(outcome.trip);
       setTripPlans(outcome.tripPlans);
       setItineraryItems(outcome.itineraryItems);
+      setReloadToken((n) => n + 1);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [tripId, reloadToken]);
+  }, [tripId, reloadNonce]);
 
   const mainTripPlanId = trip?.mainTripPlanId ?? null;
   const selectedOptionId = selectedPlanOptionId ?? mainTripPlanId;
@@ -122,6 +135,10 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
           itineraryItems,
         })
       : null;
+  /** Draft subtitle “appends to Main” — Main Plan uses short label. */
+  const importPlanLabel = isMainPlanSelected
+    ? "Main"
+    : (tripPlans.find((p) => p.id === selectedOptionId)?.name ?? "plan");
   const sessionToken = loadMemberSession(
     typeof window !== "undefined" ? window.sessionStorage : null,
   )?.sessionToken;
@@ -177,7 +194,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
             <button
               type="button"
               className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-[13px] font-medium"
-              onClick={() => setReloadToken((n) => n + 1)}
+              onClick={() => setReloadNonce((n) => n + 1)}
             >
               Retry
             </button>
@@ -189,7 +206,8 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
               <>
                 <strong>{trip.name}</strong>
                 <span>
-                  {trip.destinationLabel} · {trip.startDate}–{trip.endDate}
+                  {trip.destinationLabel} ·{" "}
+                  {formatDateRange(trip.startDate, trip.endDate)}
                 </span>
               </>
             ) : null}
@@ -208,7 +226,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
               </a>
               <a
                 href={`/trips/${tripId}/days`}
-                className="px-3.5 py-2 text-[13px] font-medium text-(--color-on-primary) no-underline opacity-90"
+                className="view-switch-inactive px-3.5 py-2 text-[13px] font-medium no-underline"
               >
                 Days
               </a>
@@ -266,20 +284,35 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
                 </div>
               )}
             </div>
+            {/* Draft places-bulk-ingest-v1: #btn-import in command actions. */}
+            <button
+              type="button"
+              className="btn"
+              id="btn-import"
+              onClick={() => {
+                setImportDialogKey((n) => n + 1);
+                setImportOpen(true);
+              }}
+            >
+              Import
+            </button>
             {/* Draft-v1 Share chrome — calm stub; no share API. */}
             <button type="button" className="btn btn-primary">
               Share
             </button>
           </div>
         </header>
-        {itineraryModel ? (
+        {itineraryModel && trip ? (
           <ItineraryPlanPage
             model={itineraryModel}
             tripId={tripId}
             sessionToken={sessionToken}
             apiBaseUrl={apiBaseUrl}
-            fetch={fetch}
-            onCockpitReload={() => setReloadToken((n) => n + 1)}
+            fetch={globalThis.fetch.bind(globalThis)}
+            reloadToken={reloadToken}
+            onCockpitReload={() => setReloadNonce((n) => n + 1)}
+            destinationLabel={trip.destinationLabel}
+            countries={trip.countries}
             reorderEnabled={reorderEnabled}
           />
         ) : null}
@@ -290,6 +323,19 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
           aria-label="Context inspector"
         />
       )}
+      {sessionToken && planVariantId ? (
+        <ItineraryImportDialog
+          key={importDialogKey}
+          open={importOpen}
+          tripId={tripId}
+          sessionToken={sessionToken}
+          apiBaseUrl={apiBaseUrl}
+          planVariantId={planVariantId}
+          planLabel={importPlanLabel}
+          onClose={() => setImportOpen(false)}
+          onImported={() => setReloadNonce((n) => n + 1)}
+        />
+      ) : null}
     </div>
   );
 }

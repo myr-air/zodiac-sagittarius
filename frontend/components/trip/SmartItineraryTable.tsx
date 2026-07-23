@@ -36,6 +36,8 @@ import type {
   ItineraryTableStop,
 } from "../../src/trip/itinerary-table-model";
 import { nestOneLevel } from "../../src/trip/itinerary-table-model";
+import { findOverlappingSiblingIds } from "../../src/trip/sibling-overlap";
+import { PlaceResolveDialog } from "./PlaceResolveDialog";
 
 /** Draft SUBPLAN_CHEVRON — expands/collapses nested sub-activity tree. */
 const SUBPLAN_CHEVRON = (
@@ -106,6 +108,11 @@ export type SmartItineraryTableProps = {
    * Further patches stay blocked until authoritative state returns.
    */
   onCockpitReload?: () => void;
+  /**
+   * Parent bumps after TripCockpit reload completes — clears the conflict
+   * lock so blur/commit PATCH can resume.
+   */
+  reloadToken?: number;
   /** Currently selected stop id (tonal `.selected` style). */
   selectedId?: string | null;
   /** Row click → select payload (parent toggles / clears). */
@@ -126,6 +133,10 @@ export type SmartItineraryTableProps = {
    * edits use the same returned expectedVersion.
    */
   externalItemOverrides?: Record<string, TripCockpitItineraryItem>;
+  /** Destination label for place resolve (M81HY2YR T2). */
+  destinationLabel?: string;
+  /** Country codes for place resolve bias (M81HY2YR T2). */
+  countries?: string[];
 };
 
 /** Cockpit summary may carry endTime for the time rail (not on typed load subset yet). */
@@ -408,14 +419,16 @@ function WxIcon({ kind }: { kind: DemoWx["wx"] }) {
 
 function DayWx({ isoDay, dayNum }: { isoDay: string; dayNum: number }) {
   const demo = demoWxForDay(isoDay, dayNum);
-  const summary = `${demo.label} · ${demo.temp} · ↑${demo.rise} · ↓${demo.set}`;
+  const summary = `Demo · ${demo.label} · ${demo.temp} · ↑${demo.rise} · ↓${demo.set}`;
   return (
     <div
       className="day-wx"
+      data-demo="true"
       data-wx={demo.wx}
       title={summary}
       aria-label={summary}
     >
+      <span className="demo-badge">Demo</span>
       <WxIcon kind={demo.wx} />
       <span className="wx-temp">{demo.temp}</span>
       <span className="wx-sun" title="Sunrise">
@@ -522,12 +535,94 @@ function moveItemId(ids: string[], fromId: string, beforeId: string): string[] {
   return next;
 }
 
+type OverlapCueItem = {
+  id: string;
+  day: string;
+  parentItemId: string | null;
+  startTime: string;
+  endTime?: string | null;
+  activity: string;
+};
+
+/** Quiet advisory cues for overlapping same-day siblings (draft day-cue / row notes). */
+function buildSiblingOverlapCues(items: readonly OverlapCueItem[]): {
+  overlappingIds: Set<string>;
+  /** Per ISO day — draft `.day-cue` copy when that day has overlaps. */
+  dayCueByDay: Map<string, string>;
+  /** Per stop — draft `.overlap-note` ("Overlaps with …") for a partner. */
+  noteById: Map<string, string>;
+} {
+  const overlappingIds = findOverlappingSiblingIds(
+    items.map((item) => ({
+      id: item.id,
+      day: item.day,
+      parentItemId: item.parentItemId,
+      startTime: item.startTime,
+      endTime: item.endTime,
+    })),
+  );
+
+  const dayCueByDay = new Map<string, string>();
+  const noteById = new Map<string, string>();
+  if (overlappingIds.size === 0) {
+    return { overlappingIds, dayCueByDay, noteById };
+  }
+
+  const byDay = new Map<string, OverlapCueItem[]>();
+  for (const item of items) {
+    if (!overlappingIds.has(item.id)) continue;
+    const group = byDay.get(item.day);
+    if (group) group.push(item);
+    else byDay.set(item.day, [item]);
+  }
+
+  for (const [day, dayItems] of byDay) {
+    if (dayItems.length < 2) continue;
+    let minStart = dayItems[0]!.startTime;
+    let minEnd = (dayItems[0]!.endTime ?? "").trim();
+    for (const item of dayItems) {
+      if (item.startTime < minStart) minStart = item.startTime;
+      const end = (item.endTime ?? "").trim();
+      if (end && (!minEnd || end < minEnd)) minEnd = end;
+    }
+    if (!minEnd) continue;
+    dayCueByDay.set(
+      day,
+      `${dayItems.length} stops overlap between ${minStart}–${minEnd} — review times.`,
+    );
+
+    // Pairwise notes among same-parent siblings (first partner wins).
+    for (let i = 0; i < dayItems.length; i++) {
+      const a = dayItems[i]!;
+      for (let j = i + 1; j < dayItems.length; j++) {
+        const b = dayItems[j]!;
+        if ((a.parentItemId ?? null) !== (b.parentItemId ?? null)) continue;
+        const aEnd = (a.endTime ?? "").trim();
+        const bEnd = (b.endTime ?? "").trim();
+        if (!aEnd || !bEnd) continue;
+        if (!(a.startTime < bEnd && b.startTime < aEnd)) continue;
+        if (!noteById.has(a.id)) {
+          noteById.set(a.id, `Overlaps with ${b.activity}`);
+        }
+        if (!noteById.has(b.id)) {
+          noteById.set(b.id, `Overlaps with ${a.activity}`);
+        }
+      }
+    }
+  }
+
+  return { overlappingIds, dayCueByDay, noteById };
+}
+
 function StopRow({
   item,
   dayLabel,
   zebraBg,
   selected,
   bodyHidden,
+  hasOverlap,
+  overlapNote,
+  dayCueOn,
   canPatch,
   canCreateChild,
   showDragGrip,
@@ -539,12 +634,19 @@ function StopRow({
   onSelectChild,
   onInspectChange,
   onDropReorder,
+  onResolvePlace,
 }: {
   item: ItineraryTableStop;
   dayLabel: string;
   zebraBg: string;
   selected: boolean;
   bodyHidden: boolean;
+  /** Sibling time-window overlap — draft `tr.has-overlap`. */
+  hasOverlap: boolean;
+  /** Draft `.overlap-note`; hidden while day cue is on. */
+  overlapNote: string | null;
+  /** Quiet mode: day cue on → hide per-row notes (draft body[data-day-cue=on]). */
+  dayCueOn: boolean;
   canPatch: boolean;
   /** Member session can POST a nested child under this stop. */
   canCreateChild: boolean;
@@ -571,6 +673,8 @@ function StopRow({
   }) => void;
   /** Same-day drop target — dragged id lands before this row. */
   onDropReorder?: (draggedId: string, beforeId: string) => void;
+  /** Place cell Resolve → open candidate picker (M81HY2YR T2). */
+  onResolvePlace?: () => void;
 }) {
   const endTime = readEndTime(item);
   const children: ItineraryTableChildStop[] = item.children ?? [];
@@ -741,19 +845,46 @@ function StopRow({
   function renderFieldInput(field: (typeof fieldDefs)[number]) {
     const value = fieldBag[field.key] ?? "";
     // by / meal use draft choice-chips on .title-with-meta (renderChoiceChip).
+    if (field.key !== "place") {
+      return (
+        <input
+          key={field.key}
+          className={field.line === "primary" ? "cell-title" : "cell-sub"}
+          type="text"
+          value={value}
+          placeholder={field.placeholder ?? field.label}
+          aria-label={field.label}
+          autoComplete="off"
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => updateBagKey(field.key, e.target.value)}
+          onBlur={(e) => commitBagKey(field.key, e.target.value)}
+        />
+      );
+    }
     return (
-      <input
-        key={field.key}
-        className={field.line === "primary" ? "cell-title" : "cell-sub"}
-        type="text"
-        value={value}
-        placeholder={field.placeholder ?? field.label}
-        aria-label={field.label}
-        autoComplete="off"
-        onClick={(e) => e.stopPropagation()}
-        onChange={(e) => updateBagKey(field.key, e.target.value)}
-        onBlur={(e) => commitBagKey(field.key, e.target.value)}
-      />
+      <div key={field.key} className="place-cell">
+        <input
+          className={field.line === "primary" ? "cell-title" : "cell-sub"}
+          type="text"
+          value={value}
+          placeholder={field.placeholder ?? field.label}
+          aria-label={field.label}
+          autoComplete="off"
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => updateBagKey(field.key, e.target.value)}
+          onBlur={(e) => commitBagKey(field.key, e.target.value)}
+        />
+        <button
+          type="button"
+          className="btn-quiet"
+          onClick={(e) => {
+            e.stopPropagation();
+            onResolvePlace?.();
+          }}
+        >
+          Resolve
+        </button>
+      </div>
     );
   }
 
@@ -851,6 +982,7 @@ function StopRow({
   const stopClass = [
     "stop-row",
     selected ? "selected" : null,
+    hasOverlap ? "has-overlap" : null,
     bodyHidden ? "day-body-hidden" : null,
   ]
     .filter(Boolean)
@@ -876,6 +1008,7 @@ function StopRow({
       className={stopClass}
       data-id={item.id}
       data-day={dayLabel}
+      {...(hasOverlap ? { "data-overlap": "true" } : {})}
       {...(showSubplanChrome
         ? { "data-subs-open": subsOpen ? "true" : "false" }
         : {})}
@@ -1088,6 +1221,10 @@ function StopRow({
                   {secondaryFields.map((f) => renderFieldInput(f))}
                   <span hidden>{item.place}</span>
                 </div>
+                {/* Row notes in-row only when this day's cue is off. */}
+                {overlapNote && !dayCueOn ? (
+                  <span className="overlap-note">{overlapNote}</span>
+                ) : null}
               </div>
               <div className="activity-actions" data-activity-actions="">
                 <select
@@ -1402,8 +1539,22 @@ function AddDraftRow({
   error: string | null;
   onTitleChange: (value: string) => void;
   onCancel: () => void;
-  onCommit: () => void;
+  onCommit: (times: { startTime: string; endTime: string }) => void;
 }) {
+  const [draftStart, setDraftStart] = useState("");
+  const [draftEnd, setDraftEnd] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setDraftStart("");
+      setDraftEnd("");
+    }
+  }, [open]);
+
+  const commit = () => {
+    onCommit({ startTime: draftStart, endTime: draftEnd });
+  };
+
   return (
     <tr
       className="add-draft-row"
@@ -1421,7 +1572,8 @@ function AddDraftRow({
                 data-time="start"
                 placeholder="--"
                 maxLength={5}
-                defaultValue=""
+                value={draftStart}
+                onChange={(e) => setDraftStart(e.target.value)}
                 aria-label="Start time"
                 autoComplete="off"
               />
@@ -1435,14 +1587,15 @@ function AddDraftRow({
                 data-time="end"
                 placeholder="--"
                 maxLength={5}
-                defaultValue=""
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.target.value)}
                 aria-label="End time"
                 autoComplete="off"
               />
             </div>
             <div className="time-duration" data-duration aria-label="Duration">
               <span className="time-duration-text" data-duration-text>
-                —
+                {durationLabel(draftStart, draftEnd)}
               </span>
             </div>
           </div>
@@ -1468,7 +1621,7 @@ function AddDraftRow({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    onCommit();
+                    commit();
                   }
                 }}
                 aria-label="Title"
@@ -1502,8 +1655,11 @@ export function SmartItineraryTable({
   tripId,
   sessionToken,
   apiBaseUrl = "",
-  fetch: fetchImpl = fetch,
+  fetch: fetchImpl = typeof globalThis.fetch === "function"
+    ? globalThis.fetch.bind(globalThis)
+    : fetch,
   onCockpitReload,
+  reloadToken = 0,
   selectedId = null,
   onSelect,
   onInspectChange,
@@ -1511,6 +1667,8 @@ export function SmartItineraryTable({
   reorderEnabled = false,
   removedItemIds,
   externalItemOverrides,
+  destinationLabel = "",
+  countries = [],
 }: SmartItineraryTableProps) {
   const surface = resolveToken("--color-surface", "#ffffff");
   const surfaceSubtle = resolveToken("--color-surface-subtle", "#f8fafc");
@@ -1520,6 +1678,8 @@ export function SmartItineraryTable({
   const [createError, setCreateError] = useState<string | null>(null);
   /** Calm inline reorder failure — never keeps a silent local-only order (T5 #3). */
   const [reorderError, setReorderError] = useState<string | null>(null);
+  /** Calm inline PATCH failure — do not swallow non-conflict errors. */
+  const [patchError, setPatchError] = useState<string | null>(null);
   /** Items created via Quick-add in this session (T4 #3). */
   const [createdItems, setCreatedItems] = useState<TripCockpitItineraryItem[]>(
     [],
@@ -1537,7 +1697,9 @@ export function SmartItineraryTable({
   const [collapsedDays, setCollapsedDays] = useState<Set<string>>(() =>
     readCollapsedDays(tripId),
   );
-  let stopIndex = 0;
+  /** Place cell Resolve target — opens PlaceResolveDialog (M81HY2YR T2 #1). */
+  const [resolveTarget, setResolveTarget] =
+    useState<TripCockpitItineraryItem | null>(null);
 
   const resolveItem = (item: TripCockpitItineraryItem): TripCockpitItineraryItem =>
     itemOverrides[item.id] ?? externalItemOverrides?.[item.id] ?? item;
@@ -1545,6 +1707,12 @@ export function SmartItineraryTable({
   useEffect(() => {
     setCollapsedDays(readCollapsedDays(tripId));
   }, [tripId]);
+
+  /** Conflict lock clears when parent finishes TripCockpit reload. */
+  useEffect(() => {
+    setAwaitingCockpitReload(false);
+    setPatchError(null);
+  }, [reloadToken]);
 
   const toggleDayCollapsed = (isoDay: string) => {
     setCollapsedDays((prev) => {
@@ -1576,9 +1744,14 @@ export function SmartItineraryTable({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [openDay]);
 
-  const commitDraft = (isoDay: string) => {
+  const commitDraft = (
+    isoDay: string,
+    times: { startTime: string; endTime: string },
+  ) => {
     if (!tripId || !sessionToken) return;
     const activity = draftTitle.trim() || "Untitled activity";
+    const startTime = times.startTime.trim();
+    const endTime = times.endTime.trim();
     setCreateError(null);
     void createItineraryItem(
       {
@@ -1589,6 +1762,8 @@ export function SmartItineraryTable({
         activity,
         activityType: "default",
         place: "",
+        ...(startTime ? { startTime } : {}),
+        ...(endTime ? { endTime } : {}),
       },
       { fetch: fetchImpl, apiBaseUrl },
     ).then((outcome) => {
@@ -1639,6 +1814,7 @@ export function SmartItineraryTable({
     patch: ItineraryItemPatchFields,
   ) => {
     if (!tripId || !sessionToken || awaitingCockpitReload) return;
+    setPatchError(null);
     void patchItineraryItem(
       {
         tripId,
@@ -1659,7 +1835,9 @@ export function SmartItineraryTable({
       if (outcome.code === "version_conflict") {
         setAwaitingCockpitReload(true);
         onCockpitReload?.();
+        return;
       }
+      setPatchError(outcome.error);
     });
   };
 
@@ -1712,12 +1890,90 @@ export function SmartItineraryTable({
     apiBaseUrl,
   ]);
 
+  // Flatten resolved day stops (incl. nested children) for sibling overlap cues.
+  const overlapSourceItems: OverlapCueItem[] = model.days.flatMap((day) => {
+    const dayItems = nestOneLevel(
+      [
+        ...day.items.flatMap((item) => {
+          const { children: nested, ...parent } = item;
+          return [
+            parent as TripCockpitItineraryItem,
+            ...(nested ?? []),
+          ];
+        }),
+        ...createdItems.filter((item) => item.day === day.day),
+      ]
+        .map((item) => resolveItem(item))
+        .filter((item) => !removedItemIds?.has(item.id)),
+    );
+    return dayItems.flatMap((item) => [
+      {
+        id: item.id,
+        day: item.day,
+        parentItemId: item.parentItemId ?? null,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        activity: item.activity,
+      },
+      ...(item.children ?? []).map((child) => ({
+        id: child.id,
+        day: child.day,
+        parentItemId: child.parentItemId ?? null,
+        startTime: child.startTime,
+        endTime: child.endTime,
+        activity: child.activity,
+      })),
+    ]);
+  });
+  const { overlappingIds, dayCueByDay, noteById } =
+    buildSiblingOverlapCues(overlapSourceItems);
+  const anyDayCueOn = dayCueByDay.size > 0;
+
+  /** Per-day stop lists + zebra base offsets (no mutable stopIndex in .map). */
+  const preparedDays = model.days.map((day, dayIdx) => {
+    const dayItems = nestOneLevel(
+      [
+        ...day.items.flatMap((item) => {
+          const { children: nested, ...parent } = item;
+          return [
+            parent as TripCockpitItineraryItem,
+            ...(nested ?? []),
+          ];
+        }),
+        ...createdItems.filter((item) => item.day === day.day),
+      ]
+        .map((item) => resolveItem(item))
+        .filter((item) => !removedItemIds?.has(item.id)),
+    );
+    return {
+      day,
+      dayIdx,
+      dayNum: dayIdx + 1,
+      dayLabel: `Day ${dayIdx + 1}`,
+      dayItems,
+    };
+  });
+  const dayBaseOffsets = preparedDays.reduce<number[]>(
+    (offsets, _prepared, index) => {
+      if (index === 0) return [0];
+      return [
+        ...offsets,
+        offsets[index - 1]! + preparedDays[index - 1]!.dayItems.length,
+      ];
+    },
+    [],
+  );
+
   return (
-    <table
-      ref={tableRef}
-      className="smart"
-      aria-label="Smart itinerary table"
+    <div
+      className="smart-itinerary"
+      data-day-cue={anyDayCueOn ? "on" : "off"}
     >
+      <table
+        ref={tableRef}
+        className="smart"
+        aria-label="Smart itinerary table"
+      >
       <thead>
         <tr>
           <th className="col-stop" scope="col">
@@ -1735,26 +1991,22 @@ export function SmartItineraryTable({
             </td>
           </tr>
         ) : null}
-        {model.days.flatMap((day, dayIdx) => {
-          const dayNum = dayIdx + 1;
-          const dayLabel = `Day ${dayNum}`;
+        {patchError ? (
+          <tr className="patch-error-row">
+            <td className="col-stop">
+              <p className="add-error" role="alert">
+                {patchError}
+              </p>
+            </td>
+          </tr>
+        ) : null}
+        {preparedDays.flatMap(({ day, dayIdx, dayNum, dayLabel, dayItems }) => {
           const open = openDay === dayLabel;
-          const dayItems = nestOneLevel(
-            [
-              ...day.items.flatMap((item) => {
-                const { children: nested, ...parent } = item;
-                return [
-                  parent as TripCockpitItineraryItem,
-                  ...(nested ?? []),
-                ];
-              }),
-              ...createdItems.filter((item) => item.day === day.day),
-            ]
-              .map((item) => resolveItem(item))
-              .filter((item) => !removedItemIds?.has(item.id)),
-          );
           const dayItemIds = dayItems.map((item) => item.id);
           const collapsed = collapsedDays.has(day.day);
+          const baseOffset = dayBaseOffsets[dayIdx] ?? 0;
+          const dayCueText = dayCueByDay.get(day.day) ?? null;
+          const dayCueOn = dayCueText != null;
           const header = (
             <DayRow
               key={`day-${day.day}`}
@@ -1766,10 +2018,53 @@ export function SmartItineraryTable({
               showDragGrip={false}
             />
           );
-          const stops = dayItems.map((item) => {
+          const dayCue = dayCueText ? (
+            <tr key={`day-cue-${day.day}`} className="day-cue-row">
+              <td className="col-stop">
+                <p className="day-cue">{dayCueText}</p>
+              </td>
+            </tr>
+          ) : null;
+          // Keep notes in DOM while this day's cue is on, but outside stop
+          // rows (RTL within(row) must not see them). Host is per-day inside
+          // the table — not a global strip under .smart-itinerary.
+          const idsOnDay = new Set(
+            dayItems.flatMap((item) => [
+              item.id,
+              ...(item.children ?? []).map((child) => child.id),
+            ]),
+          );
+          const dayNoteEntries = [...noteById.entries()].filter(([id]) =>
+            idsOnDay.has(id),
+          );
+          const dayNotesHost =
+            dayCueOn && dayNoteEntries.length > 0 ? (
+              <tr
+                key={`overlap-notes-${day.day}`}
+                className="overlap-notes-host-row"
+                hidden
+                aria-hidden="true"
+              >
+                <td className="col-stop">
+                  <div className="overlap-notes-host" hidden>
+                    {dayNoteEntries.map(([id, note]) => (
+                      <span
+                        key={id}
+                        className="overlap-note"
+                        data-for={id}
+                        hidden
+                      >
+                        {note}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ) : null;
+          const stops = dayItems.map((item, localIndex) => {
             const zebraBg =
-              stopIndex % 2 === 0 ? surface : surfaceSubtle;
-            stopIndex += 1;
+              (baseOffset + localIndex) % 2 === 0 ? surface : surfaceSubtle;
+            const hasOverlap = overlappingIds.has(item.id);
             return (
               <StopRow
                 key={item.id}
@@ -1778,6 +2073,9 @@ export function SmartItineraryTable({
                 zebraBg={zebraBg}
                 selected={selectedId === item.id}
                 bodyHidden={collapsed}
+                hasOverlap={hasOverlap}
+                overlapNote={noteById.get(item.id) ?? null}
+                dayCueOn={dayCueOn}
                 canPatch={canPatch}
                 canCreateChild={canCreateChild}
                 showDragGrip={reorderEnabled}
@@ -1842,6 +2140,11 @@ export function SmartItineraryTable({
                         })
                     : undefined
                 }
+                onResolvePlace={
+                  tripId && sessionToken
+                    ? () => setResolveTarget(item)
+                    : undefined
+                }
               />
             );
           });
@@ -1866,12 +2169,47 @@ export function SmartItineraryTable({
               error={open ? createError : null}
               onTitleChange={setDraftTitle}
               onCancel={closeDraft}
-              onCommit={() => commitDraft(day.day)}
+              onCommit={(times) => commitDraft(day.day, times)}
             />
           );
-          return [header, ...stops, add, draft];
+          return [
+            header,
+            ...(dayCue ? [dayCue] : []),
+            ...(dayNotesHost ? [dayNotesHost] : []),
+            ...stops,
+            add,
+            draft,
+          ];
         })}
       </tbody>
     </table>
+    {resolveTarget && tripId && sessionToken ? (
+      <PlaceResolveDialog
+        key={resolveTarget.id}
+        open
+        item={{
+          id: resolveTarget.id,
+          activity: resolveTarget.activity,
+          place: resolveTarget.place,
+          day: resolveTarget.day,
+          version: resolveTarget.version,
+        }}
+        tripId={tripId}
+        sessionToken={sessionToken}
+        destinationLabel={destinationLabel}
+        countries={countries}
+        apiBaseUrl={apiBaseUrl}
+        fetch={fetchImpl}
+        onClose={() => setResolveTarget(null)}
+        onApplied={(applied) => {
+          setItemOverrides((prev) => ({
+            ...prev,
+            [applied.id]: applied,
+          }));
+        }}
+        onCockpitReload={onCockpitReload}
+      />
+    ) : null}
+    </div>
   );
 }

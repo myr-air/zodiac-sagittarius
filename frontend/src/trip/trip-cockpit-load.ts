@@ -22,6 +22,8 @@ export type TripCockpitTrip = {
   id: string;
   name: string;
   destinationLabel: string;
+  /** Country codes / labels from trip geo (place resolve context). */
+  countries: string[];
   startDate: string;
   endDate: string;
   mainTripPlanId: string | null;
@@ -111,6 +113,11 @@ function optionalNullableString(value: unknown): string | null | undefined {
   return undefined;
 }
 
+function parseCountries(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((c): c is string => typeof c === "string");
+}
+
 function parseTrip(raw: unknown): TripCockpitTrip | null {
   if (!raw || typeof raw !== "object") return null;
   const t = raw as Record<string, unknown>;
@@ -130,6 +137,7 @@ function parseTrip(raw: unknown): TripCockpitTrip | null {
     id: t.id,
     name: t.name,
     destinationLabel: t.destinationLabel,
+    countries: parseCountries(t.countries),
     startDate: t.startDate,
     endDate: t.endDate,
     mainTripPlanId,

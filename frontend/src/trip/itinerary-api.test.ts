@@ -9,6 +9,7 @@ import {
   deleteItineraryItem,
   patchItineraryItem,
   reorderItineraryItems,
+  type ItineraryItemPatchFields,
 } from "./itinerary-api";
 
 const API_BASE = "http://127.0.0.1:5181";
@@ -79,6 +80,45 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
       activity: ACTIVITY,
       activityType: ACTIVITY_TYPE,
       place: PLACE,
+    });
+  });
+
+  it("createItineraryItem POSTs optional startTime and endTime when provided", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({
+        ...ITEM_SUMMARY,
+        startTime: "10:00",
+        endTime: "11:30",
+        version: 1,
+      }),
+    );
+
+    const outcome = await createItineraryItem(
+      {
+        tripId: TRIP_ID,
+        sessionToken: SESSION_TOKEN,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY,
+        activityType: ACTIVITY_TYPE,
+        place: PLACE,
+        startTime: "10:00",
+        endTime: "11:30",
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]?.body))).toEqual({
+      clientMutationId: CLIENT_MUTATION_ID,
+      planVariantId: PLAN_ID,
+      day: DAY,
+      activity: ACTIVITY,
+      activityType: ACTIVITY_TYPE,
+      place: PLACE,
+      startTime: "10:00",
+      endTime: "11:30",
     });
   });
 
@@ -366,5 +406,153 @@ describe("itinerary-api create/patch/reorder/delete wire contracts", () => {
       parentItemId: PARENT_ID,
       activity: CHILD_ACTIVITY,
     });
+  });
+
+  /**
+   * M81HY2YR T1 #3: ItineraryItemPatchFields must accept latitude/longitude
+   * (nullable clear) so place-resolve persist can PATCH coords; patchItineraryItem
+   * must serialize them in the patch body on the existing item route.
+   */
+  it("patchItineraryItem serializes latitude/longitude (including null clear) in patch for place-resolve persist", async () => {
+    const LAT = 18.7883;
+    const LNG = 98.9853;
+    const MAP_LINK =
+      "https://www.openstreetmap.org/?mlat=18.7883&mlon=98.9853#map=17/18.7883/98.9853";
+
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({ ...ITEM_SUMMARY, version: EXPECTED_VERSION + 1 }),
+    );
+
+    const persistPatch: ItineraryItemPatchFields = {
+      place: PLACE,
+      mapLink: MAP_LINK,
+      latitude: LAT,
+      longitude: LNG,
+    };
+
+    const outcome = await patchItineraryItem(
+      {
+        tripId: TRIP_ID,
+        itemId: ITEM_ID,
+        sessionToken: SESSION_TOKEN,
+        expectedVersion: EXPECTED_VERSION,
+        patch: persistPatch,
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect(JSON.parse(String(init?.body))).toEqual({
+      clientMutationId: CLIENT_MUTATION_ID,
+      expectedVersion: EXPECTED_VERSION,
+      patch: {
+        place: PLACE,
+        mapLink: MAP_LINK,
+        latitude: LAT,
+        longitude: LNG,
+      },
+    });
+
+    // Nullable clear — clear-coords path for place-resolve persist.
+    fetchMock.mockClear();
+    fetchMock.mockImplementation(async () =>
+      jsonResponse({ ...ITEM_SUMMARY, version: EXPECTED_VERSION + 2 }),
+    );
+
+    const clearPatch: ItineraryItemPatchFields = {
+      latitude: null,
+      longitude: null,
+    };
+
+    const clearOutcome = await patchItineraryItem(
+      {
+        tripId: TRIP_ID,
+        itemId: ITEM_ID,
+        sessionToken: SESSION_TOKEN,
+        expectedVersion: EXPECTED_VERSION + 1,
+        patch: clearPatch,
+        clientMutationId: `${CLIENT_MUTATION_ID}-clear`,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(clearOutcome.ok).toBe(true);
+    const [, clearInit] = fetchMock.mock.calls[0]!;
+    expect(JSON.parse(String(clearInit?.body))).toEqual({
+      clientMutationId: `${CLIENT_MUTATION_ID}-clear`,
+      expectedVersion: EXPECTED_VERSION + 1,
+      patch: {
+        latitude: null,
+        longitude: null,
+      },
+    });
+  });
+});
+
+/**
+ * M81LW2UJ T6 — createItineraryItem error honesty.
+ * Backend ApiError serializes ErrorBody as top-level `{ code, message }`
+ * (see backend/crates/api/src/api/error.rs). When fetch returns that 4xx body,
+ * surface `message` — never false reachability. Network throw keeps reachability.
+ */
+const API_4XX_MESSAGE = "plan variant not found for this trip";
+const REACHABILITY_MESSAGE =
+  "Could not reach the server. Check your connection and try again.";
+
+describe("createItineraryItem error honesty", () => {
+  it("surfaces HTTP 4xx API message when fetch returned a response — not false reachability", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(
+        { code: "invalid_request", message: API_4XX_MESSAGE },
+        400,
+      ),
+    );
+
+    const outcome = await createItineraryItem(
+      {
+        tripId: TRIP_ID,
+        sessionToken: SESSION_TOKEN,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY,
+        activityType: ACTIVITY_TYPE,
+        place: PLACE,
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) throw new Error("expected failure");
+    expect(outcome.error).toBe(API_4XX_MESSAGE);
+    expect(outcome.error).not.toBe(REACHABILITY_MESSAGE);
+    expect(outcome.error).not.toMatch(/Could not reach the server/i);
+  });
+
+  it("uses reachability copy when fetch throws (network failure)", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+
+    const outcome = await createItineraryItem(
+      {
+        tripId: TRIP_ID,
+        sessionToken: SESSION_TOKEN,
+        planVariantId: PLAN_ID,
+        day: DAY,
+        activity: ACTIVITY,
+        activityType: ACTIVITY_TYPE,
+        place: PLACE,
+        clientMutationId: CLIENT_MUTATION_ID,
+      },
+      { fetch: fetchMock, apiBaseUrl: API_BASE },
+    );
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) throw new Error("expected failure");
+    expect(outcome.error).toBe(REACHABILITY_MESSAGE);
   });
 });
