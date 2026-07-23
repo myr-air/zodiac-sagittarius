@@ -15,6 +15,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   createItineraryItem,
+  generatePathGroupId,
+  generatePathId,
   patchItineraryItem,
   reorderItineraryItems,
   type ItineraryItemPatchFields,
@@ -36,6 +38,7 @@ import type {
   ItineraryTableStop,
 } from "../../src/trip/itinerary-table-model";
 import { nestOneLevel } from "../../src/trip/itinerary-table-model";
+import { groupPathAlternatives } from "../../src/trip/itinerary-path-groups";
 import { findOverlappingSiblingIds } from "../../src/trip/sibling-overlap";
 import { PlaceResolveDialog } from "./PlaceResolveDialog";
 
@@ -70,6 +73,20 @@ const TIME_SETUP_ICON = (
 );
 
 type StopDialogMode = "note" | "link" | "time-setup";
+
+/**
+ * Path fork chrome for a stop row (M827T84Q T2 #1, designer-fix v6.1):
+ * `activeId` is the active sibling's id (pathRole "main", or the group's
+ * first item when none is main); `options` are ALL same-day,
+ * same-pathGroupId siblings — including the active one — shown as
+ * `.subplan-row` entries (active row carries `is-path-active` + a `.using-tag`
+ * chip) only while the row's subplan is expanded.
+ */
+type PathForkDisplay = {
+  activePathName: string;
+  activeId: string;
+  options: TripCockpitItineraryItem[];
+};
 
 const STOP_DIALOG_TITLE: Record<StopDialogMode, string> = {
   note: "Note",
@@ -627,8 +644,11 @@ function StopRow({
   canCreateChild,
   showDragGrip,
   externalBag,
+  pathFork,
   onPatch,
   onChildPatch,
+  onActivatePath,
+  onAddPathOption,
   onCreateChild,
   onSelect,
   onSelectChild,
@@ -652,12 +672,26 @@ function StopRow({
   canCreateChild: boolean;
   showDragGrip: boolean;
   externalBag?: StopFieldBag;
+  /** Path fork chrome (M827T84Q T2 #1) — set when `item` fronts a fork group. */
+  pathFork?: PathForkDisplay;
   onPatch: (patch: ItineraryItemPatchFields) => void;
   /** Nested sub-activity place blur → PATCH child via itinerary-api. */
   onChildPatch?: (
     child: ItineraryTableChildStop,
     patch: ItineraryItemPatchFields,
   ) => void;
+  /**
+   * Radio-only path activation (M827T84Q T3 #1): picking a fork option issues
+   * one PATCH pathRole:"main" on `picked` + one PATCH pathRole:"alternative"
+   * on the previously-main sibling. Set only when `pathFork` is present.
+   */
+  onActivatePath?: (picked: TripCockpitItineraryItem) => void;
+  /**
+   * "Add option…" inside the fork subplan (designer-fix v6.1): opens the
+   * same add-alternative flow as the Path strip — select this row's parent
+   * item, then open the strip editor already in Add mode.
+   */
+  onAddPathOption?: (item: TripCockpitItineraryItem) => void;
   onCreateChild?: (activity: string) => void;
   onSelect?: (payload: {
     activity: string;
@@ -679,7 +713,12 @@ function StopRow({
   const endTime = readEndTime(item);
   const children: ItineraryTableChildStop[] = item.children ?? [];
   const hasSubplan = children.length > 0;
-  const showSubplanChrome = hasSubplan || canCreateChild;
+  /** All fork path options (active + alternatives) — designer-fix v6.1. */
+  const pathOptions = pathFork?.options ?? [];
+  const activePathOptionId = pathFork?.activeId;
+  /** Chrome only earns its keep when there's more than one option to pick. */
+  const hasPathAlternatives = pathOptions.length > 1;
+  const showSubplanChrome = hasSubplan || canCreateChild || hasPathAlternatives;
   const [activityType, setActivityType] = useState(item.activityType);
   const [fieldBag, setFieldBag] = useState<StopFieldBag>(() =>
     seedFieldBag(item),
@@ -988,12 +1027,18 @@ function StopRow({
     .filter(Boolean)
     .join(" ");
 
-  const subCount = children.length;
-  const toggleTitle = subsOpen
-    ? "Hide sub-activities"
-    : subCount
-      ? `Show ${subCount} sub-activities`
-      : "Add sub-activities";
+  // Fork rows count active + alternative paths (draft data-count includes
+  // the currently-using option); plain stops count only real sub-activities.
+  const subCount = pathFork ? pathOptions.length : children.length;
+  const toggleTitle = pathFork
+    ? subsOpen
+      ? "Hide path options"
+      : "Show path options"
+    : subsOpen
+      ? "Hide sub-activities"
+      : subCount
+        ? `Show ${subCount} sub-activities`
+        : "Add sub-activities";
 
   const commitChildDraft = () => {
     if (!canCreateChild || !onCreateChild) return;
@@ -1220,6 +1265,11 @@ function StopRow({
                 <div className="line-secondary">
                   {secondaryFields.map((f) => renderFieldInput(f))}
                   <span hidden>{item.place}</span>
+                  {pathFork ? (
+                    <span className="fork-current" data-fork-current="">
+                      {`Currently using: ${pathFork.activePathName}`}
+                    </span>
+                  ) : null}
                 </div>
                 {/* Row notes in-row only when this day's cue is off. */}
                 {overlapNote && !dayCueOn ? (
@@ -1305,6 +1355,74 @@ function StopRow({
           {showSubplanChrome ? (
             <div className="subplan" data-subplan="" hidden={!subsOpen}>
               <div className="subplan-list" data-subplan-list="">
+                {pathFork
+                  ? pathOptions.map((option) => {
+                      const isActive = option.id === activePathOptionId;
+                      return (
+                        <div
+                          key={option.id}
+                          className={
+                            isActive
+                              ? "subplan-row is-path-active"
+                              : "subplan-row"
+                          }
+                          data-subplan-row=""
+                          data-id={option.id}
+                          data-path={option.pathId ?? undefined}
+                        >
+                          <label
+                            className="subplan-radio"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="radio"
+                              name={`path-${item.pathGroupId ?? item.id}`}
+                              checked={isActive}
+                              aria-label={`Use ${option.pathName || option.activity}`}
+                              onChange={() => onActivatePath?.(option)}
+                            />
+                          </label>
+                          <div className="sub-when">
+                            {option.startTime || "—"} ·{" "}
+                            {durationLabel(option.startTime, readEndTime(option))}
+                          </div>
+                          <div className="sub-fields" data-sub-fields="">
+                            <div className="sub-title-row">
+                              <span className="sub-title">
+                                {option.activity}
+                              </span>
+                              <span className="path-chip">
+                                {option.pathName ?? ""}
+                              </span>
+                              {isActive ? (
+                                <span className="using-tag" data-using-tag="">
+                                  Using
+                                </span>
+                              ) : null}
+                            </div>
+                            {option.place ? (
+                              <div className="sub-place">{option.place}</div>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })
+                  : null}
+                {pathFork ? (
+                  <button
+                    type="button"
+                    className="subplan-add path-add-option"
+                    data-subplan-add-path=""
+                    aria-label="Add option"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSubsOpen(true);
+                      onAddPathOption?.(item);
+                    }}
+                  >
+                    Add option…
+                  </button>
+                ) : null}
                 {children.map((child) => (
                   <div
                     key={child.id}
@@ -1473,6 +1591,169 @@ function StopRow({
             </div>
           </div>
         ) : null}
+      </td>
+    </tr>
+  );
+}
+
+/** Collapsed summary text for the Path strip (draft `.path-strip-meta`). */
+function pathStripSummary(item: TripCockpitItineraryItem): string {
+  return item.pathName ? `Path · ${item.pathName}` : "Path · Shared spine";
+}
+
+/**
+ * Path strip (M827T84Q T4 #1): continuation row under the selected stop.
+ * Collapsed shows a "Path · …" summary + Edit path; expanding offers Assign
+ * to an existing pathGroupId already in the plan, or Add alternative… which
+ * threads pathGroupId (reused from `item` or freshly generated), pathId,
+ * pathName, pathRole:"alternative" into createItineraryItem.
+ */
+function PathStripRow({
+  item,
+  planPathGroupIds,
+  editorOpen,
+  addOpen,
+  addName,
+  addError,
+  onToggleEditor,
+  onOpenAdd,
+  onCancelAdd,
+  onAddNameChange,
+  onSaveAdd,
+  onClearPath,
+  onAssignPath,
+}: {
+  item: TripCockpitItineraryItem;
+  /** Distinct pathGroupIds already present anywhere in this plan. */
+  planPathGroupIds: string[];
+  editorOpen: boolean;
+  addOpen: boolean;
+  addName: string;
+  addError: string | null;
+  onToggleEditor: () => void;
+  onOpenAdd: () => void;
+  onCancelAdd: () => void;
+  onAddNameChange: (value: string) => void;
+  onSaveAdd: () => void;
+  /**
+   * Clear path (M827T84Q T4 #2): PATCH pathGroupId/pathId/pathName/pathRole
+   * to null on this stop. Only meaningful when the stop already carries a
+   * pathGroupId.
+   */
+  onClearPath: () => void;
+  /**
+   * Assign to path (M827T84Q T4 #3): picking an existing pathGroupId from
+   * the dropdown joins that group; picking the empty "Shared spine (no
+   * path)" option clears the path the same as Clear path.
+   */
+  onAssignPath: (pathGroupId: string | null) => void;
+}) {
+  const assignId = `path-assign-${item.id}`;
+  const nameId = `path-alt-name-${item.id}`;
+
+  return (
+    <tr className="path-strip" data-for={item.id}>
+      <td className="col-stop">
+        <div className="path-strip-inner">
+          <div className="path-strip-summary">
+            <p className="path-strip-meta">{pathStripSummary(item)}</p>
+            <button
+              type="button"
+              className="btn-quiet"
+              aria-expanded={editorOpen}
+              onClick={onToggleEditor}
+            >
+              {editorOpen ? "Done" : "Edit path"}
+            </button>
+          </div>
+          {editorOpen ? (
+            <div className="path-strip-editor">
+              <p className="path-strip-hint">
+                Alternative Path is inside this plan — not another Trip Plan.
+              </p>
+              <div className="path-strip-controls">
+                <div className="field">
+                  <label htmlFor={assignId}>Assign to path</label>
+                  <select
+                    id={assignId}
+                    key={item.pathGroupId ?? "none"}
+                    defaultValue={item.pathGroupId ?? ""}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      onAssignPath(value === "" ? null : value);
+                    }}
+                  >
+                    <option value="">Shared spine (no path)</option>
+                    {planPathGroupIds.map((pathGroupId) => (
+                      <option key={pathGroupId} value={pathGroupId}>
+                        {pathGroupId === item.pathGroupId
+                          ? `${pathGroupId} (current)`
+                          : pathGroupId}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className="btn-surface"
+                  onClick={onOpenAdd}
+                >
+                  Add alternative…
+                </button>
+                {item.pathGroupId ? (
+                  <button
+                    type="button"
+                    className="btn-quiet"
+                    onClick={onClearPath}
+                  >
+                    Clear path
+                  </button>
+                ) : null}
+              </div>
+              {addOpen ? (
+                <div className="add-inline">
+                  <div className="field">
+                    <label htmlFor={nameId}>Name</label>
+                    <input
+                      id={nameId}
+                      type="text"
+                      value={addName}
+                      placeholder="e.g. Morning express"
+                      autoComplete="off"
+                      onChange={(e) => onAddNameChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          onSaveAdd();
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-primary-fill"
+                    onClick={onSaveAdd}
+                  >
+                    Save on this stop
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-surface"
+                    onClick={onCancelAdd}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : null}
+              {addError ? (
+                <p className="path-strip-error" role="alert">
+                  {addError}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </td>
     </tr>
   );
@@ -1700,6 +1981,18 @@ export function SmartItineraryTable({
   /** Place cell Resolve target — opens PlaceResolveDialog (M81HY2YR T2 #1). */
   const [resolveTarget, setResolveTarget] =
     useState<TripCockpitItineraryItem | null>(null);
+  /** Path strip (M827T84Q T4 #1) — editor + Add alternative… for the selected stop. */
+  const [pathEditorOpen, setPathEditorOpen] = useState(false);
+  const [pathAddOpen, setPathAddOpen] = useState(false);
+  const [pathAddName, setPathAddName] = useState("");
+  const [pathAddError, setPathAddError] = useState<string | null>(null);
+  /**
+   * "Add option…" (fork subplan, designer-fix v6.1) selects the fork parent
+   * and opens the strip editor in the same tick — holds that item's id so
+   * the selection-reset effect below doesn't immediately close what it just
+   * opened when `selectedId` changes to match.
+   */
+  const pendingPathOpenRef = useRef<string | null>(null);
 
   const resolveItem = (item: TripCockpitItineraryItem): TripCockpitItineraryItem =>
     itemOverrides[item.id] ?? externalItemOverrides?.[item.id] ?? item;
@@ -1713,6 +2006,26 @@ export function SmartItineraryTable({
     setAwaitingCockpitReload(false);
     setPatchError(null);
   }, [reloadToken]);
+
+  /**
+   * Path strip editor is per-selection — collapse it when selection moves,
+   * except when this selection change is the one "Add option…" just asked
+   * for (pendingPathOpenRef), in which case keep the editor it just opened.
+   */
+  useEffect(() => {
+    if (
+      pendingPathOpenRef.current !== null &&
+      pendingPathOpenRef.current === selectedId
+    ) {
+      pendingPathOpenRef.current = null;
+      return;
+    }
+    pendingPathOpenRef.current = null;
+    setPathEditorOpen(false);
+    setPathAddOpen(false);
+    setPathAddName("");
+    setPathAddError(null);
+  }, [selectedId]);
 
   const toggleDayCollapsed = (isoDay: string) => {
     setCollapsedDays((prev) => {
@@ -1809,6 +2122,47 @@ export function SmartItineraryTable({
     });
   };
 
+  /**
+   * Add alternative… (M827T84Q T4 #1): reuse `item.pathGroupId` when the
+   * selection already carries one, else mint a fresh one; pathId is always
+   * freshly generated. New stop lands on the same day as `item`.
+   */
+  const commitAddAlternative = (
+    item: TripCockpitItineraryItem,
+    rawName: string,
+  ) => {
+    if (!tripId || !sessionToken) return;
+    const pathName = rawName.trim();
+    if (!pathName) return;
+    const pathGroupId = item.pathGroupId || generatePathGroupId();
+    const pathId = generatePathId();
+    setPathAddError(null);
+    void createItineraryItem(
+      {
+        tripId,
+        sessionToken,
+        planVariantId: model.planVariantId,
+        day: item.day,
+        activity: pathName,
+        activityType: "default",
+        place: "",
+        pathGroupId,
+        pathId,
+        pathName,
+        pathRole: "alternative",
+      },
+      { fetch: fetchImpl, apiBaseUrl },
+    ).then((outcome) => {
+      if (!outcome.ok) {
+        setPathAddError(outcome.error);
+        return;
+      }
+      setCreatedItems((prev) => [...prev, outcome.item]);
+      setPathAddOpen(false);
+      setPathAddName("");
+    });
+  };
+
   const commitPatch = (
     item: TripCockpitItineraryItem,
     patch: ItineraryItemPatchFields,
@@ -1838,6 +2192,47 @@ export function SmartItineraryTable({
         return;
       }
       setPatchError(outcome.error);
+    });
+  };
+
+  /**
+   * Clear path (M827T84Q T4 #2): PATCH pathGroupId/pathId/pathName/pathRole
+   * to null on `item`, reusing commitPatch's expectedVersion + version_conflict
+   * → onCockpitReload handling (no optimistic local null on conflict).
+   */
+  const commitClearPath = (item: TripCockpitItineraryItem) => {
+    commitPatch(item, {
+      pathGroupId: null,
+      pathId: null,
+      pathName: null,
+      pathRole: null,
+    });
+  };
+
+  /**
+   * Assign to path (M827T84Q T4 #3): picking an existing pathGroupId from
+   * the Path strip dropdown joins `item` to that group as an alternative
+   * (never steals "main" from the group's active sibling) — mints a fresh
+   * pathId for `item` and carries over the group's display pathName when a
+   * sibling already has one, else falls back to the pathGroupId itself.
+   * Picking the empty option behaves exactly like Clear path (null the four
+   * path fields) so the dropdown stays consistent with the Clear button.
+   */
+  const commitAssignPath = (
+    item: TripCockpitItineraryItem,
+    pathGroupId: string | null,
+    groupPathName: string | undefined,
+  ) => {
+    if (!pathGroupId) {
+      commitClearPath(item);
+      return;
+    }
+    if (pathGroupId === item.pathGroupId) return;
+    commitPatch(item, {
+      pathGroupId,
+      pathId: generatePathId(),
+      pathName: groupPathName || pathGroupId,
+      pathRole: "alternative",
     });
   };
 
@@ -1964,6 +2359,34 @@ export function SmartItineraryTable({
     [],
   );
 
+  // Distinct pathGroupIds already present anywhere in the plan (Assign to
+  // path options — M827T84Q T4 #1 lists the whole plan, not just this day).
+  const planPathGroupIds = Array.from(
+    new Set(
+      preparedDays.flatMap(({ dayItems }) =>
+        dayItems.flatMap((item) => [
+          item.pathGroupId ?? null,
+          ...(item.children ?? []).map((child) => child.pathGroupId ?? null),
+        ]),
+      ),
+    ),
+  ).filter((id): id is string => Boolean(id));
+
+  // Display pathName per pathGroupId (Assign to path — M827T84Q T4 #3): the
+  // group's "main" sibling wins when present, else the first named sibling.
+  const planPathGroupNames: Record<string, string> = {};
+  for (const { dayItems } of preparedDays) {
+    for (const item of dayItems) {
+      for (const candidate of [item, ...(item.children ?? [])]) {
+        if (!candidate.pathGroupId || !candidate.pathName) continue;
+        const isMain = candidate.pathRole === "main";
+        if (isMain || !planPathGroupNames[candidate.pathGroupId]) {
+          planPathGroupNames[candidate.pathGroupId] = candidate.pathName;
+        }
+      }
+    }
+  }
+
   return (
     <div
       className="smart-itinerary"
@@ -2061,11 +2484,31 @@ export function SmartItineraryTable({
                 </td>
               </tr>
             ) : null;
-          const stops = dayItems.map((item, localIndex) => {
+          // Same-day pathGroupId siblings collapse to one fork stop-row
+          // (M827T84Q T2 #1) — the active path fronts the row, alternatives
+          // render as .subplan-row entries only while expanded.
+          const pathGroupEntries = groupPathAlternatives(dayItems);
+          const stops = pathGroupEntries.flatMap((entry, localIndex) => {
             const zebraBg =
               (baseOffset + localIndex) % 2 === 0 ? surface : surfaceSubtle;
+            let item: ItineraryTableStop;
+            let pathFork: PathForkDisplay | undefined;
+            if (entry.kind === "fork") {
+              const active =
+                (entry.activeItemId
+                  ? entry.items.find((i) => i.id === entry.activeItemId)
+                  : undefined) ?? entry.items[0]!;
+              item = active as ItineraryTableStop;
+              pathFork = {
+                activePathName: active.pathName ?? "",
+                activeId: active.id,
+                options: entry.items,
+              };
+            } else {
+              item = entry.item as ItineraryTableStop;
+            }
             const hasOverlap = overlappingIds.has(item.id);
-            return (
+            const stopRow = (
               <StopRow
                 key={item.id}
                 item={item}
@@ -2080,8 +2523,36 @@ export function SmartItineraryTable({
                 canCreateChild={canCreateChild}
                 showDragGrip={reorderEnabled}
                 externalBag={fieldBagById?.[item.id]}
+                pathFork={pathFork}
                 onPatch={(patch) => commitPatch(item, patch)}
                 onChildPatch={(child, patch) => commitPatch(child, patch)}
+                onActivatePath={
+                  pathFork
+                    ? (picked) => {
+                        if (picked.id === item.id) return;
+                        commitPatch(picked, { pathRole: "main" });
+                        commitPatch(item, { pathRole: "alternative" });
+                      }
+                    : undefined
+                }
+                onAddPathOption={
+                  pathFork
+                    ? () => {
+                        pendingPathOpenRef.current = item.id;
+                        setPathAddError(null);
+                        setPathEditorOpen(true);
+                        setPathAddOpen(true);
+                        onSelect?.({
+                          id: item.id,
+                          activity: item.activity,
+                          activityType: item.activityType,
+                          status: item.status,
+                          dayLabel,
+                          fieldBag: seedFieldBag(item),
+                        });
+                      }
+                    : undefined
+                }
                 onCreateChild={(activity) =>
                   commitChildCreate(item, activity)
                 }
@@ -2147,6 +2618,41 @@ export function SmartItineraryTable({
                 }
               />
             );
+            // Path strip (M827T84Q T4 #1): continuation row under whichever
+            // stop is selected — Edit path / Assign / Add alternative….
+            if (selectedId !== item.id) return [stopRow];
+            const stripRow = (
+              <PathStripRow
+                key={`path-strip-${item.id}`}
+                item={item}
+                planPathGroupIds={planPathGroupIds}
+                editorOpen={pathEditorOpen}
+                addOpen={pathAddOpen}
+                addName={pathAddName}
+                addError={pathAddError}
+                onToggleEditor={() => setPathEditorOpen((open) => !open)}
+                onOpenAdd={() => {
+                  setPathAddError(null);
+                  setPathAddOpen(true);
+                }}
+                onCancelAdd={() => {
+                  setPathAddOpen(false);
+                  setPathAddName("");
+                  setPathAddError(null);
+                }}
+                onAddNameChange={setPathAddName}
+                onSaveAdd={() => commitAddAlternative(item, pathAddName)}
+                onClearPath={() => commitClearPath(item)}
+                onAssignPath={(pathGroupId) =>
+                  commitAssignPath(
+                    item,
+                    pathGroupId,
+                    pathGroupId ? planPathGroupNames[pathGroupId] : undefined,
+                  )
+                }
+              />
+            );
+            return [stopRow, stripRow];
           });
           const add = (
             <AddRow

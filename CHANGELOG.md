@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.27.0] — 2026-07-23
+
+### Added
+- Alternative Path product UI on the Smart Itinerary Table: fork parent stop-row with expandable options, radio active-path pick, and Path strip assign / add alternative / clear
+
+### Changed
+- PRODUCT.md §5 marks Alternative Path fork / active-path pick as shipped in the Joii UI
+
+### Notes
+- Mission M827T84Q (roadmap itinerary-band-c-complete M3); live `/trips/{id}` path screenshot smoke still recommended when API is up
+
+
 ## [0.26.1] — 2026-07-23
 
 ### Changed
