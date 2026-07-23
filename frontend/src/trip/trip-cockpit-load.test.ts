@@ -272,4 +272,57 @@ describe("loadTripCockpit", () => {
       }),
     ]);
   });
+
+  /**
+   * T1 #1: parseItineraryItem must retain pathGroupId/pathId/pathName/pathRole
+   * onto TripCockpitItineraryItem instead of dropping them.
+   */
+  it("retains pathGroupId/pathId/pathName/pathRole on itineraryItems from TripCockpit", async () => {
+    const PATH_GROUP_ID = "018f4e83-5410-7d8b-8f25-fd52c5e7bd20";
+    const PATH_ID = "018f4e83-5410-7d8b-8f25-fd52c5e7bd21";
+    const baseItem = TRIP_COCKPIT_BODY.itineraryItems[0]!;
+
+    const storage = memoryStorage({
+      [MEMBER_SESSION_STORAGE_KEY]: JSON.stringify({
+        tripId: TRIP_ID,
+        memberId: OWNER_MEMBER_ID,
+        sessionToken: SESSION_TOKEN,
+        createdAt: "2026-07-19T00:00:00Z",
+        expiresAt: "2026-07-26T00:00:00Z",
+      }),
+    });
+
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse({
+        ...TRIP_COCKPIT_BODY,
+        itineraryItems: [
+          {
+            ...baseItem,
+            pathGroupId: PATH_GROUP_ID,
+            pathId: PATH_ID,
+            pathName: "Ferry route",
+            pathRole: "main",
+          },
+        ],
+      }),
+    );
+
+    const outcome = await loadTripCockpit(
+      { tripId: TRIP_ID },
+      { fetch: fetchMock, apiBaseUrl: API_BASE, storage },
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+
+    expect(outcome.itineraryItems).toEqual([
+      expect.objectContaining({
+        id: ITEM_ID,
+        pathGroupId: PATH_GROUP_ID,
+        pathId: PATH_ID,
+        pathName: "Ferry route",
+        pathRole: "main",
+      }),
+    ]);
+  });
 });

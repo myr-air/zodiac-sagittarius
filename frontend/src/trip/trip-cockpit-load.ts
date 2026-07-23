@@ -54,6 +54,14 @@ export type TripCockpitItineraryItem = {
   id: string;
   tripId: string;
   planVariantId: string;
+  /** Path-group linkage for multi-route stops (API Option); null when unset. */
+  pathGroupId?: string | null;
+  /** Path linkage within a path group (API Option); null when unset. */
+  pathId?: string | null;
+  /** Human label for the path (API Option); null when unset. */
+  pathName?: string | null;
+  /** Role of this item within its path, e.g. "main" (API Option); null when unset. */
+  pathRole?: string | null;
   /** Null for roots; set for children nested under a parent stop (one level). */
   parentItemId?: string | null;
   day: string;
@@ -193,6 +201,14 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
   if (typeof item.version !== "number") return null;
   const parentItemId = optionalNullableString(item.parentItemId);
   if (parentItemId === undefined) return null;
+  const pathGroupId = optionalNullableString(item.pathGroupId);
+  if (pathGroupId === undefined) return null;
+  const pathId = optionalNullableString(item.pathId);
+  if (pathId === undefined) return null;
+  const pathName = optionalNullableString(item.pathName);
+  if (pathName === undefined) return null;
+  const pathRole = optionalNullableString(item.pathRole);
+  if (pathRole === undefined) return null;
   const mapLink =
     typeof item.mapLink === "string" ? item.mapLink : undefined;
   const note = typeof item.note === "string" ? item.note : undefined;
@@ -216,6 +232,10 @@ function parseItineraryItem(raw: unknown): TripCockpitItineraryItem | null {
     id: item.id,
     tripId: item.tripId,
     planVariantId: item.planVariantId,
+    pathGroupId,
+    pathId,
+    pathName,
+    pathRole,
     parentItemId,
     day: item.day,
     activity: item.activity,
