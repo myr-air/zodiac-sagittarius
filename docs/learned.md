@@ -6,6 +6,8 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Problem | Solution | Evidence |
 |---------|------|---------|----------|----------|
+| M82LQRZD | 2026-07-23 | Accept applied suggestion but parent plan-check summary stayed pending so cues/triage remained | Rail calls `onPlanSuggestionResolved`; parent merges accepted suggestion into summary | ItineraryPlanPage Accept-clears Vitest |
+| M82LQRZD | 2026-07-23 | Failed GET latest presented as never-checked | Only set `planCheckLoaded` on successful load | review fix; orchestration honesty |
 | M82K32B8 | 2026-07-23 | Twelve react-hooks lint errors blocked `bun run lint`; drop-active `onDragEnd` on drop target never cleared chrome | Render-time previous-prop adjust + effect ref sync; lift dropActiveDay and clear from drag-source dragend | lint 0 errors; drop-active Vitest incl. dragEnd |
 | M82GSOYG | 2026-07-23 | Plan-block day PATCH rejected while children exist (immediate parent_scope FK) | Single-statement `update_itinerary_item_with_day_cascade`; FE PATCHes parent day only | itinerary_patch_contract cascade; FE cross-day Vitest |
 | M82GSOYG | 2026-07-23 | Partial `details` PATCH wiped sibling JSON fields (coalesce replace) | softMap merges `currentDetails` for from/to/by/meal; table/rail pass item.details | itinerary-type-fields merge tests |
@@ -37,6 +39,7 @@ Project knowledge migrated from spacecraft missions.
 
 | Mission | Date | Lesson | Why it matters |
 |---------|------|--------|----------------|
+| M82LQRZD | 2026-07-23 | When a child applies a mutation that changes membership of a parent-owned derived list, notify or reload the parent on success | Success UI cannot depend only on the child's network round-trip while cues still read parent props |
 | M82K32B8 | 2026-07-23 | HTML5 DnD `dragend` fires on the drag source, not the drop target | Hover/active chrome driven by drag-over must clear from the source's dragend or shared parent state |
 | M82GSOYG | 2026-07-23 | When an API replaces a whole JSON document on PATCH, clients must merge prior fields into the outbound payload | Sending only the edited key silently deletes siblings on coalesce-replace columns |
 | M82GSOYG | 2026-07-23 | Cascading related-row updates under an immediate (NOT DEFERRABLE) FK need a single SQL statement, not sequential UPDATEs | Hierarchy moves under scope FKs fail mid-transaction otherwise |
