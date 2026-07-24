@@ -53,6 +53,7 @@ import {
   type TripCockpitItineraryItem,
 } from "../../src/trip/trip-cockpit-load";
 import { buildItineraryTableModel } from "../../src/trip/itinerary-table-model";
+import type { PlanSuggestionSummary } from "../../src/trip/plan-check-api";
 import {
   SmartItineraryTable,
   type SmartItineraryTableProps,
@@ -5339,6 +5340,361 @@ describe("SmartItineraryTable path strip: clear path", () => {
     ).toBeInTheDocument();
     expect(
       within(conflictTable).queryByText(/^Path\s*·\s*Shared spine$/i),
+    ).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * M82LQRZD T3 #1 — quiet inline plan-check cue under flagged stops.
+ * Stops with pending findings (passed via the new `planCheckFindingsByStop`
+ * prop — shape matches plan-check-model's groupFindingsByStop output) render
+ * a notice-only inline cue row (severity + count + short message) under the
+ * stop row; stops without findings render no cue row. Draft v3 landmarks:
+ * `tr.check-cue[data-for]` > `.inline-check[data-severity]` >
+ * `.count` / `.msg`. Distinct from M2 sibling overlap cues, which use
+ * `.overlap-note` / `.day-cue` / `has-overlap` — never reused here.
+ * RED: SmartItineraryTable does not render any plan-check cue yet.
+ */
+const PLAN_CHECK_STOP_SINGLE_ID = "item-plan-check-single";
+const PLAN_CHECK_STOP_MULTI_ID = "item-plan-check-multi";
+const PLAN_CHECK_STOP_CLEAN_ID = "item-plan-check-clean";
+const PLAN_CHECK_SINGLE_MESSAGE = "Missing check-in or check-out timing";
+const PLAN_CHECK_MULTI_INFO_MESSAGE = "Travel segment is missing a mode";
+const PLAN_CHECK_MULTI_ERROR_MESSAGE = "Missing scheduled time";
+
+function makePlanCheckFinding(
+  overrides: Partial<PlanSuggestionSummary> & { id: string; targetItemIds: string[] },
+): PlanSuggestionSummary {
+  return {
+    tripId: TRIP_ID,
+    planCheckId: "018f4e90-0000-7000-8000-0000000000aa",
+    severity: "warning",
+    scope: "item",
+    explanation: { en: "", th: "" },
+    recommendedAction: { en: "", th: "" },
+    actionKind: null,
+    actionPayload: null,
+    status: "pending",
+    snoozedUntil: null,
+    createdAt: "2026-07-23T10:00:05Z",
+    updatedAt: "2026-07-23T10:00:05Z",
+    version: 1,
+    ...overrides,
+  };
+}
+
+describe("SmartItineraryTable quiet inline plan-check cue", () => {
+  it("renders a notice-only severity + count + message cue row under stops with pending findings, and no cue row under stops without findings", () => {
+    const singleFindingStop = stop({
+      id: PLAN_CHECK_STOP_SINGLE_ID,
+      day: DAY,
+      activity: "Hotel check-in",
+      activityType: "stay",
+      place: "Tsim Sha Tsui",
+      startTime: "14:00",
+      endTime: "14:30",
+    });
+    const multiFindingStop = stop({
+      id: PLAN_CHECK_STOP_MULTI_ID,
+      day: DAY,
+      activity: "Star Ferry",
+      activityType: "travel",
+      place: "Central ↔ TST",
+      startTime: "17:30",
+      endTime: "18:15",
+    });
+    const cleanStop = stop({
+      id: PLAN_CHECK_STOP_CLEAN_ID,
+      day: DAY,
+      activity: "Avenue of Stars",
+      activityType: "attraction",
+      place: "Tsim Sha Tsui East",
+      startTime: "19:00",
+      endTime: "20:30",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [singleFindingStop, multiFindingStop, cleanStop],
+    });
+
+    const singleFinding = makePlanCheckFinding({
+      id: "sugg-plan-check-single",
+      targetItemIds: [PLAN_CHECK_STOP_SINGLE_ID],
+      severity: "warning",
+      explanation: { en: PLAN_CHECK_SINGLE_MESSAGE, th: "" },
+    });
+    // Mixed severity at the same stop: highest rank (error) must win the
+    // cue's displayed severity + message; count reflects both findings.
+    const multiFindingInfo = makePlanCheckFinding({
+      id: "sugg-plan-check-multi-info",
+      targetItemIds: [PLAN_CHECK_STOP_MULTI_ID],
+      severity: "info",
+      explanation: { en: PLAN_CHECK_MULTI_INFO_MESSAGE, th: "" },
+    });
+    const multiFindingError = makePlanCheckFinding({
+      id: "sugg-plan-check-multi-error",
+      targetItemIds: [PLAN_CHECK_STOP_MULTI_ID],
+      severity: "error",
+      explanation: { en: PLAN_CHECK_MULTI_ERROR_MESSAGE, th: "" },
+    });
+
+    const { container, unmount } = render(
+      <SmartItineraryTable
+        model={model}
+        planCheckFindingsByStop={{
+          [PLAN_CHECK_STOP_SINGLE_ID]: [singleFinding],
+          [PLAN_CHECK_STOP_MULTI_ID]: [multiFindingInfo, multiFindingError],
+        }}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    // --- Single pending finding: severity + "1 check" + short message. ---
+    const singleCueRow = table.querySelector(
+      `tr.check-cue[data-for="${PLAN_CHECK_STOP_SINGLE_ID}"]`,
+    ) as HTMLElement | null;
+    expect(singleCueRow).toBeTruthy();
+    expect(singleCueRow).toBeVisible();
+
+    const singleCue = within(singleCueRow!).getByText(
+      PLAN_CHECK_SINGLE_MESSAGE,
+    ).closest(".inline-check");
+    expect(singleCue).toBeTruthy();
+    expect(singleCue).toHaveAttribute("data-severity", "warning");
+    expect(
+      within(singleCueRow!).getByText("1 check", { exact: false }),
+    ).toBeInTheDocument();
+    // Notice-only: no triage controls inside the table cue (triage stays
+    // in the rail — full control coverage is T3 #2).
+    expect(
+      within(singleCueRow!).queryAllByRole("button"),
+    ).toHaveLength(0);
+
+    // --- Two mixed-severity pending findings: highest severity + plural count. ---
+    const multiCueRow = table.querySelector(
+      `tr.check-cue[data-for="${PLAN_CHECK_STOP_MULTI_ID}"]`,
+    ) as HTMLElement | null;
+    expect(multiCueRow).toBeTruthy();
+    expect(multiCueRow).toBeVisible();
+
+    const multiCue = within(multiCueRow!).getByText(
+      PLAN_CHECK_MULTI_ERROR_MESSAGE,
+    ).closest(".inline-check");
+    expect(multiCue).toBeTruthy();
+    expect(multiCue).toHaveAttribute("data-severity", "error");
+    expect(
+      within(multiCueRow!).getByText("2 checks", { exact: false }),
+    ).toBeInTheDocument();
+    // The lower-severity finding's message is not the one surfaced.
+    expect(
+      within(multiCueRow!).queryByText(PLAN_CHECK_MULTI_INFO_MESSAGE),
+    ).not.toBeInTheDocument();
+
+    // --- No findings entry for this stop → no cue row at all. ---
+    expect(
+      table.querySelector(
+        `tr.check-cue[data-for="${PLAN_CHECK_STOP_CLEAN_ID}"]`,
+      ),
+    ).toBeNull();
+    const cleanRow = table.querySelector(
+      `tr.stop-row[data-id="${PLAN_CHECK_STOP_CLEAN_ID}"]`,
+    ) as HTMLElement;
+    expect(cleanRow).toBeTruthy();
+    // Scope to the clean stop row (and its immediate following sibling cue
+    // slot): other stops in this render correctly carry plan-check messages.
+    expect(within(cleanRow).queryByText(/check|missing|mode/i)).toBeNull();
+    expect(
+      cleanRow.nextElementSibling?.matches("tr.check-cue") ?? false,
+    ).toBe(false);
+
+    // --- Plan-check cue namespace stays distinct from M2 sibling overlap
+    // cues (.overlap-note / .day-cue / has-overlap) — never reused here. ---
+    expect(container.querySelector(".inline-check.overlap-note")).toBeNull();
+    expect(container.querySelector("tr.check-cue.day-cue-row")).toBeNull();
+    expect(
+      table.querySelector(
+        `tr.stop-row[data-id="${PLAN_CHECK_STOP_SINGLE_ID}"].has-overlap`,
+      ),
+    ).toBeNull();
+
+    // --- Backward-compatible default: omitting the prop entirely renders
+    // no plan-check cue anywhere (existing callers keep their current DOM). ---
+    unmount();
+    const { container: bareContainer } = render(
+      <SmartItineraryTable model={model} />,
+    );
+    expect(bareContainer.querySelectorAll("tr.check-cue")).toHaveLength(0);
+    expect(bareContainer.querySelectorAll(".inline-check")).toHaveLength(0);
+  });
+});
+
+/**
+ * M82LQRZD T3 #2 — inline plan-check cue stays notice-only in the table;
+ * triage controls (Accept / Dismiss / Snooze) live only in the rail, never
+ * inside `tr.check-cue`. Also locks that the M2 sibling overlap cue system
+ * (`.day-cue` / `tr.has-overlap` / `.overlap-note`) keeps firing as its own
+ * independent cue when a plan-check finding lands on the same stop — the
+ * plan-check cue must never replace, suppress, or merge with the overlap
+ * warning.
+ */
+const PLAN_CHECK_NO_CONTROLS_STOP_ID = "item-plan-check-no-controls";
+const PLAN_CHECK_NO_CONTROLS_MESSAGE = "Missing confirmation number";
+const PLAN_CHECK_OVERLAP_COEXIST_MESSAGE = "Booking needs a confirmation code";
+
+describe("SmartItineraryTable inline plan-check cue has no triage controls", () => {
+  it("exposes no Accept / Dismiss / Snooze text or buttons inside any tr.check-cue", () => {
+    const flaggedStop = stop({
+      id: PLAN_CHECK_NO_CONTROLS_STOP_ID,
+      day: DAY,
+      activity: "Airport transfer",
+      activityType: "travel",
+      place: "HKIA ↔ Hotel",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [flaggedStop],
+    });
+
+    const finding = makePlanCheckFinding({
+      id: "sugg-plan-check-no-controls",
+      targetItemIds: [PLAN_CHECK_NO_CONTROLS_STOP_ID],
+      severity: "error",
+      explanation: { en: PLAN_CHECK_NO_CONTROLS_MESSAGE, th: "" },
+    });
+
+    const { container } = render(
+      <SmartItineraryTable
+        model={model}
+        planCheckFindingsByStop={{
+          [PLAN_CHECK_NO_CONTROLS_STOP_ID]: [finding],
+        }}
+      />,
+    );
+
+    const cueRows = [
+      ...container.querySelectorAll("tr.check-cue"),
+    ] as HTMLElement[];
+    expect(cueRows.length).toBeGreaterThan(0);
+
+    for (const cueRow of cueRows) {
+      // Notice-only row: no buttons of any kind, and no Accept/Dismiss/Snooze
+      // wording — full triage affordance coverage belongs to the rail, never
+      // this inline table cue.
+      expect(within(cueRow).queryAllByRole("button")).toHaveLength(0);
+      expect(cueRow.querySelectorAll("button")).toHaveLength(0);
+      expect(
+        within(cueRow).queryByText(/\b(accept|dismiss|snooze)\b/i),
+      ).not.toBeInTheDocument();
+    }
+  });
+
+  it("keeps M2 sibling overlap cues and the plan-check inline cue as separate, coexisting cues on the same day", () => {
+    const clearStop = stop({
+      id: OVERLAP_CLEAR_ID,
+      day: DAY,
+      activity: "Hotel check-in",
+      activityType: "stay",
+      place: "Hotel Gracery Shinjuku",
+      startTime: "15:30",
+      endTime: "16:00",
+    });
+    const dinner = stop({
+      id: OVERLAP_DINNER_ID,
+      day: DAY,
+      activity: OVERLAP_DINNER_TITLE,
+      activityType: "food",
+      place: "Ichiran Shinjuku",
+      startTime: "18:30",
+      endTime: "20:00",
+    });
+    const walk = stop({
+      id: OVERLAP_WALK_ID,
+      day: DAY,
+      activity: OVERLAP_WALK_TITLE,
+      activityType: "experience",
+      place: "Kabukicho",
+      startTime: "18:45",
+      endTime: "19:15",
+    });
+
+    const model = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [clearStop, dinner, walk],
+    });
+
+    // Attach a plan-check finding directly on one of the overlapping siblings
+    // to prove the plan-check cue does not replace or suppress the M2
+    // overlap cue when both apply to the same stop.
+    const overlapFinding = makePlanCheckFinding({
+      id: "sugg-plan-check-overlap-coexist",
+      targetItemIds: [OVERLAP_DINNER_ID],
+      severity: "warning",
+      explanation: { en: PLAN_CHECK_OVERLAP_COEXIST_MESSAGE, th: "" },
+    });
+
+    const { container } = render(
+      <SmartItineraryTable
+        model={model}
+        planCheckFindingsByStop={{
+          [OVERLAP_DINNER_ID]: [overlapFinding],
+        }}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+
+    // --- M2 overlap cue still fires: day-cue text + has-overlap tint. ---
+    const dayCue =
+      container.querySelector(".day-cue") ?? table.querySelector(".day-cue");
+    expect(dayCue).toBeTruthy();
+    expect(dayCue).toBeVisible();
+    expect(dayCue).toHaveTextContent(OVERLAP_DAY_CUE);
+
+    const dinnerRow = table.querySelector(
+      `tr.stop-row[data-id="${OVERLAP_DINNER_ID}"]`,
+    ) as HTMLElement;
+    const walkRow = table.querySelector(
+      `tr.stop-row[data-id="${OVERLAP_WALK_ID}"]`,
+    ) as HTMLElement;
+    expect(dinnerRow).toBeTruthy();
+    expect(walkRow).toBeTruthy();
+    expect(dinnerRow).toHaveClass("has-overlap");
+    expect(walkRow).toHaveClass("has-overlap");
+
+    // --- Plan-check inline cue also fires on the same stop, independently. ---
+    const checkCueRow = table.querySelector(
+      `tr.check-cue[data-for="${OVERLAP_DINNER_ID}"]`,
+    ) as HTMLElement | null;
+    expect(checkCueRow).toBeTruthy();
+    expect(checkCueRow).toBeVisible();
+    expect(
+      within(checkCueRow!).getByText(PLAN_CHECK_OVERLAP_COEXIST_MESSAGE),
+    ).toBeInTheDocument();
+
+    // --- Two independent cue mechanisms, not one collapsing into the other:
+    // the plan-check cue row never carries M2 overlap markers, and the
+    // overlap-tinted stop row never carries plan-check markers. ---
+    expect(checkCueRow).not.toHaveClass("day-cue-row");
+    expect(checkCueRow?.querySelector(".overlap-note")).toBeNull();
+    expect(dinnerRow).not.toHaveClass("check-cue");
+    expect(dinnerRow.querySelector(".inline-check")).toBeNull();
+
+    // Still no triage controls inside the plan-check cue while it coexists
+    // with the overlap warning on the same stop.
+    expect(within(checkCueRow!).queryAllByRole("button")).toHaveLength(0);
+    expect(
+      within(checkCueRow!).queryByText(/\b(accept|dismiss|snooze)\b/i),
     ).not.toBeInTheDocument();
   });
 });
