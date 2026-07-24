@@ -3,14 +3,29 @@
  * T7 #1: shared per-stop field bag keeps table + rail in sync across type switches.
  * M81DDKSC T4: selection carries version so the rail can PATCH mappable fields.
  * Must-fix: rail PATCH applies returned summary version; conflict reloads cockpit.
+ * M82LQRZD T7 #1: loads GET plan-checks/latest once for the visible plan
+ * (deps: tripId/sessionToken/apiBaseUrl/fetch/tripPlanId — NOT model, so
+ * ordinary itinerary edits and cockpit reloads never auto-rerun a check),
+ * derives planCheckFindingsByStop (groupFindingsByStop) + planCheckMode for
+ * SmartItineraryTable + ItineraryContextRail, and wires rail Run check
+ * (POST plan-checks) and suggestion triage (PATCH plan-suggestions/{id}).
  */
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { StopFieldBag } from "../../src/trip/itinerary-type-fields";
 import type { ItineraryTableModel } from "../../src/trip/itinerary-table-model";
 import type { TripCockpitItineraryItem } from "../../src/trip/trip-cockpit-load";
+import {
+  loadLatestPlanCheck,
+  patchPlanSuggestion,
+  runPlanCheck,
+  type PatchPlanSuggestionOutcome,
+  type PlanCheckSummary,
+  type PlanSuggestionSummary,
+} from "../../src/trip/plan-check-api";
+import { groupFindingsByStop, planPendingTotal } from "../../src/trip/plan-check-model";
 import {
   ItineraryContextRail,
   type ItineraryContextSelectedItem,
@@ -20,6 +35,8 @@ import { SmartItineraryTable } from "./SmartItineraryTable";
 export type ItineraryPlanPageProps = {
   model: ItineraryTableModel;
   tripId?: string;
+  /** Visible trip plan (variant) id — scopes plan-check GET/POST when set. */
+  tripPlanId?: string;
   sessionToken?: string;
   apiBaseUrl?: string;
   fetch?: typeof fetch;
@@ -55,6 +72,7 @@ function versionForItem(
 export function ItineraryPlanPage({
   model,
   tripId,
+  tripPlanId,
   sessionToken,
   apiBaseUrl,
   fetch: fetchImpl,
@@ -82,6 +100,125 @@ export function ItineraryPlanPage({
     Record<string, TripCockpitItineraryItem>
   >({});
   const selectedId = selectedItem?.id ?? null;
+
+  /** Latest plan-check summary for the visible plan (null = never checked). */
+  const [planCheckSummary, setPlanCheckSummary] =
+    useState<PlanCheckSummary | null>(null);
+  /** Distinguishes "not loaded yet" from a loaded-but-null (never-checked) summary. */
+  const [planCheckLoaded, setPlanCheckLoaded] = useState(false);
+
+  const planCheckDepsReady = Boolean(
+    tripId && sessionToken && apiBaseUrl && fetchImpl,
+  );
+
+  async function reloadLatestPlanCheck() {
+    if (!(tripId && sessionToken && apiBaseUrl && fetchImpl)) return;
+    const outcome = await loadLatestPlanCheck(
+      { tripId, sessionToken, tripPlanId },
+      { fetch: fetchImpl, apiBaseUrl },
+    );
+    if (outcome.ok) {
+      setPlanCheckSummary(outcome.planCheck);
+      setPlanCheckLoaded(true);
+    }
+    // Failed load: leave unloaded — do not claim "never checked".
+  }
+
+  /**
+   * Load-once-on-active — deps intentionally exclude `model` so ordinary
+   * itinerary edits and TripCockpit reloads never re-trigger the GET or an
+   * implicit re-check (M82LQRZD T7 #1).
+   */
+  useEffect(() => {
+    if (!planCheckDepsReady) return;
+    let cancelled = false;
+    void (async () => {
+      if (!(tripId && sessionToken && apiBaseUrl && fetchImpl)) return;
+      const outcome = await loadLatestPlanCheck(
+        { tripId, sessionToken, tripPlanId },
+        { fetch: fetchImpl, apiBaseUrl },
+      );
+      if (cancelled) return;
+      if (outcome.ok) {
+        setPlanCheckSummary(outcome.planCheck);
+        setPlanCheckLoaded(true);
+      }
+      // Failed load: leave unloaded — do not claim "never checked".
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripId, sessionToken, apiBaseUrl, fetchImpl, tripPlanId]);
+
+  const planCheckFindingsByStop = planCheckSummary
+    ? groupFindingsByStop(planCheckSummary)
+    : undefined;
+  const planPendingCount = planCheckSummary
+    ? planPendingTotal(planCheckSummary)
+    : undefined;
+  const planCheckMode = !planCheckLoaded
+    ? undefined
+    : planCheckSummary === null
+      ? "never"
+      : planCheckSummary.stale
+        ? "stale"
+        : (planPendingCount ?? 0) === 0
+          ? "clean"
+          : "idle";
+
+  async function handleRunPlanCheck() {
+    if (!(tripId && sessionToken && apiBaseUrl && fetchImpl)) return;
+    const outcome = await runPlanCheck(
+      { tripId, sessionToken, tripPlanId },
+      { fetch: fetchImpl, apiBaseUrl },
+    );
+    if (outcome.ok) {
+      setPlanCheckSummary(outcome.planCheck);
+      setPlanCheckLoaded(true);
+    }
+  }
+
+  function mergePlanSuggestion(suggestion: PlanSuggestionSummary) {
+    setPlanCheckSummary((prev) =>
+      prev
+        ? {
+            ...prev,
+            suggestions: prev.suggestions.map((s) =>
+              s.id === suggestion.id ? suggestion : s,
+            ),
+          }
+        : prev,
+    );
+  }
+
+  function handlePlanSuggestionTriage(args: {
+    suggestionId: string;
+    status: "accepted" | "dismissed" | "snoozed";
+    expectedVersion: number;
+    snoozedUntil?: string;
+  }): Promise<PatchPlanSuggestionOutcome> | void {
+    if (!(tripId && sessionToken && apiBaseUrl && fetchImpl)) return;
+    return (async () => {
+      const outcome = await patchPlanSuggestion(
+        {
+          tripId,
+          suggestionId: args.suggestionId,
+          sessionToken,
+          expectedVersion: args.expectedVersion,
+          status: args.status,
+          ...(args.snoozedUntil !== undefined
+            ? { snoozedUntil: args.snoozedUntil }
+            : {}),
+        },
+        { fetch: fetchImpl, apiBaseUrl },
+      );
+      if (outcome.ok) {
+        mergePlanSuggestion(outcome.suggestion);
+      }
+      return outcome;
+    })();
+  }
 
   function mergeBag(itemId: string, bag: StopFieldBag) {
     setFieldBagById((prev) => ({ ...prev, [itemId]: bag }));
@@ -130,6 +267,7 @@ export function ItineraryPlanPage({
           fieldBagById={fieldBagById}
           removedItemIds={removedItemIds}
           externalItemOverrides={itemOverrides}
+          planCheckFindingsByStop={planCheckFindingsByStop}
           onSelect={(next) => {
             mergeBag(next.id, next.fieldBag);
             // Draft selectStop toggle: second click on the same stop unselects.
@@ -162,6 +300,13 @@ export function ItineraryPlanPage({
         fetch={fetchImpl}
         reloadToken={reloadToken}
         onCockpitReload={onCockpitReload}
+        planCheckMode={planCheckMode}
+        planPendingCount={planPendingCount}
+        onRunPlanCheck={handleRunPlanCheck}
+        planCheckFindingsByStop={planCheckFindingsByStop}
+        onPlanSuggestionTriage={handlePlanSuggestionTriage}
+        onPlanCheckReload={reloadLatestPlanCheck}
+        onPlanSuggestionResolved={mergePlanSuggestion}
         onFieldBagChange={(itemId, bag) => {
           mergeBag(itemId, bag);
           setSelectedItem((prev) =>

@@ -41,6 +41,8 @@ import type {
 import { nestOneLevel } from "../../src/trip/itinerary-table-model";
 import { groupPathAlternatives } from "../../src/trip/itinerary-path-groups";
 import { findOverlappingSiblingIds } from "../../src/trip/sibling-overlap";
+import type { PlanSuggestionSummary } from "../../src/trip/plan-check-api";
+import { stopFindingSummary } from "../../src/trip/plan-check-model";
 import { PlaceResolveDialog } from "./PlaceResolveDialog";
 
 /** Draft SUBPLAN_CHEVRON — expands/collapses nested sub-activity tree. */
@@ -173,6 +175,15 @@ export type SmartItineraryTableProps = {
   destinationLabel?: string;
   /** Country codes for place resolve bias (M81HY2YR T2). */
   countries?: string[];
+  /**
+   * Plan-check pending findings grouped by stop id (M82LQRZD T3 #1). Shape
+   * matches plan-check-model's groupFindingsByStop output: pending
+   * PlanSuggestionSummary[] keyed by targetItemId. Drives a quiet
+   * notice-only inline cue row under each flagged stop (draft v3
+   * `.inline-check` / `tr.check-cue` landmarks) — distinct from M2 sibling
+   * overlap cues (`.overlap-note` / `.day-cue` / `has-overlap`).
+   */
+  planCheckFindingsByStop?: Record<string, PlanSuggestionSummary[]>;
 };
 
 /** Cockpit summary may carry endTime for the time rail (not on typed load subset yet). */
@@ -2033,6 +2044,7 @@ export function SmartItineraryTable({
   externalItemOverrides,
   destinationLabel = "",
   countries = [],
+  planCheckFindingsByStop,
 }: SmartItineraryTableProps) {
   const surface = resolveToken("--color-surface", "#ffffff");
   const surfaceSubtle = resolveToken("--color-surface-subtle", "#f8fafc");
@@ -2782,6 +2794,44 @@ export function SmartItineraryTable({
               item = entry.item as ItineraryTableStop;
             }
             const hasOverlap = overlappingIds.has(item.id);
+            // Quiet inline plan-check cue (M82LQRZD T3 #1) — notice-only,
+            // distinct from the M2 sibling overlap cues above. Highest
+            // severity + pending count comes from plan-check-model's
+            // stopFindingSummary; the surfaced message is that same
+            // highest-severity finding's explanation.
+            const checkFindings = planCheckFindingsByStop?.[item.id];
+            const checkSummary = checkFindings
+              ? stopFindingSummary(
+                  { [item.id]: checkFindings },
+                  item.id,
+                )
+              : undefined;
+            const checkCueRow = checkSummary ? (
+              <tr
+                key={`check-cue-${item.id}`}
+                className="check-cue"
+                data-for={item.id}
+              >
+                <td className="col-stop">
+                  <div
+                    className="inline-check"
+                    data-severity={checkSummary.severity}
+                  >
+                    <span className="count">
+                      {checkSummary.count} check
+                      {checkSummary.count === 1 ? "" : "s"}
+                    </span>
+                    <span className="msg">
+                      {
+                        (checkFindings!.find(
+                          (finding) => finding.severity === checkSummary.severity,
+                        ) ?? checkFindings![0]!).explanation.en
+                      }
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : null;
             const stopRow = (
               <StopRow
                 key={item.id}
@@ -2909,7 +2959,9 @@ export function SmartItineraryTable({
             );
             // Path strip (M827T84Q T4 #1): continuation row under whichever
             // stop is selected — Edit path / Assign / Add alternative….
-            if (selectedId !== item.id) return [stopRow];
+            if (selectedId !== item.id) {
+              return checkCueRow ? [stopRow, checkCueRow] : [stopRow];
+            }
             const stripRow = (
               <PathStripRow
                 key={`path-strip-${item.id}`}
@@ -2941,7 +2993,9 @@ export function SmartItineraryTable({
                 }
               />
             );
-            return [stopRow, stripRow];
+            return checkCueRow
+              ? [stopRow, checkCueRow, stripRow]
+              : [stopRow, stripRow];
           });
           const add = (
             <AddRow

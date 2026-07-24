@@ -5,6 +5,10 @@
  * when selected (honest — no fake paste API; place-cell Resolve OK).
  * T7 #1: type fields mirror the stop field bag (table + rail stay in sync).
  * M81DDKSC T4: mappable bag keys PATCH via soft-map; non-mappable stay read-only.
+ * M82LQRZD T4 #1: empty rail (no selection) shows plan-check chrome — Run
+ * check + idle/never/clean/stale copy — when `planCheckMode` is supplied
+ * (plan-check-inspector-draft-v3.html). No full-plan finding queue here;
+ * that lives with a selected stop (T5).
  */
 
 "use client";
@@ -15,6 +19,11 @@ import {
   patchItineraryItem,
 } from "../../src/trip/itinerary-api";
 import type { TripCockpitItineraryItem } from "../../src/trip/trip-cockpit-load";
+import type {
+  PatchPlanSuggestionOutcome,
+  PlanSuggestionSummary,
+} from "../../src/trip/plan-check-api";
+import { acceptPlanSuggestion } from "../../src/trip/plan-check-apply";
 import {
   BY_OPTIONS,
   MEAL_OPTIONS,
@@ -47,6 +56,20 @@ const CUE_BY_TYPE: Record<string, string> = {
   note: "Note usually wants a short reminder · optional place",
   unset: "Choose a type when you care",
 };
+
+/** Draft mode-idle/never/clean/stale sub copy (plan-check-inspector-draft-v3.html). */
+const PLAN_CHECK_META_BY_MODE: Record<
+  NonNullable<ItineraryContextRailProps["planCheckMode"]>,
+  string
+> = {
+  idle: "Visible plan · rules check",
+  stale: "Visible plan · stale results",
+  never: "Visible plan · not checked yet",
+  clean: "Visible plan · clean",
+};
+const RUN_CHECK_LABEL = "Run check";
+const STALE_CUE_TEXT =
+  "Plan changed since this check — cues may be out of date. Run check to refresh.";
 
 const REMOVE_LABEL = "Remove";
 const DELETE_DIALOG_TITLE = "Delete activity";
@@ -98,7 +121,55 @@ type ItineraryContextRailProps = {
    * lock so rail PATCH can resume.
    */
   reloadToken?: number;
+  /**
+   * Plan-check state for the empty rail (no stop selected). When set, the
+   * rail shows plan-check chrome instead of the generic "No activity
+   * selected" cue (M82LQRZD T4 #1). Undefined keeps the pre-existing empty
+   * cue — full-plan triage page wiring lands separately.
+   */
+  planCheckMode?: "idle" | "never" | "clean" | "stale";
+  /** Draft mode-idle summary count ("<N> checks on this plan — ..."). */
+  planPendingCount?: number;
+  /** Draft #run-check — always available on the empty rail. */
+  onRunPlanCheck?: () => void;
+  /**
+   * Pending plan-check findings keyed by stop id (mirrors
+   * SmartItineraryTable's `planCheckFindingsByStop`, M82LQRZD T3 #1) so a
+   * future page can pass the same groupFindingsByStop output to both. When
+   * selectedItem is set, findings for selectedItem.id render as a "Checks
+   * for this stop" triage list (M82LQRZD T5 #1) — undefined keeps the rail
+   * unchanged (no plan-check chrome on a selected stop).
+   */
+  planCheckFindingsByStop?: Record<string, PlanSuggestionSummary[]>;
+  /**
+   * Accept/Dismiss/Snooze on one finding's triage buttons. Parent owns the
+   * actual PATCH /plan-suggestions/{id} call (T5 wiring only — this rail
+   * does not itself call the API).
+   */
+  onPlanSuggestionTriage?: (args: {
+    suggestionId: string;
+    status: "accepted" | "dismissed" | "snoozed";
+    expectedVersion: number;
+    /** Snooze-only — ISO timestamp the suggestion resurfaces at. */
+    snoozedUntil?: string;
+  }) => PatchPlanSuggestionOutcome | Promise<PatchPlanSuggestionOutcome> | void;
+  /**
+   * Suggestion PATCH version_conflict channel — distinct from
+   * onCockpitReload (itinerary-item PATCH conflicts). Parent reloads the
+   * latest plan-check summary; this rail leaves the finding pending
+   * (props-only findings — no local accept/dismiss mutation here, M82LQRZD
+   * T5 #3).
+   */
+  onPlanCheckReload?: () => void;
+  /**
+   * Accept apply success — parent merges the returned suggestion into the
+   * plan-check summary so pending cues/triage drop immediately (M82LQRZD).
+   */
+  onPlanSuggestionResolved?: (suggestion: PlanSuggestionSummary) => void;
 };
+
+/** Snooze horizon — resurface the suggestion a day out (draft default). */
+const SNOOZE_DURATION_MS = 24 * 60 * 60 * 1000;
 
 function typeLabel(activityType: string): string {
   if (TYPE_LABEL[activityType]) return TYPE_LABEL[activityType]!;
@@ -124,6 +195,13 @@ export function ItineraryContextRail({
   onPatched,
   onCockpitReload,
   reloadToken = 0,
+  planCheckMode,
+  planPendingCount,
+  onRunPlanCheck,
+  planCheckFindingsByStop,
+  onPlanSuggestionTriage,
+  onPlanCheckReload,
+  onPlanSuggestionResolved,
 }: ItineraryContextRailProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -166,21 +244,105 @@ export function ItineraryContextRail({
   }
 
   const empty = !selectedItem;
+  /**
+   * Empty rail shows plan-check chrome instead of the generic empty cue
+   * once a page wires planCheckMode (M82LQRZD T4 #1). No mode = the
+   * pre-existing single empty cue (M81LW2UJ T5).
+   */
+  const showPlanCheckEmpty = empty && planCheckMode !== undefined;
   /** Single empty cue title — do not also render competing "Start here" heading. */
-  const title = empty ? "No activity selected" : selectedItem.activity;
-  const meta = empty
-    ? "Add under a day. Fields appear as you enrich."
-    : [
-        typeLabel(selectedItem.activityType),
-        selectedItem.dayLabel,
-        selectedItem.status,
-      ]
-        .filter(Boolean)
-        .join(" · ");
+  const title = showPlanCheckEmpty
+    ? "Plan check"
+    : empty
+      ? "No activity selected"
+      : selectedItem.activity;
+  const meta = showPlanCheckEmpty
+    ? PLAN_CHECK_META_BY_MODE[planCheckMode]
+    : empty
+      ? "Add under a day. Fields appear as you enrich."
+      : [
+          typeLabel(selectedItem.activityType),
+          selectedItem.dayLabel,
+          selectedItem.status,
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
   const fieldDefs = empty ? [] : fieldsToRail(selectedItem.activityType);
   const bag = selectedItem?.fieldBag ?? {};
   const cue = empty ? null : enrichCue(selectedItem.activityType);
+  /** This stop's pending findings only — a sibling stop's must not leak in. */
+  const stopFindings = selectedItem
+    ? planCheckFindingsByStop?.[selectedItem.id]
+    : undefined;
+
+  async function triage(
+    suggestion: PlanSuggestionSummary,
+    status: "accepted" | "dismissed" | "snoozed",
+    snoozedUntil?: string,
+  ) {
+    const outcome = await onPlanSuggestionTriage?.({
+      suggestionId: suggestion.id,
+      status,
+      expectedVersion: suggestion.version,
+      ...(status === "snoozed" && snoozedUntil
+        ? { snoozedUntil }
+        : {}),
+    });
+    if (outcome && !outcome.ok && outcome.code === "version_conflict") {
+      onPlanCheckReload?.();
+    }
+  }
+
+  /**
+   * Accept — prefers the apply path (acceptPlanSuggestion) over the plain
+   * status-only triage() path once tripId/sessionToken/apiBaseUrl/fetch deps
+   * are available, so a safe { itemId, patch } action_payload PATCHes the
+   * itinerary item before the suggestion PATCH (M82LQRZD T6). Dismiss/Snooze
+   * never call acceptPlanSuggestion — they always use triage() above.
+   * On an item-side version_conflict, the item PATCH never ran to
+   * completion — the suggestion is left pending (not marked accepted) and
+   * onCockpitReload fires (parity with commitRailField). On a
+   * suggestion-side version_conflict, onPlanCheckReload fires instead.
+   * Falls back to triage() (accepted) when the apply-path deps are missing —
+   * the parent then owns the PATCH itself, matching the pre-existing
+   * behavior for pages that only wire onPlanSuggestionTriage.
+   */
+  async function acceptFinding(suggestion: PlanSuggestionSummary) {
+    if (!(tripId && sessionToken && apiBaseUrl && fetchImpl)) {
+      await triage(suggestion, "accepted");
+      return;
+    }
+
+    const outcome = await acceptPlanSuggestion(
+      {
+        tripId,
+        sessionToken,
+        suggestion,
+        ...(typeof selectedItem?.version === "number"
+          ? { itemExpectedVersion: selectedItem.version }
+          : {}),
+      },
+      { fetch: fetchImpl, apiBaseUrl },
+    );
+
+    if (outcome.ok) {
+      if (outcome.appliedItemPatch && outcome.item) {
+        onPatched?.(outcome.item);
+      }
+      // Drop the finding from pending UI (parent merges status into summary).
+      onPlanSuggestionResolved?.(outcome.suggestion);
+      return;
+    }
+
+    if (outcome.code === "version_conflict") {
+      if (outcome.stage === "item") {
+        onCockpitReload?.();
+      } else {
+        onPlanCheckReload?.();
+      }
+    }
+  }
 
   const canPatch = Boolean(
     selectedItem &&
@@ -300,7 +462,16 @@ export function ItineraryContextRail({
             {meta}
           </p>
         </div>
-        {!empty ? (
+        {showPlanCheckEmpty ? (
+          <button
+            type="button"
+            id="run-check"
+            className="btn-run"
+            onClick={onRunPlanCheck}
+          >
+            {RUN_CHECK_LABEL}
+          </button>
+        ) : !empty ? (
           <button
             type="button"
             className="btn-quiet-danger"
@@ -311,7 +482,50 @@ export function ItineraryContextRail({
           </button>
         ) : null}
       </div>
-      {empty ? null : (
+      {showPlanCheckEmpty ? (
+        <div className="panel plan-check-empty">
+          {planCheckMode === "idle" || planCheckMode === "stale" ? (
+            <>
+              {planCheckMode === "idle" ? (
+                <p className="summary">
+                  <em>
+                    {planPendingCount ?? 0} check
+                    {planPendingCount === 1 ? "" : "s"}
+                  </em>{" "}
+                  on this plan — open a stop with a cue to triage.
+                </p>
+              ) : (
+                <p className="stale-cue" role="status" aria-live="polite">
+                  {STALE_CUE_TEXT}
+                </p>
+              )}
+              <div className="empty-block">
+                <strong>Select a stop to review</strong>
+                <p>
+                  Inline cues mark issues on the table. Triage and edit stay
+                  together in this rail.
+                </p>
+              </div>
+            </>
+          ) : planCheckMode === "never" ? (
+            <div className="empty-block">
+              <strong>No plan check yet</strong>
+              <p>
+                Run check to mark missing times, lodging details, and travel
+                gaps on the stops.
+              </p>
+            </div>
+          ) : (
+            <div className="empty-block">
+              <strong>No suggestions right now</strong>
+              <p>
+                Latest check found nothing to triage. Run check again after
+                you edit the itinerary.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : empty ? null : (
         <>
           {deleteError ? (
             <p className="text-sm text-(--color-danger)" role="alert">
@@ -430,6 +644,65 @@ export function ItineraryContextRail({
               })}
             </div>
           </div>
+          {stopFindings ? (
+            <div className="panel ctx-checks">
+              <h3>Checks for this stop</h3>
+              {stopFindings.length === 0 ? (
+                <p>No pending checks for this stop.</p>
+              ) : (
+                <ul className="queue-list">
+                  {stopFindings.map((finding) => (
+                    <li
+                      key={finding.id}
+                      className="finding"
+                      data-severity={finding.severity}
+                    >
+                      <div className="finding-top">
+                        <span className="sev">{finding.severity}</span>
+                      </div>
+                      <p className="finding-explain">
+                        {finding.explanation.en}
+                      </p>
+                      <p className="finding-action">
+                        {finding.recommendedAction.en}
+                      </p>
+                      <div className="triage">
+                        <button
+                          type="button"
+                          className="btn-triage accept"
+                          onClick={() => void acceptFinding(finding)}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-triage"
+                          onClick={() => triage(finding, "dismissed")}
+                        >
+                          Dismiss
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-triage"
+                          onClick={() =>
+                            triage(
+                              finding,
+                              "snoozed",
+                              new Date(
+                                Date.now() + SNOOZE_DURATION_MS,
+                              ).toISOString(),
+                            )
+                          }
+                        >
+                          Snooze
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : null}
         </>
       )}
 
