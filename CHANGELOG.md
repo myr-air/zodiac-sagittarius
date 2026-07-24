@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.29.0] — 2026-07-24
+
+### Added
+- Joii plan-check inspector on the trip cockpit: quiet inline cues under flagged stops, selected-stop Context rail triage (Accept / Dismiss / Snooze), and empty-rail Run check / stale / honest empty states
+- Frontend plan-check client (`run` / `latest` / `patch`) plus Accept apply for safe item `action_payload` before marking accepted
+
+### Changed
+- PRODUCT.md §5 marks Plan check suggestions as shipped Joii inspector (near-issue cues + selected-stop triage)
+
+### Notes
+- Closed roadmap M4 on `itinerary-band-c-complete`; follow-up polish tracked in #187
+
+
 ## [0.28.1] — 2026-07-23
 
 ### Fixed

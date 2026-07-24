@@ -2775,6 +2775,76 @@ a.portal-pass:hover {
   opacity: 1;
 }
 
+/* Plan-check empty rail — Run check + idle/never/clean/stale copy
+   (plan-check-inspector-draft-v3.html; M82LQRZD T4 #1). */
+.btn-run {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-run:hover {
+  background: var(--color-primary-strong);
+}
+
+.plan-check-empty .summary {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+.plan-check-empty .summary em {
+  font-style: normal;
+  color: var(--color-warning-strong);
+  font-weight: 700;
+}
+
+.plan-check-empty .stale-cue {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-warning-strong);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.plan-check-empty .empty-block {
+  padding: 8px 0;
+  text-align: center;
+  color: var(--color-text-subtle);
+}
+
+.plan-check-empty .empty-block strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.plan-check-empty .empty-block p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .btn-quiet-danger {
   background: transparent;
   color: var(--color-text-subtle);
@@ -2796,6 +2866,112 @@ a.portal-pass:hover {
 .btn-quiet-danger:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Selected-stop "Checks for this stop" triage list
+   (plan-check-inspector-draft-v3.html mode-selected; M82LQRZD T5 #1). */
+.ctx-checks .queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ctx-checks .finding {
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ctx-checks .finding[data-severity="warning"] {
+  background: var(--color-warning-soft);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  box-shadow: inset 3px 0 0 var(--color-warning);
+}
+
+.ctx-checks .finding[data-severity="info"] {
+  background: var(--color-route-soft);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  box-shadow: inset 3px 0 0 var(--color-route);
+}
+
+.ctx-checks .finding-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ctx-checks .sev {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-subtle);
+}
+
+.ctx-checks .finding[data-severity="warning"] .sev {
+  color: var(--color-warning-strong);
+}
+
+.ctx-checks .finding[data-severity="info"] .sev {
+  color: var(--color-route);
+}
+
+.ctx-checks .finding-explain {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+.ctx-checks .finding-action {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.ctx-checks .triage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ctx-checks .btn-triage {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ctx-checks .btn-triage.accept {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.ctx-checks .btn-triage:hover {
+  background: var(--color-surface-muted);
+}
+
+.ctx-checks .btn-triage.accept:hover {
+  background: var(--color-primary-strong);
 }
 
 table.smart {
@@ -3174,6 +3350,53 @@ tr.stop-row.has-overlap.selected td {
 
 .smart-itinerary tr.day-cue-row td {
   padding: 0;
+}
+
+/* M82LQRZD — quiet inline plan-check cue under a flagged stop. Notice
+   only: no triage controls here (full triage stays in the rail). */
+tr.check-cue td {
+  padding: 0 12px 10px;
+}
+
+.inline-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 36rem;
+  padding: 6px 10px;
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-warning-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-warning-strong);
+}
+
+.inline-check[data-severity="info"] {
+  border-left-color: var(--color-route);
+  background: var(--color-route-soft);
+  color: var(--color-route);
+}
+
+.inline-check[data-severity="error"],
+.inline-check[data-severity="critical"] {
+  border-left-color: var(--color-danger);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.inline-check .count {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.inline-check .msg {
+  font-weight: 600;
+  color: inherit;
 }
 
 tr.stop-row.enter {

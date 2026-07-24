@@ -315,6 +315,7 @@ export function TripWorkspaceShell({ tripId }: TripWorkspaceShellProps) {
           <ItineraryPlanPage
             model={itineraryModel}
             tripId={tripId}
+            tripPlanId={planVariantId ?? undefined}
             sessionToken={sessionToken}
             apiBaseUrl={apiBaseUrl}
             fetch={globalThis.fetch.bind(globalThis)}

@@ -18,6 +18,11 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import type { TripCockpitItineraryItem } from "../../src/trip/trip-cockpit-load";
 import { buildItineraryTableModel } from "../../src/trip/itinerary-table-model";
+import type { ItineraryTableModel } from "../../src/trip/itinerary-table-model";
+import type {
+  PlanCheckSummary,
+  PlanSuggestionSummary,
+} from "../../src/trip/plan-check-api";
 import { ItineraryPlanPage } from "./ItineraryPlanPage";
 
 /** Independent literals from approved itinerary-plan-draft-v1.html (travel stop t1). */
@@ -1060,5 +1065,585 @@ describe("ItineraryPlanPage parent block-delete guard", () => {
     expect(within(context).getByRole("heading", { level: 2 })).toHaveTextContent(
       BLOCK_PARENT_ACTIVITY,
     );
+  });
+});
+
+/**
+ * M82LQRZD T7 #1 — load-latest-on-active + no auto-rerun on edits.
+ * ItineraryPlanPage GETs plan-checks/latest once for the visible plan when
+ * plan-check deps (tripId/sessionToken/apiBaseUrl/fetch) are active, derives
+ * planCheckFindingsByStop (groupFindingsByStop over pending suggestions) and
+ * passes it to both SmartItineraryTable (inline check-cue row) and
+ * ItineraryContextRail ("Checks for this stop" triage list), sets
+ * planCheckMode from the latest summary (never/idle/clean/stale), and wires
+ * Run check (rail) to POST plan-checks. Ordinary itinerary edits and model
+ * prop churn must never auto-trigger the POST (no silent auto-rerun).
+ * RED: ItineraryPlanPage does not yet call plan-check-api at all.
+ */
+const PLAN_CHECK_SESSION = "member-session-token-plan-check-t7";
+const PLAN_CHECK_ID = "018f4e90-0000-7000-8000-0000000000aa";
+const PLAN_CHECK_STOP_ID = "item-plan-check-t7-stop";
+const PLAN_CHECK_FINDING_MESSAGE = "Missing return travel segment";
+const PLAN_CHECK_LATEST_URL = `${API_BASE}/api/v1/trips/${TRIP_ID}/plan-checks/latest`;
+const PLAN_CHECK_RUN_URL = `${API_BASE}/api/v1/trips/${TRIP_ID}/plan-checks`;
+
+const planCheckStop: StopItem = {
+  ...TRAVEL_STOP,
+  id: PLAN_CHECK_STOP_ID,
+};
+
+function makePlanSuggestion(
+  overrides: Partial<PlanSuggestionSummary> & { id: string },
+): PlanSuggestionSummary {
+  return {
+    tripId: TRIP_ID,
+    planCheckId: PLAN_CHECK_ID,
+    severity: "warning",
+    scope: "item",
+    targetItemIds: [PLAN_CHECK_STOP_ID],
+    explanation: { en: PLAN_CHECK_FINDING_MESSAGE, th: "" },
+    recommendedAction: { en: "Add a return travel stop", th: "" },
+    actionKind: null,
+    actionPayload: null,
+    status: "pending",
+    snoozedUntil: null,
+    createdAt: "2026-07-23T10:00:05Z",
+    updatedAt: "2026-07-23T10:00:05Z",
+    version: 1,
+    ...overrides,
+  };
+}
+
+function makePlanCheckSummary(
+  overrides: Partial<PlanCheckSummary> & { suggestions: PlanSuggestionSummary[] },
+): PlanCheckSummary {
+  return {
+    id: PLAN_CHECK_ID,
+    tripId: TRIP_ID,
+    tripPlanId: PLAN_ID,
+    createdBy: "018f4e80-1111-7000-9000-000000000001",
+    itineraryFingerprint: "sha256:t7abc123",
+    stale: false,
+    status: "completed",
+    languageMetadata: null,
+    createdAt: "2026-07-23T10:00:00Z",
+    completedAt: "2026-07-23T10:00:05Z",
+    version: 1,
+    ...overrides,
+  };
+}
+
+function planCheckLatestCalls(
+  fetchMock: ReturnType<typeof vi.fn>,
+): Array<{ url: string; init: RequestInit }> {
+  return fetchMock.mock.calls
+    .map(([input, init]) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method !== "GET" || !url.includes("/plan-checks/latest")) return null;
+      return { url, init: (init ?? {}) as RequestInit };
+    })
+    .filter((call): call is { url: string; init: RequestInit } => call !== null);
+}
+
+function planCheckRunCalls(
+  fetchMock: ReturnType<typeof vi.fn>,
+): Array<{ url: string; init: RequestInit }> {
+  return fetchMock.mock.calls
+    .map(([input, init]) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (
+        method !== "POST" ||
+        !url.includes("/plan-checks") ||
+        url.includes("/plan-checks/latest")
+      ) {
+        return null;
+      }
+      return { url, init: (init ?? {}) as RequestInit };
+    })
+    .filter((call): call is { url: string; init: RequestInit } => call !== null);
+}
+
+function buildPlanCheckModel(): ItineraryTableModel {
+  return buildItineraryTableModel({
+    startDate: DAY,
+    endDate: DAY,
+    planVariantId: PLAN_ID,
+    itineraryItems: [planCheckStop],
+  });
+}
+
+describe("ItineraryPlanPage plan-check load-latest-on-active (T7 #1)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("loads GET plan-checks/latest exactly once on mount for the visible plan (Bearer session; no ?tripPlanId= when the optional prop is absent)", async () => {
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(null);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+    });
+    const call = planCheckLatestCalls(fetchMock)[0]!;
+    expect(call.url).toBe(PLAN_CHECK_LATEST_URL);
+    expect(new Headers(call.init.headers).get("Authorization")).toBe(
+      `Bearer ${PLAN_CHECK_SESSION}`,
+    );
+
+    // Settling further renders must not re-trigger the GET (load-once).
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+  });
+
+  it("includes ?tripPlanId= in the latest GET when the optional tripPlanId prop is provided", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(null));
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        tripPlanId={PLAN_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+    });
+    expect(planCheckLatestCalls(fetchMock)[0]!.url).toBe(
+      `${PLAN_CHECK_LATEST_URL}?tripPlanId=${PLAN_ID}`,
+    );
+  });
+
+  it("passes pending findings (groupFindingsByStop) to the table inline check-cue and to the selected-stop rail 'Checks for this stop' list", async () => {
+    const suggestion = makePlanSuggestion({ id: "sugg-plan-check-t7-1" });
+    const summary = makePlanCheckSummary({ stale: false, suggestions: [suggestion] });
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(summary);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    await waitFor(() => {
+      expect(
+        table.querySelector(`tr.check-cue[data-for="${PLAN_CHECK_STOP_ID}"]`),
+      ).toBeTruthy();
+    });
+    expect(
+      within(table.querySelector(`tr.check-cue[data-for="${PLAN_CHECK_STOP_ID}"]`) as HTMLElement)
+        .getByText(PLAN_CHECK_FINDING_MESSAGE),
+    ).toBeInTheDocument();
+
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${PLAN_CHECK_STOP_ID}"]`,
+    ) as HTMLElement;
+    fireEvent.click(stopRow);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    expect(
+      within(context).getByRole("heading", { name: /checks for this stop/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(context).getByText(PLAN_CHECK_FINDING_MESSAGE),
+    ).toBeInTheDocument();
+  });
+
+  it("sets planCheckMode=never when the latest GET returns null (rail shows the never-checked cue)", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(null));
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    await waitFor(() => {
+      expect(within(context).getByText(/no plan check yet/i)).toBeInTheDocument();
+    });
+  });
+
+  it("sets planCheckMode=stale when the latest summary is stale (rail shows the stale cue; no auto POST)", async () => {
+    const suggestion = makePlanSuggestion({ id: "sugg-plan-check-t7-stale" });
+    const summary = makePlanCheckSummary({ stale: true, suggestions: [suggestion] });
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(summary);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    await waitFor(() => {
+      expect(
+        within(context).getByText(/plan changed since this check/i),
+      ).toBeInTheDocument();
+    });
+    expect(planCheckRunCalls(fetchMock)).toHaveLength(0);
+  });
+
+  it("sets planCheckMode=idle when the latest summary is fresh with pending findings (rail shows the pending-count summary)", async () => {
+    const suggestionOne = makePlanSuggestion({ id: "sugg-plan-check-t7-idle-1" });
+    const suggestionTwo = makePlanSuggestion({ id: "sugg-plan-check-t7-idle-2" });
+    const summary = makePlanCheckSummary({
+      stale: false,
+      suggestions: [suggestionOne, suggestionTwo],
+    });
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(summary);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    await waitFor(() => {
+      expect(within(context).getByText(/2 checks?/i)).toBeInTheDocument();
+    });
+    expect(within(context).getByText(/on this plan/i)).toBeInTheDocument();
+  });
+
+  it("sets planCheckMode=clean when the latest summary is fresh with no pending findings (rail shows the zero-findings cue)", async () => {
+    const summary = makePlanCheckSummary({ stale: false, suggestions: [] });
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(summary);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    await waitFor(() => {
+      expect(
+        within(context).getByText(/no suggestions right now/i),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("Run check in the rail POSTs plan-checks for the visible plan", async () => {
+    const ranSummary = makePlanCheckSummary({ stale: false, suggestions: [] });
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "GET" && url === PLAN_CHECK_LATEST_URL) {
+        return jsonResponse(null);
+      }
+      if (method === "POST" && url === PLAN_CHECK_RUN_URL) {
+        return jsonResponse(ranSummary);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    const runCheckBtn = await within(context).findByRole("button", {
+      name: /run check/i,
+    });
+    fireEvent.click(runCheckBtn);
+
+    await waitFor(() => {
+      expect(planCheckRunCalls(fetchMock)).toHaveLength(1);
+    });
+    const runCall = planCheckRunCalls(fetchMock)[0]!;
+    expect(runCall.url).toBe(PLAN_CHECK_RUN_URL);
+    expect(new Headers(runCall.init.headers).get("Authorization")).toBe(
+      `Bearer ${PLAN_CHECK_SESSION}`,
+    );
+  });
+
+  it("does not POST plan-checks when an ordinary itinerary edit PATCHes an item (no auto-rerun)", async () => {
+    let current: StopItem = { ...planCheckStop, version: 1 };
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "GET" && url === PLAN_CHECK_LATEST_URL) {
+        return jsonResponse(null);
+      }
+      if (
+        method === "PATCH" &&
+        url === `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${current.id}`
+      ) {
+        let body: { patch?: Record<string, unknown> } = {};
+        try {
+          body = JSON.parse(String(init?.body ?? "{}")) as {
+            patch?: Record<string, unknown>;
+          };
+        } catch {
+          body = {};
+        }
+        current = {
+          ...current,
+          ...(body.patch as Partial<StopItem>),
+          version: current.version + 1,
+        };
+        return jsonResponse(current);
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildItineraryTableModel({
+          startDate: DAY,
+          endDate: DAY,
+          planVariantId: PLAN_ID,
+          itineraryItems: [current],
+        })}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+    });
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${current.id}"]`,
+    ) as HTMLElement;
+    fireEvent.click(stopRow);
+
+    const tableFrom = within(stopRow).getByRole("textbox", { name: /^from$/i });
+    fireEvent.change(tableFrom, { target: { value: "HKG" } });
+    fireEvent.blur(tableFrom);
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([input, init]) => {
+          const url = String(input);
+          const method = String(init?.method ?? "GET").toUpperCase();
+          return method === "PATCH" && url.includes("/itinerary-items/");
+        }),
+      ).toBe(true);
+    });
+
+    expect(planCheckRunCalls(fetchMock)).toHaveLength(0);
+    // The ordinary edit must not have triggered a second latest reload either.
+    expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+  });
+
+  it("does not POST plan-checks (or re-GET latest) when the model prop changes (no auto-rerun on cockpit reload)", async () => {
+    const fetchMock = vi.fn(async (input) => {
+      const url = String(input);
+      if (url === PLAN_CHECK_LATEST_URL) return jsonResponse(null);
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    const initialModel = buildPlanCheckModel();
+    const { rerender } = render(
+      <ItineraryPlanPage
+        model={initialModel}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+    });
+
+    const changedStop: StopItem = { ...planCheckStop, version: 2, status: "planned" };
+    const nextModel = buildItineraryTableModel({
+      startDate: DAY,
+      endDate: DAY,
+      planVariantId: PLAN_ID,
+      itineraryItems: [changedStop],
+    });
+
+    rerender(
+      <ItineraryPlanPage
+        model={nextModel}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(planCheckLatestCalls(fetchMock)).toHaveLength(1);
+    expect(planCheckRunCalls(fetchMock)).toHaveLength(0);
+  });
+
+  /**
+   * M82LQRZD T7 — Accept with a safe item action_payload must PATCH the
+   * item then the suggestion, and the parent (ItineraryPlanPage) must merge
+   * the returned accepted suggestion via onPlanSuggestionResolved (→
+   * mergePlanSuggestion) so the finding immediately leaves both the rail's
+   * "Checks for this stop" triage list and the table's inline check-cue —
+   * groupFindingsByStop only ever surfaces status=pending suggestions.
+   */
+  it("after a successful Accept (apply path), the parent merges the accepted suggestion so the finding leaves the rail triage list and the table's check-cue", async () => {
+    const suggestion = makePlanSuggestion({
+      id: "sugg-plan-check-t7-accept",
+      actionKind: "item_patch",
+      actionPayload: { itemId: PLAN_CHECK_STOP_ID, patch: { status: "planned" } },
+    });
+    const summary = makePlanCheckSummary({ stale: false, suggestions: [suggestion] });
+    const itemPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/itinerary-items/${PLAN_CHECK_STOP_ID}`;
+    const suggestionPatchUrl = `${API_BASE}/api/v1/trips/${TRIP_ID}/plan-suggestions/${suggestion.id}`;
+
+    const fetchMock = vi.fn(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "GET" && url === PLAN_CHECK_LATEST_URL) {
+        return jsonResponse(summary);
+      }
+      if (method === "PATCH" && url === itemPatchUrl) {
+        return jsonResponse({
+          ...planCheckStop,
+          status: "planned",
+          version: (planCheckStop.version ?? 1) + 1,
+        });
+      }
+      if (method === "PATCH" && url === suggestionPatchUrl) {
+        return jsonResponse({
+          ...suggestion,
+          status: "accepted",
+          version: suggestion.version + 1,
+        });
+      }
+      return jsonResponse({ error: { message: "unexpected" } }, 404);
+    });
+
+    render(
+      <ItineraryPlanPage
+        model={buildPlanCheckModel()}
+        tripId={TRIP_ID}
+        sessionToken={PLAN_CHECK_SESSION}
+        apiBaseUrl={API_BASE}
+        fetch={fetchMock}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: TABLE_ARIA_LABEL });
+    await waitFor(() => {
+      expect(
+        table.querySelector(`tr.check-cue[data-for="${PLAN_CHECK_STOP_ID}"]`),
+      ).toBeTruthy();
+    });
+
+    const stopRow = table.querySelector(
+      `tr.stop-row[data-id="${PLAN_CHECK_STOP_ID}"]`,
+    ) as HTMLElement;
+    fireEvent.click(stopRow);
+
+    const context = screen.getByRole("complementary", {
+      name: /context inspector/i,
+    });
+    expect(
+      within(context).getByText(PLAN_CHECK_FINDING_MESSAGE),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      within(context).getByRole("button", { name: /^accept$/i }),
+    );
+
+    await waitFor(() => {
+      expect(fetchMock.mock.calls.some(([input, init]) => {
+        const callUrl = String(input);
+        const method = String(init?.method ?? "GET").toUpperCase();
+        return method === "PATCH" && callUrl === suggestionPatchUrl;
+      })).toBe(true);
+    });
+
+    // Parent merged the accepted suggestion (onPlanSuggestionResolved →
+    // mergePlanSuggestion) — the finding drops out of pending everywhere.
+    await waitFor(() => {
+      expect(
+        within(context).queryByText(PLAN_CHECK_FINDING_MESSAGE),
+      ).toBeNull();
+    });
+    expect(
+      table.querySelector(`tr.check-cue[data-for="${PLAN_CHECK_STOP_ID}"]`),
+    ).toBeNull();
   });
 });

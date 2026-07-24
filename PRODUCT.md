@@ -232,7 +232,7 @@ Joii is a greenfield Next App Router app (`package` name `joii`):
 | Members / join / presence | Yes | No | Full |
 | Expenses / estimates | Yes | No | Plan-scoped |
 | Bookings / commitments | Yes | No | Plan-scoped |
-| Plan check suggestions | Yes | No | Inspector queue (M4) |
+| Plan check suggestions | Yes | Yes (near-issue inline cues + selected-stop Context rail triage; empty rail = Run check / stale / honest empty — not a full-plan queue) | Joii inspector (M4) |
 | Realtime trip events | Yes | No | Live sync |
 
 ---
